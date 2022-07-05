@@ -1,20 +1,8 @@
-import numpy as np
-
-
-import numpy as np
-import pinocchio as pin
-
-from os.path import dirname, join, abspath
-
-from parameters_settings import params_settings
-from pinocchio.visualize import GepettoVisualizer
-from tools.robot import load_model
-from pinocchio.utils import *
-
 import cyipopt
 from scipy.optimize import approx_fprime
 
-import pandas as pd
+import numpy as np
+import pinocchio as pin
 
 
 def Rquat(x, y, z, w):

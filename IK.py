@@ -1,14 +1,5 @@
 import numpy as np
-
-
-import numpy as np
 import pinocchio as pin
-from os.path import dirname, join, abspath
-
-from parameters_settings import params_settings
-from pinocchio.visualize import GepettoVisualizer
-from tools.robot import load_model
-from pinocchio.utils import *
 
 import quadprog
 import cyipopt
@@ -765,10 +756,12 @@ def IK_markers_human_quadprog(model, data, DMarkers, i_markers, q0):
         Goal = np.concatenate(
             (Goal, np.reshape(np.array(DMarkers[ii]), (1, 3))), axis=0
         )
-        Mposition_goal_temp = pin.SE3(
-            Rquat(1, 0, 0, 0), np.matrix(np.array(DMarkers[ii])).T
-        )
-        # viz.viewer.gui.addXYZaxis('world/framegoal'+str(ii), [1, 0., 0., 1.], 0.0115, 0.15)
+        # Mposition_goal_temp = pin.SE3(
+        # Rquat(1, 0, 0, 0), np.matrix(np.array(DMarkers[ii])).T
+        # )
+        # viz.viewer.gui.addXYZaxis(
+        # "world/framegoal" + str(ii), [1, 0.0, 0.0, 1.0], 0.0115, 0.15
+        # )
         # place(viz,'world/framegoal'+str(ii), Mposition_goal_temp)
 
     pin.framesForwardKinematics(model, data, q0)
@@ -790,20 +783,25 @@ def IK_markers_human_quadprog(model, data, DMarkers, i_markers, q0):
 
     rmse = np.sqrt(np.mean((np.array(Goal) - np.array(Mposition_markers)) ** 2))
 
-    ### ----------------------------------------------------------------------------- ###
-    ### OPTIMIZATION PROBLEM
+    # ---------------------------------------------------------------------------- ###
+    # OPTIMIZATION PROBLEM
 
     while rmse > 0.015:
         # print(rmse)
         pin.forwardKinematics(model, data, q0)  # Compute joint placements
-        pin.updateFramePlacements(
-            model, data
-        )  # Also compute operational frame placements
+        # Also compute operational frame placements
+        pin.updateFramePlacements(model, data)
 
         for ii in range(len(i_markers)):
             Mposition_markers[ii] = data.oMf[i_markers[ii]].translation
-            # viz.viewer.gui.addXYZaxis('world/framemarkers'+str(ii), [0., 0., 1., 1.], 0.0115, 0.05)
-            # place(viz,'world/framemarkers'+str(ii), pin.SE3(Rquat(1, 0, 0, 0), Mposition_markers[ii]))
+            # viz.viewer.gui.addXYZaxis(
+            # "world/framemarkers" + str(ii), [0.0, 0.0, 1.0, 1.0], 0.0115, 0.05
+            # )
+            # place(
+            # viz,
+            # "world/framemarkers" + str(ii),
+            # pin.SE3(Rquat(1, 0, 0, 0), Mposition_markers[ii]),
+            # )
 
             v_ii = (np.array(Goal[ii]) - np.array(Mposition_markers[ii])) / dt
             mu_ii = damping * np.matmul(v_ii, v_ii)
@@ -903,8 +901,8 @@ def IK_markers_human(viz, model, data, DMarkers, i_markers, q0):
     J = np.empty(shape=[0, len(q0) - 1])
     p = np.array([])
 
-    ### ----------------------------------------------------------------------------- ###
-    ### OPTIMIZATION PROBLEM
+    # ----------------------------------------------------------------------------- ###
+    # OPTIMIZATION PROBLEM
 
     while rmse > 0.02:
         # print(rmse)
