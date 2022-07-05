@@ -47,7 +47,7 @@
             <inertia ixx="0.151794" ixy="-0.00233867" ixz="0.000153753" iyy="0.023468" iyz="0.000148088" izz="0.154423" />
         </inertial>
         <visual>
-	        <origin xyz="-0.07 0.04 0.09" rpy="0 1.57 0" /> 
+	        <origin xyz="-0.07 0.04 0.09" rpy="0 1.57 0" />
             <geometry>
 		        <mesh filename="package://human_urdf/meshes/head_mesh.STL" scale="0.0055 0.0055 0.0055"/>
             </geometry>
@@ -71,7 +71,7 @@
     </link>
     <link name="middle_head_virtual" >
     <visual>
-	    <origin xyz="-0.03 -0.01 -0.045" rpy="0 0.0 0" /> 
+	    <origin xyz="-0.03 -0.01 -0.045" rpy="0 0.0 0" />
             <geometry>
 		<mesh filename="package://human_urdf/meshes/neck_mesh.STL" scale="0.005 0.005 0.005"/>
             </geometry>
@@ -176,7 +176,7 @@
     </link>
     <link name="left_lowerarm_virtual">
 	    <visual>
-	        <origin xyz="-0.15 -0.04 -0.035" rpy="0 0 0" /> 
+	        <origin xyz="-0.15 -0.04 -0.035" rpy="0 0 0" />
             <geometry>
 		        <mesh filename="package://human_urdf/meshes/elbow_mesh.STL" scale="0.0055 0.0055 0.0055"/>
             </geometry>
@@ -200,7 +200,7 @@
             <material name="body_color">
                 <texture />
                 <color rgba="0 1 1 0.5" />
-            </material>        
+            </material>
 	    </visual>
     </link>
     <link name="left_lowerleg_COM">
@@ -243,7 +243,7 @@
     </link>
     <link name="left_upperarm_virtual">
 	    <visual>
-	        <origin xyz="-0.16 -0.045 -0.045" rpy="0 0 0" /> 
+	        <origin xyz="-0.16 -0.045 -0.045" rpy="0 0 0" />
             <geometry>
 		        <mesh filename="package://human_urdf/meshes/shoulder_mesh.STL" scale="0.0055 0.0055 0.0055"/>
             </geometry>
@@ -303,7 +303,7 @@
             <inertia ixx="0.107721" ixy="0.00546803" ixz="0.00137966" iyy="0.107746" iyz="0.000447998" izz="0.096326" />
         </inertial>
         <visual>
-	        <origin xyz="-0.08 -0.13 0.125" rpy="0 1.57 0" /> 
+	        <origin xyz="-0.08 -0.13 0.125" rpy="0 1.57 0" />
             <geometry>
 		        <mesh filename="package://human_urdf/meshes/pelvis_mesh.STL" scale="0.006 0.0055 0.0055"/>
             </geometry>
@@ -419,7 +419,7 @@
     </link>
     <link name="right_lowerarm_virtual">
         <visual>
-	        <origin xyz="-0.15 -0.04 -0.035" rpy="0 0 0" /> 
+	        <origin xyz="-0.15 -0.04 -0.035" rpy="0 0 0" />
             <geometry>
 		        <mesh filename="package://human_urdf/meshes/elbow_mesh.STL" scale="0.0055 0.0055 0.0055"/>
             </geometry>
@@ -489,7 +489,7 @@
     </link>
     <link name="right_upperarm_virtual">
         <visual>
-	        <origin xyz="-0.15 -0.04 -0.05" rpy="0 0 0" /> 
+	        <origin xyz="-0.15 -0.04 -0.05" rpy="0 0 0" />
             <geometry>
 		        <mesh filename="package://human_urdf/meshes/shoulder_mesh.STL" scale="0.0055 0.0055 0.0055"/>
             </geometry>
@@ -550,7 +550,7 @@
         </inertial>
         <visual>
             <! -- <origin xyz="0.024 -0.178321 0" rpy="0 -0 0" /> -->
-	    <origin xyz="-0.11 -0.32 0.13" rpy="0 1.57 0" /> 
+	    <origin xyz="-0.11 -0.32 0.13" rpy="0 1.57 0" />
             <geometry>
 		        <!--<box size="0.15 0.356643 0.329994" />-->
 		        <mesh filename="package://human_urdf/meshes/torso_mesh.STL" scale="0.0065 0.0065 0.0065"/>
