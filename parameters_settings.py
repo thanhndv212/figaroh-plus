@@ -27,7 +27,7 @@ params_settings = {
     # additional mass (for the loaded part)
     "which_body_loaded": 2,
     #### defaut values to be set in case the URDF is incomplete
-    # default value for joint limits in cas the URDF does not have the info
+    # default value for joint limits in case the URDF does not have the info
     "q_lim_def": 1.57,
     "dq_lim_def": 5,  # in rad.s-1
     "ddq_lim_def": 20,  # in rad.s-2
