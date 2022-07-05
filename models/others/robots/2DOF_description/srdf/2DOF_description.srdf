@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<robot name="parallelepiped">
+
+    <group name="end_effector">
+        <joint name="joint1" />
+        <joint name="joint2" />
+        <chain base_link="base_link" tip_link="link2" />
+    </group>
+
+    <group_state name="arm_up">
+        <joint name="joint1" value="1.8" />
+        <joint name="joint2" value="0" />
+    </group_state>
+
+</robot>

@@ -1,0 +1,5 @@
+datasets/* filter=lfs diff=lfs merge=lfs -text
+experimental_data/* filter=lfs diff=lfs merge=lfs -text
+models/* filter=lfs diff=lfs merge=lfs -text
+results/* filter=lfs diff=lfs merge=lfs -text
+related_reports/* filter=lfs diff=lfs merge=lfs -text
