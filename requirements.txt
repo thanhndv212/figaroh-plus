@@ -1,0 +1,8 @@
+ipopt
+matplotlib
+ndcurves
+pandas
+pin
+quadprog
+scipy
+tabulate
