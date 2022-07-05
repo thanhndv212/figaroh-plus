@@ -137,11 +137,11 @@ def main():
     plt.show()
 
     # calculate vel and acc using central difference
-    dt = 1 / f_sample
+    dt = 1 / params_settings["ts"]
     dq = np.zeros([q.shape[0], q.shape[1]])
     ddq = np.zeros([q.shape[0], q.shape[1]])
-    t = np.linspace(0, dq.shape[0], num=dq.shape[0]) / f_sample
-    for i in range(pos_data.shape[1]):
+    t = np.linspace(0, dq.shape[0], num=dq.shape[0]) / params_settings["ts"]
+    for i in range(data_load.shape[1]):
         dq[:, i] = np.gradient(q[:, i], edge_order=1) / dt
         ddq[:, i] = np.gradient(dq[:, i], edge_order=1) / dt
         plt.plot(t, q[:, i])

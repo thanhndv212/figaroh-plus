@@ -89,8 +89,8 @@ def get_params_settings():
         "ddq_lim_def": 20,  # in rad.s-2
         "tau_lim_def": 4,  # in N.m
         # ### parameters related to all exciting trajectories
-        "ts": 1
-        / 400,  # Sampling time of the trajectories to be/that have been recorded
+        # Sampling time of the trajectories to be/that have been recorded
+        "ts": 1 / 400,
         # ### parameters related to the data elaboration (filtering, etc...)
         "cut_off_frequency_butterworth": 100,
         # ### parameters related to the trapezoidal trajectory generation
