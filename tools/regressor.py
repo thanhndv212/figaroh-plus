@@ -37,6 +37,142 @@ def build_regressor_basic(N, robot, q, v, a):
         W_mod[:, 10 * k + 0] = W[:, 10 * k + 4]  # Ixx
     return W_mod
 
+def build_regressor_basic_v2(robot, q, v, a, param, tau=None):
+    """This function builds the basic regressor of the 10(+2) parameters
+    'Ixx','Ixy','Ixz','Iyy','Iyz','Izz','mx','my','mz','m'+ ('fs','fv') using pinocchio
+    library depending on param.
+    Input:  robot: (robot) a robot extracted from an urdf (for instance)
+            q: (ndarray) a configuration position vector (size robot.model.nq)
+            v: (ndarray) a configuration velocity vector (size robot.model.nv)
+            a: (ndarray) a configutation acceleration vectore (size robot.model.na)
+            param: (dict) a dictionnary setting the options, i.e., here add two
+            parameters, 'fs' and 'fv' if the flag 'has friction' is true
+            tau : (ndarray) of stacked torque measurements (Fx,Fy,Fz), None if the torque offsets are not identified 
+    Output: W_mod: (ndarray) basic regressor for 10(+2) parameters
+    """
+    err = False
+    N = len(q) # nb of samples 
+    nb_in=len(robot.model.inertias)
+    if param["is_joint_torques"]:
+        W = np.zeros([N * robot.model.nv, 10 * (nb_in-1)])
+        for i in range(N):
+            W_temp = pin.computeJointTorqueRegressor(
+                robot.model, robot.data, q[i, :], v[i, :], a[i, :]
+            )
+            for j in range(W_temp.shape[0]):
+                W[j * N + i, :] = W_temp[j, :]
+
+    if param["is_external_wrench"]:
+        ft = param["force_torque"]
+        W = np.zeros([N * 6, 10 * (nb_in-1)]) 
+        for i in range(N):
+            W_temp = pin.computeJointTorqueRegressor(
+                robot.model, robot.data, q[i, :], v[i, :], a[i, :]
+            )
+            for k in range(len(ft)):
+                if ft[k] == "Fx":
+                    j = 0
+                    W[j * N + i, :] = W_temp[j, :]
+                elif ft[k] == "Fy":
+                    j = 1
+                    W[j * N + i, :] = W_temp[j, :]
+                elif ft[k] == "Fz":
+                    j = 2
+                    W[j * N + i, :] = W_temp[j, :]
+                elif ft[k] == "Mx":
+                    j = 3
+                    W[j * N + i, :] = W_temp[j, :]
+                elif ft[k] == "My":
+                    j = 4
+                    W[j * N + i, :] = W_temp[j, :]
+                elif ft[k] == "Mz":
+                    j = 5
+                    W[j * N + i, :] = W_temp[j, :]
+                elif ft[k] == "All":
+                    for j in range(6):
+                        W[j * N + i, :] = W_temp[j, :]
+                else:
+                    err = True
+        if err:
+            raise SyntaxError("Please enter valid parameters")
+
+    add_col = 0
+
+    if param["has_friction"]:  # adds two other parameters fs and fv
+        add_col += 2
+
+    if param["is_joint_torques"]:
+        W_mod = np.zeros([N * robot.model.nv, (10 + add_col) * nb_in])
+
+    if param["is_external_wrench"]:
+        W_mod = np.zeros([N * 6, (10 + add_col) * (nb_in-1)])
+    
+    if param["is_external_wrench"] and param["external_wrench_offsets"]:  # adds OFFX, OFFY, OFFZ
+        W_mod = np.zeros([N * 6, (10 + add_col) * (nb_in-1) + 3])
+
+    if param["is_joint_torques"]:
+        for k in range(nb_in-1):
+            W_mod[:, (10 + add_col) * k + 9] = W[:, 10 * k + 0]  # m
+            W_mod[:, (10 + add_col) * k + 8] = W[:, 10 * k + 3]  # mz
+            W_mod[:, (10 + add_col) * k + 7] = W[:, 10 * k + 2]  # my
+            W_mod[:, (10 + add_col) * k + 6] = W[:, 10 * k + 1]  # mx
+            W_mod[:, (10 + add_col) * k + 5] = W[:, 10 * k + 9]  # Izz
+            W_mod[:, (10 + add_col) * k + 4] = W[:, 10 * k + 8]  # Iyz
+            W_mod[:, (10 + add_col) * k + 3] = W[:, 10 * k + 6]  # Iyy
+            W_mod[:, (10 + add_col) * k + 2] = W[:, 10 * k + 7]  # Ixz
+            W_mod[:, (10 + add_col) * k + 1] = W[:, 10 * k + 5]  # Ixy
+            W_mod[:, (10 + add_col) * k + 0] = W[:, 10 * k + 4]  # Ixx
+
+            if param[
+                "has_friction"
+            ]:  # builds the regressor for the augmented parameters
+                W_mod = np.c_[W_mod, np.zeros([N * robot.model.nv, 2 * nb_in])]
+                for ii in range(N):
+                    W_mod[ii + k * N, (10 + add_col) * k + 10] = v[ii, k]  # fv
+                    W_mod[ii + k * N, (10 + add_col) * k + 11] = np.sign(v[ii, k])  # fs
+
+    if param["is_external_wrench"]:
+        for k in range(nb_in-1):
+            W_mod[:, (10 + add_col) * k + 9] = W[:, 10 * k + 0]  # m
+            W_mod[:, (10 + add_col) * k + 8] = W[:, 10 * k + 3]  # mz
+            W_mod[:, (10 + add_col) * k + 7] = W[:, 10 * k + 2]  # my
+            W_mod[:, (10 + add_col) * k + 6] = W[:, 10 * k + 1]  # mx
+            W_mod[:, (10 + add_col) * k + 5] = W[:, 10 * k + 9]  # Izz
+            W_mod[:, (10 + add_col) * k + 4] = W[:, 10 * k + 8]  # Iyz
+            W_mod[:, (10 + add_col) * k + 3] = W[:, 10 * k + 6]  # Iyy
+            W_mod[:, (10 + add_col) * k + 2] = W[:, 10 * k + 7]  # Ixz
+            W_mod[:, (10 + add_col) * k + 1] = W[:, 10 * k + 5]  # Ixy
+            W_mod[:, (10 + add_col) * k + 0] = W[:, 10 * k + 4]  # Ixx
+
+            if param[
+                "has_friction"
+            ]:  # builds the regressor for the augmented parameters
+                W_mod = np.c_[
+                    W_mod,
+                    np.zeros([N * 6, 2 * (nb_in-1)]),
+                ]
+                for ii in range(N):
+                    W_mod[ii + k * N, (10 + add_col) * k + 10] = v[ii, k]  # fv
+                    W_mod[ii + k * N, (10 + add_col) * k + 11] = np.sign(v[ii, k])  # fs
+
+    if param["external_wrench_offsets"] and tau is not None:
+            for k in range(3,6):
+                if k == 3:  
+                    for ii in range(N):
+                        W_mod[ii + k * N, -2] = tau[ii+N]
+                        W_mod[ii + k * N, -1] = tau[ii+2*N]
+                if k == 4 :
+                    for ii in range(N):
+                        W_mod[ii + k * N, -3] = tau[ii]
+                        W_mod[ii + k * N, -1] = tau[ii+2*N]
+                if k == 5:
+                    for ii in range(N):
+                        W_mod[ii + k * N, -3] = tau[ii]
+                        W_mod[ii + k * N, -2] = tau[ii+N]
+
+    return W_mod
+
+
 
 # TODO: clean up this mess
 # def build_regressor_w_friction(model, data, N, nq, nv, njoints, q, v, a):

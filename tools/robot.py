@@ -126,6 +126,88 @@ class Robot(RobotWrapper):
         params_std = dict(zip(params, phi))
         return params_std
 
+    def get_standard_parameters_v2(self, param):
+    
+        model=self.model
+        phi = []
+        params = []
+
+        # manual input addtiional parameters
+        # example TX40
+        # self.fv = (8.05e0, 5.53e0, 1.97e0, 1.11e0, 1.86e0, 6.5e-1)
+        # self.fs = (7.14e0, 8.26e0, 6.34e0, 2.48e0, 3.03e0, 2.82e-1)
+        # self.Ia = (3.62e-1, 3.62e-1, 9.88e-2, 3.13e-2, 4.68e-2, 1.05e-2)
+        # self.off = (3.92e-1, 1.37e0, 3.26e-1, -1.02e-1, -2.88e-2, 1.27e-1)
+        # self.Iam6 = 9.64e-3
+        # self.fvm6 = 6.16e-1
+        # self.fsm6 = 1.95e0
+        # self.N1 = 32
+        # self.N2 = 32
+        # self.N3 = 45
+        # self.N4 = -48
+        # self.N5 = 45
+        # self.N6 = 32
+        # self.qd_lim = 0.01 * \
+        #     np.array([287, 287, 430, 410, 320, 700]) * np.pi / 180
+        # self.ratio_essential = 30
+
+
+
+        params_name = (
+            "Ixx",
+            "Ixy",
+            "Ixz",
+            "Iyy",
+            "Iyz",
+            "Izz",
+            "mx",
+            "my",
+            "mz",
+            "m",
+        )
+
+        # change order of values in phi['m', 'mx','my','mz','Ixx','Ixy','Iyy','Ixz', 'Iyz','Izz'] - from pinoccchio
+        # corresponding to params_name ['Ixx','Ixy','Ixz','Iyy','Iyz','Izz','mx','my','mz','m']
+        for i in range(1,  model.njoints):
+            P =  model.inertias[i].toDynamicParameters()
+            P_mod = np.zeros(P.shape[0])
+            P_mod[9] = P[0]  # m
+            P_mod[8] = P[3]  # mz
+            P_mod[7] = P[2]  # my
+            P_mod[6] = P[1]  # mx
+            P_mod[5] = P[9]  # Izz
+            P_mod[4] = P[8]  # Iyz
+            P_mod[3] = P[6]  # Iyy
+            P_mod[2] = P[7]  # Ixz
+            P_mod[1] = P[5]  # Ixy
+            P_mod[0] = P[4]  # Ixx
+            for j in params_name:
+                if not param['is_external_wrench']:#self.isFext:
+                    params.append(j + str(i))
+                else:
+                    params.append(j + str(i-1))
+            for k in P_mod:
+                phi.append(k)
+            #if param['hasActuatorInertia']:
+                # phi.extend([self.Ia[i - 1]])
+                # params.extend(["Ia" + str(i)])
+            if param['has_friction']:
+                phi.extend([param['fv'][i-1], param['fv'][i-1]])
+                params.extend(["fv" + str(i), "fs" + str(i)])
+                # phi.extend([self.fv[i - 1], self.fs[i - 1]])
+                # params.extend(["fv" + str(i), "fs" + str(i)])
+            #if param['hasJointOffset']:
+                #phi.extend([self.off[i - 1]])
+                #params.extend(["off" + str(i)])
+        #if param['hasCoupledWrist']:#self.isCoupling:
+            #phi.extend([self.Iam6, self.fvm6, self.fsm6])
+            #params.extend(["Iam6", "fvm6", "fsm6"])
+        if param["external_wrench_offsets"]:
+            phi.extend([param['OFFX'],param['OFFY'],param['OFFZ']])
+            params.extend(["OFFX","OFFY","OFFZ"])
+        params_std = dict(zip(params, phi))
+        return params_std
+
     def display_q0(self):
         """If you want to visualize the robot in this example,
         you can choose which visualizer to employ
