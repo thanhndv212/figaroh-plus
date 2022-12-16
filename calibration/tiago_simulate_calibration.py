@@ -47,7 +47,7 @@ model = robot.model
 data = robot.data
 
 NbSample = 50
-param = get_param(robot, NbSample, TOOL_NAME='ee_marker_joint', NbMarkers=4)
+param = get_param(robot, NbSample, TOOL_NAME='ee_marker_joint', NbMarkers=1)
 
 #############################################################
 
@@ -61,13 +61,13 @@ PEE_names = []
 for i in range(param['NbMarkers']):
     PEE_names.extend(['pEEx_%d' % (i+1), 'pEEy_%d' % (i+1), 'pEEz_%d' % (i+1)])
 params_name = paramsrand_base + PEE_names
-for i in params_name:
-    print(i)
+for i, pn in enumerate(params_name):
+    print(i, pn)
 
 #############################################################
 
 # 3/ Data collection/generation
-dataSet = 'experimental'  # choose data source 'sample' or 'experimental'
+dataSet = 'sample'  # choose data source 'sample' or 'experimental'
 if dataSet == 'sample':
     # create artificial offsets
     var_sample, nvars_sample = init_var(param, mode=1)
@@ -78,8 +78,8 @@ if dataSet == 'sample':
 
     for i in range(param['NbSample']):
         config = param['q0']
-        config[param['Ind_joint']] = pin.randomConfiguration(model)[
-            param['Ind_joint']]
+        config[param['config_idx']] = pin.randomConfiguration(model)[
+            param['config_idx']]
         q_sample[i, :] = config
 
     # create simulated end effector coordinates measures (PEEm)
@@ -242,12 +242,12 @@ fig4 = plt.figure()
 fig4.suptitle("Joint configurations with joint bounds")
 ax4 = fig4.add_subplot(111, projection='3d')
 lb = ub = []
-for j in param['Ind_joint']:
+for j in param['config_idx']:
     # model.names does not accept index type of numpy int64
     # and model.lowerPositionLimit index lag to model.names by 1
     lb = np.append(lb, model.lowerPositionLimit[j])
     ub = np.append(ub, model.upperPositionLimit[j])
-q_actJoint = q_LM[:, param['Ind_joint']]
+q_actJoint = q_LM[:, param['config_idx']]
 sample_range = np.arange(param['NbSample'])
 for i in range(len(param['actJoint_idx'])):
     ax4.scatter3D(q_actJoint[:, i], sample_range, i)
@@ -259,22 +259,22 @@ ax4.set_ylabel('Sample')
 ax4.set_zlabel('Joint')
 ax4.grid()
 
-if dataSet == 'sample':
-    plt.figure(5)
-    plt.barh(params_name, (res - var_sample), align='center')
-    plt.grid()
-elif dataSet == 'experimental':
-    plt.figure(5)
-    plt.barh(params_name[0:6], res[0:6], align='center', color='blue')
-    plt.grid()
-    plt.figure(6)
-    plt.barh(params_name[6:-3*param['NbMarkers']],
-             res[6:-3*param['NbMarkers']], align='center', color='orange')
-    plt.grid()
-    plt.figure(7)
-    plt.barh(params_name[-3*param['NbMarkers']:],
-             res[-3*param['NbMarkers']:], align='center', color='green')
-    plt.grid()
+# if dataSet == 'sample':
+#     plt.figure(5)
+#     plt.barh(params_name, (res - var_sample), align='center')
+#     plt.grid()
+# elif dataSet == 'experimental':
+#     plt.figure(5)
+#     plt.barh(params_name[0:6], res[0:6], align='center', color='blue')
+#     plt.grid()
+#     plt.figure(6)
+#     plt.barh(params_name[6:-3*param['NbMarkers']],
+#              res[6:-3*param['NbMarkers']], align='center', color='orange')
+#     plt.grid()
+#     plt.figure(7)
+#     plt.barh(params_name[-3*param['NbMarkers']:],
+#              res[-3*param['NbMarkers']:], align='center', color='green')
+#     plt.grid()
 plt.show()
 
 #############################################################
