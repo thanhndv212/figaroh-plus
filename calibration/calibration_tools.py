@@ -70,7 +70,7 @@ AXIS_MOTION =[
 def get_param(robot, NbSample, BASE_FRAME='universe',
               TOOL_NAME='ee_marker_joint', NbMarkers=1,
               calib_model='full_params', calib_idx=3,
-              free_flyer=False, non_geom=False):
+              free_flyer=False, non_geom=False, EE_measurability=None):
 
     # NOTE: since joint 0 is universe and it is trivial,
     # indices of joints are different from indices of joint configuration,
@@ -82,7 +82,7 @@ def get_param(robot, NbSample, BASE_FRAME='universe',
     # End-effector sensing measurability: a BOOLEAN vector of 6 stands for px,
     # py, pz, phix, phiy, phiz (mocap/camera/laser tracker/close-loop)
     # number of "True" = calb_idx
-    EE_measurability = [False, False, True, True, True, False]
+    
     calib_idx = EE_measurability.count(True)
 
     # Calibration model: level 1: joint_offset (only joint offsets),
@@ -487,10 +487,13 @@ def get_rel_kinreg(model, data, start_frame, end_frame, q):
 ######################## LM least squares functions ########################################
 
 
-def get_LMvariables(param):
+def get_LMvariables(param, mode=0):
     # initialize all variables at zeros
     nvar = len(param['param_name'])
-    var = np.zeros(nvar)
+    if mode==0:
+        var = np.zeros(nvar)
+    elif mode==1:
+        var = np.random.uniform(-0.005, 0.005, nvar)
     return var, nvar
 
 
@@ -649,6 +652,8 @@ def init_var(param, mode=0, base_model=True):
         # tiago
         elif param['robot_name'] == 'tiago':
             qBase_0 = np.array([0.5245, 0.3291, -0.02294, 0., 0., 0.])
+        else:
+            qBase_0 = np.array([0., 0., 0., 0., 0., 0.])
 
         # parameter variation at joints
         if param['calib_model'] == 'joint_ offset':
@@ -659,6 +664,7 @@ def init_var(param, mode=0, base_model=True):
         qEE_0 = np.full((param['NbMarkers']*param['calibration_index'],), 0)
     # robot_name = "tiago"
     # robot_name = "talos"
+    zero_list = []
     if param['robot_name'] == 'tiago':
         # create list of parameters to be set as zero for tiago, respect the order
         # TODO: to be imported from a config file
@@ -672,6 +678,7 @@ def init_var(param, mode=0, base_model=True):
         arm7_list = [43, 46]  # include phiz7
         total_list = [torso_list, arm1_list, arm2_list, arm3_list, arm4_list,
                       arm5_list, arm6_list, arm7_list]
+        zero_list = np.concatenate(total_list)
     elif param['robot_name'] == 'talos':
         # create list of parameters to be set as zero for tiago, respect the order
         # TODO: to be imported from a config file
@@ -688,7 +695,7 @@ def init_var(param, mode=0, base_model=True):
                       arm3_list, arm4_list, arm5_list, arm6_list, arm7_list]
         for i in range(len(total_list)):
             total_list[i] = np.array(total_list[i]) + i*6
-    zero_list = np.concatenate(total_list)
+        zero_list = np.concatenate(total_list)
     print("list of elements to be set zero: ", zero_list)
 
     # remove parameters are set to zero (dependent params)
