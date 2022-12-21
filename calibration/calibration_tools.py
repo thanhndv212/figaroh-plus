@@ -295,7 +295,16 @@ def get_geoOffset(joint_names):
 
 # TODO: to add to tools
 
+def add_pee_name(param):
+    PEE_names = []
+    pee_tpl = ['pEEx', 'pEEy', 'pEEz', 'phiEEx', 'phiEEy','phiEEz']
+    for i in range(param['NbMarkers']):
+        for j, state in enumerate(param['measurability']):
+            if state:
+                PEE_names.extend(['{}_{}'.format(pee_tpl[j], i+1)])
+    param['param_name'] = param['param_name'] + PEE_names
 
+    
 def add_eemarker_frame(frame_name, p, rpy, model, data):
     """ Adds a frame at the end_effector.
     """
