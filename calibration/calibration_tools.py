@@ -5,14 +5,11 @@ from scipy.linalg import svd, svdvals
 import pinocchio as pin
 from pinocchio.visualize import GepettoVisualizer
 import time
-import cyipopt
-import multiprocessing as mp
-from functools import partial
+import pprint
 import matplotlib.pyplot as plt
 import numdifftools as nd
 # import quadprog as qp
 import pandas as pd
-from meshcat_viewer_wrapper import MeshcatVisualizer
 from scripts.tools.regressor import eliminate_non_dynaffect
 from scripts.tools.qrdecomposition import (
     get_baseParams,
@@ -611,7 +608,7 @@ def update_forward_kinematics(model, data, var, q, param):
     #  to vector rpy, convert back to to 3x3 matrix
     axis_tpl = ['d_px', 'd_py', 'd_pz', 'd_phix', 'd_phiy', 'd_phiz']
     elas_tpl = ['kx', 'ky', 'kz']
-
+    pee_tpl = ['pEEx', 'pEEy', 'pEEz', 'phiEEx', 'phiEEy','phiEEz']
     # order of joint in variables are arranged as in param['actJoint_idx']
     assert len(var) == len(param['param_name']), "Length of variables != length of params"
     param_dict = dict(zip(param['param_name'], var))
@@ -675,7 +672,7 @@ def update_forward_kinematics(model, data, var, q, param):
         if len(updated_params) < len(param_dict):
             pee = np.zeros(6)
             for n_id in range(len(updated_params), len(param_dict)):
-                for axis_id, axis in enumerate(axis_tpl):
+                for axis_id, axis in enumerate(pee_tpl):
                     if axis in param['param_name'][n_id]:
                         pee[axis_id] = var[n_id]
             eeMf = cartesian_to_SE3(pee)
