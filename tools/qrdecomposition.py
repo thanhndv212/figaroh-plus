@@ -200,13 +200,13 @@ def get_baseParams(W_e, params_r):
     idx_regroup = []
 
     # find rank of regressor
-    print("Diagonal values of matrix R: ")
+    # print("Diagonal values of matrix R: ")
     for i in range(len(params_r)):
         if abs(np.diag(R)[i]) > tolpal:
             idx_base.append(i)
         else:
             idx_regroup.append(i)
-        print(params_r[i], np.diag(R)[i])
+        # print(params_r[i], np.diag(R)[i])
     numrank_W = len(idx_base)
 
     # rebuild W and params after sorted
@@ -376,7 +376,7 @@ def get_baseIndex(W_e, params_r):
     idx_base = []
     epsilon = np.finfo(float).eps  # machine epsilon
     for i in range(len(params_r)):
-        print("R-value: ", i+1, params_r[i], abs(np.diag(R)[i]))
+        # print("R-value: ", i+1, params_r[i], abs(np.diag(R)[i]))
         if abs(np.diag(R)[i]) > tolpal:
             idx_base.append(i)
     idx_base = tuple(idx_base)
