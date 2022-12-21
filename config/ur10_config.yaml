@@ -1,0 +1,21 @@
+# define parameters for calibration and identification process
+# robot: ur_10
+---
+calibration:
+  calib_level: full_params
+  non_geom: False
+  base_frame: universe
+  tool_frame: ee_link
+  markers:
+    - ref_joint: wrist_3_joint
+      measure: [True, True, True, False, False, False]
+  free_flyer: False
+  nb_sample: 50
+identification:
+  robot_params:
+    - q_lim_def: 0
+  problem_params:
+    - has_friction: False
+  processing_params:
+    - cut_off_frequency_butterworth: 100
+...
