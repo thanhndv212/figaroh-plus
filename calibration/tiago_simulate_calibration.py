@@ -47,7 +47,7 @@ model = robot.model
 data = robot.data
 
 NbSample = 50
-param = get_param(robot, NbSample, TOOL_NAME='ee_marker_joint', NbMarkers=1)
+param = get_param(robot, NbSample, end_frame='ee_marker_joint', NbMarkers=1)
 
 #############################################################
 

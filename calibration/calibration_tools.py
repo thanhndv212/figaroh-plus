@@ -91,8 +91,8 @@ def get_param(robot, NbSample, BASE_FRAME='universe',
     calib_model = calib_model
 
     # Kinematic chain: base frame: start_frame, end-effector frame: end_frame
-    start_frame = BASE_FRAME  # default
-    end_frame = TOOL_NAME
+    start_frame = start_frame  # default
+    end_frame = end_frame
 
     frames = [f.name for f in robot.model.frames]
     assert (start_frame in frames), "Start_frame {} does not exist.".format(start_frame)
@@ -103,7 +103,7 @@ def get_param(robot, NbSample, BASE_FRAME='universe',
     q0 = robot.q0
 
     # IDX_TOOL: frame ID of the tool
-    IDX_TOOL = robot.model.getFrameId(TOOL_NAME)
+    IDX_TOOL = robot.model.getFrameId(end_frame)
 
     # tool_joint: ID of the joint right before the tool's frame (parent)
     tool_joint = robot.model.frames[IDX_TOOL].parent
