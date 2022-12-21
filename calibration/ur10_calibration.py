@@ -1,39 +1,22 @@
-import pinocchio as pin
-from pinocchio.robot_wrapper import RobotWrapper
-from pinocchio.utils import *
-
-from sys import argv
-import os
 from os.path import dirname, join, abspath
-
+import pinocchio as pin
+from pinocchio.utils import *
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-
 from scipy.optimize import least_squares
 import numpy as np
-import random
-
-import pandas as pd
-import csv
 import time
+import yaml
+from yaml.loader import SafeLoader
+import pprint
 from meshcat_viewer_wrapper import MeshcatVisualizer
+
 from tools.robot import Robot
-from tools.regressor import eliminate_non_dynaffect
-from tools.qrdecomposition import get_baseParams, cond_num
-
-
 from calibration_tools import (
-    extract_expData,
-    extract_expData4Mkr,
     get_param,
-    init_var,
-    get_PEE_fullvar,
-    get_PEE_var,
-    get_geoOffset,
-    get_jointOffset,
-    get_PEE,
-    Calculate_kinematics_model,
-    Calculate_identifiable_kinematics_model,
+    get_param_from_yaml,
+    add_pee_name,
+    extract_expData4Mkr,
     Calculate_base_kinematics_regressor,
     update_forward_kinematics,
     get_LMvariables)
@@ -48,9 +31,11 @@ robot = Robot(
 model = robot.model
 data = robot.data
 
-NbSample = 50
-EE_measurability = [True, True, True, False, False, False]
-param = get_param(robot, NbSample, TOOL_NAME='ee_link', NbMarkers=1, EE_measurability=EE_measurability)
+with open('config/ur10_config.yaml', 'r') as f:
+    config = yaml.load(f, Loader=SafeLoader)
+    pprint.pprint(config)
+calib_data = config['calibration']
+param = get_param_from_yaml(robot, calib_data)
 
 #############################################################
 
@@ -59,13 +44,12 @@ q_rand = []
 Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = Calculate_base_kinematics_regressor(
     q_rand, model, data, param)
 
-# naming for eeframe markers
-PEE_names = []
-for i in range(param['NbMarkers']):
-    PEE_names.extend(['pEEx_%d' % (i+1), 'pEEy_%d' % (i+1), 'pEEz_%d' % (i+1)])
-params_name = paramsrand_base + PEE_names
-for i, pn in enumerate(params_name):
-    print(i, pn)
+# add markers name to param['param_name']
+add_pee_name(param)
+
+# total calibrating parameter names
+for i, pn in enumerate(param['param_name']):
+        print(i, pn)
 
 #############################################################
 
@@ -85,19 +69,16 @@ if dataSet == 'sample':
         config[param['config_idx']] = pin.randomConfiguration(model)[
             param['config_idx']]
         q_sample[i, :] = config
+
+    # create simulated data
     PEEm_sample = update_forward_kinematics(model, data, var_sample, q_sample, param)
-    # create simulated end effector coordinates measures (PEEm)
-    # PEEm_sample = get_PEE_fullvar(
-    #     var_sample, q_sample, model, data, param)
 
     q_LM = np.copy(q_sample)
     PEEm_LM = np.copy(PEEm_sample)
 
 elif dataSet == 'experimental':
-    # read csv file
-    # path = '/home/dvtnguyen/calibration/figaroh/data/tiago/tiago_nov_30_64.csv'
+    # load experimental data
     path = abspath('data/tiago/tiago_nov_30_64.csv')
-    # path = '/home/thanhndv212/Cooking/figaroh/data/tiago/exp_data_nov_64_3011.csv'
 
     PEEm_exp, q_exp = extract_expData4Mkr(path, param)
 
@@ -110,22 +91,16 @@ print(np.shape(PEEm_LM))
 
 print('updated number of samples: ', param['NbSample'])
 
-
 #############################################################
 
 # 4/ Given a model and configurations (input), end effector positions/locations
-# (output), solve an optimization problem to find offset params as variables
+# (output), solve an optimization problem to find offset params which are set as variables
 
 # # NON-LINEAR model with Levenberg-Marquardt #################
-"""
-    - minimize the difference between measured coordinates of end-effector
-    and its estimated values from DGM by Levenberg-Marquardt
-"""
+# minimize the difference between measured coordinates of end-effector
+# and its estimated values
 
-
-coeff = 1e-3
-write_to_file = True
-
+coeff = 1e-3 # coefficient that regulates parameters
 
 def cost_func(var, coeff, q, model, data, param,  PEEm):
     PEEe = update_forward_kinematics(model, data, var, q, param)
@@ -262,149 +237,35 @@ ax4.set_ylabel('Sample')
 ax4.set_zlabel('Joint')
 ax4.grid()
 
-# if dataSet == 'sample':
-#     plt.figure(5)
-#     plt.barh(params_name, (res - var_sample), align='center')
-#     plt.grid()
-# elif dataSet == 'experimental':
-#     plt.figure(5)
-#     plt.barh(params_name[0:6], res[0:6], align='center', color='blue')
-#     plt.grid()
-#     plt.figure(6)
-#     plt.barh(params_name[6:-3*param['NbMarkers']],
-#              res[6:-3*param['NbMarkers']], align='center', color='orange')
-#     plt.grid()
-#     plt.figure(7)
-#     plt.barh(params_name[-3*param['NbMarkers']:],
-#              res[-3*param['NbMarkers']:], align='center', color='green')
-#     plt.grid()
+# identified parameters
+if dataSet == 'sample':
+    plt.figure(5)
+    print(len(param['param_name']), res.shape)
+    plt.barh(param['param_name'], res, align='center')
+    plt.grid()
+elif dataSet == 'experimental':
+    plt.figure(5)
+    plt.barh(param['param_name'][0:6], res[0:6], align='center', color='blue')
+    plt.grid()
+    plt.figure(6)
+    plt.barh(param['param_name'][6:-3*param['NbMarkers']],
+             res[6:-3*param['NbMarkers']], align='center', color='orange')
+    plt.grid()
+    plt.figure(7)
+    plt.barh(param['param_name'][-3*param['NbMarkers']:],
+             res[-3*param['NbMarkers']:], align='center', color='green')
+    plt.grid()
 
-# display few configurations
-viz = MeshcatVisualizer(
-    model=robot.model, collision_model=robot.collision_model,
-    visual_model=robot.visual_model, url='classical'
-)
-time.sleep(1)
-for i in range(param['NbSample']):
-    viz.display(q_LM[i, :])
-    time.sleep(1)
+## display few configurations
+# viz = MeshcatVisualizer(
+#     model=robot.model, collision_model=robot.collision_model,
+#     visual_model=robot.visual_model, url='classical'
+# )
+# time.sleep(1)
+# for i in range(param['NbSample']):
+#     viz.display(q_LM[i, :])
+#     time.sleep(1)
 
 plt.show()
 
-#############################################################
-
-# 7/ Write estimated parameters 
-
-
-def write_results_tofile(res, file_type='xacro'):
-    """ Save offset parameters to file
-        file_type = 'csv': for storing only
-        file_type = 'xacro' or 'yaml': for updating kinematic model
-    """
-    torso_list = [0, 1, 2, 3, 4, 5]
-    arm1_list = [6, 7, 8, 11]
-    arm2_list = [13, 16]
-    arm3_list = [19, 22]
-    arm4_list = [24, 27]
-    arm5_list = [30, 33]
-    arm6_list = [36, 39]
-    arm7_list = [43, 46]  # include phiz7
-    total_list = [torso_list, arm1_list, arm2_list, arm3_list, arm4_list,
-                  arm5_list, arm6_list, arm7_list]
-
-    zero_list = []
-    for i in range(len(total_list)):
-        zero_list = [*zero_list, *total_list[i]]
-
-    param_list = np.zeros((param['NbJoint'], 6))
-
-    # torso all zeros
-
-    # arm 1
-    param_list[1, 3] = res[6]
-    param_list[1, 4] = res[7]
-
-    # arm 2
-    param_list[2, 0] = res[8]
-    param_list[2, 2] = res[9]
-    param_list[2, 3] = res[10]
-    param_list[2, 5] = res[11]
-
-    # arm 3
-    param_list[3, 0] = res[12]
-    param_list[3, 2] = res[13]
-    param_list[3, 3] = res[14]
-    param_list[3, 5] = res[15]
-
-    # arm 4
-    param_list[4, 1] = res[16]
-    param_list[4, 2] = res[17]
-    param_list[4, 4] = res[18]
-    param_list[4, 5] = res[19]
-
-    # arm 5
-    param_list[5, 1] = res[20]
-    param_list[5, 2] = res[21]
-    param_list[5, 4] = res[22]
-    param_list[5, 5] = res[23]
-
-    # arm 6
-    param_list[6, 1] = res[24]
-    param_list[6, 2] = res[25]
-    param_list[6, 4] = res[26]
-    param_list[6, 5] = res[27]
-
-    # arm 7
-    param_list[7, 0] = res[28]
-    param_list[7, 2] = res[29]
-    param_list[7, 3] = res[30]
-    param_list[7, 5] = res[31]
-
-    joint_names = [name for i, name in enumerate(model.names)]
-    offset_name = ['_x_offset', '_y_offset', '_z_offset', '_roll_offset',
-                   '_pitch_offset', '_yaw_offset']
-    
-    if file_type == 'xacro':
-        path_save_xacro = join(
-            dirname(dirname(str(abspath(__file__)))),
-            f"data/tiago/post_estimation/offset.xacro")
-        with open(path_save_xacro, "w") as output_file:
-            for i in range(param['NbJoint']):
-                for j in range(6):
-                    update_name = joint_names[i+1] + offset_name[j]
-                    update_value = param_list[i, j]
-                    update_line = "<xacro:property name=\"{}\" value=\"{}\" / >".format(
-                        update_name, update_value)
-                    output_file.write(update_line)
-                    output_file.write('\n')
-
-    elif file_type == 'yaml':
-        path_save_yaml = join(
-            dirname(dirname(str(abspath(__file__)))),
-            f"data/tiago/post_estimation/offset.yaml")
-        with open(path_save_yaml, "w") as output_file:
-            for i in range(param['NbJoint']):
-                for j in range(6):
-                    update_name = joint_names[i+1] + offset_name[j]
-                    update_value = param_list[i, j]
-                    update_line = "{}: {}".format(
-                        update_name, update_value)
-                    output_file.write(update_line)
-                    output_file.write('\n')
-    
-    elif file_type == 'csv':
-        path_save_ep = join(
-            dirname(dirname(str(abspath(__file__)))),
-            f"data/tiago/post_estimation/offset.csv")
-        with open(path_save_ep, "w") as output_file:
-            w = csv.writer(output_file)
-            for i in range(nvars):
-                w.writerow(
-                    [
-                        params_name[i],
-                        res[i],
-                        std_dev[i],
-                        std_pctg[i]
-                    ]
-                )
 ############################################################
