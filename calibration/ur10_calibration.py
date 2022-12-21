@@ -16,7 +16,7 @@ from calibration_tools import (
     get_param,
     get_param_from_yaml,
     add_pee_name,
-    extract_expData4Mkr,
+    load_data,
     Calculate_base_kinematics_regressor,
     update_forward_kinematics,
     get_LMvariables)
@@ -80,7 +80,7 @@ elif dataSet == 'experimental':
     # load experimental data
     path = abspath('data/tiago/tiago_nov_30_64.csv')
 
-    PEEm_exp, q_exp = extract_expData4Mkr(path, param)
+    PEEm_exp, q_exp = load_data(path, model, param)
 
     q_LM = np.copy(q_exp)
     PEEm_LM = np.copy(PEEm_exp)
@@ -143,7 +143,8 @@ for i in range(nvars):
     std_dev.append(np.sqrt(C_param[i, i]))
     std_pctg.append(abs(np.sqrt(C_param[i, i])/res[i]))
 print("standard deviation: ", std_dev)
-
+ 
+ 
 
 #############################################################
 

@@ -24,7 +24,7 @@ from tools.qrdecomposition import get_baseParams, cond_num
 
 from calibration_tools import (
     extract_expData,
-    extract_expData4Mkr,
+    load_data,
     get_param,
     init_var,
     get_PEE_fullvar,
@@ -46,8 +46,9 @@ robot = Robot(
 model = robot.model
 data = robot.data
 
+EE_measurability = [True, True, True, False, False, False]
 NbSample = 50
-param = get_param(robot, NbSample, end_frame='ee_marker_joint', NbMarkers=1)
+param = get_param(robot, NbSample, end_frame='ee_marker_joint', NbMarkers=4, EE_measurability=EE_measurability)
 
 #############################################################
 
@@ -67,7 +68,7 @@ for i, pn in enumerate(params_name):
 #############################################################
 
 # 3/ Data collection/generation
-dataSet = 'sample'  # choose data source 'sample' or 'experimental'
+dataSet = 'experimental'  # choose data source 'sample' or 'experimental'
 if dataSet == 'sample':
     # create artificial offsets
     var_sample, nvars_sample = init_var(param, mode=1)
@@ -95,7 +96,7 @@ elif dataSet == 'experimental':
     path = abspath('data/tiago/tiago_nov_30_64.csv')
     # path = '/home/thanhndv212/Cooking/figaroh/data/tiago/exp_data_nov_64_3011.csv'
 
-    PEEm_exp, q_exp = extract_expData4Mkr(path, param)
+    PEEm_exp, q_exp = load_data(path, model, param, del_list=[9])
 
     q_LM = np.copy(q_exp)
     PEEm_LM = np.copy(PEEm_exp)

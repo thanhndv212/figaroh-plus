@@ -363,7 +363,7 @@ def extract_expData(path_to_file, param):
     return PEEm_exp, q_exp
 
 
-def extract_expData4Mkr(path_to_file, param, del_list=[]):
+def load_data(path_to_file, model, param, del_list=[]):
     """ Read a csv file into dataframe by pandas, then transform to the form
     of full joint configuration and markers' position/location.
     NOTE: indices matter! Pay attention.
@@ -414,30 +414,20 @@ def extract_expData4Mkr(path_to_file, param, del_list=[]):
 
     # create headers for marker position
     PEE_headers = []
-    if param['calibration_index'] == 3:
-        for i in range(param['NbMarkers']):
-            PEE_headers.append('x%s' % str(i+1))
-            PEE_headers.append('y%s' % str(i+1))
-            PEE_headers.append('z%s' % str(i+1))
+    pee_tpl = ['x', 'y', 'z', 'phix','phiy','phiz']
+    for i in range(param['NbMarkers']):
+        for j, state in enumerate(param['measurability']):
+            if state:
+                PEE_headers.extend(['{}{}'.format(pee_tpl[j], i+1)])
 
     # create headers for joint configurations
-    joint_headers = []
-    if param['robot_name'] == "tiago":
-        joint_headers = ['torso', 'arm1', 'arm2', 'arm3', 'arm4',
-                         'arm5', 'arm6', 'arm7']
-    elif param['robot_name'] == "talos":
-        # left arm
-        # joint_headers = ['torso1', 'torso2', 'armL1', 'armL2', 'armL3',
-        #                  'armL4', 'armL5', 'armL6', 'armL7']
-
-        # right arm
-        joint_headers = ['torso1', 'torso2', 'armR1', 'armR2', 'armR3',
-                         'armR4', 'armR5', 'armR6', 'armR7']
+    joint_headers = [model.names[i] for i in param['actJoint_idx']]
+    print(joint_headers)
     # check if all created headers present in csv file
     csv_headers = list(df.columns)
     for header in (PEE_headers + joint_headers):
         if header not in csv_headers:
-            print("Headers for extracting data is wrongly defined!")
+            print("%s does not exist in the file." % header)
             break
 
     # Extract marker position/location
@@ -458,16 +448,11 @@ def extract_expData4Mkr(path_to_file, param, del_list=[]):
     PEEm_exp = PEEm_exp.flatten('C')
 
     q_exp = np.empty((param['NbSample'], param['q0'].shape[0]))
-    if param['robot_name'] == 'tiago':
-        for i in range(param['NbSample']):
+    for i in range(param['NbSample']):
             config = param['q0']
             config[param['config_idx']] = q_act[i, :]
             q_exp[i, :] = config
-    elif param['robot_name'] == 'talos':
-        for i in range(param['NbSample']):
-            config = param['q0']
-            config[param['config_idx']] = q_act[i, :]
-            q_exp[i, :] = config
+
     return PEEm_exp, q_exp
 
 # TODO: to add to tools
