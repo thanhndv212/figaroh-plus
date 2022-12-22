@@ -1,7 +1,7 @@
 import pinocchio as pin
 import numpy as np
 from scipy import signal
-from tools.regressor import build_regressor_reduced, get_index_eliminate
+from ..tools.regressor import build_regressor_reduced, get_index_eliminate
 import operator
 
 def base_param_from_standard(phi_standard,params_base):

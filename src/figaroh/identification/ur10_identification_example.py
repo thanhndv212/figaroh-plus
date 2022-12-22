@@ -5,11 +5,11 @@ import pinocchio as pin
 import numpy as np
 # import time
 # import sys
-from tools.robot import Robot
-from tools.regressor import build_regressor_basic_v2, get_index_eliminate, build_regressor_reduced
-from tools.qrdecomposition import get_baseParams_v2
-from parameters_settings import params_settings
-from identification_functions_def import calculate_first_second_order_differentiation, base_param_from_standard
+from ..tools.robot import Robot
+from ..tools.regressor import build_regressor_basic_v2, get_index_eliminate, build_regressor_reduced
+from ..tools.qrdecomposition import get_baseParams_v2
+from .parameters_settings import params_settings
+from .identification_functions_def import calculate_first_second_order_differentiation, base_param_from_standard
 # from pinocchio.visualize import GepettoVisualizer
 import matplotlib.pyplot as plt 
 

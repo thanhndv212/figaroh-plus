@@ -9,10 +9,10 @@ import time
 import yaml
 from yaml.loader import SafeLoader
 import pprint
-from meshcat_viewer_wrapper import MeshcatVisualizer
+# from meshcat_viewer_wrapper import MeshcatVisualizer
 
-from tools.robot import Robot
-from calibration_tools import (
+from figaroh.tools.robot import Robot
+from figaroh.calibration.calibration_tools import (
     get_param,
     get_param_from_yaml,
     add_pee_name,
@@ -23,9 +23,10 @@ from calibration_tools import (
 
 # 1/ Load robot model and create a dictionary containing reserved constants
 
+directory = 'data/ur10'
 robot = Robot(
-    "ur_description/urdf",
-    "ur10_robot.urdf",
+    directory,
+    'robot.urdf',
     # isFext=True  # add free-flyer joint at base
 )
 model = robot.model
@@ -54,7 +55,7 @@ for i, pn in enumerate(param['param_name']):
 #############################################################
 
 # 3/ Data collection/generation
-dataSet = 'sample'  # choose data source 'sample' or 'experimental'
+dataSet = 'experimental'  # choose data source 'sample' or 'experimental'
 if dataSet == 'sample':
     # create artificial offsets
     var_sample, nvars_sample = get_LMvariables(param, mode=1)
@@ -78,7 +79,7 @@ if dataSet == 'sample':
 
 elif dataSet == 'experimental':
     # load experimental data
-    path = abspath('data/tiago/tiago_nov_30_64.csv')
+    path = abspath('data/ur10/simulation.csv')
 
     PEEm_exp, q_exp = load_data(path, model, param)
 
