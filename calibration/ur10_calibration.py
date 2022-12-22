@@ -23,7 +23,7 @@ from calibration_tools import (
 
 # 1/ Load robot model and create a dictionary containing reserved constants
 
-directory = 'data/ur10')
+directory = 'data/ur10'
 robot = Robot(
     directory,
     'robot.urdf',
