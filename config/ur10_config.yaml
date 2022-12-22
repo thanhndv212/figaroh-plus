@@ -8,9 +8,9 @@ calibration:
   tool_frame: ee_link
   markers:
     - ref_joint: wrist_3_joint
-      measure: [True, True, True, False, False, False]
+      measure: [True, True, True, True, True, True]
   free_flyer: False
-  nb_sample: 50
+  nb_sample: 28
 identification:
   robot_params:
     - q_lim_def: 0
