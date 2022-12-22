@@ -1,4 +1,4 @@
-from ..tools.robot import Robot
+from figaroh.tools.robot import Robot
 import matplotlib.pyplot as plt
 from pytransform3d.urdf import UrdfTransformManager
 import pinocchio as pin

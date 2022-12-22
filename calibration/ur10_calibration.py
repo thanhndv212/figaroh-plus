@@ -11,8 +11,8 @@ from yaml.loader import SafeLoader
 import pprint
 # from meshcat_viewer_wrapper import MeshcatVisualizer
 
-from tools.robot import Robot
-from calibration_tools import (
+from figaroh.tools.robot import Robot
+from figaroh.calibration.calibration_tools import (
     get_param,
     get_param_from_yaml,
     add_pee_name,
