@@ -10,6 +10,7 @@ import yaml
 from yaml.loader import SafeLoader
 import pprint
 # from meshcat_viewer_wrapper import MeshcatVisualizer
+from pinocchio.robot_wrapper import RobotWrapper
 
 from figaroh.tools.robot import Robot
 from figaroh.calibration.calibration_tools import (
@@ -23,16 +24,30 @@ from figaroh.calibration.calibration_tools import (
 
 # 1/ Load robot model and create a dictionary containing reserved constants
 
-directory = 'data/ur10'
-robot = Robot(
-    directory,
-    'robot.urdf',
-    # isFext=True  # add free-flyer joint at base
-)
+# directory = 'data/ur10'
+# robot = Robot(
+#     directory,
+#     'robot.urdf',
+#     # isFext=True  # add free-flyer joint at base
+# )
+
+
+urdf_filename = 'robot.urdf'
+urdf_dir = 'ur_description/urdf'
+model_path = join(
+    dirname(dirname(str(abspath(__file__)))), "models/others/robots")
+urdf_file_path = join(join(model_path, urdf_dir), urdf_filename)
+
+robot = RobotWrapper()
+robot.initFromURDF(urdf_file_path, model_path)
 model = robot.model
 data = robot.data
 
-with open('config/ur10_config.yaml', 'r') as f:
+config_file = 'ur10_config.yaml'
+config_dir = join(
+    dirname(dirname(str(abspath(__file__)))), "config")
+config_path = join(config_dir, config_file)
+with open(config_path, 'r') as f:
     config = yaml.load(f, Loader=SafeLoader)
     pprint.pprint(config)
 calib_data = config['calibration']
