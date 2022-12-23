@@ -10,13 +10,13 @@ import matplotlib.pyplot as plt
 import numdifftools as nd
 # import quadprog as qp
 import pandas as pd
-from scripts.tools.regressor import eliminate_non_dynaffect
-from scripts.tools.qrdecomposition import (
+from ..tools.regressor import eliminate_non_dynaffect
+from ..tools.qrdecomposition import (
     get_baseParams,
     get_baseIndex,
     build_baseRegressor,
     cond_num)
-from scripts.tools.robot import Robot
+from ..tools.robot import Robot
 
 ######################## initialization functions ########################################
 # pinocchio does not parse axis of motion, below is munually imported from urdf of talos
