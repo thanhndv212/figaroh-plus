@@ -1,3 +1,4 @@
+import os
 from os.path import dirname, join, abspath
 import pinocchio as pin
 from pinocchio.utils import *
@@ -23,11 +24,12 @@ from figaroh.calibration.calibration_tools import (
     get_LMvariables)
 
 # 1/ Load robot model and create a dictionary containing reserved constants
+ros_package_path = os.getenv('ROS_PACKAGE_PATH')
+package_dirs = ros_package_path.split(':')
 
-directory = 'data/ur10'
 robot = Robot(
-    directory,
-    'robot.urdf',
+    'data/ur10/robot.urdf',
+    package_dirs = package_dirs
     # isFext=True  # add free-flyer joint at base
 )
 model = robot.model

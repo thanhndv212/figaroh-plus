@@ -1,4 +1,5 @@
 import sys
+import os
 import time
 from pinocchio.robot_wrapper import RobotWrapper
 from pinocchio.visualize import GepettoVisualizer, MeshcatVisualizer
@@ -12,8 +13,8 @@ import hppfcl
 class Robot(RobotWrapper):
     def __init__(
         self,
-        robot_folder,
         robot_urdf,
+        package_dirs,
         isFext=False,
         isActuator_inertia=False,
         isFrictionincld=False,
@@ -44,7 +45,6 @@ class Robot(RobotWrapper):
         self.isCoupling = isCoupling
 
         # folder location
-        self.robot_folder = robot_folder
         self.robot_urdf = robot_urdf
 
         # manual input addtiional parameters
@@ -67,22 +67,19 @@ class Robot(RobotWrapper):
         # self.ratio_essential = 30
 
         # initializing robot's models
-        pinocchio_model_dir = join(
-            dirname(dirname(str(abspath(__file__)))), "models")
-        model_path = join(pinocchio_model_dir, "others/robots")
-        mesh_dir = model_path
-        urdf_filename = self.robot_urdf
-        urdf_dir = self.robot_folder
-        urdf_model_path = join(join(model_path, urdf_dir), urdf_filename)
         if not isFext:
-            self.initFromURDF(urdf_model_path, mesh_dir)
+            self.initFromURDF(robot_urdf, package_dirs=package_dirs)
         else:
-            self.initFromURDF(urdf_model_path, mesh_dir,
-                              pin.JointModelFreeFlyer())
+            self.initFromURDF(robot_urdf, package_dirs=package_dirs,
+                              root_joint=pin.JointModelFreeFlyer())
 
-        self.geom_model = pin.buildGeomFromUrdf(
-            self.model, urdf_model_path, model_path, pin.GeometryType.COLLISION
-        )
+        # self.geom_model = pin.buildGeomFromUrdf(
+        #     self.model, robot_urdf, geom_type=pin.GeometryType.COLLISION,
+        #     package_dirs = package_dirs
+        # )
+
+        ## \todo test that this is equivalent to reloading the model
+        self.geom_model = self.collision_model
 
     def get_standard_parameters(self):
         """This function prints out the standard inertial parameters defined in urdf model.
