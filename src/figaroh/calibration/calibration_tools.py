@@ -573,13 +573,13 @@ def get_rel_kinreg(model, data, start_frame, end_frame, q):
 ######################## LM least squares functions ########################################
 
 
-def get_LMvariables(param, mode=0):
+def get_LMvariables(param, mode=0, seed=0):
     # initialize all variables at zeros
     nvar = len(param['param_name'])
     if mode==0:
         var = np.zeros(nvar)
     elif mode==1:
-        var = np.random.uniform(-0.005, 0.005, nvar)
+        var = np.random.uniform(-seed, seed, nvar)
     return var, nvar
 
 
