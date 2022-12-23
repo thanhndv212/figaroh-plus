@@ -106,7 +106,7 @@ coeff = 1e-3 # coefficient that regulates parameters
 def cost_func(var, coeff, q, model, data, param,  PEEm):
     PEEe = update_forward_kinematics(model, data, var, q, param)
     res_vect = np.append((PEEm - PEEe), np.sqrt(coeff)
-                         * var[6:-param['NbMarkers']*3])
+                         * var[6:-param['NbMarkers']*param['calibration_index']])
     # res_vect = (PEEm - PEEe)
     return res_vect
 
@@ -153,7 +153,7 @@ print("standard deviation: ", std_dev)
 
 # calculate difference between estimated data and measured data
 delta_PEE = PEEe_sol - PEEm_LM
-PEE_xyz = delta_PEE.reshape((param['NbMarkers']*3, param["NbSample"]))
+PEE_xyz = delta_PEE.reshape((param['NbMarkers']*param['calibration_index'], param["NbSample"]))
 PEE_dist = np.zeros((param['NbMarkers'], param["NbSample"]))
 for i in range(param["NbMarkers"]):
     for j in range(param["NbSample"]):
@@ -197,17 +197,18 @@ else:
 fig2 = plt.figure(2)
 fig2.suptitle("Visualization of estimated poses and measured pose in Cartesian")
 ax2 = fig2.add_subplot(111, projection='3d')
-PEEm_LM2d = PEEm_LM.reshape((param['NbMarkers']*3, param["NbSample"]))
-PEEe_sol2d = PEEe_sol.reshape((param['NbMarkers']*3, param["NbSample"]))
+PEEm_LM2d = PEEm_LM.reshape((param['NbMarkers']*param['calibration_index'], param["NbSample"]))
+PEEe_sol2d = PEEe_sol.reshape((param['NbMarkers']*param['calibration_index'], param["NbSample"]))
 for i in range(param['NbMarkers']):
     ax2.scatter3D(PEEm_LM2d[i*3, :], PEEm_LM2d[i*3+1, :],
-                  PEEm_LM2d[i*3+2, :], marker='^', color='blue')
+                  PEEm_LM2d[i*3+2, :], marker='^', color='blue', label='measured')
     ax2.scatter3D(PEEe_sol2d[i*3, :], PEEe_sol2d[i*3+1, :],
-                  PEEe_sol2d[i*3+2, :], marker='o', color='red')
+                  PEEe_sol2d[i*3+2, :], marker='o', color='red', label='estimated')
 ax2.set_xlabel('X - front (meter)')
 ax2.set_ylabel('Y - side (meter)')
 ax2.set_zlabel('Z - height (meter)')
 ax2.grid()
+ax2.legend()
 
 # 3// visualize relative deviation between measure and estimate
 fig3 = plt.figure(3)
@@ -251,11 +252,11 @@ elif dataSet == 'experimental':
     plt.grid()
     plt.figure(6)
     plt.barh(param['param_name'][6:-3*param['NbMarkers']],
-             res[6:-3*param['NbMarkers']], align='center', color='orange')
+             res[6:-param['calibration_index']*param['NbMarkers']], align='center', color='orange')
     plt.grid()
     plt.figure(7)
     plt.barh(param['param_name'][-3*param['NbMarkers']:],
-             res[-3*param['NbMarkers']:], align='center', color='green')
+             res[-param['calibration_index']*param['NbMarkers']:], align='center', color='green')
     plt.grid()
 
 ## display few configurations
