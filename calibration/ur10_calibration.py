@@ -266,11 +266,11 @@ elif dataSet == 'experimental':
     plt.barh(param['param_name'][0:6], res[0:6], align='center', color='blue')
     plt.grid()
     plt.figure(6)
-    plt.barh(param['param_name'][6:-3*param['NbMarkers']],
+    plt.barh(param['param_name'][6:-param['calibration_index']*param['NbMarkers']],
              res[6:-param['calibration_index']*param['NbMarkers']], align='center', color='orange')
     plt.grid()
     plt.figure(7)
-    plt.barh(param['param_name'][-3*param['NbMarkers']:],
+    plt.barh(param['param_name'][-param['calibration_index']*param['NbMarkers']:],
              res[-param['calibration_index']*param['NbMarkers']:], align='center', color='green')
     plt.grid()
 
