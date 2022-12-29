@@ -117,6 +117,8 @@ def cost_func(var, coeff, q, model, data, param,  PEEm):
 # initial guess
 # mode = 1: random seed [-0.01, 0.01], mode = 0: init guess = 0
 var_0, nvars =  get_LMvariables(param, mode=0)
+# Write reference pose of camera in initial guess
+var_0[-6:] = np.array([-0.000, -0.118, -0.011, -5.66796100e-01, -5.36932045e-04,  8.36004767e-03])
 print("initial guess: ", var_0)
 
 # solve
