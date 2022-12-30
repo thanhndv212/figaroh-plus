@@ -28,7 +28,7 @@ ros_package_path = os.getenv('ROS_PACKAGE_PATH')
 package_dirs = ros_package_path.split(':')
 
 robot = Robot(
-    'data/ur10/robot.urdf',
+    'data/robot.urdf',
     package_dirs = package_dirs
     # isFext=True  # add free-flyer joint at base
 )
@@ -82,7 +82,7 @@ if dataSet == 'sample':
 
 elif dataSet == 'experimental':
     # load experimental data
-    path = abspath('data/ur10/simulation.csv')
+    path = abspath('data/simulation.csv')
 
     PEEm_exp, q_exp = load_data(path, model, param)
 
