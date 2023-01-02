@@ -5,12 +5,12 @@ calibration:
   calib_level: full_params
   non_geom: False
   base_frame: universe
-  tool_frame: ee_link
+  tool_frame: wrist_3_link
   markers:
     - ref_joint: wrist_3_joint
       measure: [True, True, True, True, True, True]
   free_flyer: False
-  nb_sample: 28
+  nb_sample: 29
 identification:
   robot_params:
     - q_lim_def: 0

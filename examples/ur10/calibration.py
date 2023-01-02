@@ -1,3 +1,4 @@
+import os
 from os.path import dirname, join, abspath
 import pinocchio as pin
 from pinocchio.utils import *
@@ -23,31 +24,18 @@ from figaroh.calibration.calibration_tools import (
     get_LMvariables)
 
 # 1/ Load robot model and create a dictionary containing reserved constants
+ros_package_path = os.getenv('ROS_PACKAGE_PATH')
+package_dirs = ros_package_path.split(':')
 
-# directory = 'data/ur10'
-# robot = Robot(
-#     directory,
-#     'robot.urdf',
-#     # isFext=True  # add free-flyer joint at base
-# )
-
-
-urdf_filename = 'robot.urdf'
-urdf_dir = 'ur_description/urdf'
-model_path = join(
-    dirname(dirname(str(abspath(__file__)))), "models/others/robots")
-urdf_file_path = join(join(model_path, urdf_dir), urdf_filename)
-
-robot = RobotWrapper()
-robot.initFromURDF(urdf_file_path, model_path)
+robot = Robot(
+    'data/robot.urdf',
+    package_dirs = package_dirs
+    # isFext=True  # add free-flyer joint at base
+)
 model = robot.model
 data = robot.data
 
-config_file = 'ur10_config.yaml'
-config_dir = join(
-    dirname(dirname(str(abspath(__file__)))), "config")
-config_path = join(config_dir, config_file)
-with open(config_path, 'r') as f:
+with open('config/ur10_config.yaml', 'r') as f:
     config = yaml.load(f, Loader=SafeLoader)
     pprint.pprint(config)
 calib_data = config['calibration']
@@ -94,7 +82,7 @@ if dataSet == 'sample':
 
 elif dataSet == 'experimental':
     # load experimental data
-    path = abspath('data/ur10/simulation.csv')
+    path = abspath('data/simulation.csv')
 
     PEEm_exp, q_exp = load_data(path, model, param)
 
@@ -129,6 +117,8 @@ def cost_func(var, coeff, q, model, data, param,  PEEm):
 # initial guess
 # mode = 1: random seed [-0.01, 0.01], mode = 0: init guess = 0
 var_0, nvars =  get_LMvariables(param, mode=0)
+# Write reference pose of camera in initial guess
+var_0[-6:] = np.array([-0.000, -0.118, -0.011, -5.66796100e-01, -5.36932045e-04,  8.36004767e-03])
 print("initial guess: ", var_0)
 
 # solve
