@@ -25,8 +25,12 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from math import pi
+import numpy as np
 import yaml
 from string import Template
+import pinocchio
+from pinocchio import SE3, Quaternion
 
 # Conversion from names in the kinematics parameter file to joint names
 paramToJoint = {
@@ -95,5 +99,28 @@ def update_parameters(f_input, f_output, var, param):
         output += (f'  {name}:\n')
         output += t.substitute(kinematics_params['kinematics'][name])
     output +='  hash:\n'
+    # Write camera parameters
+    # optical frame in wrist_3_joint as computed by calibration procedure
+    jMop = SE3(translation = var[-6:-3],
+              rotation = pinocchio.rpy.rpyToMatrix(var[-3:]))
+    # d435_mount_link in wrist_3_joint
+    jMm = SE3(translation = np.array([0.,0.,0.]),
+              rotation = pinocchio.rpy.rpyToMatrix(np.array([0.,0.,pi])))
+    # optical frame in ref_camera_link
+    cMop = SE3(translation = np.array([0.011, 0.033, 0.013]),
+               rotation = pinocchio.rpy.rpyToMatrix(np.array([-pi/2,0,-pi/2])))
+    # mMc = mMj * jMop * opMc
+    mMc = jMm.inverse() * jMop * cMop.inverse()
+    xyz = mMc.translation
+    rpy = pinocchio.rpy.matrixToRpy(mMc.rotation)
+    kinematics_params['camera']['x'] = xyz[0]
+    kinematics_params['camera']['y'] = xyz[1]
+    kinematics_params['camera']['z'] = xyz[2]
+    kinematics_params['camera']['roll'] = rpy[0]
+    kinematics_params['camera']['pitch'] = rpy[1]
+    kinematics_params['camera']['yaw'] = rpy[2]
+    output += '\n# Pose of ref_camera_link in ur10e_d435_mount_link\n'
+    output += 'camera:\n'
+    output += t.substitute(kinematics_params['camera'])
     with open(f_output, 'w') as f:
         f.write(output)
