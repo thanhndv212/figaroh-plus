@@ -13,9 +13,26 @@ calibration:
   nb_sample: 29
 identification:
   robot_params:
-    - q_lim_def: 0
+    - q_lim_def: 1.57 
+      dq_lim_def : 5 
+      ddq_lim_def : 20
+      tau_lim_def : 4
   problem_params:
-    - has_friction: False
+    - is_external_wrench : False
+      is_joint_torques : True
+      force_torque : ['All']
+      external_wrench_offsets : False
+      has_friction : False
+      has_joint_offset : False
+      has_actuator_inertia : False
+      is_static_regressor : True
+      is_inertia_regressor : True
+      embedded_forces : True
   processing_params:
     - cut_off_frequency_butterworth: 100
+      ts : 0.01
+  tls_params:
+    - mass_load : 3.0
+      which_body_loaded : 19  
+      sync_joint_motion : False 
 ...

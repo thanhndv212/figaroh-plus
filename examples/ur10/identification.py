@@ -4,19 +4,38 @@ import pinocchio as pin
 # import pinocchio.casadi
 import numpy as np
 # import time
-# import sys
-from ..tools.robot import Robot
-from ..tools.regressor import build_regressor_basic_v2, get_index_eliminate, build_regressor_reduced
-from ..tools.qrdecomposition import get_baseParams_v2
-from .parameters_settings import params_settings
-from .identification_functions_def import calculate_first_second_order_differentiation, base_param_from_standard
+import sys, os
+from figaroh.tools.robot import Robot
+from figaroh.tools.regressor import build_regressor_basic_v2, get_index_eliminate, build_regressor_reduced
+from figaroh.tools.qrdecomposition import get_baseParams_v2
+from figaroh.identification.identification_tools import get_param_from_yaml,calculate_first_second_order_differentiation, base_param_from_standard
 # from pinocchio.visualize import GepettoVisualizer
 import matplotlib.pyplot as plt 
+import pprint
+import yaml
+from yaml.loader import SafeLoader
 
-robot = Robot('ur_description/urdf',"ur10_robot.urdf")
+robot = Robot('/home/msabbah/Bureau/thanh_git/figaroh/models/others/robots/ur_description/urdf/ur10_robot.urdf','/home/msabbah/Bureau/thanh_git/figaroh/models/others/robots')
+
+# # 1/ Load robot model and create a dictionary containing reserved constants
+# ros_package_path = os.getenv('ROS_PACKAGE_PATH')
+# package_dirs = ros_package_path.split(':')
+
+# robot = Robot(
+#     'data/robot.urdf',
+#     package_dirs = package_dirs
+#     # isFext=True  # add free-flyer joint at base
+# )
 
 model = robot.model
 data = robot.data
+
+with open('examples/ur10/config/ur10_config.yaml', 'r') as f:
+    config = yaml.load(f, Loader=SafeLoader)
+    pprint.pprint(config)
+identif_data = config['identification']
+params_settings = get_param_from_yaml(robot, identif_data)
+print(params_settings)
 
 # viz = GepettoVisualizer(robot.model, robot.collision_model, robot.visual_model)
 # try:
