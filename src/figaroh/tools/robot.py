@@ -129,27 +129,6 @@ class Robot(RobotWrapper):
         phi = []
         params = []
 
-        # manual input addtiional parameters
-        # example TX40
-        # self.fv = (8.05e0, 5.53e0, 1.97e0, 1.11e0, 1.86e0, 6.5e-1)
-        # self.fs = (7.14e0, 8.26e0, 6.34e0, 2.48e0, 3.03e0, 2.82e-1)
-        # self.Ia = (3.62e-1, 3.62e-1, 9.88e-2, 3.13e-2, 4.68e-2, 1.05e-2)
-        # self.off = (3.92e-1, 1.37e0, 3.26e-1, -1.02e-1, -2.88e-2, 1.27e-1)
-        # self.Iam6 = 9.64e-3
-        # self.fvm6 = 6.16e-1
-        # self.fsm6 = 1.95e0
-        # self.N1 = 32
-        # self.N2 = 32
-        # self.N3 = 45
-        # self.N4 = -48
-        # self.N5 = 45
-        # self.N6 = 32
-        # self.qd_lim = 0.01 * \
-        #     np.array([287, 287, 430, 410, 320, 700]) * np.pi / 180
-        # self.ratio_essential = 30
-
-
-
         params_name = (
             "Ixx",
             "Ixy",
@@ -165,7 +144,7 @@ class Robot(RobotWrapper):
 
         # change order of values in phi['m', 'mx','my','mz','Ixx','Ixy','Iyy','Ixz', 'Iyz','Izz'] - from pinoccchio
         # corresponding to params_name ['Ixx','Ixy','Ixz','Iyy','Iyz','Izz','mx','my','mz','m']
-        for i in range(1,  model.njoints):
+        for i in range(len(model.inertias)):
             P =  model.inertias[i].toDynamicParameters()
             P_mod = np.zeros(P.shape[0])
             P_mod[9] = P[0]  # m

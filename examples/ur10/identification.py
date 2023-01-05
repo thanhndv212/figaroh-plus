@@ -8,7 +8,7 @@ import sys, os
 from figaroh.tools.robot import Robot
 from figaroh.tools.regressor import build_regressor_basic_v2, get_index_eliminate, build_regressor_reduced
 from figaroh.tools.qrdecomposition import get_baseParams_v2
-from figaroh.identification.identification_tools import get_param_from_yaml,calculate_first_second_order_differentiation, base_param_from_standard
+from figaroh.identification.identification_tools import get_param_from_yaml,calculate_first_second_order_differentiation, base_param_from_standard, calculate_standard_parameters
 # from pinocchio.visualize import GepettoVisualizer
 import matplotlib.pyplot as plt 
 import pprint
@@ -33,6 +33,7 @@ data = robot.data
 with open('examples/ur10/config/ur10_config.yaml', 'r') as f:
     config = yaml.load(f, Loader=SafeLoader)
     pprint.pprint(config)
+    
 identif_data = config['identification']
 params_settings = get_param_from_yaml(robot, identif_data)
 print(params_settings)
@@ -165,4 +166,17 @@ plt.plot(tau_identif,label='identified')
 plt.legend()
 plt.show()
 
-# TODO : add the qp to retrieve standard parameters and then modify the model
+COM_max = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] # subject to be more adaptated
+COM_min = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1] # subject to be more adaptated
+
+phi_standard, phi_ref = calculate_standard_parameters(robot, W, tau_noised, COM_max, COM_min, params_settings)
+
+print(phi_standard)
+print(phi_ref)
+
+plt.plot(phi_standard,label='SIP Identified')
+plt.plot(phi_ref,label='SIP URDF')
+plt.legend()
+plt.show()
+
+# TODO : modify the model with SIP ?
