@@ -17,24 +17,18 @@ import pandas as pd
 import csv
 import time
 
-from tools.robot import Robot
-from tools.regressor import eliminate_non_dynaffect
-from tools.qrdecomposition import get_baseParams, cond_num
-
-
-from calibration_tools import (
-    extract_expData,
-    load_data,
+from figaroh.tools.robot import Robot
+from figaroh.calibration.calibration_tools import (
     get_param,
+    get_param_from_yaml,
+    add_pee_name,
+    load_data,
     init_var,
     get_PEE_fullvar,
-    get_PEE_var,
-    get_geoOffset,
-    get_jointOffset,
-    get_PEE,
-    Calculate_kinematics_model,
-    Calculate_identifiable_kinematics_model,
-    Calculate_base_kinematics_regressor)
+    Calculate_base_kinematics_regressor,
+    update_forward_kinematics,
+    get_LMvariables)
+
 
 # 1/ Load robot model and create a dictionary containing reserved constants
 

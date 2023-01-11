@@ -1,0 +1,29 @@
+# define parameters for calibration and identification process
+# robot: tiago
+---
+calibration:
+  calib_level: full_params
+  non_geom: False
+  base_frame: universe
+  tool_frame: ee_marker_joint
+  markers:
+    - ref_joint: arm_7_joint
+      measure: [True, True, True, False, False, False]
+    - ref_joint: arm_7_joint
+      measure: [True, True, True, False, False, False]
+    - ref_joint: arm_7_joint
+      measure: [True, True, True, False, False, False]
+    - ref_joint: arm_7_joint
+      measure: [True, True, True, False, False, False]  
+  free_flyer: False
+  nb_sample: 35
+identification:
+  robot_params:
+
+  problem_params:
+
+  processing_params:
+
+  tls_params:
+
+...

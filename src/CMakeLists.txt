@@ -36,8 +36,7 @@ endforeach()
 # Install submodule identification
 set(FILES
   __init__.py
-  identification_functions_def.py
-  parameters_settings.py
+  identification_tools.py
   )
 foreach(F ${FILES})
     python_install_on_site("figaroh/identification" ${F})
