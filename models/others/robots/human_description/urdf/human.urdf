@@ -16,7 +16,7 @@
         <visual>
 	        <origin xyz="-0.08 -0.13 0.125" rpy="0 1.57 0" /> 
             <geometry>
-		        <mesh filename="package://human_urdf/meshes/pelvis_mesh.STL" scale="0.006 0.0055 0.0055"/>
+		        <mesh filename="package://human_description/meshes/pelvis_mesh.STL" scale="0.006 0.0055 0.0055"/>
             </geometry>
             <material name="body_color">
                 <texture />
@@ -43,7 +43,7 @@
 	    <visual>
             <origin xyz="-0.04 -0.48 0.080" rpy="0.0 1.57 0" />
             <geometry>
-                <mesh filename="package://human_urdf/meshes/knee_mesh.STL" scale="0.006 0.006 0.006"/>
+                <mesh filename="package://human_description/meshes/knee_mesh.STL" scale="0.006 0.006 0.006"/>
             </geometry>
             <material name="body_color">
                 <texture />
@@ -67,7 +67,7 @@
         <visual>
             <origin xyz="-0.1 -0.42 0.085" rpy="0.0 1.57 0" />
             <geometry>
-                <mesh filename="package://human_urdf/meshes/upperleg_mesh.STL" scale="0.0063 0.0065 0.007"/>
+                <mesh filename="package://human_description/meshes/upperleg_mesh.STL" scale="0.0063 0.0065 0.007"/>
             </geometry>
             <material name="body_color">
                 <texture />
@@ -91,7 +91,7 @@
         <visual>
             <origin xyz="-0.06 -0.43 0.08" rpy="0.0 1.57 0" />
             <geometry>
-                <mesh filename="package://human_urdf/meshes/lowerleg_mesh.STL" scale="0.0063 0.0065 0.007"/>
+                <mesh filename="package://human_description/meshes/lowerleg_mesh.STL" scale="0.0063 0.0065 0.007"/>
             </geometry>
             <material name="body_color">
                 <texture />
@@ -123,7 +123,7 @@
         <visual>
             <origin xyz="-0.05 -0.055 0.075" rpy="0 1.57 0" />
             <geometry>
-		        <mesh filename="package://human_urdf/meshes/foot_mesh.STL" scale="0.0060 0.0060 0.0060"/>
+		        <mesh filename="package://human_description/meshes/foot_mesh.STL" scale="0.0060 0.0060 0.0060"/>
                 <!--<box size="0.03 0.085239 0.06" />-->
             </geometry>
             <material name="body_color">
@@ -156,7 +156,7 @@
 	    <visual>
             <origin xyz="-0.06 0.07 -0.085" rpy="0 -0 0" />
             <geometry>
-		        <mesh filename="package://human_urdf/meshes/abdomen_mesh.STL" scale="0.0055 0.0055 0.0055"/>
+		        <mesh filename="package://human_description/meshes/abdomen_mesh.STL" scale="0.0055 0.0055 0.0055"/>
                 <!--<box size="0.15 0.161217 0.198658" />-->
             </geometry>
             <material name="body_color">
@@ -198,7 +198,7 @@
 	    <origin xyz="-0.11 0 0.13" rpy="0 1.57 0" /> 
             <geometry>
 		        <!--<box size="0.15 0.356643 0.329994" />-->
-		        <mesh filename="package://human_urdf/meshes/torso_mesh.STL" scale="0.0065 0.0065 0.0065"/>
+		        <mesh filename="package://human_description/meshes/torso_mesh.STL" scale="0.0065 0.0065 0.0065"/>
             </geometry>
             <material name="body_color">
                 <texture />
@@ -217,7 +217,7 @@
     <visual>
 	    <origin xyz="-0.03 -0.01 -0.045" rpy="0 0.0 0" /> 
             <geometry>
-		<mesh filename="package://human_urdf/meshes/neck_mesh.STL" scale="0.005 0.005 0.005"/>
+		<mesh filename="package://human_description/meshes/neck_mesh.STL" scale="0.005 0.005 0.005"/>
             </geometry>
             <material name="body_color">
                 <texture />
@@ -249,7 +249,7 @@
         <visual>
 	        <origin xyz="-0.07 0.04 0.09" rpy="0 1.57 0" /> 
             <geometry>
-		        <mesh filename="package://human_urdf/meshes/head_mesh.STL" scale="0.0055 0.0055 0.0055"/>
+		        <mesh filename="package://human_description/meshes/head_mesh.STL" scale="0.0055 0.0055 0.0055"/>
             </geometry>
             <material name="body_color">
                 <texture />
@@ -276,7 +276,7 @@
 	    <visual>
 	        <origin xyz="-0.16 -0.045 -0.045" rpy="0 0 0" /> 
             <geometry>
-		        <mesh filename="package://human_urdf/meshes/shoulder_mesh.STL" scale="0.0055 0.0055 0.0055"/>
+		        <mesh filename="package://human_description/meshes/shoulder_mesh.STL" scale="0.0055 0.0055 0.0055"/>
             </geometry>
             <material name="body_color">
                 <texture />
@@ -308,7 +308,7 @@
         <visual>
             <origin xyz="0.06 -0.29 -0.175" rpy="0.0 -1.57 0" />
             <geometry>
-                <mesh filename="package://human_urdf/meshes/upperarm_mesh.STL" scale="0.0063 0.0060 0.007"/>
+                <mesh filename="package://human_description/meshes/upperarm_mesh.STL" scale="0.0063 0.0060 0.007"/>
             </geometry>
             <material name="body_color"/>
         </visual>
@@ -324,7 +324,7 @@
 	    <visual>
 	        <origin xyz="-0.15 -0.04 -0.035" rpy="0 0 0" /> 
             <geometry>
-		        <mesh filename="package://human_urdf/meshes/elbow_mesh.STL" scale="0.0055 0.0055 0.0055"/>
+		        <mesh filename="package://human_description/meshes/elbow_mesh.STL" scale="0.0055 0.0055 0.0055"/>
             </geometry>
             <material name="body_color">
                 <texture />
@@ -348,7 +348,7 @@
         <visual>
             <origin xyz="0.052 -0.26 -0.17" rpy="0.0 -1.57 0" />
             <geometry>
-                <mesh filename="package://human_urdf/meshes/lowerarm_mesh.STL" scale="0.0060 0.0060 0.0060"/>
+                <mesh filename="package://human_description/meshes/lowerarm_mesh.STL" scale="0.0060 0.0060 0.0060"/>
             </geometry>
             <material name="body_color">
                 <texture />
@@ -380,7 +380,7 @@
         <visual>
             <origin xyz="-0.06 -0.15 0.165" rpy="0 1.57 0" />
             <geometry>
-		        <mesh filename="package://human_urdf/meshes/hand_mesh.STL" scale="0.0060 0.0060 0.0060"/>
+		        <mesh filename="package://human_description/meshes/hand_mesh.STL" scale="0.0060 0.0060 0.0060"/>
                 <!--<box size="0.03 0.085239 0.06" />-->
             </geometry>
             <material name="body_color">
@@ -408,7 +408,7 @@
         <visual>
 	        <origin xyz="-0.15 -0.04 -0.05" rpy="0 0 0" /> 
             <geometry>
-		        <mesh filename="package://human_urdf/meshes/shoulder_mesh.STL" scale="0.0055 0.0055 0.0055"/>
+		        <mesh filename="package://human_description/meshes/shoulder_mesh.STL" scale="0.0055 0.0055 0.0055"/>
             </geometry>
             <material name="body_color">
                 <texture />
@@ -440,7 +440,7 @@
         <visual>
             <origin xyz="0.06 -0.29 -0.18" rpy="0.0 -1.57 0" />
             <geometry>
-                <mesh filename="package://human_urdf/meshes/upperarm_mesh.STL" scale="0.0063 0.0060 0.007"/>
+                <mesh filename="package://human_description/meshes/upperarm_mesh.STL" scale="0.0063 0.0060 0.007"/>
             </geometry>
             <material name="body_color">
                 <texture />
@@ -459,7 +459,7 @@
         <visual>
 	        <origin xyz="-0.15 -0.04 -0.035" rpy="0 0 0" /> 
             <geometry>
-		        <mesh filename="package://human_urdf/meshes/elbow_mesh.STL" scale="0.0055 0.0055 0.0055"/>
+		        <mesh filename="package://human_description/meshes/elbow_mesh.STL" scale="0.0055 0.0055 0.0055"/>
             </geometry>
             <material name="body_color">
                 <texture />
@@ -483,7 +483,7 @@
         <visual>
             <origin xyz="0.052 -0.26 -0.17" rpy="0.0 -1.57 0" />
             <geometry>
-                <mesh filename="package://human_urdf/meshes/lowerarm_mesh.STL" scale="0.0060 0.0060 0.0060"/>
+                <mesh filename="package://human_description/meshes/lowerarm_mesh.STL" scale="0.0060 0.0060 0.0060"/>
             </geometry>
             <material name="body_color">
                 <texture />
@@ -515,7 +515,7 @@
         <visual>
             <origin xyz="0.06 -0.15 -0.165" rpy="0 -1.57 0" />
             <geometry>
-		        <mesh filename="package://human_urdf/meshes/hand_mesh.STL" scale="0.0060 0.0060 0.0060"/>
+		        <mesh filename="package://human_description/meshes/hand_mesh.STL" scale="0.0060 0.0060 0.0060"/>
                 <!--<box size="0.03 0.085239 0.06" />-->
             </geometry>
             <material name="body_color">
@@ -543,7 +543,7 @@
         <visual>
             <origin xyz="-0.04 -0.48 0.07" rpy="0.0 1.57 0" />
             <geometry>
-                <mesh filename="package://human_urdf/meshes/knee_mesh.STL" scale="0.006 0.006 0.006"/>
+                <mesh filename="package://human_description/meshes/knee_mesh.STL" scale="0.006 0.006 0.006"/>
             </geometry>
             <material name="body_color">
                 <texture />
@@ -567,7 +567,7 @@
         <visual>
             <origin xyz="-0.1 -0.42 0.07" rpy="0.0 1.57 0" />
             <geometry>
-                <mesh filename="package://human_urdf/meshes/upperleg_mesh.STL" scale="0.0063 0.0065 0.007"/>
+                <mesh filename="package://human_description/meshes/upperleg_mesh.STL" scale="0.0063 0.0065 0.007"/>
             </geometry>
             <material name="body_color">
                 <texture />
@@ -591,7 +591,7 @@
         <visual>
             <origin xyz="-0.06 -0.43 0.07" rpy="0.0 1.57 0" />
             <geometry>
-                <mesh filename="package://human_urdf/meshes/lowerleg_mesh.STL" scale="0.0063 0.0065 0.007"/>
+                <mesh filename="package://human_description/meshes/lowerleg_mesh.STL" scale="0.0063 0.0065 0.007"/>
             </geometry>
             <material name="body_color">
                 <texture />
@@ -623,7 +623,7 @@
         <visual>
             <origin xyz="-0.05 -0.055 0.065" rpy="0 1.57 0" />
             <geometry>
-		        <mesh filename="package://human_urdf/meshes/foot_mesh.STL" scale="0.0060 0.0060 0.0060"/>
+		        <mesh filename="package://human_description/meshes/foot_mesh.STL" scale="0.0060 0.0060 0.0060"/>
                 <!--<box size="0.03 0.085239 0.06" />-->
             </geometry>
             <material name="body_color">

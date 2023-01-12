@@ -144,40 +144,70 @@ class Robot(RobotWrapper):
 
         # change order of values in phi['m', 'mx','my','mz','Ixx','Ixy','Iyy','Ixz', 'Iyz','Izz'] - from pinoccchio
         # corresponding to params_name ['Ixx','Ixy','Ixz','Iyy','Iyz','Izz','mx','my','mz','m']
-        for i in range(len(model.inertias)):
-            P =  model.inertias[i].toDynamicParameters()
-            P_mod = np.zeros(P.shape[0])
-            P_mod[9] = P[0]  # m
-            P_mod[8] = P[3]  # mz
-            P_mod[7] = P[2]  # my
-            P_mod[6] = P[1]  # mx
-            P_mod[5] = P[9]  # Izz
-            P_mod[4] = P[8]  # Iyz
-            P_mod[3] = P[6]  # Iyy
-            P_mod[2] = P[7]  # Ixz
-            P_mod[1] = P[5]  # Ixy
-            P_mod[0] = P[4]  # Ixx
-            for j in params_name:
-                if not param['is_external_wrench']:#self.isFext:
+        if not self.isFext:
+            for i in range(len(model.inertias)):
+                P =  model.inertias[i].toDynamicParameters()
+                P_mod = np.zeros(P.shape[0])
+                P_mod[9] = P[0]  # m
+                P_mod[8] = P[3]  # mz
+                P_mod[7] = P[2]  # my
+                P_mod[6] = P[1]  # mx
+                P_mod[5] = P[9]  # Izz
+                P_mod[4] = P[8]  # Iyz
+                P_mod[3] = P[6]  # Iyy
+                P_mod[2] = P[7]  # Ixz
+                P_mod[1] = P[5]  # Ixy
+                P_mod[0] = P[4]  # Ixx
+                for j in params_name:
                     params.append(j + str(i))
-                else:
+                for k in P_mod:
+                    phi.append(k)
+                #if param['hasActuatorInertia']:
+                    # phi.extend([self.Ia[i - 1]])
+                    # params.extend(["Ia" + str(i)])
+                if param['has_friction']:
+                    phi.extend([param['fv'][i-1], param['fv'][i-1]])
+                    params.extend(["fv" + str(i), "fs" + str(i)])
+                    # phi.extend([self.fv[i - 1], self.fs[i - 1]])
+                    # params.extend(["fv" + str(i), "fs" + str(i)])
+                #if param['hasJointOffset']:
+                    #phi.extend([self.off[i - 1]])
+                    #params.extend(["off" + str(i)])
+            #if param['hasCoupledWrist']:#self.isCoupling:
+                #phi.extend([self.Iam6, self.fvm6, self.fsm6])
+                #params.extend(["Iam6", "fvm6", "fsm6"])
+        else : 
+            for i in range(1,len(model.inertias)):
+                P =  model.inertias[i].toDynamicParameters()
+                P_mod = np.zeros(P.shape[0])
+                P_mod[9] = P[0]  # m
+                P_mod[8] = P[3]  # mz
+                P_mod[7] = P[2]  # my
+                P_mod[6] = P[1]  # mx
+                P_mod[5] = P[9]  # Izz
+                P_mod[4] = P[8]  # Iyz
+                P_mod[3] = P[6]  # Iyy
+                P_mod[2] = P[7]  # Ixz
+                P_mod[1] = P[5]  # Ixy
+                P_mod[0] = P[4]  # Ixx
+                for j in params_name:
                     params.append(j + str(i-1))
-            for k in P_mod:
-                phi.append(k)
-            #if param['hasActuatorInertia']:
-                # phi.extend([self.Ia[i - 1]])
-                # params.extend(["Ia" + str(i)])
-            if param['has_friction']:
-                phi.extend([param['fv'][i-1], param['fv'][i-1]])
-                params.extend(["fv" + str(i), "fs" + str(i)])
-                # phi.extend([self.fv[i - 1], self.fs[i - 1]])
-                # params.extend(["fv" + str(i), "fs" + str(i)])
-            #if param['hasJointOffset']:
-                #phi.extend([self.off[i - 1]])
-                #params.extend(["off" + str(i)])
-        #if param['hasCoupledWrist']:#self.isCoupling:
-            #phi.extend([self.Iam6, self.fvm6, self.fsm6])
-            #params.extend(["Iam6", "fvm6", "fsm6"])
+                for k in P_mod:
+                    phi.append(k)
+                #if param['hasActuatorInertia']:
+                    # phi.extend([self.Ia[i - 1]])
+                    # params.extend(["Ia" + str(i)])
+                if param['has_friction']:
+                    phi.extend([param['fv'][i-1], param['fv'][i-1]])
+                    params.extend(["fv" + str(i), "fs" + str(i)])
+                    # phi.extend([self.fv[i - 1], self.fs[i - 1]])
+                    # params.extend(["fv" + str(i), "fs" + str(i)])
+                #if param['hasJointOffset']:
+                    #phi.extend([self.off[i - 1]])
+                    #params.extend(["off" + str(i)])
+            #if param['hasCoupledWrist']:#self.isCoupling:
+                #phi.extend([self.Iam6, self.fvm6, self.fsm6])
+                #params.extend(["Iam6", "fvm6", "fsm6"])
         if param["external_wrench_offsets"]:
             phi.extend([param['OFFX'],param['OFFY'],param['OFFZ']])
             params.extend(["OFFX","OFFY","OFFZ"])

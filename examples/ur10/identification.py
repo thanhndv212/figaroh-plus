@@ -1,21 +1,21 @@
-# import eigenpy
-# import hppfcl
+import eigenpy
+import hppfcl
 import pinocchio as pin
-# import pinocchio.casadi
+import pinocchio.casadi
 import numpy as np
 # import time
 import sys, os
-from figaroh.tools.robot import Robot
-from figaroh.tools.regressor import build_regressor_basic_v2, get_index_eliminate, build_regressor_reduced
-from figaroh.tools.qrdecomposition import get_baseParams_v2
-from figaroh.identification.identification_tools import get_param_from_yaml,calculate_first_second_order_differentiation, base_param_from_standard, calculate_standard_parameters
+from src.figaroh.tools.robot import Robot
+from src.figaroh.tools.regressor import build_regressor_basic_v2, get_index_eliminate, build_regressor_reduced
+from src.figaroh.tools.qrdecomposition import get_baseParams_v2
+from src.figaroh.identification.identification_tools import get_param_from_yaml,calculate_first_second_order_differentiation, base_param_from_standard, calculate_standard_parameters
 # from pinocchio.visualize import GepettoVisualizer
 import matplotlib.pyplot as plt 
 import pprint
 import yaml
 from yaml.loader import SafeLoader
 
-robot = Robot('/home/msabbah/Bureau/thanh_git/figaroh/models/others/robots/ur_description/urdf/ur10_robot.urdf','/home/msabbah/Bureau/thanh_git/figaroh/models/others/robots')
+robot = Robot('models/others/robots/ur_description/urdf/ur10_robot.urdf','models/others/robots')
 
 # # 1/ Load robot model and create a dictionary containing reserved constants
 # ros_package_path = os.getenv('ROS_PACKAGE_PATH')
@@ -179,4 +179,4 @@ plt.plot(phi_ref,label='SIP URDF')
 plt.legend()
 plt.show()
 
-# TODO : modify the model with SIP ?
+# TODO : adapt constraints on COM, verify SIP, modify the model with SIP ?

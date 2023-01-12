@@ -9,7 +9,7 @@ calibration:
   markers:
     - ref_joint: wrist_3_joint
       measure: [True, True, True, True, True, True]
-  free_flyer: False
+  free_flyer: True
   nb_sample: 29
 identification:
   robot_params:
@@ -29,7 +29,7 @@ identification:
       is_inertia_regressor : True
       embedded_forces : False
   processing_params:
-    - cut_off_frequency_butterworth: 30
+    - cut_off_frequency_butterworth: 10
       ts : 0.033333
   tls_params:
     - mass_load : 3.0

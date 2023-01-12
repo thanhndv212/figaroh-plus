@@ -1,21 +1,22 @@
-# import eigenpy
-# import hppfcl
+import eigenpy
+import hppfcl
 import pinocchio as pin
-# import pinocchio.casadi
+import pinocchio.casadi
 import numpy as np
 # import time
 import sys, os
-from figaroh.tools.robot import Robot
-from figaroh.tools.regressor import build_regressor_basic_v2, get_index_eliminate, build_regressor_reduced
-from figaroh.tools.qrdecomposition import get_baseParams_v2
-from figaroh.identification.identification_tools import get_param_from_yaml,calculate_first_second_order_differentiation, base_param_from_standard, calculate_standard_parameters
+from src.figaroh.tools.robot import Robot
+from src.figaroh.tools.regressor import build_regressor_basic_v2, get_index_eliminate, build_regressor_reduced
+from src.figaroh.tools.qrdecomposition import get_baseParams_v2
+from src.figaroh.identification.identification_tools import get_param_from_yaml,calculate_first_second_order_differentiation, base_param_from_standard, calculate_standard_parameters, low_pass_filter_data
 # from pinocchio.visualize import GepettoVisualizer
 import matplotlib.pyplot as plt 
 import pprint
+import csv
 import yaml
 from yaml.loader import SafeLoader
 
-robot = Robot('/home/msabbah/Bureau/thanh_git/figaroh/models/others/robots/ur_description/urdf/ur10_robot.urdf','/home/msabbah/Bureau/thanh_git/figaroh/models/others/robots')
+robot = Robot('models/others/robots/human_description/urdf/human.urdf','models/others/robots',isFext=True) 
 
 # # 1/ Load robot model and create a dictionary containing reserved constants
 # ros_package_path = os.getenv('ROS_PACKAGE_PATH')
@@ -30,7 +31,7 @@ robot = Robot('/home/msabbah/Bureau/thanh_git/figaroh/models/others/robots/ur_de
 model = robot.model
 data = robot.data
 
-with open('examples/ur10/config/ur10_config.yaml', 'r') as f:
+with open('examples/human/config/human_config.yaml', 'r') as f:
     config = yaml.load(f, Loader=SafeLoader)
     pprint.pprint(config)
     
@@ -57,6 +58,8 @@ print(params_settings)
 #     print(err)
 #     sys.exit(0)
 
+# viz.display(pin.neutral(model))
+
 # Print out the placement of each joint of the kinematic tree
 print("\nJoint placements:")
 for name, oMi in zip(model.names, data.oMi):
@@ -64,7 +67,6 @@ for name, oMi in zip(model.names, data.oMi):
           .format( name, *oMi.translation.T.flat )))
 
 # generate a list containing the full set of standard parameters
-# params_standard = robot.get_standard_parameters()
 params_standard = robot.get_standard_parameters_v2(params_settings)
 
 # 1. First we build the structural base identification model, i.e. the one that can
@@ -94,46 +96,50 @@ print("The structural base parameters are: ")
 for ii in range(len(params_base)):
     print(params_base[ii])
 
-# simulating a sinus trajectory on joints shoulder_lift_joint, elbow_joint, wrist_2_joint
+# gather data from .csv
 
-delta_t=0.01
-f1 = 1
-f2 = 10
-f3 = 0.1
+q_nofilt=[]
+q_ii=[]
+Fx=[]
+Fy=[]
+Fz=[]
+Mx=[]
+My=[]
+Mz=[]
 
-samples=100
-w1 = 2.*np.pi*f1
-w2= 2*np.pi*f2
-w3= 2*np.pi*f3
+with open('examples/human/data/q+Forces_sampled_30Hz_filtered.csv', newline='') as csvfile:
+    spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+    for row in spamreader:
+        if 'q_0' in row[0]:
+            print('First')
+        else:
+            new_row=row[0].split(',')
+            for ii in range(model.nq):
+                q_ii.append(float(new_row[ii]))
+            q_nofilt.append(np.array(q_ii))
+            F = pin.Force(np.array([float(new_row[-6]),float(new_row[-5]),float(new_row[-4]),float(new_row[-3]),float(new_row[-2]),float(new_row[-1])]))
+            Fx.append(F.linear[0])
+            Fy.append(F.linear[1])
+            Fz.append(F.linear[2])
+            Mx.append(F.angular[0])
+            My.append(F.angular[1])
+            Mz.append(F.angular[2])
+            # /!\ FORCES ARE EXPRESSED IN GLOBAL FRAME AND TORQUES EXPRESSED WRT PLATFORM ORIGIN. THEY ARE FILTERED AT 5HZ.
+            q_ii = []
 
-t = np.linspace(0, int(samples*delta_t), samples)
+# Filtering the q at 10 Hz
 
-q=np.zeros((samples,model.nq))
+params_settings['cut_off_frequency_butterworth']=10
 
-for ii in range(samples):
-    q[ii,0]= np.sin(w1*t[ii])
-    q[ii,2]= np.sin(w2*t[ii])
-    q[ii,4]= np.sin(w3*t[ii])
-    # viz.display(q[ii,:])
-    # time.sleep(0.5)
+q_nofilt=np.array(q_nofilt)
+
+for ii in range(model.nq):
+    if ii == 0:
+        q= low_pass_filter_data(q_nofilt[:,ii], params_settings)
+    else:
+        q = np.column_stack((q,low_pass_filter_data(q_nofilt[:,ii], params_settings)))
 
 q, dq, ddq = calculate_first_second_order_differentiation(model, q, params_settings)
-
-# # Verif deriv :
-# f, (ax1, ax2, ax3) = plt.subplots(3, 1)
-# ax1 = plt.subplot(311)   
-# ax1.plot(q[:,0],'r', label='q')
-# ax1.legend()
-# ax1.set_title('q_0 - Shoulder_lift_joint')
-# ax2 = plt.subplot(312)
-# ax2.plot(dq[:,0],'b', label='dq')
-# ax2.legend()
-# ax2.set_title('dq_0 - shoulder lift joint speed (rad/s)')
-# ax3 = plt.subplot(313)
-# ax3.plot(ddq[:,0],'g', label='ddq')
-# ax3.legend()
-# ax3.set_title('ddq_0 - Shoulder lift joint acc (rad/s²)')
-# plt.show()
 
 W = build_regressor_basic_v2(robot, q, dq, ddq, params_settings)
 # select only the columns of the regressor corresponding to the structural base
@@ -142,41 +148,180 @@ W_base = W[:, idx_base]
 print("When using all trajectories the cond num is", int(np.linalg.cond(W_base)))
 
 # simulation of the measured joint torques
-tau_simu = np.empty(len(q)*model.nq)
+Fx_simu=[]
+Fy_simu=[]
+Fz_simu=[]
+Mx_simu=[]
+My_simu=[]
+Mz_simu=[]
 
-for ii in range(len(q)):
-    tau_temp = pin.rnea(model, data, q[ii, :], dq[ii, :], ddq[ii, :])
-    for j in range(model.nq):
-        tau_simu[j * len(q) + ii] = tau_temp[j]
+nb_samples = len(q)
 
-# Noise to add to the measure to make them more realistic
-noise = np.random.normal(0,10,len(tau_simu))
+# simulation of the measured joint torques
+tau_simu = np.empty(nb_samples*6)
 
-tau_noised = tau_simu+noise
+for ii in range(nb_samples):
+    pin.forwardKinematics(model,data,q[ii,:])
+    pin.updateFramePlacements(model,data)
+    M_pelvis = data.oMi[model.getJointId('root_joint')]
+    tau_temp = pin.Force(np.array(pin.rnea(model, data, q[ii,:], dq[ii,:], ddq[ii,:])[:6]))#force de réaction
+    tau_temp = tau_temp.se3Action(M_pelvis) 
+    Fx_simu.append(tau_temp.linear[0])
+    Fy_simu.append(tau_temp.linear[1])
+    Fz_simu.append(tau_temp.linear[2])
+    Mx_simu.append(tau_temp.angular[0])
+    My_simu.append(tau_temp.angular[1])
+    Mz_simu.append(tau_temp.angular[2])
+    for j in range(6):
+        tau_temp_sub = np.array([tau_temp.linear[0],tau_temp.linear[1],tau_temp.linear[2],tau_temp.angular[0],tau_temp.angular[1],tau_temp.angular[2]])
+        tau_simu[j * nb_samples + ii] = tau_temp_sub[j]
+
+# removing samples due to filtering and differentiation
+Fx_filtd=Fx[25:-27]
+Fy_filtd=Fy[25:-27]
+Fz_filtd=Fz[25:-27]
+Mx_filtd=Mx[25:-27]
+My_filtd=My[25:-27]
+Mz_filtd=Mz[25:-27]
+
+tau_meas=np.array(Fx_filtd+Fy_filtd+Fz_filtd+Mx_filtd+My_filtd+Mz_filtd)
+
+#Forces transported
+
+tau_meast = np.empty(nb_samples*6)
+
+for ii in range(nb_samples):
+    pin.forwardKinematics(model,data,q[ii,:])
+    pin.updateFramePlacements(model,data)
+    M_pelvis = data.oMi[model.getJointId('root_joint')]
+    tau_temp = pin.Force(np.array([Fx_filtd[ii],Fy_filtd[ii],Fz_filtd[ii],Mx_filtd[ii],My_filtd[ii],Mz_filtd[ii]]))
+    tau_temp = tau_temp.se3ActionInverse(M_pelvis)
+    for j in range(6):
+        tau_temp_sub = np.array([tau_temp.linear[0],tau_temp.linear[1],tau_temp.linear[2],tau_temp.angular[0],tau_temp.angular[1],tau_temp.angular[2]])
+        tau_meast[j * nb_samples + ii] = tau_temp_sub[j]
 
 # Least-square identification process
-phi_base = np.matmul(np.linalg.pinv(W_base), tau_noised)
-
-phi_base_real = base_param_from_standard(params_standard,params_base) 
+phi_base = np.matmul(np.linalg.pinv(W_base), tau_meast)
 
 tau_identif = W_base@phi_base
 
-plt.plot(tau_noised,label='simulated+noised')
-plt.plot(tau_identif,label='identified')
+#Forces visualisation
+
+Fx_identif=[]
+Fy_identif=[]
+Fz_identif=[]
+Mx_identif=[]
+My_identif=[]
+Mz_identif=[]
+
+
+for ii in range(int(len(tau_identif)/6)):
+    Fx_identif.append(tau_identif[ii])
+    Fy_identif.append(tau_identif[int(1*(len(tau_identif)/6))+ii])
+    Fz_identif.append(tau_identif[int(2*(len(tau_identif)/6))+ii])
+    Mx_identif.append(tau_identif[int(3*(len(tau_identif)/6))+ii])
+    My_identif.append(tau_identif[int(4*(len(tau_identif)/6))+ii])
+    Mz_identif.append(tau_identif[int(5*(len(tau_identif)/6))+ii])
+
+tau_identif_proj = np.empty(nb_samples*6)
+
+for ii in range(nb_samples):
+    pin.forwardKinematics(model,data,q[ii,:])
+    pin.updateFramePlacements(model,data)
+    M_pelvis = data.oMi[model.getJointId('root_joint')]
+    tau_temp = pin.Force(np.array([Fx_identif[ii],Fy_identif[ii],Fz_identif[ii],Mx_identif[ii],My_identif[ii],Mz_identif[ii]]))#force de réaction
+    tau_temp = tau_temp.se3Action(M_pelvis) 
+    for j in range(6):
+        tau_temp_sub = np.array([tau_temp.linear[0],tau_temp.linear[1],tau_temp.linear[2],tau_temp.angular[0],tau_temp.angular[1],tau_temp.angular[2]])
+        tau_identif_proj[j * nb_samples + ii] = tau_temp_sub[j]
+
+Fx_identif_proj=[]
+Fy_identif_proj=[]
+Fz_identif_proj=[]
+Mx_identif_proj=[]
+My_identif_proj=[]
+Mz_identif_proj=[]
+
+for ii in range(int(len(tau_identif_proj)/6)):
+    Fx_identif_proj.append(tau_identif_proj[ii])
+    Fy_identif_proj.append(tau_identif_proj[int(1*(len(tau_identif_proj)/6))+ii])
+    Fz_identif_proj.append(tau_identif_proj[int(2*(len(tau_identif_proj)/6))+ii])
+    Mx_identif_proj.append(tau_identif_proj[int(3*(len(tau_identif_proj)/6))+ii])
+    My_identif_proj.append(tau_identif_proj[int(4*(len(tau_identif_proj)/6))+ii])
+    Mz_identif_proj.append(tau_identif_proj[int(5*(len(tau_identif_proj)/6))+ii])
+
+plt.plot(tau_meas,'r',label='measured')
+plt.plot(tau_simu,'b',label='Simu with AT')
+plt.plot(tau_identif_proj,'g',label='identified')
 plt.legend()
+plt.title('Overall wrench (measured, simulated with AT and identified')
 plt.show()
 
-COM_max = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] # subject to be more adaptated
-COM_min = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1] # subject to be more adaptated
+plt.plot(Fx_filtd,'r',label='measures')
+plt.plot(Fx_simu,'b',label='AT')
+plt.plot(Fx_identif_proj,'g',label='identified')
+plt.legend()
+plt.grid()
+plt.title('Fx (N)')
+plt.show()
 
-phi_standard, phi_ref = calculate_standard_parameters(robot, W, tau_noised, COM_max, COM_min, params_settings)
+plt.plot(Fy_filtd,'r',label='measures')
+plt.plot(Fy_simu,'b',label='AT')
+plt.plot(Fy_identif_proj,'g',label='identified')
+plt.legend()
+plt.grid()
+plt.title('Fy (N)')
+plt.show()
+
+plt.plot(Fz_filtd,'r',label='measures')
+plt.plot(Fz_simu,'b',label='AT')
+plt.plot(Fz_identif_proj,'g',label='identified')
+plt.legend()
+plt.grid()
+plt.title('Fz (N)')
+plt.show()
+
+plt.plot(Mx_filtd,'r',label='measures')
+plt.plot(Mx_simu,'b',label='AT')
+plt.plot(Mx_identif_proj,'g',label='identified')
+plt.legend()
+plt.grid()
+plt.title('Mx (N.m) ')
+plt.show()
+
+plt.plot(My_filtd,'r',label='measures')
+plt.plot(My_simu,'b',label='AT')
+plt.plot(My_identif_proj,'g',label='identified')
+plt.legend()
+plt.grid()
+plt.title('My (N.m) ')
+plt.show()
+
+plt.plot(Mz_filtd,'r',label='measures')
+plt.plot(Mz_simu,'b',label='AT')
+plt.plot(Mz_identif_proj,'g',label='identified')
+plt.legend()
+plt.grid()
+plt.title('Mz (N.m) ')
+plt.show()
+
+id_inertias=[]
+id_virtual=[]
+
+for jj in range(1,len(robot.model.inertias.tolist())):
+    if robot.model.inertias.tolist()[jj].mass !=0:
+        id_inertias.append(jj-1)
+    else:
+        id_virtual.append(jj-1)
+
+COM_max = np.ones((1,3*len(id_inertias))) # subject to be more adaptated
+COM_min = -np.ones((1,3*len(id_inertias))) # subject to be more adaptated
+
+
+phi_standard, phi_ref = calculate_standard_parameters(robot, W, tau_meas, COM_max[0], COM_min[0], params_settings)
 
 print(phi_standard)
 print(phi_ref)
 
-plt.plot(phi_standard,label='SIP Identified')
-plt.plot(phi_ref,label='SIP URDF')
-plt.legend()
-plt.show()
 
-# TODO : modify the model with SIP ?
+# # TODO : LOOK AT SIP AND HOW TO HANDLE VIRTUAL INERTIAS, modify the model with SIP ?

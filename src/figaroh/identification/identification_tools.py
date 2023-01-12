@@ -501,11 +501,18 @@ def calculate_standard_parameters(robot,W,tau,COM_max,COM_min,params_settings):
     id_inertias=[]
     id_virtual=[]
 
-    for jj in range(len(robot.model.inertias.tolist())):
-        if robot.model.inertias.tolist()[jj].mass !=0:
-            id_inertias.append(jj-1)
-        else:
-            id_virtual.append(jj-1)
+    if robot.isFext : 
+        for jj in range(1,len(robot.model.inertias.tolist())):
+            if robot.model.inertias.tolist()[jj].mass !=0:
+                id_inertias.append(jj-1)
+            else:
+                id_virtual.append(jj-1)
+    else : 
+        for jj in range(len(robot.model.inertias.tolist())):
+            if robot.model.inertias.tolist()[jj].mass !=0:
+                id_inertias.append(jj)
+            else:
+                id_virtual.append(jj)
 
     nreal=len(id_inertias)
     nvirtual=len(id_virtual)
@@ -545,7 +552,7 @@ def calculate_standard_parameters(robot,W,tau,COM_max,COM_min,params_settings):
     h=np.zeros((((7+len(v[0]))*(nreal),1)))
     # A=np.zeros((10*(nvirtual),10*(nbodies)))
     # b=np.zeros((10*nvirtual,1))
-
+    
     for ii in range(len(id_inertias)):
         for k in range(len(v[0])): # inertia matrix def pos for enough (ie. 2000 here) vectors on unit sphere
             G[ii*(len(v[0])+7)+k][id_inertias[ii]*10+0]=-v[0][k]**2
