@@ -42,6 +42,15 @@ foreach(F ${FILES})
     python_install_on_site("figaroh/identification" ${F})
 endforeach()
 
+# Install submodule measurements
+set(FILES
+  __init__.py
+  measurement.py
+  )
+foreach(F ${FILES})
+    python_install_on_site("figaroh/measurements" ${F})
+endforeach()
+
 # Install submodule meshcat_viewer_wrapper
 set(FILES
   __init__.py
