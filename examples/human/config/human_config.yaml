@@ -2,21 +2,30 @@
 # robot: ur_10
 ---
 calibration:
-  calib_level: full_params
-  non_geom: False
-  base_frame: universe
-  tool_frame: wrist_3_link
+  calib_level: 
+  non_geom: 
+  base_frame: 
+  tool_frame: 
   markers:
-    - ref_joint: wrist_3_joint
-      measure: [True, True, True, True, True, True]
-  free_flyer: True
-  nb_sample: 29
+    - ref_joint:
+      measure: []
+  free_flyer: 
+  nb_sample: 
 identification:
   robot_params:
     - q_lim_def: 1.57 
-      dq_lim_def : 5 
-      ddq_lim_def : 20
-      tau_lim_def : 4
+      dq_lim_def : 5.0
+      ddq_lim_def : 20.0
+      tau_lim_def : 4.0
+      fv : None
+      fs : None
+      Ia : None
+      offset : None
+      Iam6 : None
+      fvm6 : None
+      fsm6 : None
+      N : None
+      ratio_essential : None
   problem_params:
     - is_external_wrench : True
       is_joint_torques : False
@@ -27,9 +36,10 @@ identification:
       has_actuator_inertia : False
       is_static_regressor : True
       is_inertia_regressor : True
+      has_coupled_wrist: False
       embedded_forces : False
   processing_params:
-    - cut_off_frequency_butterworth: 10
+    - cut_off_frequency_butterworth: 10.0
       ts : 0.033333
   tls_params:
     - mass_load : 3.0
