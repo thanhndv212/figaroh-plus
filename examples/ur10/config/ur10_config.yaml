@@ -27,7 +27,7 @@ identification:
       has_actuator_inertia : False
       is_static_regressor : True
       is_inertia_regressor : True
-      embedded_forces : True
+      embedded_forces : False
   processing_params:
     - cut_off_frequency_butterworth: 100
       ts : 0.01

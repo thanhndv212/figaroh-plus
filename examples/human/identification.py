@@ -135,9 +135,9 @@ q_nofilt=np.array(q_nofilt)
 
 for ii in range(model.nq):
     if ii == 0:
-        q= low_pass_filter_data(q_nofilt[:,ii], params_settings)
+        q= low_pass_filter_data(q_nofilt[:,ii], params_settings,5)
     else:
-        q = np.column_stack((q,low_pass_filter_data(q_nofilt[:,ii], params_settings)))
+        q = np.column_stack((q,low_pass_filter_data(q_nofilt[:,ii], params_settings,5)))
 
 q, dq, ddq = calculate_first_second_order_differentiation(model, q, params_settings)
 

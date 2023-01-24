@@ -1,3 +1,5 @@
+import hppfcl
+import eigenpy
 import pinocchio as pin
 from pinocchio.robot_wrapper import RobotWrapper
 from pinocchio.visualize import GepettoVisualizer, MeshcatVisualizer
@@ -19,18 +21,21 @@ from scipy import linalg, signal
 import pandas as pd
 import json
 import csv
+import yaml
+from yaml.loader import SafeLoader
+import pprint
 # from tabulate import tabulate
 
-from tools.robot import Robot
-from tools.regressor import *
-from tools.qrdecomposition import *
-from tools.randomdata import *
-from tools.robotcollisions import *
+from src.figaroh.tools.robot import Robot
+from src.figaroh.tools.regressor import *
+from src.figaroh.tools.qrdecomposition import *
+from src.figaroh.tools.randomdata import *
+from src.figaroh.tools.robotcollisions import *
+from src.figaroh.identification.identification_tools import get_param_from_yaml,calculate_first_second_order_differentiation, base_param_from_standard, calculate_standard_parameters, low_pass_filter_data
 
 
 robot = Robot(
-    "staubli_tx40_description/urdf",
-    "tx40_mdh_modified.urdf",
+   'models/others/robots/staubli_tx40_description/urdf/tx40_mdh_modified.urdf','models/others/robots',
     False,
     True,
     True,
@@ -40,79 +45,68 @@ robot = Robot(
 
 
 if __name__ == "__main__":
+
     model = robot.model
-    print(model)
     data = robot.data
+
     nq, nv, njoints = model.nq, model.nv, model.njoints
-    # params_std = standardParameters(njoints,fv,fs,Ia,off,Iam6,fvm6,fsm6)
-    params_std = robot.get_standard_parameters()
+
+    with open('examples/staubli_TX40/config/T40X_config.yaml', 'r') as f:
+        config = yaml.load(f, Loader=SafeLoader)
+        pprint.pprint(config)
+    
+    identif_data = config['identification']
+    params_settings = get_param_from_yaml(robot, identif_data)
+
+    print(params_settings)
+
+    params_std = robot.get_standard_parameters_v2(params_settings)
     # table_stdparams = pd.DataFrame(params_std.items(), columns=[
     #                                "Standard Parameters", "Value"])
     # print(table_stdparams)
 
     # print("identification on exp data")
 
-    f_sample = 5000
+    f_sample = 1/params_settings['ts']
+
     curr_data = pd.read_csv(
-        "/home/ecn/Cooking/figaro/identification_toolbox/src/thanh/curr_data.csv").to_numpy()
+        "examples/staubli_TX40/data/curr_data.csv").to_numpy()
     pos_data = pd.read_csv(
-        "/home/ecn/Cooking/figaro/identification_toolbox/src/thanh/pos_read_data.csv").to_numpy()
+        "examples/staubli_TX40/data/pos_read_data.csv").to_numpy()
     # Nyquist freq/0.5*sampling rate fs = 0.5 *5 kHz
 
-    N = pos_data.shape[0]
+    N_robot = params_settings['N']
 
     # cut off tail and head
     head = int(0.1 * f_sample)
     tail = int(7.5 * f_sample + 1)
-    # y = curr_data[head:tail,:]
-    # q_motor = pos_data[head:tail,:]
     y = curr_data
     q_motor = pos_data
 
     # calculate joint position = inv(reduction ration matrix)*motor_encoder_angle
-    red_q = np.diag([robot.N1, robot.N2, robot.N3,
-                    robot.N4, robot.N5, robot.N6])
-    red_q[5, 4] = robot.N6
+    red_q = np.diag([N_robot[0], N_robot[1], N_robot[2],
+                    N_robot[3], N_robot[4], N_robot[5]])
+    red_q[5, 4] = N_robot[5]
     q_T = np.dot(np.linalg.inv(red_q), q_motor.T)
     q = q_T.T
 
-    # median order 3 => butterworth zerophase filtering
+    q_nofilt = np.array(q)
+
     nbutter = 4
-    f_butter = 100
-    b, a = signal.butter(nbutter, f_butter / (f_sample / 2), "low")
-    for j in range(q.shape[1]):
-        q[:, j] = signal.medfilt(q[:, j], 3)
-        q[:, j] = signal.filtfilt(
-            b, a, q[:, j], axis=0, padtype="odd", padlen=3 * (max(len(b), len(a)) - 1)
-        )
+    nbord = 5 * nbutter
+
+    for ii in range(model.nq):
+        if ii == 0:
+            q= low_pass_filter_data(q_nofilt[:,ii], params_settings,nbutter)
+        else:
+            q = np.column_stack((q,low_pass_filter_data(q_nofilt[:,ii], params_settings,nbutter)))
+
 
     # calibration between joint mdh position and robot measure
     q[:, 1] += -np.pi / 2
     q[:, 2] += np.pi / 2
-    # q[:, 5] += np.pi #already calibrated in urdf for joint 6
 
-    # calculate vel and acc by central difference
-    dt = 1 / f_sample
-    dq = np.zeros([q.shape[0], q.shape[1]])
-    ddq = np.zeros([q.shape[0], q.shape[1]])
-    t = np.linspace(0, dq.shape[0], num=dq.shape[0]) / f_sample
-    for i in range(pos_data.shape[1]):
-        dq[:, i] = np.gradient(q[:, i], edge_order=1) / dt
-        ddq[:, i] = np.gradient(dq[:, i], edge_order=1) / dt
-        plt.plot(t, q[:, i])
-
-    plt.axvline(0.1)
-    plt.axvline(7.5)
-    plt.show(block=True)
-
-    # suppress end segments of samples due to the border effect
-    nbord = 5 * nbutter
-    q = np.delete(q, np.s_[0:nbord], axis=0)
-    q = np.delete(q, np.s_[(q.shape[0] - nbord): q.shape[0]], axis=0)
-    dq = np.delete(dq, np.s_[0:nbord], axis=0)
-    dq = np.delete(dq, np.s_[(dq.shape[0] - nbord): dq.shape[0]], axis=0)
-    ddq = np.delete(ddq, np.s_[0:nbord], axis=0)
-    ddq = np.delete(ddq, np.s_[(ddq.shape[0] - nbord): ddq.shape[0]], axis=0)
+    q, dq, ddq = calculate_first_second_order_differentiation(model,q,params_settings)
 
     # build regressor matrix
     qd = dq
@@ -123,9 +117,9 @@ if __name__ == "__main__":
     W = add_coupling(W, model, data, N, nq, nv, njoints, q, qd, qdd)
 
     # calculate joint torques = reduction gear ratio matrix*motor_torques
-    red_tau = np.diag([robot.N1, robot.N2, robot.N3,
-                      robot.N4, robot.N5, robot.N6])
-    red_tau[4, 5] = robot.N6
+    red_tau = np.diag([N_robot[0], N_robot[1], N_robot[2],
+                    N_robot[3], N_robot[4], N_robot[5]])
+    red_tau[4, 5] = N_robot[5]
     tau_T = np.dot(red_tau, y.T)
 
     # suppress end segments of  samples due to the border effect
@@ -163,12 +157,8 @@ if __name__ == "__main__":
     for i in range(len(W_list)):
         idx_qd_cross_zero = []
         for j in range(W_list[i].shape[0]):
-            if abs(W_list[i][j, i * 14 + 11]) < robot.qd_lim[i]:  # check columns of fv_i
+            if abs(W_list[i][j, i * 14 + 11]) < params_settings['dq_lim_def'][i]:  # check columns of fv_i
                 idx_qd_cross_zero.append(j)
-        # if i == 4 or i == 5:  # joint 5 and 6
-        #     for k in range(W_list[i].shape[0]):
-        #         if abs(W_list[i][k, 4 * 14 + 11] + W_list[i][k, 5 * 14 + 11]) < qd_lim[4] + qd_lim[5]:  # check sum cols of fv_5 + fv_6
-        #             idx_qd_cross_zero.append(k)
         # indices with vels around zero
         idx_eliminate = list(set(idx_qd_cross_zero))
         W_list[i] = np.delete(W_list[i], idx_eliminate, axis=0)
@@ -192,7 +182,7 @@ if __name__ == "__main__":
 
     # base parameters
     # elimate and QR decomposition for ordinary LS
-    W_e, idx_e, params_r = eliminate_non_dynaffect(W_, params_std, 0.001)
+    W_e, params_r = eliminate_non_dynaffect(W_, params_std, 0.001)
     W_b, base_parameters, params_base, phi_b = double_QR(tau_, W_e, params_r)
     std_xr_ols = relative_stdev(W_b, phi_b, tau_)
     phi_b_ols = np.around(np.linalg.lstsq(W_b, tau_, rcond=None)[0], 6)
@@ -240,7 +230,7 @@ if __name__ == "__main__":
 
     path_save_bp = join(
         dirname(dirname(str(abspath(__file__)))),
-        "identification_toolbox/src/thanh/TX40_bp_5.csv",
+        "staubli_TX40/results/TX40_bp_5.csv",
     )
     with open(path_save_bp, "w") as output_file:
         w = csv.writer(output_file)
@@ -256,7 +246,7 @@ if __name__ == "__main__":
     std_xr_e = std_xr
     params_essential = params_base
     W_essential = W_b
-    while not (max_std_e < robot.ratio_essential * min_std_e):
+    while not (max_std_e < params_settings['ratio_essential'] * min_std_e):
         (i,) = np.where(np.isclose(std_xr_e, max_std_e))
         del params_essential[int(i)]
         W_essential = np.delete(W_essential, i, 1)
@@ -315,7 +305,7 @@ if __name__ == "__main__":
     # save results to csv
     path_save_ep = join(
         dirname(dirname(str(abspath(__file__)))),
-        "identification_toolbox/src/thanh/TX40_ep_5.csv",
+        "staubli_TX40/results/TX40_ep_5.csv",
     )
     with open(path_save_ep, "w") as output_file:
         w = csv.writer(output_file)

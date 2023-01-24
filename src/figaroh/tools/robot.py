@@ -62,8 +62,7 @@ class Robot(RobotWrapper):
         # self.N4 = -48
         # self.N5 = 45
         # self.N6 = 32
-        # self.qd_lim = 0.01 * \
-        #     np.array([287, 287, 430, 410, 320, 700]) * np.pi / 180
+        # self.qd_lim = 0.01 * \np.array([287, 287, 430, 410, 320, 700]) * np.pi / 180
         # self.ratio_essential = 30
 
         # initializing robot's models
@@ -124,6 +123,8 @@ class Robot(RobotWrapper):
         return params_std
 
     def get_standard_parameters_v2(self, param):
+        """ uses dictionnary 
+        """
     
         model=self.model
         phi = []
@@ -142,9 +143,11 @@ class Robot(RobotWrapper):
             "m",
         )
 
+        print(model.inertias.tolist())
+
         # change order of values in phi['m', 'mx','my','mz','Ixx','Ixy','Iyy','Ixz', 'Iyz','Izz'] - from pinoccchio
         # corresponding to params_name ['Ixx','Ixy','Ixz','Iyy','Iyz','Izz','mx','my','mz','m']
-        if not self.isFext:
+        if param['is_joint_torques']:
             for i in range(len(model.inertias)):
                 P =  model.inertias[i].toDynamicParameters()
                 P_mod = np.zeros(P.shape[0])
@@ -162,21 +165,7 @@ class Robot(RobotWrapper):
                     params.append(j + str(i))
                 for k in P_mod:
                     phi.append(k)
-                #if param['hasActuatorInertia']:
-                    # phi.extend([self.Ia[i - 1]])
-                    # params.extend(["Ia" + str(i)])
-                if param['has_friction']:
-                    phi.extend([param['fv'][i-1], param['fv'][i-1]])
-                    params.extend(["fv" + str(i), "fs" + str(i)])
-                    # phi.extend([self.fv[i - 1], self.fs[i - 1]])
-                    # params.extend(["fv" + str(i), "fs" + str(i)])
-                #if param['hasJointOffset']:
-                    #phi.extend([self.off[i - 1]])
-                    #params.extend(["off" + str(i)])
-            #if param['hasCoupledWrist']:#self.isCoupling:
-                #phi.extend([self.Iam6, self.fvm6, self.fsm6])
-                #params.extend(["Iam6", "fvm6", "fsm6"])
-        else : 
+        elif param['is_external_wrench'] : 
             for i in range(1,len(model.inertias)):
                 P =  model.inertias[i].toDynamicParameters()
                 P_mod = np.zeros(P.shape[0])
@@ -194,25 +183,30 @@ class Robot(RobotWrapper):
                     params.append(j + str(i-1))
                 for k in P_mod:
                     phi.append(k)
-                #if param['hasActuatorInertia']:
-                    # phi.extend([self.Ia[i - 1]])
-                    # params.extend(["Ia" + str(i)])
+            if param["external_wrench_offsets"]:
+                phi.extend([param['OFFX'],param['OFFY'],param['OFFZ']])
+                params.extend(["OFFX","OFFY","OFFZ"])
+        else: 
+            raise ValueError ("Please specify if your robot is joint torques only or external wrench only")
+        
+        for ii in range(1,self.model.njoints):
+                if param['has_actuator_inertia']:
+                    phi.extend([param['Ia'][ii-1]])
+                    params.extend(["Ia" + str(ii-1)])
                 if param['has_friction']:
-                    phi.extend([param['fv'][i-1], param['fv'][i-1]])
-                    params.extend(["fv" + str(i), "fs" + str(i)])
-                    # phi.extend([self.fv[i - 1], self.fs[i - 1]])
-                    # params.extend(["fv" + str(i), "fs" + str(i)])
-                #if param['hasJointOffset']:
-                    #phi.extend([self.off[i - 1]])
-                    #params.extend(["off" + str(i)])
-            #if param['hasCoupledWrist']:#self.isCoupling:
-                #phi.extend([self.Iam6, self.fvm6, self.fsm6])
-                #params.extend(["Iam6", "fvm6", "fsm6"])
-        if param["external_wrench_offsets"]:
-            phi.extend([param['OFFX'],param['OFFY'],param['OFFZ']])
-            params.extend(["OFFX","OFFY","OFFZ"])
+                    phi.extend([param['fv'][ii-1], param['fs'][ii-1]])
+                    params.extend(["fv" + str(ii-1), "fs" + str(ii-1)])
+                if param['has_joint_offset']:
+                    phi.extend([param['off'][ii-1]])
+                    params.extend(["off" + str(ii-1)])
+
+        if param['has_coupled_wrist']:#self.isCoupling:
+            phi.extend([param['Iam6'], param['fvm6'], param['fsm6']])
+            params.extend(["Iam6", "fvm6", "fsm6"])
+
         params_std = dict(zip(params, phi))
         return params_std
+
 
     def display_q0(self):
         """If you want to visualize the robot in this example,

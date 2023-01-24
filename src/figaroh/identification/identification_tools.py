@@ -132,11 +132,24 @@ def get_param_from_yaml(robot,identif_data):
         'robot_name': robot_name,
         'nb_samples': int(1/(process_params['ts'])),
         'q_lim_def': robots_params['q_lim_def'],
+        'dq_lim_def': robots_params['dq_lim_def'],
         'is_external_wrench': problem_params['is_external_wrench'],
         'is_joint_torques': problem_params['is_joint_torques'],
         'force_torque': problem_params['force_torque'],
         'external_wrench_offsets': problem_params['external_wrench_offsets'],
         'has_friction': problem_params['has_friction'],
+        'fv': robots_params['fv'],
+        'fs': robots_params['fs'],
+        'has_actuator_inertia': problem_params['has_actuator_inertia'],
+        'Ia': robots_params['Ia'],
+        'has_joint_offset': problem_params['has_joint_offset'],
+        'off': robots_params['offset'],
+        'has_coupled_wrist': problem_params['has_coupled_wrist'],
+        'Iam6': robots_params['Iam6'],
+        'fvm6': robots_params['fvm6'],
+        'fsm6': robots_params['fsm6'],
+        'N': robots_params['N'],
+        'ratio_essential': robots_params['ratio_essential'],
         'cut_off_frequency_butterworth': process_params['cut_off_frequency_butterworth'],
         'ts': process_params['ts'],
         'mass_load': tls_params['mass_load'],
@@ -292,12 +305,9 @@ def calculate_first_second_order_differentiation(model,q,param,dt=None):
 
     return q, dq, ddq
 
-def low_pass_filter_data(data,param):
+def low_pass_filter_data(data,param,nbutter):
     '''This function filters and elaborates data used in the identification process. 
     It is based on a return of experience  of Prof Maxime Gautier (LS2N, Nantes, France)'''
-
-    # median order 3 => butterworth zerophase filtering
-    nbutter = 5
     
     b, a = signal.butter(nbutter, param['ts']*param['cut_off_frequency_butterworth'] / 2, "low")
    
