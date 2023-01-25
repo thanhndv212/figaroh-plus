@@ -143,12 +143,10 @@ class Robot(RobotWrapper):
             "m",
         )
 
-        print(model.inertias.tolist())
-
         # change order of values in phi['m', 'mx','my','mz','Ixx','Ixy','Iyy','Ixz', 'Iyz','Izz'] - from pinoccchio
         # corresponding to params_name ['Ixx','Ixy','Ixz','Iyy','Iyz','Izz','mx','my','mz','m']
         if param['is_joint_torques']:
-            for i in range(len(model.inertias)):
+            for i in range(self.model.nv):
                 P =  model.inertias[i].toDynamicParameters()
                 P_mod = np.zeros(P.shape[0])
                 P_mod[9] = P[0]  # m
@@ -162,9 +160,19 @@ class Robot(RobotWrapper):
                 P_mod[1] = P[5]  # Ixy
                 P_mod[0] = P[4]  # Ixx
                 for j in params_name:
-                    params.append(j + str(i))
+                    params.append(j + str(i+1))
                 for k in P_mod:
                     phi.append(k)
+                if param['has_actuator_inertia']:
+                    phi.extend([param['Ia'][i]])
+                    params.extend(["Ia" + str(i+1)])
+                if param['has_friction']:
+                    phi.extend([param['fv'][i], param['fs'][i]])
+                    params.extend(["fv" + str(i+1), "fs" + str(i+1)])
+                if param['has_joint_offset']:
+                    phi.extend([param['off'][i]])
+                    params.extend(["off" + str(i+1)])
+                    
         elif param['is_external_wrench'] : 
             for i in range(1,len(model.inertias)):
                 P =  model.inertias[i].toDynamicParameters()
@@ -187,18 +195,7 @@ class Robot(RobotWrapper):
                 phi.extend([param['OFFX'],param['OFFY'],param['OFFZ']])
                 params.extend(["OFFX","OFFY","OFFZ"])
         else: 
-            raise ValueError ("Please specify if your robot is joint torques only or external wrench only")
-        
-        for ii in range(1,self.model.njoints):
-                if param['has_actuator_inertia']:
-                    phi.extend([param['Ia'][ii-1]])
-                    params.extend(["Ia" + str(ii-1)])
-                if param['has_friction']:
-                    phi.extend([param['fv'][ii-1], param['fs'][ii-1]])
-                    params.extend(["fv" + str(ii-1), "fs" + str(ii-1)])
-                if param['has_joint_offset']:
-                    phi.extend([param['off'][ii-1]])
-                    params.extend(["off" + str(ii-1)])
+            raise ValueError ("Please specify if your robot is joint torques only or external wrench only")      
 
         if param['has_coupled_wrist']:#self.isCoupling:
             phi.extend([param['Iam6'], param['fvm6'], param['fsm6']])

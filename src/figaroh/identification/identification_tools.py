@@ -155,7 +155,6 @@ def get_param_from_yaml(robot,identif_data):
         'mass_load': tls_params['mass_load'],
         'which_body_loaded': tls_params['which_body_loaded'],
     }
-    pprint.pprint(param)
     return param
 
 
