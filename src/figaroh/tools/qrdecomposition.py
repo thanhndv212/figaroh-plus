@@ -6,7 +6,7 @@ from scipy import linalg, signal
 # epsilon = np.finfo(float).eps  # machine epsilon
 # tolpal = W_e.shape[0]*abs(np.diag(R).max()) * \
 #     epsilon  # rank revealing tolerance
-tolpal = 1e-6
+tolpal = 1e-3
 
 
 def QR_pivoting(tau, W_e, params_r):

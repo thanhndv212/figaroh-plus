@@ -38,17 +38,17 @@ def build_regressor_basic(N, robot, q, v, a):
     return W_mod
 
 def build_regressor_basic_v2(robot, q, v, a, param, tau=None):
-    """This function builds the basic regressor of the 10(+2) parameters
-    'Ixx','Ixy','Ixz','Iyy','Iyz','Izz','mx','my','mz','m'+ ('fs','fv') using pinocchio
+    """This function builds the basic regressor of the 10(+4) parameters
+    'Ixx','Ixy','Ixz','Iyy','Iyz','Izz','mx','my','mz','m'+ ('ia','fs','fv','off') using pinocchio
     library depending on param.
     Input:  robot: (robot) a robot extracted from an urdf (for instance)
             q: (ndarray) a configuration position vector (size robot.model.nq)
             v: (ndarray) a configuration velocity vector (size robot.model.nv)
             a: (ndarray) a configutation acceleration vectore (size robot.model.na)
             param: (dict) a dictionnary setting the options, i.e., here add two
-            parameters, 'fs' and 'fv' if the flag 'has friction' is true
+            parameters, 'ia' if the flag 'has_actuator_inertia' is true,'fs' and 'fv' if the flag 'has friction' is true, 'off' is the flag "has_joint_offset' is true
             tau : (ndarray) of stacked torque measurements (Fx,Fy,Fz), None if the torque offsets are not identified 
-    Output: W_mod: (ndarray) basic regressor for 10(+2) parameters
+    Output: W_mod: (ndarray) basic regressor for 10(+4) parameters
     """
     # TODO : test phase with all the different cases between ia, fv+fs, off to see if all have been correctly handled + add similiar code for external wrench case (+ friction, ia,off,etc..)
     

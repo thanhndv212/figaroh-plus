@@ -57,8 +57,8 @@ if __name__ == "__main__":
         pprint.pprint(config)
     
     identif_data = config['identification']
-    params_settings = get_param_from_yaml(robot, identif_data)
 
+    params_settings = get_param_from_yaml(robot, identif_data)
     params_std = robot.get_standard_parameters_v2(params_settings)
 
     q_rand = np.random.uniform(low=-6, high=6, size=(10 * params_settings["nb_samples"], model.nq))
@@ -71,8 +71,8 @@ if __name__ == "__main__":
         low=-30, high=30, size=(10 * params_settings["nb_samples"], model.nv)
     )
     W = build_regressor_basic_v2(robot, q_rand, dq_rand, ddq_rand, params_settings)
-    # W = build_regressor_full_modified(model, data, len(q_rand), nq, nv, njoints, q_rand, dq_rand, ddq_rand)
     W = add_coupling(W, model, data, len(q_rand), nq, nv, njoints, q_rand, dq_rand, ddq_rand)
+    
     # remove zero cols and build a zero columns free regressor matrix
     idx_e, params_r = get_index_eliminate(W, params_std, 1e-6)
     W_e = build_regressor_reduced(W, idx_e)
@@ -84,7 +84,6 @@ if __name__ == "__main__":
     print("The structural base parameters are: ")
     for ii in range(len(params_base)):
         print(params_base[ii])
-
 
     f_sample = 1/params_settings['ts']
 
@@ -147,9 +146,7 @@ if __name__ == "__main__":
     qdd = ddq
     N = q.shape[0]
 
-
     W = build_regressor_basic_v2(robot,q,qd,qdd,params_settings)
-
     W = add_coupling(W, model, data, N, nq, nv, njoints, q, qd, qdd)
 
     # calculate joint torques = reduction gear ratio matrix*motor_torques
