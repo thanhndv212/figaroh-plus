@@ -64,8 +64,32 @@ def build_W_b(Ns, robot, q, v, a, idx_e_, idx_base_, W_stack=None):
     # stack the computed base reg below the previous base reg
     if isinstance(W_stack, np.ndarray):
         W_b = np.vstack((W_stack, W_b))
-        print("regressor is stacked!")
     return W_b
+
+
+def get_idx_b_cubic(robot, active_joints):
+    """ Find base parameters for cubic spline trajectory
+    """
+    n_wps_r = 100
+    freq_r = 100
+    CB_r = CubicSpline(robot, n_wps_r, active_joints)
+    WP_r = WaypointsGeneration(robot, n_wps_r, active_joints)
+    WP_r.gen_rand_pool(soft_lim_pool)
+
+    # generate random waypoints
+    wps_r, vel_wps_r, acc_wps_r = WP_r.gen_rand_wp()
+
+    # generate timepoints
+    tps_r = np.matrix([0.5*i for i in range(n_wps_r)]).transpose()
+
+    # get full config traj
+    t_r, p_r, v_r, a_r = CB_r.get_full_config(
+        freq_r, tps_r, wps_r, vel_wps_r, acc_wps_r)
+
+    # get index essential and base params columns: idx_e, idx_b
+    idx_e, idx_b = get_idx_from_random(p_r.shape[0], robot, p_r, v_r, a_r)
+    print("number of base params: ", len(idx_b))
+    return idx_e, idx_b
 
 # IPOPT PROBLEM FORMULATION FUNCTIONS
 
