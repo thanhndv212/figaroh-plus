@@ -50,7 +50,7 @@ def build_tiago_simplified(robot):
     xyz_1 = np.array([-0.028, 0, -0.01])
     xyz_2 = np.array([0.005, 0, -0.35])
     xyz_3 = np.array([0, 0, 0.20])
-    xyz_4 = np.array([0.005, 0, -0.05])
+    xyz_4 = np.array([0, 0, 0])
     xyz_5 = np.array([-0.03, 0.09, 0])
 
     geom_model.addGeometryObject(
@@ -71,12 +71,12 @@ def build_tiago_simplified(robot):
     visual_model.addGeometryObject(
         Capsule("base_cap", 0, 0.3, 0.25, pin.SE3(np.eye(3), xyz_3))
     )
-    # geom_model.addGeometryObject(
-    #     Box("head_box", 9, 0.1, 0.14, 0.1, pin.SE3(np.eye(3), xyz_4))
-    # )
-    # visual_model.addGeometryObject(
-    #     Box("head_box", 9, 0.1, 0.14, 0.1, pin.SE3(np.eye(3), xyz_4))
-    # )
+    geom_model.addGeometryObject(
+        Capsule("forearm_cap", 6,  0.30, 0.10,pin.SE3(np.eye(3), xyz_4))
+    )
+    visual_model.addGeometryObject(
+        Capsule("forearm_cap", 6,  0.10, 0.30, pin.SE3(np.eye(3), xyz_4))
+    )
     geom_model.addGeometryObject(
         Capsule("head_cap", 10, 0.17, 0.25, pin.SE3(np.eye(3), xyz_5))
     )
@@ -88,11 +88,12 @@ def build_tiago_simplified(robot):
     #     print("object number %d" % k, geom_model.geometryObjects[k].name)
 
     arm_link_names = [
-        "arm_4_link_0",
-        "arm_5_link_0",
-        "arm_6_link_0",
-        "wrist_ft_link_0",
-        "wrist_ft_tool_link_0",
+        "forearm_cap"
+        # "arm_4_link_0",
+        # "arm_5_link_0",
+        # "arm_6_link_0",
+        # "wrist_ft_link_0",
+        # "wrist_ft_tool_link_0",
     ]
     arm_link_ids = [geom_model.getGeometryId(k) for k in arm_link_names]
     mask_link_names = [
@@ -108,6 +109,7 @@ def build_tiago_simplified(robot):
     print("number of collision pairs of simplified model is: ",
           len(geom_model.collisionPairs))
 
+    return robot
 
 def build_tiago_normal(robot):
     # # Remove collision pairs listed in the SRDF file
@@ -139,7 +141,7 @@ def main():
         package_dirs = package_dirs,
         # isFext=True  # add free-flyer joint at base
     )
-    build_tiago_simplified(robot)
+    robot = build_tiago_simplified(robot)
     collision = CollisionWrapper(robot, viz=None)
 
     def check_collision(collision, q):
@@ -151,7 +153,7 @@ def main():
             print("self-collision is violated!")
         return is_collision
     # TODO: write for checking collision model and collision data
-
+    print(robot.model)
     viz = MeshcatVisualizer(
         model=robot.model, collision_model=robot.collision_model, visual_model=robot.visual_model, url='classical'
     )
