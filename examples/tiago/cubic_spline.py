@@ -18,7 +18,8 @@ class CubicSpline:
     def __init__(self,
                  robot,
                  num_waypoints: int,
-                 active_joints: list):
+                 active_joints: list,
+                 soft_lim = 0):
 
         self.robot = robot
         self.rmodel = self.robot.model
@@ -177,9 +178,9 @@ class CubicSpline:
                     __isViolated = __isViolated or __isViolated_eff
                     # print(__isViolated)
         if not __isViolated:
-            print("Succeeded to generate waypoints for  a feasible initial cubic spline")
+            print("SUCCEEDED to generate waypoints for  a feasible initial cubic spline")
         else:
-            print("Failed to generate a feasible cubic spline")        
+            print("FAILED to generate a feasible cubic spline")        
         return __isViolated
 
     def check_self_collision(self):
@@ -209,17 +210,21 @@ class WaypointsGeneration(CubicSpline):
     def __init__(self,
                  robot,
                  num_waypoints: int,
-                 active_joints: list):
-        super().__init__(robot, num_waypoints, active_joints)
-        self.n_set = 10
+                 active_joints: list,
+                 soft_lim=0):
+        super().__init__(robot, num_waypoints, active_joints,soft_lim=0)
+        self.n_set = 20
         self.pool_q = np.zeros((self.n_set, len(self.active_joints)))
         self.pool_dq = np.zeros((self.n_set, len(self.active_joints)))
         self.pool_ddq = np.zeros((self.n_set, len(self.active_joints)))
+        self.soft_limit_pool_default = np.zeros((3,len(self.active_joints)))
 
-    def gen_rand_pool(self, soft_limit_pool=0):
+    def gen_rand_pool(self, soft_limit_pool=None):
         """ Generate a uniformly distributed waypoint pool of pos/vel/acc over
             a specific range
         """
+        if soft_limit_pool is None:
+            soft_limit_pool = self.soft_limit_pool_default
         assert np.array(soft_limit_pool).shape == (3,len(self.active_joints)), \
             "input a vector of soft limit pool with a shape of (3, len(activejoints)"
         lim_q = soft_limit_pool[0, :]
@@ -250,16 +255,6 @@ class WaypointsGeneration(CubicSpline):
             new_lower_ddq[i] = k*(self.lower_dq[i] + lim_ddq[i] * 
                 abs(self.upper_dq[i] - self.lower_dq[i]))
 
-            # new_upper_effort = self.upper_effort - soft_limit * \
-            #     abs(self.upper_effort - self.lower_effort)
-            # new_lower_effort = self.lower_effort - soft_limit * \
-            #     abs(self.upper_effort - self.lower_effort)
-
-        for i in range(len(self.active_joints)):
-            print(  "joint %s" % i,
-                    "pos limit range: ", new_upper_q[i]- new_lower_q[i],
-                    "vel limit:", abs(new_lower_dq[i]),
-                    "min required travel time: ", (new_upper_q[i]- new_lower_q[i])/abs(new_lower_dq[i]))
             step_q = (new_upper_q[i] - new_lower_q[i])/(self.n_set - 1) 
             self.pool_q[:, i] = np.array(
                 [new_lower_q[i] + j*step_q for j in range(self.n_set)])
@@ -273,69 +268,74 @@ class WaypointsGeneration(CubicSpline):
                 [new_lower_ddq[i] + j*step_ddq for j in range(self.n_set)])
         # return self.pool_q, self.pool_dq, self.pool_ddq
 
-    def gen_rand_wp(self, soft_limit=0,
+    def gen_rand_wp(self,
                     wp_init=None, vel_wp_init=None, acc_wp_init=None,
                     vel_set_zero=True, acc_set_zero=True):
         """ Generate waypoint pos/vel/acc which randomly pick from waypoint
             pool
             Or, set vel and/or acc at waypoints to be zero
         """
-        # self.gen_rand_pool(soft_limit)
-        q_rand = np.zeros((self.num_waypoints, len(self.active_joints)))
-        dq_rand = np.zeros((self.num_waypoints, len(self.active_joints)))
-        ddq_rand = np.zeros((self.num_waypoints, len(self.active_joints)))
+        wps_rand = np.zeros((self.num_waypoints, len(self.active_joints)))
+        vel_wps_rand = np.zeros((self.num_waypoints, len(self.active_joints)))
+        acc_wps_rand = np.zeros((self.num_waypoints, len(self.active_joints)))
 
         if wp_init is not None:
-            q_rand[0, :] = wp_init
+            wps_rand[0, :] = wp_init
             for i in range(len(self.active_joints)):
-                q_rand[range(1, self.num_waypoints), i] = np.random.choice(
+                wps_rand[range(1, self.num_waypoints), i] = np.random.choice(
                     self.pool_q[:, i], self.num_waypoints-1)
         else:
             for i in range(len(self.active_joints)):
-                q_rand[:, i] = np.random.choice(
+                wps_rand[:, i] = np.random.choice(
                     self.pool_q[:, i], self.num_waypoints)
 
         if vel_wp_init is not None:
-            dq_rand[0, :] = vel_wp_init
+            vel_wps_rand[0, :] = vel_wp_init
             if not vel_set_zero:
                 for i in range(len(self.active_joints)):
-                    dq_rand[range(1, self.num_waypoints), i] = np.random.choice(
+                    vel_wps_rand[range(1, self.num_waypoints), i] = np.random.choice(
                         self.pool_dq[:, i], self.num_waypoints-1)
-            else:
-                dq_rand[range(1, self.num_waypoints), :] = np.zeros((self.num_waypoints-1, len(self.active_joints)))
         else:
             if not vel_set_zero:
                 for i in range(len(self.active_joints)):
-                    dq_rand[:, i] = np.random.choice(
+                    vel_wps_rand[:, i] = np.random.choice(
                         self.pool_dq[:, i], self.num_waypoints)
-            else:
-                dq_rand = np.zeros((self.num_waypoints, len(self.active_joints)))
 
 
         if vel_wp_init is not None:
-            ddq_rand[0, :] = vel_wp_init
+            acc_wps_rand[0, :] = vel_wp_init
             if not acc_set_zero:
                 for i in range(len(self.active_joints)):
-                    ddq_rand[range(1, self.num_waypoints), i] = np.random.choice(
+                    acc_wps_rand[range(1, self.num_waypoints), i] = np.random.choice(
                         self.pool_ddq[:, i], self.num_waypoints-1)
-            else:
-                ddq_rand[range(1, self.num_waypoints), :] = np.zeros((self.num_waypoints-1, len(self.active_joints)))
         else:
             if not acc_set_zero:
                 for i in range(len(self.active_joints)):
-                    ddq_rand[:, i] = np.random.choice(
+                    acc_wps_rand[:, i] = np.random.choice(
                         self.pool_ddq[:, i], self.num_waypoints)
-            else:
-                ddq_rand = np.zeros((self.num_waypoints, len(self.active_joints)))
-        # print("pool for waypoints generation: ", self.pool_q)
-        return q_rand.transpose(), dq_rand.transpose(), ddq_rand.transpose()
+        return wps_rand.transpose(), vel_wps_rand.transpose(), acc_wps_rand.transpose()
 
-    def get_feasible_wp(self):
-        pass
+    def gen_equal_wp(self,
+                    wp_init=None, vel_wp_init=None, acc_wp_init=None):
+        """ Generate equal waypoints everywhere same as first waypoints
+            with default: zero vel and zero acc
+        """
+        wps_equal = np.zeros((self.num_waypoints, len(self.active_joints)))
+        vel_wps_equal = np.zeros((self.num_waypoints, len(self.active_joints)))
+        acc_wps_equal = np.zeros((self.num_waypoints, len(self.active_joints)))
 
-    def get_rand_tp():
-        pass
+        step_q = (self.upper_q - self.lower_q)/20
+        if wp_init is not None:
+            wps_equal = np.tile(wp_init, (self.num_waypoints,1))
+            for jj in range(1, self.num_waypoints):
+                wps_equal[jj,:] = wps_equal[jj-1,:] + step_q
 
+        if vel_wp_init is not None:
+            vel_wps_equal = np.tile(vel_wp_init, (self.num_waypoints,1))
+        
+        if acc_wp_init is not None:
+            acc_wps_equal = np.tile(acc_wp_init, (self.num_waypoints,1))
+        return wps_equal.transpose(), vel_wps_equal.transpose(), acc_wps_equal.transpose()
 
 def main():
     
@@ -357,7 +357,6 @@ def main():
                      "arm_5_joint",
                      "arm_6_joint",
                      "arm_7_joint"]
-    CB = CubicSpline(robot, num_waypoints, active_joints)
 
     f = 50
     T1 = 0.0
@@ -367,14 +366,19 @@ def main():
     soft_lim_pool = np.array([[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
                             [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
                             [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]])
-    WP = WaypointsGeneration(robot, num_waypoints, active_joints)
+    CB = CubicSpline(robot, num_waypoints, active_joints, soft_lim)
+    WP = WaypointsGeneration(robot, num_waypoints, active_joints, soft_lim)
     isViolated = True  # constraint flag
     WP.gen_rand_pool(soft_lim_pool)
     count = 0
+    wp_init = np.zeros(len(active_joints))
+    for idx in range(len(active_joints)):
+        wp_init[idx] = np.random.choice(WP.pool_q[:, idx], 1)
     while isViolated:
         count += 1
         print("----------","run %s " % count, "----------")
-        wps, vel_wps, acc_wps = WP.gen_rand_wp(soft_lim)
+        # wps, vel_wps, acc_wps = WP.gen_rand_wp()
+        wps, vel_wps, acc_wps = WP.gen_equal_wp(wp_init)
         # print(WP.pool_q[0, 0])
         time_points = np.matrix([T1, T2]).transpose()
         t, p_act, v_act, a_act = CB.get_full_config(
