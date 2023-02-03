@@ -35,9 +35,17 @@ class CubicSpline:
         self.upper_effort = self.rmodel.effortLimit[self.active_joints]
         self.lower_effort = -self.rmodel.effortLimit[self.active_joints]
 
-    # generate one single spline on one single joint
-    def gen_single_spline(self):
-        pass
+     # joint limits on active joints with soft limit on both limit ends
+        if soft_lim >0:
+            self.upper_q = self.upper_q - soft_lim*abs(self.upper_q-self.lower_q)
+            self.lower_q = self.lower_q + soft_lim*abs(self.upper_q-self.lower_q)
+            self.upper_dq = self.upper_dq - soft_lim*abs(self.upper_dq - self.lower_dq)
+            self.lower_dq = self.lower_dq + soft_lim*abs(self.upper_dq - self.lower_dq)
+            self.upper_effort = self.upper_effort - soft_lim * \
+                abs(self.upper_effort - self.lower_effort)
+            self.lower_effort = self.lower_effort + soft_lim * \
+                abs(self.upper_effort - self.lower_effort)
+
 
     def get_active_config(self,
                           freq: int,
