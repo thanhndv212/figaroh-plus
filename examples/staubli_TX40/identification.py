@@ -84,7 +84,7 @@ if __name__ == "__main__":
 
     # Calulate the base regressor matrix, the base regroupings equations params_base and
     # get the idx_base, ie. the index of base parameters in the initial regressor matrix
-    _, params_base, idx_base = get_baseParams_v2(W_e, params_r, params_std)
+    _, params_base, idx_base = get_baseParams(W_e, params_r, params_std)
 
     print("The structural base parameters are: ")
     for ii in range(len(params_base)):

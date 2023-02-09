@@ -186,89 +186,7 @@ def double_QR(tau, W_e, params_r, params_std=None):
         return W_b, base_parameters, params_base, phi_b
 
 
-def get_baseParams(W_e, params_r):
-    """ Returns symbolic expressions of base parameters and base regressor matrix. """
-    # scipy has QR pivoting using Householder reflection
-    Q, R = np.linalg.qr(W_e)
-
-    # sort params as decreasing order of diagonal of R
-    assert np.diag(R).shape[0] == len(
-        params_r
-    ), "params_r does not have same length with R"
-
-    idx_base = []
-    idx_regroup = []
-
-    # find rank of regressor
-    # print("Diagonal values of matrix R: ")
-    for i in range(len(params_r)):
-        if abs(np.diag(R)[i]) > tolpal:
-            idx_base.append(i)
-        else:
-            idx_regroup.append(i)
-        # print(params_r[i], np.diag(R)[i])
-    numrank_W = len(idx_base)
-
-    # rebuild W and params after sorted
-    W1 = np.zeros([W_e.shape[0], len(idx_base)])
-    W2 = np.zeros([W_e.shape[0], len(idx_regroup)])
-
-    params_base = []
-    params_regroup = []
-
-    for i in range(len(idx_base)):
-        W1[:, i] = W_e[:, idx_base[i]]
-        params_base.append(params_r[idx_base[i]])
-    for j in range(len(idx_regroup)):
-        W2[:, j] = W_e[:, idx_regroup[j]]
-        params_regroup.append(params_r[idx_regroup[j]])
-
-    W_regrouped = np.c_[W1, W2]
-
-    # perform QR decomposition second time on regrouped regressor
-    Q_r, R_r = np.linalg.qr(W_regrouped)
-
-    R1 = R_r[0:numrank_W, 0:numrank_W]
-    Q1 = Q_r[:, 0:numrank_W]
-    R2 = R_r[0:numrank_W, numrank_W: R.shape[1]]
-
-    # regrouping coefficient
-    beta = np.around(np.dot(np.linalg.inv(R1), R2), 6)
-
-    tol_beta = 1e-6  # for scipy.signal.decimate
-    for i in range(numrank_W):
-        for j in range(beta.shape[1]):
-            if abs(beta[i, j]) < tol_beta:
-
-                params_base[i] = params_base[i]
-
-            elif beta[i, j] < -tol_beta:
-
-                params_base[i] = (
-                    params_base[i]
-                    + " - "
-                    + str(abs(beta[i, j]))
-                    + "*"
-                    + str(params_regroup[j])
-                )
-
-            else:
-
-                params_base[i] = (
-                    params_base[i]
-                    + " + "
-                    + str(abs(beta[i, j]))
-                    + "*"
-                    + str(params_regroup[j])
-                )
-
-    # base regressor
-    W_b = np.dot(Q1, R1)
-    assert np.allclose(W1, W_b), "base regressors is wrongly calculated!  "
-
-    return W_b, params_base
-
-def get_baseParams_v2(W_e, params_r, params_std):
+def get_baseParams(W_e, params_r, params_std=None):
     """ Returns symbolic expressions of base parameters and base regressor matrix and idenx of the base regressor matrix. """
     # scipy has QR pivoting using Householder reflection
     Q, R = np.linalg.qr(W_e)
@@ -307,13 +225,16 @@ def get_baseParams_v2(W_e, params_r, params_std):
     for j in range(len(idx_regroup)):
         W2[:, j] = W_e[:, idx_regroup[j]]
         params_regroup.append(params_r[idx_regroup[j]])
+
     # return base param indices 
     idx_base = []
-    params_names = list(params_std.keys())
-    for i in params_base:
-        if i in params_names:
-            idx_base.append(params_names.index(i))
-            
+
+    if params_std is not None:
+        params_names = list(params_std.keys())
+        for i in params_base:
+            if i in params_names:
+                idx_base.append(params_names.index(i))
+                
     W_regrouped = np.c_[W1, W2]
 
     # perform QR decomposition second time on regrouped regressor

@@ -527,7 +527,7 @@ def calculate_standard_parameters(robot,W,tau,COM_max,COM_min,params_settings):
     nvirtual=len(id_virtual)
     nbodies=nreal+nvirtual
 
-    params_standard_u = robot.get_standard_parameters_v2(params_settings)
+    params_standard_u = robot.get_standard_parameters(params_settings)
 
     params_name = (
                     "Ixx",

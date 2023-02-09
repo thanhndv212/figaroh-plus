@@ -1,14 +1,13 @@
 import eigenpy
 import hppfcl
 import pinocchio as pin
-import pinocchio.casadi
 import numpy as np
 # import time
 import sys, os
-from src.figaroh.tools.robot import Robot
-from src.figaroh.tools.regressor import build_regressor_basic_v2, get_index_eliminate, build_regressor_reduced
-from src.figaroh.tools.qrdecomposition import get_baseParams_v2
-from src.figaroh.identification.identification_tools import get_param_from_yaml,calculate_first_second_order_differentiation, base_param_from_standard, calculate_standard_parameters, low_pass_filter_data
+from figaroh.tools.robot import Robot
+from figaroh.tools.regressor import build_regressor_basic, get_index_eliminate, build_regressor_reduced
+from figaroh.tools.qrdecomposition import get_baseParams
+from figaroh.identification.identification_tools import get_param_from_yaml,calculate_first_second_order_differentiation, base_param_from_standard, calculate_standard_parameters, low_pass_filter_data
 # from pinocchio.visualize import GepettoVisualizer
 import matplotlib.pyplot as plt 
 import pprint
@@ -90,7 +89,7 @@ W_e = build_regressor_reduced(W, idx_e)
 
 # Calulate the base regressor matrix, the base regroupings equations params_base and
 # get the idx_base, ie. the index of base parameters in the initial regressor matrix
-_, params_base, idx_base = get_baseParams_v2(W_e, params_r, params_standard)
+_, params_base, idx_base = get_baseParams(W_e, params_r, params_standard)
 
 print("The structural base parameters are: ")
 for ii in range(len(params_base)):
