@@ -27,12 +27,12 @@ from yaml.loader import SafeLoader
 import pprint
 # from tabulate import tabulate
 
-from src.figaroh.tools.robot import Robot
-from src.figaroh.tools.regressor import *
-from src.figaroh.tools.qrdecomposition import *
-from src.figaroh.tools.randomdata import *
-from src.figaroh.tools.robotcollisions import *
-from src.figaroh.identification.identification_tools import get_param_from_yaml,calculate_first_second_order_differentiation, base_param_from_standard, calculate_standard_parameters, low_pass_filter_data
+from figaroh.tools.robot import Robot
+from figaroh.tools.regressor import *
+from figaroh.tools.qrdecomposition import *
+from figaroh.tools.randomdata import *
+from figaroh.tools.robotcollisions import *
+from figaroh.identification.identification_tools import get_param_from_yaml,calculate_first_second_order_differentiation, base_param_from_standard, calculate_standard_parameters, low_pass_filter_data
 
 
 robot = Robot(
@@ -59,7 +59,12 @@ if __name__ == "__main__":
     identif_data = config['identification']
 
     params_settings = get_param_from_yaml(robot, identif_data)
-    params_std = robot.get_standard_parameters_v2(params_settings)
+    params_std = robot.get_standard_parameters(params_settings)
+
+    if params_settings['has_coupled_wrist']:#self.isCoupling:
+        params_std["Iam6"] = params_settings['Iam6']
+        params_std["fvm6"] = params_settings['fvm6']
+        params_std["fsm6"] = params_settings['fsm6']
 
     q_rand = np.random.uniform(low=-6, high=6, size=(10 * params_settings["nb_samples"], model.nq))
 

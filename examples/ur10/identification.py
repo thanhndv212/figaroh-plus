@@ -65,7 +65,7 @@ for name, oMi in zip(model.names, data.oMi):
 
 # generate a list containing the full set of standard parameters
 # params_standard = robot.get_standard_parameters()
-params_standard = robot.get_standard_parameters_v2(params_settings)
+params_standard = robot.get_standard_parameters(params_settings)
 
 # 1. First we build the structural base identification model, i.e. the one that can
 # be observed, using random samples
