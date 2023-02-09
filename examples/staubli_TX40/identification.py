@@ -75,8 +75,8 @@ if __name__ == "__main__":
     ddq_rand = np.random.uniform(
         low=-30, high=30, size=(10 * params_settings["nb_samples"], model.nv)
     )
-    W = build_regressor_basic_v2(robot, q_rand, dq_rand, ddq_rand, params_settings)
-    W = add_coupling(W, model, data, len(q_rand), nq, nv, njoints, q_rand, dq_rand, ddq_rand)
+    W = build_regressor_basic(robot, q_rand, dq_rand, ddq_rand, params_settings)
+    W = add_coupling_TX40(W, model, data, len(q_rand), nq, nv, njoints, q_rand, dq_rand, ddq_rand)
     
     # remove zero cols and build a zero columns free regressor matrix
     idx_e, params_r = get_index_eliminate(W, params_std, 1e-6)
@@ -151,8 +151,8 @@ if __name__ == "__main__":
     qdd = ddq
     N = q.shape[0]
 
-    W = build_regressor_basic_v2(robot,q,qd,qdd,params_settings)
-    W = add_coupling(W, model, data, N, nq, nv, njoints, q, qd, qdd)
+    W = build_regressor_basic(robot,q,qd,qdd,params_settings)
+    W = add_coupling_TX40(W, model, data, N, nq, nv, njoints, q, qd, qdd)
 
     # calculate joint torques = reduction gear ratio matrix*motor_torques
     red_tau = np.diag([N_robot[0], N_robot[1], N_robot[2],

@@ -80,7 +80,7 @@ ddq_rand = np.random.uniform(
     low=-6, high=6, size=(10 * params_settings["nb_samples"], model.nv)
 )
 
-W = build_regressor_basic_v2(robot, q_rand, dq_rand, ddq_rand, params_settings)
+W = build_regressor_basic(robot, q_rand, dq_rand, ddq_rand, params_settings)
 
 # remove zero cols and build a zero columns free regressor matrix
 idx_e, params_r = get_index_eliminate(W, params_standard, 1e-6)
@@ -135,7 +135,7 @@ q, dq, ddq = calculate_first_second_order_differentiation(model, q, params_setti
 # ax3.set_title('ddq_0 - Shoulder lift joint acc (rad/s²)')
 # plt.show()
 
-W = build_regressor_basic_v2(robot, q, dq, ddq, params_settings)
+W = build_regressor_basic(robot, q, dq, ddq, params_settings)
 # select only the columns of the regressor corresponding to the structural base
 # parameters
 W_base = W[:, idx_base]

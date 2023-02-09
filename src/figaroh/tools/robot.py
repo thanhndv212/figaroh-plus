@@ -83,7 +83,7 @@ class Robot(RobotWrapper):
         # change order of values in phi['m', 'mx','my','mz','Ixx','Ixy','Iyy','Ixz', 'Iyz','Izz'] - from pinoccchio
         # corresponding to params_name ['Ixx','Ixy','Ixz','Iyy','Iyz','Izz','mx','my','mz','m']
         if param['is_joint_torques']:
-            for i in range(len(model.inertias)):
+            for i in range(1,len(model.inertias)):
                 P =  model.inertias[i].toDynamicParameters()
                 P_mod = np.zeros(P.shape[0])
                 P_mod[9] = P[0]  # m
@@ -97,19 +97,27 @@ class Robot(RobotWrapper):
                 P_mod[1] = P[5]  # Ixy
                 P_mod[0] = P[4]  # Ixx
                 for j in params_name:
-                    params.append(j + str(i+1))
+                    params.append(j + str(i))
                 for k in P_mod:
                     phi.append(k)
+                
+                params.extend(["Ia" + str(i)])
+                params.extend(["fv" + str(i), "fs" + str(i)])
+                params.extend(["off" + str(i)])
+                
                 if param['has_actuator_inertia']:
-                    phi.extend([param['Ia'][i]])
-                    params.extend(["Ia" + str(i+1)])
+                    phi.extend([param['Ia'][i-1]])
+                else:
+                    phi.extend([None])
                 if param['has_friction']:
-                    phi.extend([param['fv'][i], param['fs'][i]])
-                    params.extend(["fv" + str(i+1), "fs" + str(i+1)])
+                    phi.extend([param['fv'][i-1], param['fs'][i-1]])
+                else:
+                    phi.extend([None, None])
                 if param['has_joint_offset']:
-                    phi.extend([param['off'][i]])
-                    params.extend(["off" + str(i+1)])
-                    
+                    phi.extend([param['off'][i-1]])
+                else:
+                    phi.extend([None])
+
         elif param['is_external_wrench'] : 
             for i in range(1,len(model.inertias)):
                 P =  model.inertias[i].toDynamicParameters()
@@ -128,6 +136,24 @@ class Robot(RobotWrapper):
                     params.append(j + str(i-1))
                 for k in P_mod:
                     phi.append(k)
+                
+                params.extend(["Ia" + str(i)])
+                params.extend(["fv" + str(i), "fs" + str(i)])
+                params.extend(["off" + str(i)])
+                
+                if param['has_actuator_inertia']:
+                    phi.extend([param['Ia'][i-1]])
+                else:
+                    phi.extend([None])
+                if param['has_friction']:
+                    phi.extend([param['fv'][i-1], param['fs'][i-1]])
+                else:
+                    phi.extend([None, None])
+                if param['has_joint_offset']:
+                    phi.extend([param['off'][i-1]])
+                else:
+                    phi.extend([None])
+                    
             if param["external_wrench_offsets"]:
                 phi.extend([param['OFFX'],param['OFFY'],param['OFFZ']])
                 params.extend(["OFFX","OFFY","OFFZ"])
