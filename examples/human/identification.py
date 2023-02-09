@@ -1,14 +1,9 @@
-import eigenpy
-import hppfcl
 import pinocchio as pin
 import numpy as np
-# import time
-import sys, os
 from figaroh.tools.robot import Robot
 from figaroh.tools.regressor import build_regressor_basic, get_index_eliminate, build_regressor_reduced
 from figaroh.tools.qrdecomposition import get_baseParams
-from figaroh.identification.identification_tools import get_param_from_yaml,calculate_first_second_order_differentiation, base_param_from_standard, calculate_standard_parameters, low_pass_filter_data
-# from pinocchio.visualize import GepettoVisualizer
+from figaroh.identification.identification_tools import get_param_from_yaml,calculate_first_second_order_differentiation, calculate_standard_parameters, low_pass_filter_data
 import matplotlib.pyplot as plt 
 import pprint
 import csv
@@ -16,17 +11,6 @@ import yaml
 from yaml.loader import SafeLoader
 
 robot = Robot('models/others/robots/human_description/urdf/human.urdf','models/others/robots',isFext=True) 
-
-# # 1/ Load robot model and create a dictionary containing reserved constants
-# ros_package_path = os.getenv('ROS_PACKAGE_PATH')
-# package_dirs = ros_package_path.split(':')
-
-# robot = Robot(
-#     'data/robot.urdf',
-#     package_dirs = package_dirs
-#     # isFext=True  # add free-flyer joint at base
-# )
-
 model = robot.model
 data = robot.data
 
@@ -38,26 +22,6 @@ identif_data = config['identification']
 params_settings = get_param_from_yaml(robot, identif_data)
 print(params_settings)
 
-# viz = GepettoVisualizer(robot.model, robot.collision_model, robot.visual_model)
-# try:
-#     viz.initViewer()
-# except ImportError as err:
-#     print(
-#         "Error while initializing the viewer. It seems you should install gepetto-viewer"
-#     )
-#     print(err)
-#     sys.exit(0)
-
-# try:
-#     viz.loadViewerModel("pinocchio")
-# except AttributeError as err:
-#     print(
-#         "Error while loading the viewer model. It seems you should start gepetto-viewer"
-#     )
-#     print(err)
-#     sys.exit(0)
-
-# viz.display(pin.neutral(model))
 
 # Print out the placement of each joint of the kinematic tree
 print("\nJoint placements:")
@@ -321,6 +285,5 @@ phi_standard, phi_ref = calculate_standard_parameters(robot, W, tau_meas, COM_ma
 
 print(phi_standard)
 print(phi_ref)
-
 
 # # TODO : LOOK AT SIP AND HOW TO HANDLE VIRTUAL INERTIAS, modify the model with SIP ?

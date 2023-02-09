@@ -1,38 +1,17 @@
-import hppfcl
-import eigenpy
-import pinocchio as pin
-from pinocchio.robot_wrapper import RobotWrapper
-from pinocchio.visualize import GepettoVisualizer, MeshcatVisualizer
-from pinocchio.utils import *
-
-from sys import argv
-import os
 from os.path import dirname, join, abspath
-import time
-
 from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-
 import numpy as np
-from numpy.linalg import norm, solve
-from numpy.testing import assert_allclose
-from scipy import linalg, signal
-
-
+from scipy import signal
 import pandas as pd
-import json
 import csv
 import yaml
 from yaml.loader import SafeLoader
 import pprint
-# from tabulate import tabulate
 
 from figaroh.tools.robot import Robot
-from figaroh.tools.regressor import *
-from figaroh.tools.qrdecomposition import *
-from figaroh.tools.randomdata import *
-from figaroh.tools.robotcollisions import *
-from figaroh.identification.identification_tools import get_param_from_yaml,calculate_first_second_order_differentiation, base_param_from_standard, calculate_standard_parameters, low_pass_filter_data
+from figaroh.tools.regressor import build_regressor_basic, add_coupling_TX40, build_regressor_reduced
+from figaroh.tools.qrdecomposition import get_index_eliminate, get_baseParams, double_QR, eliminate_non_dynaffect
+from figaroh.identification.identification_tools import get_param_from_yaml,calculate_first_second_order_differentiation, relative_stdev, low_pass_filter_data
 
 
 robot = Robot(

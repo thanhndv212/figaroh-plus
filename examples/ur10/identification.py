@@ -1,32 +1,15 @@
-import eigenpy
-import hppfcl
 import pinocchio as pin
-# import pinocchio.casadi
 import numpy as np
-# import time
-import sys, os
 from figaroh.tools.robot import Robot
 from figaroh.tools.regressor import build_regressor_basic, get_index_eliminate, build_regressor_reduced
 from figaroh.tools.qrdecomposition import get_baseParams
 from figaroh.identification.identification_tools import get_param_from_yaml,calculate_first_second_order_differentiation, base_param_from_standard, calculate_standard_parameters
-# from pinocchio.visualize import GepettoVisualizer
 import matplotlib.pyplot as plt 
 import pprint
 import yaml
 from yaml.loader import SafeLoader
 
 robot = Robot('models/others/robots/ur_description/urdf/ur10_robot.urdf','models/others/robots')
-
-# # 1/ Load robot model and create a dictionary containing reserved constants
-# ros_package_path = os.getenv('ROS_PACKAGE_PATH')
-# package_dirs = ros_package_path.split(':')
-
-# robot = Robot(
-#     'data/robot.urdf',
-#     package_dirs = package_dirs
-#     # isFext=True  # add free-flyer joint at base
-# )
-
 model = robot.model
 data = robot.data
 
@@ -38,25 +21,6 @@ identif_data = config['identification']
 params_settings = get_param_from_yaml(robot, identif_data)
 print(params_settings)
 
-# viz = GepettoVisualizer(robot.model, robot.collision_model, robot.visual_model)
-# try:
-#     viz.initViewer()
-# except ImportError as err:
-#     print(
-#         "Error while initializing the viewer. It seems you should install gepetto-viewer"
-#     )
-#     print(err)
-#     sys.exit(0)
-
-# try:
-#     viz.loadViewerModel("pinocchio")
-# except AttributeError as err:
-#     print(
-#         "Error while loading the viewer model. It seems you should start gepetto-viewer"
-#     )
-#     print(err)
-#     sys.exit(0)
-
 # Print out the placement of each joint of the kinematic tree
 print("\nJoint placements:")
 for name, oMi in zip(model.names, data.oMi):
@@ -64,7 +28,6 @@ for name, oMi in zip(model.names, data.oMi):
           .format( name, *oMi.translation.T.flat )))
 
 # generate a list containing the full set of standard parameters
-# params_standard = robot.get_standard_parameters()
 params_standard = robot.get_standard_parameters(params_settings)
 
 # 1. First we build the structural base identification model, i.e. the one that can
