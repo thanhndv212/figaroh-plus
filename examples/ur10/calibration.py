@@ -84,7 +84,7 @@ if dataSet == 'sample':
 
 elif dataSet == 'experimental':
     # load experimental data
-    path = abspath('data/simulation.csv')
+    path = abspath('data/calibration.csv')
 
     PEEm_exp, q_exp = load_data(path, model, param)
 
@@ -134,10 +134,12 @@ res = LM_solve.x
 # PEE estimated by solution
 PEEe_sol = update_forward_kinematics(model, data, res, q_LM, param)
 # root mean square error
-rmse = np.sqrt(np.mean((PEEe_sol-PEEm_LM)**2))
+rmse_pos = np.sqrt(np.mean((PEEe_sol[:3*param['NbSample']]-PEEm_LM[:3*param['NbSample']])**2))
+rmse_ori = np.sqrt(np.mean((PEEe_sol[3*param['NbSample']:]-PEEm_LM[3*param['NbSample']:])**2))
 
 print("solution: ", res)
-print("minimized cost function: ", rmse)
+print("root mean square error of end-effector position(meters): ", rmse_pos)
+print("root mean square error of end-effector orientation(radian): ", rmse_ori)
 print("optimality: ", LM_solve.optimality)
 
 # calculate standard deviation of estimated parameter ( Khalil chapter 11)
