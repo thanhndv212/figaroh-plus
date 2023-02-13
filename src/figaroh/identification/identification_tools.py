@@ -2,64 +2,51 @@ import pinocchio as pin
 import numpy as np
 from scipy import signal
 from ..tools.regressor import build_regressor_reduced, get_index_eliminate
-from ..tools.robot import Robot
 import quadprog
 import operator
-import pprint
 
-def get_params_settings():
-    params_settings = {
-       #### parameters related to the identification model 
-        'is_external_wrench':True,
-        'is_joint_torques':False,
-        'force_torque':['All'], # forces and torques you desire under the format : Fx,Fy,Fz,Mx,My,Mz (NB : answer 'All' gives the regressor for Fx,Fy,Fz,Mx,My,Mz
-        'external_wrench_offsets':False, # add to the pipeline the identification of the offset for Mx, My, Mz
-        'has_friction':False,
-        'has_joint_offset':False,
-        'has_actuator_inertia':False,
-        'has_coupled_wrist':False,
-        'K_1':2, # default values of drive gains in case they are used
-        'K_2':2, # default values of drive gains in case they are used
-        'is_static_regressor':True, # Use this flag to work only with the static regressor (segment's masses and COM)
-        'is_inertia_regressor':True, # Use this flag to work only with the inertial regressor (segment's inertia)
-        'embedded_forces':True, #True = Forces acquired separetely from the mocap, False = Forces acquired with the mocap
+def get_param_from_yaml(robot,identif_data):
+    """This function allows to create a dictionnary of the settings set in a yaml file.
+    Input:  robot: (Robot Tpl) a robot (extracted from an URDF for instance)
+            identif_data: (dict) a dictionnary containing the parameters settings for identification (set in a config yaml file)  
+    Output: param: (dict) a dictionnary of parameters settings
+    """
+    # robot_name: anchor as a reference point for executing
+    robot_name = robot.model.name
 
-        #### defaut values to be set in case the URDF is incomplete
-        'q_lim_def': 1.57,# default value for joint limits in case the URDF does not have the info
-        'dq_lim_def':5, # in rad.s-1
-        'ddq_lim_def':20, # in rad.s-2
-        'tau_lim_def':4, # in N.m
-        #### parameters related to all exciting trajectories
-        'ts':1/100,# Sampling frequency of the trajectories to be recorded
-         
-        #### parameters related to the data elaboration (filtering, etc...) 
-        'cut_off_frequency_butterworth': 10,
-        
-        #### parameters related to the trapezoidal trajectory generation
-        'nb_repet_trap': 2, # number of repetition of the trapezoidal motions
-        'trapez_vel_steps':10,# Velocity step in % of the max velocity
+    robots_params = identif_data['robot_params'][0]
+    problem_params = identif_data['problem_params'][0]
+    process_params = identif_data['processing_params'][0]
+    tls_params = identif_data['tls_params'][0]
 
-        #### parameters related to the OEM generation
-        'tf':1,# duration of one OEM
-        'nb_iter_OEM':1, # number of OEM to be optimized
-        'nb_harmonics': 4,# number of harmonics of the fourier serie
-        'freq': 1, # frequency of the fourier serie coefficient
-        'q_safety': 0.08, # value in radian (=5deg) to remove from the actual joint limits
-        'eps_gradient':1e-5,# numerical gradient step
-        'is_fourier_series':True,# use Fourier series for trajectory generation
-        'time_static':2, # in seconds the time for each static pose
-        
-        #### parameters related to the Totl least square identification
-        'mass_lsoad':3.0,
-        'which_body_loaded':19, #Use this flag to specify the index of the body on which you have set the additional mass (for the loaded part), base link counts as 0
-        'sync_joint_motion':False, # move all joint simultaneously when using quintic polynomial interpolation
-        
-        #### parameters related to  animation/saving data
-        'ANIMATE':True, # plot flag for gepetto-viewer
-        'SAVE_FILE':True
+    param = {
+        'robot_name': robot_name,
+        'nb_samples': int(1/(process_params['ts'])),
+        'q_lim_def': robots_params['q_lim_def'],
+        'dq_lim_def': robots_params['dq_lim_def'],
+        'is_external_wrench': problem_params['is_external_wrench'],
+        'is_joint_torques': problem_params['is_joint_torques'],
+        'force_torque': problem_params['force_torque'],
+        'external_wrench_offsets': problem_params['external_wrench_offsets'],
+        'has_friction': problem_params['has_friction'],
+        'fv': robots_params['fv'],
+        'fs': robots_params['fs'],
+        'has_actuator_inertia': problem_params['has_actuator_inertia'],
+        'Ia': robots_params['Ia'],
+        'has_joint_offset': problem_params['has_joint_offset'],
+        'off': robots_params['offset'],
+        'has_coupled_wrist': problem_params['has_coupled_wrist'],
+        'Iam6': robots_params['Iam6'],
+        'fvm6': robots_params['fvm6'],
+        'fsm6': robots_params['fsm6'],
+        'N': robots_params['N'],
+        'ratio_essential': robots_params['ratio_essential'],
+        'cut_off_frequency_butterworth': process_params['cut_off_frequency_butterworth'],
+        'ts': process_params['ts'],
+        'mass_load': tls_params['mass_load'],
+        'which_body_loaded': tls_params['which_body_loaded'],
     }
-    params_settings["nb_samples"] = int(params_settings["tf"] / params_settings["ts"])
-    return params_settings
+    return param
 
 def set_missing_params_setting(robot, params_settings):
 
@@ -113,51 +100,6 @@ def set_missing_params_setting(robot, params_settings):
 
     return params_settings
 
-
-def get_param_from_yaml(robot,identif_data):
-    """This function allows to create a dictionnary of the settings set in a yaml file.
-    Input:  robot: (Robot Tpl) a robot (extracted from an URDF for instance)
-            identif_data: (dict) a dictionnary containing the parameters settings for identification (set in a config yaml file)  
-    Output: param: (dict) a dictionnary of parameters settings
-    """
-    # robot_name: anchor as a reference point for executing
-    robot_name = robot.model.name
-
-    robots_params = identif_data['robot_params'][0]
-    problem_params = identif_data['problem_params'][0]
-    process_params = identif_data['processing_params'][0]
-    tls_params = identif_data['tls_params'][0]
-
-    param = {
-        'robot_name': robot_name,
-        'nb_samples': int(1/(process_params['ts'])),
-        'q_lim_def': robots_params['q_lim_def'],
-        'dq_lim_def': robots_params['dq_lim_def'],
-        'is_external_wrench': problem_params['is_external_wrench'],
-        'is_joint_torques': problem_params['is_joint_torques'],
-        'force_torque': problem_params['force_torque'],
-        'external_wrench_offsets': problem_params['external_wrench_offsets'],
-        'has_friction': problem_params['has_friction'],
-        'fv': robots_params['fv'],
-        'fs': robots_params['fs'],
-        'has_actuator_inertia': problem_params['has_actuator_inertia'],
-        'Ia': robots_params['Ia'],
-        'has_joint_offset': problem_params['has_joint_offset'],
-        'off': robots_params['offset'],
-        'has_coupled_wrist': problem_params['has_coupled_wrist'],
-        'Iam6': robots_params['Iam6'],
-        'fvm6': robots_params['fvm6'],
-        'fsm6': robots_params['fsm6'],
-        'N': robots_params['N'],
-        'ratio_essential': robots_params['ratio_essential'],
-        'cut_off_frequency_butterworth': process_params['cut_off_frequency_butterworth'],
-        'ts': process_params['ts'],
-        'mass_load': tls_params['mass_load'],
-        'which_body_loaded': tls_params['which_body_loaded'],
-    }
-    return param
-
-
 def base_param_from_standard(phi_standard,params_base):
     """This function allows to calculate numerically the base parameters with the values of the standard ones.
     Input:  phi_standard: (tuple) a dictionnary containing the values of the standard parameters of the model (usually from get_standard_parameters)
@@ -185,24 +127,6 @@ def base_param_from_standard(phi_standard,params_base):
             value_phi_base=list_ops[kk](value_phi_base,values[kk+1])
         phi_base.append(value_phi_base)
     return phi_base
-
-def remove_zero_crossing_velocity(robot,W,tau):
-    # eliminate qd crossing zero
-    for i in range(len(W)):
-        idx_qd_cross_zero = []
-        for j in range(W[i].shape[0]):
-            if abs(W[i][j, i * 14 + 11]) < robot.qd_lim[i]:  # check columns of fv_i
-                idx_qd_cross_zero.append(j)
-        # if i == 4 or i == 5:  # joint 5 and 6
-        #     for k in range(W_list[i].shape[0]):
-        #         if abs(W_list[i][k, 4 * 14 + 11] + W_list[i][k, 5 * 14 + 11]) < qd_lim[4] + qd_lim[5]:  # check sum cols of fv_5 + fv_6
-        #             idx_qd_cross_zero.append(k)
-        # indices with vels around zero
-        idx_eliminate = list(set(idx_qd_cross_zero))
-        W[i] = np.delete(W[i], idx_eliminate, axis=0)
-        W[i] = np.delete(tau[i], idx_eliminate, axis=0)
-        print(W[i].shape, tau[i].shape)
-
 
 def relative_stdev(W_b, phi_b, tau):
     """ Calculates relative standard deviation of estimated parameters using the residual errro[Pressé & Gautier 1991]"""
@@ -247,20 +171,9 @@ def weigthed_least_squares(robot,phi_b,W_b,tau_meas,tau_est,param):
         
         phi_b=np.matmul( np.linalg.pinv(np.matmul(P,W_b)) ,np.matmul(P,tau_meas) )
 
-         # sig_ro_joint[ii] = np.linalg.norm( tau[ii] - np.dot(W_b[a: (a + tau[ii]), :], phi_b) ) ** 2 / (tau[ii])
-        #diag_SIGMA[a: (a + tau[ii])] = np.full(    tau[ii], sig_ro_joint[ii])
-        #a += tau[ii]
-    #SIGMA = np.diag(diag_SIGMA)
-    
-    
-    # Covariance matrix
-    # C_X = np.linalg.inv(np.matmul(np.matmul(W_b.T, np.linalg.inv(SIGMA)), W_b))  # (W^T*SIGMA^-1*W)^-1
-    # WLS solution
-   # phi_b = np.matmul(np.matmul(np.matmul(C_X, W_b.T), np.linalg.inv(SIGMA)), tau)  # (W^T*SIGMA^-1*W)^-1*W^T*SIGMA^-1*TAU
     phi_b = np.around(phi_b, 6)
     
     return phi_b
-
 
 def calculate_first_second_order_differentiation(model,q,param,dt=None):
     """This function calculates the derivatives (velocities and accelerations here) by central difference for given angular configurations accounting that the robot has a freeflyer or not (which is indicated in the params_settings).
@@ -322,38 +235,7 @@ def low_pass_filter_data(data,param,nbutter):
      
     return data
 
-# inertial parameters of link2 from urdf model
-
-def buildAugmentedRegressor(W_b_u, W_l, W_b_l, tau_u, tau_l, param):
-    '''Inputs:  W_b_u  base regressor for unloaded case 
-                W_b_l:  base Regressor for loaded case 
-                W_l: Full  regressor for loaded case
-                I_u: measured current in uloaded case in A
-                I_l: measured current in loaded case in A
-        Ouputs: W_tot: total regressor matrix
-                V_norm= Normalised solution vector'''
-                
-    # augmented regressor matrix
-    
-    tau=np.concatenate((tau_u, tau_l), axis=0)
-
-
-    W=np.concatenate((W_b_u, W_b_l), axis=0)
-    
-    W_upayload=np.concatenate((np.zeros((len(W_l),2)),W_l[:,[-9, -7] ]), axis=0)
-
-    W=np.concatenate((W,W_upayload), axis=1) 
-     
-    W_kpayload=np.concatenate((np.zeros((len(W_l),1)),W_l[:,-10].reshape(len(W_l),1)), axis=0)
-    W=np.concatenate((W,W_kpayload), axis=1) 
-    
- 
-    Phi_b=np.matmul(np.linalg.pinv(W),tau)
-    
-    # Phi_b_ref=np.copy(Phi_b)
-    
-
-    return W, Phi_b
+# Function for the total least square
 
 def build_total_regressor(W_b_u, W_b_l,W_l, I_u, I_l,param_standard_l, param):
     '''Inputs:  W_b_u  base regressor for unloaded case 
@@ -366,7 +248,7 @@ def build_total_regressor(W_b_u, W_b_l,W_l, I_u, I_l,param_standard_l, param):
                 residue'''
              
     # build the total regressor matrix for TLS
-    # we have to add a minus in front of the regressors for tTLS
+    # we have to add a minus in front of the regressors for TLS
     W_tot=np.concatenate((-W_b_u, -W_b_l), axis=0)
   
     nb_j=int(len(I_u)/param['nb_samples'])
@@ -394,38 +276,35 @@ def build_total_regressor(W_b_u, W_b_l,W_l, I_u, I_l,param_standard_l, param):
         for k in [0,1,2,3,4,5,6,7,8,10,11]:
             W_l_temp[:, k]=W_l[:,(param['which_body_loaded'])*12 + k] # adds columns belonging to Ixx Ixy Iyy Iyz Izz mx my mz fs fv
         idx_e_temp,params_r_temp= get_index_eliminate(W_l_temp,param_standard_l, 1e-6)
-        W_e_l=build_regressor_reduced(W_l_temp,idx_e_temp)
-        W_upayload=np.concatenate((np.zeros((len(W_l),W_e_l.shape[1])),-W_e_l), axis=0)
-        W_tot=np.concatenate((W_tot,W_upayload), axis=1) 
-        W_kpayload=np.concatenate((np.zeros((len(W_l),1)),-W_l[:,(param['which_body_loaded'])*12+9].reshape(len(W_l),1)), axis=0)# the mass
-        W_tot=np.concatenate((W_tot,W_kpayload), axis=1) 
+        W_e_l = build_regressor_reduced(W_l_temp,idx_e_temp)
+        W_upayload = np.concatenate((np.zeros((len(W_l),W_e_l.shape[1])),-W_e_l), axis=0)
+        W_tot = np.concatenate((W_tot,W_upayload), axis=1) 
+        W_kpayload = np.concatenate((np.zeros((len(W_l),1)),-W_l[:,(param['which_body_loaded'])*12+9].reshape(len(W_l),1)), axis=0)# the mass
+        W_tot = np.concatenate((W_tot,W_kpayload), axis=1) 
 
     elif param['has_actuator_inertia']: #adds ia fv fs off 
         W_l_temp=np.zeros((len(W_l),14))
         for k in [0,1,2,3,4,5,6,7,8,10,11,12,13]:
             W_l_temp[:, k]=W_l[:,(param['which_body_loaded'])*14 + k] # adds columns belonging to Ixx Ixy Iyy Iyz Izz mx my mz ia fv fs off
-        idx_e_temp,params_r_temp= get_index_eliminate(W_l_temp,param_standard_l, 1e-6)
-        W_e_l=build_regressor_reduced(W_l_temp,idx_e_temp)
-        W_upayload=np.concatenate((np.zeros((len(W_l),W_e_l.shape[1])),-W_e_l), axis=0)
-        W_tot=np.concatenate((W_tot,W_upayload), axis=1) 
-        W_kpayload=np.concatenate((np.zeros((len(W_l),1)),-W_l[:,(param['which_body_loaded'])*14+9].reshape(len(W_l),1)), axis=0)# the mass
-        W_tot=np.concatenate((W_tot,W_kpayload), axis=1)
+        idx_e_temp,params_r_temp = get_index_eliminate(W_l_temp,param_standard_l, 1e-6)
+        W_e_l = build_regressor_reduced(W_l_temp,idx_e_temp)
+        W_upayload = np.concatenate((np.zeros((len(W_l),W_e_l.shape[1])),-W_e_l), axis=0)
+        W_tot = np.concatenate((W_tot,W_upayload), axis=1) 
+        W_kpayload = np.concatenate((np.zeros((len(W_l),1)),-W_l[:,(param['which_body_loaded'])*14+9].reshape(len(W_l),1)), axis=0)# the mass
+        W_tot = np.concatenate((W_tot,W_kpayload), axis=1)
 
     else:
         W_l_temp=np.zeros((len(W_l),9))
         for k in range(9):
-            W_l_temp[:, k]=W_l[:,(param['which_body_loaded'])*10 + k] # adds columns belonging to Ixx Ixy Iyy Iyz Izz mx my mz
-        idx_e_temp,params_r_temp= get_index_eliminate(W_l_temp,param_standard_l, 1e-6)
-        W_e_l=build_regressor_reduced(W_l_temp,idx_e_temp)
-        W_upayload=np.concatenate((np.zeros((len(W_l),W_e_l.shape[1])),-W_e_l), axis=0)
-        W_tot=np.concatenate((W_tot,W_upayload), axis=1) 
-        W_kpayload=np.concatenate((np.zeros((len(W_l),1)),-W_l[:,(param['which_body_loaded'])*10+9].reshape(len(W_l),1)), axis=0)# the mass
-        W_tot=np.concatenate((W_tot,W_kpayload), axis=1) 
+            W_l_temp[:, k] = W_l[:,(param['which_body_loaded'])*10 + k] # adds columns belonging to Ixx Ixy Iyy Iyz Izz mx my mz
+        idx_e_temp,params_r_temp = get_index_eliminate(W_l_temp,param_standard_l, 1e-6)
+        W_e_l = build_regressor_reduced(W_l_temp,idx_e_temp)
+        W_upayload = np.concatenate((np.zeros((len(W_l),W_e_l.shape[1])),-W_e_l), axis=0)
+        W_tot = np.concatenate((W_tot,W_upayload), axis=1) 
+        W_kpayload = np.concatenate((np.zeros((len(W_l),1)),-W_l[:,(param['which_body_loaded'])*10+9].reshape(len(W_l),1)), axis=0)# the mass
+        W_tot = np.concatenate((W_tot,W_kpayload), axis=1) 
 
-    print(W_tot.shape)
-    print(np.linalg.matrix_rank(W_tot))
     U, S, Vh = np.linalg.svd(W_tot, full_matrices=False)
-    ind_min= np.argmin(S)
     
     V = np.transpose(Vh).conj()
     
@@ -437,41 +316,6 @@ def build_total_regressor(W_b_u, W_b_l,W_l, I_u, I_l,param_standard_l, param):
     residue=np.matmul(W_tot,V_norm)
     
     return W_tot, V_norm, residue
-
-
-# Building regressor
-
-
-def iden_model(model, data, q, dq, ddq, param):
-    """This function calculates joint torques and generates the joint torque regressor.
-            Note: a parameter Friction as to be set to include in dynamic model
-            Input: 	model, data: model and data structure of robot from Pinocchio
-                    q, v, a: joint's position, velocity, acceleration
-                    N : number of samples
-                    nq: length of q
-            Output: tau: vector of joint torque
-                    W : joint torque regressor"""
-    nb_samples=len(q)
-    tau = np.empty(model.nq*nb_samples)
-    W = np.empty([nb_samples*model.nq, 10*model.nq])
-
-    for i in range(nb_samples):
-        tau_temp = pin.rnea(model, data, q[i, :], dq[i, :], ddq[i, :])
-        W_temp = pin.computeJointTorqueRegressor(
-            model, data, q[i, :], dq[i, :], ddq[i, :])
-        for j in range(model.nq):
-            tau[j*nb_samples + i] = tau_temp[j]
-            W[j*nb_samples + i, :] = W_temp[j, :]
-
-    if param['Friction']:
-        W = np.c_[W, np.zeros([nb_samples*model.nq, 2*model.nq])]
-        for i in range(nb_samples):
-            for j in range(model.nq):
-                tau[j*nb_samples + i] = tau[j*nb_samples + i] + dq[i, j]*param['fv'] + np.sign(dq[i, j])*param['fc']
-                W[j*nb_samples + i, 10*model.nq+2*j] = dq[i, j]
-                W[j*nb_samples + i, 10*model.nq+2*j + 1] = np.sign(dq[i, j])
-
-    return tau, W
 
 # SIP QP OPTIMISATION
 
@@ -510,7 +354,7 @@ def calculate_standard_parameters(robot,W,tau,COM_max,COM_min,params_settings):
     id_inertias=[]
     id_virtual=[]
 
-    if robot.isFext : 
+    if params_settings['is_external_wrench'] : 
         for jj in range(1,len(robot.model.inertias.tolist())):
             if robot.model.inertias.tolist()[jj].mass !=0:
                 id_inertias.append(jj-1)
