@@ -1,25 +1,27 @@
 import os
 from os.path import dirname, join, abspath
+
 import pinocchio as pin
 from pinocchio.utils import *
+
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+
 from scipy.optimize import least_squares
 import numpy as np
+
 import time
 import yaml
 from yaml.loader import SafeLoader
 import pprint
-# from meshcat_viewer_wrapper import MeshcatVisualizer
-from pinocchio.robot_wrapper import RobotWrapper
 
+from figaroh.meshcat_viewer_wrapper import MeshcatVisualizer
 from figaroh.tools.robot import Robot
 from figaroh.calibration.calibration_tools import (
-    get_param,
     get_param_from_yaml,
     add_pee_name,
     load_data,
-    Calculate_base_kinematics_regressor,
+    calculate_base_kinematics_regressor,
     update_forward_kinematics,
     get_LMvariables)
 
@@ -45,7 +47,7 @@ param = get_param_from_yaml(robot, calib_data)
 
 # 2/ Base parameters calculation
 q_rand = []
-Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = Calculate_base_kinematics_regressor(
+Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = calculate_base_kinematics_regressor(
     q_rand, model, data, param)
 
 # add markers name to param['param_name']

@@ -1093,7 +1093,7 @@ def get_PEE(offset_var, q, model, data, param, noise=False):
 ######################## base parameters functions ########################################
 
 
-def Calculate_kinematics_model(q_i, model, data, param):
+def calculate_kinematics_model(q_i, model, data, param):
     """ Calculate jacobian matrix and kinematic regressor given ONE configuration.
         Details of calculation at regressor.hxx and se3-tpl.hpp
     """
@@ -1109,7 +1109,7 @@ def Calculate_kinematics_model(q_i, model, data, param):
     return model, data, R, J
 
 
-def Calculate_identifiable_kinematics_model(q, model, data, param):
+def calculate_identifiable_kinematics_model(q, model, data, param):
     """ Calculate jacobian matrix and kinematic regressor and aggreating into one matrix,
         given a set of configurations or random configurations if not given.
     """
@@ -1131,7 +1131,7 @@ def Calculate_identifiable_kinematics_model(q, model, data, param):
         else:
             q_i = q_temp[i, :]
         if param['start_frame'] == 'universe':
-            model, data, Ri, Ji = Calculate_kinematics_model(
+            model, data, Ri, Ji = calculate_kinematics_model(
                 q_i, model, data, param)
         else:
             Ri = get_rel_kinreg(model, data, param['start_frame'],
@@ -1149,19 +1149,19 @@ def Calculate_identifiable_kinematics_model(q, model, data, param):
     return R
 
 
-def Calculate_base_kinematics_regressor(q, model, data, param):
+def calculate_base_kinematics_regressor(q, model, data, param):
     # obtain joint names
     joint_names = [name for i, name in enumerate(model.names[1:])]
     geo_params = get_geoOffset(joint_names)
 
     # calculate kinematic regressor with random configs
     if not param["free_flyer"]:
-        Rrand = Calculate_identifiable_kinematics_model([], model, data, param)
+        Rrand = calculate_identifiable_kinematics_model([], model, data, param)
     else:
-        Rrand = Calculate_identifiable_kinematics_model(q, model, data, param)
+        Rrand = calculate_identifiable_kinematics_model(q, model, data, param)
     # calculate kinematic regressor with input configs
     if np.any(np.array(q)):
-        R = Calculate_identifiable_kinematics_model(q, model, data, param)
+        R = calculate_identifiable_kinematics_model(q, model, data, param)
     else:
         R = Rrand
 
@@ -1198,7 +1198,7 @@ def Calculate_base_kinematics_regressor(q, model, data, param):
     idx_base = get_baseIndex(Rrand_e, paramsrand_e)
 
     # get base regressor and base params from random data
-    Rrand_b, paramsrand_base = get_baseParams(Rrand_e, paramsrand_e)
+    Rrand_b, paramsrand_base, _ = get_baseParams(Rrand_e, paramsrand_e)
 
     # remove non affect columns from GIVEN data
     R_e, params_e = eliminate_non_dynaffect(
@@ -1206,7 +1206,7 @@ def Calculate_base_kinematics_regressor(q, model, data, param):
 
     # get base param from given data 
     idx_gbase = get_baseIndex(R_e, params_e)
-    R_gb, params_gbase = get_baseParams(R_e, params_e)
+    R_gb, params_gbase, _ = get_baseParams(R_e, params_e)
 
     # get base regressor from GIVEN data
     R_b = build_baseRegressor(R_e, idx_base)
@@ -1285,7 +1285,7 @@ class OCP_determination_problem(object):
         for j in range(1):  # range(self.NbSample):
 
             config[self.param['config_idx']] = x  # [j::self.param['NbSample']]
-            model, data, R, J = Calculate_kinematics_model(
+            model, data, R, J = calculate_kinematics_model(
                 config, self.model, self.data, self.param['IDX_TOOL'])
 
             # select columns corresponding to joint_idx
