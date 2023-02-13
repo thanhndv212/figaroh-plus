@@ -340,7 +340,7 @@ def sample_spherical(npoints, ndim=3):
 def calculate_standard_parameters(robot,W,tau,COM_max,COM_min,params_settings):
     """This function retrieves the 10 standard parameters (m, 3D COM, 6D Inertias) for each body in the body tree thanks to a QP optimisation (cf Jovic 2016). 
     Input:  robot : (Robot Tpl) a robot extracted from an urdf for instance
-            W : ((Nsamples*njoints,10*nbodies) array) the full dynamic regressor (calculated thanks to build regressor basic for instance)   
+            W : ((Nsamples*njoints,14*nbodies) array) the full dynamic regressor (calculated thanks to build regressor basic )   
             tau : ((Nbsamples*njoints,) array) the joint torque array      
             COM_max : (list) sup boundaries for COM in the form (x,y,z) for each body 
             COM_min : (list) sup boundaries for COM in the form (x,y,z) for each body
@@ -371,6 +371,14 @@ def calculate_standard_parameters(robot,W,tau,COM_max,COM_min,params_settings):
     nvirtual=len(id_virtual)
     nbodies=nreal+nvirtual
 
+    # Adapting W only to the ten first parameters
+    W_mod = np.zeros((W.shape[0],10*nbodies))
+    for ii in range(nbodies):
+        if ii == 0 :
+            W_mod[:,ii*10:(ii+1)*10] = W[:,ii*10:(ii+1)*10]
+        else : 
+            W_mod[:,ii*10:(ii+1)*10] = W[:,4+ii*10:4+(ii+1)*10]
+
     params_standard_u = robot.get_standard_parameters(params_settings)
 
     params_name = (
@@ -394,8 +402,8 @@ def calculate_standard_parameters(robot,W,tau,COM_max,COM_min,params_settings):
 
     phi_ref=np.array(phi_ref)
 
-    P=np.matmul(W.T,W) + alpha*np.eye(10*(nbodies))
-    r=-(np.matmul(tau.T,W)+alpha*phi_ref.T)
+    P=np.matmul(W_mod.T,W_mod) + alpha*np.eye(10*(nbodies))
+    r=-(np.matmul(tau.T,W_mod)+alpha*phi_ref.T)
 
     # Setting constraints
     epsilon=0.001

@@ -1,5 +1,5 @@
 # define parameters for calibration and identification process
-# robot: ur_10
+# robot: human
 ---
 calibration:
   calib_level: 
