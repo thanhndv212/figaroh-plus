@@ -10,7 +10,7 @@ import csv
 import yaml
 from yaml.loader import SafeLoader
 
-robot = Robot('models/others/robots/human_description/urdf/human.urdf','models/others/robots',isFext=True) 
+robot = Robot('models/others/robots/human_description/urdf/human.urdf','models/others/robots',True) 
 model = robot.model
 data = robot.data
 

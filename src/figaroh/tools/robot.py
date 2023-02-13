@@ -1,13 +1,9 @@
-import sys
-import os
-import time
 from pinocchio.robot_wrapper import RobotWrapper
 from pinocchio.visualize import GepettoVisualizer, MeshcatVisualizer
 import pinocchio as pin
-from os.path import dirname, join, abspath
 from sys import argv
 import numpy as np
-import hppfcl
+
 
 
 class Robot(RobotWrapper):
@@ -16,10 +12,6 @@ class Robot(RobotWrapper):
         robot_urdf,
         package_dirs,
         isFext=False,
-        isActuator_inertia=False,
-        isFrictionincld=False,
-        isOffset=False,
-        isCoupling=False,
     ):
         # super().__init__()
 

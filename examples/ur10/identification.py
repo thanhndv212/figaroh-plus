@@ -9,7 +9,7 @@ import pprint
 import yaml
 from yaml.loader import SafeLoader
 
-robot = Robot('models/others/robots/ur_description/urdf/ur10_robot.urdf','models/others/robots')
+robot = Robot('models/others/robots/ur_description/urdf/ur10_robot.urdf','models/others/robots',False)
 model = robot.model
 data = robot.data
 
@@ -81,22 +81,6 @@ for ii in range(samples):
     # time.sleep(0.5)
 
 q, dq, ddq = calculate_first_second_order_differentiation(model, q, params_settings)
-
-# # Verif deriv :
-# f, (ax1, ax2, ax3) = plt.subplots(3, 1)
-# ax1 = plt.subplot(311)   
-# ax1.plot(q[:,0],'r', label='q')
-# ax1.legend()
-# ax1.set_title('q_0 - Shoulder_lift_joint')
-# ax2 = plt.subplot(312)
-# ax2.plot(dq[:,0],'b', label='dq')
-# ax2.legend()
-# ax2.set_title('dq_0 - shoulder lift joint speed (rad/s)')
-# ax3 = plt.subplot(313)
-# ax3.plot(ddq[:,0],'g', label='ddq')
-# ax3.legend()
-# ax3.set_title('ddq_0 - Shoulder lift joint acc (rad/s²)')
-# plt.show()
 
 W = build_regressor_basic(robot, q, dq, ddq, params_settings)
 # select only the columns of the regressor corresponding to the structural base

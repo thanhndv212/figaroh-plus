@@ -16,11 +16,7 @@ from figaroh.identification.identification_tools import get_param_from_yaml,calc
 
 robot = Robot(
    'models/others/robots/staubli_tx40_description/urdf/tx40_mdh_modified.urdf','models/others/robots',
-    False,
-    True,
-    True,
-    True,
-    True,
+    False
 )
 
 
