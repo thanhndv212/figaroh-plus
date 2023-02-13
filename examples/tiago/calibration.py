@@ -6,17 +6,19 @@ from sys import argv
 import os
 from os.path import dirname, join, abspath
 
+import pinocchio as pin
+from pinocchio.utils import *
+
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 from scipy.optimize import least_squares
 import numpy as np
-import random
 
-import pandas as pd
 import csv
 import time
 
+from figaroh.meshcat_viewer_wrapper import MeshcatVisualizer
 from figaroh.tools.robot import Robot
 from figaroh.calibration.calibration_tools import (
     get_param,
@@ -25,7 +27,7 @@ from figaroh.calibration.calibration_tools import (
     load_data,
     init_var,
     get_PEE_fullvar,
-    Calculate_base_kinematics_regressor,
+    calculate_base_kinematics_regressor,
     update_forward_kinematics,
     get_LMvariables)
 
@@ -87,7 +89,7 @@ if dataSet == 'sample':
 elif dataSet == 'experimental':
     # read csv file
     # path = '/home/dvtnguyen/calibration/figaroh/data/tiago/tiago_nov_30_64.csv'
-    path = abspath('data/tiago/tiago_nov_30_64.csv')
+    path = abspath('data/tiago_nov_30_64.csv')
     # path = '/home/thanhndv212/Cooking/figaroh/data/tiago/exp_data_nov_64_3011.csv'
 
     PEEm_exp, q_exp = load_data(path, model, param, del_list=[9])

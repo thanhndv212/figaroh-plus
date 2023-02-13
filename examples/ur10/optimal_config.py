@@ -15,7 +15,7 @@ import pinocchio as pin
 from pinocchio.robot_wrapper import RobotWrapper
 from figaroh.calibration.calibration_tools import (
     get_param_from_yaml,
-    Calculate_base_kinematics_regressor,
+    calculate_base_kinematics_regressor,
     get_param)
 from figaroh.tools.robot import Robot
 
@@ -165,7 +165,7 @@ param = get_param_from_yaml(robot, calib_data)
 # read sample configuration pool from file, otherwise random configs are generated
 q = []
 
-Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = Calculate_base_kinematics_regressor(
+Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = calculate_base_kinematics_regressor(
     q, model, data, param)
 R_rearr = rearrange_rb(R_b, param)
 subX_list, subX_dict = sub_info_matrix(R_rearr, param)
