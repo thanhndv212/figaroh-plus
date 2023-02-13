@@ -21,6 +21,9 @@ identif_data = config['identification']
 params_settings = get_param_from_yaml(robot, identif_data)
 print(params_settings)
 
+params_standard_u = robot.get_standard_parameters(params_settings)
+print(params_standard_u)
+
 # Print out the placement of each joint of the kinematic tree
 print("\nJoint placements:")
 for name, oMi in zip(model.names, data.oMi):
@@ -113,8 +116,8 @@ plt.plot(tau_identif,label='identified')
 plt.legend()
 plt.show()
 
-COM_max = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] # subject to be more adaptated
-COM_min = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1] # subject to be more adaptated
+COM_max = np.ones((6*3,1)) # subject to be more adapted
+COM_min = - np.ones((6*3,1))
 
 phi_standard, phi_ref = calculate_standard_parameters(robot, W, tau_noised, COM_max, COM_min, params_settings)
 

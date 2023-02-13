@@ -340,7 +340,7 @@ def sample_spherical(npoints, ndim=3):
 def calculate_standard_parameters(robot,W,tau,COM_max,COM_min,params_settings):
     """This function retrieves the 10 standard parameters (m, 3D COM, 6D Inertias) for each body in the body tree thanks to a QP optimisation (cf Jovic 2016). 
     Input:  robot : (Robot Tpl) a robot extracted from an urdf for instance
-            W : ((Nsamples*njoints,10*nbodies) array) the full dynamic regressor (calculated thanks to build regressor basic for instance)   
+            W : ((Nsamples*njoints,14*nbodies) array) the full dynamic regressor (calculated thanks to build regressor basic )   
             tau : ((Nbsamples*njoints,) array) the joint torque array      
             COM_max : (list) sup boundaries for COM in the form (x,y,z) for each body 
             COM_min : (list) sup boundaries for COM in the form (x,y,z) for each body
@@ -351,25 +351,8 @@ def calculate_standard_parameters(robot,W,tau,COM_max,COM_min,params_settings):
 
     alpha=0.8
     phi_ref=[]
-    id_inertias=[]
-    id_virtual=[]
-
-    if params_settings['is_external_wrench'] : 
-        for jj in range(1,len(robot.model.inertias.tolist())):
-            if robot.model.inertias.tolist()[jj].mass !=0:
-                id_inertias.append(jj-1)
-            else:
-                id_virtual.append(jj-1)
-    else : 
-        for jj in range(len(robot.model.inertias.tolist())):
-            if robot.model.inertias.tolist()[jj].mass !=0:
-                id_inertias.append(jj)
-            else:
-                id_virtual.append(jj)
-
-    nreal=len(id_inertias)
-    nvirtual=len(id_virtual)
-    nbodies=nreal+nvirtual
+    
+    nbodies=len(robot.model.inertias)
 
     params_standard_u = robot.get_standard_parameters(params_settings)
 
@@ -384,54 +367,57 @@ def calculate_standard_parameters(robot,W,tau,COM_max,COM_min,params_settings):
                     "my",
                     "mz",
                     "m",
+                    "Ia",
+                    "fv",
+                    "fs",
+                    "off"
                 )
 
-    for k in range(nbodies):
+    for k in range(1,nbodies):
         for j in params_name:
-            phi_ref_temp=params_standard_u[j+str(k)]
+            if params_standard_u[j+str(k)] is not None :
+                phi_ref_temp = params_standard_u[j+str(k)]
+            else : 
+                phi_ref_temp = 0
             phi_ref.append(phi_ref_temp)
-   
 
     phi_ref=np.array(phi_ref)
-
-    P=np.matmul(W.T,W) + alpha*np.eye(10*(nbodies))
-    r=-(np.matmul(tau.T,W)+alpha*phi_ref.T)
+    P = np.matmul(W.T,W) + alpha*np.eye(14*(nbodies-1))
+    r = -(np.matmul(tau.T,W)+alpha*phi_ref.T)
 
     # Setting constraints
+
     epsilon=0.001
     v=sample_spherical(2000) # vectors over the unit sphere
 
-    G=np.zeros(((7+len(v[0]))*(nreal),10*(nbodies)))
-    h=np.zeros((((7+len(v[0]))*(nreal),1)))
-    # A=np.zeros((10*(nvirtual),10*(nbodies)))
-    # b=np.zeros((10*nvirtual,1))
-    
-    for ii in range(len(id_inertias)):
-        for k in range(len(v[0])): # inertia matrix def pos for enough (ie. 2000 here) vectors on unit sphere
-            G[ii*(len(v[0])+7)+k][id_inertias[ii]*10+0]=-v[0][k]**2
-            G[ii*(len(v[0])+7)+k][id_inertias[ii]*10+1]=-2*v[0][k]*v[1][k]
-            G[ii*(len(v[0])+7)+k][id_inertias[ii]*10+2]=-2*v[0][k]*v[2][k]
-            G[ii*(len(v[0])+7)+k][id_inertias[ii]*10+3]=-v[1][k]**2
-            G[ii*(len(v[0])+7)+k][id_inertias[ii]*10+4]=-2*v[1][k]*v[2][k]
-            G[ii*(len(v[0])+7)+k][id_inertias[ii]*10+5]=-v[2][k]**2
-            h[ii*(len(v[0])+7)+k]=epsilon
-        G[len(v[0])+ii*(len(v[0])+7)][id_inertias[ii]*10+6]=1 # mx<mx+
-        G[len(v[0])+ii*(len(v[0])+7)][id_inertias[ii]*10+9]=-COM_max[3*ii] # mx<mx+
-        G[len(v[0])+ii*(len(v[0])+7)+1][id_inertias[ii]*10+6]=-1 # mx>mx-
-        G[len(v[0])+ii*(len(v[0])+7)+1][id_inertias[ii]*10+9]=COM_min[3*ii] # mx>mx-
-        G[len(v[0])+ii*(len(v[0])+7)+2][id_inertias[ii]*10+7]=1 # my<my+
-        G[len(v[0])+ii*(len(v[0])+7)+2][id_inertias[ii]*10+9]=-COM_max[3*ii+1] # my<my+
-        G[len(v[0])+ii*(len(v[0])+7)+3][id_inertias[ii]*10+7]=-1 # my>my-
-        G[len(v[0])+ii*(len(v[0])+7)+3][id_inertias[ii]*10+9]=COM_min[3*ii+1] # my>my-
-        G[len(v[0])+ii*(len(v[0])+7)+4][id_inertias[ii]*10+8]=1 # mz<mz+
-        G[len(v[0])+ii*(len(v[0])+7)+4][id_inertias[ii]*10+9]=-COM_max[3*ii+2] # mz<mz+
-        G[len(v[0])+ii*(len(v[0])+7)+5][id_inertias[ii]*10+8]=-1 # mz>mz-
-        G[len(v[0])+ii*(len(v[0])+7)+5][id_inertias[ii]*10+9]=COM_min[3*ii+2] # mz>mz-
-        G[len(v[0])+ii*(len(v[0])+7)+6][id_inertias[ii]*10+9]=-1 # m>0
+    G=np.zeros(((7+len(v[0]))*(nbodies-1),14*(nbodies-1)))
+    h=np.zeros((((7+len(v[0]))*(nbodies-1),1)))
 
+    for ii in range(nbodies-1):
+        for k in range(len(v[0])): # inertia matrix def pos for enough (ie. 2000 here) vectors on unit sphere
+            G[ii*(len(v[0])+7)+k][ii*14+0]=-v[0][k]**2
+            G[ii*(len(v[0])+7)+k][ii*14+1]=-2*v[0][k]*v[1][k]
+            G[ii*(len(v[0])+7)+k][ii*14+2]=-2*v[0][k]*v[2][k]
+            G[ii*(len(v[0])+7)+k][ii*14+3]=-v[1][k]**2
+            G[ii*(len(v[0])+7)+k][ii*14+4]=-2*v[1][k]*v[2][k]
+            G[ii*(len(v[0])+7)+k][ii*14+5]=-v[2][k]**2
+            h[ii*(len(v[0])+7)+k]=epsilon
+        G[len(v[0])+ii*(len(v[0])+7)][ii*14+6]=1 # mx<mx+
+        G[len(v[0])+ii*(len(v[0])+7)][ii*14+9]=-COM_max[3*ii] # mx<mx+
+        G[len(v[0])+ii*(len(v[0])+7)+1][ii*14+6]=-1 # mx>mx-
+        G[len(v[0])+ii*(len(v[0])+7)+1][ii*14+9]=COM_min[3*ii] # mx>mx-
+        G[len(v[0])+ii*(len(v[0])+7)+2][ii*14+7]=1 # my<my+
+        G[len(v[0])+ii*(len(v[0])+7)+2][ii*14+9]=-COM_max[3*ii+1] # my<my+
+        G[len(v[0])+ii*(len(v[0])+7)+3][ii*14+7]=-1 # my>my-
+        G[len(v[0])+ii*(len(v[0])+7)+3][ii*14+9]=COM_min[3*ii+1] # my>my-
+        G[len(v[0])+ii*(len(v[0])+7)+4][ii*14+8]=1 # mz<mz+
+        G[len(v[0])+ii*(len(v[0])+7)+4][ii*14+9]=-COM_max[3*ii+2] # mz<mz+
+        G[len(v[0])+ii*(len(v[0])+7)+5][ii*14+8]=-1 # mz>mz-
+        G[len(v[0])+ii*(len(v[0])+7)+5][ii*14+9]=COM_min[3*ii+2] # mz>mz-
+        G[len(v[0])+ii*(len(v[0])+7)+6][ii*14+9]=-1 # m>0
 
     # SOLVING
-    phi_standard=quadprog_solve_qp(P,r,G,h.reshape(((7+len(v[0]))*(nreal),))) # ,A,b.reshape((10*(nvirtual),)))
+    phi_standard=quadprog_solve_qp(P,r,G,h.reshape(((7+len(v[0]))*(nbodies-1),)))
 
     return phi_standard,phi_ref
 

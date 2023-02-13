@@ -20,14 +20,6 @@ with open('examples/human/config/human_config.yaml', 'r') as f:
     
 identif_data = config['identification']
 params_settings = get_param_from_yaml(robot, identif_data)
-print(params_settings)
-
-
-# Print out the placement of each joint of the kinematic tree
-print("\nJoint placements:")
-for name, oMi in zip(model.names, data.oMi):
-    print(("{:<24} : {: .2f} {: .2f} {: .2f}"
-          .format( name, *oMi.translation.T.flat )))
 
 # generate a list containing the full set of standard parameters
 params_standard = robot.get_standard_parameters(params_settings)
@@ -268,22 +260,17 @@ plt.grid()
 plt.title('Mz (N.m) ')
 plt.show()
 
-id_inertias=[]
-id_virtual=[]
 
-for jj in range(1,len(robot.model.inertias.tolist())):
-    if robot.model.inertias.tolist()[jj].mass !=0:
-        id_inertias.append(jj-1)
-    else:
-        id_virtual.append(jj-1)
+COM_max = np.ones((3*37,1)) # subject to be more adapted
+COM_min = -np.ones((3*37,1)) # subject to be more adapted
 
-COM_max = np.ones((1,3*len(id_inertias))) # subject to be more adaptated
-COM_min = -np.ones((1,3*len(id_inertias))) # subject to be more adaptated
+phi_standard, phi_ref = calculate_standard_parameters(robot, W, tau_meas, COM_max, COM_min, params_settings)
 
+print(phi_standard,phi_ref)
 
-phi_standard, phi_ref = calculate_standard_parameters(robot, W, tau_meas, COM_max[0], COM_min[0], params_settings)
+plt.plot(phi_standard,label='SIP Identified')
+plt.plot(phi_ref,label='SIP URDF')
+plt.legend()
+plt.show()
 
-print(phi_standard)
-print(phi_ref)
-
-# # TODO : LOOK AT SIP AND HOW TO HANDLE VIRTUAL INERTIAS, modify the model with SIP ?
+# # TODO : adapt COM boundaries, modify the model with SIP ?
