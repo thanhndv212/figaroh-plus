@@ -18,7 +18,7 @@ from ..tools.qrdecomposition import (
     cond_num)
 from ..tools.robot import Robot
 
-######################## initialization functions ########################################
+######################## INITIALIZATION TOOLS ########################################
 # pinocchio does not parse axis of motion, below is munually imported from urdf of talos
 # arranged in the same order with model.joints no free_flyer
 AXIS_MOTION =[
@@ -163,7 +163,8 @@ def get_param(robot, NbSample, start_frame='universe',
               end_frame='ee_marker_joint', NbMarkers=1,
               calib_model='full_params',
               free_flyer=False, non_geom=False, EE_measurability=None):
-
+    """ Read a .yaml config, then contain parsed parameters in a dictionary.
+    """
     # NOTE: since joint 0 is universe and it is trivial,
     # indices of joints are different from indices of joint configuration,
     # different from indices of joint velocities
@@ -256,7 +257,7 @@ def get_param(robot, NbSample, start_frame='universe',
     return param
 
 
-def get_jointOffset(joint_names):
+def get_joint_offset(joint_names):
     """ This function give a dictionary of joint offset parameters.
             Input:  joint_names: a list of joint names (from model.names)
             Output: joint_off: a dictionary of joint offsets.
@@ -270,10 +271,8 @@ def get_jointOffset(joint_names):
     joint_off = dict(zip(joint_off, phi_jo))
     return joint_off
 
-# TODO: to add to a class
 
-
-def get_geoOffset(joint_names):
+def get_geo_offset(joint_names):
     """ This function give a dictionary of variations (offset) of kinematics parameters.
             Input:  joint_names: a list of joint names (from model.names)
             Output: geo_params: a dictionary of variations of kinematics parameters.
@@ -315,18 +314,17 @@ def add_eemarker_frame(frame_name, p, rpy, model, data):
         pin.Frame(frame_name, parent_jointId, prev_frameId, frame_placement, pin.FrameType(0), pin.Inertia.Zero()), False)
     return ee_frame_id
 
-# TODO: to add to a data class (extracting, inspecting, plotting)
 
-######################## data processing functions ########################################
+######################## DATA PROCESSING TOOLS ########################################
 # data collected and saved in various formats and structure, it has
 # always been a pain in the ass to handles. Need to think a way to simplify
 # and optimize this procedure.
-def read_data(model, path_to_file):
+def read_config_data(model, path_to_file):
     df = pd.read_csv(path_to_file)
     q = np.zeros([len(df), model.njoints-1])
     for i in range(len(df)):
         for j, name in enumerate(model.names[1:].tolist()):
-            jointidx = rankInConfiguration(model, name)
+            jointidx = rank_in_configuration(model, name)
             q[i, jointidx] = df[name][i]
     return q
 
@@ -378,37 +376,6 @@ def load_data(path_to_file, model, param, del_list=[]):
                     tiago: torso, arm1, arm2, arm3, arm4, arm5, arm6, arm7
                     talos: torso1, torso2, armL1, armL2, armL3, armL4, armL5, armL6, armL7
     """
-    # list of "bad" data samples of tiago exp data
-    # del_list = [4, 8, -3, -1] # calib_data_oct
-    # del_list = [2, 26, 39]  # calib_nov_64
-    # del_list = [1, 2, 4, 5, 10, 13, 19, 22,
-    #             23, 24, 28, 33, -3, -2]  # clean mocap ref Nov 30
-    # del_list = [9]  # clean base ref Nov 30
-
-    # list of "bad" data samples of talos exp data
-    # del_list = [0]
-    # # first 12 cols: xyz positions of 4 markers
-    # xyz_4Mkr = np.delete(pd.read_csv(
-    #     path_to_file, usecols=list(range(0, param['NbMarkers']*3))).to_numpy(), del_list, axis=0)
-    # print('csv read', xyz_4Mkr.shape)
-
-    # # extract measured end effector coordinates
-    # PEEm_exp = xyz_4Mkr.T
-    # PEEm_exp = PEEm_exp.flatten('C')
-
-    # # next 8 cols: joints position
-    # q_act = np.delete(pd.read_csv(path_to_file, usecols=list(
-    #     range(12, 20))).to_numpy(), del_list, axis=0)
-    # param['NbSample'] = q_act.shape[0]
-
-    # # extract measured joint configs
-    # q_exp = np.empty((param['NbSample'], param['q0'].shape[0]))
-    # for i in range(param['NbSample']):
-    #     q_exp[i, 0:8] = q_act[i, :]
-    #     # ATTENTION: need to check robot.q0 vs TIAGo.q0
-    #     q_exp[i, 8:] = param['q0'][8:]
-
-    # new fixes:
     # read_csv
     df = pd.read_csv(path_to_file)
 
@@ -455,13 +422,12 @@ def load_data(path_to_file, model, param, del_list=[]):
 
     return PEEm_exp, q_exp
 
-# TODO: to add to tools
 
-######################## common tools ########################################
+######################## COMMON TOOLS ########################################
 
 
-def rankInConfiguration(model, joint_name):
-    """ Give a joint name, get index in joint configuration vector
+def rank_in_configuration(model, joint_name):
+    """ Get index of a given joint in joint configuration vector
     """
     assert joint_name in model.names, 'Given joint name does not exist.'
     jointId = model.getJointId(joint_name)
@@ -470,10 +436,10 @@ def rankInConfiguration(model, joint_name):
 
 
 def cartesian_to_SE3(X):
-    ''' Convert (6,) cartesian coordinates to SE3
-        input: 1D (6,) numpy array
-        out put: SE3 type placement
-    '''
+    """ Convert (6,) cartesian coordinates to SE3
+            Input: 1D (6,) numpy array
+            Output: SE3 placement
+    """
     X = np.array(X)
     X = X.flatten('C')
     translation = X[0:3]
@@ -485,7 +451,7 @@ def cartesian_to_SE3(X):
 def get_rel_transform(model, data, start_frame, end_frame):
     """ Calculate relative transformation between any two frames
         in the same kinematic structure in pinocchio
-        Return: SE3 of start_frame w.r.t end_frame
+            Output: SE3 placement
         Note: assume framesForwardKinematics and updateFramePlacements already
         updated
     """
@@ -514,7 +480,7 @@ def get_rel_transform(model, data, start_frame, end_frame):
 
 def get_sup_joints(model, start_frame, end_frame):
     """ Find supporting joints between two frames
-        Return: a list of supporting joints' Id 
+            Output: a list of supporting joints' Id 
     """
     start_frameId = model.getFrameId(start_frame)
     end_frameId = model.getFrameId(end_frame)
@@ -550,7 +516,7 @@ def get_sup_joints(model, start_frame, end_frame):
 
 def get_rel_kinreg(model, data, start_frame, end_frame, q):
     """ Calculate kinematic regressor between start_frame and end_frame
-        Return: 6x6n matrix
+            Output: 6x6n matrix 
     """ 
     sup_joints = get_sup_joints(model, start_frame, end_frame)
     # update frameForwardKinematics and updateFramePlacements
@@ -568,12 +534,13 @@ def get_rel_kinreg(model, data, start_frame, end_frame, q):
         kinreg[:, 6*(p-1):6*p] = fXp
     return kinreg
 
-# TODO: to crete a linear regression class (parent), LM  as a child class
 
-######################## LM least squares functions ########################################
+######################## LEVENBERG-MARQUARDT TOOLS ########################################
 
 
 def get_LMvariables(param, mode=0, seed=0):
+    """ Create a initial zero/range-bounded random search varibale for Leverberg-Marquardt algo.
+    """
     # initialize all variables at zeros
     nvar = len(param['param_name'])
     if mode==0:
@@ -694,7 +661,7 @@ def update_forward_kinematics(model, data, var, q, param):
 
 
 def update_joint_placement(model, joint_idx, xyz_rpy):
-    """ Update joint placement given a vector of 6 offsets
+    """ Update joint placement given a vector of 6 offsets.
     """
     tpl_translation = model.jointPlacements[joint_idx].translation
     tpl_rotation = model.jointPlacements[joint_idx].rotation
@@ -710,8 +677,8 @@ def update_joint_placement(model, joint_idx, xyz_rpy):
 
 
 def init_var(param, mode=0, base_model=True):
-    ''' Creates variable vector, mode = 0: initial guess, mode = 1: predefined values(randomized)
-    '''
+    """ Creates variable vector, mode = 0: initial guess, mode = 1: predefined values(randomized)
+    """
     # x,y,z,r,p,y from mocap to base ( 6 parameters for pos and orient)
     # create artificial offsets
     if mode == 0:
@@ -935,9 +902,8 @@ def get_PEE_fullvar(var, q, model, data, param, noise=False, base_model=True):
     base_placement = cartesian_to_SE3(var_rs[0, 0: 6])
 
     for k in range(param['NbMarkers']):
-        """ The last calibration_index(3/6)*NbMarkers of var array to be assigned to 
-            the last NbMarkers rows of var_rs
-        """
+        # The last calibration_index(3/6)*NbMarkers of var array to be assigned to 
+        # the last NbMarkers rows of var_rs
         # kth marker's index in var_rs
         markerId = 1 + param['NbJoint'] + k
 
@@ -952,10 +918,8 @@ def get_PEE_fullvar(var, q, model, data, param, noise=False, base_model=True):
         PEE_marker = np.empty((nrow, ncol))
         for i in range(ncol):
             config = q_temp[i, :]
-            '''
-            some fckps here in exceptional case wherer no parameters of the joint are to be variables
-            even the joint is active
-            '''
+            # some fckps here in exceptional case wherer no parameters of the joint are to be variables
+            # even the joint is active
             # update joint geometric parameters with values stored in var_rs
             # NOTE: jointPlacements modify the model of robot, revert the
             # updates after done calculatioin
@@ -1090,7 +1054,7 @@ def get_PEE(offset_var, q, model, data, param, noise=False):
     return PEE
 
 
-######################## base parameters functions ########################################
+######################## BASE REGRESSOR TOOLS ########################################
 
 
 def calculate_kinematics_model(q_i, model, data, param):
@@ -1150,9 +1114,11 @@ def calculate_identifiable_kinematics_model(q, model, data, param):
 
 
 def calculate_base_kinematics_regressor(q, model, data, param):
+    """ Calculate base regressor and base parameters for a calibration model from given configuration data.
+    """
     # obtain joint names
     joint_names = [name for i, name in enumerate(model.names[1:])]
-    geo_params = get_geoOffset(joint_names)
+    geo_params = get_geo_offset(joint_names)
 
     # calculate kinematic regressor with random configs
     if not param["free_flyer"]:
@@ -1218,200 +1184,3 @@ def calculate_base_kinematics_regressor(q, model, data, param):
     print('shape of full regressor, reduced regressor, base regressor: ',
           Rrand.shape, Rrand_e.shape, Rrand_b.shape)
     return Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e
-
-# %% IK process
-
-
-class CIK_problem(object):
-
-    def __init__(self,  data, model, param):
-
-        self.param = param
-        self.model = model
-        self.data = data
-
-    def objective(self, x):
-        # callback for objective
-
-        config = np.array(self.param['q0'])
-
-        PEEe = []
-        for j in range(1):  # range(self.NbSample):
-
-            config[self.param['config_idx']] = x  # [j::self.param['NbSample']]
-
-            pin.forwardKinematics(self.model, self.data, config)
-            pin.updateFramePlacements(self.model, self.data)
-            PEEe = np.append(PEEe, np.array(
-                self.data.oMf[self.param['IDX_TOOL']].translation))
-
-        PEEd_all = self.param['PEEd']
-        PEEd = PEEd_all[[self.param['iter']-1, self.param['NbSample'] +
-                         self.param['iter']-1, 2*self.param['NbSample']+self.param['iter']-1]]
-
-        # regularisation term noneed to use now +1e-4*np.sum( np.square(x) )
-        J = np.sum(np.square(PEEd-PEEe))+1e-1*1 / \
-            np.sum(np.square(x-self.param['x_opt_prev'])+100)
-
-        return J
-
-    def gradient(self, x):
-        # callback for gradient
-
-        G = approx_fprime(x, self.objective, self.param['eps_gradient'])
-
-        return G
-
-
-class OCP_determination_problem(object):
-
-    def __init__(self,  data, model, param):
-
-        self.param = param
-        self.model = model
-        self.data = data
-        self.const_ind = 0
-
-    def objective(self, x):
-        # callback for objective
-
-        # check with Thanh is those are the index correspoding to the base parameters
-        actJoint_idx = [2, 11, 17, 23, 29, 35, 41, 47, 48, 49,
-                        50, 51, 52, 53]  # all on z axis - checked!!
-
-        config = np.array(self.param['q0'])
-
-        PEEe = []
-        for j in range(1):  # range(self.NbSample):
-
-            config[self.param['config_idx']] = x  # [j::self.param['NbSample']]
-            model, data, R, J = calculate_kinematics_model(
-                config, self.model, self.data, self.param['IDX_TOOL'])
-
-            # select columns corresponding to joint_idx
-            R = R[:, actJoint_idx]
-            # select form the list of columns given by the QR decomposition
-            R = R[:, self.param['idx_base']]
-            # print(self.param['R_prev'])
-
-            if self.param['iter'] > 1:
-
-                R = np.concatenate([self.param['R_prev'], R])
-
-            # PEEe = np.append(PEEe, np.array(
-            #    self.data.oMf[self.param['IDX_TOOL']].translation))
-
-        # PEEd_all = self.param['PEEd']
-        # PEEd = PEEd_all[[self.param['iter']-1, self.param['NbSample'] +
-        #                self.param['iter']-1, 2*self.param['NbSample']+self.param['iter']-1]]
-
-        J = la.cond(R)  # np.sum(np.square(PEEd-PEEe))
-
-        return J
-
-    def constraint_0(self, x):
-
-        config = np.array(self.param['q0'])
-
-        PEEe = []
-        for j in range(1):  # range(self.NbSample):
-
-            config[self.param['config_idx']] = x  # [j::self.param['NbSample']]
-
-            pin.forwardKinematics(self.model, self.data, config)
-            pin.updateFramePlacements(self.model, self.data)
-            PEEe = np.append(PEEe, np.array(
-                self.data.oMf[self.param['IDX_TOOL']].translation))
-
-        PEEd_all = self.param['PEEd']
-        PEEd = PEEd_all[[self.param['iter']-1, self.param['NbSample'] +
-                         self.param['iter']-1, 2*self.param['NbSample']+self.param['iter']-1]]
-
-        c = np.array([np.square(PEEd[0]-PEEe[0])])
-
-        return c
-
-    def constraint_1(self, x):
-
-        config = np.array(self.param['q0'])
-
-        PEEe = []
-        for j in range(1):  # range(self.NbSample):
-
-            config[self.param['config_idx']] = x  # [j::self.param['NbSample']]
-
-            pin.forwardKinematics(self.model, self.data, config)
-            pin.updateFramePlacements(self.model, self.data)
-            PEEe = np.append(PEEe, np.array(
-                self.data.oMf[self.param['IDX_TOOL']].translation))
-
-        PEEd_all = self.param['PEEd']
-        PEEd = PEEd_all[[self.param['iter']-1, self.param['NbSample'] +
-                         self.param['iter']-1, 2*self.param['NbSample']+self.param['iter']-1]]
-
-        c = np.array([np.square(PEEd[1]-PEEe[1])])
-
-        return c
-
-    def constraint_2(self, x):
-
-        config = np.array(self.param['q0'])
-
-        PEEe = []
-        for j in range(1):  # range(self.NbSample):
-
-            config[self.param['config_idx']] = x  # [j::self.param['NbSample']]
-
-            pin.forwardKinematics(self.model, self.data, config)
-            pin.updateFramePlacements(self.model, self.data)
-            PEEe = np.append(PEEe, np.array(
-                self.data.oMf[self.param['IDX_TOOL']].translation))
-
-        PEEd_all = self.param['PEEd']
-        PEEd = PEEd_all[[self.param['iter']-1, self.param['NbSample'] +
-                         self.param['iter']-1, 2*self.param['NbSample']+self.param['iter']-1]]
-
-        c = np.array([np.square(PEEd[2]-PEEe[2])])
-
-        return c
-
-    def constraints(self, x):
-        """Returns the constraints."""
-        # callback for constraints
-
-        return np.concatenate([self.constraint_0(x),
-                               self.constraint_1(x),
-                               self.constraint_2(x)])
-
-        '''
-        if  self.const_ind==0: 
-
-            cts= J[self.const_ind] 
-        
-        if  self.const_ind==1: 
-
-            cts= J[self.const_ind]  
-        '''
-
-    def jacobian(self, x):
-        # Returns the Jacobian of the constraints with respect to x
-        #
-        # self.const_ind=0
-        # J0 = approx_fprime(x, self.constraints, self.param['eps_gradient'])
-
-        return np.concatenate([
-            approx_fprime(x, self.constraint_0, self.param['eps_gradient']),
-            approx_fprime(x, self.constraint_1, self.param['eps_gradient']),
-            approx_fprime(x, self.constraint_2, self.param['eps_gradient'])])
-
-        # print(J0)
-        # J=nd.Jacobian(self.constraints)(x)
-
-        return J0  # np.array(J)#np.concatenate([J0,J0])
-
-    def gradient(self, x):
-        # callback for gradient
-        G = approx_fprime(x, self.objective, self.param['eps_gradient'])
-
-        return G
-
