@@ -124,7 +124,7 @@ class Robot(RobotWrapper):
         by specifying an option from the command line:
         GepettoVisualizer: -g
         MeshcatVisualizer: -m"""
-        VISUALIZER = 0
+        VISUALIZER = None
         if len(argv) > 1:
             opt = argv[1]
             if opt == "-g":

@@ -40,31 +40,31 @@ from figaroh.identification.identification_tools import get_param_from_yaml
 # HELPER FUNCTIONS TO OBTAIN BASE REGRESSOR (BASE REG)
 
 
-def get_idx_from_random(Ns, robot, q, v, a):
+def get_idx_from_random(robot, q, v, a, param):
     """ Sole purpose is to get index of eliminate std param in W to
         produce W_e and then get index of independent params in W_e
         TODO: remove redundant computation
     """
-    W = build_regressor_basic(Ns, robot, q, v, a)
-    params_std = robot.get_standard_parameters()
+    W = build_regressor_basic(robot, q, v, a, param)
+    params_std = robot.get_standard_parameters(param)
     idx_e_, par_r_ = get_index_eliminate(W, params_std, tol_e=0.001)
     W_e_ = build_regressor_reduced(W, idx_e_)
     idx_base_ = get_baseIndex(W_e_, par_r_)
     return idx_e_, idx_base_
 
 
-def build_W_b(Ns, robot, q, v, a, idx_e_, idx_base_, W_stack=None):
+def build_W_b(robot, q, v, a, param, idx_e_, idx_base_, W_stack=None):
     """ Given index of eliminate std params and independent params,
         now build base regressor for given data
         TODO: put idx_e and idx_base into param dict
     """
-    W = build_regressor_basic(Ns, robot, q, v, a)
+    W = build_regressor_basic(robot, q, v, a, param)
     W_e_ = build_regressor_reduced(W, idx_e_)
     W_b_ = build_baseRegressor(W_e_, idx_base_)
-    list_idx = []
-    for k in range(len(idx_act_joints)):
-        list_idx.extend(
-            list(range(idx_act_joints[k]*Ns, (idx_act_joints[k]+1)*Ns)))
+    # list_idx = []
+    # for k in range(len(idx_act_joints)):
+    #     list_idx.extend(
+    #         list(range(idx_act_joints[k]*Ns, (idx_act_joints[k]+1)*Ns)))
     # W_b = W_b_[list_idx, :]
     W_b = W_b_
 
@@ -74,7 +74,7 @@ def build_W_b(Ns, robot, q, v, a, idx_e_, idx_base_, W_stack=None):
     return W_b
 
 
-def get_idx_b_cubic(robot, active_joints):
+def get_idx_b_cubic(robot, param, active_joints):
     """ Find base parameters for cubic spline trajectory
     """
     n_wps_r = 100
@@ -94,14 +94,14 @@ def get_idx_b_cubic(robot, active_joints):
         freq_r, tps_r, wps_r, vel_wps_r, acc_wps_r)
 
     # get index essential and base params columns: idx_e, idx_b
-    idx_e, idx_b = get_idx_from_random(p_r.shape[0], robot, p_r, v_r, a_r)
+    idx_e, idx_b = get_idx_from_random(robot, p_r, v_r, a_r, param)
     print("number of base params: ", len(idx_b))
     return idx_e, idx_b
 
 # IPOPT PROBLEM FORMULATION FUNCTIONS
 
 
-def objective_func(Ns, X, opt_cb, tps, vel_wps, acc_wps, wp_init, W_stack_=None):
+def objective_func(X, params_settings, opt_cb, tps, vel_wps, acc_wps, wp_init, W_stack_=None):
     """ This functions computes the condition number of correspondent
         base regressor from computed trajectory. The trajectory is a 
         cubic spline which is initiated by waypoints pos/vel/acc.
@@ -129,7 +129,7 @@ def objective_func(Ns, X, opt_cb, tps, vel_wps, acc_wps, wp_init, W_stack_=None)
     opt_cb['a_f'] = a_f
 
     # get stacked base reg
-    W_b = build_W_b(Ns, robot, p_f, v_f, a_f, idx_e,
+    W_b = build_W_b(robot, p_f, v_f, a_f, params_settings, idx_e,
                     idx_b, W_stack=W_stack_)
 
     return np.linalg.cond(W_b)
@@ -155,7 +155,7 @@ def get_constraints_all_samples(Ns,  X, opt_cb, tps, vel_wps, acc_wps,
         freq, tps, wps, vel_wps, acc_wps)
 
     # compute joint effort given full profile
-    tau = get_torque_rand(p_f.shape[0], robot, p_f, v_f, a_f)
+    tau = get_torque_rand(p_f.shape[0], robot, p_f, v_f, a_f, params_settings)
 
     # pos constraints at waypoints
     idx_waypoints = []
@@ -249,7 +249,7 @@ def get_constr_value(robot, CB, n_wps, Ns):
 
 
 class Problem_cond_Wb:
-    def __init__(self, Ns, opt_cb, tps, vel_wps, acc_wps,
+    def __init__(self, Ns, params_settings, opt_cb, tps, vel_wps, acc_wps,
                  wp_init, vel_wp_init, acc_wp_init, W_stack, stop_flag):
         self.W_stack = W_stack  # update every stacking repeat
         self.wp_init = wp_init  # init waypoint of current stack = end waypoint of prev stack
@@ -273,7 +273,7 @@ class Problem_cond_Wb:
             freq, tps, wps, vel_wps, acc_wps)
 
         # compute joint effort given full profile
-        tau = get_torque_rand(p_f.shape[0], robot, p_f, v_f, a_f)
+        tau = get_torque_rand(p_f.shape[0], robot, p_f, v_f, a_f, params_settings)
 
         self.opt_cb['t_f'] = t_f
         self.opt_cb['p_f'] = p_f
@@ -283,7 +283,7 @@ class Problem_cond_Wb:
 
     def objective(self, X):
         return objective_func(
-            Ns, X, self.opt_cb, self.tps, self.vel_wps, self.acc_wps, self.wp_init, W_stack_=self.W_stack
+            X, params_settings, self.opt_cb, self.tps, self.vel_wps, self.acc_wps, self.wp_init, W_stack_=self.W_stack
         )
 
     def gradient(self, X):
@@ -371,9 +371,15 @@ soft_lim_pool = np.array([[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
 
 # step 2: load simplified collsion model
 robot = build_tiago_simplified(robot)
+# load standard parameters
+with open('examples/tiago/config/tiago_config.yaml', 'r') as f:
+    config = yaml.load(f, Loader=SafeLoader)
+    pprint.pprint(config)
+identif_data = config['identification']
+params_settings = get_param_from_yaml(robot, identif_data)
 
 # step 3: get indices of base parameters specifically for cubic spline
-idx_e, idx_b = get_idx_b_cubic(robot, active_joints)
+idx_e, idx_b = get_idx_b_cubic(robot, params_settings, active_joints)
 
 
 # stop condition for iterative stacking
@@ -443,7 +449,7 @@ for s_rep in range(stack_reps):
         
         t_i, p_i, v_i, a_i = CB.get_full_config(
             freq, tps, wps, vel_wps, acc_wps)
-        tau_i = get_torque_rand(p_i.shape[0], robot, p_i, v_i, a_i)
+        tau_i = get_torque_rand(p_i.shape[0], robot, p_i, v_i, a_i, params_settings)
         # ATTENTION: joint torque specially arranged!
         tau_i = np.reshape(tau_i, (v_i.shape[1], v_i.shape[0])).transpose()
         is_constr_violated = CB.check_cfg_constraints(p_i, v_i, tau_i)
@@ -476,7 +482,7 @@ for s_rep in range(stack_reps):
     nlp = cyipopt.Problem(
         n=len(X0),
         m=len(cl),
-        problem_obj=Problem_cond_Wb(Ns, opt_cb, tps, vel_wps, acc_wps,
+        problem_obj=Problem_cond_Wb(Ns, params_settings, opt_cb, tps, vel_wps, acc_wps,
                                     wp_init, vel_wp_init, acc_wp_init, W_stack, stop_flag),
         lb=lb,
         ub=ub,
@@ -504,7 +510,7 @@ for s_rep in range(stack_reps):
 
 
         # if generated trajectory violated constraints, break 
-        tau = get_torque_rand(opt_cb['p_f'].shape[0], robot, opt_cb['p_f'], opt_cb['v_f'], opt_cb['a_f'])
+        tau = get_torque_rand(opt_cb['p_f'].shape[0], robot, opt_cb['p_f'], opt_cb['v_f'], opt_cb['a_f'], params_settings)
         tau = np.reshape(tau, (opt_cb['v_f'].shape[1], opt_cb['v_f'].shape[0])).transpose()
         is_constr_violated = CB.check_cfg_constraints(opt_cb['p_f'], opt_cb['v_f'], tau)
         if is_constr_violated: 
@@ -514,7 +520,7 @@ for s_rep in range(stack_reps):
 
         # reinitialize for next stacking 
         wp_init = wps_X[-1, :] 
-        W_stack = build_W_b(Ns, robot, opt_cb['p_f'], opt_cb['v_f'], opt_cb['a_f'], idx_e,
+        W_stack = build_W_b(robot, opt_cb['p_f'], opt_cb['v_f'], opt_cb['a_f'], params_settings, idx_e,
                             idx_b, W_stack=W_stack)
         print("regressor is stacked with size: ", W_stack.shape)
         
@@ -598,7 +604,7 @@ plt.ylabel("Cond(Wb)")
 plt.xlabel("Iteration counts")
 plt.legend(loc="upper right")
 plt.grid()
-plt.yscale("log")
+# plt.yscale("log")
 plt.show()
 # current_time = datetime.now().strftime("%d_%b_%Y_%H%M")
 # plt.savefig(join(
