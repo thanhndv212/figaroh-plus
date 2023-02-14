@@ -9,9 +9,18 @@ from yaml.loader import SafeLoader
 import pprint
 
 from figaroh.tools.robot import Robot
-from figaroh.tools.regressor import build_regressor_basic, add_coupling_TX40, build_regressor_reduced
-from figaroh.tools.qrdecomposition import get_index_eliminate, get_baseParams, double_QR, eliminate_non_dynaffect
-from figaroh.identification.identification_tools import get_param_from_yaml,calculate_first_second_order_differentiation, relative_stdev, low_pass_filter_data
+from figaroh.tools.regressor import (
+    build_regressor_basic,
+    add_coupling_TX40,
+    build_regressor_reduced,
+    get_index_eliminate,
+    eliminate_non_dynaffect)
+from figaroh.tools.qrdecomposition import get_baseParams, double_QR
+from figaroh.identification.identification_tools import (
+    get_param_from_yaml,
+    calculate_first_second_order_differentiation, 
+    relative_stdev,
+    low_pass_filter_data)
 
 
 robot = Robot(

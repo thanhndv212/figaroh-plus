@@ -2,11 +2,6 @@ from datetime import datetime
 import numpy as np
 from numpy import pi
 import cyipopt
-from numpy.core.arrayprint import DatetimeFormat
-from numpy.lib.function_base import gradient
-from scipy.optimize.nonlin import Jacobian
-import scipy.sparse as sparse
-from scipy.optimize import approx_fprime
 import os
 from os.path import dirname, join, abspath
 from matplotlib import pyplot as plt
@@ -18,17 +13,29 @@ import hppfcl
 import pinocchio as pin
 import csv
 import yaml
+from yaml.loader import SafeLoader
+import pprint
 
-import ndcurves
 from figaroh.tools.robot import Robot
-from figaroh.tools.regressor import *
-from figaroh.tools.qrdecomposition import *
-from figaroh.tools.randomdata import *
-from figaroh.tools.robotcollisions import *
+from figaroh.tools.regressor import (
+    build_regressor_basic, 
+    build_regressor_reduced, 
+    get_index_eliminate, 
+    eliminate_non_dynaffect,
+    add_actuator_inertia,
+    add_friction,
+    add_joint_offset)
+from figaroh.tools.qrdecomposition import (
+    get_baseParams, 
+    double_QR, 
+    get_baseIndex,
+    build_baseRegressor)
+from figaroh.tools.randomdata import get_torque_rand
+from figaroh.tools.robotcollisions import CollisionWrapper
 from figaroh.meshcat_viewer_wrapper import MeshcatVisualizer
 from simplified_colission_model import build_tiago_simplified
-from cubic_spline import *
-import time
+from cubic_spline import CubicSpline, WaypointsGeneration
+from figaroh.identification.identification_tools import get_param_from_yaml
 
 # HELPER FUNCTIONS TO OBTAIN BASE REGRESSOR (BASE REG)
 

@@ -1,10 +1,8 @@
 from numpy.core.arrayprint import DatetimeFormat
 from datetime import datetime
-from numpy.core.fromnumeric import shape
 import pinocchio as pin
 from pinocchio.robot_wrapper import RobotWrapper
 from pinocchio.visualize import GepettoVisualizer, MeshcatVisualizer
-from pinocchio.utils import *
 
 from sys import argv
 import os
