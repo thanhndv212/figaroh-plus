@@ -100,15 +100,15 @@ class Robot(RobotWrapper):
             if param['has_actuator_inertia']:
                 phi.extend([param['Ia'][i-1]])
             else:
-                phi.extend([None])
+                phi.extend([0])
             if param['has_friction']:
                 phi.extend([param['fv'][i-1], param['fs'][i-1]])
             else:
-                phi.extend([None, None])
+                phi.extend([0, 0])
             if param['has_joint_offset']:
                 phi.extend([param['off'][i-1]])
             else:
-                phi.extend([None])
+                phi.extend([0])
                     
         if param["external_wrench_offsets"]:
             phi.extend([param['OFFX'],param['OFFY'],param['OFFZ']])
@@ -124,7 +124,7 @@ class Robot(RobotWrapper):
         by specifying an option from the command line:
         GepettoVisualizer: -g
         MeshcatVisualizer: -m"""
-        VISUALIZER = None
+        VISUALIZER = 0
         if len(argv) > 1:
             opt = argv[1]
             if opt == "-g":

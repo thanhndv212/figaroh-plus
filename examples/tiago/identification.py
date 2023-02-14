@@ -21,12 +21,21 @@ from scipy import linalg, signal
 import pandas as pd
 import json
 import csv
+import yaml
+from yaml.loader import SafeLoader
+import pprint
 
 from figaroh.tools.robot import Robot
-from figaroh.tools.regressor import *
-from figaroh.tools.qrdecomposition import *
-from figaroh.tools.randomdata import *
-from figaroh.tools.robotcollisions import *
+from figaroh.identification.identification_tools import get_param_from_yaml
+from figaroh.tools.regressor import (
+    build_regressor_basic, 
+    build_regressor_reduced, 
+    get_index_eliminate, 
+    eliminate_non_dynaffect,
+    add_actuator_inertia,
+    add_friction,
+    add_joint_offset)
+from figaroh.tools.qrdecomposition import get_baseParams, double_QR
 
 
 # create a robot object
@@ -49,8 +58,19 @@ active_joints = ["torso_lift_joint",
 idx_act_joints = [robot.model.getJointId(i)-1 for i in active_joints]
 
 # load standard parameters
-params_std = robot.get_standard_parameters()  # basic std params
-eff_lims = robot.model.effortLimit[idx_act_joints]
+with open('examples/tiago/config/tiago_config.yaml', 'r') as f:
+    config = yaml.load(f, Loader=SafeLoader)
+    pprint.pprint(config)
+identif_data = config['identification']
+pprint.pprint(dir(robot.model))
+for (i,joint) in enumerate(robot.model.joints):
+    print(i,robot.model.names[i], joint)
+params_settings = get_param_from_yaml(robot, identif_data)
+params_std = robot.get_standard_parameters(params_settings)
+
+params_settings["idx_act_joints"] = idx_act_joints
+
+eff_lims = robot.model.effortLimit[params_settings["idx_act_joints"]]
 
 # load csv files
 path_to_folder = dirname(str(abspath(__file__)))
@@ -142,16 +162,16 @@ p = np.array([robot.q0]*Ntotal)
 v = np.array([robot.v0]*Ntotal)
 a = np.array([robot.v0]*Ntotal)
 
-p[:, idx_act_joints] = q_butter
-v[:, idx_act_joints] = dq_butter
-a[:, idx_act_joints] = ddq
+p[:, params_settings["idx_act_joints"]] = q_butter
+v[:, params_settings["idx_act_joints"]] = dq_butter
+a[:, params_settings["idx_act_joints"]] = ddq
 
 #  eliminate border effect
 
 # # plot filtered and raw p,v,a
 # plot1 = plt.figure(1)
 # axs1 = plot1.subplots(8, 1)
-# for i in range(len(idx_act_joints)):
+# for i in range(len(params_settings["idx_act_joints"])):
 #     if i == 0:
 #         axs1[i].plot(t, q[:, i], label='pos raw')
 #         axs1[i].plot(t, q_butter[:, i], label='pos filtered')
@@ -163,7 +183,7 @@ a[:, idx_act_joints] = ddq
 # plot1.legend()
 # plot3 = plt.figure(3)
 # axs3 = plot3.subplots(8, 1)
-# for i in range(len(idx_act_joints)):
+# for i in range(len(params_settings["idx_act_joints"])):
 #     if i == 0:
 #         axs3[i].plot(t, dq[:, i], label='vel raw')
 #         axs3[i].plot(t, dq_butter[:, i], label='vel filtered')
@@ -175,145 +195,36 @@ a[:, idx_act_joints] = ddq
 
 # plot3.legend()
 
-plot4 = plt.figure(4)
-axs4 = plot4.subplots(8, 1)
-for i in range(len(idx_act_joints)):
-    if i == 0:
-        axs4[i].plot(t, ddq_raw[:, i], label='acc raw')
-        axs4[i].set_ylabel("torso_lift_joint (m/s^2)")
-        axs4[i].plot(t, ddq[:, i], label='acc filtered')
-    else:
-        axs4[i].plot(t, ddq_raw[:, i])
-        axs4[i].plot(t, ddq[:, i])
-        axs4[i].set_ylabel("arm_%d_joint (rad/s^2)" % i)
+# plot4 = plt.figure(4)
+# axs4 = plot4.subplots(8, 1)
+# for i in range(len(params_settings["idx_act_joints"])):
+#     if i == 0:
+#         axs4[i].plot(t, ddq_raw[:, i], label='acc raw')
+#         axs4[i].set_ylabel("torso_lift_joint (m/s^2)")
+#         axs4[i].plot(t, ddq[:, i], label='acc filtered')
+#     else:
+#         axs4[i].plot(t, ddq_raw[:, i])
+#         axs4[i].plot(t, ddq[:, i])
+#         axs4[i].set_ylabel("arm_%d_joint (rad/s^2)" % i)
 
 
 # plot4.legend()
 # plt.show()
 
 # build basic regressor
-W = build_regressor_basic(Ntotal, robot, p, v, a)
-
-# add friction manually ot dictionary of standard params
-
-
-def add_frict_params(params_std, fv_std, fs_std, idx_act_joints):
-    # check lenght of friction constants
-    assert len(fv_std) == len(
-        idx_act_joints), "fv should have the size of active joints"
-    assert len(fs_std) == len(
-        idx_act_joints), "fv should have the size of active joints"
-
-    list_keys = list(params_std.keys())
-    list_values = list(params_std.values())
-    for i in range(len(idx_act_joints)):
-        joint_num = idx_act_joints[i] + 1
-        # add friction params after mass params
-        mass_index = list_keys.index('m%d' % joint_num)
-        list_keys.insert(mass_index + 1, 'fv%d' % joint_num)
-        list_keys.insert(mass_index + 2, 'fs%d' % joint_num)
-        list_values.insert(mass_index + 1, fv_std[i])
-        list_values.insert(mass_index + 2, fs_std[i])
-
-    new_params_std = dict(zip(list_keys, list_values))
-    return new_params_std
-
-
-fv_std = np.zeros(len(idx_act_joints))
-fs_std = np.zeros(len(idx_act_joints))
-# basic std params + friction params
-params_std_f = add_frict_params(params_std, fv_std, fs_std, idx_act_joints)
-
-
-def add_frict_cols(W_act, params_std_f, idx_act_joints, v):
-    # check correct size of W
-    assert W_act.shape[1] + 2 * \
-        len(idx_act_joints) == len(
-            params_std_f), "check size of W or params_std"
-    list_keys = list(params_std_f.keys())
-    new_W = W_act
-    for i in range(len(idx_act_joints)):
-        joint_num = idx_act_joints[i] + 1
-        # add friction columns after mass columns
-        mass_index = list_keys.index('m%d' % joint_num)
-        new_W = np.insert(new_W, mass_index+1,
-                          np.zeros(new_W.shape[0]), axis=1)
-        new_W = np.insert(new_W, mass_index+2,
-                          np.zeros(new_W.shape[0]), axis=1)
-        vi = v[:, i]
-        sign_vi = np.array([np.sign(k) for k in v[:, i]])
-        range_i = range(idx_act_joints[i]*v.shape[0],
-                        (idx_act_joints[i]+1)*v.shape[0])
-        new_W[range_i, mass_index + 1] = vi
-        new_W[range_i, mass_index + 2] = sign_vi
-    return new_W
-
-
-# extract rows of active joints/remove rows of inactive joints
-list_idx = []
-for k in range(len(idx_act_joints)):
-    list_idx.extend(
-        list(range(idx_act_joints[k]*Ntotal, (idx_act_joints[k]+1)*Ntotal)))
-W_act = W[list_idx, :]
-
-# add friction columns to regressor = basic observation matrix + friction columns
-W_f = add_frict_cols(W_act, params_std_f, idx_act_joints, v)
-
-
-# add offset torque
-def add_offset_params(params_std_f, idx_act_joints):
-    # check lenght of friction constants
-    list_keys = list(params_std_f.keys())
-    list_values = list(params_std_f.values())
-    for i in range(len(idx_act_joints)):
-        joint_num = idx_act_joints[i] + 1
-        # add offset params after friction params
-        fs_index = list_keys.index('fs%d' % joint_num)
-        list_keys.insert(fs_index + 1, 'off%d' % joint_num)
-        list_values.insert(fs_index + 1, 0)
-    new_params_std = dict(zip(list_keys, list_values))
-    return new_params_std
-
-# basic std params + friction params + offset
-
-
-params_std_os = add_offset_params(params_std_f, idx_act_joints)
-
-
-def add_offset_cols(Ntotal, W_f, params_std_os, idx_act_joint):
-    # check correct size of W
-    assert W_f.shape[1] + \
-        len(idx_act_joints) == len(
-            params_std_os), "check size of W or params_std"
-    list_keys = list(params_std_os.keys())
-    new_W = W_f
-    for i in range(len(idx_act_joints)):
-        joint_num = idx_act_joints[i] + 1
-        # add offset columns after friction columns
-        fs_index = list_keys.index('fs%d' % joint_num)
-        new_W = np.insert(new_W, fs_index+1,
-                          np.zeros(new_W.shape[0]), axis=1)
-        offset_i = np.ones(Ntotal)
-        range_i = range(idx_act_joints[i]*Ntotal,
-                        (idx_act_joints[i]+1)*Ntotal)
-        new_W[range_i, fs_index + 1] = offset_i
-    return new_W
-
-
-# basic observation matrix + friction columns + offset columns
-W_os = add_offset_cols(Ntotal, W_f, params_std_os, idx_act_joints)
-
+W = build_regressor_basic( robot, p, v, a, params_settings)
+print(W.shape, len(params_std))
 
 # remove zero columns
-idx_e, params_r = get_index_eliminate(W_os, params_std_os, tol_e=0.001)
-W_e = build_regressor_reduced(W_os, idx_e)
-
+idx_e, params_r = get_index_eliminate(W, params_std, tol_e=0.001)
+W_e = build_regressor_reduced(W, idx_e)
+print(W_e.shape)
 # eliminate zero crossing if considering friction model
 
 #######separate link-by-link and parallel decimate########
 # joint torque
 tau_dec = []
-for i in range(len(idx_act_joints)):
+for i in range(len(params_settings["idx_act_joints"])):
     tau_dec.append(signal.decimate(tau[:, i], q=10, zero_phase=True))
 
 tau_rf = tau_dec[0]
@@ -322,18 +233,18 @@ for i in range(1, len(tau_dec)):
 
 # regressor
 W_list = []  # list of sub regressor for each joitnt
-for i in range(len(idx_act_joints)):
+for i in range(len(params_settings["idx_act_joints"])):
     W_dec = []
     for j in range(W_e.shape[1]):
         W_dec.append(signal.decimate(W_e[range(
-            idx_act_joints[i]*Ntotal, (idx_act_joints[i]+1)*Ntotal), j], q=10, zero_phase=True))
+            params_settings["idx_act_joints"][i]*Ntotal, (params_settings["idx_act_joints"][i]+1)*Ntotal), j], q=10, zero_phase=True))
 
     W_temp = np.zeros((W_dec[0].shape[0], len(W_dec)))
     for i in range(len(W_dec)):
         W_temp[:, i] = W_dec[i]
     W_list.append(W_temp)
 
-    # rejoining sub  regresosrs into one complete regressor
+# rejoining sub  regresosrs into one complete regressor
 W_rf = np.zeros((tau_rf.shape[0], W_list[0].shape[1]))
 for i in range(len(W_list)):
     W_rf[range(i*W_list[i].shape[0], (i+1)*W_list[i].shape[0]), :] = W_list[i]
@@ -344,11 +255,11 @@ t_dec = signal.decimate(t[:, 0], q=10, zero_phase=True)
 
 # calculate base parameters
 W_b, bp_dict, params_b, phi_b, phi_std = double_QR(
-    tau_rf, W_rf, params_r, params_std_os)
+    tau_rf, W_rf, params_r, params_std)
 # import pprint
 # pprint.pprint(bp_dict)
 print("condition number: ", np.linalg.cond(W_b))
-print("residue norm: ", np.linalg.norm(tau_rf - np.dot(W_b, phi_b)))
+print("rmse norm (N/m): ", np.linalg.norm(tau_rf - np.dot(W_b, phi_b))/np.sqrt(tau_rf.shape[0]))
 print("relative residue norm: ", np.linalg.norm(
     tau_rf - np.dot(W_b, phi_b))/np.linalg.norm(tau_rf))
 
@@ -356,24 +267,20 @@ print("relative residue norm: ", np.linalg.norm(
 tau_base = np.dot(W_b, phi_b)
 print("tau_base shape", tau_base.shape)
 
-# joint torque estimated from p,v,a with std params
-phi_f = np.array(list(params_std_f.values()))
-tau_f = np.dot(W_f, phi_f)
-tau_ref_f = tau_f[range(len(idx_act_joints)*Ntotal)]
-
-phi_os = np.array(list(params_std_os.values()))
-tau_os = np.dot(W_os, phi_os)
-tau_ref_os = tau_os[range(len(idx_act_joints)*Ntotal)]
+# # joint torque estimated from p,v,a with std params
+phi_ref = np.array(list(params_std.values()))
+tau_ref = np.dot(W, phi_ref)
+tau_ref = tau_ref[range(len(params_settings["idx_act_joints"])*Ntotal)]
 
 # plot joint torque
 plot2 = plt.figure(2)
 axs2 = plot2.subplots(8, 1)
-for i in range(len(idx_act_joints)):
+for i in range(len(params_settings["idx_act_joints"])):
     if i == 0:
         axs2[i].plot(t_dec, tau_dec[i], label='effort measures-decimated')
         axs2[i].plot(t_dec, tau_base[range(i*tau_dec[i].shape[0], (i+1)*tau_dec[i].shape[0])],
                      label='base params effort estimated')
-        axs2[i].plot(t, tau_ref_os[range(i*Ntotal, (i+1)*Ntotal)],
+        axs2[i].plot(t, tau_ref[range(i*Ntotal, (i+1)*Ntotal)],
                      label='standard params effort estimated')
         axs2[i].set_ylabel("torso_lift_joint (N)")
         # axs2[i].axhline(eff_lims[i], t[0], t[-1])
@@ -381,7 +288,7 @@ for i in range(len(idx_act_joints)):
         axs2[i].plot(t_dec, tau_dec[i])
         axs2[i].plot(t_dec, tau_base[range(
             i*tau_dec[i].shape[0], (i+1)*tau_dec[i].shape[0])])
-        axs2[i].plot(t, tau_ref_os[range(i*Ntotal, (i+1)*Ntotal)])
+        axs2[i].plot(t, tau_ref[range(i*Ntotal, (i+1)*Ntotal)])
         axs2[i].set_ylabel("arm_%d_joint (N.m)" % i)
         # axs2[i].axhline(eff_lims[i], t[0], t[-1])
 # axs2[8].plot(t, ddq[:, 0])
