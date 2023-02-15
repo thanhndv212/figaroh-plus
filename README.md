@@ -4,6 +4,16 @@
 
 FIGAROH is a python toolbox aiming at providing efficient and highly flexible frameworks for dynamics identification and geometric calibration of rigid multi-body systems based on the popular modeling convention URDF. The considered systems can be serial (industrial manipulator) or tree-structures (human, humanoid robots). 
 
+## Installing dependencies
+
+First, set up the robotpkg repositories in your source list as explained here: http://robotpkg.openrobots.org/debian.html
+
+Then, execute:
+```bash
+sudo apt-get install robotpkg-py36-pinocchio robotpkg-py36-hpp-fcl robotpkg-py36-ndcurves
+pip3 install --user cyipopt numdifftools quadprog numpy scipy
+```
+
 ## Features
 
 As described in the following figure it provides:
