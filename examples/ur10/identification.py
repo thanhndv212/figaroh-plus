@@ -1,5 +1,6 @@
 import pinocchio as pin
 import numpy as np
+import csv 
 from figaroh.tools.robot import Robot
 from figaroh.tools.regressor import build_regressor_basic, get_index_eliminate, build_regressor_reduced
 from figaroh.tools.qrdecomposition import get_baseParams
@@ -62,26 +63,19 @@ for ii in range(len(params_base)):
 
 # simulating a sinus trajectory on joints shoulder_lift_joint, elbow_joint, wrist_2_joint
 
-delta_t=0.01
-f1 = 1
-f2 = 10
-f3 = 0.1
+nb_samples=100
 
-samples=100
-w1 = 2.*np.pi*f1
-w2= 2*np.pi*f2
-w3= 2*np.pi*f3
+q=np.zeros((nb_samples,model.nq))
 
-t = np.linspace(0, int(samples*delta_t), samples)
-
-q=np.zeros((samples,model.nq))
-
-for ii in range(samples):
-    q[ii,0]= np.sin(w1*t[ii])
-    q[ii,2]= np.sin(w2*t[ii])
-    q[ii,4]= np.sin(w3*t[ii])
-    # viz.display(q[ii,:])
-    # time.sleep(0.5)
+with open('examples/ur10/data/identification_q_simulation.csv', 'r') as f:
+    csvreader = csv.reader(f)
+    ii = 0
+    for row in csvreader:
+        if ii==0:
+            print("Row zero")
+        else : 
+            q[ii-1,:]=np.array([float(row[0]),float(row[1]),float(row[2]),float(row[3]),float(row[4]),float(row[5])])
+        ii+=1
 
 q, dq, ddq = calculate_first_second_order_differentiation(model, q, params_settings)
 
@@ -92,17 +86,23 @@ W_base = W[:, idx_base]
 print("When using all trajectories the cond num is", int(np.linalg.cond(W_base)))
 
 # simulation of the measured joint torques
-tau_simu = np.empty(len(q)*model.nq)
+tau_noised = np.empty(len(q)*model.nq)
 
-for ii in range(len(q)):
-    tau_temp = pin.rnea(model, data, q[ii, :], dq[ii, :], ddq[ii, :])
-    for j in range(model.nq):
-        tau_simu[j * len(q) + ii] = tau_temp[j]
-
-# Noise to add to the measure to make them more realistic
-noise = np.random.normal(0,10,len(tau_simu))
-
-tau_noised = tau_simu+noise
+with open('examples/ur10/data/identification_tau_simulation.csv', 'r') as f:
+    csvreader = csv.reader(f)
+    ii = 0
+    for row in csvreader:
+        if ii==0:
+            print("Row zero")
+        else : 
+            tau_temp=np.array([float(row[0]),float(row[1]),float(row[2]),float(row[3]),float(row[4]),float(row[5])])
+            tau_noised[ii-1]=tau_temp[0]
+            tau_noised[len(q)+ii-1]=tau_temp[1]
+            tau_noised[2*len(q)+ii-1]=tau_temp[2]
+            tau_noised[3*len(q)+ii-1]=tau_temp[3]
+            tau_noised[4*len(q)+ii-1]=tau_temp[4]
+            tau_noised[5*len(q)+ii-1]=tau_temp[5]
+        ii+=1
 
 # Least-square identification process
 phi_base = np.matmul(np.linalg.pinv(W_base), tau_noised)
