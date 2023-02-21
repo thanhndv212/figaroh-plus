@@ -15,7 +15,7 @@ pip3 install --user cyipopt numdifftools quadprog numpy scipy
 ```
 
 ## Features
-
+![figaroh_features](figaroh_flowchart.png)
 As described in the following figure it provides:
 + Dynamic Identification:
     - Dynamic model including effects of frictions, actuator inertia and joint torque offset. 
