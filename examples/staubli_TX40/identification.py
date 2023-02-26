@@ -227,35 +227,57 @@ print(tau_dec.shape, tau_base.shape, tau_ref.shape)
 cur_t = 0
 plot2 = plt.figure(2)
 axs2 = plot2.subplots(len(params_settings["idx_act_joints"]), 1)
-plt.rcParams.update({'font.size': 30})
 for i in range(len(params_settings["idx_act_joints"])):
     next_t = cur_t + t_sample[i]
     range_t = range(cur_t,next_t)
     cur_t = next_t
     if i == 0:
-        axs2[i].plot( tau_dec[range_t], color='red', label='measured')
-        axs2[i].plot( tau_base[range_t],
-                      color='green',label='estimated')
-        # axs2[i].plot( tau_ref[range_t],
-        #              color='blue',label='notional effort estimated')
-        axs2[i].set_ylabel("joint %d" % (i+1), fontsize=25)
+        t = np.linspace(0, int(len(tau_dec[range_t])*0.02), len(tau_dec[range_t]))
+        axs2[i].plot(t,tau_dec[range_t], color='red', label='measured')
+        axs2[i].plot(t,tau_base[range_t],
+                      color='green',label='identified')
+        axs2[i].plot(t,tau_ref[range_t],
+                     color='blue',label='CAD')
+        axs2[i].set_ylabel("tau %d" % (i+1)+" [N.m]")
         axs2[i].tick_params(labelbottom = False, bottom = False)
+        axs2[i].spines['top'].set_visible(False)
+        axs2[i].spines['right'].set_visible(False)
+        ticks = [-100,100]
+        axs2[i].set_yticks(ticks)
+        axs2[i].tick_params(labelbottom=False, bottom=True)
         # axs2[i].axhline(eff_lims[i], t[0], t[-1])
-        axs2[i].grid()
+        # axs2[i].grid()
     else:
-        axs2[i].plot( tau_dec[range_t],color='red')
-        axs2[i].plot( tau_base[range_t], color='green', )
-        # axs2[i].plot(tau_ref[range_t], color='blue' )
-        axs2[i].set_ylabel("joint %d" % (i+1), fontsize=25,)
+        t = np.linspace(0, int(len(tau_dec[range_t])*0.02), len(tau_dec[range_t]))
+        print(t)
+        axs2[i].plot(t,tau_dec[range_t],color='red')
+        axs2[i].plot(t,tau_base[range_t], color='green', )
+        axs2[i].plot(t,tau_ref[range_t], color='blue' )
+        axs2[i].set_ylabel("tau %d" % (i+1)+" [N.m]")
         axs2[i].tick_params(labelbottom = False, bottom = False)
-        axs2[i].grid()
+        axs2[i].spines['top'].set_visible(False)
+        axs2[i].spines['right'].set_visible(False)
+        axs2[i].tick_params(labelbottom=False, bottom=True)
+        if i == 1 :
+            ticks = [-100,100]
+            axs2[i].set_yticks(ticks)
+        elif i == 2:
+            ticks = [-50,50]
+            axs2[i].set_yticks(ticks)
+        elif i == 3:
+            ticks = [-10,10]
+            axs2[i].set_yticks(ticks)
+        else : 
+            ticks = [-20,20]
+            axs2[i].set_yticks(ticks)
 
         if i == 5:
-            axs2[i].set_xlabel( "sample", fontsize=25)
+            axs2[i].set_xlabel( "Time [s]")
             axs2[i].tick_params(axis='y', color='black')
             axs2[i].tick_params(labelbottom=True, bottom=True)
 plot2.legend()
 plt.show()
+
 # weighted LS
 a = 0
 sig_ro_joint = np.zeros(nv)
