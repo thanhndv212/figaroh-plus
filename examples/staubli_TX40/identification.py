@@ -47,6 +47,16 @@ if params_settings['has_coupled_wrist']:#self.isCoupling:
     params_std["fvm6"] = params_settings['fvm6']
     params_std["fsm6"] = params_settings['fsm6']
 
+active_joints = ["joint_1",
+                 "joint_2",
+                 "joint_3",
+                 "joint_4",
+                 "joint_5",
+                 "joint_6",
+                 ]
+idx_act_joints = [robot.model.getJointId(i)-1 for i in active_joints]
+params_settings["idx_act_joints"] = idx_act_joints
+
 q_rand = np.random.uniform(low=-6, high=6, size=(10 * params_settings["nb_samples"], model.nq))
 
 dq_rand = np.random.uniform(
@@ -112,18 +122,18 @@ q[:, 2] += np.pi / 2
 
 q, dq, ddq = calculate_first_second_order_differentiation(model,q,params_settings)
 
-fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
-fig.suptitle('Verif q')
+# fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
+# fig.suptitle('Verif q')
 
-ax1.plot(q[:,1])
-ax1.set_ylabel('q1')
+# ax1.plot(q[:,1])
+# ax1.set_ylabel('q1')
 
-ax2.plot(dq[:,1])
-ax2.set_ylabel('dq1')
+# ax2.plot(dq[:,1])
+# ax2.set_ylabel('dq1')
 
-ax3.plot(ddq[:,1])
-ax3.set_xlabel('time (s)')
-ax3.set_ylabel('ddq1')
+# ax3.plot(ddq[:,1])
+# ax3.set_xlabel('time (s)')
+# ax3.set_ylabel('ddq1')
 
 # plt.show()
 
@@ -155,6 +165,7 @@ nj_ = tau.shape[0] // 6
 print("ni: ", nj_)
 tau_list = []
 W_list = []
+t_sample = []
 for i in range(nv):
     tau_temp = tau[(i * nj_): ((i + 1) * nj_)]
     for m in range(2):
@@ -183,7 +194,7 @@ for i in range(len(W_list)):
     W_list[i] = np.delete(W_list[i], idx_eliminate, axis=0)
     tau_list[i] = np.delete(tau_list[i], idx_eliminate, axis=0)
     print(W_list[i].shape, tau_list[i].shape)
-
+    t_sample.append(W_list[i].shape[0])
 # rejoining
 # note:length of data on each joint different
 row_size = 0
@@ -206,6 +217,45 @@ W_b, base_parameters, params_base, phi_b = double_QR(tau_, W_e, params_r)
 std_xr_ols = relative_stdev(W_b, phi_b, tau_)
 phi_b_ols = np.around(np.linalg.lstsq(W_b, tau_, rcond=None)[0], 6)
 
+# plot fitting 
+tau_dec = tau_
+tau_base = np.dot(W_b, phi_b)
+phi_ref = np.array(list( float(x) for x in params_std.values()))
+print("std param: ", phi_ref.shape, W_.shape, phi_ref)
+tau_ref = np.dot(W_, phi_ref)
+print(tau_dec.shape, tau_base.shape, tau_ref.shape)
+cur_t = 0
+plot2 = plt.figure(2)
+axs2 = plot2.subplots(len(params_settings["idx_act_joints"]), 1)
+plt.rcParams.update({'font.size': 30})
+for i in range(len(params_settings["idx_act_joints"])):
+    next_t = cur_t + t_sample[i]
+    range_t = range(cur_t,next_t)
+    cur_t = next_t
+    if i == 0:
+        axs2[i].plot( tau_dec[range_t], color='red', label='measured')
+        axs2[i].plot( tau_base[range_t],
+                      color='green',label='estimated')
+        # axs2[i].plot( tau_ref[range_t],
+        #              color='blue',label='notional effort estimated')
+        axs2[i].set_ylabel("joint %d" % (i+1), fontsize=25)
+        axs2[i].tick_params(labelbottom = False, bottom = False)
+        # axs2[i].axhline(eff_lims[i], t[0], t[-1])
+        axs2[i].grid()
+    else:
+        axs2[i].plot( tau_dec[range_t],color='red')
+        axs2[i].plot( tau_base[range_t], color='green', )
+        # axs2[i].plot(tau_ref[range_t], color='blue' )
+        axs2[i].set_ylabel("joint %d" % (i+1), fontsize=25,)
+        axs2[i].tick_params(labelbottom = False, bottom = False)
+        axs2[i].grid()
+
+        if i == 5:
+            axs2[i].set_xlabel( "sample", fontsize=25)
+            axs2[i].tick_params(axis='y', color='black')
+            axs2[i].tick_params(labelbottom=True, bottom=True)
+plot2.legend()
+plt.show()
 # weighted LS
 a = 0
 sig_ro_joint = np.zeros(nv)
@@ -231,11 +281,16 @@ phi_b = np.around(phi_b, 6)
 
 # residual
 print("number of equations(after preproccesing): ", row_size)
-print("residual norm: ", np.linalg.norm(tau_ - np.dot(W_b, phi_b)))
+print("rmse norm: ", np.linalg.norm(tau_ - np.dot(W_b, phi_b))/np.sqrt(tau_.shape[0]))
 print(
     "relative residual norm: ",
     np.linalg.norm(tau_ - np.dot(W_b, phi_b)) / np.linalg.norm(tau_),
 )
+# r-squared 
+SSres = np.sum((tau_ - np.dot(W_b, phi_b))**2)
+SStot = np.sum((tau_ - np.mean(tau_))**2)
+r_squared = 1 - SSres/SStot
+print("r-squared value:", r_squared)
 
 # WLS standard deviation
 STD_X = np.diag(C_X)
@@ -302,12 +357,17 @@ while not (max_std_e < params_settings['ratio_essential'] * min_std_e):
     max_std_e = max(std_xr_e)
 print("number of equations(after preproccesing): ", row_size)
 print("residual norm: ", np.linalg.norm(
-    tau_ - np.dot(W_essential, phi_e_wls)))
+    tau_ - np.dot(W_essential, phi_e_wls))/np.sqrt(tau_.shape[0]))
 print(
     "relative residual norm: ",
     np.linalg.norm(tau_ - np.dot(W_essential, phi_e_wls)) /
     np.linalg.norm(tau_),
 )
+# r-squared 
+SSres = np.sum((tau_ - np.dot(W_b, phi_b))**2)
+SStot = np.sum((tau_ - np.mean(tau_))**2)
+r_squared = 1 - SSres/SStot
+print("r-squared value:", r_squared)
 print("condition number of essential regressor: ",
         np.linalg.cond(W_essential))
 # save results to csv
