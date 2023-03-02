@@ -283,25 +283,35 @@ print("tau_base shape", tau_base.shape)
 phi_ref = np.array(list(params_std.values()))
 tau_ref = np.dot(W, phi_ref)
 tau_ref = tau_ref[range(len(params_settings["idx_act_joints"])*Ntotal)]
-
+plt.rcParams.update({'font.size': 30})
 # plot joint torque
 plot2 = plt.figure(2)
 axs2 = plot2.subplots(8, 1)
 for i in range(len(params_settings["idx_act_joints"])):
     if i == 0:
-        axs2[i].plot(t_dec, tau_dec[i], label='effort measures-decimated')
+        axs2[i].plot(t_dec, tau_dec[i], color='red', label='effort measured')
         axs2[i].plot(t_dec, tau_base[range(i*tau_dec[i].shape[0], (i+1)*tau_dec[i].shape[0])],
-                     label='base params effort estimated')
+                      color='green',label='effort estimated')
         axs2[i].plot(t, tau_ref[range(i*Ntotal, (i+1)*Ntotal)],
-                     label='standard params effort estimated')
-        axs2[i].set_ylabel("torso_lift_joint (N)")
+                     color='blue',label='notional effort estimated')
+        axs2[i].set_ylabel("torso", fontsize=25)
+        axs2[i].tick_params(labelbottom = False, bottom = False)
         # axs2[i].axhline(eff_lims[i], t[0], t[-1])
-    else:
-        axs2[i].plot(t_dec, tau_dec[i])
+        axs2[i].grid()
+    elif i<8:
+        axs2[i].plot(t_dec, tau_dec[i],color='red')
         axs2[i].plot(t_dec, tau_base[range(
-            i*tau_dec[i].shape[0], (i+1)*tau_dec[i].shape[0])])
-        axs2[i].plot(t, tau_ref[range(i*Ntotal, (i+1)*Ntotal)])
-        axs2[i].set_ylabel("arm_%d_joint (N.m)" % i)
+            i*tau_dec[i].shape[0], (i+1)*tau_dec[i].shape[0])], color='green', )
+        axs2[i].plot(t, tau_ref[range(i*Ntotal, (i+1)*Ntotal)], color='blue' )
+        axs2[i].set_ylabel("arm %d" % i, fontsize=25,)
+        axs2[i].tick_params(labelbottom = False, bottom = False)
+        axs2[i].grid()
+
+        if i == 7:
+            axs2[i].set_xlabel( "time (sec)", fontsize=25)
+            axs2[i].tick_params(axis='y', color='black')
+            axs2[i].tick_params(labelbottom=True, bottom=True)
+
         # axs2[i].axhline(eff_lims[i], t[0], t[-1])
 # axs2[8].plot(t, ddq[:, 0])
 

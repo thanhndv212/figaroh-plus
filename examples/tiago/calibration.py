@@ -12,11 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pinocchio as pin
-from pinocchio.robot_wrapper import RobotWrapper
-from pinocchio.utils import *
-
-from sys import argv
 import os
 from os.path import dirname, join, abspath
 
@@ -48,9 +43,13 @@ from figaroh.calibration.calibration_tools import (
 
 # 1/ Load robot model and create a dictionary containing reserved constants
 
+# 1/ Load robot model and create a dictionary containing reserved constants
+ros_package_path = os.getenv('ROS_PACKAGE_PATH')
+package_dirs = ros_package_path.split(':')
+robot_dir = package_dirs[0] + "/example-robot-data/robots"
 robot = Robot(
-    "tiago_description/robots",
-    "tiago_no_hand_mod.urdf",
+    robot_dir + "/tiago_description/robots/tiago_no_hand.urdf",
+    package_dirs = package_dirs,
     # isFext=True  # add free-flyer joint at base
 )
 model = robot.model
@@ -58,13 +57,13 @@ data = robot.data
 
 EE_measurability = [True, True, True, False, False, False]
 NbSample = 50
-param = get_param(robot, NbSample, end_frame='ee_marker_joint', NbMarkers=4, EE_measurability=EE_measurability)
+param = get_param(robot, NbSample, end_frame='wrist_ft_tool_link', NbMarkers=4, EE_measurability=EE_measurability)
 
 #############################################################
 
 # 2/ Base parameters calculation
 q_rand = []
-Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = Calculate_base_kinematics_regressor(
+Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = calculate_base_kinematics_regressor(
     q_rand, model, data, param)
 
 # naming for eeframe markers
@@ -164,6 +163,14 @@ rmse = np.sqrt(np.mean((PEEe_sol-PEEm_LM)**2))
 print("solution: ", res)
 print("minimized cost function: ", rmse)
 print("optimality: ", LM_solve.optimality)
+
+# uncalibrated
+uncalib_res = var_0
+uncalib_res[:3] = res[:3]
+uncalib_res[-12:] = res[-12:]
+PEEe_uncalib = get_PEE_fullvar(uncalib_res, q_LM, model, data, param, noise=False)
+rmse_uncalib = np.sqrt(np.mean((PEEe_uncalib-PEEm_LM)**2))
+print("minimized cost function uncalib: ", rmse_uncalib)
 
 # calculate standard deviation of estimated parameter ( Khalil chapter 11)
 sigma_ro_sq = (LM_solve.cost**2) / \
@@ -286,7 +293,7 @@ ax4.grid()
 #     plt.barh(params_name[-3*param['NbMarkers']:],
 #              res[-3*param['NbMarkers']:], align='center', color='green')
 #     plt.grid()
-plt.show()
+# plt.show()
 
 #############################################################
 
