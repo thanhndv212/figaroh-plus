@@ -163,7 +163,7 @@ res =  LM_solve.x
 uncalib_res = var_0
 uncalib_res[:3] = res[:3]
 uncalib_res[-3:] = res[-3:]
-PEEe_uncalib = get_PEE_fullvar(uncalib_res, q_LM, model, data, param, noise=False)
+PEEe_uncalib = update_forward_kinematics(model, data, uncalib_res, q_LM, param)
 rmse_uncalib = np.sqrt(np.mean((PEEe_uncalib-PEEm_LM)**2))
 print("minimized cost function uncalib: ", rmse_uncalib)
 
