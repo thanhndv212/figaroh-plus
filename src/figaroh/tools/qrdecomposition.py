@@ -18,9 +18,9 @@ from numpy.linalg import norm, solve
 from scipy import linalg, signal
 
 # epsilon = np.finfo(float).eps  # machine epsilon
-# tolpal = W_e.shape[0]*abs(np.diag(R).max()) * \
+# TOL_QR = W_e.shape[0]*abs(np.diag(R).max()) * \
 #     epsilon  # rank revealing tolerance
-tolpal = 1e-3
+TOL_QR = 1e-8
 
 
 def QR_pivoting(tau, W_e, params_r):
@@ -44,7 +44,7 @@ def QR_pivoting(tau, W_e, params_r):
     numrank_W = 0
 
     for i in range(np.diag(R).shape[0]):
-        if abs(np.diag(R)[i]) > tolpal:
+        if abs(np.diag(R)[i]) > TOL_QR:
             continue
         else:
             numrank_W = i
@@ -114,7 +114,7 @@ def double_QR(tau, W_e, params_r, params_std=None):
     # find rank of regressor
 
     for i in range(len(params_r)):
-        if abs(np.diag(R)[i]) > tolpal:
+        if abs(np.diag(R)[i]) > TOL_QR:
             idx_base.append(i)
         else:
             idx_regroup.append(i)
@@ -214,12 +214,9 @@ def get_baseParams(W_e, params_r, params_std=None):
     idx_regroup = []
 
     # find rank of regressor
-    epsilon = np.finfo(float).eps  # machine epsilon
-    tolpal = W_e.shape[0]*abs(np.diag(R).max()) * \
-        epsilon  # rank revealing tolerance
-    # tolpal = 0.02
+
     for i in range(len(params_r)):
-        if abs(np.diag(R)[i]) > tolpal:
+        if abs(np.diag(R)[i]) > TOL_QR:
             idx_base.append(i)
         else:
             idx_regroup.append(i)
@@ -312,7 +309,7 @@ def get_baseIndex(W_e, params_r):
     epsilon = np.finfo(float).eps  # machine epsilon
     for i in range(len(params_r)):
         # print("R-value: ", i+1, params_r[i], abs(np.diag(R)[i]))
-        if abs(np.diag(R)[i]) > tolpal:
+        if abs(np.diag(R)[i]) > TOL_QR:
             idx_base.append(i)
     idx_base = tuple(idx_base)
     return idx_base

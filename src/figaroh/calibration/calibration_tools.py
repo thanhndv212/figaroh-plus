@@ -1193,7 +1193,7 @@ def calculate_base_kinematics_regressor(q, model, data, param):
 
     # update calibrating param['param_name']/calibrating parameters
     for j in idx_base:
-        param['param_name'].append(params_e[j])
+        param['param_name'].append(paramsrand_e[j])
 
     print('shape of full regressor, reduced regressor, base regressor: ',
           Rrand.shape, Rrand_e.shape, Rrand_b.shape)
