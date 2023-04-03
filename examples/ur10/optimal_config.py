@@ -244,7 +244,7 @@ ax[1].tick_params(axis='y', labelrotation=30)
 
 # w_list = list(w_dict_sort.values())
 # w_list.sort(reverse=True)
-ax[1].plot(w_dict_sort.values())
+ax[1].plot(list(w_dict_sort.values()))
 ax[1].set_yscale("log")
 ax[1].spines["top"].set_visible(False)
 ax[1].spines["right"].set_visible(False)
