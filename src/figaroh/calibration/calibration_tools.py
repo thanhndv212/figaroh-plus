@@ -129,21 +129,22 @@ def get_param_from_yaml(robot, calib_data):
     # optimizing variable in optimization code
     x_opt_prev = np.zeros([NbJoint])
     
-    # list of elastic gain parameter names
-    elastic_gain = []
-    axis = ['kx', 'ky', 'kz']
-    for j_id, joint_name in enumerate(robot.model.names.tolist()):
-        if joint_name == 'universe':
-            axis_motion = 'null'
-        else:
-            for ii, ax in enumerate(AXIS_MOTION[j_id]):
-                if ax == 1:
-                    axis_motion = axis[ii]
-        elastic_gain.append(axis_motion+'_'+joint_name)
+    
 
     # list of calibrating parameters name
     param_name = []
     if calib_data['non_geom']:
+        # list of elastic gain parameter names
+        elastic_gain = []
+        axis = ['kx', 'ky', 'kz']
+        for j_id, joint_name in enumerate(robot.model.names.tolist()):
+            if joint_name == 'universe':
+                axis_motion = 'null'
+            else:
+                for ii, ax in enumerate(AXIS_MOTION[j_id]):
+                    if ax == 1:
+                        axis_motion = axis[ii]
+            elastic_gain.append(axis_motion+'_'+joint_name)
         for i in actJoint_idx:
             param_name.append(elastic_gain[i])
 
@@ -278,8 +279,8 @@ def get_joint_offset(joint_names):
     """
     joint_off = []
 
-    for i in range(len(joint_names)):
-        joint_off.append("off" + "_%d" % i)
+    for i, name in enumerate(joint_names):
+        joint_off.append("off_" + name)
 
     phi_jo = [0] * len(joint_off)  # default zero values
     joint_off = dict(zip(joint_off, phi_jo))
@@ -548,7 +549,24 @@ def get_rel_kinreg(model, data, start_frame, end_frame, q):
         kinreg[:, 6*(p-1):6*p] = fXp
     return kinreg
 
-
+def get_rel_jac(model, data, start_frame, end_frame, q):
+    """ Calculate frameJacobian between start_frame and end_frame
+            Output: 6xn matrix 
+    """
+    start_frameId = model.getFrameId(start_frame)
+    end_frameId = model.getFrameId(end_frame)
+    
+    # update frameForwardKinematics and updateFramePlacements
+    pin.framesForwardKinematics(model, data, q)
+    pin.updateFramePlacements(model, data)
+    
+    # relative Jacobian
+    J_start = pin.computeFrameJacobian(
+        model, data, q, start_frameId, pin.LOCAL)
+    J_end = pin.computeFrameJacobian(
+        model, data, q, end_frameId, pin.LOCAL)
+    J_rel = J_end - J_start
+    return J_rel
 ######################## LEVENBERG-MARQUARDT TOOLS ########################################
 
 
@@ -1101,6 +1119,7 @@ def calculate_identifiable_kinematics_model(q, model, data, param):
     # obtain aggreated Jacobian matrix J and kinematic regressor R
     calib_idx = param['calibration_index']
     R = np.zeros([6*param['NbSample'], 6*(model.njoints-1)])
+    J = np.zeros([6*param['NbSample'], model.njoints-1])
     for i in range(param['NbSample']):
         if MIN_MODEL == 1:
             q_rand = pin.randomConfiguration(model)
@@ -1114,17 +1133,29 @@ def calculate_identifiable_kinematics_model(q, model, data, param):
         else:
             Ri = get_rel_kinreg(model, data, param['start_frame'],
                                 param['end_frame'], q_i)
+            # Ji = np.zeros([6, model.njoints-1]) ## TODO: get_rel_jac
+            Ji = get_rel_jac(model, data, param['start_frame'],
+                                param['end_frame'], q_i)
         for j, state in enumerate(param['measurability']):
             if state:
                 R[param['NbSample']*j + i, :] = Ri[j, :]
+                J[param['NbSample']*j + i, :] = Ji[j, :]
     # remove zero rows
     zero_rows = []
     for r_idx in range(R.shape[0]):
         if np.linalg.norm(R[r_idx, :]) < 1e-6:
             zero_rows.append(r_idx)
     R = np.delete(R, zero_rows, axis=0)
-    print(R.shape)
-    return R
+    zero_rows = []
+    for r_idx in range(J.shape[0]):
+        if np.linalg.norm(J[r_idx, :]) < 1e-6:
+            zero_rows.append(r_idx)
+    J = np.delete(J, zero_rows, axis=0)
+    print(R.shape, J.shape)
+    if param['calib_model'] == "joint_offset":
+        return J
+    elif param['calib_model'] == "full_params":
+        return R
 
 
 def calculate_base_kinematics_regressor(q, model, data, param):
@@ -1133,6 +1164,7 @@ def calculate_base_kinematics_regressor(q, model, data, param):
     # obtain joint names
     joint_names = [name for i, name in enumerate(model.names[1:])]
     geo_params = get_geo_offset(joint_names)
+    joint_offsets = get_joint_offset(joint_names)
 
     # calculate kinematic regressor with random configs
     if not param["free_flyer"]:
@@ -1148,21 +1180,22 @@ def calculate_base_kinematics_regressor(q, model, data, param):
     ############## only joint offset parameters ########
     if param['calib_model'] == 'joint_offset':
         # particularly select columns/parameters corresponding to joint and 6 last parameters
-        actJoint_idx = [2, 11, 17, 23, 29, 35, 41, 47, 48, 49,
-                        50, 51, 52, 53]  # all on z axis - checked!!
+        # actJoint_idx = [2, 11, 17, 23, 29, 35, 41, 47, 48, 49,
+        #                 50, 51, 52, 53]  # all on z axis - checked!!
 
         # a dictionary of selected parameters
-        gp_listItems = list(geo_params.items())
-        geo_params_sel = []
-        for i in actJoint_idx:
-            geo_params_sel.append(gp_listItems[i])
-        geo_params_sel = dict(geo_params_sel)
+        # gp_listItems = list(geo_params.items())
+        # geo_params_sel = []
+        # for i in actJoint_idx:
+        #     geo_params_sel.append(gp_listItems[i])
+        # geo_params_sel = dict(geo_params_sel)
+        geo_params_sel = joint_offsets
 
         # select columns corresponding to joint_idx
-        Rrand_sel = Rrand[:, actJoint_idx]
+        Rrand_sel = Rrand
 
         # select columns corresponding to joint_idx
-        R_sel = R[:, actJoint_idx]
+        R_sel = R
 
     ############## full 6 parameters ###################
     elif param['calib_model'] == 'full_params':
