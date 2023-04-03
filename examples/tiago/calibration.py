@@ -43,8 +43,6 @@ from figaroh.calibration.calibration_tools import (
 
 
 # 1/ Load robot model and create a dictionary containing reserved constants
-
-# 1/ Load robot model and create a dictionary containing reserved constants
 ros_package_path = os.getenv('ROS_PACKAGE_PATH')
 package_dirs = ros_package_path.split(':')
 robot_dir = package_dirs[0] + "/example-robot-data/robots"
