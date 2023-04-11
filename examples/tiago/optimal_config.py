@@ -158,21 +158,22 @@ class SOCP():
         return w_list, w_dict_sort
 
 
-# # 1/ Load robot model and create a dictionary containing reserved constants
+# 1/ Load robot model and create a dictionary containing reserved constants
 ros_package_path = os.getenv('ROS_PACKAGE_PATH')
 package_dirs = ros_package_path.split(':')
-
+robot_dir = package_dirs[0] + "/example-robot-data/robots"
 robot = Robot(
-    'data/robot.urdf',
-    package_dirs=package_dirs
+    robot_dir + "/tiago_description/robots/tiago.urdf",
+    package_dirs = package_dirs,
     # isFext=True  # add free-flyer joint at base
 )
 model = robot.model
 data = robot.data
 
-with open('config/ur10_config.yaml', 'r') as f:
+
+with open('config/tiago_config.yaml', 'r') as f:
     config = yaml.load(f, Loader=SafeLoader)
-    pprint.pprint(config)
+    pprint.pprint(config['calibration'])
 calib_data = config['calibration']
 param = get_param_from_yaml(robot, calib_data)
 
@@ -183,7 +184,8 @@ Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = calculate_base_kinematics_reg
     q, model, data, param)
 R_rearr = rearrange_rb(R_b, param)
 subX_list, subX_dict = sub_info_matrix(R_rearr, param)
-
+for ii, param_b in enumerate(paramsrand_base):
+    print(ii+1, param_b)
 ##find optimal combination of data samples from  a candidate pool (combinatorial optimization)
 
 # required minimum number of configurations
@@ -208,7 +210,6 @@ chosen_config = []
 for i in list(w_dict_sort.keys()):
     if w_dict_sort[i] > eps:
         chosen_config.append(i)
-print(chosen_config)
 if len(chosen_config) < min_NbChosen:
     print("Infeasible design")
 else: 

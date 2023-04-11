@@ -1,3 +1,17 @@
+# Copyright [2022-2023] [CNRS, Toward SAS]
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+# http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import os
 from os.path import dirname, join, abspath
 
@@ -15,7 +29,6 @@ import yaml
 from yaml.loader import SafeLoader
 import pprint
 
-from figaroh.meshcat_viewer_wrapper import MeshcatVisualizer
 from figaroh.tools.robot import Robot
 from figaroh.calibration.calibration_tools import (
     get_param_from_yaml,
@@ -182,8 +195,8 @@ print("indices of samples with >2 cm deviation: ", del_list)
 # # 1// Errors between estimated position and measured position of markers
 
 fig1, ax1 = plt.subplots(param['NbMarkers'], 1)
-fig1.suptitle(
-    "Relative positional errors between estimated markers and measured markers (m) by samples ")
+# fig1.suptitle(
+    # "Relative positional errors between estimated markers and measured markers (m) by samples ")
 colors = ['blue',
           'red',
           'yellow',
@@ -191,15 +204,17 @@ colors = ['blue',
           ]
 if param['NbMarkers'] == 1:
     ax1.bar(np.arange(param['NbSample']), PEE_dist[i, :])
-    ax1.set_xlabel('Sample')
-    ax1.set_ylabel('Error (meter)')
+    ax1.set_xlabel('Sample',fontsize=25)
+    ax1.set_ylabel('Error (meter)',fontsize=30)
+    ax1.tick_params(axis='both', labelsize=30)
     ax1.grid()
 else:
     for i in range(param['NbMarkers']):
         ax1[i].bar(np.arange(param['NbSample']),
                    PEE_dist[i, :], color=colors[i])
-        ax1[i].set_xlabel('Sample')
-        ax1[i].set_ylabel('Error of marker %s (meter)' % (i+1))
+        ax1[i].set_xlabel('Sample',fontsize=25)
+        ax1[i].set_ylabel('Error of marker %s (meter)' % (i+1),fontsize=25)
+        ax1[i].tick_params(axis='both', labelsize=30)
         ax1[i].grid()
 
 # # 2// plot 3D measured poses and estimated
@@ -210,9 +225,9 @@ PEEm_LM2d = PEEm_LM.reshape((param['NbMarkers']*param['calibration_index'], para
 PEEe_sol2d = PEEe_sol.reshape((param['NbMarkers']*param['calibration_index'], param["NbSample"]))
 for i in range(param['NbMarkers']):
     ax2.scatter3D(PEEm_LM2d[i*3, :], PEEm_LM2d[i*3+1, :],
-                  PEEm_LM2d[i*3+2, :], marker='^', color='blue', label='measured')
+                  PEEm_LM2d[i*3+2, :], marker='^', color='red', label='measured')
     ax2.scatter3D(PEEe_sol2d[i*3, :], PEEe_sol2d[i*3+1, :],
-                  PEEe_sol2d[i*3+2, :], marker='o', color='red', label='estimated')
+                  PEEe_sol2d[i*3+2, :], marker='o', color='green', label='estimated')
 ax2.set_xlabel('X - front (meter)')
 ax2.set_ylabel('Y - side (meter)')
 ax2.set_zlabel('Z - height (meter)')
@@ -224,7 +239,10 @@ fig3 = plt.figure(3)
 ax3 = fig3.add_subplot(111, projection='3d')
 for i in range(param['NbMarkers']):
     ax3.scatter3D(PEEm_LM2d[i*3, :], PEEm_LM2d[i*3+1, :],
-                  PEEm_LM2d[i*3+2, :], s=scatter_size[i, :], color='green')
+                  PEEm_LM2d[i*3+2, :], s=scatter_size[i, :], color='blue')
+ax3.set_xlabel('X - front (meter)')
+ax3.set_ylabel('Y - side (meter)')
+ax3.set_zlabel('Z - height (meter)')
 ax3.grid()
 
 # 4// joint configurations within range bound

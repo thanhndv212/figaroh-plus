@@ -1,8 +1,17 @@
-import pinocchio as pin
-from pinocchio.robot_wrapper import RobotWrapper
-from pinocchio.utils import *
+# Copyright [2022-2023] [CNRS, Toward SAS]
 
-from sys import argv
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+# http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import os
 from os.path import dirname, join, abspath
 
@@ -15,8 +24,9 @@ from mpl_toolkits.mplot3d import Axes3D
 from scipy.optimize import least_squares
 import numpy as np
 
-import csv
-import time
+import yaml
+from yaml.loader import SafeLoader
+import pprint
 
 from figaroh.meshcat_viewer_wrapper import MeshcatVisualizer
 from figaroh.tools.robot import Robot
@@ -33,33 +43,46 @@ from figaroh.calibration.calibration_tools import (
 
 
 # 1/ Load robot model and create a dictionary containing reserved constants
-
+ros_package_path = os.getenv('ROS_PACKAGE_PATH')
+package_dirs = ros_package_path.split(':')
+robot_dir = package_dirs[0] + "/example-robot-data/robots"
 robot = Robot(
-    "tiago_description/robots",
-    "tiago_no_hand_mod.urdf",
+    robot_dir + "/tiago_description/robots/tiago_no_hand.urdf",
+    package_dirs = package_dirs,
     # isFext=True  # add free-flyer joint at base
 )
 model = robot.model
 data = robot.data
 
-EE_measurability = [True, True, True, False, False, False]
-NbSample = 50
-param = get_param(robot, NbSample, end_frame='ee_marker_joint', NbMarkers=4, EE_measurability=EE_measurability)
+
+with open('config/tiago_config.yaml', 'r') as f:
+    config = yaml.load(f, Loader=SafeLoader)
+    pprint.pprint(config['calibration'])
+calib_data = config['calibration']
+param = get_param_from_yaml(robot, calib_data)
 
 #############################################################
 
 # 2/ Base parameters calculation
 q_rand = []
-Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = Calculate_base_kinematics_regressor(
+Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = calculate_base_kinematics_regressor(
     q_rand, model, data, param)
 
-# naming for eeframe markers
-PEE_names = []
-for i in range(param['NbMarkers']):
-    PEE_names.extend(['pEEx_%d' % (i+1), 'pEEy_%d' % (i+1), 'pEEz_%d' % (i+1)])
-params_name = paramsrand_base + PEE_names
-for i, pn in enumerate(params_name):
-    print(i, pn)
+# add markers name to param['param_name']
+add_pee_name(param)
+
+# total calibrating parameter names
+for i, pn in enumerate(param['param_name']):
+        print(i, pn)
+
+# # naming for eeframe markers
+# PEE_names = []
+# for i in range(param['NbMarkers']):
+#     PEE_names.extend(['pEEx_%d' % (i+1), 'pEEy_%d' % (i+1), 'pEEz_%d' % (i+1)])
+# params_name = paramsrand_base + PEE_names
+
+# for i, pn in enumerate(params_name):
+#     print(i, pn)
 
 #############################################################
 
@@ -67,7 +90,7 @@ for i, pn in enumerate(params_name):
 dataSet = 'experimental'  # choose data source 'sample' or 'experimental'
 if dataSet == 'sample':
     # create artificial offsets
-    var_sample, nvars_sample = init_var(param, mode=1)
+    var_sample, nvars_sample = get_LMvariables(param, mode=1, seed=0.05)
     print("%d var_sample: " % nvars_sample, var_sample)
 
     # create sample configurations
@@ -117,10 +140,10 @@ print('updated number of samples: ', param['NbSample'])
 
 
 coeff = 1e-3
-write_to_file = True
 
 
 def cost_func(var, coeff, q, model, data, param,  PEEm):
+    
     PEEe = get_PEE_fullvar(var, q, model, data, param, noise=False)
     res_vect = np.append((PEEm - PEEe), np.sqrt(coeff)
                          * var[6:-param['NbMarkers']*3])
@@ -130,7 +153,10 @@ def cost_func(var, coeff, q, model, data, param,  PEEm):
 
 # initial guess
 # mode = 1: random seed [-0.01, 0.01], mode = 0: init guess = 0
-var_0, nvars = init_var(param, mode=0)
+# var_0, nvars = init_var(param, mode=0)
+var_0, nvars = get_LMvariables(param, mode=0)
+# write base position in initial guess
+var_0[:3] = qBase_0 = np.array([0.5245, 0.3291, -0.02294]) 
 print("initial guess: ", var_0)
 
 # solve
@@ -151,20 +177,28 @@ print("solution: ", res)
 print("minimized cost function: ", rmse)
 print("optimality: ", LM_solve.optimality)
 
-# calculate standard deviation of estimated parameter ( Khalil chapter 11)
-sigma_ro_sq = (LM_solve.cost**2) / \
-    (param['NbSample']*param['calibration_index'] - nvars)
-J = LM_solve.jac
-C_param = sigma_ro_sq*np.linalg.pinv(np.dot(J.T, J))
-std_dev = []
-std_pctg = []
-for i in range(nvars):
-    std_dev.append(np.sqrt(C_param[i, i]))
-    std_pctg.append(abs(np.sqrt(C_param[i, i])/res[i]))
-print("standard deviation: ", std_dev)
+# uncalibrated
+# uncalib_res = var_0
+# uncalib_res[:3] = res[:3]
+# uncalib_res[-12:] = res[-12:]
+# PEEe_uncalib = get_PEE_fullvar(uncalib_res, q_LM, model, data, param, noise=False)
+# rmse_uncalib = np.sqrt(np.mean((PEEe_uncalib-PEEm_LM)**2))
+# print("minimized cost function uncalib: ", rmse_uncalib)
+
+# # calculate standard deviation of estimated parameter ( Khalil chapter 11)
+# sigma_ro_sq = (LM_solve.cost**2) / \
+#     (param['NbSample']*param['calibration_index'] - nvars)
+# J = LM_solve.jac
+# C_param = sigma_ro_sq*np.linalg.pinv(np.dot(J.T, J))
+# std_dev = []
+# std_pctg = []
+# for i in range(nvars):
+#     std_dev.append(np.sqrt(C_param[i, i]))
+#     std_pctg.append(abs(np.sqrt(C_param[i, i])/res[i]))
+# print("standard deviation: ", std_dev)
 
 
-#############################################################
+# #############################################################
 
 # 6/ Plot results
 
@@ -273,121 +307,3 @@ ax4.grid()
 #              res[-3*param['NbMarkers']:], align='center', color='green')
 #     plt.grid()
 plt.show()
-
-#############################################################
-
-# 7/ Write estimated parameters 
-
-
-def write_results_tofile(res, file_type='xacro'):
-    """ Save offset parameters to file
-        file_type = 'csv': for storing only
-        file_type = 'xacro' or 'yaml': for updating kinematic model
-    """
-    torso_list = [0, 1, 2, 3, 4, 5]
-    arm1_list = [6, 7, 8, 11]
-    arm2_list = [13, 16]
-    arm3_list = [19, 22]
-    arm4_list = [24, 27]
-    arm5_list = [30, 33]
-    arm6_list = [36, 39]
-    arm7_list = [43, 46]  # include phiz7
-    total_list = [torso_list, arm1_list, arm2_list, arm3_list, arm4_list,
-                  arm5_list, arm6_list, arm7_list]
-
-    zero_list = []
-    for i in range(len(total_list)):
-        zero_list = [*zero_list, *total_list[i]]
-
-    param_list = np.zeros((param['NbJoint'], 6))
-
-    # torso all zeros
-
-    # arm 1
-    param_list[1, 3] = res[6]
-    param_list[1, 4] = res[7]
-
-    # arm 2
-    param_list[2, 0] = res[8]
-    param_list[2, 2] = res[9]
-    param_list[2, 3] = res[10]
-    param_list[2, 5] = res[11]
-
-    # arm 3
-    param_list[3, 0] = res[12]
-    param_list[3, 2] = res[13]
-    param_list[3, 3] = res[14]
-    param_list[3, 5] = res[15]
-
-    # arm 4
-    param_list[4, 1] = res[16]
-    param_list[4, 2] = res[17]
-    param_list[4, 4] = res[18]
-    param_list[4, 5] = res[19]
-
-    # arm 5
-    param_list[5, 1] = res[20]
-    param_list[5, 2] = res[21]
-    param_list[5, 4] = res[22]
-    param_list[5, 5] = res[23]
-
-    # arm 6
-    param_list[6, 1] = res[24]
-    param_list[6, 2] = res[25]
-    param_list[6, 4] = res[26]
-    param_list[6, 5] = res[27]
-
-    # arm 7
-    param_list[7, 0] = res[28]
-    param_list[7, 2] = res[29]
-    param_list[7, 3] = res[30]
-    param_list[7, 5] = res[31]
-
-    joint_names = [name for i, name in enumerate(model.names)]
-    offset_name = ['_x_offset', '_y_offset', '_z_offset', '_roll_offset',
-                   '_pitch_offset', '_yaw_offset']
-    
-    if file_type == 'xacro':
-        path_save_xacro = join(
-            dirname(dirname(str(abspath(__file__)))),
-            f"data/tiago/post_estimation/offset.xacro")
-        with open(path_save_xacro, "w") as output_file:
-            for i in range(param['NbJoint']):
-                for j in range(6):
-                    update_name = joint_names[i+1] + offset_name[j]
-                    update_value = param_list[i, j]
-                    update_line = "<xacro:property name=\"{}\" value=\"{}\" / >".format(
-                        update_name, update_value)
-                    output_file.write(update_line)
-                    output_file.write('\n')
-
-    elif file_type == 'yaml':
-        path_save_yaml = join(
-            dirname(dirname(str(abspath(__file__)))),
-            f"data/tiago/post_estimation/offset.yaml")
-        with open(path_save_yaml, "w") as output_file:
-            for i in range(param['NbJoint']):
-                for j in range(6):
-                    update_name = joint_names[i+1] + offset_name[j]
-                    update_value = param_list[i, j]
-                    update_line = "{}: {}".format(
-                        update_name, update_value)
-                    output_file.write(update_line)
-                    output_file.write('\n')
-    
-    elif file_type == 'csv':
-        path_save_ep = join(
-            dirname(dirname(str(abspath(__file__)))),
-            f"data/tiago/post_estimation/offset.csv")
-        with open(path_save_ep, "w") as output_file:
-            w = csv.writer(output_file)
-            for i in range(nvars):
-                w.writerow(
-                    [
-                        params_name[i],
-                        res[i],
-                        std_dev[i],
-                        std_pctg[i]
-                    ]
-                )
-############################################################

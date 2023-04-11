@@ -5,7 +5,7 @@ calibration:
   calib_level: full_params
   non_geom: False
   base_frame: universe
-  tool_frame: ee_marker_joint
+  tool_frame: wrist_ft_tool_link
   markers:
     - ref_joint: arm_7_joint
       measure: [True, True, True, False, False, False]
