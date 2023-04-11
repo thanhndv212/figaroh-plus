@@ -97,9 +97,14 @@ for ii in range(model.nq):
 q, dq, ddq = calculate_first_second_order_differentiation(model, q, params_settings)
 
 W = build_regressor_basic(robot, q, dq, ddq, params_settings)
+
+# remove zero cols and build a zero columns free regressor matrix
+idx_e, params_r = get_index_eliminate(W, params_standard, 1e-6)
+W_e = build_regressor_reduced(W, idx_e)
+
 # select only the columns of the regressor corresponding to the structural base
 # parameters
-W_base = W[:, idx_base]
+W_base = W_e[:, idx_base]
 print("When using all trajectories the cond num is", int(np.linalg.cond(W_base)))
 
 # simulation of the measured joint torques
@@ -264,7 +269,7 @@ plt.show()
 COM_max = np.ones((3*37,1)) # subject to be more adapted
 COM_min = -np.ones((3*37,1)) # subject to be more adapted
 
-phi_standard, phi_ref = calculate_standard_parameters(robot, W, tau_meas, COM_max, COM_min, params_settings)
+phi_standard, phi_ref = calculate_standard_parameters(robot, W_e, tau_meast, COM_max, COM_min, params_settings)
 
 print(phi_standard,phi_ref)
 
