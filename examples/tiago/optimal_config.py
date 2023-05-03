@@ -24,13 +24,14 @@ import yaml
 from yaml.loader import SafeLoader
 import pprint
 import picos as pc
+import pandas as pd
 
 import pinocchio as pin
 from pinocchio.robot_wrapper import RobotWrapper
 from figaroh.calibration.calibration_tools import (
     get_param_from_yaml,
     calculate_base_kinematics_regressor,
-    get_param)
+    rank_in_configuration)
 from figaroh.tools.robot import Robot
 
 
@@ -179,7 +180,17 @@ param = get_param_from_yaml(robot, calib_data)
 
 # read sample configuration pool from file, otherwise random configs are generated
 q = []
+with open('data/tiago_calibration_joint_configurations_500_pmb2_hey5.yaml', 'r') as file:
+    configs = yaml.load(file, Loader=SafeLoader)
 
+q_jointNames = configs['calibration_joint_names']
+q_jointConfigs = np.array(configs['calibration_joint_configurations']).T
+df = pd.DataFrame.from_dict(dict(zip(q_jointNames, q_jointConfigs)))
+q = np.zeros([len(df), robot.q0.shape[0]])
+for i in range(len(df)):
+    for j, name in enumerate(q_jointNames):
+        jointidx = rank_in_configuration(model, name)
+        q[i, jointidx] = df[name][i]
 Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = calculate_base_kinematics_regressor(
     q, model, data, param)
 R_rearr = rearrange_rb(R_b, param)
@@ -189,7 +200,10 @@ for ii, param_b in enumerate(paramsrand_base):
 ##find optimal combination of data samples from  a candidate pool (combinatorial optimization)
 
 # required minimum number of configurations
-NbChosen = int(param['NbJoint']*6/param['calibration_index']) + 1
+if param['calib_model'] == 'full_params':
+    NbChosen = int(len(param['actJoint_idx'])*6/param['calibration_index']) + 1
+elif param['calib_model'] == 'joint_offset':
+    NbChosen = int(len(param['actJoint_idx'])/param['calibration_index']) + 1
 
 #### picos optimization ( A-optimality, C-optimality, D-optimality)
 prev_time = time.time()
@@ -245,7 +259,7 @@ ax[1].tick_params(axis='y', labelrotation=30)
 
 # w_list = list(w_dict_sort.values())
 # w_list.sort(reverse=True)
-ax[1].plot(list(w_dict_sort.values()))
+ax[1].scatter(np.arange(len(list(w_dict_sort.values()))), list(w_dict_sort.values()))
 ax[1].set_yscale("log")
 ax[1].spines["top"].set_visible(False)
 ax[1].spines["right"].set_visible(False)
@@ -267,4 +281,4 @@ ax[1].grid(True, linestyle='--')
 # plt.ylabel("criterion value - D optimality")
 # plt.xlabel("iteration")
 # plt.grid()
-# plt.show()
+plt.show()
