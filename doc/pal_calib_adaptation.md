@@ -12,7 +12,7 @@ b. Problems
 - Too many iterations with bad convergence. (500 random configs/ 4-5 hrs of work on average per robot) 
 - No existing cross-validation process of the identified parameters
 
-### 2/ What Figaroh offers to improve the current calibration framwork for TIAGo
+### 2/ What Figaroh offers to improve the current framework
 - Complete model for any desired kinematic chain.
 - Offering selection of joint angle offset/full-set kinematic parameters (URDF compatible) calibration (further level of non-geometric parameters such as joint elasticity (TIAGo 2, CANOPIES), base suspension effect are in development)
 - Optimizer to select a minimal set of experiment configurations (reduced by factor of 10, at least with current framework)
@@ -25,13 +25,22 @@ The toolbox Figaroh to be delivered to PAL will contain the following elements:
 - The installable core package of Figaroh
 - 3 ROS nodes and launch files:
 
-    1/ Experiment design node: generate minimal set of exciting calibration configurations
-        -> Output: yaml file of joint configurations
+    1/ Experiment design: generate minimal set of exciting calibration configurations
+
+        -> Input: joint configurations (.yaml, .csv) 
+
+        -> Output: joint configurations (.yaml, .csv)
     
-    2/ Experiementation and data collection node: excecuting motions visting designed configurations and collect synchronized data including joint encoder readings and camera frame at designed configuration
-        -> Output: csv file of end-effector position and/or orientation + measured joint configurations by encoders
+    2/ Experiementation and data collection: excecuting motions visting designed configurations and collect synchronized data including joint encoder readings and camera frame at designed configuration
+        
+        -> Input: joint configurations (.yaml)
+
+        -> Output: end-effector position and/or orientation; measured joint configurations by encoders (.csv)
     
     3/ Parameters identification node: input experiment data, run least-square algo to identify selected parameters (joint offsets/full-set kinematic parameters) + camera location
-        -> Output: yaml file to update urdf model
 
-- Cross-validation experiments: required more accurate mesuaremnet system or perform a certain iterating task. 
+        -> Input: end-effector position and/or orientation; measured joint configurations by encoders (.csv)
+
+        -> Output: parametes file (.xacro)
+
+- Cross-validation experiments: required more accurate measurement system or perform a certain iterating application
