@@ -11,7 +11,7 @@ First, set up the robotpkg repositories in your source list as explained here: h
 Then, execute:
 ```bash
 sudo apt-get install robotpkg-py36-pinocchio robotpkg-py36-hpp-fcl robotpkg-py36-ndcurves
-pip3 install --user cyipopt numdifftools quadprog numpy scipy
+pip3 install --user cyipopt numdifftools quadprog numpy scipy picos
 ```
 
 ## Features
