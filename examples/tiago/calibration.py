@@ -41,20 +41,19 @@ from figaroh.calibration.calibration_tools import (
     update_forward_kinematics,
     get_LMvariables)
 
-
-# 1/ Load robot model and create a dictionary containing reserved constants
+# 1. Load robot model and create a dictionary containing reserved constants
 ros_package_path = os.getenv('ROS_PACKAGE_PATH')
 package_dirs = ros_package_path.split(':')
 robot_dir = package_dirs[0] + "/example-robot-data/robots"
 robot = Robot(
     robot_dir + "/tiago_description/robots/tiago_no_hand.urdf",
-    package_dirs = package_dirs,
+    package_dirs=package_dirs,
     # isFext=True  # add free-flyer joint at base
 )
 model = robot.model
 data = robot.data
 
-
+# Load robot configuration from YAML file
 with open('config/tiago_config.yaml', 'r') as f:
     config = yaml.load(f, Loader=SafeLoader)
     pprint.pprint(config['calibration'])
@@ -63,37 +62,28 @@ param = get_param_from_yaml(robot, calib_data)
 
 #############################################################
 
-# 2/ Base parameters calculation
+# 2. Base parameters calculation
 q_rand = []
 Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = calculate_base_kinematics_regressor(
     q_rand, model, data, param)
 
-# add markers name to param['param_name']
+# Add markers name to param['param_name']
 add_pee_name(param)
 
-# total calibrating parameter names
+# Display total calibrating parameter names
 for i, pn in enumerate(param['param_name']):
-        print(i, pn)
-
-# # naming for eeframe markers
-# PEE_names = []
-# for i in range(param['NbMarkers']):
-#     PEE_names.extend(['pEEx_%d' % (i+1), 'pEEy_%d' % (i+1), 'pEEz_%d' % (i+1)])
-# params_name = paramsrand_base + PEE_names
-
-# for i, pn in enumerate(params_name):
-#     print(i, pn)
+    print(i, pn)
 
 #############################################################
 
-# 3/ Data collection/generation
-dataSet = 'experimental'  # choose data source 'sample' or 'experimental'
+# 3. Data collection/generation
+dataSet = 'experimental'  # Choose data source 'sample' or 'experimental'
 if dataSet == 'sample':
-    # create artificial offsets
+    # Create artificial offsets
     var_sample, nvars_sample = get_LMvariables(param, mode=1, seed=0.05)
     print("%d var_sample: " % nvars_sample, var_sample)
 
-    # create sample configurations
+    # Create sample configurations
     q_sample = np.empty((param['NbSample'], model.nq))
 
     for i in range(param['NbSample']):
@@ -102,7 +92,7 @@ if dataSet == 'sample':
             param['config_idx']]
         q_sample[i, :] = config
 
-    # create simulated end effector coordinates measures (PEEm)
+    # Create simulated end effector coordinates measures (PEEm)
     PEEm_sample = get_PEE_fullvar(
         var_sample, q_sample, model, data, param)
 
@@ -110,67 +100,81 @@ if dataSet == 'sample':
     PEEm_LM = np.copy(PEEm_sample)
 
 elif dataSet == 'experimental':
-    # read csv file
-    # path = '/home/dvtnguyen/calibration/figaroh/data/tiago/tiago_nov_30_64.csv'
+    # Read CSV file
     path = abspath('data/tiago_nov_30_64.csv')
-    # path = '/home/thanhndv212/Cooking/figaroh/data/tiago/exp_data_nov_64_3011.csv'
 
+    # Load data from file
     PEEm_exp, q_exp = load_data(path, model, param, del_list=[9])
 
     q_LM = np.copy(q_exp)
     PEEm_LM = np.copy(PEEm_exp)
 
 # Remove potential outliers which identified from previous calibration
-
 print(np.shape(PEEm_LM))
 
+# Update the number of samples
 print('updated number of samples: ', param['NbSample'])
 
 
 #############################################################
 
-# 4/ Given a model and configurations (input), end effector positions/locations
+# 4. Given a model and configurations (input), end effector positions/locations
 # (output), solve an optimization problem to find offset params as variables
 
-# # NON-LINEAR model with Levenberg-Marquardt #################
-"""
-    - minimize the difference between measured coordinates of end-effector
-    and its estimated values from DGM by Levenberg-Marquardt
-"""
+# NON-LINEAR model with Levenberg-Marquardt #################
 
+"""
+Minimize the difference between measured coordinates of end-effector
+and its estimated values from DGM by Levenberg-Marquardt
+"""
 
 coeff = 1e-3
 
+def cost_func(var, coeff, q, model, data, param, PEEm):
+    """
+    Cost function for the optimization problem.
 
-def cost_func(var, coeff, q, model, data, param,  PEEm):
+    Args:
+        var (array): Variable parameters.
+        coeff (float): Scaling factor for the variable parameters.
+        q (array): Robot joint configurations.
+        model (pin.Model): Robot model.
+        data (pin.Data): Data structure for the robot model.
+        param (dict): Dictionary of parameters.
+        PEEm (array): Measured end-effector coordinates.
+
+    Returns:
+        res_vect (array): Residual vector for the optimization problem.
+    """
     
     PEEe = get_PEE_fullvar(var, q, model, data, param, noise=False)
     res_vect = np.append((PEEm - PEEe), np.sqrt(coeff)
                          * var[6:-param['NbMarkers']*3])
-    # res_vect = (PEEm - PEEe)
+
     return res_vect
 
-
-# initial guess
+# Initial guess
 # mode = 1: random seed [-0.01, 0.01], mode = 0: init guess = 0
 # var_0, nvars = init_var(param, mode=0)
 var_0, nvars = get_LMvariables(param, mode=0)
-# write base position in initial guess
+
+# Write base position in initial guess
 var_0[:3] = qBase_0 = np.array([0.5245, 0.3291, -0.02294]) 
 print("initial guess: ", var_0)
 
-# solve
-LM_solve = least_squares(cost_func, var_0,  method='lm', verbose=1,
+# Solve the optimization problem
+LM_solve = least_squares(cost_func, var_0, method='lm', verbose=1,
                          args=(coeff, q_LM, model, data, param, PEEm_LM))
 
 #############################################################
 
-# 5/ Result analysis
+# 5. Result analysis
 res = LM_solve.x
+
 # PEE estimated by solution
 PEEe_sol = get_PEE_fullvar(res, q_LM, model, data, param, noise=False)
 
-# root mean square error
+# Root mean square error
 rmse = np.sqrt(np.mean((PEEe_sol-PEEm_LM)**2))
 
 print("solution: ", res)
@@ -198,11 +202,11 @@ print("optimality: ", LM_solve.optimality)
 # print("standard deviation: ", std_dev)
 
 
-# #############################################################
+##############################################################
 
-# 6/ Plot results
+# 6. Plot results
 
-# calculate difference between estimated data and measured data
+# Calculate difference between estimated data and measured data
 delta_PEE = PEEe_sol - PEEm_LM
 PEE_xyz = delta_PEE.reshape((param['NbMarkers']*3, param["NbSample"]))
 PEE_dist = np.zeros((param['NbMarkers'], param["NbSample"]))
@@ -211,7 +215,7 @@ for i in range(param["NbMarkers"]):
         PEE_dist[i, j] = np.sqrt(
             PEE_xyz[i*3, j]**2 + PEE_xyz[i*3 + 1, j]**2 + PEE_xyz[i*3 + 2, j]**2)
 
-# detect "bad" data (outlierrs) => remove outliers, recalibrate 
+# Detect "bad" data (outliers) => remove outliers, recalibrate 
 del_list = []
 scatter_size = np.zeros_like(PEE_dist)
 for i in range(param['NbMarkers']):
@@ -221,7 +225,7 @@ for i in range(param['NbMarkers']):
     scatter_size[i, :] = 20*PEE_dist[i, :]/np.min(PEE_dist[i, :])
 print("indices of samples with >2 cm deviation: ", del_list)
 
-# # 1// Errors between estimated position and measured position of markers
+# i. Errors between estimated position and measured position of markers
 
 fig1, ax1 = plt.subplots(param['NbMarkers'], 1)
 fig1.suptitle(
@@ -244,7 +248,7 @@ else:
         ax1[i].set_ylabel('Error of marker %s (meter)' % (i+1))
         ax1[i].grid()
 
-# # 2// plot 3D measured poses and estimated
+# ii. Plot 3D measured poses and estimated
 fig2 = plt.figure(2)
 fig2.suptitle("Visualization of estimated poses and measured pose in Cartesian")
 ax2 = fig2.add_subplot(111, projection='3d')
@@ -260,7 +264,7 @@ ax2.set_ylabel('Y - side (meter)')
 ax2.set_zlabel('Z - height (meter)')
 ax2.grid()
 
-# 3// visualize relative deviation between measure and estimate
+# ii. Visualize relative deviation between measure and estimate
 fig3 = plt.figure(3)
 ax3 = fig3.add_subplot(111, projection='3d')
 for i in range(param['NbMarkers']):
@@ -268,7 +272,7 @@ for i in range(param['NbMarkers']):
                   PEEm_LM2d[i*3+2, :], s=scatter_size[i, :], color='green')
 ax3.grid()
 
-# 4// joint configurations within range bound
+# iv. Joint configurations within range bound
 fig4 = plt.figure()
 fig4.suptitle("Joint configurations with joint bounds")
 ax4 = fig4.add_subplot(111, projection='3d')
@@ -290,6 +294,7 @@ ax4.set_ylabel('Sample')
 ax4.set_zlabel('Joint')
 ax4.grid()
 
+# # v. Optional plots depending on the dataset
 # if dataSet == 'sample':
 #     plt.figure(5)
 #     plt.barh(params_name, (res - var_sample), align='center')
