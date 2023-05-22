@@ -30,7 +30,8 @@ from pinocchio.robot_wrapper import RobotWrapper
 from figaroh.calibration.calibration_tools import (
     get_param_from_yaml,
     calculate_base_kinematics_regressor,
-    rank_in_configuration)
+    rank_in_configuration,
+    load_data)
 from figaroh.tools.robot import Robot
 
 
@@ -232,7 +233,10 @@ for i in range(len(df)):
     for j, name in enumerate(q_jointNames):
         jointidx = rank_in_configuration(model, name)
         q[i, jointidx] = df[name][i]
+# path = abspath('data/eye_hand_calibration_recorded_data_500_wtorso.csv')
 
+# # Load data from file
+# _, q = load_data(path, model, param)
 # Calculate regressor and individual information matrix
 Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = calculate_base_kinematics_regressor(
     q, model, data, param)
@@ -272,6 +276,21 @@ if len(chosen_config) < min_NbChosen:
 else: 
     print(len(chosen_config), "configs are chosen: ", chosen_config)
 
+# Save congfigs to file
+opt_ids = chosen_config
+opt_configs_values = []
+for opt_id in opt_ids:
+    opt_configs_values.append(configs['calibration_joint_configurations'][opt_id])
+
+opt_configs = configs.copy()
+opt_configs['calibration_joint_configurations'] = list(opt_configs_values)
+
+print(opt_configs)
+with open('data/optimal_tiago_calib_configs_pmb2_hey5.yaml', 'w') as output:
+    yaml.safe_dump(opt_configs, output)
+import json 
+json.dump(opt_configs_values, open('data/optimal_tiago_calib_configs_pmb2_hey5.txt', "w"))
+
 # Plotting
 det_root_list = []
 n_key_list = []
@@ -309,21 +328,4 @@ ax[1].set_yscale("log")
 ax[1].spines["top"].set_visible(False)
 ax[1].spines["right"].set_visible(False)
 ax[1].grid(True, linestyle='--')
-
-# DETMAX optimization
-for i in range(1):
-    prev_time = time.time()
-    DM = Detmax(subX_dict, NbChosen)
-    y = DM.main_algo()
-    x = np.arange(len(y))
-    plt.plot(y)
-    plt.scatter(x[-1], y[-1], c='red', marker="^")
-    print("solve time of detmax: ", time.time() - prev_time)
-    NbChosen += 10
-
-# Plot criterion value for D optimality
-plt.scatter(x[-1], DM.get_critD(list(w_dict_sort.keys())[:NbChosen]), color='g', marker="^")
-plt.ylabel("criterion value - D optimality")
-plt.xlabel("iteration")
-plt.grid()
 plt.show()

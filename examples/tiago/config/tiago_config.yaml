@@ -4,11 +4,13 @@
 calibration:
   calib_level: joint_offset # full_params /joint_offset
   non_geom: False
-  base_frame: xtion_link
-  tool_frame: hand_safety_box
+  base_frame: xtion_rgb_optical_frame
+  tool_frame: hand_tool_link
+  base_to_ref_frame: xtion_link
+  ref_frame: head_2_joint
   markers:
     - ref_joint: arm_7_joint
-      measure: [True, True, True, False, False, False]
+      measure:  [True, True, True, False, False, False]
     # - ref_joint: arm_7_joint
     #   measure: [True, True, True, False, False, False]
     # - ref_joint: arm_7_joint

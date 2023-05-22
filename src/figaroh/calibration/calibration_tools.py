@@ -101,11 +101,17 @@ def get_param_from_yaml(robot, calib_data):
     # Kinematic chain: base frame: start_frame, end-effector frame: end_frame
     start_frame = calib_data['base_frame']  # default
     end_frame = calib_data['tool_frame']
+    base_to_ref_frame = calib_data['base_to_ref_frame']
+    ref_frame = calib_data['ref_frame']
 
     frames = [f.name for f in robot.model.frames]
     assert (start_frame in frames), "Start_frame {} does not exist.".format(start_frame)
 
     assert (end_frame in frames), "End_frame {} does not exist.".format(end_frame)
+
+    assert (base_to_ref_frame in frames), "base_to_ref_frame {} does not exist.".format(base_to_ref_frame)
+
+    assert (ref_frame in frames), "ref_frame {} does not exist.".format(ref_frame)
 
     # q0: default zero configuration
     q0 = robot.q0
@@ -133,18 +139,27 @@ def get_param_from_yaml(robot, calib_data):
 
     # list of calibrating parameters name
     param_name = []
+    if calib_data['base_to_ref_frame'] is not None:
+        base_tpl = ['base_px', 'base_py', 'base_pz', 'base_phix', 'base_phiy', 'base_phiz']
+        param_name += base_tpl
+
     if calib_data['non_geom']:
         # list of elastic gain parameter names
         elastic_gain = []
         axis = ['kx', 'ky', 'kz']
+        axis_tpl = ['PX', 'PY', 'PZ', 'RX', 'RY', 'RZ']
         for j_id, joint_name in enumerate(robot.model.names.tolist()):
             if joint_name == 'universe':
                 axis_motion = 'null'
             else:
-                for ii, ax in enumerate(AXIS_MOTION[j_id]):
-                    if ax == 1:
-                        axis_motion = axis[ii]
-            elastic_gain.append(axis_motion+'_'+joint_name)
+                # for ii, ax in enumerate(AXIS_MOTION[j_id]):
+                #     if ax == 1:
+                #         axis_motion = axis[ii]
+                shortname = robot.model.joints[j_id].shortname() # ONLY TAKE PRISMATIC AND REVOLUTE JOINT
+                for joint_axis in axis_tpl:
+                    if joint_axis in shortname:
+                        axis_motion = joint_axis
+            elastic_gain.append('k_'+axis_motion+'_'+joint_name)
         for i in actJoint_idx:
             param_name.append(elastic_gain[i])
 
@@ -155,6 +170,8 @@ def get_param_from_yaml(robot, calib_data):
         'NbSample': NbSample,
         'start_frame': start_frame,
         'end_frame': end_frame,
+        'base_to_ref_frame': base_to_ref_frame,
+        'ref_frame': ref_frame,
         'IDX_TOOL': IDX_TOOL,
         'tool_joint': tool_joint,
         'eps': 1e-3,
@@ -272,15 +289,27 @@ def get_param(robot, NbSample, start_frame='universe',
     return param
 
 
-def get_joint_offset(joint_names):
+def get_joint_offset(model):
     """ This function give a dictionary of joint offset parameters.
             Input:  joint_names: a list of joint names (from model.names)
-            Output: joint_off: a dictionary of joint offsets.
+            Output: joint_off: a dictionary of joint offsets name indicating axis and joint model.
     """
     joint_off = []
-
-    for i, name in enumerate(joint_names):
-        joint_off.append("off_" + name)
+    joint_names = list(model.names[1:])
+    joints = list(model.joints[1:])
+    assert len(joint_names) == len(joints), "Number of jointnames does not match number of joints! Please check imported model."
+    for id, joint in enumerate(joints):
+        name = joint_names[id]
+        shortname = joint.shortname()
+        if model.name == 'canopies':
+            if 'RevoluteUnaligned' in shortname:
+                shortname = shortname.replace('RevoluteUnaligned','RZ')
+        for i in range(joint.nv):
+            if i > 0:
+                offset_param = shortname.replace('JointModel', 'offset') + f"{i+1}" + '_' + name
+            else:
+                offset_param = shortname.replace('JointModel', 'offset') + '_' + name
+            joint_off.append(offset_param)
 
     phi_jo = [0] * len(joint_off)  # default zero values
     joint_off = dict(zip(joint_off, phi_jo))
@@ -410,7 +439,7 @@ def load_data(path_to_file, model, param, del_list=[]):
     for header in (PEE_headers + joint_headers):
         if header not in csv_headers:
             print("%s does not exist in the file." % header)
-            break
+            df[header] = [0]*len(df)
 
     # Extract marker position/location
     xyz_4Mkr = df[PEE_headers].to_numpy()
@@ -590,16 +619,40 @@ def update_forward_kinematics(model, data, var, q, param):
     # convert translation: add a vector of 3 to SE3.translation
     # convert orientation: convert SE3.rotation 3x3 matrix to vector rpy, add
     #  to vector rpy, convert back to to 3x3 matrix
-    axis_tpl = ['d_px', 'd_py', 'd_pz', 'd_phix', 'd_phiy', 'd_phiz']
-    elas_tpl = ['kx', 'ky', 'kz']
+
+    # name reference of calibration parameters
+    if param['calib_model'] == 'full_params':
+        axis_tpl = ['d_px', 'd_py', 'd_pz', 'd_phix', 'd_phiy', 'd_phiz']
+    elif param['calib_model'] == 'joint_offset':
+        axis_tpl = ['offsetPX', 'offsetPY', 'offsetPZ', 'offsetRX', 'offsetRY', 'offsetRZ'] 
+    elas_tpl = ['kRX', 'kRY', 'kRZ'] # ONLY REVOLUTE JOINT FOR NOW
     pee_tpl = ['pEEx', 'pEEy', 'pEEz', 'phiEEx', 'phiEEy','phiEEz']
+
+    
     # order of joint in variables are arranged as in param['actJoint_idx']
     assert len(var) == len(param['param_name']), "Length of variables != length of params"
     param_dict = dict(zip(param['param_name'], var))
-    origin_model = model.copy()
 
-    # update model.jointPlacements
+    # pre-save original model to catch bugs 
+    origin_model = model.copy()
     updated_params = []
+    start_f = param['start_frame']
+    end_f = param['end_frame']
+    if param['base_to_ref_frame'] is not None:
+        base_tpl = ['base_px', 'base_py', 'base_pz', 'base_phix', 'base_phiy', 'base_phiz']
+        start_f = param['ref_frame']
+        # base frame to ref frame (i.e. Tiago: camera transformation)
+        base_tf = np.zeros(6)
+        for key in param_dict.keys():
+            for base_id, base_ax in enumerate(base_tpl):
+                if base_ax in key:
+                    base_tf[base_id] = param_dict[key]
+                    updated_params.append(key)
+        b_to_cam = get_rel_transform(model, data, param['start_frame'], param['base_to_ref_frame'])
+        cam_to_ref = cartesian_to_SE3(base_tf)
+        bMo = b_to_cam*cam_to_ref
+
+    # update model.jointPlacements with joint 'full_params'/'joint_offset' paramters
     for j_id in param['actJoint_idx']:
         xyz_rpy = np.zeros(6)
         j_name = model.names[j_id]
@@ -611,10 +664,13 @@ def update_forward_kinematics(model, data, var, q, param):
                         xyz_rpy[axis_id] += param_dict[key]
                         updated_params.append(key)
         model = update_joint_placement(model, j_id, xyz_rpy)
-    PEE = np.zeros((param['calibration_index'], param['NbSample']))
+
 
     # get transform
+    PEE = []
     q_ = np.copy(q)
+    PEE_marker = np.zeros((param['calibration_index'], param['NbSample']))
+
     for i in range(param['NbSample']):
         pin.framesForwardKinematics(model, data, q_[i, :])
         pin.updateFramePlacements(model, data)
@@ -631,10 +687,9 @@ def update_forward_kinematics(model, data, var, q, param):
                         if elas in key:
                             param_dict[key] = param_dict[key]*tau_j
                             xyz_rpy[elas_id + 3] += param_dict[key] # +3 to add only on orienation
-                            updated_params.append(key)
                 model = update_joint_placement(model, j_id, xyz_rpy)
             # get relative transform with updated model
-            oMee = get_rel_transform(model, data, param['start_frame'], param['end_frame'])
+            oMee = get_rel_transform(model, data, start_f, end_f)
             # revert model back to origin from added joint elastic error
             for j_id in param['actJoint_idx']:
                 xyz_rpy = np.zeros(6)
@@ -645,24 +700,25 @@ def update_forward_kinematics(model, data, var, q, param):
                         if elas in key:
                             param_dict[key] = param_dict[key]*tau_j
                             xyz_rpy[elas_id + 3] += param_dict[key] # +3 to add only on orienation
-                            updated_params.append(key)
                 model = update_joint_placement(model, j_id, -xyz_rpy)
 
         else:
-            oMee = get_rel_transform(model, data, param['start_frame'], param['end_frame'])
+            oMee = get_rel_transform(model, data, start_f, end_f)
 
-
-        # update last frame if there is 
+        # update first frame/ last frame if there is 
         if len(updated_params) < len(param_dict):
             pee = np.zeros(6)
-            for n_id in range(len(updated_params), len(param_dict)):
-                for axis_id, axis in enumerate(pee_tpl):
-                    if axis in param['param_name'][n_id]:
-                        pee[axis_id] = var[n_id]
+            for key in param_dict.keys():
+                for pee_id, pee_ax in enumerate(pee_tpl):
+                    if pee_ax in key:
+                        pee[pee_id] = param_dict[key]
             eeMf = cartesian_to_SE3(pee)
             oMf = oMee*eeMf
         else:
             oMf = oMee
+        
+        if param['base_to_ref_frame'] is not None:
+            oMf = bMo*oMf
         
         # final transform
         trans = oMf.translation.tolist()
@@ -672,8 +728,10 @@ def update_forward_kinematics(model, data, var, q, param):
         for mea_id, mea in enumerate(param['measurability']):
             if mea:
                 measure.append(loc[mea_id])
-        PEE[:, i] = np.array(measure)
-    PEE = PEE.flatten('C')
+        PEE_marker[:, i] = np.array(measure)
+    PEE_marker = PEE_marker.flatten('C')
+    PEE = np.append(PEE, PEE_marker)
+
     # revert model back to original 
     assert origin_model.jointPlacements != model.jointPlacements, 'before revert'
     for j_id in param['actJoint_idx']:
@@ -686,7 +744,6 @@ def update_forward_kinematics(model, data, var, q, param):
                     if axis in key:
                         xyz_rpy[axis_id] = param_dict[key]
         model = update_joint_placement(model, j_id, -xyz_rpy)
-
     assert origin_model.jointPlacements != model.jointPlacements, 'after revert'
 
     return PEE
@@ -1164,7 +1221,7 @@ def calculate_base_kinematics_regressor(q, model, data, param):
     # obtain joint names
     joint_names = [name for i, name in enumerate(model.names[1:])]
     geo_params = get_geo_offset(joint_names)
-    joint_offsets = get_joint_offset(joint_names)
+    joint_offsets = get_joint_offset(model)
 
     # calculate kinematic regressor with random configs
     if not param["free_flyer"]:
@@ -1225,9 +1282,12 @@ def calculate_base_kinematics_regressor(q, model, data, param):
     R_b = build_baseRegressor(R_e, idx_base)
 
     # update calibrating param['param_name']/calibrating parameters
-    for j in idx_base:
-        param['param_name'].append(paramsrand_e[j])
-
+    if param['calib_model'] == 'full_params':
+        for j in idx_base:
+            param['param_name'].append(paramsrand_e[j])
+    elif param['calib_model'] == 'joint_offset':
+        for i in param['actJoint_idx']:
+            param['param_name'].append(list(joint_offsets.keys())[i-1])
     print('shape of full regressor, reduced regressor, base regressor: ',
           Rrand.shape, Rrand_e.shape, Rrand_b.shape)
     return Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e
