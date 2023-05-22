@@ -649,7 +649,8 @@ def update_forward_kinematics(model, data, var, q, param):
                     base_tf[base_id] = param_dict[key]
                     updated_params.append(key)
         b_to_cam = get_rel_transform(model, data, param['start_frame'], param['base_to_ref_frame'])
-        cam_to_ref = cartesian_to_SE3(base_tf)
+        ref_to_cam = cartesian_to_SE3(base_tf)
+        cam_to_ref = ref_to_cam.actInv(pin.SE3.Identity())
         bMo = b_to_cam*cam_to_ref
 
     # update model.jointPlacements with joint 'full_params'/'joint_offset' paramters

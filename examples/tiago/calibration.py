@@ -241,12 +241,15 @@ while count <2:
     else:
         iterate = False
 # # uncalibrated
-# uncalib_res = var_0
+# var_0[0:6] = [0.0908, 0.08, 0.0, -1.57, 0.0, 0.0]
+# tip variable
+var_0[-param['calibration_index']:] = np.array([ 0.2163, 0.03484, 0.004]) 
+uncalib_res = var_0
 # # uncalib_res[:3] = res[:3]
 # # uncalib_res[-3:] = res[-3:]
-# PEEe_uncalib = update_forward_kinematics(model, data, uncalib_res, q_LM, param)
-# rmse_uncalib = np.sqrt(np.mean((PEEe_uncalib-PEEm_LM)**2))
-# print("minimized cost function uncalib: ", rmse_uncalib)
+PEEe_uncalib = update_forward_kinematics(model, data, uncalib_res, q_LM, param)
+rmse_uncalib = np.sqrt(np.mean((PEEe_uncalib-PEEm_LM)**2))
+print("minimized cost function uncalib: ", rmse_uncalib)
 calib_result = dict(zip(param['param_name'], list(res)))
 # # calculate standard deviation of estimated parameter ( Khalil chapter 11)
 # sigma_ro_sq = (LM_solve.cost**2) / \
