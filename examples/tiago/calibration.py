@@ -184,7 +184,7 @@ var_0, nvars = get_LMvariables(param, mode=0)
 #   <xacro:property name="camera_orientation_p" value="0.0" />
 #   <xacro:property name="camera_orientation_y" value="0.0" />
 # camera varible 
-# var_0[0:6] = [0.0908, 0.08, 0.0, -1.57, 0.0, 0.0]
+var_0[0:6] = [0.0908, 0.08, 0.0, -1.57, 0.0, 0.0]
 # tip variable
 var_0[-param['calibration_index']:] = np.array([ 0.2163, 0.03484, 0.004]) 
 iterate = True
@@ -226,24 +226,25 @@ while count <2:
 
     # detect "bad" data (outlierrs) => remove outliers, recalibrate 
     scatter_size = np.zeros_like(PEE_dist)
-    eps = 0.03
+    eps = 0.02
     for i in range(param['NbMarkers']):
         for k in range(param['NbSample']):
             if PEE_dist[i, k] > eps:
                 del_list.append((i, k))
         scatter_size[i, :] = 20*PEE_dist[i, :]/np.min(PEE_dist[i, :])
     print(f"indices of samples with >{eps} cm deviation: ", del_list)
-    if del_list is not None:
+    if del_list is not None and count <2:
         path = abspath('data/eye_hand_calibration_recorded_data_500_wtorso.csv')
 
         # Load data from file
         PEEm_LM, q_LM = load_data(path, model, param, del_list)
+        param['NbSample'] = q_LM.shape[0]
     else:
         iterate = False
 # # uncalibrated
 # var_0[0:6] = [0.0908, 0.08, 0.0, -1.57, 0.0, 0.0]
 # tip variable
-var_0[-param['calibration_index']:] = np.array([ 0.2163, 0.03484, 0.004]) 
+var_0[-param['calibration_index']:] = np.array([ 0.2163, 0.03484, 0.004, 0., -1.57, -1.57]) 
 uncalib_res = var_0
 # # uncalib_res[:3] = res[:3]
 # # uncalib_res[-3:] = res[-3:]
@@ -266,102 +267,104 @@ calib_result = dict(zip(param['param_name'], list(res)))
 
 ##############################################################
 
-# # 6. Plot results
+# 6. Plot results
 
-# # # 1// Errors between estimated position and measured position of markers
+# # 1// Errors between estimated position and measured position of markers
 
-# fig1, ax1 = plt.subplots(param['NbMarkers'], 1)
-# # fig1.suptitle(
-#     # "Relative positional errors between estimated markers and measured markers (m) by samples ")
-# colors = ['blue',
-#           'red',
-#           'yellow',
-#           'purple'
-#           ]
-# if param['NbMarkers'] == 1:
-#     ax1.bar(np.arange(param['NbSample']), PEE_dist[i, :])
-#     ax1.set_xlabel('Sample',fontsize=25)
-#     ax1.set_ylabel('Error (meter)',fontsize=30)
-#     ax1.tick_params(axis='both', labelsize=30)
-#     ax1.grid()
-# else:
-#     for i in range(param['NbMarkers']):
-#         ax1[i].bar(np.arange(param['NbSample']),
-#                    PEE_dist[i, :], color=colors[i])
-#         ax1[i].set_xlabel('Sample',fontsize=25)
-#         ax1[i].set_ylabel('Error of marker %s (meter)' % (i+1),fontsize=25)
-#         ax1[i].tick_params(axis='both', labelsize=30)
-#         ax1[i].grid()
+fig1, ax1 = plt.subplots(param['NbMarkers'], 1)
+# fig1.suptitle(
+    # "Relative positional errors between estimated markers and measured markers (m) by samples ")
+colors = ['blue',
+          'red',
+          'yellow',
+          'purple'
+          ]
 
-# # # 2// plot 3D measured poses and estimated
-# fig2 = plt.figure(2)
-# fig2.suptitle("Visualization of estimated poses and measured pose in Cartesian")
-# ax2 = fig2.add_subplot(111, projection='3d')
-# PEEm_LM2d = PEEm_LM.reshape((param['NbMarkers']*param['calibration_index'], param["NbSample"]))
-# PEEe_sol2d = PEEe_sol.reshape((param['NbMarkers']*param['calibration_index'], param["NbSample"]))
-# for i in range(param['NbMarkers']):
-#     ax2.scatter3D(PEEm_LM2d[i*3, :], PEEm_LM2d[i*3+1, :],
-#                   PEEm_LM2d[i*3+2, :], marker='^', color='red', label='measured')
-#     ax2.scatter3D(PEEe_sol2d[i*3, :], PEEe_sol2d[i*3+1, :],
-#                   PEEe_sol2d[i*3+2, :], marker='o', color='green', label='estimated')
-# ax2.set_xlabel('X - front (meter)')
-# ax2.set_ylabel('Y - side (meter)')
-# ax2.set_zlabel('Z - height (meter)')
-# ax2.grid()
-# ax2.legend()
+if param['NbMarkers'] == 1:
+    print(param['NbSample'], PEE_dist.shape)
+    ax1.bar(np.arange(param['NbSample']), PEE_dist[i, :])
+    ax1.set_xlabel('Sample',fontsize=25)
+    ax1.set_ylabel('Error (meter)',fontsize=30)
+    ax1.tick_params(axis='both', labelsize=30)
+    ax1.grid()
+else:
+    for i in range(param['NbMarkers']):
+        ax1[i].bar(np.arange(param['NbSample']),
+                   PEE_dist[i, :], color=colors[i])
+        ax1[i].set_xlabel('Sample',fontsize=25)
+        ax1[i].set_ylabel('Error of marker %s (meter)' % (i+1),fontsize=25)
+        ax1[i].tick_params(axis='both', labelsize=30)
+        ax1[i].grid()
 
-# # 3// visualize relative deviation between measure and estimate
-# fig3 = plt.figure(3)
-# ax3 = fig3.add_subplot(111, projection='3d')
-# for i in range(param['NbMarkers']):
-#     ax3.scatter3D(PEEm_LM2d[i*3, :], PEEm_LM2d[i*3+1, :],
-#                   PEEm_LM2d[i*3+2, :], s=scatter_size[i, :], color='blue')
-# ax3.set_xlabel('X - front (meter)')
-# ax3.set_ylabel('Y - side (meter)')
-# ax3.set_zlabel('Z - height (meter)')
-# ax3.grid()
+# # 2// plot 3D measured poses and estimated
+fig2 = plt.figure(2)
+fig2.suptitle("Visualization of estimated poses and measured pose in Cartesian")
+ax2 = fig2.add_subplot(111, projection='3d')
+PEEm_LM2d = PEEm_LM.reshape((param['NbMarkers']*param['calibration_index'], param["NbSample"]))
+PEEe_sol2d = PEEe_sol.reshape((param['NbMarkers']*param['calibration_index'], param["NbSample"]))
+for i in range(param['NbMarkers']):
+    ax2.scatter3D(PEEm_LM2d[i*3, :], PEEm_LM2d[i*3+1, :],
+                  PEEm_LM2d[i*3+2, :], marker='^', color='red', label='measured')
+    ax2.scatter3D(PEEe_sol2d[i*3, :], PEEe_sol2d[i*3+1, :],
+                  PEEe_sol2d[i*3+2, :], marker='o', color='green', label='estimated')
+ax2.set_xlabel('X - front (meter)')
+ax2.set_ylabel('Y - side (meter)')
+ax2.set_zlabel('Z - height (meter)')
+ax2.grid()
+ax2.legend()
 
-# # 4// joint configurations within range bound
-# fig4 = plt.figure()
-# fig4.suptitle("Joint configurations with joint bounds")
-# ax4 = fig4.add_subplot(111, projection='3d')
-# lb = ub = []
-# for j in param['config_idx']:
-#     # model.names does not accept index type of numpy int64
-#     # and model.lowerPositionLimit index lag to model.names by 1
-#     lb = np.append(lb, model.lowerPositionLimit[j])
-#     ub = np.append(ub, model.upperPositionLimit[j])
-# q_actJoint = q_LM[:, param['config_idx']]
-# sample_range = np.arange(param['NbSample'])
-# for i in range(len(param['actJoint_idx'])):
-#     ax4.scatter3D(q_actJoint[:, i], sample_range, i)
-# for i in range(len(param['actJoint_idx'])):
-#     ax4.plot([lb[i], ub[i]], [sample_range[0],
-#              sample_range[0]], [i, i])
-# ax4.set_xlabel('Angle (rad)')
-# ax4.set_ylabel('Sample')
-# ax4.set_zlabel('Joint')
-# ax4.grid()
+# 3// visualize relative deviation between measure and estimate
+fig3 = plt.figure(3)
+ax3 = fig3.add_subplot(111, projection='3d')
+for i in range(param['NbMarkers']):
+    ax3.scatter3D(PEEm_LM2d[i*3, :], PEEm_LM2d[i*3+1, :],
+                  PEEm_LM2d[i*3+2, :], s=scatter_size[i, :], color='blue')
+ax3.set_xlabel('X - front (meter)')
+ax3.set_ylabel('Y - side (meter)')
+ax3.set_zlabel('Z - height (meter)')
+ax3.grid()
+
+# 4// joint configurations within range bound
+fig4 = plt.figure()
+fig4.suptitle("Joint configurations with joint bounds")
+ax4 = fig4.add_subplot(111, projection='3d')
+lb = ub = []
+for j in param['config_idx']:
+    # model.names does not accept index type of numpy int64
+    # and model.lowerPositionLimit index lag to model.names by 1
+    lb = np.append(lb, model.lowerPositionLimit[j])
+    ub = np.append(ub, model.upperPositionLimit[j])
+q_actJoint = q_LM[:, param['config_idx']]
+sample_range = np.arange(param['NbSample'])
+for i in range(len(param['actJoint_idx'])):
+    ax4.scatter3D(q_actJoint[:, i], sample_range, i)
+for i in range(len(param['actJoint_idx'])):
+    ax4.plot([lb[i], ub[i]], [sample_range[0],
+             sample_range[0]], [i, i])
+ax4.set_xlabel('Angle (rad)')
+ax4.set_ylabel('Sample')
+ax4.set_zlabel('Joint')
+ax4.grid()
 
 
-# # # v. Optional plots depending on the dataset
-# # if dataSet == 'sample':
-# #     plt.figure(5)
-# #     plt.barh(params_name, (res - var_sample), align='center')
-# #     plt.grid()
-# # elif dataSet == 'experimental':
-# #     plt.figure(5)
-# #     plt.barh(params_name[0:6], res[0:6], align='center', color='blue')
-# #     plt.grid()
-# #     plt.figure(6)
-# #     plt.barh(params_name[6:-3*param['NbMarkers']],
-# #              res[6:-3*param['NbMarkers']], align='center', color='orange')
-# #     plt.grid()
-# #     plt.figure(7)
-# #     plt.barh(params_name[-3*param['NbMarkers']:],
-# #              res[-3*param['NbMarkers']:], align='center', color='green')
-# #     plt.grid()
-# plt.show()
+# # v. Optional plots depending on the dataset
+# if dataSet == 'sample':
+#     plt.figure(5)
+#     plt.barh(params_name, (res - var_sample), align='center')
+#     plt.grid()
+# elif dataSet == 'experimental':
+#     plt.figure(5)
+#     plt.barh(params_name[0:6], res[0:6], align='center', color='blue')
+#     plt.grid()
+#     plt.figure(6)
+#     plt.barh(params_name[6:-3*param['NbMarkers']],
+#              res[6:-3*param['NbMarkers']], align='center', color='orange')
+#     plt.grid()
+#     plt.figure(7)
+#     plt.barh(params_name[-3*param['NbMarkers']:],
+#              res[-3*param['NbMarkers']:], align='center', color='green')
+#     plt.grid()
+plt.show()
 ##############################################################
 
 # # 6. Save to file
@@ -381,11 +384,11 @@ for idx in param['actJoint_idx']:
             calibration_parameters[joint+'_joint_offset'] = calib_result[key]
 
 path_save_xacro = abspath('data/offset.xacro')
-with open(path_save_xacro, "w") as output_file:
-    for parameter in calibration_parameters.keys():
-            update_name = parameter
-            update_value = calibration_parameters[parameter]
-            update_line = "<xacro:property name=\"{}\" value=\"{}\" / >".format(
-                update_name, update_value)
-            output_file.write(update_line)
-            output_file.write('\n')
+# with open(path_save_xacro, "w") as output_file:
+#     for parameter in calibration_parameters.keys():
+#             update_name = parameter
+#             update_value = calibration_parameters[parameter]
+#             update_line = "<xacro:property name=\"{}\" value=\"{}\" / >".format(
+#                 update_name, update_value)
+#             output_file.write(update_line)
+#             output_file.write('\n')
