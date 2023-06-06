@@ -146,8 +146,7 @@ def get_param_from_yaml(robot, calib_data):
     if calib_data['non_geom']:
         # list of elastic gain parameter names
         elastic_gain = []
-        axis = ['kx', 'ky', 'kz']
-        axis_tpl = ['PX', 'PY', 'PZ', 'RX', 'RY', 'RZ']
+        joint_axes = ['PX', 'PY', 'PZ', 'RX', 'RY', 'RZ']
         for j_id, joint_name in enumerate(robot.model.names.tolist()):
             if joint_name == 'universe':
                 axis_motion = 'null'
@@ -156,9 +155,12 @@ def get_param_from_yaml(robot, calib_data):
                 #     if ax == 1:
                 #         axis_motion = axis[ii]
                 shortname = robot.model.joints[j_id].shortname() # ONLY TAKE PRISMATIC AND REVOLUTE JOINT
-                for joint_axis in axis_tpl:
-                    if joint_axis in shortname:
-                        axis_motion = joint_axis
+                for ja in joint_axes:
+                    if ja in shortname:
+                        axis_motion = ja
+                    elif 'RevoluteUnaligned' in shortname:
+                        axis_motion = 'RZ' # hard coded fix for canopies
+
             elastic_gain.append('k_'+axis_motion+'_'+joint_name)
         for i in actJoint_idx:
             param_name.append(elastic_gain[i])
@@ -625,7 +627,7 @@ def update_forward_kinematics(model, data, var, q, param):
         axis_tpl = ['d_px', 'd_py', 'd_pz', 'd_phix', 'd_phiy', 'd_phiz']
     elif param['calib_model'] == 'joint_offset':
         axis_tpl = ['offsetPX', 'offsetPY', 'offsetPZ', 'offsetRX', 'offsetRY', 'offsetRZ'] 
-    elas_tpl = ['kRX', 'kRY', 'kRZ'] # ONLY REVOLUTE JOINT FOR NOW
+    elas_tpl = ['k_PX', 'k_PY', 'k_PZ', 'k_RX', 'k_RY', 'k_RZ'] # ONLY REVOLUTE JOINT FOR NOW
     pee_tpl = ['pEEx', 'pEEy', 'pEEz', 'phiEEx', 'phiEEy','phiEEz']
 
     
@@ -682,25 +684,30 @@ def update_forward_kinematics(model, data, var, q, param):
             for j_id in param['actJoint_idx']:
                 xyz_rpy = np.zeros(6)
                 j_name = model.names[j_id]
-                tau_j = tau[j_id - 1] # nq = njoints -1 
-                if j_name in key:
-                    for elas_id, elas in enumerate(elas_tpl):
-                        if elas in key:
-                            param_dict[key] = param_dict[key]*tau_j
-                            xyz_rpy[elas_id + 3] += param_dict[key] # +3 to add only on orienation
+                tau_j = tau[j_id - 1] # nq = njoints -1
+                for key in param_dict.keys():
+                    if j_name in key:
+                        for elas_id, elas in enumerate(elas_tpl):
+                            if elas in key:
+                                delta_jointPos = param_dict[key]*tau_j
+                                xyz_rpy[elas_id] += delta_jointPos # +3 to add only on orienation
+                                updated_params.append(key)
                 model = update_joint_placement(model, j_id, xyz_rpy)
+
             # get relative transform with updated model
             oMee = get_rel_transform(model, data, start_f, end_f)
+
             # revert model back to origin from added joint elastic error
             for j_id in param['actJoint_idx']:
                 xyz_rpy = np.zeros(6)
                 j_name = model.names[j_id]
-                tau_j = tau[j_id - 1] # nq = njoints -1 
-                if j_name in key:
-                    for elas_id, elas in enumerate(elas_tpl):
-                        if elas in key:
-                            param_dict[key] = param_dict[key]*tau_j
-                            xyz_rpy[elas_id + 3] += param_dict[key] # +3 to add only on orienation
+                tau_j = tau[j_id - 1] # nq = njoints -1
+                for key in param_dict.keys():
+                    if j_name in key:
+                        for elas_id, elas in enumerate(elas_tpl):
+                            if elas in key:
+                                delta_jointPos = param_dict[key]*tau_j
+                                xyz_rpy[elas_id] += delta_jointPos # +3 to add only on orienation
                 model = update_joint_placement(model, j_id, -xyz_rpy)
 
         else:
