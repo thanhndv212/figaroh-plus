@@ -864,8 +864,8 @@
     <parent link="arm_right_6_link"/>
     <child link="arm_right_7_link"/>
     <axis xyz="0 0 -1"/>
-    <limit effort="50" lower="-3.6" upper="1.3701" velocity="1.95"/>
-    <safety_controller k_position="20" k_velocity="20" soft_lower_limit="-3.53" soft_upper_limit="1.3001"/>
+    <limit effort="50" lower="-2.5044" upper="2.5044" velocity="1.95"/>
+    <safety_controller k_position="20" k_velocity="20" soft_lower_limit="-2.4344" soft_upper_limit="2.4344"/>
   </joint>
   <!-- Gazebo tags -->
   <gazebo reference="arm_right_1_link">
@@ -1215,8 +1215,8 @@
     <parent link="arm_left_6_link"/>
     <child link="arm_left_7_link"/>
     <axis xyz="0 0 1"/>
-    <limit effort="50" lower="-3.6" upper="1.3701" velocity="1.95"/>
-    <safety_controller k_position="20" k_velocity="20" soft_lower_limit="-3.53" soft_upper_limit="1.3001"/>
+    <limit effort="50" lower="-2.5044" upper="2.5044" velocity="1.95"/>
+    <safety_controller k_position="20" k_velocity="20" soft_lower_limit="-2.4344" soft_upper_limit="2.4344"/>
   </joint>
   <!-- Gazebo tags -->
   <gazebo reference="arm_left_1_link">
@@ -1365,7 +1365,7 @@
   <!-- camera body, with origin at bottom screw mount -->
   <joint name="camera_right_d435_joint" type="fixed">
     <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
-    <parent link="camera_support_right_link"/>
+    <parent link="sliding_camera_right_link"/>
     <child link="camera_right_d435_bottom_screw_frame"/>
   </joint>
   <link name="camera_right_d435_bottom_screw_frame"/>
@@ -1583,23 +1583,23 @@
       <inertia ixx="0.000301490971818317" ixy="1.75689502966857E-06" ixz="-3.19430552225728E-06" iyy="0.000367415088227513" iyz="-4.07947845633224E-06" izz="0.000444887114559986"/>
     </inertial>
     <visual>
-      <origin rpy="0 0 0" xyz="0 0 0.0"/>
+      <origin rpy="-1.5708 -1.5708 0" xyz="0 0 0.0482"/>
       <geometry>
         <mesh filename="package://canopies_description/meshes/end-effector/base_gripper_link.STL"/>
       </geometry>
       <material name="">
-        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+        <color rgba="0.894117647058823 0.913725490196078 0.929411764705882 1"/>
       </material>
     </visual>
     <collision>
-      <origin rpy="0.0 0.0 0" xyz="0 0 0.0"/>
+      <origin rpy="-1.5708 -1.5708 0" xyz="0 0 0.0485"/>
       <geometry>
         <mesh filename="package://canopies_description/meshes/end-effector/base_gripper_link.STL"/>
       </geometry>
     </collision>
   </link>
   <joint name="base_gripper_right_joint" type="fixed">
-    <origin rpy="0 3.1415 0." xyz="0 0 0.0005"/>
+    <origin rpy="0 3.1415 0." xyz="0 0 0.001"/>
     <parent link="arm_right_7_link"/>
     <child link="base_gripper_right_link"/>
   </joint>
@@ -1626,7 +1626,7 @@
     </collision>
   </link>
   <joint name="inner_finger_1_right_joint" type="revolute">
-    <origin rpy="1.5708 -0.2618 -3.1416" xyz="0.013977 0.0125 0.13388"/>
+    <origin rpy="1.5708 -0.2618 -3.1416" xyz="0.014 0.011 0.07885"/>
     <parent link="base_gripper_right_link"/>
     <child link="inner_finger_1_right_link"/>
     <axis xyz="0 0 1"/>
@@ -1698,7 +1698,7 @@
     </collision>
   </link>
   <joint name="outer_finger_1_right_joint" type="revolute">
-    <origin rpy="1.5708 -0.2618 3.1416" xyz="0.0288 -0.00 0.12935"/>
+    <origin rpy="1.5708 -0.2618 3.1416" xyz="0.028823 -0.002 0.074318"/>
     <parent link="base_gripper_right_link"/>
     <child link="outer_finger_1_right_link"/>
     <axis xyz="0 0 -1"/>
@@ -1741,7 +1741,7 @@
     </collision>
   </link>
   <joint name="inner_finger_2_right_joint" type="revolute">
-    <origin rpy="1.5708 0.2618 -3.1416" xyz="-0.0139772762825847014 0.0124999999999999 0.133881761423197"/>
+    <origin rpy="1.5708 0.2618 -3.1416" xyz="-0.014 0.011 0.07885"/>
     <parent link="base_gripper_right_link"/>
     <child link="inner_finger_2_right_link"/>
     <axis xyz="0 0 -1"/>
@@ -1827,7 +1827,7 @@
     </collision>
   </link>
   <joint name="outer_finger_2_right_joint" type="revolute">
-    <origin rpy="1.5708 0.2618 -3.1416" xyz="-0.0288 -0.00 0.12935"/>
+    <origin rpy="1.5708 0.2618 -3.1416" xyz="-0.028823 -0.003 0.074318"/>
     <parent link="base_gripper_right_link"/>
     <child link="outer_finger_2_right_link"/>
     <axis xyz="0 0 -1"/>
@@ -1848,7 +1848,7 @@
     </plugin>
   </gazebo>
   <!-- Camera and its relative position to the gripper -->
-  <link name="camera_support_right_link">
+  <link name="bracelet_right_link">
     <inertial>
       <origin rpy="0 0 0" xyz="2.79734083848452E-09 0.042751821136237 0.0281127266298947"/>
       <mass value="0.00498877703130037"/>
@@ -1857,212 +1857,50 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/camera_link.STL"/>
+        <mesh filename="package://canopies_description/meshes/end-effector/camera_rotational_link.STL"/>
       </geometry>
       <material name="">
-        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+        <color rgba="0.298039215686275 0.298039215686275 0.298039215686275 1"/>
       </material>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/camera_link.STL"/>
+        <mesh filename="package://canopies_description/meshes/end-effector/camera_rotational_link.STL"/>
       </geometry>
     </collision>
   </link>
-  <joint name="camera_support_right_joint" type="fixed">
-    <origin rpy="-1.5707963267949 -1.5707963267949 0" xyz="-0.00653452199318369 0.0634848274170939 -0.01010"/>
+  <joint name="bracelet_right_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="base_gripper_right_link"/>
-    <child link="camera_support_right_link"/>
+    <child link="bracelet_right_link"/>
   </joint>
-  <!-- Cutting system -->
-  <link name="linear_actuator_1_right_input">
+  <link name="sliding_camera_right_link">
     <inertial>
-      <origin rpy="0 0 0" xyz="-0.0313814290043927 0.00137958022709721 0.00215959232823035"/>
-      <mass value="0.0148966281742273"/>
-      <inertia ixx="7.00775734567922E-07" ixy="3.18033015222363E-08" ixz="-2.94802587930061E-08" iyy="2.21934679869254E-06" iyz="-1.18008652512124E-09" izz="2.40965199008803E-06"/>
+      <origin rpy="0 0 0" xyz="0.00191415786419463 0.000899730089904842 0.0103578716883767"/>
+      <mass value="0.045942703958924"/>
+      <inertia ixx="2.49330078505231E-05" ixy="9.43998542256713E-08" ixz="9.3926537239295E-07" iyy="8.19626949652857E-06" iyz="-9.45103591650873E-09" izz="2.88263143775324E-05"/>
     </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/linear_actuator_1_input.STL"/>
+        <mesh filename="package://canopies_description/meshes/end-effector/sliding_camera_link.STL"/>
       </geometry>
       <material name="">
-        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+        <color rgba="1 1 1 1"/>
       </material>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/linear_actuator_1_input.STL"/>
+        <mesh filename="package://canopies_description/meshes/end-effector/sliding_camera_link.STL"/>
       </geometry>
     </collision>
   </link>
-  <joint name="linear_actuator_1_right_input_joint" type="fixed">
-    <origin rpy="1.5708 1.3023 0" xyz="-0.013 0.0333 0.11785"/>
-    <parent link="base_gripper_right_link"/>
-    <child link="linear_actuator_1_right_input"/>
-    <axis xyz="0 0 -1"/>
-    <limit effort="0" lower="0" upper="0" velocity="0"/>
-  </joint>
-  <link name="linear_actuator_1_right_output">
-    <inertial>
-      <origin rpy="0 0 0" xyz="-9.93550462973815E-05 0.00213728194825592 -0.00353203112848559"/>
-      <mass value="0.00412397660917704"/>
-      <inertia ixx="1.17923485424745E-07" ixy="-2.33035451186075E-10" ixz="2.17872370098491E-11" iyy="1.0873568654128E-07" iyz="-2.95780250620756E-12" izz="4.26138315954536E-08"/>
-    </inertial>
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/linear_actuator_1_output.STL"/>
-      </geometry>
-      <material name="">
-        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
-      </material>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/linear_actuator_1_output.STL"/>
-      </geometry>
-    </collision>
-  </link>
-  <joint name="linear_actuator_1_right_output_joint" type="fixed">
-    <origin rpy="-1.5708 0 1.5708" xyz="-0.088013 0 0.00805"/>
-    <parent link="linear_actuator_1_right_input"/>
-    <child link="linear_actuator_1_right_output"/>
-    <axis xyz="0 0 -1"/>
-    <limit effort="100" lower="-0.03" upper="0.0" velocity="2"/>
-  </joint>
-  <link name="right_blade_arm_right">
-    <inertial>
-      <origin rpy="0 0 0" xyz="0.00293665683887821 -0.00868178925313144 -0.00147250695433832"/>
-      <mass value="0.0162993607075381"/>
-      <inertia ixx="2.76917831015652E-06" ixy="-2.2978596304209E-06" ixz="-3.47777731962179E-08" iyy="4.40320361088305E-06" iyz="-1.59653938958749E-08" izz="7.14988203878181E-06"/>
-    </inertial>
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/right_blade.STL"/>
-      </geometry>
-      <material name="">
-        <color rgba="0.776470588235294 0.756862745098039 0.737254901960784 1"/>
-      </material>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/right_blade.STL"/>
-      </geometry>
-    </collision>
-  </link>
-  <joint name="right_blade_arm_right_joint" type="fixed">
-    <origin rpy="3.14 -1.5708 1.57" xyz="0 0.026 0.21685"/>
-    <parent link="base_gripper_right_link"/>
-    <child link="right_blade_arm_right"/>
-    <axis xyz="0 0 -1"/>
-    <limit effort="0" lower="0" upper="0" velocity="0"/>
-  </joint>
-  <link name="linear_actuator_2_right_input">
-    <inertial>
-      <origin rpy="0 0 0" xyz="-0.0313814290941533 -0.0013795802214186 -0.00215959231980963"/>
-      <mass value="0.0148966281282571"/>
-      <inertia ixx="7.00775734007478E-07" ixy="-3.18033030957232E-08" ixz="2.94802559569699E-08" iyy="2.21934677964085E-06" iyz="-1.18008628681898E-09" izz="2.40965197133936E-06"/>
-    </inertial>
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/linear_actuator_2_input.STL"/>
-      </geometry>
-      <material name="">
-        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
-      </material>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/linear_actuator_2_input.STL"/>
-      </geometry>
-    </collision>
-  </link>
-  <joint name="linear_actuator_2_right_input_joint" type="fixed">
-    <origin rpy="-1.5708 1.3023 3.1416" xyz="0.013 0.0303 0.11785"/>
-    <parent link="base_gripper_right_link"/>
-    <child link="linear_actuator_2_right_input"/>
-    <axis xyz="0 0 -1"/>
-    <limit effort="0" lower="0" upper="0" velocity="0"/>
-  </joint>
-  <link name="linear_actuator_2_right_output">
-    <inertial>
-      <origin rpy="0 0 0" xyz="5.3588215381116E-05 0.00449793149820971 -0.00441880154832637"/>
-      <mass value="0.00329570302607353"/>
-      <inertia ixx="1.08529819731116E-07" ixy="4.5596672225505E-10" ixz="-9.17796448544702E-12" iyy="9.76548077358887E-08" iyz="-5.78244892942455E-12" izz="3.42138534522638E-08"/>
-    </inertial>
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/linear_actuator_2_output.STL"/>
-      </geometry>
-      <material name="">
-        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
-      </material>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/linear_actuator_2_output.STL"/>
-      </geometry>
-    </collision>
-  </link>
-  <joint name="linear_actuator_2_right_output_joint" type="fixed">
-    <origin rpy="-1.5708 0 1.5708" xyz="-0.088013 0 0.00355"/>
-    <parent link="linear_actuator_2_right_input"/>
-    <child link="linear_actuator_2_right_output"/>
-    <axis xyz="0 0 -1"/>
-    <limit effort="100" lower="-0.03" upper="0.0" velocity="2"/>
-    <mimic joint="linear_actuator_1_right_output_joint" multiplier="1" offset="0"/>
-  </joint>
-  <gazebo>
-    <plugin filename="libroboticsgroup_gazebo_mimic_joint_plugin.so" name="linear_actuator_right_outputmimic_joint_plugin">
-      <joint>linear_actuator_1_right_output_joint</joint>
-      <mimicJoint>linear_actuator_2_right_output_joint</mimicJoint>
-      <multiplier>1.0</multiplier>
-      <offset>0.0</offset>
-      <sensitiveness>0.0</sensitiveness>
-      <!-- if absolute difference between setpoint and process value is below this threshold, do nothing; 0.0 = disable [rad] -->
-      <maxEffort>0.05</maxEffort>
-      <!-- only taken into account if has_pid:=true [Nm] -->
-      <robotNamespace/>
-    </plugin>
-  </gazebo>
-  <link name="left_blade_arm_right">
-    <inertial>
-      <origin rpy="0 0 0" xyz="-0.00293665683888321 0.00868178925302026 -0.00147250695433832"/>
-      <mass value="0.0162993607075382"/>
-      <inertia ixx="2.76917831015914E-06" ixy="-2.29785963042184E-06" ixz="3.477777319621E-08" iyy="4.40320361088048E-06" iyz="1.59653938958951E-08" izz="7.14988203878186E-06"/>
-    </inertial>
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/left_blade.STL"/>
-      </geometry>
-      <material name="">
-        <color rgba="0.776470588235294 0.756862745098039 0.737254901960784 1"/>
-      </material>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/left_blade.STL"/>
-      </geometry>
-    </collision>
-  </link>
-  <joint name="left_blade_arm_right_joint" type="fixed">
-    <origin rpy="1.5708 1.5708 0" xyz="0 0.026 0.21685"/>
-    <parent link="base_gripper_right_link"/>
-    <child link="left_blade_arm_right"/>
-    <axis xyz="0 0 -1"/>
-    <limit effort="0" lower="0" upper="0" velocity="0"/>
+  <joint name="sliding_camera_right_joint" type="fixed">
+    <origin rpy="-1.5708 -1.5708 0" xyz="0 0.05352 -0.032425"/>
+    <parent link="bracelet_right_link"/>
+    <child link="sliding_camera_right_link"/>
   </joint>
   <transmission name="gripper_right_trans">
     <type>transmission_interface/SimpleTransmission</type>
@@ -2075,14 +1913,13 @@
       <hardwareInterface>hardware_interface/JointStateInterface</hardwareInterface>
     </joint>
   </transmission>
-  <!--<xacro:mimic_gripper_transmission name="linear_actuator_1_${side}_output"  side="${side}" reduction="1.0"/>-->
   <material name="camera_left_d435_aluminum">
     <color rgba="0.5 0.5 0.5 1"/>
   </material>
   <!-- camera body, with origin at bottom screw mount -->
   <joint name="camera_left_d435_joint" type="fixed">
     <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
-    <parent link="camera_support_left_link"/>
+    <parent link="sliding_camera_left_link"/>
     <child link="camera_left_d435_bottom_screw_frame"/>
   </joint>
   <link name="camera_left_d435_bottom_screw_frame"/>
@@ -2300,23 +2137,23 @@
       <inertia ixx="0.000301490971818317" ixy="1.75689502966857E-06" ixz="-3.19430552225728E-06" iyy="0.000367415088227513" iyz="-4.07947845633224E-06" izz="0.000444887114559986"/>
     </inertial>
     <visual>
-      <origin rpy="0 0 0" xyz="0 0 0.0"/>
+      <origin rpy="-1.5708 -1.5708 0" xyz="0 0 0.0482"/>
       <geometry>
         <mesh filename="package://canopies_description/meshes/end-effector/base_gripper_link.STL"/>
       </geometry>
       <material name="">
-        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+        <color rgba="0.894117647058823 0.913725490196078 0.929411764705882 1"/>
       </material>
     </visual>
     <collision>
-      <origin rpy="0.0 0.0 0" xyz="0 0 0.0"/>
+      <origin rpy="-1.5708 -1.5708 0" xyz="0 0 0.0485"/>
       <geometry>
         <mesh filename="package://canopies_description/meshes/end-effector/base_gripper_link.STL"/>
       </geometry>
     </collision>
   </link>
   <joint name="base_gripper_left_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 -0.0005"/>
+    <origin rpy="0 0 -1.117359787" xyz="0 0 -0.001"/>
     <parent link="arm_left_7_link"/>
     <child link="base_gripper_left_link"/>
   </joint>
@@ -2343,7 +2180,7 @@
     </collision>
   </link>
   <joint name="inner_finger_1_left_joint" type="revolute">
-    <origin rpy="1.5708 -0.2618 -3.1416" xyz="0.013977 0.0125 0.13388"/>
+    <origin rpy="1.5708 -0.2618 -3.1416" xyz="0.014 0.011 0.07885"/>
     <parent link="base_gripper_left_link"/>
     <child link="inner_finger_1_left_link"/>
     <axis xyz="0 0 1"/>
@@ -2415,7 +2252,7 @@
     </collision>
   </link>
   <joint name="outer_finger_1_left_joint" type="revolute">
-    <origin rpy="1.5708 -0.2618 3.1416" xyz="0.0288 -0.00 0.12935"/>
+    <origin rpy="1.5708 -0.2618 3.1416" xyz="0.028823 -0.002 0.074318"/>
     <parent link="base_gripper_left_link"/>
     <child link="outer_finger_1_left_link"/>
     <axis xyz="0 0 -1"/>
@@ -2458,7 +2295,7 @@
     </collision>
   </link>
   <joint name="inner_finger_2_left_joint" type="revolute">
-    <origin rpy="1.5708 0.2618 -3.1416" xyz="-0.0139772762825847014 0.0124999999999999 0.133881761423197"/>
+    <origin rpy="1.5708 0.2618 -3.1416" xyz="-0.014 0.011 0.07885"/>
     <parent link="base_gripper_left_link"/>
     <child link="inner_finger_2_left_link"/>
     <axis xyz="0 0 -1"/>
@@ -2544,7 +2381,7 @@
     </collision>
   </link>
   <joint name="outer_finger_2_left_joint" type="revolute">
-    <origin rpy="1.5708 0.2618 -3.1416" xyz="-0.0288 -0.00 0.12935"/>
+    <origin rpy="1.5708 0.2618 -3.1416" xyz="-0.028823 -0.003 0.074318"/>
     <parent link="base_gripper_left_link"/>
     <child link="outer_finger_2_left_link"/>
     <axis xyz="0 0 -1"/>
@@ -2565,7 +2402,7 @@
     </plugin>
   </gazebo>
   <!-- Camera and its relative position to the gripper -->
-  <link name="camera_support_left_link">
+  <link name="bracelet_left_link">
     <inertial>
       <origin rpy="0 0 0" xyz="2.79734083848452E-09 0.042751821136237 0.0281127266298947"/>
       <mass value="0.00498877703130037"/>
@@ -2574,212 +2411,50 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/camera_link.STL"/>
+        <mesh filename="package://canopies_description/meshes/end-effector/camera_rotational_link.STL"/>
       </geometry>
       <material name="">
-        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+        <color rgba="0.298039215686275 0.298039215686275 0.298039215686275 1"/>
       </material>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/camera_link.STL"/>
+        <mesh filename="package://canopies_description/meshes/end-effector/camera_rotational_link.STL"/>
       </geometry>
     </collision>
   </link>
-  <joint name="camera_support_left_joint" type="fixed">
-    <origin rpy="-1.5707963267949 -1.5707963267949 0" xyz="-0.00653452199318369 0.0634848274170939 -0.01010"/>
+  <joint name="bracelet_left_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="base_gripper_left_link"/>
-    <child link="camera_support_left_link"/>
+    <child link="bracelet_left_link"/>
   </joint>
-  <!-- Cutting system -->
-  <link name="linear_actuator_1_left_input">
+  <link name="sliding_camera_left_link">
     <inertial>
-      <origin rpy="0 0 0" xyz="-0.0313814290043927 0.00137958022709721 0.00215959232823035"/>
-      <mass value="0.0148966281742273"/>
-      <inertia ixx="7.00775734567922E-07" ixy="3.18033015222363E-08" ixz="-2.94802587930061E-08" iyy="2.21934679869254E-06" iyz="-1.18008652512124E-09" izz="2.40965199008803E-06"/>
+      <origin rpy="0 0 0" xyz="0.00191415786419463 0.000899730089904842 0.0103578716883767"/>
+      <mass value="0.045942703958924"/>
+      <inertia ixx="2.49330078505231E-05" ixy="9.43998542256713E-08" ixz="9.3926537239295E-07" iyy="8.19626949652857E-06" iyz="-9.45103591650873E-09" izz="2.88263143775324E-05"/>
     </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/linear_actuator_1_input.STL"/>
+        <mesh filename="package://canopies_description/meshes/end-effector/sliding_camera_link.STL"/>
       </geometry>
       <material name="">
-        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+        <color rgba="1 1 1 1"/>
       </material>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/linear_actuator_1_input.STL"/>
+        <mesh filename="package://canopies_description/meshes/end-effector/sliding_camera_link.STL"/>
       </geometry>
     </collision>
   </link>
-  <joint name="linear_actuator_1_left_input_joint" type="fixed">
-    <origin rpy="1.5708 1.3023 0" xyz="-0.013 0.0333 0.11785"/>
-    <parent link="base_gripper_left_link"/>
-    <child link="linear_actuator_1_left_input"/>
-    <axis xyz="0 0 -1"/>
-    <limit effort="0" lower="0" upper="0" velocity="0"/>
-  </joint>
-  <link name="linear_actuator_1_left_output">
-    <inertial>
-      <origin rpy="0 0 0" xyz="-9.93550462973815E-05 0.00213728194825592 -0.00353203112848559"/>
-      <mass value="0.00412397660917704"/>
-      <inertia ixx="1.17923485424745E-07" ixy="-2.33035451186075E-10" ixz="2.17872370098491E-11" iyy="1.0873568654128E-07" iyz="-2.95780250620756E-12" izz="4.26138315954536E-08"/>
-    </inertial>
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/linear_actuator_1_output.STL"/>
-      </geometry>
-      <material name="">
-        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
-      </material>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/linear_actuator_1_output.STL"/>
-      </geometry>
-    </collision>
-  </link>
-  <joint name="linear_actuator_1_left_output_joint" type="fixed">
-    <origin rpy="-1.5708 0 1.5708" xyz="-0.088013 0 0.00805"/>
-    <parent link="linear_actuator_1_left_input"/>
-    <child link="linear_actuator_1_left_output"/>
-    <axis xyz="0 0 -1"/>
-    <limit effort="100" lower="-0.03" upper="0.0" velocity="2"/>
-  </joint>
-  <link name="right_blade_arm_left">
-    <inertial>
-      <origin rpy="0 0 0" xyz="0.00293665683887821 -0.00868178925313144 -0.00147250695433832"/>
-      <mass value="0.0162993607075381"/>
-      <inertia ixx="2.76917831015652E-06" ixy="-2.2978596304209E-06" ixz="-3.47777731962179E-08" iyy="4.40320361088305E-06" iyz="-1.59653938958749E-08" izz="7.14988203878181E-06"/>
-    </inertial>
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/right_blade.STL"/>
-      </geometry>
-      <material name="">
-        <color rgba="0.776470588235294 0.756862745098039 0.737254901960784 1"/>
-      </material>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/right_blade.STL"/>
-      </geometry>
-    </collision>
-  </link>
-  <joint name="right_blade_arm_left_joint" type="fixed">
-    <origin rpy="3.14 -1.5708 1.57" xyz="0 0.026 0.21685"/>
-    <parent link="base_gripper_left_link"/>
-    <child link="right_blade_arm_left"/>
-    <axis xyz="0 0 -1"/>
-    <limit effort="0" lower="0" upper="0" velocity="0"/>
-  </joint>
-  <link name="linear_actuator_2_left_input">
-    <inertial>
-      <origin rpy="0 0 0" xyz="-0.0313814290941533 -0.0013795802214186 -0.00215959231980963"/>
-      <mass value="0.0148966281282571"/>
-      <inertia ixx="7.00775734007478E-07" ixy="-3.18033030957232E-08" ixz="2.94802559569699E-08" iyy="2.21934677964085E-06" iyz="-1.18008628681898E-09" izz="2.40965197133936E-06"/>
-    </inertial>
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/linear_actuator_2_input.STL"/>
-      </geometry>
-      <material name="">
-        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
-      </material>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/linear_actuator_2_input.STL"/>
-      </geometry>
-    </collision>
-  </link>
-  <joint name="linear_actuator_2_left_input_joint" type="fixed">
-    <origin rpy="-1.5708 1.3023 3.1416" xyz="0.013 0.0303 0.11785"/>
-    <parent link="base_gripper_left_link"/>
-    <child link="linear_actuator_2_left_input"/>
-    <axis xyz="0 0 -1"/>
-    <limit effort="0" lower="0" upper="0" velocity="0"/>
-  </joint>
-  <link name="linear_actuator_2_left_output">
-    <inertial>
-      <origin rpy="0 0 0" xyz="5.3588215381116E-05 0.00449793149820971 -0.00441880154832637"/>
-      <mass value="0.00329570302607353"/>
-      <inertia ixx="1.08529819731116E-07" ixy="4.5596672225505E-10" ixz="-9.17796448544702E-12" iyy="9.76548077358887E-08" iyz="-5.78244892942455E-12" izz="3.42138534522638E-08"/>
-    </inertial>
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/linear_actuator_2_output.STL"/>
-      </geometry>
-      <material name="">
-        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
-      </material>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/linear_actuator_2_output.STL"/>
-      </geometry>
-    </collision>
-  </link>
-  <joint name="linear_actuator_2_left_output_joint" type="fixed">
-    <origin rpy="-1.5708 0 1.5708" xyz="-0.088013 0 0.00355"/>
-    <parent link="linear_actuator_2_left_input"/>
-    <child link="linear_actuator_2_left_output"/>
-    <axis xyz="0 0 -1"/>
-    <limit effort="100" lower="-0.03" upper="0.0" velocity="2"/>
-    <mimic joint="linear_actuator_1_left_output_joint" multiplier="1" offset="0"/>
-  </joint>
-  <gazebo>
-    <plugin filename="libroboticsgroup_gazebo_mimic_joint_plugin.so" name="linear_actuator_left_outputmimic_joint_plugin">
-      <joint>linear_actuator_1_left_output_joint</joint>
-      <mimicJoint>linear_actuator_2_left_output_joint</mimicJoint>
-      <multiplier>1.0</multiplier>
-      <offset>0.0</offset>
-      <sensitiveness>0.0</sensitiveness>
-      <!-- if absolute difference between setpoint and process value is below this threshold, do nothing; 0.0 = disable [rad] -->
-      <maxEffort>0.05</maxEffort>
-      <!-- only taken into account if has_pid:=true [Nm] -->
-      <robotNamespace/>
-    </plugin>
-  </gazebo>
-  <link name="left_blade_arm_left">
-    <inertial>
-      <origin rpy="0 0 0" xyz="-0.00293665683888321 0.00868178925302026 -0.00147250695433832"/>
-      <mass value="0.0162993607075382"/>
-      <inertia ixx="2.76917831015914E-06" ixy="-2.29785963042184E-06" ixz="3.477777319621E-08" iyy="4.40320361088048E-06" iyz="1.59653938958951E-08" izz="7.14988203878186E-06"/>
-    </inertial>
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/left_blade.STL"/>
-      </geometry>
-      <material name="">
-        <color rgba="0.776470588235294 0.756862745098039 0.737254901960784 1"/>
-      </material>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://canopies_description/meshes/end-effector/left_blade.STL"/>
-      </geometry>
-    </collision>
-  </link>
-  <joint name="left_blade_arm_left_joint" type="fixed">
-    <origin rpy="1.5708 1.5708 0" xyz="0 0.026 0.21685"/>
-    <parent link="base_gripper_left_link"/>
-    <child link="left_blade_arm_left"/>
-    <axis xyz="0 0 -1"/>
-    <limit effort="0" lower="0" upper="0" velocity="0"/>
+  <joint name="sliding_camera_left_joint" type="fixed">
+    <origin rpy="-1.5708 -1.5708 0" xyz="0 0.05352 -0.032425"/>
+    <parent link="bracelet_left_link"/>
+    <child link="sliding_camera_left_link"/>
   </joint>
   <transmission name="gripper_left_trans">
     <type>transmission_interface/SimpleTransmission</type>
@@ -2792,7 +2467,6 @@
       <hardwareInterface>hardware_interface/JointStateInterface</hardwareInterface>
     </joint>
   </transmission>
-  <!--<xacro:mimic_gripper_transmission name="linear_actuator_1_${side}_output"  side="${side}" reduction="1.0"/>-->
   <material name="head_camera_aluminum">
     <color rgba="0.5 0.5 0.5 1"/>
   </material>
@@ -3106,7 +2780,6 @@
       <mechanicalReduction>1.0</mechanicalReduction>
     </actuator>
     <joint name="head_1_joint">
-      <offset>-0.0434806779455</offset>
       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
       <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
@@ -3119,7 +2792,6 @@
       <mechanicalReduction>1.0</mechanicalReduction>
     </actuator>
     <joint name="head_2_joint">
-      <offset>-0.0438300718974</offset>
       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
       <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>

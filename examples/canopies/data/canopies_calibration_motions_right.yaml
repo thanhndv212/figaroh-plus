@@ -1,0 +1,164 @@
+play_motion:
+  motions:
+    calibration_stop_1:
+      joints: [arm_left_1_joint, arm_left_2_joint, arm_left_3_joint, arm_left_4_joint, arm_left_5_joint, arm_left_6_joint, arm_left_7_joint, head_1_joint, head_2_joint, torso_lift_joint]
+      points:
+        - time_from_start: 0        
+          positions: [0.2582118714780356, 0.1792201932603756, -1.821114369659954, 0.8784234711255814, -1.640622566199926, 1.443183809123856, 0.9578211671189907, -1.157776379264595, 0.4905114158874037]
+      meta:
+        name: calibration_stop_1
+        usage: demo
+        description: calibration
+    calibration_stop_2:
+      joints: [arm_left_1_joint, arm_left_2_joint, arm_left_3_joint, arm_left_4_joint, arm_left_5_joint, arm_left_6_joint, arm_left_7_joint, head_1_joint, head_2_joint]
+      points:
+        - time_from_start: 0        
+          positions: [1.334087244845136, -1.405748852672977, -1.624467876234033, -1.27006144165997, -0.5988336191874735, -0.975432881472714, -2.509424042075481, 0.9334659450671827, 0.1271829020332956]
+      meta:
+        name: calibration_stop_2
+        usage: demo
+        description: calibration 
+    calibration_stop_3:
+      joints: [arm_left_1_joint, arm_left_2_joint, arm_left_3_joint, arm_left_4_joint, arm_left_5_joint, arm_left_6_joint, arm_left_7_joint, head_1_joint, head_2_joint]
+      points:
+        - time_from_start: 0     
+          positions: [0.7641455788951008, 0.8850379183648522, 0.8574557290914977, 1.131870482155836, 2.166739156761933, 1.666301796751738, -0.7229580530675532, -0.6844709847025985, -0.6585248644517226]
+      meta:
+        name: calibration_stop_3
+        usage: demo
+        description: calibration
+    calibration_stop_4:
+      joints: [arm_left_1_joint, arm_left_2_joint, arm_left_3_joint, arm_left_4_joint, arm_left_5_joint, arm_left_6_joint, arm_left_7_joint, head_1_joint, head_2_joint]
+      points:
+        - time_from_start: 0     
+          positions: [0.9481271991374496, 0.9609541331161613, -0.7111723301891495, -0.6281974513562376, -2.070151301609477, 1.173631029802633, -0.9890748225789712, -0.7885382842213593, -0.4362348901059508]
+      meta:
+        name: calibration_stop_4
+        usage: demo
+        description: calibration
+    calibration_stop_5:
+      joints: [arm_left_1_joint, arm_left_2_joint, arm_left_3_joint, arm_left_4_joint, arm_left_5_joint, arm_left_6_joint, arm_left_7_joint, head_1_joint, head_2_joint]
+      points:
+        - time_from_start: 0     
+          positions: [0.7596758996356656, -1.423044600694623, 1.788846361050235, 0.7845982041718931, -1.041471368309507, 1.945447650510454, 0.6898930886213721, -0.3647132239838443, 0.02806853318270663]
+      meta:
+        name: calibration_stop_5
+        usage: demo
+        description: calibration
+    calibration_stop_6:
+      joints: [arm_left_1_joint, arm_left_2_joint, arm_left_3_joint, arm_left_4_joint, arm_left_5_joint, arm_left_6_joint, arm_left_7_joint, head_1_joint, head_2_joint]
+      points:
+        - time_from_start: 0     
+          positions: [0.28067327589405, -1.163866664121707, -0.18530323157117, 0.6643822201909497, 0.3367070409691957, 1.248944228455521, -0.4416974939913119, -0.8569479792057134, 0.07371871966604082]
+      meta:
+        name: calibration_stop_6
+        usage: demo
+        description: calibration
+    calibration_stop_7:
+      joints: [arm_left_1_joint, arm_left_2_joint, arm_left_3_joint, arm_left_4_joint, arm_left_5_joint, arm_left_6_joint, arm_left_7_joint, head_1_joint, head_2_joint]
+      points:
+        - time_from_start: 0     
+          positions: [1.023900260718772, -0.6131279210679337, 2.30752960133466, -0.01439350298287145, -2.191256348774734, -0.4812127401945476, -3.223779805803104, -0.3269617414197854, 0.4758588014427007]
+      meta:
+        name: calibration_stop_7
+        usage: demo
+        description: calibration
+    calibration_stop_8:
+      joints: [arm_left_1_joint, arm_left_2_joint, arm_left_3_joint, arm_left_4_joint, arm_left_5_joint, arm_left_6_joint, arm_left_7_joint, head_1_joint, head_2_joint]
+      points:
+        - time_from_start: 0     
+          positions: [-0.01529854514173445, -0.05579012553648299, -0.7573401097843193, -1.44586955426441, 1.280426416584061, 1.624101929599866, 0.559450691554841, -0.5960516085034212, -0.08060768621922376]
+      meta:
+        name: calibration_stop_8
+        usage: demo
+        description: calibration
+    calibration_stop_9:
+      joints: [arm_left_1_joint, arm_left_2_joint, arm_left_3_joint, arm_left_4_joint, arm_left_5_joint, arm_left_6_joint, arm_left_7_joint, head_1_joint, head_2_joint]
+      points:
+        - time_from_start: 0     
+          positions: [1.383418898329073, -1.195528443689817, -2.325270918781842, 0.1515523126780449, 2.294484571041042, 1.695860751071806, -0.07744027678988719, -0.1665884711465466, 0.5621985063808524]
+      meta:
+        name: calibration_stop_9
+        usage: demo
+        description: calibration
+    calibration_stop_10:
+      joints: [arm_left_1_joint, arm_left_2_joint, arm_left_3_joint, arm_left_4_joint, arm_left_5_joint, arm_left_6_joint, arm_left_7_joint, head_1_joint, head_2_joint]
+      points:
+        - time_from_start: 0     
+          positions: [1.255598116781119, 0.5205482866598619, -1.000656883580256, -1.253473884126809, -1.731649776316634, 0.895665767817873, -1.206180157199824, -0.1248687314154939, 0.2032170277298558]
+      meta:
+        name: calibration_stop_10
+        usage: demo
+        description: calibration
+    calibration_stop_11:
+      joints: [arm_left_1_joint, arm_left_2_joint, arm_left_3_joint, arm_left_4_joint, arm_left_5_joint, arm_left_6_joint, arm_left_7_joint, head_1_joint, head_2_joint]
+      points:
+        - time_from_start: 0     
+          positions: [0.8099422282530937, 0.7219107059949623, 1.530894465200574, -1.270947457543904, -1.402672413403064, -1.157376507108811, -2.547595062102804, -1.085599584215946, 0.1206262052603858]
+      meta:
+        name: calibration_stop_11
+        usage: demo
+        description: calibration
+    calibration_stop_12:
+      joints: [arm_left_1_joint, arm_left_2_joint, arm_left_3_joint, arm_left_4_joint, arm_left_5_joint, arm_left_6_joint, arm_left_7_joint, head_1_joint, head_2_joint]
+      points:
+        - time_from_start: 0     
+          positions: [1.029961665172311, 1.202616884750977, 0.7940133862083165, 1.435378059510484, 1.462621050951398, 1.29904802479529, -1.031646594614732, 0.5508341837180437, -0.8246592433262596]
+      meta:
+        name: calibration_stop_12
+        usage: demo
+        description: calibration
+    calibration_stop_13:
+      joints: [arm_left_1_joint, arm_left_2_joint, arm_left_3_joint, arm_left_4_joint, arm_left_5_joint, arm_left_6_joint, arm_left_7_joint, head_1_joint, head_2_joint]
+      points:
+        - time_from_start: 0     
+          positions: [1.21511845257417, -0.6941539965438748, -1.859585508898162, -0.3172132809066686, 1.694289929122236, 1.471567867773533, 0.6818029546728024, -0.639907095344472, -0.217796344752344]
+      meta:
+        name: calibration_stop_13
+        usage: demo
+        description: calibration
+    calibration_stop_14:
+      joints: [arm_left_1_joint, arm_left_2_joint, arm_left_3_joint, arm_left_4_joint, arm_left_5_joint, arm_left_6_joint, arm_left_7_joint, head_1_joint, head_2_joint]
+      points:
+        - time_from_start: 0     
+          positions: [0.5288373600711958, 0.5053309981280003, 1.248885789208029, -0.05222034541970499, 1.346543634319549, 0.484343310813776, 0.6749776450530334, -0.7121019315264467, -0.6488319005241293]
+      meta:
+        name: calibration_stop_14
+        usage: demo
+        description: calibration
+    calibration_stop_15:
+      joints: [arm_left_1_joint, arm_left_2_joint, arm_left_3_joint, arm_left_4_joint, arm_left_5_joint, arm_left_6_joint, arm_left_7_joint, head_1_joint, head_2_joint]
+      points:
+        - time_from_start: 0     
+          positions: [0.4438731904519451, -1.065490379457765, -1.364045855699141, 0.198572928457065, -1.398003298915181, -1.191037514037908, -3.214871305917035, -0.8798825517783201, 0.6058514325844958] 
+      meta:
+        name: calibration_stop_15
+        usage: demo
+        description: calibration
+    calibration_stop_16:
+      joints: [arm_left_1_joint, arm_left_2_joint, arm_left_3_joint, arm_left_4_joint, arm_left_5_joint, arm_left_6_joint, arm_left_7_joint, head_1_joint, head_2_joint]
+      points:
+        - time_from_start: 0     
+          positions: [0.4207736365844319, -0.1083410790985315, 1.820446007511188, 0.2119152902356629, -1.808696440076129, -1.356155679118309, -3.322242790961533, -0.9759520991723077, 0.2335786816399553] 
+      meta:
+        name: calibration_stop_16
+        usage: demo
+        description: calibration
+    calibration_stop_17:
+      joints: [arm_left_1_joint, arm_left_2_joint, arm_left_3_joint, arm_left_4_joint, arm_left_5_joint, arm_left_6_joint, arm_left_7_joint, head_1_joint, head_2_joint]
+      points:
+        - time_from_start: 0     
+          positions: [0.4895321407120681, -1.001026335072661, -1.60253043960307, -0.9584791031985227, 1.549630595046757, 1.204254454172053, 1.123076466465719, -0.787083871152511, 0.4331520716772609] 
+      meta:
+        name: calibration_stop_17
+        usage: demo
+        description: calibration
+    calibration_stop_18:
+      joints: [arm_left_1_joint, arm_left_2_joint, arm_left_3_joint, arm_left_4_joint, arm_left_5_joint, arm_left_6_joint, arm_left_7_joint, head_1_joint, head_2_joint]
+      points:
+        - time_from_start: 0     
+          positions: [0.8174016556096451, 0.3045327997045397, -0.2815313113152014, -1.450603467810539, -1.831796667461812, 0.05162189810699935, -0.8814476543506751, -0.3196714168314857, 0.5694757680447374] 
+      meta:
+        name: calibration_stop_18
+        usage: demo
+        description: calibration
