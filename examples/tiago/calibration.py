@@ -244,7 +244,11 @@ while count <2:
 # # uncalibrated
 # var_0[0:6] = [0.0908, 0.08, 0.0, -1.57, 0.0, 0.0]
 # tip variable
-var_0[-param['calibration_index']:] = np.array([ 0.2163, 0.03484, 0.004, 0., -1.57, -1.57]) 
+if param['calibration_index'] == 6:
+    var_0[-param['calibration_index']:] = np.array([ 0.2163, 0.03484, 0.004, 0., -1.57, -1.57]) 
+elif param['calibration_index'] == 3:
+    var_0[-param['calibration_index']:] = np.array([ 0.2163, 0.03484, 0.004]) 
+
 uncalib_res = var_0
 # # uncalib_res[:3] = res[:3]
 # # uncalib_res[-3:] = res[-3:]

@@ -201,14 +201,20 @@ class SOCP():
 
 # Load robot model and create a dictionary containing reserved constants
 # Specify the path to tiago model
+# ros_package_path = os.getenv('ROS_PACKAGE_PATH')
+# package_dirs = ros_package_path.split(':')
+# robot_dir = package_dirs[0] + "/example-robot-data/robots"
+
+# # Create a robot object with the specified URDF file and package directories
+# robot = Robot(
+#     robot_dir + "/tiago_description/robots/tiago.urdf",
+#     package_dirs=package_dirs,
+# )
 ros_package_path = os.getenv('ROS_PACKAGE_PATH')
 package_dirs = ros_package_path.split(':')
-robot_dir = package_dirs[0] + "/example-robot-data/robots"
-
-# Create a robot object with the specified URDF file and package directories
 robot = Robot(
-    robot_dir + "/tiago_description/robots/tiago.urdf",
-    package_dirs=package_dirs,
+    "data/tiago.urdf",
+    package_dirs = package_dirs,
 )
 model = robot.model
 data = robot.data
