@@ -248,7 +248,7 @@ opt_configs['calibration_joint_configurations'] = list(opt_configs_values)
 # with open('data/canopies_calibration_right_500.yaml', 'w') as output:
 #     yaml.safe_dump(opt_configs, output)
 import json 
-json.dump(opt_configs_values, open(f'data/canopies_calibration_{side}_{nb_chosen}_copy.txt', "w"))
+json.dump(opt_configs_values, open(f'data/canopies_calibration_{side}_{nb_chosen}.txt', "w"))
 
 # Play configurations on visualizer
 # from figaroh.meshcat_viewer_wrapper import MeshcatVisualizer

@@ -39,7 +39,8 @@ from figaroh.calibration.calibration_tools import (
     get_PEE_fullvar,
     calculate_base_kinematics_regressor,
     update_forward_kinematics,
-    get_LMvariables)
+    get_LMvariables,
+    get_rel_transform)
 
 
 # 1/ Load robot model and create a dictionary containing reserved constants
@@ -77,7 +78,7 @@ for i, pn in enumerate(param['param_name']):
 #############################################################
 
 # 3/ Data collection/generation
-dataSet = 'sample'  # choose data source 'sample' or 'experimental'
+dataSet = 'experimental'  # choose data source 'sample' or 'experimental'
 if dataSet == 'sample':
     # create artificial offsets
     var_sample, nvars_sample = get_LMvariables(param, mode=1, seed=0.05)
@@ -103,11 +104,8 @@ if dataSet == 'sample':
 
 elif dataSet == 'experimental':
     # read csv file
-    # path = '/home/dvtnguyen/calibration/figaroh/data/tiago/tiago_nov_30_64.csv'
-    path = abspath('data/tiago_nov_30_64.csv')
-    # path = '/home/thanhndv212/Cooking/figaroh/data/tiago/exp_data_nov_64_3011.csv'
-
-    PEEm_exp, q_exp = load_data(path, model, param, del_list=[9])
+    path = abspath('data/eye_hand_calibration_recorded_data.csv')
+    PEEm_exp, q_exp = load_data(path, model, param)
 
     q_LM = np.copy(q_exp)
     PEEm_LM = np.copy(PEEm_exp)
@@ -130,8 +128,6 @@ print('updated number of samples: ', param['NbSample'])
     and its estimated values from DGM by Levenberg-Marquardt
 """
 
-
-coeff = 1e-3
 
 coeff = 1e-2
 
@@ -160,14 +156,9 @@ def cost_func(var, coeff, q, model, data, param, PEEm):
 
 
 # initial guess
-# mode = 1: random seed [-0.01, 0.01], mode = 0: init guess = 0
-# var_0, nvars = init_var(param, mode=0)
-var_0, nvars = get_LMvariables(param, mode=1)
-# write base position in initial guess
-# var_0[:3] = qBase_0 = np.array([0.5245, 0.3291, -0.02294]) 
-var_0[0:6] = [0.0908, 0.08, 0.0, -1.57, 0.0, 0.0]
-var_0[-param['calibration_index']:] = np.array([0.0, 0., 0.415]) # right arm
-# var_0[-param['calibration_index']:] = np.array([0.05, 0.05, 0.35]) # left arm
+var_0, nvars = get_LMvariables(param, mode=0)
+var_0[0:6] = [0.08911, 0.0575, 0.004, -1.5708, 0, 0]
+var_0[-param['calibration_index']:] = np.array([0.5, 0.05, 0.35]) 
 
 
 print("initial guess: ", var_0)
@@ -214,7 +205,7 @@ calib_result = dict(zip(param['param_name'], list(res)))
 
 # #############################################################
 
-# # 6/ Plot results
+# # # 6/ Plot results
 
 # # calculate difference between estimated data and measured data
 # delta_PEE = PEEe_sol - PEEm_LM
@@ -304,48 +295,48 @@ calib_result = dict(zip(param['param_name'], list(res)))
 # ax4.set_zlabel('Joint')
 # ax4.grid()
 
-# # if dataSet == 'sample':
-# #     plt.figure(5)
-# #     plt.barh(params_name, (res - var_sample), align='center')
-# #     plt.grid()
-# # elif dataSet == 'experimental':
-# #     plt.figure(5)
-# #     plt.barh(params_name[0:6], res[0:6], align='center', color='blue')
-# #     plt.grid()
-# #     plt.figure(6)
-# #     plt.barh(params_name[6:-3*param['NbMarkers']],
-# #              res[6:-3*param['NbMarkers']], align='center', color='orange')
-# #     plt.grid()
-# #     plt.figure(7)
-# #     plt.barh(params_name[-3*param['NbMarkers']:],
-# #              res[-3*param['NbMarkers']:], align='center', color='green')
-# #     plt.grid()
+# if dataSet == 'sample':
+#     plt.figure(5)
+#     plt.barh(params_name, (res - var_sample), align='center')
+#     plt.grid()
+# elif dataSet == 'experimental':
+#     plt.figure(5)
+#     plt.barh(params_name[0:6], res[0:6], align='center', color='blue')
+#     plt.grid()
+#     plt.figure(6)
+#     plt.barh(params_name[6:-3*param['NbMarkers']],
+#              res[6:-3*param['NbMarkers']], align='center', color='orange')
+#     plt.grid()
+#     plt.figure(7)
+#     plt.barh(params_name[-3*param['NbMarkers']:],
+#              res[-3*param['NbMarkers']:], align='center', color='green')
+#     plt.grid()
 # plt.show()
 
 ##############################################################
 
 # # 6. Save to file
 # mapping 
-calibration_parameters = {}
-calibration_parameters['camera_position_x'] = calib_result['base_px']
-calibration_parameters['camera_position_y'] = calib_result['base_py']
-calibration_parameters['camera_position_z'] = calib_result['base_pz']
-calibration_parameters['camera_orientation_r'] = calib_result['base_phix']
-calibration_parameters['camera_orientation_p'] = calib_result['base_phiy']
-calibration_parameters['camera_orientation_y'] = calib_result['base_phiz']
+# calibration_parameters = {}
+# calibration_parameters['camera_position_x'] = calib_result['base_px']
+# calibration_parameters['camera_position_y'] = calib_result['base_py']
+# calibration_parameters['camera_position_z'] = calib_result['base_pz']
+# calibration_parameters['camera_orientation_r'] = calib_result['base_phix']
+# calibration_parameters['camera_orientation_p'] = calib_result['base_phiy']
+# calibration_parameters['camera_orientation_y'] = calib_result['base_phiz']
 
-for idx in param['actJoint_idx']:
-    joint = model.names[idx]
-    for key in calib_result.keys():
-        if joint in key:    
-            calibration_parameters[joint+'_joint_offset'] = calib_result[key]
+# for idx in param['actJoint_idx']:
+#     joint = model.names[idx]
+#     for key in calib_result.keys():
+#         if joint in key:    
+#             calibration_parameters[joint+'_joint_offset'] = calib_result[key]
 
-path_save_xacro = abspath('data/offset_test_sample.xacro')
-with open(path_save_xacro, "w") as output_file:
-    for parameter in calibration_parameters.keys():
-            update_name = parameter
-            update_value = calibration_parameters[parameter]
-            update_line = "<xacro:property name=\"{}\" value=\"{}\" / >".format(
-                update_name, update_value)
-            output_file.write(update_line)
-            output_file.write('\n')
+# path_save_xacro = abspath('data/offset_test_sample.xacro')
+# with open(path_save_xacro, "w") as output_file:
+#     for parameter in calibration_parameters.keys():
+#             update_name = parameter
+#             update_value = calibration_parameters[parameter]
+#             update_line = "<xacro:property name=\"{}\" value=\"{}\" / >".format(
+#                 update_name, update_value)
+#             output_file.write(update_line)
+#             output_file.write('\n')
