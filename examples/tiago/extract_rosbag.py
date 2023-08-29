@@ -15,7 +15,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import pinocchio as pin
 from figaroh.tools.robot import Robot
 
-from figaroh.calibration.calibration_tools import (get_rel_transform)
+from figaroh.calibration.calibration_tools import (get_rel_transform, rank_in_configuration)
 from figaroh.tools.robot import Robot 
 
 from figaroh.meshcat_viewer_wrapper import MeshcatVisualizer
@@ -176,12 +176,15 @@ def extract_instrospection(path_to_values, path_to_names, value_names=[], t_list
         value_names = names
 
     joint_idx = []
+    nonexist = []
     for element in value_names:
         if element in names:
             joint_idx.append(names.index(element))
         else:
             print(element, "Mentioned joint is not present in the names list.")
-            break
+            nonexist.append(element)
+    for element in nonexist:
+        value_names.remove(element)
     print("Joint indices corresponding to active joints: ", joint_idx)
 
     # joint_val (np.darray): split data in "values" column (str) to numpy array
@@ -369,17 +372,22 @@ def calc_deriv_fft(signal, sample_rate):
     dydx = ifft(1j*k*fft(y)).real
     return dydx
 
+def calc_angvel_fromQuat(q1, q2, dt):
+    return (2 / dt) * np.array([
+        q1[0]*q2[1] - q1[1]*q2[0] - q1[2]*q2[3] + q1[3]*q2[2],
+        q1[0]*q2[2] + q1[1]*q2[3] - q1[2]*q2[0] - q1[3]*q2[1],
+        q1[0]*q2[3] - q1[1]*q2[2] + q1[2]*q2[1] - q1[3]*q2[0]])
 ########################################################################
 
 
-path_to_values = '/home/thanhndv212/Downloads/experiment_data/suspension/bags/single_oscilation_around_xfold_weight_2023-07-28-13-33-20/introspection_datavalues.csv'
-path_to_names = '/home/thanhndv212/Downloads/experiment_data/suspension/bags/single_oscilation_around_xfold_weight_2023-07-28-13-33-20/introspection_datanames.csv'
-path_to_tf = '/home/thanhndv212/Downloads/experiment_data/suspension/bags/single_oscilation_around_xfold_weight_2023-07-28-13-33-20/natnet_rostiago_shoulderpose.csv'
+path_to_values = '/home/dvtnguyen/Downloads/experiment_data/suspension/bags/single_oscilation_around_xfold_weight_2023-07-28-13-33-20/introspection_datavalues.csv'
+path_to_names = '/home/dvtnguyen/Downloads/experiment_data/suspension/bags/single_oscilation_around_xfold_weight_2023-07-28-13-33-20/introspection_datanames.csv'
+path_to_tf = '/home/dvtnguyen/Downloads/experiment_data/suspension/bags/single_oscilation_around_xfold_weight_2023-07-28-13-33-20/natnet_rostiago_shoulderpose.csv'
 
 ros_package_path = os.getenv('ROS_PACKAGE_PATH')
 package_dirs = ros_package_path.split(':')
 robot = Robot(
-    'data/tiago_no_hand.urdf',
+    'data/tiago_schunk.urdf',
     package_dirs= package_dirs,
     # isFext=True  # add free-flyer joint at base
 )
@@ -395,8 +403,25 @@ position_dict = extract_instrospection(
 )
 f_q = 100
 t_q = encoder_dict['t']
-q_abs = np.array(list(encoder_dict.values())[1:]).T
-q_pos = np.array(list(position_dict.values())[1:]).T
+q_abs = np.zeros((len(t_q), robot.model.nq))
+q_pos = np.zeros((len(t_q), robot.model.nq))
+
+for name in robot.model.names[1:]:
+    joint_idx = robot.model.getJointId(name)
+    idx_q = robot.model.joints[joint_idx].idx_q
+    for key in encoder_dict.keys():
+        if name in key:
+            q_abs[:, idx_q] = encoder_dict['- {}_absolute_encoder_position'.format(name)]
+            q_pos[:, idx_q] = position_dict['- {}_position'.format(name)]
+q_abs = np.nan_to_num(q_abs, nan=0)
+q_pos = np.nan_to_num(q_pos, nan=0)
+
+# for i in range(robot.model.nv):
+#     q_abs[:, i] = list(encoder_dict.values())[i+1]
+#     q_pos[:, i] = list(position_dict.values())[i+1]
+
+# q_abs = np.array(list(encoder_dict.values())[1:]).T
+# q_pos = np.array(list(position_dict.values())[1:]).T
 
 # resample to uniform sampling rate 100 Hz
 q_abs_res = np.zeros_like(q_abs)
@@ -438,8 +463,42 @@ quatW_res = sig_resample(quatW_butf, t_tf, len(t_q), f_q)
 # resample timestamps to uniform sampling rate 100 Hz
 t_res = np.linspace(t_q[0], t_q[-1], len(t_q))
 
-plot_markertf(t_tf, quatX_butf, quatY_butf, quatZ_butf)
-plot_markertf(t_q, quatX_res, quatY_res, quatZ_res)
+
+# convert quaternion to rpy 
+rpy_res = np.zeros((len(t_res), 3))
+for i in range(len(t_res)):
+    rpy_res[i, :] = pin.rpy.matrixToRpy(pin.Quaternion(np.array([quatX_res[i], quatY_res[i], quatZ_res[i], quatW_res[i]])).toRotationMatrix())
+# velocity 
+# do fft first order differentiation on joint configs and marker data (quaterion -> angular velocity)
+# marker velecities
+pos_vel = np.zeros((len(t_res), 3))
+pos_vel[:, 0] = calc_deriv_fft(posX_res, f_q)
+pos_vel[:, 1] = calc_deriv_fft(posY_res, f_q)
+pos_vel[:, 2] = calc_deriv_fft(posZ_res, f_q)
+
+ang_vel = np.zeros((len(t_res), 3))
+angrpy_vel = np.zeros((len(t_res), 3))
+
+for i in range(len(t_res)-1):
+    ang_vel[i, :] = calc_angvel_fromQuat(
+        [quatW_res[i], quatX_res[i], quatY_res[i], quatZ_res[i]],
+        [quatW_res[i+1], quatX_res[i+1], quatY_res[i+1], quatZ_res[i+1]],
+        1/f_q
+    )
+
+for i in range(3):
+    angrpy_vel[:, i] = calc_deriv_fft(rpy_res[:, i], f_q)
+
+# acceleration
+# do fft first order differentiation on velocites
+
+# 
+
+
+# plot_markertf(t_tf, quatX_butf, quatY_butf, quatZ_butf)
+plot_markertf(t_res, rpy_res[:, 0], rpy_res[:, 1], rpy_res[:, 2])
+plot_markertf(t_res, ang_vel[:, 0], ang_vel[:, 1], ang_vel[:, 2])
+plot_markertf(t_res, angrpy_vel[:, 0], angrpy_vel[:, 1], angrpy_vel[:, 2])
 plt.show()
 
 
