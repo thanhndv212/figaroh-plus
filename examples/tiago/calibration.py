@@ -45,10 +45,9 @@ from figaroh.calibration.calibration_tools import (
 # 1/ Load robot model and create a dictionary containing reserved constants
 ros_package_path = os.getenv('ROS_PACKAGE_PATH')
 package_dirs = ros_package_path.split(':')
-robot_dir = package_dirs[0] + "/example-robot-data/robots"
 robot = Robot(
-    robot_dir + "/tiago_description/robots/tiago_no_hand.urdf",
-    package_dirs = package_dirs,
+    'data/tiago.urdf',
+    package_dirs= package_dirs,
     # isFext=True  # add free-flyer joint at base
 )
 model = robot.model
