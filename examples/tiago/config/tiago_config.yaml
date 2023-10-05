@@ -9,12 +9,12 @@ calibration:
   markers:
     - ref_joint: arm_7_joint
       measure: [True, True, True, False, False, False]
-    - ref_joint: arm_7_joint
-      measure: [True, True, True, False, False, False]
-    - ref_joint: arm_7_joint
-      measure: [True, True, True, False, False, False]
-    - ref_joint: arm_7_joint
-      measure: [True, True, True, False, False, False]  
+    # - ref_joint: arm_7_joint
+    #   measure: [True, True, True, False, False, False]
+    # - ref_joint: arm_7_joint
+    #   measure: [True, True, True, False, False, False]
+    # - ref_joint: arm_7_joint
+    #   measure: [True, True, True, False, False, False]  
   free_flyer: False
   nb_sample: 35
 identification:

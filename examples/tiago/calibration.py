@@ -14,7 +14,7 @@
 
 import os
 from os.path import dirname, join, abspath
-
+import sys 
 import pinocchio as pin
 from pinocchio.utils import *
 
@@ -38,15 +38,23 @@ from figaroh.calibration.calibration_tools import (
     init_var,
     get_PEE_fullvar,
     calculate_base_kinematics_regressor,
-    update_forward_kinematics,
+    update_forward_kinematics_2,
     get_LMvariables)
-
-
+if len(sys.argv) > 1 and sys.argv[1] in ['qualysis', 'vicon', 'optitrack']:
+    MOCAP_SYS = sys.argv[1]
+else:
+    MOCAP_SYS = 'qualysis'  # 'qualysis', 'vicon', 'optitrack'
+if MOCAP_SYS == 'vicon':
+    end_marker = sys.argv[2]
+    start_marker = sys.argv[3]
+REMOVE_LAST_3 = False
+INCLUDE_UNCALIB = False
+ADD_PEE = True
 # 1/ Load robot model and create a dictionary containing reserved constants
 ros_package_path = os.getenv('ROS_PACKAGE_PATH')
 package_dirs = ros_package_path.split(':')
 robot = Robot(
-    'data/tiago.urdf',
+    'data/tiago_schunk.urdf',
     package_dirs= package_dirs,
     # isFext=True  # add free-flyer joint at base
 )
@@ -67,13 +75,24 @@ q_rand = []
 Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = calculate_base_kinematics_regressor(
     q_rand, model, data, param)
 
+# change first 6 param to the base placement
+# for i in range(6):
+#     param['param_name'][i] = 'base_placement_%d' % (i+1)
+# param['param_name'].remove('d_pz_arm_7_joint')
 # add markers name to param['param_name']
-add_pee_name(param)
+if ADD_PEE:
+    add_pee_name(param) 
+
+# remove last 3 positional parameters
+if REMOVE_LAST_3:
+    for i, pn in enumerate(param['param_name']):
+            print(i+1, pn)
+    param['param_name'].remove('d_pz_arm_7_joint')
+    param['param_name'].remove('d_py_arm_6_joint')
+    param['param_name'].remove('d_pz_arm_6_joint')
+
 
 # total calibrating parameter names
-for i, pn in enumerate(param['param_name']):
-        print(i, pn)
-
 # # naming for eeframe markers
 # PEE_names = []
 # for i in range(param['NbMarkers']):
@@ -110,18 +129,23 @@ if dataSet == 'sample':
 
 elif dataSet == 'experimental':
     # read csv file
-    # path = '/home/dvtnguyen/calibration/figaroh/data/tiago/tiago_nov_30_64.csv'
-    path = abspath('data/tiago_nov_30_64.csv')
-    # path = '/home/thanhndv212/Cooking/figaroh/data/tiago/exp_data_nov_64_3011.csv'
-
-    PEEm_exp, q_exp = load_data(path, model, param, del_list=[9])
+    del_list = []
+    if MOCAP_SYS == 'qualysis':
+        path = abspath('data/tiago_nov_30_64.csv')
+        del_list = [9]
+    elif MOCAP_SYS == 'vicon':
+        path = abspath('data/vicon_calibration_fc10_{}_{}.csv'.format(end_marker, start_marker))
+    elif MOCAP_SYS == 'optitrack':
+        path = abspath('data/optitrack_calibration.csv')
+    print("reading data from: ", path)
+    PEEm_exp, q_exp = load_data(path, model, param, del_list=del_list)
 
     q_LM = np.copy(q_exp)
     PEEm_LM = np.copy(PEEm_exp)
 
 # Remove potential outliers which identified from previous calibration
 
-print(np.shape(PEEm_LM))
+print("total number of equations: ", np.shape(PEEm_LM)[0])
 
 print('updated number of samples: ', param['NbSample'])
 
@@ -136,51 +160,72 @@ print('updated number of samples: ', param['NbSample'])
     - minimize the difference between measured coordinates of end-effector
     and its estimated values from DGM by Levenberg-Marquardt
 """
-
-
-coeff = 1e-3
-
-
-def cost_func(var, coeff, q, model, data, param,  PEEm):
-    
-    PEEe = get_PEE_fullvar(var, q, model, data, param, noise=False)
-    res_vect = np.append((PEEm - PEEe), np.sqrt(coeff)
-                         * var[6:-param['NbMarkers']*3])
-    # res_vect = (PEEm - PEEe)
-    return res_vect
-
-
 # initial guess
-# mode = 1: random seed [-0.01, 0.01], mode = 0: init guess = 0
+# mode = 1: random seed [-0.01, 0.01], mode = 0: init gxuess = 0
 # var_0, nvars = init_var(param, mode=0)
 var_0, nvars = get_LMvariables(param, mode=0)
 # write base position in initial guess
-var_0[:3] = qBase_0 = np.array([0.5245, 0.3291, -0.02294]) 
+if MOCAP_SYS == 'vicon':
+    nbase = 3
+    coeff = 1e-3
+    # var_0[:3] = np.array([0.01, 0.2, -0.3]) # base
+    var_0[-3:] = np.array([0.1, 0., 0.]) # gripper
+elif MOCAP_SYS == 'qualysis':
+    nbase = 6
+    coeff = 1e-3
+    var_0[:3] = np.array([0.0117, 0.1953, -0.3345]) 
+elif MOCAP_SYS == 'optitrack':
+    base_coeff = 0.0
+    coeff = 1e-3
+    var_0[:3] = np.array([0.1, 0.1, -0.3])
 print("initial guess: ", var_0)
+print("regulator coeff: ", coeff)
+
+def cost_func(var, nbase, coeff, q, model, data, param,  PEEm):
+    
+    # PEEe = get_PEE_fullvar(var, q, model, data, param, noise=False)
+    # res_vect = np.append((PEEm - PEEe), np.sqrt(coeff)
+    #                      * var[6:-param['NbMarkers']*3])
+    # res_vect = (PEEm - PEEe)
+    PEEe = update_forward_kinematics_2(model, data, var, q, param)
+    # res_vect = np.append((PEEm - PEEe), np.append(np.sqrt(base_coeff)*var[0:3], np.sqrt(coeff)
+    #                      * var[6:-param['NbMarkers']*3]))
+    res_vect = np.append((PEEm - PEEe), np.sqrt(coeff)
+                         * var[nbase:-param['NbMarkers']*3])
+    return res_vect
 
 # solve
-LM_solve = least_squares(cost_func, var_0,  method='lm', verbose=1,
-                         args=(coeff, q_LM, model, data, param, PEEm_LM))
+rmse = 1e4
+count = 0
+while rmse > 5*1e-3 and count < 10:
+    print('*'*100)
+    print("iteration: ", count)
+    LM_solve = least_squares(cost_func, var_0,  method='lm', verbose=1,
+                            args=(nbase, coeff, q_LM, model, data, param, PEEm_LM))
 
-#############################################################
+    #############################################################
 
-# 5/ Result analysis
-res = LM_solve.x
-# PEE estimated by solution
-PEEe_sol = get_PEE_fullvar(res, q_LM, model, data, param, noise=False)
+    # 5/ Result analysis
+    res = LM_solve.x
+    # PEE estimated by solution
+    # PEEe_sol = get_PEE_fullvar(res, q_LM, model, data, param, noise=False)
+    PEEe_sol = update_forward_kinematics_2(model, data, res, q_LM, param, verbose=1)
 
-# root mean square error
-rmse = np.sqrt(np.mean((PEEe_sol-PEEm_LM)**2))
-
-print("solution: ", res)
+    # root mean square error
+    rmse = np.sqrt(np.mean((PEEe_sol-PEEm_LM)**2))
+    var_0 = res + 0.1*np.random.randn(nvars)
+    count += 1
+print("solution: ")
+for ii, prname in enumerate(param['param_name']):
+    print(ii + 1, prname, np.round(res[ii], 4))
 print("minimized cost function: ", rmse)
 print("optimality: ", LM_solve.optimality)
 
 # uncalibrated
-# uncalib_res = var_0
-# uncalib_res[:3] = res[:3]
-# uncalib_res[-12:] = res[-12:]
-# PEEe_uncalib = get_PEE_fullvar(uncalib_res, q_LM, model, data, param, noise=False)
+uncalib_res = var_0
+uncalib_res[:6] = res[:6]
+uncalib_res[-param['NbMarkers']*3:] = res[-param['NbMarkers']*3:]
+PEEe_uncalib = update_forward_kinematics_2(model, data, uncalib_res, q_LM,  param, verbose=1)
 # rmse_uncalib = np.sqrt(np.mean((PEEe_uncalib-PEEm_LM)**2))
 # print("minimized cost function uncalib: ", rmse_uncalib)
 
@@ -249,45 +294,56 @@ fig2.suptitle("Visualization of estimated poses and measured pose in Cartesian")
 ax2 = fig2.add_subplot(111, projection='3d')
 PEEm_LM2d = PEEm_LM.reshape((param['NbMarkers']*3, param["NbSample"]))
 PEEe_sol2d = PEEe_sol.reshape((param['NbMarkers']*3, param["NbSample"]))
+PEEe_uncalib2d = PEEe_uncalib.reshape((param['NbMarkers']*3, param["NbSample"]))
 for i in range(param['NbMarkers']):
     ax2.scatter3D(PEEm_LM2d[i*3, :], PEEm_LM2d[i*3+1, :],
-                  PEEm_LM2d[i*3+2, :], marker='^', color='blue')
+                  PEEm_LM2d[i*3+2, :], marker='^', color='blue', label='Measured')
     ax2.scatter3D(PEEe_sol2d[i*3, :], PEEe_sol2d[i*3+1, :],
-                  PEEe_sol2d[i*3+2, :], marker='o', color='red')
+                  PEEe_sol2d[i*3+2, :], marker='o', color='red', label='Estimated')
+    if INCLUDE_UNCALIB:
+        ax2.scatter3D(PEEe_uncalib2d[i*3, :], PEEe_uncalib2d[i*3+1, :],
+                    PEEe_uncalib2d[i*3+2, :], marker='x', color='green', label='Uncalibrated')
+    for j in range(param['NbSample']):
+        ax2.plot3D([PEEm_LM2d[i*3, j], PEEe_sol2d[i*3, j]], [PEEm_LM2d[i*3+1, j], PEEe_sol2d[i*3+1, j]],
+                    [PEEm_LM2d[i*3+2, j], PEEe_sol2d[i*3+2, j]], color='red')
+        if INCLUDE_UNCALIB:
+            ax2.plot3D([PEEm_LM2d[i*3, j], PEEe_uncalib2d[i*3, j]], [PEEm_LM2d[i*3+1, j], PEEe_uncalib2d[i*3+1, j]], 
+                    [PEEm_LM2d[i*3+2, j], PEEe_uncalib2d[i*3+2, j]], color='green')
 ax2.set_xlabel('X - front (meter)')
 ax2.set_ylabel('Y - side (meter)')
 ax2.set_zlabel('Z - height (meter)')
+ax2.legend()
 ax2.grid()
 
-# 3// visualize relative deviation between measure and estimate
-fig3 = plt.figure(3)
-ax3 = fig3.add_subplot(111, projection='3d')
-for i in range(param['NbMarkers']):
-    ax3.scatter3D(PEEm_LM2d[i*3, :], PEEm_LM2d[i*3+1, :],
-                  PEEm_LM2d[i*3+2, :], s=scatter_size[i, :], color='green')
-ax3.grid()
+# # 3// visualize relative deviation between measure and estimate
+# fig3 = plt.figure(3)
+# ax3 = fig3.add_subplot(111, projection='3d')
+# for i in range(param['NbMarkers']):
+#     ax3.scatter3D(PEEm_LM2d[i*3, :], PEEm_LM2d[i*3+1, :],
+#                   PEEm_LM2d[i*3+2, :], s=scatter_size[i, :], color='green')
+# ax3.grid()
 
-# 4// joint configurations within range bound
-fig4 = plt.figure()
-fig4.suptitle("Joint configurations with joint bounds")
-ax4 = fig4.add_subplot(111, projection='3d')
-lb = ub = []
-for j in param['config_idx']:
-    # model.names does not accept index type of numpy int64
-    # and model.lowerPositionLimit index lag to model.names by 1
-    lb = np.append(lb, model.lowerPositionLimit[j])
-    ub = np.append(ub, model.upperPositionLimit[j])
-q_actJoint = q_LM[:, param['config_idx']]
-sample_range = np.arange(param['NbSample'])
-for i in range(len(param['actJoint_idx'])):
-    ax4.scatter3D(q_actJoint[:, i], sample_range, i)
-for i in range(len(param['actJoint_idx'])):
-    ax4.plot([lb[i], ub[i]], [sample_range[0],
-             sample_range[0]], [i, i])
-ax4.set_xlabel('Angle (rad)')
-ax4.set_ylabel('Sample')
-ax4.set_zlabel('Joint')
-ax4.grid()
+# # 4// joint configurations within range bound
+# fig4 = plt.figure()
+# fig4.suptitle("Joint configurations with joint bounds")
+# ax4 = fig4.add_subplot(111, projection='3d')
+# lb = ub = []
+# for j in param['config_idx']:
+#     # model.names does not accept index type of numpy int64
+#     # and model.lowerPositionLimit index lag to model.names by 1
+#     lb = np.append(lb, model.lowerPositionLimit[j])
+#     ub = np.append(ub, model.upperPositionLimit[j])
+# q_actJoint = q_LM[:, param['config_idx']]
+# sample_range = np.arange(param['NbSample'])
+# for i in range(len(param['actJoint_idx'])):
+#     ax4.scatter3D(q_actJoint[:, i], sample_range, i)
+# for i in range(len(param['actJoint_idx'])):
+#     ax4.plot([lb[i], ub[i]], [sample_range[0],
+#              sample_range[0]], [i, i])
+# ax4.set_xlabel('Angle (rad)')
+# ax4.set_ylabel('Sample')
+# ax4.set_zlabel('Joint')
+# ax4.grid()
 
 # if dataSet == 'sample':
 #     plt.figure(5)
