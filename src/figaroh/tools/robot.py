@@ -112,15 +112,27 @@ class Robot(RobotWrapper):
             params.extend(["off" + str(i)])
             
             if param['has_actuator_inertia']:
-                phi.extend([param['Ia'][i-1]])
+                try:
+                    phi.extend([param['Ia'][i-1]])
+                except Exception as e:
+                    print("Warning: ", 'has_actuator_inertia_%d' % i, e)
+                    phi.extend([0])
             else:
                 phi.extend([0])
             if param['has_friction']:
-                phi.extend([param['fv'][i-1], param['fs'][i-1]])
+                try:
+                    phi.extend([param['fv'][i-1], param['fs'][i-1]])
+                except Exception as e:
+                    print("Warning: ", 'has_friction_%d' % i, e)
+                    phi.extend([0, 0])
             else:
                 phi.extend([0, 0])
             if param['has_joint_offset']:
-                phi.extend([param['off'][i-1]])
+                try:
+                    phi.extend([param['off'][i-1]])
+                except Exception as e:
+                    print("Warning: ", 'has_joint_offset_%d' % i, e)
+                    phi.extend([0])
             else:
                 phi.extend([0])
                     
