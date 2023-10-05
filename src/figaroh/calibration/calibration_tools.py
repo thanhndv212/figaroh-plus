@@ -91,6 +91,7 @@ def get_param_from_yaml(robot, calib_data):
     # py, pz, phix, phiy, phiz (mocap/camera/laser tracker/close-loop)
     # number of "True" = calb_idx
     NbMarkers = len(calib_data['markers'])
+    # TODO: generalize for the case where different measurability for each marker
     measurability = calib_data['markers'][0]['measure']
     calib_idx = measurability.count(True)
 
@@ -421,6 +422,12 @@ def load_data(path_to_file, model, param, del_list=[]):
                 active joint angles: 
                     tiago: torso, arm1, arm2, arm3, arm4, arm5, arm6, arm7
                     talos: torso1, torso2, armL1, armL2, armL3, armL4, armL5, armL6, armL7
+            Marker is a broad term for measurment. Important to know that any type of
+            measurement should be able to be converted to a 6D vector (position and orientation)
+            and be treated as a marker. The measurability hightlight the DOF that measurement 
+            deliver and reference joint indicates the parent where the measurement is taken.
+            However, respecting the order of x, y, z, phix, phiy, phiz is critical as well as
+            the numbered order of the markers.
     """
     # read_csv
     df = pd.read_csv(path_to_file)
@@ -490,6 +497,19 @@ def cartesian_to_SE3(X):
     X = X.flatten('C')
     translation = X[0:3]
     rot_matrix = pin.rpy.rpyToMatrix(X[3:6])
+    placement = pin.SE3(rot_matrix, translation)
+    return placement
+
+
+def xyzquat_to_SE3(xyzquat):
+    """ Convert (7,) xyzquat coordinates to SE3
+            Input: 1D (7,) numpy array
+            Output: SE3 placement
+    """
+    xyzquat = np.array(xyzquat)
+    xyzquat = xyzquat.flatten('C')
+    translation = xyzquat[0:3]
+    rot_matrix = pin.Quaternion(xyzquat[3:7]).normalize().toRotationMatrix()
     placement = pin.SE3(rot_matrix, translation)
     return placement
 
