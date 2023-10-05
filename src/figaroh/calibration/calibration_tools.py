@@ -602,7 +602,7 @@ def get_LMvariables(param, mode=0, seed=0):
     return var, nvar
 
 
-def update_forward_kinematics(model, data, var, q, param):
+def update_forward_kinematics(model, data, var, q, param, verbose=0):
     """ Update jointplacements with offset parameters, recalculate forward kinematics
         to find end-effector's position and orientation.
     """
@@ -620,6 +620,13 @@ def update_forward_kinematics(model, data, var, q, param):
 
     # update model.jointPlacements
     updated_params = []
+
+    # base placement
+    # TODO: add axis of base
+    if 'base_placement' in list(param_dict.keys())[5]:
+        base_placement = cartesian_to_SE3(var[0: 6])
+        updated_params = param['param_name'][0:6]
+        
     for j_id in param['actJoint_idx']:
         xyz_rpy = np.zeros(6)
         j_name = model.names[j_id]
@@ -628,10 +635,28 @@ def update_forward_kinematics(model, data, var, q, param):
                 # update xyz_rpy with kinematic errors
                 for axis_id, axis in enumerate(axis_tpl):
                     if axis in key:
+                        if verbose==1:
+                            print("Updating [{}] joint placement at axis {} with [{}]".format(j_name, axis, key))
                         xyz_rpy[axis_id] += param_dict[key]
                         updated_params.append(key)
         model = update_joint_placement(model, j_id, xyz_rpy)
     PEE = np.zeros((param['calibration_index'], param['NbSample']))
+
+    # update end_effector frame
+    for marker_idx in range(1,param['NbMarkers']+1):
+        pee = np.zeros(6)
+        ee_name = 'EE'
+        for key in param_dict.keys():
+            if ee_name in key and str(marker_idx) in key:
+                # update xyz_rpy with kinematic errors
+                for axis_pee_id, axis_pee in enumerate(pee_tpl):
+                    if axis_pee in key:
+                        if verbose==1:
+                            print("Updating [{}_{}] joint placement at axis {} with [{}]".format(ee_name, str(marker_idx), axis_pee, key))
+                        pee[axis_pee_id] += param_dict[key]
+                        # updated_params.append(key)
+
+        eeMf = cartesian_to_SE3(pee)
 
     # get transform
     q_ = np.copy(q)
@@ -673,7 +698,69 @@ def update_forward_kinematics(model, data, var, q, param):
 
 
         # update last frame if there is 
+        # if len(updated_params) < len(param_dict):
+        #     pee = np.zeros(6)
+        #     for n_id in range(len(updated_params), len(param_dict)):
+        #         for axis_id, axis in enumerate(pee_tpl):
+        #             if axis in param['param_name'][n_id]:
+        #                 if verbose==1:
+        #                     print("Updating end_effector frame [{}] with [{}]".format(axis, param['param_name'][n_id]))
+        #                 pee[axis_id] = var[n_id]
+        #     eeMf = cartesian_to_SE3(pee)
+        #     oMf = oMee*eeMf
+        # else:
+        #     oMf = oMee
+        
+        # # final transform
+        # trans = oMf.translation.tolist()
+        # orient = pin.rpy.matrixToRpy(oMf.rotation).tolist()
+        # loc = trans + orient
+        # measure = []
+        # for mea_id, mea in enumerate(param['measurability']):
+        #     if mea:
+        #         measure.append(loc[mea_id])
+        # PEE[:, i] = np.array(measure)
         if len(updated_params) < len(param_dict):
+            # pee = np.zeros(6)
+            # for n_id in range(len(updated_params), len(param_dict)):
+            #     for axis_id, axis in enumerate(pee_tpl):
+            #         if axis in param['param_name'][n_id]:
+            #             if verbose==1:
+            #                 print("Updating last frame with [{}]".format(param['param_name'][n_id]))
+            #             pee[axis_id] = var[n_id]
+            #             updated_params.append(param['param_name'][n_id])
+
+            oMf = oMee*eeMf
+            # final transform
+            trans = oMf.translation.tolist()
+            orient = pin.rpy.matrixToRpy(oMf.rotation).tolist()
+            loc = trans + orient
+            measure = []
+            for mea_id, mea in enumerate(param['measurability']):
+                if mea:
+                    measure.append(loc[mea_id])
+            # PEE[(marker_idx-1)*param['calibration_index']:marker_idx*param['calibration_index'], i] = np.array(measure)
+            PEE[:, i] = np.array(measure)
+        
+            # assert len(updated_params) == len(param_dict), "Not all parameters are updated"
+            
+    PEE = PEE.flatten('C')
+    # revert model back to original 
+    assert origin_model.jointPlacements != model.jointPlacements, 'before revert'
+    for j_id in param['actJoint_idx']:
+        xyz_rpy = np.zeros(6)
+        j_name = model.names[j_id]
+        for key in param_dict.keys():
+            if j_name in key:
+                # update xyz_rpy
+                for axis_id, axis in enumerate(axis_tpl):
+                    if axis in key:
+                        xyz_rpy[axis_id] = param_dict[key]
+        model = update_joint_placement(model, j_id, -xyz_rpy)
+
+    assert origin_model.jointPlacements != model.jointPlacements, 'after revert'
+
+    return PEE
 
 
 def update_forward_kinematics_2(model, data, var, q, param, verbose=0):
