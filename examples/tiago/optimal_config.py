@@ -32,6 +32,8 @@ from figaroh.calibration.calibration_tools import (
     calculate_base_kinematics_regressor,
     get_param)
 from figaroh.tools.robot import Robot
+from figaroh.meshcat_viewer_wrapper import MeshcatVisualizer
+from simplified_colission_model import check_tiago_autocollision
 
 
 def rearrange_rb(R_b, param):
@@ -161,10 +163,9 @@ class SOCP():
 # 1/ Load robot model and create a dictionary containing reserved constants
 ros_package_path = os.getenv('ROS_PACKAGE_PATH')
 package_dirs = ros_package_path.split(':')
-robot_dir = package_dirs[0] + "/example-robot-data/robots"
 robot = Robot(
-    robot_dir + "/tiago_description/robots/tiago.urdf",
-    package_dirs = package_dirs,
+    'data/tiago_schunk.urdf',
+    package_dirs= package_dirs,
     # isFext=True  # add free-flyer joint at base
 )
 model = robot.model
@@ -178,7 +179,19 @@ calib_data = config['calibration']
 param = get_param_from_yaml(robot, calib_data)
 
 # read sample configuration pool from file, otherwise random configs are generated
-q = []
+# q = []
+q = np.zeros((param['NbSample'], robot.q0.shape[0] ))
+for i in range(param['NbSample']):
+    q_rand = pin.randomConfiguration(model)
+    q_i = robot.q0.copy()
+    q_i[param['config_idx']] = q_rand[param['config_idx']]
+    q[i, :] = q_i
+
+collided_idx = check_tiago_autocollision(robot, q)
+q = np.delete(q, collided_idx, axis=0)
+print("DELETE %d configurations due to collision" % len(collided_idx))
+# update number of samples 
+param['NbSample'] = q.shape[0]
 
 Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = calculate_base_kinematics_regressor(
     q, model, data, param)
@@ -215,41 +228,70 @@ if len(chosen_config) < min_NbChosen:
 else: 
     print(len(chosen_config), "configs are chosen: ", chosen_config)
 
-# plotting 
-det_root_list = []
-n_key_list = []
-for nbc in range(min_NbChosen, param["NbSample"]+1):
-    n_key = list(w_dict_sort.keys())[0:nbc]
-    n_key_list.append(n_key)
-    M_i = pc.sum(w_dict_sort[i]*subX_list[i] for i in n_key)
-    det_root_list.append(pc.DetRootN(M_i))
-idx_subList = range(len(det_root_list))
+# check collision
+q_selected = q[chosen_config, :]
 
-fig, ax = plt.subplots(2)
-ratio = det_root_whole/det_root_list[-1]
-plot_range = param["NbSample"] - NbChosen
-ax[0].set_ylabel('D-optimality criterion', fontsize=20)
-ax[0].tick_params(axis='y', labelsize=18)
-ax[0].plot(ratio*np.array(det_root_list[:plot_range]))
-ax[0].spines["top"].set_visible(False)
-ax[0].spines["right"].set_visible(False)
-ax[0].grid(True, linestyle='--')
-ax[0].legend(fontsize=18)
-# ax[0].set_yscale('log')
+collided_idx = check_tiago_autocollision(robot, q_selected)
+q_collided = q_selected[collided_idx, :]
 
-# quality of estimation
-ax[1].set_ylabel('Weight values (log)', fontsize=20)  
-ax[1].set_xlabel('Data sample', fontsize=20)
-ax[1].tick_params(axis='both', labelsize=18)
-ax[1].tick_params(axis='y', labelrotation=30)
+# display few configurations
+viz = MeshcatVisualizer(
+    model=robot.model, collision_model=robot.collision_model,
+    visual_model=robot.visual_model, url='classical'
+)
+time.sleep(3)
+q_visual = q_selected[0:30,:]
+for i in range(q_visual.shape[0]):
+    viz.display(q_visual[i, :])
+    time.sleep(1)
 
-# w_list = list(w_dict_sort.values())
-# w_list.sort(reverse=True)
-ax[1].plot(list(w_dict_sort.values()))
-ax[1].set_yscale("log")
-ax[1].spines["top"].set_visible(False)
-ax[1].spines["right"].set_visible(False)
-ax[1].grid(True, linestyle='--')
+# write to file
+q_arm = np.around(q_selected[0:30, param['config_idx']],4).tolist()
+from datetime import datetime
+import json
+dt = datetime.now()
+current_time = dt.strftime("%d_%b_%Y_%H%M")
+text_file = join(
+   dirname(str(abspath(__file__))),
+    f"data/tiago_calibration_{current_time}.txt")
+json.dump(q_arm, open(text_file, "w"))
+
+
+# # plotting 
+# det_root_list = []
+# n_key_list = []
+# for nbc in range(min_NbChosen, param["NbSample"]+1):
+#     n_key = list(w_dict_sort.keys())[0:nbc]
+#     n_key_list.append(n_key)
+#     M_i = pc.sum(w_dict_sort[i]*subX_list[i] for i in n_key)
+#     det_root_list.append(pc.DetRootN(M_i))
+# idx_subList = range(len(det_root_list))
+
+# fig, ax = plt.subplots(2)
+# ratio = det_root_whole/det_root_list[-1]
+# plot_range = param["NbSample"] - NbChosen
+# ax[0].set_ylabel('D-optimality criterion', fontsize=20)
+# ax[0].tick_params(axis='y', labelsize=18)
+# ax[0].plot(ratio*np.array(det_root_list[:plot_range]))
+# ax[0].spines["top"].set_visible(False)
+# ax[0].spines["right"].set_visible(False)
+# ax[0].grid(True, linestyle='--')
+# ax[0].legend(fontsize=18)
+# # ax[0].set_yscale('log')
+
+# # quality of estimation
+# ax[1].set_ylabel('Weight values (log)', fontsize=20)  
+# ax[1].set_xlabel('Data sample', fontsize=20)
+# ax[1].tick_params(axis='both', labelsize=18)
+# ax[1].tick_params(axis='y', labelrotation=30)
+
+# # w_list = list(w_dict_sort.values())
+# # w_list.sort(reverse=True)
+# ax[1].plot(list(w_dict_sort.values()))
+# ax[1].set_yscale("log")
+# ax[1].spines["top"].set_visible(False)
+# ax[1].spines["right"].set_visible(False)
+# ax[1].grid(True, linestyle='--')
 
 # plt.show()
 

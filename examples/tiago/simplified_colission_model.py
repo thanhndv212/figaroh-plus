@@ -19,9 +19,9 @@ import pinocchio as pin
 import time
 
 from figaroh.tools.robot import Robot
-# from figaroh.tools.regressor import *
-# from figaroh.tools.qrdecomposition import *
-# from figaroh.tools.randomdata import *
+# from tools.regressor import *
+# from tools.qrdecomposition import *
+# from tools.randomdata import *
 from figaroh.tools.robotcollisions import *
 from figaroh.meshcat_viewer_wrapper import MeshcatVisualizer
 
@@ -61,53 +61,70 @@ def build_tiago_simplified(robot):
     visual_model = robot.visual_model
     geom_model = robot.geom_model
 
+    # custom translational placement
     xyz_1 = np.array([-0.028, 0, -0.01])
     xyz_2 = np.array([0.005, 0, -0.35])
     xyz_3 = np.array([0, 0, 0.20])
-    xyz_4 = np.array([0, 0, 0])
+    xyz_4 = np.array([0.005, 0, -0.05])
     xyz_5 = np.array([-0.03, 0.09, 0])
+    xyz_6 = np.array([0., 0., 0.17])
+
+    # joint parent ID
+    base_ID = robot.model.getJointId("universe")
+    torso_ID = robot.model.getJointId("torso_lift_joint")
+    head_cap_ID = robot.model.getJointId("head_2_joint")
+    head_box_ID = robot.model.getJointId("head_1_joint")
+    hand_ID = robot.model.getJointId("arm_7_joint")
 
     geom_model.addGeometryObject(
-        Box("torso_up_box", 1, 0.28, 0.35, 0.2, pin.SE3(np.eye(3), xyz_1))
+        Box("torso_up_box", torso_ID, 0.28, 0.35, 0.2, pin.SE3(np.eye(3), xyz_1))
     )
     visual_model.addGeometryObject(
-        Box("torso_up_box", 1, 0.28, 0.35, 0.2, pin.SE3(np.eye(3), xyz_1))
+        Box("torso_up_box", torso_ID, 0.28, 0.35, 0.2, pin.SE3(np.eye(3), xyz_1))
     )
     geom_model.addGeometryObject(
-        Box("torso_low_box", 1, 0.221, 0.26, 0.35, pin.SE3(np.eye(3), xyz_2))
+        Box("torso_low_box", torso_ID, 0.221,
+            0.26, 0.35, pin.SE3(np.eye(3), xyz_2))
     )
     visual_model.addGeometryObject(
-        Box("torso_low_box", 1, 0.221, 0.26, 0.35, pin.SE3(np.eye(3), xyz_2))
+        Box("torso_low_box", torso_ID, 0.221,
+            0.26, 0.35, pin.SE3(np.eye(3), xyz_2))
     )
     geom_model.addGeometryObject(
-        Capsule("base_cap", 0, 0.3, 0.25, pin.SE3(np.eye(3), xyz_3))
+        Capsule("base_cap", base_ID, 0.3, 0.25, pin.SE3(np.eye(3), xyz_3))
     )
     visual_model.addGeometryObject(
-        Capsule("base_cap", 0, 0.3, 0.25, pin.SE3(np.eye(3), xyz_3))
+        Capsule("base_cap", base_ID, 0.3, 0.25, pin.SE3(np.eye(3), xyz_3))
     )
+    # geom_model.addGeometryObject(
+    #     Box("head_box", head_box_ID, 0.1, 0.14, 0.1, pin.SE3(np.eye(3), xyz_4))
+    # )
+    # visual_model.addGeometryObject(
+    #     Box("head_box", head_box_ID, 0.1, 0.14, 0.1, pin.SE3(np.eye(3), xyz_4))
+    # )
     geom_model.addGeometryObject(
-        Capsule("forearm_cap", 6,  0.30, 0.10,pin.SE3(np.eye(3), xyz_4))
+        Capsule("head_cap", head_cap_ID, 0.17, 0.25, pin.SE3(np.eye(3), xyz_5))
     )
     visual_model.addGeometryObject(
-        Capsule("forearm_cap", 6,  0.10, 0.30, pin.SE3(np.eye(3), xyz_4))
-    )
-    geom_model.addGeometryObject(
-        Capsule("head_cap", 10, 0.17, 0.25, pin.SE3(np.eye(3), xyz_5))
-    )
-    visual_model.addGeometryObject(
-        Capsule("head_cap", 10, 0.17, 0.25, pin.SE3(np.eye(3), xyz_5))
+        Capsule("head_cap", head_cap_ID, 0.17, 0.25, pin.SE3(np.eye(3), xyz_5))
     )
 
+    geom_model.addGeometryObject(
+        Capsule("hand_cap", hand_ID, 0.1, 0.2, pin.SE3(np.eye(3), xyz_6))
+    )
+    visual_model.addGeometryObject(
+        Capsule("hand_cap", hand_ID, 0.1, 0.2, pin.SE3(np.eye(3), xyz_6))
+    )
     # for k in range(len(geom_model.geometryObjects)):
     #     print("object number %d" % k, geom_model.geometryObjects[k].name)
 
     arm_link_names = [
-        "forearm_cap"
-        # "arm_4_link_0",
-        # "arm_5_link_0",
+        "arm_4_link_0",
+        "arm_5_link_0",
         # "arm_6_link_0",
         # "wrist_ft_link_0",
         # "wrist_ft_tool_link_0",
+        "hand_cap"
     ]
     arm_link_ids = [geom_model.getGeometryId(k) for k in arm_link_names]
     mask_link_names = [
@@ -123,14 +140,65 @@ def build_tiago_simplified(robot):
     print("number of collision pairs of simplified model is: ",
           len(geom_model.collisionPairs))
 
-    return robot
 
-def build_tiago_normal(robot):
+def build_canopies_simplified(robot):
+    visual_model = robot.visual_model
+    geom_model = robot.geom_model
+
+    xyz_0 = np.array([0., 0., 0.0])
+    xyz_1 = np.array([0., 0., 0.5])
+    xyz_6 = np.array([0., 0., -0.1])
+
+    base_ID = robot.model.getJointId("universe")
+    hand_ID = robot.model.getJointId("arm_right_7_joint")
+
+    geom_model.addGeometryObject(
+        Box("torso_box", base_ID, 0.35, 0.40, 1, pin.SE3(np.eye(3), xyz_1))
+    )
+    visual_model.addGeometryObject(
+        Box("torso_box", base_ID, 0.35, 0.40, 1, pin.SE3(np.eye(3), xyz_1))
+    )
+    geom_model.addGeometryObject(
+        Box("ground_plane", base_ID, 2.5, 2.5, 0.1, pin.SE3(np.eye(3), xyz_0))
+    )
+    visual_model.addGeometryObject(
+        Box("ground_plane", base_ID, 2.5, 2.5, 0.1, pin.SE3(np.eye(3), xyz_0))
+    )
+    geom_model.addGeometryObject(
+        Capsule("hand_cap", hand_ID, 0.05, 0.2, pin.SE3(np.eye(3), xyz_6))
+    )
+    visual_model.addGeometryObject(
+        Capsule("hand_cap", hand_ID, 0.05, 0.2, pin.SE3(np.eye(3), xyz_6))
+    )
+    arm_link_names = [
+        "arm_right_3_link_0",
+        "arm_right_4_link_0",
+        "arm_right_5_link_0",
+        "arm_right_6_link_0",
+        # "wrist_ft_link_0",
+        # "wrist_ft_tool_link_0",
+        "hand_cap"
+    ]
+    arm_link_ids = [geom_model.getGeometryId(k) for k in arm_link_names]
+    mask_link_names = [
+        "torso_box",
+        "ground_plane"
+    ]
+    mask_link_ids = [geom_model.getGeometryId(k) for k in mask_link_names]
+    for i in mask_link_ids:
+        for j in arm_link_ids:
+            geom_model.addCollisionPair(pin.CollisionPair(i, j))
+    print("number of collision pairs of simplified model is: ",
+          len(geom_model.collisionPairs))
+
+
+def build_tiago_normal(robot, srdf_dr, srdf_file):
     # # Remove collision pairs listed in the SRDF file
     pinocchio_model_dir = join(dirname(str(abspath(__file__))), "models")
     model_path = join(pinocchio_model_dir, "others/robots")
-    srdf_filename = "tiago.srdf"
-    srdf_model_path = model_path + "/tiago_description/srdf/" + srdf_filename
+    srdf_filename = srdf_file  # "tiago.srdf"
+    srdf_model_path = model_path + srdf_dr + \
+        srdf_filename  # "/tiago_description/srdf/"
 
     geom_model = robot.geom_model
     geom_model.addAllCollisionPairs()
@@ -142,41 +210,59 @@ def build_tiago_normal(robot):
     geom_data = pin.GeometryData(geom_model)
 
 
+def check_tiago_autocollision(robot, q, srdf_dr='', srdf_file=''):
+    build_tiago_simplified(robot)
+    # build_tiago_normal(robot, srdf_dr, srdf_file)
+    collision = CollisionWrapper(robot, viz=None)
+    collided_idx = []
+    for i in range(q.shape[0]):
+        is_collision = collision.computeCollisions(q[i, :])
+        if not is_collision:
+            print("config %s self-collision is not violated!" % i)
+        else:
+            print("config %s self-collision is violated!" % i)
+            collided_idx.append(i)
+    return collided_idx
+
+
 def main():
-    print("Start 'meshcat-serve' in a terminal ... ")
-    time.sleep(1)
-    
-# 1/ Load robot model and create a dictionary containing reserved constants
+    print("You have to start 'meshcat-server' in a terminal ...")
+    time.sleep(3)
     ros_package_path = os.getenv('ROS_PACKAGE_PATH')
     package_dirs = ros_package_path.split(':')
-    robot_dir = package_dirs[0] + "/example-robot-data/robots"
     robot = Robot(
-        robot_dir + "/tiago_description/robots/tiago_no_hand.urdf",
-        package_dirs = package_dirs,
-        # isFext=True  # add free-flyer joint at base
+    'data/tiago_schunk.urdf',
+    package_dirs= package_dirs,     
+    # isFext=True  # add free-flyer joint at base
     )
-    robot = build_tiago_simplified(robot)
-    collision = CollisionWrapper(robot, viz=None)
+    # Tiago no hand
+    # urdf_dr = "tiago_description/robots"
+    # urdf_file = "tiago_no_hand_mod.urdf"
+    # srdf_dr = "/tiago_description/srdf/"
+    # srdf_file = "tiago.srdf"
 
-    def check_collision(collision, q):
-        is_collision = collision.computeCollisions(q)
-        # collision.getAllpairs()
-        if not is_collision:
-            print("self-collision is not violated!")
-        else:
-            print("self-collision is violated!")
-        return is_collision
-    # TODO: write for checking collision model and collision data
-    print(robot.model)
+    # Talos reduced
+    urdf_dr = "talos_data/robots"
+    urdf_file = "talos_reduced.urdf"
+    srdf_dr = "/talos_data/srdf/"
+    srdf_file = "talos.srdf"
+
+    # robot = Robot(urdf_dr, urdf_file)
+
+    q = np.empty((20, robot.q0.shape[0]))
+    for i in range(20):
+        q[i, :] = pin.randomConfiguration(robot.model)
+    check_tiago_autocollision(robot, q, srdf_dr, srdf_file)
+
+    # display few configurations
     viz = MeshcatVisualizer(
-        model=robot.model, collision_model=robot.collision_model, visual_model=robot.visual_model, url='classical'
+        model=robot.model, collision_model=robot.collision_model,
+        visual_model=robot.visual_model, url='classical'
     )
     time.sleep(3)
     for i in range(20):
-        q = pin.randomConfiguration(robot.model)
-        if not check_collision(collision, q):
-            viz.display(q)
-            time.sleep(0.5)
+        viz.display(q[i, :])
+        time.sleep(2)
 
 
 if __name__ == '__main__':
