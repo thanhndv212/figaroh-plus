@@ -674,25 +674,153 @@ def update_forward_kinematics(model, data, var, q, param):
 
         # update last frame if there is 
         if len(updated_params) < len(param_dict):
-            pee = np.zeros(6)
-            for n_id in range(len(updated_params), len(param_dict)):
-                for axis_id, axis in enumerate(pee_tpl):
-                    if axis in param['param_name'][n_id]:
-                        pee[axis_id] = var[n_id]
-            eeMf = cartesian_to_SE3(pee)
-            oMf = oMee*eeMf
+
+
+def update_forward_kinematics_2(model, data, var, q, param, verbose=0):
+    """ Update jointplacements with offset parameters, recalculate forward kinematics
+        to find end-effector's position and orientation.
+    """
+    # read param['param_name'] to allocate offset parameters to correct SE3
+    # convert translation: add a vector of 3 to SE3.translation
+    # convert orientation: convert SE3.rotation 3x3 matrix to vector rpy, add
+    #  to vector rpy, convert back to to 3x3 matrix
+    axis_tpl = ['d_px', 'd_py', 'd_pz', 'd_phix', 'd_phiy', 'd_phiz']
+    elas_tpl = ['kx', 'ky', 'kz']
+    pee_tpl = ['pEEx', 'pEEy', 'pEEz', 'phiEEx', 'phiEEy','phiEEz']
+    # order of joint in variables are arranged as in param['actJoint_idx']
+    assert len(var) == len(param['param_name']), "Length of variables != length of params"
+    param_dict = dict(zip(param['param_name'], var))
+    origin_model = model.copy()
+
+    # update model.jointPlacements
+    updated_params = []
+
+    # base placement or 'universe' joint
+    # TODO: add axis of base
+    if 'base_placement' in list(param_dict.keys())[0]:
+        base_placement = cartesian_to_SE3(var[0: 6])
+        updated_params = param['param_name'][0:6]
+
+    for j_id in param['actJoint_idx']:
+        xyz_rpy = np.zeros(6)
+        j_name = model.names[j_id]
+        for key in param_dict.keys():
+            if j_name in key:
+                # update xyz_rpy with kinematic errors
+                for axis_id, axis in enumerate(axis_tpl):
+                    if axis in key:
+                        if verbose==1:
+                            print("Updating [{}] joint placement at axis {} with [{}]".format(j_name, axis, key))
+                        xyz_rpy[axis_id] += param_dict[key]
+                        updated_params.append(key)
+        model = update_joint_placement(model, j_id, xyz_rpy)
+    PEE = np.zeros((param['NbMarkers']*param['calibration_index'], param['NbSample']))
+
+    # update end_effector frame
+    ee_frames = []
+    for marker_idx in range(1,param['NbMarkers']+1):
+        pee = np.zeros(6)
+        ee_name = 'EE'
+        for key in param_dict.keys():
+            if ee_name in key and str(marker_idx) in key:
+                # update xyz_rpy with kinematic errors
+                for axis_pee_id, axis_pee in enumerate(pee_tpl):
+                    if axis_pee in key:
+                        if verbose==1:
+                            print("Updating [{}_{}] joint placement at axis {} with [{}]".format(ee_name, str(marker_idx), axis_pee, key))
+                        pee[axis_pee_id] += param_dict[key]
+                        # updated_params.append(key)
+
+        eeMf = cartesian_to_SE3(pee)
+        ee_frames.append(eeMf)
+    assert len(ee_frames) == param['NbMarkers'], "Number of end-effector frames != number of markers"
+
+    # get transform
+    q_ = np.copy(q)
+    for i in range(param['NbSample']):
+        pin.framesForwardKinematics(model, data, q_[i, :])
+        pin.updateFramePlacements(model, data)
+        # update model.jointPlacements with joint elastic error
+        if param['non_geom']:
+            tau = pin.computeGeneralizedGravity(model, data, q_[i,:]) # vector size of 32 = nq < njoints
+            # update xyz_rpy with joint elastic error
+            for j_id in param['actJoint_idx']:
+                xyz_rpy = np.zeros(6)
+                j_name = model.names[j_id]
+                tau_j = tau[j_id - 1] # nq = njoints -1 
+                if j_name in key:
+                    for elas_id, elas in enumerate(elas_tpl):
+                        if elas in key:
+                            param_dict[key] = param_dict[key]*tau_j
+                            xyz_rpy[elas_id + 3] += param_dict[key] # +3 to add only on orienation
+                            updated_params.append(key)
+                model = update_joint_placement(model, j_id, xyz_rpy)
+            # get relative transform with updated model
+            oMee = get_rel_transform(model, data, param['start_frame'], param['end_frame'])
+            # revert model back to origin from added joint elastic error
+            for j_id in param['actJoint_idx']:
+                xyz_rpy = np.zeros(6)
+                j_name = model.names[j_id]
+                tau_j = tau[j_id - 1] # nq = njoints -1 
+                if j_name in key:
+                    for elas_id, elas in enumerate(elas_tpl):
+                        if elas in key:
+                            param_dict[key] = param_dict[key]*tau_j
+                            xyz_rpy[elas_id + 3] += param_dict[key] # +3 to add only on orienation
+                            updated_params.append(key)
+                model = update_joint_placement(model, j_id, -xyz_rpy)
+
         else:
-            oMf = oMee
+            oMee = get_rel_transform(model, data, param['start_frame'], param['end_frame'])
+
+
+        # update last frame if there is 
+        # if len(updated_params) < len(param_dict):
+        #     pee = np.zeros(6)
+        #     for n_id in range(len(updated_params), len(param_dict)):
+        #         for axis_id, axis in enumerate(pee_tpl):
+        #             if axis in param['param_name'][n_id]:
+        #                 if verbose==1:
+        #                     print("Updating end_effector frame [{}] with [{}]".format(axis, param['param_name'][n_id]))
+        #                 pee[axis_id] = var[n_id]
+        #     eeMf = cartesian_to_SE3(pee)
+        #     oMf = oMee*eeMf
+        # else:
+        #     oMf = oMee
         
-        # final transform
-        trans = oMf.translation.tolist()
-        orient = pin.rpy.matrixToRpy(oMf.rotation).tolist()
-        loc = trans + orient
-        measure = []
-        for mea_id, mea in enumerate(param['measurability']):
-            if mea:
-                measure.append(loc[mea_id])
-        PEE[:, i] = np.array(measure)
+        # # final transform
+        # trans = oMf.translation.tolist()
+        # orient = pin.rpy.matrixToRpy(oMf.rotation).tolist()
+        # loc = trans + orient
+        # measure = []
+        # for mea_id, mea in enumerate(param['measurability']):
+        #     if mea:
+        #         measure.append(loc[mea_id])
+        # PEE[:, i] = np.array(measure)
+        if len(updated_params) < len(param_dict):
+            # pee = np.zeros(6)
+            # for n_id in range(len(updated_params), len(param_dict)):
+            #     for axis_id, axis in enumerate(pee_tpl):
+            #         if axis in param['param_name'][n_id]:
+            #             if verbose==1:
+            #                 print("Updating last frame with [{}]".format(param['param_name'][n_id]))
+            #             pee[axis_id] = var[n_id]
+            #             updated_params.append(param['param_name'][n_id])
+            for marker_idx_ in range(1,param['NbMarkers']+1):
+                oMf = oMee*ee_frames[marker_idx_-1]
+                # final transform
+                trans = oMf.translation.tolist()
+                orient = pin.rpy.matrixToRpy(oMf.rotation).tolist()
+                loc = trans + orient
+                measure = []
+                for mea_id, mea in enumerate(param['measurability']):
+                    if mea:
+                        measure.append(loc[mea_id])
+                # PEE[(marker_idx-1)*param['calibration_index']:marker_idx*param['calibration_index'], i] = np.array(measure)
+                PEE[(marker_idx_-1)*param['calibration_index']:marker_idx_*param['calibration_index'], i] = np.array(measure)
+        
+            # assert len(updated_params) == len(param_dict), "Not all parameters are updated"
+            
     PEE = PEE.flatten('C')
     # revert model back to original 
     assert origin_model.jointPlacements != model.jointPlacements, 'before revert'
