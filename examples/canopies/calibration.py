@@ -40,8 +40,9 @@ from figaroh.calibration.calibration_tools import (
     calculate_base_kinematics_regressor,
     update_forward_kinematics,
     get_LMvariables,
-    get_rel_transform)
-
+    get_rel_transform,
+    cartesian_to_SE3,)
+%matplotlib
 
 # 1/ Load robot model and create a dictionary containing reserved constants
 ros_package_path = os.getenv('ROS_PACKAGE_PATH')
@@ -160,32 +161,37 @@ var_0, nvars = get_LMvariables(param, mode=0)
 var_0[0:6] = [0.08911, 0.0575, 0.004, -1.5708, 0, 0]
 var_0[-param['calibration_index']:] = np.array([0.5, 0.05, 0.35]) 
 
+rmse = 1e4
+count = 0
+while rmse > 5*1e-3 and count < 10:
+    print('*'*100)
+    print("iteration: ", count)
+    print("initial guess: ", var_0)
 
-print("initial guess: ", var_0)
+    # solve
+    LM_solve = least_squares(cost_func, var_0,  method='lm', verbose=1,
+                            args=(coeff, q_LM, model, data, param, PEEm_LM))
 
-# solve
-LM_solve = least_squares(cost_func, var_0,  method='lm', verbose=1,
-                         args=(coeff, q_LM, model, data, param, PEEm_LM))
+    #############################################################
 
-#############################################################
+    # 5/ Result analysis
+    res = LM_solve.x
+    # PEE estimated by solution
+    PEEe_sol = update_forward_kinematics(model, data, res, q_LM, param)
 
-# 5/ Result analysis
-res = LM_solve.x
-# PEE estimated by solution
-PEEe_sol = update_forward_kinematics(model, data, res, q_LM, param)
-
-# root mean square error
-rmse = np.sqrt(np.mean((PEEe_sol-PEEm_LM)**2))
-
+    # root mean square error
+    rmse = np.sqrt(np.mean((PEEe_sol-PEEm_LM)**2))
+    var_0 = res + 0.1*np.random.randn(nvars)
+    count += 1
 print("solution: ", res)
 print("minimized cost function: ", rmse)
 print("optimality: ", LM_solve.optimality)
 
 # uncalibrated
-# uncalib_res = var_0
-# uncalib_res[:3] = res[:3]
-# uncalib_res[-12:] = res[-12:]
-# PEEe_uncalib = get_PEE_fullvar(uncalib_res, q_LM, model, data, param, noise=False)
+uncalib_res = var_0
+# uncalib_res[:6] = res[:6]
+uncalib_res[-3:] = res[-3:]
+PEEe_uncalib = update_forward_kinematics(model, data, uncalib_res, q_LM, param)
 # rmse_uncalib = np.sqrt(np.mean((PEEe_uncalib-PEEm_LM)**2))
 # print("minimized cost function uncalib: ", rmse_uncalib)
 calib_result = dict(zip(param['param_name'], list(res)))
@@ -206,64 +212,77 @@ calib_result = dict(zip(param['param_name'], list(res)))
 # #############################################################
 
 # # # 6/ Plot results
+INCLUDE_UNCALIB = True
 
-# # calculate difference between estimated data and measured data
-# delta_PEE = PEEe_sol - PEEm_LM
-# PEE_xyz = delta_PEE.reshape((param['NbMarkers']*3, param["NbSample"]))
-# PEE_dist = np.zeros((param['NbMarkers'], param["NbSample"]))
-# for i in range(param["NbMarkers"]):
-#     for j in range(param["NbSample"]):
-#         PEE_dist[i, j] = np.sqrt(
-#             PEE_xyz[i*3, j]**2 + PEE_xyz[i*3 + 1, j]**2 + PEE_xyz[i*3 + 2, j]**2)
+# calculate difference between estimated data and measured data
+delta_PEE = PEEe_sol - PEEm_LM
+PEE_xyz = delta_PEE.reshape((param['NbMarkers']*3, param["NbSample"]))
+PEE_dist = np.zeros((param['NbMarkers'], param["NbSample"]))
+for i in range(param["NbMarkers"]):
+    for j in range(param["NbSample"]):
+        PEE_dist[i, j] = np.sqrt(
+            PEE_xyz[i*3, j]**2 + PEE_xyz[i*3 + 1, j]**2 + PEE_xyz[i*3 + 2, j]**2)
 
-# # detect "bad" data (outlierrs) => remove outliers, recalibrate 
-# del_list = []
-# scatter_size = np.zeros_like(PEE_dist)
-# for i in range(param['NbMarkers']):
-#     for k in range(param['NbSample']):
-#         if PEE_dist[i, k] > 0.02:
-#             del_list.append((i, k))
-#     scatter_size[i, :] = 20*PEE_dist[i, :]/np.min(PEE_dist[i, :])
-# print("indices of samples with >2 cm deviation: ", del_list)
+# detect "bad" data (outlierrs) => remove outliers, recalibrate 
+del_list = []
+scatter_size = np.zeros_like(PEE_dist)
+for i in range(param['NbMarkers']):
+    for k in range(param['NbSample']):
+        if PEE_dist[i, k] > 0.02:
+            del_list.append((i, k))
+    scatter_size[i, :] = 20*PEE_dist[i, :]/np.min(PEE_dist[i, :])
+print("indices of samples with >2 cm deviation: ", del_list)
 
 # # # 1// Errors between estimated position and measured position of markers
 
-# fig1, ax1 = plt.subplots(param['NbMarkers'], 1)
-# fig1.suptitle(
-#     "Relative positional errors between estimated markers and measured markers (m) by samples ")
-# colors = ['blue',
-#           'red',
-#           'yellow',
-#           'purple'
-#           ]
-# if param['NbMarkers'] == 1:
-#     ax1.bar(np.arange(param['NbSample']), PEE_dist[i, :])
-#     ax1.set_xlabel('Sample')
-#     ax1.set_ylabel('Error (meter)')
-#     ax1.grid()
-# else:
-#     for i in range(param['NbMarkers']):
-#         ax1[i].bar(np.arange(param['NbSample']),
-#                    PEE_dist[i, :], color=colors[i])
-#         ax1[i].set_xlabel('Sample')
-#         ax1[i].set_ylabel('Error of marker %s (meter)' % (i+1))
-#         ax1[i].grid()
+fig1, ax1 = plt.subplots(param['NbMarkers'], 1)
+fig1.suptitle(
+    "Relative positional errors between estimated markers and measured markers (m) by samples ")
+colors = ['blue',
+          'red',
+          'yellow',
+          'purple'
+          ]
+if param['NbMarkers'] == 1:
+    ax1.bar(np.arange(param['NbSample']), PEE_dist[i, :])
+    ax1.set_xlabel('Sample')
+    ax1.set_ylabel('Error (meter)')
+    ax1.grid()
+else:
+    for i in range(param['NbMarkers']):
+        ax1[i].bar(np.arange(param['NbSample']),
+                   PEE_dist[i, :], color=colors[i])
+        ax1[i].set_xlabel('Sample')
+        ax1[i].set_ylabel('Error of marker %s (meter)' % (i+1))
+        ax1[i].grid()
 
-# # # 2// plot 3D measured poses and estimated
-# fig2 = plt.figure(2)
-# fig2.suptitle("Visualization of estimated poses and measured pose in Cartesian")
-# ax2 = fig2.add_subplot(111, projection='3d')
-# PEEm_LM2d = PEEm_LM.reshape((param['NbMarkers']*3, param["NbSample"]))
-# PEEe_sol2d = PEEe_sol.reshape((param['NbMarkers']*3, param["NbSample"]))
-# for i in range(param['NbMarkers']):
-#     ax2.scatter3D(PEEm_LM2d[i*3, :], PEEm_LM2d[i*3+1, :],
-#                   PEEm_LM2d[i*3+2, :], marker='^', color='blue')
-#     ax2.scatter3D(PEEe_sol2d[i*3, :], PEEe_sol2d[i*3+1, :],
-#                   PEEe_sol2d[i*3+2, :], marker='o', color='red')
-# ax2.set_xlabel('X - front (meter)')
-# ax2.set_ylabel('Y - side (meter)')
-# ax2.set_zlabel('Z - height (meter)')
-# ax2.grid()
+# # 2// plot 3D measured poses and estimated
+fig2 = plt.figure(2)
+fig2.suptitle("Visualization of estimated poses and measured pose in Cartesian")
+ax2 = fig2.add_subplot(111, projection='3d')
+PEEm_LM2d = PEEm_LM.reshape((param['NbMarkers']*3, param["NbSample"]))
+PEEe_sol2d = PEEe_sol.reshape((param['NbMarkers']*3, param["NbSample"]))
+PEEe_uncalib2d = PEEe_uncalib.reshape((param['NbMarkers']*3, param["NbSample"]))
+for i in range(param['NbMarkers']):
+    ax2.scatter3D(PEEm_LM2d[i*3, :], PEEm_LM2d[i*3+1, :],
+                  PEEm_LM2d[i*3+2, :], marker='^', color='blue', label='Measured')
+    ax2.scatter3D(PEEe_sol2d[i*3, :], PEEe_sol2d[i*3+1, :],
+                  PEEe_sol2d[i*3+2, :], marker='o', color='red', label='Estimated')
+    if INCLUDE_UNCALIB:
+        ax2.scatter3D(PEEe_uncalib2d[i*3, :], PEEe_uncalib2d[i*3+1, :],
+                    PEEe_uncalib2d[i*3+2, :], marker='x', color='green', label='Uncalibrated')
+    for j in range(param['NbSample']):
+        ax2.plot3D([PEEm_LM2d[i*3, j], PEEe_sol2d[i*3, j]], [PEEm_LM2d[i*3+1, j], PEEe_sol2d[i*3+1, j]],
+                    [PEEm_LM2d[i*3+2, j], PEEe_sol2d[i*3+2, j]], color='red')
+        if INCLUDE_UNCALIB:
+            ax2.plot3D([PEEm_LM2d[i*3, j], PEEe_uncalib2d[i*3, j]], [PEEm_LM2d[i*3+1, j], PEEe_uncalib2d[i*3+1, j]], 
+                    [PEEm_LM2d[i*3+2, j], PEEe_uncalib2d[i*3+2, j]], color='green')
+
+ax2.set_xlabel('X - front (meter)')
+ax2.set_ylabel('Y - side (meter)')
+ax2.set_zlabel('Z - height (meter)')
+ax2.legend()
+ax2.grid()
 
 # # 3// visualize relative deviation between measure and estimate
 # fig3 = plt.figure(3)
@@ -340,3 +359,32 @@ calib_result = dict(zip(param['param_name'], list(res)))
 #                 update_name, update_value)
 #             output_file.write(update_line)
 #             output_file.write('\n')
+
+q_test = q_LM[0, :]
+PEE_test = PEEm_LM2d[:, 0]
+pin.framesForwardKinematics(model, data, q_test )
+pin.updateFramePlacements(model, data)
+b_to_cam = get_rel_transform(model, data, 'head_camera_color_optical_frame', 'head_camera_base_link')
+ref_to_cam = cartesian_to_SE3(res[0:6])
+cam_to_ref = ref_to_cam.actInv(pin.SE3.Identity())
+bMref = b_to_cam*cam_to_ref
+bMref_urdf = get_rel_transform(model, data, 'head_camera_color_optical_frame', 'head_2_joint')
+oMee = get_rel_transform(model, data, 'head_2_joint', 'base_gripper_left_link')
+pee = np.zeros(6)
+pee[0:3] = res[-3:]
+eeMf = cartesian_to_SE3(pee)
+oMf = oMee*eeMf
+print(bMref*oMee)
+print(bMref*oMf)
+print("*"*40)
+print(bMref_urdf*oMee)
+print(bMref_urdf*oMf)
+print("*"*40)
+print(PEE_test)
+
+data = robot.model.createData()
+robot.initViewer(loadModel=True)
+
+model = robot.model
+gui = robot.viewer.gui
+robot.display(robot.q0)
