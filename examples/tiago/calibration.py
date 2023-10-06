@@ -41,14 +41,13 @@ from figaroh.calibration.calibration_tools import (
     update_forward_kinematics,
     get_LMvariables,
     get_rel_transform)
-
-# 1. Load robot model and create a dictionary containing reserved constants
+%matplotlib
+# 1/ Load robot model and create a dictionary containing reserved constants
 ros_package_path = os.getenv('ROS_PACKAGE_PATH')
 package_dirs = ros_package_path.split(':')
-robot_dir = package_dirs[0] + "/example-robot-data/robots"
 robot = Robot(
-    robot_dir + "/tiago_description/robots/tiago.urdf",
-    package_dirs=package_dirs,
+    "data/tiago.urdf",
+    package_dirs = package_dirs,
     # isFext=True  # add free-flyer joint at base
 )
 model = robot.model
@@ -250,8 +249,8 @@ elif param['calibration_index'] == 3:
     var_0[-param['calibration_index']:] = np.array([ 0.2163, 0.03484, 0.004]) 
 
 uncalib_res = var_0
-# # uncalib_res[:3] = res[:3]
-# # uncalib_res[-3:] = res[-3:]
+# uncalib_res[:3] = res[:3]
+uncalib_res[-3:] = res[-3:]
 PEEe_uncalib = update_forward_kinematics(model, data, uncalib_res, q_LM, param)
 rmse_uncalib = np.sqrt(np.mean((PEEe_uncalib-PEEm_LM)**2))
 print("minimized cost function uncalib: ", rmse_uncalib)
@@ -272,6 +271,7 @@ calib_result = dict(zip(param['param_name'], list(res)))
 ##############################################################
 
 # 6. Plot results
+INCLUDE_UNCALIB = True
 
 # # 1// Errors between estimated position and measured position of markers
 
@@ -306,11 +306,22 @@ fig2.suptitle("Visualization of estimated poses and measured pose in Cartesian")
 ax2 = fig2.add_subplot(111, projection='3d')
 PEEm_LM2d = PEEm_LM.reshape((param['NbMarkers']*param['calibration_index'], param["NbSample"]))
 PEEe_sol2d = PEEe_sol.reshape((param['NbMarkers']*param['calibration_index'], param["NbSample"]))
+PEEe_uncalib2d = PEEe_uncalib.reshape((param['NbMarkers']*3, param["NbSample"]))
 for i in range(param['NbMarkers']):
     ax2.scatter3D(PEEm_LM2d[i*3, :], PEEm_LM2d[i*3+1, :],
-                  PEEm_LM2d[i*3+2, :], marker='^', color='red', label='measured')
+                  PEEm_LM2d[i*3+2, :], marker='^', color='blue', label='Measured')
     ax2.scatter3D(PEEe_sol2d[i*3, :], PEEe_sol2d[i*3+1, :],
-                  PEEe_sol2d[i*3+2, :], marker='o', color='green', label='estimated')
+                  PEEe_sol2d[i*3+2, :], marker='o', color='red', label='Estimated')
+    if INCLUDE_UNCALIB:
+        ax2.scatter3D(PEEe_uncalib2d[i*3, :], PEEe_uncalib2d[i*3+1, :],
+                    PEEe_uncalib2d[i*3+2, :], marker='x', color='green', label='Uncalibrated')
+    for j in range(param['NbSample']):
+        ax2.plot3D([PEEm_LM2d[i*3, j], PEEe_sol2d[i*3, j]], [PEEm_LM2d[i*3+1, j], PEEe_sol2d[i*3+1, j]],
+                    [PEEm_LM2d[i*3+2, j], PEEe_sol2d[i*3+2, j]], color='red')
+        if INCLUDE_UNCALIB:
+            ax2.plot3D([PEEm_LM2d[i*3, j], PEEe_uncalib2d[i*3, j]], [PEEm_LM2d[i*3+1, j], PEEe_uncalib2d[i*3+1, j]], 
+                    [PEEm_LM2d[i*3+2, j], PEEe_uncalib2d[i*3+2, j]], color='green')
+
 ax2.set_xlabel('X - front (meter)')
 ax2.set_ylabel('Y - side (meter)')
 ax2.set_zlabel('Z - height (meter)')
@@ -396,3 +407,9 @@ path_save_xacro = abspath('data/offset.xacro')
 #                 update_name, update_value)
 #             output_file.write(update_line)
 #             output_file.write('\n')
+data = robot.model.createData()
+robot.initViewer(loadModel=True)
+
+model = robot.model
+gui = robot.viewer.gui
+robot.display(robot.q0)
