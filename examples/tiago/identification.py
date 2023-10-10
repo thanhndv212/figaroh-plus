@@ -25,7 +25,7 @@ import time
 
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-
+import scienceplots
 import numpy as np
 from numpy.linalg import norm, solve
 from scipy import linalg, signal
@@ -48,7 +48,7 @@ from figaroh.tools.regressor import (
     add_friction,
     add_joint_offset)
 from figaroh.tools.qrdecomposition import get_baseParams, double_QR
-
+# plt.style.use(['ieee'])
 
 # 1/ Load robot model and create a dictionary containing reserved constants
 ros_package_path = os.getenv('ROS_PACKAGE_PATH')
@@ -297,39 +297,39 @@ print("tau_base shape", tau_base.shape)
 phi_ref = np.array(list(params_std.values()))
 tau_ref = np.dot(W, phi_ref)
 tau_ref = tau_ref[range(len(params_settings["idx_act_joints"])*Ntotal)]
-plt.rcParams.update({'font.size': 30})
+
 # plot joint torque
-plot2 = plt.figure(2)
-axs2 = plot2.subplots(len(active_joints), 1)
-for i in range(len(params_settings["idx_act_joints"])):
-    if i == 0:
-        axs2[i].plot(t_dec, tau_dec[i], color='red', label='effort measured')
-        axs2[i].plot(t_dec, tau_base[range(i*tau_dec[i].shape[0], (i+1)*tau_dec[i].shape[0])],
-                      color='green',label='effort estimated')
-        axs2[i].plot(t, tau_ref[range(i*Ntotal, (i+1)*Ntotal)],
-                     color='blue',label='notional effort estimated')
-        axs2[i].set_ylabel("torso", fontsize=25)
-        axs2[i].tick_params(labelbottom = False, bottom = False)
-        # axs2[i].axhline(eff_lims[i], t[0], t[-1])
-        axs2[i].grid()
-    elif i<len(active_joints):
-        axs2[i].plot(t_dec, tau_dec[i],color='red')
-        axs2[i].plot(t_dec, tau_base[range(
-            i*tau_dec[i].shape[0], (i+1)*tau_dec[i].shape[0])], color='green', )
-        axs2[i].plot(t, tau_ref[range(i*Ntotal, (i+1)*Ntotal)], color='blue' )
-        axs2[i].set_ylabel("arm %d" % i, fontsize=25,)
-        axs2[i].tick_params(labelbottom = False, bottom = False)
-        axs2[i].grid()
+%matplotlib
+with plt.style.context(['seaborn-darkgrid']):
+    plot2 = plt.figure(2)
+    axs2 = plot2.subplots(len(active_joints), 1)
+    plt.style.library['seaborn-darkgrid'].update({'font.size': 18,'grid.color': 'grey'})
+    for i in range(len(params_settings["idx_act_joints"])):
+        if i == 0:
+            axs2[i].plot(t_dec, tau_dec[i], color='red', label='torque estimated from motor current')
+            axs2[i].plot(t_dec, tau_base[range(i*tau_dec[i].shape[0], (i+1)*tau_dec[i].shape[0])],
+                        color='green',label='torque estimated by identified model')
+            axs2[i].plot(t, tau_ref[range(i*Ntotal, (i+1)*Ntotal)],
+                        color='blue',label='torque estimated by initial model', linestyle='--')
+            axs2[i].set_ylabel("torso [N]", rotation='horizontal', fontsize=15, ha='right')
+            axs2[i].tick_params(labelbottom = False, bottom = False)
+            # axs2[i].axhline(eff_lims[i], t[0], t[-1])
+            # axs2[i].grid()
+        elif i<len(active_joints):
+            axs2[i].plot(t_dec, tau_dec[i],color='red')
+            axs2[i].plot(t_dec, tau_base[range(
+                i*tau_dec[i].shape[0], (i+1)*tau_dec[i].shape[0])], color='green', )
+            axs2[i].plot(t, tau_ref[range(i*Ntotal, (i+1)*Ntotal)], color='blue' , linestyle='--')
+            axs2[i].set_ylabel("arm %d [N.m]" % i, rotation='horizontal', fontsize=15, ha='right')
+            axs2[i].tick_params(labelbottom = False, bottom = False)
+            # axs2[i].grid()
 
-        if i == 7:
-            axs2[i].set_xlabel( "time (sec)", fontsize=25)
-            axs2[i].tick_params(axis='y', color='black')
-            axs2[i].tick_params(labelbottom=True, bottom=True)
+            if i == len(active_joints)-1:
+                axs2[i].set_xlabel( "time [sec]", fontsize=15)
+                axs2[i].tick_params(axis='y', color='black')
+                axs2[i].tick_params(labelbottom=True, bottom=True)
 
-        # axs2[i].axhline(eff_lims[i], t[0], t[-1])
-# axs2[8].plot(t, ddq[:, 0])
-
-plot2.legend()
+    plot2.legend()
 plt.show()
 
 # x = np.arange(len(params_b))
