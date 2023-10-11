@@ -103,7 +103,7 @@ if dataSet == 'sample':
 
 elif dataSet == 'experimental':
     # Read CSV file
-    path = abspath('data/eye_hand_calibration_recorded_data_500.csv')
+    path = abspath('data/13_optimal_eye_hand_calibration_recorded_data_500.csv')
 
     # Load data from file
     PEEm_exp, q_exp = load_data(path, model, param)
@@ -233,8 +233,6 @@ while count <2:
         scatter_size[i, :] = 20*PEE_dist[i, :]/np.min(PEE_dist[i, :])
     print(f"indices of samples with >{eps} cm deviation: ", del_list)
     if del_list is not None and count <2:
-        path = abspath('data/eye_hand_calibration_recorded_data_500_wtorso.csv')
-
         # Load data from file
         PEEm_LM, q_LM = load_data(path, model, param, del_list)
         param['NbSample'] = q_LM.shape[0]
