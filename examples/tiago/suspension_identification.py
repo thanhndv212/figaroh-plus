@@ -34,13 +34,13 @@ from processing_utils import *
 ros_package_path = os.getenv('ROS_PACKAGE_PATH')
 package_dirs = ros_package_path.split(':')
 # robot_dir = package_dirs[0] + "/example-robot-data/robots"
-robot = Robot(
+tiago_fb = Robot(
     'data/tiago_schunk.urdf',
     package_dirs = package_dirs,
     isFext=True  # add free-flyer joint at base
 )
-model = robot.model
-data = robot.data
+model = tiago_fb.model
+data = tiago_fb.data
 
 # A. Consider the whole base as one whole generalized suspension
 
@@ -95,7 +95,7 @@ f_res = 100
 f_cutoff = 10
 # selected_range = range(0, 41000)
 selected_range = range(0, 5336)
-plot = True # plot the coordinates
+plot = False # plot the coordinates
 plot_raw = True
 alpha = 0.25
 # time_stamps_vicon = [830, 3130, 4980, 6350, 7740, 9100, 10860, 13410, 15830, 18170, 20000, 21860, 24320, 26170, 27530, 29410, 31740, 33710, 35050, 36560, 39000]
@@ -201,12 +201,13 @@ Mbase_marker = Mmarker_base.inverse()
 universe_frame = list()
 xyz_u = np.zeros((len(base_rot), 3))
 rpy_u = np.zeros((len(base_rot), 3))
+quat_u = np.zeros((len(base_rot), 4))
 for i in range(len(base_rot)):
     SE3_base = pin.SE3(base_rot[i], base_trans[i, :])*Mmarker_base
     universe_frame.append(SE3_base)
     xyz_u[i, :] = SE3_base.translation
     rpy_u[i, :] = pin.rpy.matrixToRpy(SE3_base.rotation)
-
+    quat_u[i, :] = pin.Quaternion(SE3_base.rotation).coeffs()
 plot_SE3(universe_frame[0], 'universe')
 # plot_markertf(np.arange(len(base_rot)), xyz_u, 'xyz_u')
 # plot_markertf(np.arange(len(base_rot)), rpy_u, 'rpy_u')
@@ -224,6 +225,50 @@ for i in range(3):
     rpy_us[:, i] = rpy_u[sample_range, i] - np.mean(rpy_u[sample_range, i])
 # plot_markertf(np.arange(NbSample), xyz_us, 'xyz_us')
 # plot_markertf(np.arange(NbSample), rpy_us, 'rpy_us')
+
+######### concatenate joint data with floating base 
+
+######################################################################################
+# path to joint encoder data
+print('Read encoder data from ', input_path_joint)
+path_to_values = bag_path + input_path_joint + '/introspection_datavalues.csv'
+path_to_names = bag_path + input_path_joint + '/introspection_datanames.csv'
+
+# create a robot
+ros_package_path = os.getenv('ROS_PACKAGE_PATH')
+package_dirs = ros_package_path.split(':')
+tiago = Robot(
+    'data/tiago_schunk.urdf',
+    package_dirs= package_dirs,
+    # isFext=True  # add free-flyer joint at base
+)
+# add object to gripper
+# addBox_to_gripper(robot)
+
+# read values from csv files
+t_res, f_res, joint_names, q_abs_res, q_pos_res = get_q_arm(tiago, path_to_values, path_to_names, f_cutoff)
+active_joints = ["torso_lift_joint",
+                 "arm_1_joint",
+                 "arm_2_joint",
+                 "arm_3_joint",
+                 "arm_4_joint",
+                 "arm_5_joint",
+                 "arm_6_joint",
+                 "arm_7_joint",
+                 ]
+actJoint_idx = []
+actJoint_idv = []
+for act_j in active_joints:
+    joint_idx = tiago.model.getJointId(act_j)
+    actJoint_idx.append(tiago.model.joints[joint_idx].idx_q)
+    actJoint_idv.append(tiago.model.joints[joint_idx].idx_v)
+
+q_arm, dq_arm, ddq_arm = calc_vel_acc(tiago, q_pos_res, selected_range, joint_names, f_res, f_cutoff)
+q_fb = np.concatenate((q_base, q_arm), axis=1)
+dq_fb = np.concatenate((dq_base, dq_arm), axis=1)
+ddq_fb = np.concatenate((ddq_base, ddq_arm), axis=1)
+
+
 
 ######### Regressor matrix 
 reg_mat = create_R_matrix(len(sample_range), xyz_us, dxyz_u[sample_range, :], rpy_us, drpy_u[sample_range, :])  
