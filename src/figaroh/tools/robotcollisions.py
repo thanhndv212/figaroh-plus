@@ -77,8 +77,7 @@ class CollisionWrapper:
         if len(collisions) == 0:
             return np.array([])
         dist = np.array(
-            [self.gdata.distanceResults[i].min_distance for (
-                i, c, r) in collisions]
+            [self.gdata.distanceResults[i].min_distance for (i, c, r) in collisions]
         )
         return dist
 
@@ -113,6 +112,7 @@ class CollisionWrapper:
                 return True
                 break
         return False
+
     # --- DISPLAY -----------------------------------------------------------------------------------
     # --- DISPLAY -----------------------------------------------------------------------------------
     # --- DISPLAY -----------------------------------------------------------------------------------
@@ -127,7 +127,6 @@ class CollisionWrapper:
         # self.createDisplayPatchs(0)
 
     def createDisplayPatchs(self, ncollisions):
-
         if ncollisions == self.ncollisions:
             return
         elif ncollisions < self.ncollisions:  # Remove patches
@@ -136,8 +135,7 @@ class CollisionWrapper:
                 self.viz[self.patchName % (i, "b")].delete()
         else:
             for i in range(self.ncollisions, ncollisions):
-                self.viz.addCylinder(self.patchName %
-                                     (i, "a"), 0.0005, 0.05, "red")
+                self.viz.addCylinder(self.patchName % (i, "a"), 0.0005, 0.05, "red")
                 # viz.addCylinder( self.patchName % (i,'b') , .0005,.05,"red")
 
         self.ncollisions = ncollisions
@@ -152,11 +150,9 @@ class CollisionWrapper:
         geomModel.collisionResults[0].getContact(0).
         """
         name = self.patchName % (ipatch, "a")
-        R = pin.Quaternion.FromTwoVectors(
-            np.array([0, 1, 0]), contact.normal).matrix()
+        R = pin.Quaternion.FromTwoVectors(np.array([0, 1, 0]), contact.normal).matrix()
         M = pin.SE3(R, contact.pos)
-        self.viz.addCylinder(self.patchName %
-                             (ipatch, "a"), 0.0005, 0.05, "red")
+        self.viz.addCylinder(self.patchName % (ipatch, "a"), 0.0005, 0.05, "red")
         self.viz.applyConfiguration(name, M)
 
     def displayCollisions(self, collisions=None):

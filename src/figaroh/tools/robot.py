@@ -19,7 +19,6 @@ from sys import argv
 import numpy as np
 
 
-
 class Robot(RobotWrapper):
     def __init__(
         self,
@@ -53,8 +52,11 @@ class Robot(RobotWrapper):
         if not isFext:
             self.initFromURDF(robot_urdf, package_dirs=package_dirs)
         else:
-            self.initFromURDF(robot_urdf, package_dirs=package_dirs,
-                              root_joint=pin.JointModelFreeFlyer())
+            self.initFromURDF(
+                robot_urdf,
+                package_dirs=package_dirs,
+                root_joint=pin.JointModelFreeFlyer(),
+            )
 
         # self.geom_model = pin.buildGeomFromUrdf(
         #     self.model, robot_urdf, geom_type=pin.GeometryType.COLLISION,
@@ -64,12 +66,11 @@ class Robot(RobotWrapper):
         ## \todo test that this is equivalent to reloading the model
         self.geom_model = self.collision_model
 
-
     def get_standard_parameters(self, param):
         """This function prints out the standard inertial parameters defined in urdf model.
         Output: params_std: a dictionary of parameter names and their values"""
-    
-        model=self.model
+
+        model = self.model
         phi = []
         params = []
 
@@ -88,9 +89,9 @@ class Robot(RobotWrapper):
 
         # change order of values in phi['m', 'mx','my','mz','Ixx','Ixy','Iyy','Ixz', 'Iyz','Izz'] - from pinoccchio
         # corresponding to params_name ['Ixx','Ixy','Ixz','Iyy','Iyz','Izz','mx','my','mz','m']
-        
-        for i in range(1,len(model.inertias)):
-            P =  model.inertias[i].toDynamicParameters()
+
+        for i in range(1, len(model.inertias)):
+            P = model.inertias[i].toDynamicParameters()
             P_mod = np.zeros(P.shape[0])
             P_mod[9] = P[0]  # m
             P_mod[8] = P[3]  # mz
@@ -106,31 +107,30 @@ class Robot(RobotWrapper):
                 params.append(j + str(i))
             for k in P_mod:
                 phi.append(k)
-            
+
             params.extend(["Ia" + str(i)])
             params.extend(["fv" + str(i), "fs" + str(i)])
             params.extend(["off" + str(i)])
-            
-            if param['has_actuator_inertia']:
-                phi.extend([param['Ia'][i-1]])
+
+            if param["has_actuator_inertia"]:
+                phi.extend([param["Ia"][i - 1]])
             else:
                 phi.extend([0])
-            if param['has_friction']:
-                phi.extend([param['fv'][i-1], param['fs'][i-1]])
+            if param["has_friction"]:
+                phi.extend([param["fv"][i - 1], param["fs"][i - 1]])
             else:
                 phi.extend([0, 0])
-            if param['has_joint_offset']:
-                phi.extend([param['off'][i-1]])
+            if param["has_joint_offset"]:
+                phi.extend([param["off"][i - 1]])
             else:
                 phi.extend([0])
-                    
+
         if param["external_wrench_offsets"]:
-            phi.extend([param['OFFX'],param['OFFY'],param['OFFZ']])
-            params.extend(["OFFX","OFFY","OFFZ"])  
+            phi.extend([param["OFFX"], param["OFFY"], param["OFFZ"]])
+            params.extend(["OFFX", "OFFY", "OFFZ"])
 
         params_std = dict(zip(params, phi))
         return params_std
-
 
     def display_q0(self):
         """If you want to visualize the robot in this example,

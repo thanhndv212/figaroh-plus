@@ -19,6 +19,7 @@ import pinocchio as pin
 import time
 
 from figaroh.tools.robot import Robot
+
 # from figaroh.tools.regressor import *
 # from figaroh.tools.qrdecomposition import *
 # from figaroh.tools.randomdata import *
@@ -86,10 +87,10 @@ def build_tiago_simplified(robot):
         Capsule("base_cap", 0, 0.3, 0.25, pin.SE3(np.eye(3), xyz_3))
     )
     geom_model.addGeometryObject(
-        Capsule("forearm_cap", 6,  0.30, 0.10,pin.SE3(np.eye(3), xyz_4))
+        Capsule("forearm_cap", 6, 0.30, 0.10, pin.SE3(np.eye(3), xyz_4))
     )
     visual_model.addGeometryObject(
-        Capsule("forearm_cap", 6,  0.10, 0.30, pin.SE3(np.eye(3), xyz_4))
+        Capsule("forearm_cap", 6, 0.10, 0.30, pin.SE3(np.eye(3), xyz_4))
     )
     geom_model.addGeometryObject(
         Capsule("head_cap", 10, 0.17, 0.25, pin.SE3(np.eye(3), xyz_5))
@@ -120,10 +121,13 @@ def build_tiago_simplified(robot):
     for i in mask_link_ids:
         for j in arm_link_ids:
             geom_model.addCollisionPair(pin.CollisionPair(i, j))
-    print("number of collision pairs of simplified model is: ",
-          len(geom_model.collisionPairs))
+    print(
+        "number of collision pairs of simplified model is: ",
+        len(geom_model.collisionPairs),
+    )
 
     return robot
+
 
 def build_tiago_normal(robot):
     # # Remove collision pairs listed in the SRDF file
@@ -145,14 +149,14 @@ def build_tiago_normal(robot):
 def main():
     print("Start 'meshcat-serve' in a terminal ... ")
     time.sleep(1)
-    
-# 1/ Load robot model and create a dictionary containing reserved constants
-    ros_package_path = os.getenv('ROS_PACKAGE_PATH')
-    package_dirs = ros_package_path.split(':')
+
+    # 1/ Load robot model and create a dictionary containing reserved constants
+    ros_package_path = os.getenv("ROS_PACKAGE_PATH")
+    package_dirs = ros_package_path.split(":")
     robot_dir = package_dirs[0] + "/example-robot-data/robots"
     robot = Robot(
         robot_dir + "/tiago_description/robots/tiago_no_hand.urdf",
-        package_dirs = package_dirs,
+        package_dirs=package_dirs,
         # isFext=True  # add free-flyer joint at base
     )
     robot = build_tiago_simplified(robot)
@@ -166,10 +170,14 @@ def main():
         else:
             print("self-collision is violated!")
         return is_collision
+
     # TODO: write for checking collision model and collision data
     print(robot.model)
     viz = MeshcatVisualizer(
-        model=robot.model, collision_model=robot.collision_model, visual_model=robot.visual_model, url='classical'
+        model=robot.model,
+        collision_model=robot.collision_model,
+        visual_model=robot.visual_model,
+        url="classical",
     )
     time.sleep(3)
     for i in range(20):
@@ -179,5 +187,5 @@ def main():
             time.sleep(0.5)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

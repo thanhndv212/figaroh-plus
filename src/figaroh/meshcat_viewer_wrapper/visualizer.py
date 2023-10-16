@@ -26,8 +26,9 @@ def materialFromColor(color):
         material = colors.colormap[color]
     elif isinstance(color, list):
         from .colors import rgb2int
+
         material = meshcat.geometry.MeshPhongMaterial()
-        material.color = rgb2int(*[int(c*255) for c in color[:3]])
+        material.color = rgb2int(*[int(c * 255) for c in color[:3]])
         if len(color) == 3:
             material.transparent = False
         else:
@@ -35,24 +36,26 @@ def materialFromColor(color):
             material.opacity = float(color[3])
     elif color is None:
         import random
+
         material = random.sample(list(colors.colormap), 1)[0]
     else:
         material = colors.black
     return material
 
 
-class   MeshcatVisualizer(PMV):
-    def __init__(self, robot=None, model=None, collision_model=None, visual_model=None, url=None):
+class MeshcatVisualizer(PMV):
+    def __init__(
+        self, robot=None, model=None, collision_model=None, visual_model=None, url=None
+    ):
         if robot is not None:
-            PMV.__init__(self, robot.model, robot.collision_model,
-                         robot.visual_model)
+            PMV.__init__(self, robot.model, robot.collision_model, robot.visual_model)
         elif model is not None:
             PMV.__init__(self, model, collision_model, visual_model)
 
         if url is not None:
-            if url == 'classical':
-                url = 'tcp://127.0.0.1:6000'
-            print('Wrapper tries to connect to server <%s>' % url)
+            if url == "classical":
+                url = "tcp://127.0.0.1:6000"
+            print("Wrapper tries to connect to server <%s>" % url)
             server = meshcat.Visualizer(zmq_url=url)
         else:
             server = None
@@ -69,7 +72,8 @@ class   MeshcatVisualizer(PMV):
     def addCylinder(self, name, length, radius, color=None):
         material = materialFromColor(color)
         self.viewer[name].set_object(
-            meshcat.geometry.Cylinder(length, radius), material)
+            meshcat.geometry.Cylinder(length, radius), material
+        )
 
     def addBox(self, name, dims, color):
         material = materialFromColor(color)
@@ -87,10 +91,10 @@ class   MeshcatVisualizer(PMV):
                 p = placement[:3]
                 T = np.r_[np.c_[R, p], [[0, 0, 0, 1]]]
             else:
-                print('Error, np.shape of placement is not accepted')
+                print("Error, np.shape of placement is not accepted")
                 return False
         else:
-            print('Error format of placement is not accepted')
+            print("Error format of placement is not accepted")
             return False
         self.viewer[name].set_transform(T)
 

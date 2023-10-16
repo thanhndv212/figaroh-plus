@@ -17,10 +17,11 @@ from os.path import dirname, join, abspath
 import numpy as np
 import csv
 
-def write_results_tofile(res, model, param, file_type='xacro'):
-    """ Save offset parameters to file
-        file_type = 'csv': for storing only
-        file_type = 'xacro' or 'yaml': for updating kinematic model
+
+def write_results_tofile(res, model, param, file_type="xacro"):
+    """Save offset parameters to file
+    file_type = 'csv': for storing only
+    file_type = 'xacro' or 'yaml': for updating kinematic model
     """
     torso_list = [0, 1, 2, 3, 4, 5]
     arm1_list = [6, 7, 8, 11]
@@ -30,14 +31,22 @@ def write_results_tofile(res, model, param, file_type='xacro'):
     arm5_list = [30, 33]
     arm6_list = [36, 39]
     arm7_list = [43, 46]  # include phiz7
-    total_list = [torso_list, arm1_list, arm2_list, arm3_list, arm4_list,
-                  arm5_list, arm6_list, arm7_list]
+    total_list = [
+        torso_list,
+        arm1_list,
+        arm2_list,
+        arm3_list,
+        arm4_list,
+        arm5_list,
+        arm6_list,
+        arm7_list,
+    ]
 
     zero_list = []
     for i in range(len(total_list)):
         zero_list = [*zero_list, *total_list[i]]
 
-    param_list = np.zeros((param['NbJoint'], 6))
+    param_list = np.zeros((param["NbJoint"], 6))
 
     # torso all zeros
 
@@ -82,48 +91,54 @@ def write_results_tofile(res, model, param, file_type='xacro'):
     param_list[7, 5] = res[31]
 
     joint_names = [name for i, name in enumerate(model.names)]
-    offset_name = ['_x_offset', '_y_offset', '_z_offset', '_roll_offset',
-                   '_pitch_offset', '_yaw_offset']
-    
-    if file_type == 'xacro':
+    offset_name = [
+        "_x_offset",
+        "_y_offset",
+        "_z_offset",
+        "_roll_offset",
+        "_pitch_offset",
+        "_yaw_offset",
+    ]
+
+    if file_type == "xacro":
         path_save_xacro = join(
             dirname(dirname(str(abspath(__file__)))),
-            f"data/tiago/post_estimation/offset.xacro")
+            f"data/tiago/post_estimation/offset.xacro",
+        )
         with open(path_save_xacro, "w") as output_file:
-            for i in range(param['NbJoint']):
+            for i in range(param["NbJoint"]):
                 for j in range(6):
-                    update_name = joint_names[i+1] + offset_name[j]
+                    update_name = joint_names[i + 1] + offset_name[j]
                     update_value = param_list[i, j]
-                    update_line = "<xacro:property name=\"{}\" value=\"{}\" / >".format(
-                        update_name, update_value)
+                    update_line = '<xacro:property name="{}" value="{}" / >'.format(
+                        update_name, update_value
+                    )
                     output_file.write(update_line)
-                    output_file.write('\n')
+                    output_file.write("\n")
 
-    elif file_type == 'yaml':
+    elif file_type == "yaml":
         path_save_yaml = join(
             dirname(dirname(str(abspath(__file__)))),
-            f"data/tiago/post_estimation/offset.yaml")
+            f"data/tiago/post_estimation/offset.yaml",
+        )
         with open(path_save_yaml, "w") as output_file:
-            for i in range(param['NbJoint']):
+            for i in range(param["NbJoint"]):
                 for j in range(6):
-                    update_name = joint_names[i+1] + offset_name[j]
+                    update_name = joint_names[i + 1] + offset_name[j]
                     update_value = param_list[i, j]
-                    update_line = "{}: {}".format(
-                        update_name, update_value)
+                    update_line = "{}: {}".format(update_name, update_value)
                     output_file.write(update_line)
-                    output_file.write('\n')
-    
-    elif file_type == 'csv':
+                    output_file.write("\n")
+
+    elif file_type == "csv":
         path_save_ep = join(
             dirname(dirname(str(abspath(__file__)))),
-            f"data/tiago/post_estimation/offset.csv")
+            f"data/tiago/post_estimation/offset.csv",
+        )
         with open(path_save_ep, "w") as output_file:
             w = csv.writer(output_file)
-            for i in range(len(param['param_name'])):
-                w.writerow(
-                    [
-                        param['param_name'][i],
-                        res[i]
-                    ]
-                )
+            for i in range(len(param["param_name"])):
+                w.writerow([param["param_name"][i], res[i]])
+
+
 ############################################################

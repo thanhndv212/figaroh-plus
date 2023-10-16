@@ -31,52 +31,55 @@ from figaroh.calibration.calibration_tools import (
     get_param_from_yaml,
     calculate_base_kinematics_regressor,
     rank_in_configuration,
-    load_data)
+    load_data,
+)
 from figaroh.tools.robot import Robot
-%matplotlib
+
 
 def rearrange_rb(R_b, param):
     """Rearrange the kinematic regressor by sample numbered order.
-    
+
     Args:
         R_b (numpy.ndarray): The kinematic regressor.
         param (dict): The dictionary containing calibration parameters.
-    
+
     Returns:
         numpy.ndarray: The rearranged kinematic regressor.
     """
     Rb_rearr = np.empty_like(R_b)
-    for i in range(param['calibration_index']):
-        for j in range(param['NbSample']):
-            Rb_rearr[j*param['calibration_index'] + i, :] = R_b[i*param['NbSample'] + j]
+    for i in range(param["calibration_index"]):
+        for j in range(param["NbSample"]):
+            Rb_rearr[j * param["calibration_index"] + i, :] = R_b[
+                i * param["NbSample"] + j
+            ]
     return Rb_rearr
 
 
 def sub_info_matrix(R, param):
     """Return a list of sub information matrices (product of transpose of regressor and regressor)
     which corresponds to each data sample.
-    
+
     Args:
         R (numpy.ndarray): The kinematic regressor.
         param (dict): The dictionary containing calibration parameters.
-    
+
     Returns:
         tuple: A tuple containing a list of sub information matrices and a dictionary mapping sample indices to sub information matrices.
     """
     subX_list = []
-    idex = param['calibration_index']
-    for it in range(param['NbSample']):
-        sub_R = R[it*idex:(it*idex+idex), :]
+    idex = param["calibration_index"]
+    for it in range(param["NbSample"]):
+        sub_R = R[it * idex : (it * idex + idex), :]
         subX = np.matmul(sub_R.T, sub_R)
         subX_list.append(subX)
-    subX_dict = dict(zip(np.arange(param['NbSample']), subX_list))
+    subX_dict = dict(zip(np.arange(param["NbSample"]), subX_list))
     return subX_list, subX_dict
 
 
-class Detmax():
+class Detmax:
     def __init__(self, candidate_pool, NbChosen):
         """Initialize the Detmax class.
-        
+
         Args:
             candidate_pool (dict): The dictionary containing candidate samples.
             NbChosen (int): The number of chosen samples from the candidate pool.
@@ -91,10 +94,10 @@ class Detmax():
     def get_critD(self, set):
         """Given a list of indices in the candidate pool, output the n-th squared determinant
         of information matrix constructed by the given list.
-        
+
         Args:
             set (list): A list of indices in the candidate pool.
-        
+
         Returns:
             float: The n-th squared determinant of the information matrix.
         """
@@ -106,7 +109,7 @@ class Detmax():
 
     def main_algo(self):
         """Implement the main algorithm for maximizing the determinant of the information matrix.
-        
+
         Returns:
             list: A list of optimal squared determinants of the information matrix.
         """
@@ -154,10 +157,10 @@ class Detmax():
         return self.opt_critD
 
 
-class SOCP():
+class SOCP:
     def __init__(self, subX_dict, param):
         """Initialize the SOCP class.
-        
+
         Args:
             subX_dict (dict): The dictionary containing sub information matrices.
             param (dict): The dictionary containing calibration parameters.
@@ -165,28 +168,28 @@ class SOCP():
         self.pool = subX_dict
         self.param = param
         self.problem = pc.Problem()
-        self.w = pc.RealVariable('w', self.param['NbSample'], lower=0)
-        self.t = pc.RealVariable('t', 1)
+        self.w = pc.RealVariable("w", self.param["NbSample"], lower=0)
+        self.t = pc.RealVariable("t", 1)
 
     def add_constraints(self):
         """Add constraints to the optimization problem."""
-        Mw = pc.sum(self.w[i]*self.pool[i] for i in range(self.param['NbSample']))
-        wgt_cons = self.problem.add_constraint(1|self.w <= 1)
+        Mw = pc.sum(self.w[i] * self.pool[i] for i in range(self.param["NbSample"]))
+        wgt_cons = self.problem.add_constraint(1 | self.w <= 1)
         det_root_cons = self.problem.add_constraint(self.t <= pc.DetRootN(Mw))
 
     def set_objective(self):
         """Set the optimization objective."""
-        self.problem.set_objective('max', self.t)
+        self.problem.set_objective("max", self.t)
 
     def solve(self):
         """Solve the optimization problem and return the solution.
-        
+
         Returns:
             tuple: A tuple containing a list of solution values and a sorted dictionary of the solution.
         """
         self.add_constraints()
         self.set_objective()
-        self.solution = self.problem.solve(solver='cvxopt')
+        self.solution = self.problem.solve(solver="cvxopt")
 
         w_list = []
         for i in range(self.w.dim):
@@ -194,7 +197,7 @@ class SOCP():
         print("sum of all element in vector solution: ", sum(w_list))
 
         # Convert to dict
-        w_dict = dict(zip(np.arange(self.param['NbSample']), w_list))
+        w_dict = dict(zip(np.arange(self.param["NbSample"]), w_list))
         w_dict_sort = dict(reversed(sorted(w_dict.items(), key=lambda item: item[1])))
         return w_list, w_dict_sort
 
@@ -210,64 +213,67 @@ class SOCP():
 #     robot_dir + "/tiago_description/robots/tiago.urdf",
 #     package_dirs=package_dirs,
 # )
-ros_package_path = os.getenv('ROS_PACKAGE_PATH')
-package_dirs = ros_package_path.split(':')
+ros_package_path = os.getenv("ROS_PACKAGE_PATH")
+package_dirs = ros_package_path.split(":")
 robot = Robot(
     "data/tiago.urdf",
-    package_dirs = package_dirs,
+    package_dirs=package_dirs,
 )
 model = robot.model
 data = robot.data
 
 # Load calibration configuration from YAML file
-with open('config/tiago_config.yaml', 'r') as f:
+with open("config/tiago_config.yaml", "r") as f:
     config = yaml.load(f, Loader=SafeLoader)
-    pprint.pprint(config['calibration'])
-calib_data = config['calibration']
+    pprint.pprint(config["calibration"])
+calib_data = config["calibration"]
 param = get_param_from_yaml(robot, calib_data)
 
 # Read sample configuration pool from file, otherwise random configs are generated
 q = []
-with open('data/tiago_calibration_joint_configurations_500_pmb2_hey5.yaml', 'r') as file:
+with open(
+    "data/tiago_calibration_joint_configurations_500_pmb2_hey5.yaml", "r"
+) as file:
     configs = yaml.load(file, Loader=SafeLoader)
 
-q_jointNames = configs['calibration_joint_names']
-q_jointConfigs = np.array(configs['calibration_joint_configurations']).T
+q_jointNames = configs["calibration_joint_names"]
+q_jointConfigs = np.array(configs["calibration_joint_configurations"]).T
 df = pd.DataFrame.from_dict(dict(zip(q_jointNames, q_jointConfigs)))
 q = np.zeros([len(df), robot.q0.shape[0]])
 for i in range(len(df)):
     for j, name in enumerate(q_jointNames):
         jointidx = rank_in_configuration(model, name)
         q[i, jointidx] = df[name][i]
-path = abspath('data/eye_hand_calibration_recorded_data_500.csv')
+path = abspath("data/eye_hand_calibration_recorded_data_500.csv")
 
 # # Load data from file
 _, q = load_data(path, model, param)
 # Calculate regressor and individual information matrix
 Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = calculate_base_kinematics_regressor(
-    q, model, data, param)
+    q, model, data, param
+)
 R_rearr = rearrange_rb(R_b, param)
 subX_list, subX_dict = sub_info_matrix(R_rearr, param)
 for ii, param_b in enumerate(paramsrand_base):
-    print(ii+1, param_b)
+    print(ii + 1, param_b)
 
 # Find optimal combination of data samples from a candidate pool (combinatorial optimization)
 # Required minimum number of configurations
-if param['calib_model'] == 'full_params':
-    NbChosen = int(len(param['actJoint_idx'])*6/param['calibration_index']) + 1
-elif param['calib_model'] == 'joint_offset':
-    NbChosen = int(len(param['actJoint_idx'])/param['calibration_index']) + 1
+if param["calib_model"] == "full_params":
+    NbChosen = int(len(param["actJoint_idx"]) * 6 / param["calibration_index"]) + 1
+elif param["calib_model"] == "joint_offset":
+    NbChosen = int(len(param["actJoint_idx"]) / param["calibration_index"]) + 1
 
 # Picos optimization (A-optimality, C-optimality, D-optimality)
 prev_time = time.time()
 M_whole = np.matmul(R_rearr.T, R_rearr)
 det_root_whole = pc.DetRootN(M_whole)
-print('detrootn of whole matrix:', det_root_whole)
+print("detrootn of whole matrix:", det_root_whole)
 
 SOCP_algo = SOCP(subX_dict, param)
 w_list, w_dict_sort = SOCP_algo.solve()
 solve_time = time.time() - prev_time
-print('solve time of socp: ', solve_time)
+print("solve time of socp: ", solve_time)
 
 min_NbChosen = NbChosen
 
@@ -279,22 +285,22 @@ for i in list(w_dict_sort.keys()):
         chosen_config.append(i)
 if len(chosen_config) < min_NbChosen:
     print("Infeasible design")
-else: 
+else:
     print(len(chosen_config), "configs are chosen: ", chosen_config)
 
 # Save congfigs to file
 opt_ids = chosen_config
 opt_configs_values = []
 for opt_id in opt_ids:
-    opt_configs_values.append(configs['calibration_joint_configurations'][opt_id])
+    opt_configs_values.append(configs["calibration_joint_configurations"][opt_id])
 
 opt_configs = configs.copy()
-opt_configs['calibration_joint_configurations'] = list(opt_configs_values)
+opt_configs["calibration_joint_configurations"] = list(opt_configs_values)
 
 # print(opt_configs)
 # with open('data/optimal_tiago_calib_configs_pmb2_hey5.yaml', 'w') as output:
 #     yaml.safe_dump(opt_configs, output)
-# import json 
+# import json
 # json.dump(opt_configs_values, open('data/optimal_tiago_calib_configs_pmb2_hey5.txt', "w"))
 
 # Plotting
@@ -316,22 +322,22 @@ fig, ax = plt.subplots(2)
 # Plot D-optimality criterion
 ratio = det_root_whole / det_root_list[-1]
 plot_range = param["NbSample"] - NbChosen
-ax[0].set_ylabel('D-optimality criterion', fontsize=20)
-ax[0].tick_params(axis='y', labelsize=18)
+ax[0].set_ylabel("D-optimality criterion", fontsize=20)
+ax[0].tick_params(axis="y", labelsize=18)
 ax[0].plot(ratio * np.array(det_root_list[:plot_range]))
 ax[0].spines["top"].set_visible(False)
 ax[0].spines["right"].set_visible(False)
-ax[0].grid(True, linestyle='--')
+ax[0].grid(True, linestyle="--")
 ax[0].legend(fontsize=18)
 
 # Plot quality of estimation
-ax[1].set_ylabel('Weight values (log)', fontsize=20)
-ax[1].set_xlabel('Data sample', fontsize=20)
-ax[1].tick_params(axis='both', labelsize=18)
-ax[1].tick_params(axis='y', labelrotation=30)
+ax[1].set_ylabel("Weight values (log)", fontsize=20)
+ax[1].set_xlabel("Data sample", fontsize=20)
+ax[1].tick_params(axis="both", labelsize=18)
+ax[1].tick_params(axis="y", labelrotation=30)
 ax[1].scatter(np.arange(len(list(w_dict_sort.values()))), list(w_dict_sort.values()))
 ax[1].set_yscale("log")
 ax[1].spines["top"].set_visible(False)
 ax[1].spines["right"].set_visible(False)
-ax[1].grid(True, linestyle='--')
+ax[1].grid(True, linestyle="--")
 plt.show()
