@@ -13,8 +13,7 @@
 # limitations under the License.
 
 import time
-import sys
-from os.path import abspath, dirname, join
+from os.path import abspath
 import os
 import random
 import numpy as np
@@ -24,9 +23,6 @@ from yaml.loader import SafeLoader
 import pprint
 import picos as pc
 import pandas as pd
-
-import pinocchio as pin
-from pinocchio.robot_wrapper import RobotWrapper
 from figaroh.calibration.calibration_tools import (
     get_param_from_yaml,
     calculate_base_kinematics_regressor,
@@ -56,20 +52,19 @@ def rearrange_rb(R_b, param):
 
 
 def sub_info_matrix(R, param):
-    """Return a list of sub information matrices (product of transpose of regressor and regressor)
-    which corresponds to each data sample.
+    """Return a list of sub information matrices (product of transpose of
+    regressor and regressor) which corresponds to each data sample.
 
-    Args:
-        R (numpy.ndarray): The kinematic regressor.
-        param (dict): The dictionary containing calibration parameters.
+    Input:  R (numpy.ndarray): The kinematic regressor.
+            param (dict): The dictionary containing calibration parameters.
 
-    Returns:
-        tuple: A tuple containing a list of sub information matrices and a dictionary mapping sample indices to sub information matrices.
+    Output: tuple: A tuple containing a list of sub information matrices and a
+            dictionary mapping sample indices to sub information matrices.
     """
     subX_list = []
     idex = param["calibration_index"]
     for it in range(param["NbSample"]):
-        sub_R = R[it * idex : (it * idex + idex), :]
+        sub_R = R[it * idex: (it * idex + idex), :]
         subX = np.matmul(sub_R.T, sub_R)
         subX_list.append(subX)
     subX_dict = dict(zip(np.arange(param["NbSample"]), subX_list))
@@ -80,9 +75,8 @@ class Detmax:
     def __init__(self, candidate_pool, NbChosen):
         """Initialize the Detmax class.
 
-        Args:
-            candidate_pool (dict): The dictionary containing candidate samples.
-            NbChosen (int): The number of chosen samples from the candidate pool.
+        Input:  candidate_pool (dict): Pool of candidate samples.
+                NbChosen (int): The number of chosen samples.
         """
         self.pool = candidate_pool
         self.nd = NbChosen
@@ -92,26 +86,30 @@ class Detmax:
         self.opt_critD = []
 
     def get_critD(self, set):
-        """Given a list of indices in the candidate pool, output the n-th squared determinant
-        of information matrix constructed by the given list.
+        """Given a list of indices in the candidate pool, output the n-th
+        squared determinant of information matrix constructed by the given
+        list.
 
-        Args:
+        Input:
             set (list): A list of indices in the candidate pool.
 
-        Returns:
+        Output:
             float: The n-th squared determinant of the information matrix.
         """
         infor_mat = 0
         for idx in set:
-            assert idx in self.pool.keys(), "chosen sample not in candidate pool"
+            assert (
+                idx in self.pool.keys()
+            ), "chosen sample not in candidate pool"
             infor_mat += self.pool[idx]
         return float(pc.DetRootN(infor_mat))
 
     def main_algo(self):
-        """Implement the main algorithm for maximizing the determinant of the information matrix.
+        """Implement the main algorithm for maximizing the determinant of the
+        information matrix.
 
         Returns:
-            list: A list of optimal squared determinants of the information matrix.
+            A list of optimal squared determinants of the information matrix.
         """
         pool_idx = tuple(self.pool.keys())
 
@@ -122,8 +120,8 @@ class Detmax:
         # Adding samples from remaining pool: k = 1
         opt_k = updated_pool[0]
         opt_critD = self.get_critD(cur_set)
-        init_set = set(cur_set)
-        fin_set = set([])
+        # init_set = set(cur_set)
+        # fin_set = set([])
         rm_j = cur_set[0]
 
         while opt_k != rm_j:
@@ -151,7 +149,7 @@ class Detmax:
                     rm_j = j
             cur_set.remove(rm_j)
             opt_critD = self.get_critD(cur_set)
-            fin_set = set(cur_set)
+            # fin_set = set(cur_set)
 
             self.opt_critD.append(opt_critD)
         return self.opt_critD
@@ -161,9 +159,8 @@ class SOCP:
     def __init__(self, subX_dict, param):
         """Initialize the SOCP class.
 
-        Args:
-            subX_dict (dict): The dictionary containing sub information matrices.
-            param (dict): The dictionary containing calibration parameters.
+        Input:  subX_dict (dict):  sub information matrices.
+                param (dict): calibration settings.
         """
         self.pool = subX_dict
         self.param = param
@@ -173,9 +170,11 @@ class SOCP:
 
     def add_constraints(self):
         """Add constraints to the optimization problem."""
-        Mw = pc.sum(self.w[i] * self.pool[i] for i in range(self.param["NbSample"]))
-        wgt_cons = self.problem.add_constraint(1 | self.w <= 1)
-        det_root_cons = self.problem.add_constraint(self.t <= pc.DetRootN(Mw))
+        Mw = pc.sum(
+            self.w[i] * self.pool[i] for i in range(self.param["NbSample"])
+        )
+        self.problem.add_constraint(1 | self.w <= 1)
+        self.problem.add_constraint(self.t <= pc.DetRootN(Mw))
 
     def set_objective(self):
         """Set the optimization objective."""
@@ -185,7 +184,8 @@ class SOCP:
         """Solve the optimization problem and return the solution.
 
         Returns:
-            tuple: A tuple containing a list of solution values and a sorted dictionary of the solution.
+            tuple: A tuple containing a list of solution values and a sorted
+            dictionary of the solution.
         """
         self.add_constraints()
         self.set_objective()
@@ -198,7 +198,9 @@ class SOCP:
 
         # Convert to dict
         w_dict = dict(zip(np.arange(self.param["NbSample"]), w_list))
-        w_dict_sort = dict(reversed(sorted(w_dict.items(), key=lambda item: item[1])))
+        w_dict_sort = dict(
+            reversed(sorted(w_dict.items(), key=lambda item: item[1]))
+        )
         return w_list, w_dict_sort
 
 
@@ -229,7 +231,7 @@ with open("config/tiago_config.yaml", "r") as f:
 calib_data = config["calibration"]
 param = get_param_from_yaml(robot, calib_data)
 
-# Read sample configuration pool from file, otherwise random configs are generated
+# Read sample configuration pool from file, otherwise random configs
 q = []
 with open(
     "data/tiago_calibration_joint_configurations_500_pmb2_hey5.yaml", "r"
@@ -249,18 +251,24 @@ path = abspath("data/eye_hand_calibration_recorded_data_500.csv")
 # # Load data from file
 _, q = load_data(path, model, param)
 # Calculate regressor and individual information matrix
-Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = calculate_base_kinematics_regressor(
-    q, model, data, param
-)
+(
+    Rrand_b,
+    R_b,
+    R_e,
+    paramsrand_base,
+    paramsrand_e,
+) = calculate_base_kinematics_regressor(q, model, data, param)
 R_rearr = rearrange_rb(R_b, param)
 subX_list, subX_dict = sub_info_matrix(R_rearr, param)
 for ii, param_b in enumerate(paramsrand_base):
     print(ii + 1, param_b)
 
-# Find optimal combination of data samples from a candidate pool (combinatorial optimization)
+# Find optimal combination of data samples from a candidate pool
 # Required minimum number of configurations
 if param["calib_model"] == "full_params":
-    NbChosen = int(len(param["actJoint_idx"]) * 6 / param["calibration_index"]) + 1
+    NbChosen = (
+        int(len(param["actJoint_idx"]) * 6 / param["calibration_index"]) + 1
+    )
 elif param["calib_model"] == "joint_offset":
     NbChosen = int(len(param["actJoint_idx"]) / param["calibration_index"]) + 1
 
@@ -292,16 +300,22 @@ else:
 opt_ids = chosen_config
 opt_configs_values = []
 for opt_id in opt_ids:
-    opt_configs_values.append(configs["calibration_joint_configurations"][opt_id])
+    opt_configs_values.append(
+        configs["calibration_joint_configurations"][opt_id]
+    )
 
 opt_configs = configs.copy()
 opt_configs["calibration_joint_configurations"] = list(opt_configs_values)
 
 # print(opt_configs)
-# with open('data/optimal_tiago_calib_configs_pmb2_hey5.yaml', 'w') as output:
+# with open("data/optimal_tiago_calib_configs_pmb2_hey5.yaml", "w") as output:
 #     yaml.safe_dump(opt_configs, output)
 # import json
-# json.dump(opt_configs_values, open('data/optimal_tiago_calib_configs_pmb2_hey5.txt', "w"))
+
+# json.dump(
+#     opt_configs_values,
+#     open("data/optimal_tiago_calib_configs_pmb2_hey5.txt", "w"),
+# )
 
 # Plotting
 det_root_list = []
@@ -335,7 +349,9 @@ ax[1].set_ylabel("Weight values (log)", fontsize=20)
 ax[1].set_xlabel("Data sample", fontsize=20)
 ax[1].tick_params(axis="both", labelsize=18)
 ax[1].tick_params(axis="y", labelrotation=30)
-ax[1].scatter(np.arange(len(list(w_dict_sort.values()))), list(w_dict_sort.values()))
+ax[1].scatter(
+    np.arange(len(list(w_dict_sort.values()))), list(w_dict_sort.values())
+)
 ax[1].set_yscale("log")
 ax[1].spines["top"].set_visible(False)
 ax[1].spines["right"].set_visible(False)

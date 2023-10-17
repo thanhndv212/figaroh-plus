@@ -17,7 +17,7 @@ import numpy as np
 
 
 def generate_waypoints(N, robot, mlow, mhigh):
-    """This function generates N random values for joints' position,velocity, acceleration.
+    """This function generates N random values for joints' pos, vel, acc.
     Input:  N: number of samples
                     nq: length of q, nv : length of v
                     mlow and mhigh: the bound for random function
@@ -27,20 +27,35 @@ def generate_waypoints(N, robot, mlow, mhigh):
     a = np.empty((1, robot.model.nv))
     for i in range(N):
         q = np.vstack(
-            (q, np.random.uniform(low=mlow, high=mhigh, size=(robot.model.nq,)))
+            (
+                q,
+                np.random.uniform(
+                    low=mlow, high=mhigh, size=(robot.model.nq,)
+                ),
+            )
         )
         v = np.vstack(
-            (v, np.random.uniform(low=mlow, high=mhigh, size=(robot.model.nv,)))
+            (
+                v,
+                np.random.uniform(
+                    low=mlow, high=mhigh, size=(robot.model.nv,)
+                ),
+            )
         )
         a = np.vstack(
-            (a, np.random.uniform(low=mlow, high=mhigh, size=(robot.model.nv,)))
+            (
+                a,
+                np.random.uniform(
+                    low=mlow, high=mhigh, size=(robot.model.nv,)
+                ),
+            )
         )
     return q, v, a
 
 
 # TODO: generalize determine number of joints after the base link
 def generate_waypoints_fext(N, robot, mlow, mhigh):
-    """This function generates N random values for joints' position,velocity, acceleration.
+    """This function generates N random values for joint pos, vel, acc.
     Input:  N: number of samples
                     nq: length of q, nv : length of v
                     mlow and mhigh: the bound for random function
@@ -54,13 +69,19 @@ def generate_waypoints_fext(N, robot, mlow, mhigh):
     v = np.empty((1, nv))
     a = np.empty((1, nv))
     for i in range(N):
-        q_ = np.append(q0, np.random.uniform(low=mlow, high=mhigh, size=(nq - 7,)))
+        q_ = np.append(
+            q0, np.random.uniform(low=mlow, high=mhigh, size=(nq - 7,))
+        )
         q = np.vstack((q, q_))
 
-        v_ = np.append(v0, np.random.uniform(low=mlow, high=mhigh, size=(nv - 6,)))
+        v_ = np.append(
+            v0, np.random.uniform(low=mlow, high=mhigh, size=(nv - 6,))
+        )
         v = np.vstack((v, v_))
 
-        a_ = np.append(a0, np.random.uniform(low=mlow, high=mhigh, size=(nv - 6,)))
+        a_ = np.append(
+            a0, np.random.uniform(low=mlow, high=mhigh, size=(nv - 6,))
+        )
         a = np.vstack((a, a_))
     return q, v, a
 
@@ -76,7 +97,8 @@ def get_torque_rand(N, robot, q, v, a, param):
         for i in range(N):
             for j in range(robot.model.nv):
                 tau[j * N + i] += (
-                    v[i, j] * param["fv"][j] + np.sign(v[i, j]) * param["fs"][j]
+                    v[i, j] * param["fv"][j]
+                    + np.sign(v[i, j]) * param["fs"][j]
                 )
     if param["has_actuator_inertia"]:
         for i in range(N):
@@ -94,14 +116,18 @@ def get_torque_rand(N, robot, q, v, a, param):
                         param["Iam6"] * v[i, robot.model.nv - 1]
                         + param["fvm6"] * v[i, robot.model.nv - 1]
                         + param["fsm6"]
-                        * np.sign(v[i, robot.model.nv - 2] + v[i, robot.model.nv - 1])
+                        * np.sign(
+                            v[i, robot.model.nv - 2] + v[i, robot.model.nv - 1]
+                        )
                     )
                 if j == robot.model.nv - 1:
                     tau[j * N + i] += (
                         param["Iam6"] * v[i, robot.model.nv - 2]
                         + param["fvm6"] * v[i, robot.model.nv - 2]
                         + param["fsm6"]
-                        * np.sign(v[i, robot.model.nv - 2] + v[i, robot.model.nv - 1])
+                        * np.sign(
+                            v[i, robot.model.nv - 2] + v[i, robot.model.nv - 1]
+                        )
                     )
     return tau
 

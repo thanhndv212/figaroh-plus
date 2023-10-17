@@ -5,7 +5,7 @@ calibration:
   calib_level: joint_offset # full_params /joint_offset
   non_geom: False
   base_frame: xtion_rgb_optical_frame # start_frame of kinematic chain
-  tool_frame: hand_tool_link # end_frame of kinematic chain
+  tool_frame: wrist_ft_tool_link # end_frame of kinematic chain
   base_to_ref_frame: xtion_link # camera frame
   ref_frame: head_2_joint # parent joint frame of camera frame 
   markers:

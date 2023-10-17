@@ -14,12 +14,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from scipy import optimize, signal
 import pandas as pd
-from sys import argv
-import os
-from os.path import dirname, join, abspath
 
 # data set of 4 corners and middle points
 """ algo to extract 10 points near corner point and middle point
@@ -27,9 +23,6 @@ from os.path import dirname, join, abspath
 
 
 def extract_setpts(start_idx, reps, path_to_csv, frame_name):
-    dp_corner = []
-    dp_mid = []
-
     tf_eeframe = pd.read_csv(path_to_csv)
 
     # names
@@ -105,7 +98,11 @@ def extract_setpts(start_idx, reps, path_to_csv, frame_name):
                 idx_p = -10
             for j in range(Nb_dp):
                 k_set[j, :] = np.array(
-                    [eeframe_x[idx_p + j], eeframe_y[idx_p + j], eeframe_z[idx_p + j]]
+                    [
+                        eeframe_x[idx_p + j],
+                        eeframe_y[idx_p + j],
+                        eeframe_z[idx_p + j],
+                    ]
                 )
 
             dp_i.append(k_set)
@@ -136,9 +133,10 @@ def extract_setpts(start_idx, reps, path_to_csv, frame_name):
 
 
 def create_square(var, width, height, edge):
-    """var: an array containing position of center point normalized nomal vector
-        w, h: size of the rectangle
-        edge: a vector of upside edge
+    """var: an array containing position of center point normalized nomal
+            vector
+    w, h: size of the rectangle
+    edge: a vector of upside edge
 
     # #################
     # # C4     M4    C3
@@ -184,11 +182,16 @@ def create_square(var, width, height, edge):
 
 def plot_square(ax, corner_points, mid_points):
     for i in range(mid_points.shape[0]):
-        ax.scatter(mid_points[i, 0], mid_points[i, 1], mid_points[i, 2], color="r")
+        ax.scatter(
+            mid_points[i, 0], mid_points[i, 1], mid_points[i, 2], color="r"
+        )
 
     for i in range(corner_points.shape[0]):
         ax.scatter(
-            corner_points[i, 0], corner_points[i, 1], corner_points[i, 2], color="r"
+            corner_points[i, 0],
+            corner_points[i, 1],
+            corner_points[i, 2],
+            color="r",
         )
         ax.plot(
             [corner_points[i, 0], corner_points[i - 1, 0]],
@@ -209,10 +212,15 @@ def plot_setpts(ax, dp_corner, dp_mid):
     for i in range(4):
         for j in range(dp_corner[i].shape[0]):
             ax.scatter(
-                dp_corner[i][j, 0], dp_corner[i][j, 1], dp_corner[i][j, 2], color="blue"
+                dp_corner[i][j, 0],
+                dp_corner[i][j, 1],
+                dp_corner[i][j, 2],
+                color="blue",
             )
         for k in range(dp_mid[i].shape[0]):
-            ax.scatter(dp_mid[i][k, 0], dp_mid[i][k, 1], dp_mid[i][k, 2], color="blue")
+            ax.scatter(
+                dp_mid[i][k, 0], dp_mid[i][k, 1], dp_mid[i][k, 2], color="blue"
+            )
 
 
 # square fitting optimization problem
@@ -290,7 +298,9 @@ def main():
     # plot give data points
     for i in range(1):
         for j in range(dp_corner[i].shape[0]):
-            ax.scatter(dp_corner[i][j, 0], dp_corner[i][j, 1], dp_corner[i][j, 2])
+            ax.scatter(
+                dp_corner[i][j, 0], dp_corner[i][j, 1], dp_corner[i][j, 2]
+            )
         for k in range(dp_mid[i].shape[0]):
             ax.scatter(dp_mid[i][k, 0], dp_mid[i][k, 1], dp_mid[i][k, 2])
     plot_square(ax, c_pts_sample, m_pts_sample)
@@ -300,25 +310,30 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # path_to_csv = '/home/thanhndv212/Cooking/bag2csv/calib_Jan/rosbag/square_motion_4_zero_offsets_2022-01-12-10-55-17/tf.csv'
+    # path_to_csv = "/home/thanhndv212/Cooking/bag2csv/calib_Jan/rosbag/\
+    # square_motion_4_zero_offsets_2022-01-12-10-55-17/tf.csv"
     # reps = 1
     # start_idx = 1050
 
-    # path_to_csv = '/home/thanhndv212/Cooking/bag2csv/calib_Jan/rosbag/square_motion_4_pal_offsets_2022-01-12-11-38-43/tf.csv'
+    # path_to_csv = "/home/thanhndv212/Cooking/bag2csv/calib_Jan/rosbag/\
+    # square_motion_4_pal_offsets_2022-01-12-11-38-43/tf.csv"
     # reps = 1
     # start_idx = 700
 
-    # path_to_csv = '/home/thanhndv212/Cooking/bag2csv/Calibration/Tiago/calib_Jan/rosbag/square_motion_4_mocap_offsets_2022-01-12-11-25-38/tf.csv'
+    # path_to_csv = "/home/thanhndv212/Cooking/bag2csv/Calibration/Tiago/\
+    # calib_Jan/rosbag/square_motion_4_mocap_offsets_2022-01-12-11-25-38/tf.csv"
     # reps = 1
     # start_idx = 700
 
-    # # path_to_csv = '/home/thanhndv212/Cooking/bag2csv/calib_Jan/rosbag/square_motion_4_mocap_inv_offsets_2022-01-12-11-10-58/tf.csv'
+    # path_to_csv = "/home/thanhndv212/Cooking/bag2csv/calib_Jan/rosbag/\
+    # square_motion_4_mocap_inv_offsets_2022-01-12-11-10-58/tf.csv"
     # # reps = 1
     # # start_idx = 500
 
     # frame_name = '"endeffector_frame"'
-    # dp_center, dp_corner_list, dp_mid_list, dp_C1_return = extract_setpts(start_idx, reps,
-    #                                                                       path_to_csv, frame_name)
+    # dp_center, dp_corner_list, dp_mid_list, dp_C1_return = extract_setpts(
+    #     start_idx, reps, path_to_csv, frame_name
+    # )
 
     # # predefined constants
     # edge = np.array([0, 0, 1])
@@ -329,18 +344,10 @@ if __name__ == "__main__":
     # init_guess = np.array([0.7, 0.0, 0.7, 1, 0, 0])
 
     # fig = plt.figure()
-    # ax = fig.add_subplot(111, projection='3d')
+    # ax = fig.add_subplot(111, projection="3d")
 
     # # repeatability
-    # pt_name = ['center',
-    #            'C1',
-    #            'C2',
-    #            'C3',
-    #            'C4',
-    #            'M1',
-    #            'M2',
-    #            'M3',
-    #            'M4']
+    # pt_name = ["center", "C1", "C2", "C3", "C4", "M1", "M2", "M3", "M4"]
     # # res_list = []
     # # res_list.append(np.linalg.norm(dp_center[0] - dp_center[1]))
     # # for i in range(len(dp_corner_list)):
@@ -359,7 +366,8 @@ if __name__ == "__main__":
 
     # path_save_ep = join(
     #     dirname(dirname(str(abspath(__file__)))),
-    #     f"data/tiago/square_static_postures_mocap_offset.csv")
+    #     f"data/tiago/square_static_postures_mocap_offset.csv",
+    # )
     # with open(path_save_ep, "w") as output_file:
     #     w = csv.writer(output_file)
     #     w.writerow(pt_name)
@@ -368,18 +376,23 @@ if __name__ == "__main__":
 
     # # square fitting
 
-    # # for j in range(reps):
-    # #     dp_corner = []
-    # #     dp_mid = []
-    # #     for i in range(len(dp_corner_list)):
-    # #         dp_corner.append(dp_corner_list[i][j])
-    # #         dp_mid.append(dp_mid_list[i][j])
-    # #     plot_setpts(ax, dp_corner, dp_mid)
-    # #     rslt = optimize.least_squares(cost_function, init_guess, jac='3-point',
-    # #                                   args=(w, h, edge, dp_corner, dp_mid), verbose=1)
-    # #     print(rslt.x)
-    # #     print(rslt.cost)
-    # #     LS_cpts, LS_mpts = create_square(rslt.x, w, h, edge)
-    # #     plot_square(ax, LS_cpts, LS_mpts)
+    # for j in range(reps):
+    #     dp_corner = []
+    #     dp_mid = []
+    #     for i in range(len(dp_corner_list)):
+    #         dp_corner.append(dp_corner_list[i][j])
+    #         dp_mid.append(dp_mid_list[i][j])
+    #     plot_setpts(ax, dp_corner, dp_mid)
+    #     rslt = optimize.least_squares(
+    #         cost_function,
+    #         init_guess,
+    #         jac="3-point",
+    #         args=(w, h, edge, dp_corner, dp_mid),
+    #         verbose=1,
+    #     )
+    #     print(rslt.x)
+    #     print(rslt.cost)
+    #     LS_cpts, LS_mpts = create_square(rslt.x, w, h, edge)
+    #     plot_square(ax, LS_cpts, LS_mpts)
 
     # # plt.show()

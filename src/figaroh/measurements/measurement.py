@@ -22,9 +22,11 @@ class Measurement:
         Input : name (str) : the name of the measurement
                 joint (str) : the joint in which the measurement is expressed
                 frame (str) : the closest frame from the measurement
-                type (str) : type of measurement, choice between SE3, wrench or current
-                value (6D array) : value of the measurement. Suppose that value is given wrt the joint placement
-                      (what if current ?)
+                type (str) :    type of measurement, choice between SE3, wrench 
+                                or current
+                value (6D array) :  value of the measurement. Suppose that 
+                                    value is given wrt the joint placement
+                                    (what if current ?)
         """
         self.name = name
         self.joint = joint

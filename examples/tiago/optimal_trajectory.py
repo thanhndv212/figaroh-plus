@@ -12,20 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
 import numpy as np
-from numpy import pi
 import cyipopt
 import os
-from os.path import dirname, join, abspath
 from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import seaborn as sns
 import time
 import numdifftools as nd
-import hppfcl
-import pinocchio as pin
-import csv
 import yaml
 from yaml.loader import SafeLoader
 import pprint
@@ -35,20 +27,13 @@ from figaroh.tools.regressor import (
     build_regressor_basic,
     build_regressor_reduced,
     get_index_eliminate,
-    eliminate_non_dynaffect,
-    add_actuator_inertia,
-    add_friction,
-    add_joint_offset,
 )
 from figaroh.tools.qrdecomposition import (
-    get_baseParams,
-    double_QR,
     get_baseIndex,
     build_baseRegressor,
 )
 from figaroh.tools.randomdata import get_torque_rand
 from figaroh.tools.robotcollisions import CollisionWrapper
-from figaroh.meshcat_viewer_wrapper import MeshcatVisualizer
 from simplified_colission_model import build_tiago_simplified
 from cubic_spline import CubicSpline, WaypointsGeneration
 from figaroh.identification.identification_tools import get_param_from_yaml
@@ -280,15 +265,10 @@ class Problem_cond_Wb:
         stop_flag,
     ):
         self.W_stack = W_stack  # update every stacking repeat
-        self.wp_init = (
-            wp_init  # init waypoint of current stack = end waypoint of prev stack
-        )
-        self.vel_wp_init = (
-            vel_wp_init  # init waypoint of current stack = end waypoint of prev stack
-        )
-        self.acc_wp_init = (
-            acc_wp_init  # init waypoint of current stack = end waypoint of prev stack
-        )
+        # init waypoint of current stack = end waypoint of prev stack
+        self.wp_init = wp_init 
+        self.vel_wp_init = vel_wp_init
+        self.acc_wp_init = acc_wp_init
         self.tps = tps  # timestamp at waypoints increasing over stacking
         self.vel_wps = vel_wps  # velocity at waypoints
         self.acc_wps = acc_wps  # acceleration at waypoints
@@ -303,10 +283,14 @@ class Problem_cond_Wb:
         wps = wps.transpose()
 
         # create full profile
-        t_f, p_f, v_f, a_f = CB.get_full_config(freq, tps, wps, vel_wps, acc_wps)
+        t_f, p_f, v_f, a_f = CB.get_full_config(
+            freq, tps, wps, vel_wps, acc_wps
+        )
 
         # compute joint effort given full profile
-        tau = get_torque_rand(p_f.shape[0], robot, p_f, v_f, a_f, params_settings)
+        tau = get_torque_rand(
+            p_f.shape[0], robot, p_f, v_f, a_f, params_settings
+        )
 
         self.opt_cb["t_f"] = t_f
         self.opt_cb["p_f"] = p_f
@@ -335,7 +319,13 @@ class Problem_cond_Wb:
 
     def constraints(self, X):
         constr_vec = get_constraints_all_samples(
-            Ns, X, self.opt_cb, self.tps, self.vel_wps, self.acc_wps, self.wp_init
+            Ns,
+            X,
+            self.opt_cb,
+            self.tps,
+            self.vel_wps,
+            self.acc_wps,
+            self.wp_init,
         )
         return constr_vec
 
@@ -366,7 +356,6 @@ class Problem_cond_Wb:
     ):
         iter_num.append(iter_count)
         list_obj_value.append(obj_value)
-        opt_cb = self.opt_cb
         if self.stop_flag:
             return False
 
@@ -450,7 +439,6 @@ A_F = []
 
 CB = CubicSpline(robot, n_wps, active_joints, soft_lim)
 WP = WaypointsGeneration(robot, n_wps, active_joints, soft_lim)
-## generate a pool to choo
 WP.gen_rand_pool(3 * soft_lim_pool)
 # step 4: define boundaries of search vars, and constraints
 idx_act_joints = CB.active_joints
@@ -490,13 +478,22 @@ for s_rep in range(stack_reps):
     while is_constr_violated:
         count += 1
         print("----------", "run %s " % count, "----------")
-        wps, vel_wps, acc_wps = WP.gen_rand_wp(wp_init, vel_wp_init, acc_wp_init)
+        wps, vel_wps, acc_wps = WP.gen_rand_wp(
+            wp_init, vel_wp_init, acc_wp_init
+        )
         # wps, vel_wps, acc_wps = WP.gen_equal_wp(
         # wp_init, vel_wp_init, acc_wp_init)
-        tps = t_s * s_rep + np.matrix([t_s * i_wp for i_wp in range(n_wps)]).transpose()
+        tps = (
+            t_s * s_rep
+            + np.matrix([t_s * i_wp for i_wp in range(n_wps)]).transpose()
+        )
 
-        t_i, p_i, v_i, a_i = CB.get_full_config(freq, tps, wps, vel_wps, acc_wps)
-        tau_i = get_torque_rand(p_i.shape[0], robot, p_i, v_i, a_i, params_settings)
+        t_i, p_i, v_i, a_i = CB.get_full_config(
+            freq, tps, wps, vel_wps, acc_wps
+        )
+        tau_i = get_torque_rand(
+            p_i.shape[0], robot, p_i, v_i, a_i, params_settings
+        )
         # ATTENTION: joint torque specially arranged!
         tau_i = np.reshape(tau_i, (v_i.shape[1], v_i.shape[0])).transpose()
         is_constr_violated = CB.check_cfg_constraints(p_i, v_i, tau_i)
@@ -504,7 +501,9 @@ for s_rep in range(stack_reps):
             break
     # reshape wps to a vector of search variable
     X0 = wps[:, range(1, n_wps)]
-    X0 = np.reshape(X0.transpose(), ((len(active_joints) * (n_wps - 1),))).tolist()
+    X0 = np.reshape(
+        X0.transpose(), ((len(active_joints) * (n_wps - 1),))
+    ).tolist()
 
     print("1st waypoint at the beginning: ", wp_init)
     print("next waypoint(s) (initial guess): ", X0)
@@ -517,7 +516,13 @@ for s_rep in range(stack_reps):
     cl, cu = get_constr_value(robot, CB, n_wps, Ns)
 
     # optimal segment trajectory
-    opt_cb = {"t_f": None, "p_f": None, "v_f": None, "a_f": None, "tau_f": None}
+    opt_cb = {
+        "t_f": None,
+        "p_f": None,
+        "v_f": None,
+        "a_f": None,
+        "tau_f": None,
+    }
 
     # ipopt problem formulation
     nlp = cyipopt.Problem(
@@ -573,7 +578,9 @@ for s_rep in range(stack_reps):
         tau = np.reshape(
             tau, (opt_cb["v_f"].shape[1], opt_cb["v_f"].shape[0])
         ).transpose()
-        is_constr_violated = CB.check_cfg_constraints(opt_cb["p_f"], opt_cb["v_f"], tau)
+        is_constr_violated = CB.check_cfg_constraints(
+            opt_cb["p_f"], opt_cb["v_f"], tau
+        )
         if is_constr_violated:
             print("Constrainted VIOLATED!")
             stop_flag = True
@@ -657,7 +664,7 @@ for s_rep in range(stack_reps):
 
     # add plot of one segment
     print(
-        "#########################END of %s-th OPTIMIZATION##########################################"
+        "#########################END of %s-th OPTIMIZATION###################"
         % (s_rep + 1)
     )
 
@@ -672,7 +679,7 @@ print("RUNTIME IS ", start - time.time(), "(secs)")
 # with open(path_save_yaml, 'w') as f:
 #     data = yaml.dump(pos_dict, f, default_flow_style=None)
 
-## plotting results
+# plotting results
 plt.title("Evolution of condition number of base regressor over iteration")
 plt.ylabel("Cond(Wb)")
 plt.xlabel("Iteration counts")
@@ -685,7 +692,7 @@ plt.show()
 #     dirname(dirname(str(abspath(__file__)))),
 #     f"tiago/data/tiago_ipopt_evo_{current_time}.png"))
 
-## plot trajectory
+# plot trajectory
 fig_cb, ax_cb = plt.subplots(len(idx_act_joints), 3, sharex=True)
 for jj in range(len(T_F)):
     for ii in range(len(idx_act_joints)):
@@ -711,13 +718,15 @@ plt.show()
 #     = > gen full config
 #     = > build base regressor Wb
 #     = > cond(Wb)
-#     /gradient: only take search variable as, do gradient descent on objective function
+#     /gradient: only take search variable as, do gradient descent on
+                objective function
 #     /constraints: only take search variable as input
 #     f(search varible)
 #     = > generate cubic spline(search varible)
 #     = > gen full config: array of q, v, a on all sample points
 #     = > get joint torque: array of tau on all sample points
-#     = > construct collision object -> compute distance on all pairs(simplified) at waypoints: array of collision pair dist
+#     = > construct collision object -> compute distance on all pairs
+        (simplified) at waypoints: array of collision pair dist
 #     /jacobian: only take search variable as input
 #     /hessian: only take search variable as input
 #     /intermediate

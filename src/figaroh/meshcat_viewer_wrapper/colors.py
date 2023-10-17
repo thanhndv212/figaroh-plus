@@ -16,8 +16,8 @@ import meshcat
 
 
 def rgb2int(r, g, b):
-    """Convert 3 integers (chars) 0<= r,g,b < 256 into one single integer = 256**2*r+256*g+b,
-    as expected by Meshcat."""
+    """Convert 3 integers (chars) 0<= r,g,b < 256 into one single integer =
+    256**2*r+256*g+b,as expected by Meshcat."""
     return int(r * 256**2 + g * 256 + b)
 
 

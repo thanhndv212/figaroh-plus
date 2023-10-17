@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pinocchio as pin
 import numpy as np
-from numpy.linalg import norm, solve
-from scipy import linalg, signal
+from scipy import linalg
 
 # epsilon = np.finfo(float).eps  # machine epsilon
 # TOL_QR = W_e.shape[0]*abs(np.diag(R).max()) * \
@@ -24,9 +22,9 @@ TOL_QR = 1e-8
 
 
 def QR_pivoting(tau, W_e, params_r):
-    """This function calculates QR decompostion with pivoting, finds rank of regressor,
-    and calculates base parameters
-            Input:  W_e: regressor matrix (normally after eliminating zero columns)
+    """This function calculates QR decompostion with pivoting, finds rank of
+    regressor,and calculates base parameters
+            Input:  W_e: regressor matrix (after eliminating zero columns)
                     params_r: a list of parameters corresponding to W_e
             Output: W_b: base regressor
                     base_parametes: a dictionary of base parameters"""
@@ -53,7 +51,7 @@ def QR_pivoting(tau, W_e, params_r):
     # regrouping, calculating base params, base regressor
     R1 = R[0:numrank_W, 0:numrank_W]
     Q1 = Q[:, 0:numrank_W]
-    R2 = R[0:numrank_W, numrank_W : R.shape[1]]
+    R2 = R[0:numrank_W, numrank_W:R.shape[1]]
 
     # regrouping coefficient
     beta = np.around(np.dot(np.linalg.inv(R1), R2), 6)
@@ -94,9 +92,9 @@ def QR_pivoting(tau, W_e, params_r):
 
 def double_QR(tau, W_e, params_r, params_std=None):
     """This function calculates QR decompostion 2 times, first to find symbolic
-    expressions of base parameters, second to find their values after re-organizing
-    regressor matrix.
-            Input:  W_e: regressor matrix (normally after eliminating zero columns)
+    expressions of base parameters, second to find their values after
+    re-organizing regressor matrix.
+            Input:  W_e: regressor matrix (after eliminating zero columns)
                     params_r: a list of parameters corresponding to W_e
             Output: W_b: base regressor
                     base_parametes: a dictionary of base parameters"""
@@ -142,7 +140,7 @@ def double_QR(tau, W_e, params_r, params_std=None):
 
     R1 = R_r[0:numrank_W, 0:numrank_W]
     Q1 = Q_r[:, 0:numrank_W]
-    R2 = R_r[0:numrank_W, numrank_W : R.shape[1]]
+    R2 = R_r[0:numrank_W, numrank_W:R.shape[1]]
 
     # regrouping coefficient
     beta = np.around(np.dot(np.linalg.inv(R1), R2), 6)
@@ -161,7 +159,9 @@ def double_QR(tau, W_e, params_r, params_std=None):
             phi_std.append(params_std[x])
         for i in range(numrank_W):
             for j in range(beta.shape[1]):
-                phi_std[i] = phi_std[i] + beta[i, j] * params_std[params_regroup[j]]
+                phi_std[i] = (
+                    phi_std[i] + beta[i, j] * params_std[params_regroup[j]]
+                )
         phi_std = np.around(phi_std, 5)
 
     tol_beta = 1e-6  # for scipy.signal.decimate
@@ -197,7 +197,8 @@ def double_QR(tau, W_e, params_r, params_std=None):
 
 
 def get_baseParams(W_e, params_r, params_std=None):
-    """Returns symbolic expressions of base parameters and base regressor matrix and idenx of the base regressor matrix."""
+    """Returns symbolic expressions of base parameters and base regressor
+    matrix and idenx of the base regressor matrix."""
     # scipy has QR pivoting using Householder reflection
     Q, R = np.linalg.qr(W_e)
 
@@ -210,7 +211,6 @@ def get_baseParams(W_e, params_r, params_std=None):
     idx_regroup = []
 
     # find rank of regressor
-
     for i in range(len(params_r)):
         if abs(np.diag(R)[i]) > TOL_QR:
             idx_base.append(i)
@@ -249,7 +249,7 @@ def get_baseParams(W_e, params_r, params_std=None):
 
     R1 = R_r[0:numrank_W, 0:numrank_W]
     Q1 = Q_r[:, 0:numrank_W]
-    R2 = R_r[0:numrank_W, numrank_W : R.shape[1]]
+    R2 = R_r[0:numrank_W, numrank_W:R.shape[1]]
 
     # regrouping coefficient
     beta = np.around(np.dot(np.linalg.inv(R1), R2), 6)
@@ -298,7 +298,7 @@ def get_baseIndex(W_e, params_r):
     ), "params_r does not have same length with R"
 
     idx_base = []
-    epsilon = np.finfo(float).eps  # machine epsilon
+    # epsilon = np.finfo(float).eps  # machine epsilon
     for i in range(len(params_r)):
         # print("R-value: ", i+1, params_r[i], abs(np.diag(R)[i]))
         if abs(np.diag(R)[i]) > TOL_QR:

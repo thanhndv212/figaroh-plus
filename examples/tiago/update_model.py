@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 from os.path import dirname, join, abspath
 import numpy as np
 import csv
@@ -103,15 +102,17 @@ def write_results_tofile(res, model, param, file_type="xacro"):
     if file_type == "xacro":
         path_save_xacro = join(
             dirname(dirname(str(abspath(__file__)))),
-            f"data/tiago/post_estimation/offset.xacro",
+            "data/tiago/post_estimation/offset.xacro",
         )
         with open(path_save_xacro, "w") as output_file:
             for i in range(param["NbJoint"]):
                 for j in range(6):
                     update_name = joint_names[i + 1] + offset_name[j]
                     update_value = param_list[i, j]
-                    update_line = '<xacro:property name="{}" value="{}" / >'.format(
-                        update_name, update_value
+                    update_line = (
+                        '<xacro:property name="{}" value="{}" / >'.format(
+                            update_name, update_value
+                        )
                     )
                     output_file.write(update_line)
                     output_file.write("\n")
@@ -119,7 +120,7 @@ def write_results_tofile(res, model, param, file_type="xacro"):
     elif file_type == "yaml":
         path_save_yaml = join(
             dirname(dirname(str(abspath(__file__)))),
-            f"data/tiago/post_estimation/offset.yaml",
+            "data/tiago/post_estimation/offset.yaml",
         )
         with open(path_save_yaml, "w") as output_file:
             for i in range(param["NbJoint"]):
@@ -133,7 +134,7 @@ def write_results_tofile(res, model, param, file_type="xacro"):
     elif file_type == "csv":
         path_save_ep = join(
             dirname(dirname(str(abspath(__file__)))),
-            f"data/tiago/post_estimation/offset.csv",
+            "data/tiago/post_estimation/offset.csv",
         )
         with open(path_save_ep, "w") as output_file:
             w = csv.writer(output_file)

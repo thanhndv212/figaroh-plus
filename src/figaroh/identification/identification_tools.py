@@ -21,9 +21,11 @@ import operator
 
 
 def get_param_from_yaml(robot, identif_data):
-    """This function allows to create a dictionnary of the settings set in a yaml file.
+    """This function allows to create a dictionnary of the settings set in a
+    yaml file.
     Input:  robot: (Robot Tpl) a robot (extracted from an URDF for instance)
-            identif_data: (dict) a dictionnary containing the parameters settings for identification (set in a config yaml file)
+            identif_data: (dict) a dictionnary containing the parameters
+            settings for identification (set in a config yaml file)
     Output: param: (dict) a dictionnary of parameters settings
     """
     # robot_name: anchor as a reference point for executing
@@ -70,7 +72,7 @@ def set_missing_params_setting(robot, params_settings):
     diff_limit = np.setdiff1d(
         robot.model.lowerPositionLimit, robot.model.upperPositionLimit
     )
-    # upper and lower joint limits are the same so use defaut values for all joints
+    # upper and lower joint limits are the same , defaut values for all joints
     if not diff_limit.any:
         print("No joint limits. Set default values")
         for ii in range(robot.model.nq):
@@ -98,9 +100,9 @@ def set_missing_params_setting(robot, params_settings):
     if params_settings["has_friction"]:
         for ii in range(robot.model.nv):
             if ii == 0:
-                # default values of the joint viscous friction in case they are used
+                # default values of the joint viscous friction
                 fv = [(ii + 1) / 10]
-                # default value of the joint static friction in case they are used
+                # default value of the joint static friction
                 fs = [(ii + 1) / 10]
             else:
                 fv.append((ii + 1) / 10)
@@ -120,10 +122,14 @@ def set_missing_params_setting(robot, params_settings):
 
 
 def base_param_from_standard(phi_standard, params_base):
-    """This function allows to calculate numerically the base parameters with the values of the standard ones.
-    Input:  phi_standard: (tuple) a dictionnary containing the values of the standard parameters of the model (usually from get_standard_parameters)
-            params_base: (list) a list containing the analytical relations between standard parameters to give the base parameters
-    Output: phi_base: (list) a list containing the numeric values of the base parameters
+    """This function allows to calculate numerically the base parameters with
+    the values of the standard ones.
+    Input:  phi_standard: (tuple) a dictionnary containing the values of the
+            standard parameters of the model (from get_standard_parameters)
+            params_base: (list) a list containing the analytical relations
+            between standard parameters to give the base parameters
+    Output: phi_base: (list) a list containing the numeric values of the base
+            parameters
     """
     phi_base = []
     ops = {"+": operator.add, "-": operator.sub}
@@ -149,7 +155,8 @@ def base_param_from_standard(phi_standard, params_base):
 
 
 def relative_stdev(W_b, phi_b, tau):
-    """Calculates relative standard deviation of estimated parameters using the residual errro[Pressé & Gautier 1991]"""
+    """Calculates relative standard deviation of estimated parameters using
+    the residual errro[Pressé & Gautier 1991]"""
     # stdev of residual error ro
     sig_ro_sqr = np.linalg.norm((tau - np.dot(W_b, phi_b))) ** 2 / (
         W_b.shape[0] - phi_b.shape[0]
@@ -168,25 +175,25 @@ def relative_stdev(W_b, phi_b, tau):
 
 
 def weigthed_least_squares(robot, phi_b, W_b, tau_meas, tau_est, param):
-    """This function computes the weigthed least square solution of the identification problem see [Gautier, 1997] for details
-    inputs:
-    - robot: pinocchio robot structure
-    - W_b: base regressor matrix
-    - tau: measured joint torques
+    """This function computes the weigthed least square solution of the
+    identification problem see [Gautier, 1997] for details
+    Input:  robot: pinocchio robot structure
+            W_b: base regressor matrix
+            tau: measured joint torques
     """
     sigma = np.zeros(
         robot.model.nq
     )  # Needs to be modified for taking into account the GRFM
-    zero_identity_matrix = np.identity(len(tau_meas))
     P = np.zeros((len(tau_meas), len(tau_meas)))
     nb_samples = int(param["idx_tau_stop"][0])
     start_idx = int(0)
     for ii in range(robot.model.nq):
         sigma[ii] = np.linalg.norm(
-            tau_meas[int(start_idx) : int(param["idx_tau_stop"][ii])]
-            - tau_est[int(start_idx) : int(param["idx_tau_stop"][ii])]
+            tau_meas[int(start_idx): int(param["idx_tau_stop"][ii])]
+            - tau_est[int(start_idx): int(param["idx_tau_stop"][ii])]
         ) / (
-            len(tau_meas[int(start_idx) : int(param["idx_tau_stop"][ii])]) - len(phi_b)
+            len(tau_meas[int(start_idx): int(param["idx_tau_stop"][ii])])
+            - len(phi_b)
         )
 
         start_idx = param["idx_tau_stop"][ii]
@@ -194,7 +201,9 @@ def weigthed_least_squares(robot, phi_b, W_b, tau_meas, tau_est, param):
         for jj in range(nb_samples):
             P[jj + ii * (nb_samples), jj + ii * (nb_samples)] = 1 / sigma[ii]
 
-        phi_b = np.matmul(np.linalg.pinv(np.matmul(P, W_b)), np.matmul(P, tau_meas))
+        phi_b = np.matmul(
+            np.linalg.pinv(np.matmul(P, W_b)), np.matmul(P, tau_meas)
+        )
 
     phi_b = np.around(phi_b, 6)
 
@@ -202,12 +211,19 @@ def weigthed_least_squares(robot, phi_b, W_b, tau_meas, tau_est, param):
 
 
 def calculate_first_second_order_differentiation(model, q, param, dt=None):
-    """This function calculates the derivatives (velocities and accelerations here) by central difference for given angular configurations accounting that the robot has a freeflyer or not (which is indicated in the params_settings).
+    """This function calculates the derivatives (velocities and accelerations
+    here) by central difference for given angular configurations accounting
+    that the robot has a freeflyer or not (which is indicated in the
+    params_settings).
     Input:  model: (Model Tpl) the robot model
-            q: (array) the angular configurations whose derivatives need to be calculated
+            q: (array) the angular configurations whose derivatives need to be
+            calculated
             param: (dict) a dictionnary containing the settings
-            dt:  (list) a list containing the different timesteps between the samples (set to None by default, which means that the timestep is constant and to be found in param['ts'])
-    Output: q: (array) angular configurations (whose size match the samples removed by central differences)
+            dt:  (list) a list containing the different timesteps between the
+            samples (set to None by default, which means that the timestep is
+            constant and to be found in param['ts'])
+    Output: q: (array) angular configurations (whose size match the samples
+            removed by central differences)
             dq: (array) angular velocities
             ddq: (array) angular accelerations
     """
@@ -244,12 +260,15 @@ def calculate_first_second_order_differentiation(model, q, param, dt=None):
 
 
 def low_pass_filter_data(data, param, nbutter):
-    """This function filters and elaborates data used in the identification process.
-    It is based on a return of experience  of Prof Maxime Gautier (LS2N, Nantes, France)
+    """This function filters and elaborates data used in the identification
+    process. It is based on a return of experience  of Prof Maxime Gautier
+    (LS2N, Nantes, France)
     """
 
     b, a = signal.butter(
-        nbutter, param["ts"] * param["cut_off_frequency_butterworth"] / 2, "low"
+        nbutter,
+        param["ts"] * param["cut_off_frequency_butterworth"] / 2,
+        "low",
     )
 
     # data = signal.medfilt(data, 3)
@@ -260,7 +279,9 @@ def low_pass_filter_data(data, param, nbutter):
     # suppress end segments of samples due to the border effect
     nbord = 5 * nbutter
     data = np.delete(data, np.s_[0:nbord], axis=0)
-    data = np.delete(data, np.s_[(data.shape[0] - nbord) : data.shape[0]], axis=0)
+    data = np.delete(
+        data, np.s_[(data.shape[0] - nbord): data.shape[0]], axis=0
+    )
 
     return data
 
@@ -268,7 +289,9 @@ def low_pass_filter_data(data, param, nbutter):
 # Function for the total least square
 
 
-def build_total_regressor(W_b_u, W_b_l, W_l, I_u, I_l, param_standard_l, param):
+def build_total_regressor(
+    W_b_u, W_b_l, W_l, I_u, I_l, param_standard_l, param
+):
     """Inputs:  W_b_u  base regressor for unloaded case
             W_b_l:  base Regressor for loaded case
             W_l: Full  regressor for loaded case
@@ -287,14 +310,14 @@ def build_total_regressor(W_b_u, W_b_l, W_l, I_u, I_l, param_standard_l, param):
     # nv (or 6) columns for the current
     V_a = np.concatenate(
         (
-            I_u[0 : param["nb_samples"]].reshape(param["nb_samples"], 1),
+            I_u[0: param["nb_samples"]].reshape(param["nb_samples"], 1),
             np.zeros(((nb_j - 1) * param["nb_samples"], 1)),
         ),
         axis=0,
     )
     V_b = np.concatenate(
         (
-            I_l[0 : param["nb_samples"]].reshape(param["nb_samples"], 1),
+            I_l[0: param["nb_samples"]].reshape(param["nb_samples"], 1),
             np.zeros(((nb_j - 1) * param["nb_samples"], 1)),
         ),
         axis=0,
@@ -307,7 +330,9 @@ def build_total_regressor(W_b_u, W_b_l, W_l, I_u, I_l, param_standard_l, param):
                     (
                         np.zeros((param["nb_samples"] * (ii), 1)),
                         I_u[
-                            param["nb_samples"] * (ii) : (ii + 1) * param["nb_samples"]
+                            param["nb_samples"]
+                            * (ii): (ii + 1)
+                            * param["nb_samples"]
                         ].reshape(param["nb_samples"], 1),
                     ),
                     axis=0,
@@ -322,7 +347,9 @@ def build_total_regressor(W_b_u, W_b_l, W_l, I_u, I_l, param_standard_l, param):
                     (
                         np.zeros((param["nb_samples"] * (ii), 1)),
                         I_l[
-                            param["nb_samples"] * (ii) : (ii + 1) * param["nb_samples"]
+                            param["nb_samples"]
+                            * (ii): (ii + 1)
+                            * param["nb_samples"]
                         ].reshape(param["nb_samples"], 1),
                     ),
                     axis=0,
@@ -338,7 +365,7 @@ def build_total_regressor(W_b_u, W_b_l, W_l, I_u, I_l, param_standard_l, param):
 
     W_tot = np.concatenate((W_tot, W_current), axis=1)
 
-    # selection and reduction of the regressor for the unknown parameters for the mass
+    # selection and reduction of the regressor for the unknown parameters
 
     if param["has_friction"]:  # adds fv and fs
         W_l_temp = np.zeros((len(W_l), 12))
@@ -357,7 +384,9 @@ def build_total_regressor(W_b_u, W_b_l, W_l, I_u, I_l, param_standard_l, param):
         W_kpayload = np.concatenate(
             (
                 np.zeros((len(W_l), 1)),
-                -W_l[:, (param["which_body_loaded"]) * 12 + 9].reshape(len(W_l), 1),
+                -W_l[:, (param["which_body_loaded"]) * 12 + 9].reshape(
+                    len(W_l), 1
+                ),
             ),
             axis=0,
         )  # the mass
@@ -365,10 +394,9 @@ def build_total_regressor(W_b_u, W_b_l, W_l, I_u, I_l, param_standard_l, param):
 
     elif param["has_actuator_inertia"]:  # adds ia fv fs off
         W_l_temp = np.zeros((len(W_l), 14))
+        # adds columns belonging to Ixx Ixy Iyy Iyz Izz mx my mz ia fv fs off
         for k in [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13]:
-            W_l_temp[:, k] = W_l[
-                :, (param["which_body_loaded"]) * 14 + k
-            ]  # adds columns belonging to Ixx Ixy Iyy Iyz Izz mx my mz ia fv fs off
+            W_l_temp[:, k] = W_l[:, (param["which_body_loaded"]) * 14 + k]
         idx_e_temp, params_r_temp = get_index_eliminate(
             W_l_temp, param_standard_l, 1e-6
         )
@@ -380,7 +408,9 @@ def build_total_regressor(W_b_u, W_b_l, W_l, I_u, I_l, param_standard_l, param):
         W_kpayload = np.concatenate(
             (
                 np.zeros((len(W_l), 1)),
-                -W_l[:, (param["which_body_loaded"]) * 14 + 9].reshape(len(W_l), 1),
+                -W_l[:, (param["which_body_loaded"]) * 14 + 9].reshape(
+                    len(W_l), 1
+                ),
             ),
             axis=0,
         )  # the mass
@@ -403,7 +433,9 @@ def build_total_regressor(W_b_u, W_b_l, W_l, I_u, I_l, param_standard_l, param):
         W_kpayload = np.concatenate(
             (
                 np.zeros((len(W_l), 1)),
-                -W_l[:, (param["which_body_loaded"]) * 10 + 9].reshape(len(W_l), 1),
+                -W_l[:, (param["which_body_loaded"]) * 10 + 9].reshape(
+                    len(W_l), 1
+                ),
             ),
             axis=0,
         )  # the mass
@@ -451,15 +483,23 @@ def sample_spherical(npoints, ndim=3):
 def calculate_standard_parameters_vold(
     robot, W, tau, COM_max, COM_min, params_settings
 ):
-    """This function retrieves the 10 standard parameters (m, 3D COM, 6D Inertias) for each body in the body tree thanks to a QP optimisation (cf Jovic 2016).
+    """This function retrieves the 10 standard parameters (m, 3D COM, 6D
+    Inertias) for each body in the body tree thanks to a QP optimisation
+    (cf Jovic 2016).
     Input:  robot : (Robot Tpl) a robot extracted from an urdf for instance
-            W : ((Nsamples*njoints,14*nbodies) array) the full dynamic regressor (calculated thanks to build regressor basic )
+            W : ((Nsamples*njoints,14*nbodies) array) the full dynamic
+            regressor (calculated thanks to build regressor basic )
             tau : ((Nbsamples*njoints,) array) the joint torque array
-            COM_max : (list) sup boundaries for COM in the form (x,y,z) for each body
-            COM_min : (list) sup boundaries for COM in the form (x,y,z) for each body
-            params_settings : (dict) a dictionnary indicating the settings (extracted from get_parameters_from_yaml)
-    Output: phi_standard: (list) a list containing the numeric values of the standard parameters
-            phi_ref : (list) a list containing the numeric values of the standard parameters as they are set in the urdf
+            COM_max : (list) sup boundaries for COM in the form (x,y,z) for
+            each body
+            COM_min : (list) sup boundaries for COM in the form (x,y,z) for
+            each body
+            params_settings : (dict) a dictionnary indicating the settings
+            (extracted from get_parameters_from_yaml)
+    Output: phi_standard: (list) a list containing the numeric values of the
+            standard parameters
+            phi_ref : (list) a list containing the numeric values of the
+            standard parameters as they are set in the urdf
     """
     alpha = 0.9
     phi_ref = []
@@ -520,45 +560,77 @@ def calculate_standard_parameters_vold(
     for ii in range(len(id_inertias)):
         for k in range(
             len(v[0])
-        ):  # inertia matrix def pos for enough (ie. 2000 here) vectors on unit sphere
-            G[ii * (len(v[0]) + 7) + k][id_inertias[ii] * 10 + 0] = -v[0][k] ** 2
+        ):  # inertia matrix def pos for enough vectors onunit sphere
+            G[ii * (len(v[0]) + 7) + k][id_inertias[ii] * 10 + 0] = (
+                -v[0][k] ** 2
+            )
             G[ii * (len(v[0]) + 7) + k][id_inertias[ii] * 10 + 1] = (
                 -2 * v[0][k] * v[1][k]
             )
             G[ii * (len(v[0]) + 7) + k][id_inertias[ii] * 10 + 2] = (
                 -2 * v[0][k] * v[2][k]
             )
-            G[ii * (len(v[0]) + 7) + k][id_inertias[ii] * 10 + 3] = -v[1][k] ** 2
+            G[ii * (len(v[0]) + 7) + k][id_inertias[ii] * 10 + 3] = (
+                -v[1][k] ** 2
+            )
             G[ii * (len(v[0]) + 7) + k][id_inertias[ii] * 10 + 4] = (
                 -2 * v[1][k] * v[2][k]
             )
-            G[ii * (len(v[0]) + 7) + k][id_inertias[ii] * 10 + 5] = -v[2][k] ** 2
+            G[ii * (len(v[0]) + 7) + k][id_inertias[ii] * 10 + 5] = (
+                -v[2][k] ** 2
+            )
             h[ii * (len(v[0]) + 7) + k] = epsilon
-        G[len(v[0]) + ii * (len(v[0]) + 7)][id_inertias[ii] * 10 + 6] = 1  # mx<mx+
-        G[len(v[0]) + ii * (len(v[0]) + 7)][id_inertias[ii] * 10 + 9] = -COM_max[
+        G[len(v[0]) + ii * (len(v[0]) + 7)][
+            id_inertias[ii] * 10 + 6
+        ] = 1  # mx<mx+
+        G[len(v[0]) + ii * (len(v[0]) + 7)][
+            id_inertias[ii] * 10 + 9
+        ] = -COM_max[
             3 * ii
         ]  # mx<mx+
-        G[len(v[0]) + ii * (len(v[0]) + 7) + 1][id_inertias[ii] * 10 + 6] = -1  # mx>mx-
-        G[len(v[0]) + ii * (len(v[0]) + 7) + 1][id_inertias[ii] * 10 + 9] = COM_min[
+        G[len(v[0]) + ii * (len(v[0]) + 7) + 1][
+            id_inertias[ii] * 10 + 6
+        ] = -1  # mx>mx-
+        G[len(v[0]) + ii * (len(v[0]) + 7) + 1][
+            id_inertias[ii] * 10 + 9
+        ] = COM_min[
             3 * ii
         ]  # mx>mx-
-        G[len(v[0]) + ii * (len(v[0]) + 7) + 2][id_inertias[ii] * 10 + 7] = 1  # my<my+
-        G[len(v[0]) + ii * (len(v[0]) + 7) + 2][id_inertias[ii] * 10 + 9] = -COM_max[
+        G[len(v[0]) + ii * (len(v[0]) + 7) + 2][
+            id_inertias[ii] * 10 + 7
+        ] = 1  # my<my+
+        G[len(v[0]) + ii * (len(v[0]) + 7) + 2][
+            id_inertias[ii] * 10 + 9
+        ] = -COM_max[
             3 * ii + 1
         ]  # my<my+
-        G[len(v[0]) + ii * (len(v[0]) + 7) + 3][id_inertias[ii] * 10 + 7] = -1  # my>my-
-        G[len(v[0]) + ii * (len(v[0]) + 7) + 3][id_inertias[ii] * 10 + 9] = COM_min[
+        G[len(v[0]) + ii * (len(v[0]) + 7) + 3][
+            id_inertias[ii] * 10 + 7
+        ] = -1  # my>my-
+        G[len(v[0]) + ii * (len(v[0]) + 7) + 3][
+            id_inertias[ii] * 10 + 9
+        ] = COM_min[
             3 * ii + 1
         ]  # my>my-
-        G[len(v[0]) + ii * (len(v[0]) + 7) + 4][id_inertias[ii] * 10 + 8] = 1  # mz<mz+
-        G[len(v[0]) + ii * (len(v[0]) + 7) + 4][id_inertias[ii] * 10 + 9] = -COM_max[
+        G[len(v[0]) + ii * (len(v[0]) + 7) + 4][
+            id_inertias[ii] * 10 + 8
+        ] = 1  # mz<mz+
+        G[len(v[0]) + ii * (len(v[0]) + 7) + 4][
+            id_inertias[ii] * 10 + 9
+        ] = -COM_max[
             3 * ii + 2
         ]  # mz<mz+
-        G[len(v[0]) + ii * (len(v[0]) + 7) + 5][id_inertias[ii] * 10 + 8] = -1  # mz>mz-
-        G[len(v[0]) + ii * (len(v[0]) + 7) + 5][id_inertias[ii] * 10 + 9] = COM_min[
+        G[len(v[0]) + ii * (len(v[0]) + 7) + 5][
+            id_inertias[ii] * 10 + 8
+        ] = -1  # mz>mz-
+        G[len(v[0]) + ii * (len(v[0]) + 7) + 5][
+            id_inertias[ii] * 10 + 9
+        ] = COM_min[
             3 * ii + 2
         ]  # mz>mz-
-        G[len(v[0]) + ii * (len(v[0]) + 7) + 6][id_inertias[ii] * 10 + 9] = -1  # m>0
+        G[len(v[0]) + ii * (len(v[0]) + 7) + 6][
+            id_inertias[ii] * 10 + 9
+        ] = -1  # m>0
 
     # SOLVING
     phi_standard = quadprog_solve_qp(
@@ -568,86 +640,112 @@ def calculate_standard_parameters_vold(
     return phi_standard, phi_ref
 
 
-# def calculate_standard_parameters(robot,W,tau,COM_max,COM_min,params_settings):
-#     """This function retrieves the 10 standard parameters (m, 3D COM, 6D Inertias) for each body in the body tree thanks to a QP optimisation (cf Jovic 2016).
+# def calculate_standard_parameters(
+#     robot, W, tau, COM_max, COM_min, params_settings
+# ):
+#     """This function retrieves the 10 standard parameters (m, 3D COM, 6D
+#     Inertias) for each body in the body tree thanks to a QP optimisation
+#     (cf Jovic 2016).
 #     Input:  robot : (Robot Tpl) a robot extracted from an urdf for instance
-#             W : ((Nsamples*njoints,14*nbodies) array) the full dynamic regressor (calculated thanks to build regressor basic )
+#             W : ((Nsamples*njoints,14*nbodies) array) the full dynamic
+#             regressor (calculated thanks to build regressor basic )
 #             tau : ((Nbsamples*njoints,) array) the joint torque array
-#             COM_max : (list) sup boundaries for COM in the form (x,y,z) for each body
-#             COM_min : (list) sup boundaries for COM in the form (x,y,z) for each body
-#             params_settings : (dict) a dictionnary indicating the settings (extracted from get_parameters_from_yaml)
-#     Output: phi_standard: (list) a list containing the numeric values of the standard parameters
-#             phi_ref : (list) a list containing the numeric values of the standard parameters as they are set in the urdf
+#             COM_max : (list) sup boundaries for COM in the form (x,y,z) for
+#             each body
+#             COM_min : (list) sup boundaries for COM in the form (x,y,z) for
+#             each body
+#             params_settings : (dict) a dictionnary indicating the settings
+#             (extracted from get_parameters_from_yaml)
+#     Output: phi_standard: (list) a list containing the numeric values of the
+#             standard parameters
+#             phi_ref : (list) a list containing the numeric values of the
+#             standard parameters as they are set in the urdf
 #     """
 
-#     alpha=0.8
-#     phi_ref=[]
+#     alpha = 0.8
+#     phi_ref = []
 
-#     nbodies=len(robot.model.inertias)
+#     nbodies = len(robot.model.inertias)
 
 #     params_standard_u = robot.get_standard_parameters(params_settings)
 
 #     params_name = (
-#                     "Ixx",
-#                     "Ixy",
-#                     "Ixz",
-#                     "Iyy",
-#                     "Iyz",
-#                     "Izz",
-#                     "mx",
-#                     "my",
-#                     "mz",
-#                     "m",
-#                     "Ia",
-#                     "fv",
-#                     "fs",
-#                     "off"
-#                 )
+#         "Ixx",
+#         "Ixy",
+#         "Ixz",
+#         "Iyy",
+#         "Iyz",
+#         "Izz",
+#         "mx",
+#         "my",
+#         "mz",
+#         "m",
+#         "Ia",
+#         "fv",
+#         "fs",
+#         "off",
+#     )
 
-#     for k in range(1,nbodies):
+#     for k in range(1, nbodies):
 #         for j in params_name:
-#             if params_standard_u[j+str(k)] is not None :
-#                 phi_ref_temp = params_standard_u[j+str(k)]
-#             else :
+#             if params_standard_u[j + str(k)] is not None:
+#                 phi_ref_temp = params_standard_u[j + str(k)]
+#             else:
 #                 phi_ref_temp = 0
 #             phi_ref.append(phi_ref_temp)
 
-#     phi_ref=np.array(phi_ref)
-#     P = np.matmul(W.T,W) + alpha*np.eye(14*(nbodies-1))
-#     r = -(np.matmul(tau.T,W)+alpha*phi_ref.T)
+#     phi_ref = np.array(phi_ref)
+#     P = np.matmul(W.T, W) + alpha * np.eye(14 * (nbodies - 1))
+#     r = -(np.matmul(tau.T, W) + alpha * phi_ref.T)
 
 #     # Setting constraints
 
-#     epsilon=0.001
-#     v=sample_spherical(2000) # vectors over the unit sphere
+#     epsilon = 0.001
+#     v = sample_spherical(2000)  # vectors over the unit sphere
 
-#     G=np.zeros(((7+len(v[0]))*(nbodies-1),14*(nbodies-1)))
-#     h=np.zeros((((7+len(v[0]))*(nbodies-1),1)))
+#     G = np.zeros(((7 + len(v[0])) * (nbodies - 1), 14 * (nbodies - 1)))
+#     h = np.zeros((((7 + len(v[0])) * (nbodies - 1), 1)))
 
-#     for ii in range(nbodies-1):
-#         for k in range(len(v[0])): # inertia matrix def pos for enough (ie. 2000 here) vectors on unit sphere
-#             G[ii*(len(v[0])+7)+k][ii*14+0]=-v[0][k]**2
-#             G[ii*(len(v[0])+7)+k][ii*14+1]=-2*v[0][k]*v[1][k]
-#             G[ii*(len(v[0])+7)+k][ii*14+2]=-2*v[0][k]*v[2][k]
-#             G[ii*(len(v[0])+7)+k][ii*14+3]=-v[1][k]**2
-#             G[ii*(len(v[0])+7)+k][ii*14+4]=-2*v[1][k]*v[2][k]
-#             G[ii*(len(v[0])+7)+k][ii*14+5]=-v[2][k]**2
-#             h[ii*(len(v[0])+7)+k]=epsilon
-#         G[len(v[0])+ii*(len(v[0])+7)][ii*14+6]=1 # mx<mx+
-#         G[len(v[0])+ii*(len(v[0])+7)][ii*14+9]=-COM_max[3*ii] # mx<mx+
-#         G[len(v[0])+ii*(len(v[0])+7)+1][ii*14+6]=-1 # mx>mx-
-#         G[len(v[0])+ii*(len(v[0])+7)+1][ii*14+9]=COM_min[3*ii] # mx>mx-
-#         G[len(v[0])+ii*(len(v[0])+7)+2][ii*14+7]=1 # my<my+
-#         G[len(v[0])+ii*(len(v[0])+7)+2][ii*14+9]=-COM_max[3*ii+1] # my<my+
-#         G[len(v[0])+ii*(len(v[0])+7)+3][ii*14+7]=-1 # my>my-
-#         G[len(v[0])+ii*(len(v[0])+7)+3][ii*14+9]=COM_min[3*ii+1] # my>my-
-#         G[len(v[0])+ii*(len(v[0])+7)+4][ii*14+8]=1 # mz<mz+
-#         G[len(v[0])+ii*(len(v[0])+7)+4][ii*14+9]=-COM_max[3*ii+2] # mz<mz+
-#         G[len(v[0])+ii*(len(v[0])+7)+5][ii*14+8]=-1 # mz>mz-
-#         G[len(v[0])+ii*(len(v[0])+7)+5][ii*14+9]=COM_min[3*ii+2] # mz>mz-
-#         G[len(v[0])+ii*(len(v[0])+7)+6][ii*14+9]=-1 # m>0
+#     for ii in range(nbodies - 1):
+#         for k in range(
+#             len(v[0])
+#         ):  # inertia matrix def pos for enough vectors on unit sphere
+#             G[ii * (len(v[0]) + 7) + k][ii * 14 + 0] = -v[0][k] ** 2
+#             G[ii * (len(v[0]) + 7) + k][ii * 14 + 1] = -2 * v[0][k] * v[1][k]
+#             G[ii * (len(v[0]) + 7) + k][ii * 14 + 2] = -2 * v[0][k] * v[2][k]
+#             G[ii * (len(v[0]) + 7) + k][ii * 14 + 3] = -v[1][k] ** 2
+#             G[ii * (len(v[0]) + 7) + k][ii * 14 + 4] = -2 * v[1][k] * v[2][k]
+#             G[ii * (len(v[0]) + 7) + k][ii * 14 + 5] = -v[2][k] ** 2
+#             h[ii * (len(v[0]) + 7) + k] = epsilon
+#         G[len(v[0]) + ii * (len(v[0]) + 7)][ii * 14 + 6] = 1  # mx<mx+
+#         G[len(v[0]) + ii * (len(v[0]) + 7)][ii * 14 + 9] = -COM_max[
+#             3 * ii
+#         ]  # mx<mx+
+#         G[len(v[0]) + ii * (len(v[0]) + 7) + 1][ii * 14 + 6] = -1  # mx>mx-
+#         G[len(v[0]) + ii * (len(v[0]) + 7) + 1][ii * 14 + 9] = COM_min[
+#             3 * ii
+#         ]  # mx>mx-
+#         G[len(v[0]) + ii * (len(v[0]) + 7) + 2][ii * 14 + 7] = 1  # my<my+
+#         G[len(v[0]) + ii * (len(v[0]) + 7) + 2][ii * 14 + 9] = -COM_max[
+#             3 * ii + 1
+#         ]  # my<my+
+#         G[len(v[0]) + ii * (len(v[0]) + 7) + 3][ii * 14 + 7] = -1  # my>my-
+#         G[len(v[0]) + ii * (len(v[0]) + 7) + 3][ii * 14 + 9] = COM_min[
+#             3 * ii + 1
+#         ]  # my>my-
+#         G[len(v[0]) + ii * (len(v[0]) + 7) + 4][ii * 14 + 8] = 1  # mz<mz+
+#         G[len(v[0]) + ii * (len(v[0]) + 7) + 4][ii * 14 + 9] = -COM_max[
+#             3 * ii + 2
+#         ]  # mz<mz+
+#         G[len(v[0]) + ii * (len(v[0]) + 7) + 5][ii * 14 + 8] = -1  # mz>mz-
+#         G[len(v[0]) + ii * (len(v[0]) + 7) + 5][ii * 14 + 9] = COM_min[
+#             3 * ii + 2
+#         ]  # mz>mz-
+#         G[len(v[0]) + ii * (len(v[0]) + 7) + 6][ii * 14 + 9] = -1  # m>0
 
 #     # SOLVING
-#     phi_standard=quadprog_solve_qp(P,r,G,h.reshape(((7+len(v[0]))*(nbodies-1),)))
+#     phi_standard = quadprog_solve_qp(
+#         P, r, G, h.reshape(((7 + len(v[0])) * (nbodies - 1),))
+#     )
 
-#     return phi_standard,phi_ref
+#     return phi_standard, phi_ref

@@ -13,17 +13,13 @@
 # limitations under the License.
 
 import numpy as np
-from numpy import pi
 import hppfcl
 import pinocchio as pin
 import time
 
 from figaroh.tools.robot import Robot
 
-# from figaroh.tools.regressor import *
-# from figaroh.tools.qrdecomposition import *
-# from figaroh.tools.randomdata import *
-from figaroh.tools.robotcollisions import *
+from figaroh.tools.robotcollisions import CollisionWrapper
 from figaroh.meshcat_viewer_wrapper import MeshcatVisualizer
 
 import os
@@ -32,7 +28,6 @@ from os.path import dirname, join, abspath
 
 def Capsule(name, joint, radius, length, placement, color=[0.7, 0.7, 0.98, 1]):
     """Create a Pinocchio::FCL::Capsule to be added in the Geom-Model."""
-    # They should be capsules ... but hppfcl current version is buggy with Capsules...
     # hppgeom = hppfcl.Capsule(radius,length)
     hppgeom = hppfcl.Cylinder(radius, length)
     geom = pin.GeometryObject(name, joint, hppgeom, placement)
@@ -41,8 +36,7 @@ def Capsule(name, joint, radius, length, placement, color=[0.7, 0.7, 0.98, 1]):
 
 
 def Box(name, joint, x, y, z, placement, color=[0.7, 0.7, 0.98, 1]):
-    """Create a Pinocchio::FCL::Capsule to be added in the Geom-Model."""
-    # They should be capsules ... but hppfcl current version is buggy with Capsules...
+    """Create a Pinocchio::FCL::Box to be added in the Geom-Model."""
     # hppgeom = hppfcl.Capsule(radius,length)
     hppgeom = hppfcl.Box(x, y, z)
     geom = pin.GeometryObject(name, joint, hppgeom, placement)
@@ -143,7 +137,7 @@ def build_tiago_normal(robot):
     collision.remove_collisions(srdf_model_path)
 
     # Create data structures
-    geom_data = pin.GeometryData(geom_model)
+    # geom_data = pin.GeometryData(geom_model)
 
 
 def main():

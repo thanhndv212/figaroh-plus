@@ -63,11 +63,11 @@ class Robot(RobotWrapper):
         #     package_dirs = package_dirs
         # )
 
-        ## \todo test that this is equivalent to reloading the model
         self.geom_model = self.collision_model
 
     def get_standard_parameters(self, param):
-        """This function prints out the standard inertial parameters defined in urdf model.
+        """This function prints out the standard inertial parameters defined
+        in urdf model.
         Output: params_std: a dictionary of parameter names and their values"""
 
         model = self.model
@@ -87,8 +87,9 @@ class Robot(RobotWrapper):
             "m",
         )
 
-        # change order of values in phi['m', 'mx','my','mz','Ixx','Ixy','Iyy','Ixz', 'Iyz','Izz'] - from pinoccchio
-        # corresponding to params_name ['Ixx','Ixy','Ixz','Iyy','Iyz','Izz','mx','my','mz','m']
+        # change order of values in phi['m', 'mx','my','mz','Ixx','Ixy','Iyy',
+        # 'Ixz', 'Iyz','Izz'] - from pinoccchio corresponding to params_name
+        # ['Ixx','Ixy','Ixz','Iyy','Iyz','Izz','mx','my','mz','m']
 
         for i in range(1, len(model.inertias)):
             P = model.inertias[i].toDynamicParameters()

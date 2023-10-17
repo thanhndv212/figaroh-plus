@@ -45,10 +45,17 @@ def materialFromColor(color):
 
 class MeshcatVisualizer(PMV):
     def __init__(
-        self, robot=None, model=None, collision_model=None, visual_model=None, url=None
+        self,
+        robot=None,
+        model=None,
+        collision_model=None,
+        visual_model=None,
+        url=None,
     ):
         if robot is not None:
-            PMV.__init__(self, robot.model, robot.collision_model, robot.visual_model)
+            PMV.__init__(
+                self, robot.model, robot.collision_model, robot.visual_model
+            )
         elif model is not None:
             PMV.__init__(self, model, collision_model, visual_model)
 
@@ -63,7 +70,9 @@ class MeshcatVisualizer(PMV):
         if robot is not None or model is not None:
             self.initViewer(loadModel=True, viewer=server)
         else:
-            self.viewer = server if server is not None else meshcat.Visualizer()
+            self.viewer = (
+                server if server is not None else meshcat.Visualizer()
+            )
 
     def addSphere(self, name, radius, color):
         material = materialFromColor(color)

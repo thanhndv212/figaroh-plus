@@ -13,16 +13,14 @@
 # limitations under the License.
 
 import os
-from os.path import dirname, join, abspath
+from os.path import abspath
+import rospy
 import pinocchio as pin
-from pinocchio.utils import *
 from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from scipy.optimize import least_squares
 import numpy as np
 import yaml
 from yaml.loader import SafeLoader
-from figaroh.meshcat_viewer_wrapper import MeshcatVisualizer
 from figaroh.tools.robot import Robot
 from figaroh.calibration.calibration_tools import (
     get_param_from_yaml,
@@ -31,16 +29,23 @@ from figaroh.calibration.calibration_tools import (
     calculate_base_kinematics_regressor,
     update_forward_kinematics,
     get_LMvariables,
-    cartesian_to_SE3,
 )
 
 # 1. Load robot model and create a dictionary containing reserved constants
 print("*" * 50)
-print("Loading robot model and creating a dictionary containing reserved constants")
-ros_package_path = os.getenv("ROS_PACKAGE_PATH")
-package_dirs = ros_package_path.split(":")
+print(
+    "Loading robot model and calibration settings."
+)
+load_by_urdf = True
+if load_by_urdf:
+    ros_package_path = os.getenv("ROS_PACKAGE_PATH")
+    package_dirs = ros_package_path.split(":")
+    robot_urdf = "data/tiaog_48.urdf"
+else:
+    robot_urdf = rospy.get_param("robot_description")
+
 robot = Robot(
-    "data/tiago.urdf",
+    robot_urdf,
     package_dirs=package_dirs,
     # isFext=True  # add free-flyer joint at base
 )
@@ -54,13 +59,19 @@ calib_data = config["calibration"]
 param = get_param_from_yaml(robot, calib_data)
 
 for jointID in param["actJoint_idx"]:
-    print("Active joints to be calibrated: ", model.joints[jointID].shortname())
+    print(
+        "Active joints to be calibrated: ", model.joints[jointID].shortname()
+    )
 
 # 2. Base parameters calculation
 q_rand = []
-Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = calculate_base_kinematics_regressor(
-    q_rand, model, data, param
-)
+(
+    Rrand_b,
+    R_b,
+    R_e,
+    paramsrand_base,
+    paramsrand_e,
+) = calculate_base_kinematics_regressor(q_rand, model, data, param)
 
 # Add markers name to param['param_name']
 add_pee_name(param)
@@ -89,7 +100,9 @@ if dataSet == "sample":
         q_sample[i, :] = config
 
     # Create simulated end effector coordinates measures (PEEm)
-    PEEm_sample = update_forward_kinematics(model, data, var_sample, q_sample, param)
+    PEEm_sample = update_forward_kinematics(
+        model, data, var_sample, q_sample, param
+    )
 
     q_LM = np.copy(q_sample)
     PEEm_LM = np.copy(PEEm_sample)
@@ -125,7 +138,8 @@ def cost_func(var, coeff, q, model, data, param, PEEm):
     PEEe = update_forward_kinematics(model, data, var, q, param)
     res_vect = np.append(
         (PEEm - PEEe),
-        np.sqrt(coeff) * var[6 : -param["NbMarkers"] * param["calibration_index"]],
+        np.sqrt(coeff)
+        * var[6: -param["NbMarkers"] * param["calibration_index"]],
     )
     return res_vect
 
@@ -142,7 +156,7 @@ tip_pose = np.array([0.2163, 0.03484, 0.004, 0.0, -1.57, -1.57])
 # camera variable
 var_0[0:6] = camera_pose
 # tip variable
-var_0[-param["calibration_index"] :] = tip_pose[: param["calibration_index"]]
+var_0[-param["calibration_index"]:] = tip_pose[: param["calibration_index"]]
 iterate = True
 count = 0
 del_list = []
@@ -241,7 +255,9 @@ if param["NbMarkers"] == 1:
     ax1.grid()
 else:
     for i in range(param["NbMarkers"]):
-        ax1[i].bar(np.arange(param["NbSample"]), PEE_dist[i, :], color=colors[i])
+        ax1[i].bar(
+            np.arange(param["NbSample"]), PEE_dist[i, :], color=colors[i]
+        )
         ax1[i].set_xlabel("Sample", fontsize=25)
         ax1[i].set_ylabel("Error of marker %s (meter)" % (i + 1), fontsize=25)
         ax1[i].tick_params(axis="both", labelsize=30)
@@ -249,7 +265,9 @@ else:
 
 # 2// plot 3D measured poses and estimated
 fig2 = plt.figure(2)
-fig2.suptitle("Visualization of estimated poses and measured pose in Cartesian")
+fig2.suptitle(
+    "Visualization of estimated poses and measured pose in Cartesian"
+)
 ax2 = fig2.add_subplot(111, projection="3d")
 PEEm_LM2d = PEEm_LM.reshape(
     (param["NbMarkers"] * param["calibration_index"], param["NbSample"])
@@ -257,7 +275,9 @@ PEEm_LM2d = PEEm_LM.reshape(
 PEEe_sol2d = PEEe_sol.reshape(
     (param["NbMarkers"] * param["calibration_index"], param["NbSample"])
 )
-PEEe_uncalib2d = PEEe_uncalib.reshape((param["NbMarkers"] * 3, param["NbSample"]))
+PEEe_uncalib2d = PEEe_uncalib.reshape(
+    (param["NbMarkers"] * 3, param["NbSample"])
+)
 for i in range(param["NbMarkers"]):
     ax2.scatter3D(
         PEEm_LM2d[i * 3, :],
@@ -356,7 +376,9 @@ def write_to_xacro(model, calib_result, param):
         joint = model.names[idx]
         for key in calib_result.keys():
             if joint in key:
-                calibration_parameters[joint + "_joint_offset"] = calib_result[key]
+                calibration_parameters[joint + "_joint_offset"] = calib_result[
+                    key
+                ]
 
     path_save_xacro = abspath("data/offset_{}.xacro".format(param["NbSample"]))
     with open(path_save_xacro, "w") as output_file:
