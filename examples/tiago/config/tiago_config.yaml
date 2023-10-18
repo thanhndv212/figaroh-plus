@@ -18,6 +18,10 @@ calibration:
     # - ref_joint: arm_7_joint
     #   measure: [True, True, True, False, False, False]  
   free_flyer: False
+  camera_pose: [0.0908, 0.08, 0.0, -1.57, 0.0, 0.0]
+  tip_pose: [0.2163, 0.03484, 0.004, 0.0, -1.57, -1.57]
+  coeff_regularize: 0.01
+  data_file: data/eye_hand_calibration_recorded_data_500.csv
   nb_sample: 500
 identification:
   robot_params:
