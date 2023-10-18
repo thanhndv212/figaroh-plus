@@ -97,6 +97,10 @@ def get_param_from_yaml(robot, calib_data):
     base_to_ref_frame = calib_data["base_to_ref_frame"]
     ref_frame = calib_data["ref_frame"]
 
+    # initial pose of base frame and marker frame
+    camera_pose = calib_data["camera_pose"]
+    tip_pose = calib_data["tip_pose"]
+
     frames = [f.name for f in robot.model.frames]
     assert start_frame in frames, "Start_frame {} does not exist.".format(
         start_frame
@@ -198,6 +202,10 @@ def get_param_from_yaml(robot, calib_data):
         "free_flyer": calib_data["free_flyer"],
         "param_name": param_name,
         "non_geom": calib_data["non_geom"],
+        "camera_pose": camera_pose,
+        "tip_pose": tip_pose,
+        "coeff_regularize": calib_data["coeff_regularize"],
+        "data_file": calib_data["data_file"],
     }
     pprint.pprint(param)
     return param
@@ -636,7 +644,7 @@ def get_rel_kinreg(model, data, start_frame, end_frame, q):
         # fMp = get_rel_transform(model, data, end_frame, model.names[p])
         fMp = oMf.actInv(oMp)
         fXp = fMp.toActionMatrix()
-        kinreg[:, 6 * (p - 1): 6 * p] = fXp
+        kinreg[:, 6 * (p - 1) : 6 * p] = fXp
     return kinreg
 
 
@@ -777,9 +785,7 @@ def update_forward_kinematics(model, data, var, q, param):
                         for elas_id, elas in enumerate(elas_tpl):
                             if elas in key:
                                 delta_jointPos = param_dict[key] * tau_j
-                                xyz_rpy[
-                                    elas_id
-                                ] += delta_jointPos
+                                xyz_rpy[elas_id] += delta_jointPos
                                 updated_params.append(key)
                 model = update_joint_placement(model, j_id, xyz_rpy)
 
@@ -796,9 +802,7 @@ def update_forward_kinematics(model, data, var, q, param):
                         for elas_id, elas in enumerate(elas_tpl):
                             if elas in key:
                                 delta_jointPos = param_dict[key] * tau_j
-                                xyz_rpy[
-                                    elas_id
-                                ] += delta_jointPos
+                                xyz_rpy[elas_id] += delta_jointPos
                 model = update_joint_placement(model, j_id, -xyz_rpy)
 
         else:
