@@ -12,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# from ndcurves import piecewise,  ndcurves.exact_cubic, ndcurves.curve_constraints
 import ndcurves
 import numpy as np
 from matplotlib import pyplot as plt
 from figaroh.tools.randomdata import get_torque_rand
 from figaroh.tools.robot import Robot
-import icecream as ic
 import eigenpy
 import os
 
@@ -30,11 +28,15 @@ eigenpy.switchToNumpyArray()
 
 
 class CubicSpline:
-    def __init__(self, robot, num_waypoints: int, active_joints: list, soft_lim=0):
+    def __init__(
+        self, robot, num_waypoints: int, active_joints: list, soft_lim=0
+    ):
         self.robot = robot
         self.rmodel = self.robot.model
         self.num_waypoints = num_waypoints
-        self.active_joints = [(self.rmodel.getJointId(i) - 1) for i in active_joints]
+        self.active_joints = [
+            (self.rmodel.getJointId(i) - 1) for i in active_joints
+        ]
         self.dim = (len(self.active_joints), self.num_waypoints)
 
         # joint limits on active joints
@@ -47,8 +49,12 @@ class CubicSpline:
 
         # joint limits on active joints with soft limit on both limit ends
         if soft_lim > 0:
-            self.upper_q = self.upper_q - soft_lim * abs(self.upper_q - self.lower_q)
-            self.lower_q = self.lower_q + soft_lim * abs(self.upper_q - self.lower_q)
+            self.upper_q = self.upper_q - soft_lim * abs(
+                self.upper_q - self.lower_q
+            )
+            self.lower_q = self.lower_q + soft_lim * abs(
+                self.upper_q - self.lower_q
+            )
             self.upper_dq = self.upper_dq - soft_lim * abs(
                 self.upper_dq - self.lower_dq
             )
@@ -74,8 +80,7 @@ class CubicSpline:
         # dimensions
         assert (
             self.dim == waypoints.shape
-        ), "(Pos) Check size \
-                                        (num_active_joints,num_waypoints)!"
+        ), "(Pos) Check size (num_active_joints,num_waypoints)!"
         self.pc = ndcurves.piecewise()  # set piecewise object to join segments
 
         # C_2 continuous at waypoints
@@ -83,12 +88,10 @@ class CubicSpline:
             # dimensions
             assert (
                 self.dim == vel_waypoints.shape
-            ), "(Vel) Check size\
-                                        (num_active_joints, num_waypoints)!"
+            ), "(Vel) Check size (num_active_joints, num_waypoints)!"
             assert (
                 self.dim == acc_waypoints.shape
-            ), "(Acc) Check size\
-                                        (num_active_joints, num_waypoints)!"
+            ), "(Acc) Check size (num_active_joints, num_waypoints)!"
 
             # make exact cubic WITH constraints on vel and acc on both ends
             for i in range(self.num_waypoints - 1):
@@ -108,7 +111,8 @@ class CubicSpline:
         else:
             for i in range(self.num_waypoints - 1):
                 ec = ndcurves.exact_cubic(
-                    waypoints[:, range(i, i + 2)], time_points[range(i, i + 2), 0]
+                    waypoints[:, range(i, i + 2)],
+                    time_points[range(i, i + 2), 0],
                 )
                 self.pc.append(ec)
 
@@ -129,10 +133,12 @@ class CubicSpline:
             [self.pc(self.t[i, 0]) for i in range(self.N)], dtype="float"
         )
         self.dq_act = np.array(
-            [self.pc.derivate(self.t[i, 0], 1) for i in range(self.N)], dtype="float"
+            [self.pc.derivate(self.t[i, 0], 1) for i in range(self.N)],
+            dtype="float",
         )
         self.ddq_act = np.array(
-            [self.pc.derivate(self.t[i, 0], 2) for i in range(self.N)], dtype="float"
+            [self.pc.derivate(self.t[i, 0], 2) for i in range(self.N)],
+            dtype="float",
         )
         t, p_act, v_act, a_act = self.t, self.q_act, self.dq_act, self.ddq_act
 
@@ -209,7 +215,7 @@ class CubicSpline:
                     # print(__isViolated)
         if not __isViolated:
             print(
-                "SUCCEEDED to generate waypoints for  a feasible initial cubic spline"
+                "SUCCEEDED to generate a feasible initial cubic spline"
             )
         else:
             print("FAILED to generate a feasible cubic spline")
@@ -226,7 +232,6 @@ class CubicSpline:
         ddq = a[:, self.active_joints]
 
         for i in range(q.shape[1]):
-            plot = plt.figure(i)
             plt.plot(t[:, 0], q[:, i], color="r", label="pos")
             plt.plot(t[:, 0], dq[:, i], color="b", label="vel")
             plt.plot(t[:, 0], ddq[:, i], color="g", label="acc")
@@ -239,7 +244,9 @@ class CubicSpline:
 class WaypointsGeneration(CubicSpline):
     """Generate waypoints specific for cubic spline"""
 
-    def __init__(self, robot, num_waypoints: int, active_joints: list, soft_lim=0):
+    def __init__(
+        self, robot, num_waypoints: int, active_joints: list, soft_lim=0
+    ):
         super().__init__(robot, num_waypoints, active_joints, soft_lim=0)
         self.n_set = 20
         self.pool_q = np.zeros((self.n_set, len(self.active_joints)))
@@ -256,7 +263,8 @@ class WaypointsGeneration(CubicSpline):
         assert np.array(soft_limit_pool).shape == (
             3,
             len(self.active_joints),
-        ), "input a vector of soft limit pool with a shape of (3, len(activejoints)"
+        ), "input a vector of soft limit pool with a shape of\
+            (3, len(activejoints)"
         lim_q = soft_limit_pool[0, :]
         lim_dq = soft_limit_pool[1, :]
         lim_ddq = soft_limit_pool[2, :]
@@ -285,10 +293,12 @@ class WaypointsGeneration(CubicSpline):
 
             k = 1.5  # take accel limits as k tims of vel limts
             new_upper_ddq[i] = k * (
-                self.upper_dq[i] - lim_ddq[i] * abs(self.upper_dq[i] - self.lower_dq[i])
+                self.upper_dq[i]
+                - lim_ddq[i] * abs(self.upper_dq[i] - self.lower_dq[i])
             )
             new_lower_ddq[i] = k * (
-                self.lower_dq[i] + lim_ddq[i] * abs(self.upper_dq[i] - self.lower_dq[i])
+                self.lower_dq[i]
+                + lim_ddq[i] * abs(self.upper_dq[i] - self.lower_dq[i])
             )
 
             step_q = (new_upper_q[i] - new_lower_q[i]) / (self.n_set - 1)
@@ -331,13 +341,17 @@ class WaypointsGeneration(CubicSpline):
                 )
         else:
             for i in range(len(self.active_joints)):
-                wps_rand[:, i] = np.random.choice(self.pool_q[:, i], self.num_waypoints)
+                wps_rand[:, i] = np.random.choice(
+                    self.pool_q[:, i], self.num_waypoints
+                )
 
         if vel_wp_init is not None:
             vel_wps_rand[0, :] = vel_wp_init
             if not vel_set_zero:
                 for i in range(len(self.active_joints)):
-                    vel_wps_rand[range(1, self.num_waypoints), i] = np.random.choice(
+                    vel_wps_rand[
+                        range(1, self.num_waypoints), i
+                    ] = np.random.choice(
                         self.pool_dq[:, i], self.num_waypoints - 1
                     )
         else:
@@ -351,7 +365,9 @@ class WaypointsGeneration(CubicSpline):
             acc_wps_rand[0, :] = vel_wp_init
             if not acc_set_zero:
                 for i in range(len(self.active_joints)):
-                    acc_wps_rand[range(1, self.num_waypoints), i] = np.random.choice(
+                    acc_wps_rand[
+                        range(1, self.num_waypoints), i
+                    ] = np.random.choice(
                         self.pool_ddq[:, i], self.num_waypoints - 1
                     )
         else:
@@ -360,7 +376,11 @@ class WaypointsGeneration(CubicSpline):
                     acc_wps_rand[:, i] = np.random.choice(
                         self.pool_ddq[:, i], self.num_waypoints
                     )
-        return wps_rand.transpose(), vel_wps_rand.transpose(), acc_wps_rand.transpose()
+        return (
+            wps_rand.transpose(),
+            vel_wps_rand.transpose(),
+            acc_wps_rand.transpose(),
+        )
 
     def gen_equal_wp(self, wp_init=None, vel_wp_init=None, acc_wp_init=None):
         """Generate equal waypoints everywhere same as first waypoints

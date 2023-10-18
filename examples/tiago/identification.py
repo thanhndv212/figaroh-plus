@@ -12,27 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from numpy.core.arrayprint import DatetimeFormat
-from datetime import datetime
-import pinocchio as pin
-from pinocchio.robot_wrapper import RobotWrapper
-from pinocchio.visualize import GepettoVisualizer, MeshcatVisualizer
 
-from sys import argv
 import os
 from os.path import dirname, join, abspath
-import time
-
 from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-
 import numpy as np
-from numpy.linalg import norm, solve
-from scipy import linalg, signal
-
+from scipy import signal
 import pandas as pd
-import json
-import csv
 import yaml
 from yaml.loader import SafeLoader
 import pprint
@@ -43,12 +29,8 @@ from figaroh.tools.regressor import (
     build_regressor_basic,
     build_regressor_reduced,
     get_index_eliminate,
-    eliminate_non_dynaffect,
-    add_actuator_inertia,
-    add_friction,
-    add_joint_offset,
 )
-from figaroh.tools.qrdecomposition import get_baseParams, double_QR
+from figaroh.tools.qrdecomposition import double_QR
 
 
 # create a robot object
@@ -150,7 +132,16 @@ ka_arm5 = -0.087
 ka_arm6 = -0.0613
 ka_arm7 = -0.0613
 ka = [ka_tor, ka_arm1, ka_arm2, ka_arm3, ka_arm4, ka_arm5, ka_arm6, ka_arm7]
-red = [red_tor, red_arm1, red_arm2, red_arm3, red_arm4, red_arm5, red_arm6, red_arm7]
+red = [
+    red_tor,
+    red_arm1,
+    red_arm2,
+    red_arm3,
+    red_arm4,
+    red_arm5,
+    red_arm6,
+    red_arm7,
+]
 for i in range(len(red)):
     if i == 0:
         tau[:, i] = red[i] * ka[i] * tau[:, i] + 193
@@ -259,7 +250,7 @@ W_e = build_regressor_reduced(W, idx_e)
 print(W_e.shape)
 # eliminate zero crossing if considering friction model
 
-#######separate link-by-link and parallel decimate########
+# separate link-by-link and parallel decimate########
 # joint torque
 tau_dec = []
 for i in range(len(params_settings["idx_act_joints"])):
@@ -296,16 +287,18 @@ for i in range(len(params_settings["idx_act_joints"])):
 # rejoining sub  regresosrs into one complete regressor
 W_rf = np.zeros((tau_rf.shape[0], W_list[0].shape[1]))
 for i in range(len(W_list)):
-    W_rf[range(i * W_list[i].shape[0], (i + 1) * W_list[i].shape[0]), :] = W_list[i]
+    W_rf[
+        range(i * W_list[i].shape[0], (i + 1) * W_list[i].shape[0]), :
+    ] = W_list[i]
 
 # time
 t_dec = signal.decimate(t[:, 0], q=10, zero_phase=True)
 
 
 # calculate base parameters
-W_b, bp_dict, params_b, phi_b, phi_std = double_QR(tau_rf, W_rf, params_r, params_std)
-# import pprint
-# pprint.pprint(bp_dict)
+W_b, bp_dict, params_b, phi_b, phi_std = double_QR(
+    tau_rf, W_rf, params_r, params_std
+)
 print("condition number: ", np.linalg.cond(W_b))
 print(
     "rmse norm (N/m): ",
@@ -333,7 +326,9 @@ for i in range(len(params_settings["idx_act_joints"])):
         axs2[i].plot(t_dec, tau_dec[i], color="red", label="effort measured")
         axs2[i].plot(
             t_dec,
-            tau_base[range(i * tau_dec[i].shape[0], (i + 1) * tau_dec[i].shape[0])],
+            tau_base[
+                range(i * tau_dec[i].shape[0], (i + 1) * tau_dec[i].shape[0])
+            ],
             color="green",
             label="effort estimated",
         )
@@ -345,16 +340,19 @@ for i in range(len(params_settings["idx_act_joints"])):
         )
         axs2[i].set_ylabel("torso", fontsize=25)
         axs2[i].tick_params(labelbottom=False, bottom=False)
-        # axs2[i].axhline(eff_lims[i], t[0], t[-1])
         axs2[i].grid()
     elif i < 8:
         axs2[i].plot(t_dec, tau_dec[i], color="red")
         axs2[i].plot(
             t_dec,
-            tau_base[range(i * tau_dec[i].shape[0], (i + 1) * tau_dec[i].shape[0])],
+            tau_base[
+                range(i * tau_dec[i].shape[0], (i + 1) * tau_dec[i].shape[0])
+            ],
             color="green",
         )
-        axs2[i].plot(t, tau_ref[range(i * Ntotal, (i + 1) * Ntotal)], color="blue")
+        axs2[i].plot(
+            t, tau_ref[range(i * Ntotal, (i + 1) * Ntotal)], color="blue"
+        )
         axs2[i].set_ylabel(
             "arm %d" % i,
             fontsize=25,
@@ -367,37 +365,5 @@ for i in range(len(params_settings["idx_act_joints"])):
             axs2[i].tick_params(axis="y", color="black")
             axs2[i].tick_params(labelbottom=True, bottom=True)
 
-        # axs2[i].axhline(eff_lims[i], t[0], t[-1])
-# axs2[8].plot(t, ddq[:, 0])
-
 plot2.legend()
 plt.show()
-
-
-# x = np.arange(len(params_b))
-# width = 0.5
-# fig, ax = plt.subplots()
-# rects1 = ax.bar(x - width/2, phi_b, width, label='identified')
-# rects2 = ax.bar(x + width/2, phi_std, width, label='reference')
-
-# # Add some text for labels, title and custom x-axis tick labels, etc.
-# ax.legend()
-
-
-# plt.grid()
-# plt.show(block=True)
-
-
-# std_xr_ols = relative_stdev(W_b, phi_b, tau_rf)
-# path_to_folder = dirname(dirname(str(abspath(__file__))))
-# dt = datetime.now()
-# current_time = dt.strftime("%d_%b_%Y_%H%M")
-# bp_csv = join(path_to_folder,
-#               'identification_toolbox/src/tiago/tiago_bp_{current_time}.csv')
-# # pd.DataFrame(bp_dict).to_csv(bp_csv, index=True)
-# with open(bp_csv, "w") as output_file:
-#     w = csv.writer(output_file)
-#     for i in range(len(params_b)):
-#         w.writerow(
-#             [params_b[i], phi_b[i], phi_std[i], 100*std_xr_ols[i]]
-#         )
