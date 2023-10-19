@@ -285,7 +285,7 @@ class TiagoOptimalCalibration(TiagoCalibration):
         ), "Infeasible design, try to increase NbSample."
 
         print(len(chosen_config), "configs are chosen: ", chosen_config)
-
+        self.nb_chosen = len(chosen_config)
         opt_ids = chosen_config
         opt_configs_values = []
         for opt_id in opt_ids:
@@ -298,21 +298,22 @@ class TiagoOptimalCalibration(TiagoCalibration):
         )
         return True
 
-    def write_to_file(self):
+    def write_to_file(self, name_=None):
         """
         Write optimal configurations to file.
         """
         assert (
             self.calculate_optimal_configurations()
         ), "Calculate optimal configurations first."
-
-        with open("modified.yaml", "w") as stream:
+        if name_ is None:
+            name_ = "data/tiago_optimal_configurations.yaml"
+        with open(name_, "w") as stream:
             try:
                 yaml.dump(
                     self.opt_configs,
                     stream,
                     sort_keys=False,
-                    default_flow_style=None,
+                    default_flow_style=True,
                 )
             except yaml.YAMLError as exc:
                 print(exc)
