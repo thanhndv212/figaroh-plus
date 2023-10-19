@@ -416,18 +416,18 @@ def write_to_xacro(tiago_calib, file_type="yaml"):
     param = tiago_calib.param
 
     calibration_parameters = {}
-    calibration_parameters["camera_position_x"] = calib_result["base_px"]
-    calibration_parameters["camera_position_y"] = calib_result["base_py"]
-    calibration_parameters["camera_position_z"] = calib_result["base_pz"]
-    calibration_parameters["camera_orientation_r"] = calib_result["base_phix"]
-    calibration_parameters["camera_orientation_p"] = calib_result["base_phiy"]
-    calibration_parameters["camera_orientation_y"] = calib_result["base_phiz"]
+    calibration_parameters["camera_position_x"] = float(calib_result["base_px"])
+    calibration_parameters["camera_position_y"] = float(calib_result["base_py"])
+    calibration_parameters["camera_position_z"] = float(calib_result["base_pz"])
+    calibration_parameters["camera_orientation_r"] = float(calib_result["base_phix"])
+    calibration_parameters["camera_orientation_p"] = float(calib_result["base_phiy"])
+    calibration_parameters["camera_orientation_y"] = float(calib_result["base_phiz"])
 
     for idx in param["actJoint_idx"]:
         joint = model.names[idx]
         for key in calib_result.keys():
             if joint in key:
-                calibration_parameters[joint + "_offset"] = calib_result[key]
+                calibration_parameters[joint + "_offset"] = float(calib_result[key])
 
     if file_type == "xacro":
         path_save_xacro = abspath(
@@ -451,13 +451,21 @@ def write_to_xacro(tiago_calib, file_type="yaml"):
             "data/tiago_master_calibration_{}.yaml".format(param["NbSample"])
         )
         with open(path_save_yaml, "w") as output_file:
-            for parameter in calibration_parameters.keys():
-                update_name = parameter
-                update_value = calibration_parameters[parameter]
-                update_line = "{}:{}".format(update_name, update_value)
-                output_file.write(update_line)
-                output_file.write("\n")
-
+            # for parameter in calibration_parameters.keys():
+            #     update_name = parameter
+            #     update_value = calibration_parameters[parameter]
+            #     update_line = "{}:{}".format(update_name, update_value)
+            #     output_file.write(update_line)
+            #     output_file.write("\n")
+            try:
+                yaml.dump(
+                    calibration_parameters,
+                    output_file,
+                    sort_keys=False,
+                    default_flow_style=False,
+                )
+            except yaml.YAMLError as exc:
+                print(exc)
 
 def main():
     tiago = load_robot("data/tiago_hey5.urdf")
