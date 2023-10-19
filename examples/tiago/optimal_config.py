@@ -13,23 +13,18 @@
 # limitations under the License.
 
 import time
-from os.path import abspath
-import os
 import random
 import numpy as np
 import matplotlib.pyplot as plt
 import yaml
 from yaml.loader import SafeLoader
-import pprint
 import picos as pc
 import pandas as pd
 from figaroh.calibration.calibration_tools import (
-    get_param_from_yaml,
     calculate_base_kinematics_regressor,
     rank_in_configuration,
-    load_data,
 )
-from figaroh.tools.robot import Robot
+from tiago_tools import load_robot, TiagoCalibration
 
 
 def rearrange_rb(R_b, param):
@@ -64,7 +59,7 @@ def sub_info_matrix(R, param):
     subX_list = []
     idex = param["calibration_index"]
     for it in range(param["NbSample"]):
-        sub_R = R[it * idex: (it * idex + idex), :]
+        sub_R = R[it * idex : (it * idex + idex), :]
         subX = np.matmul(sub_R.T, sub_R)
         subX_list.append(subX)
     subX_dict = dict(zip(np.arange(param["NbSample"]), subX_list))
@@ -204,156 +199,223 @@ class SOCP:
         return w_list, w_dict_sort
 
 
-# Load robot model and create a dictionary containing reserved constants
-# Specify the path to tiago model
-# ros_package_path = os.getenv('ROS_PACKAGE_PATH')
-# package_dirs = ros_package_path.split(':')
-# robot_dir = package_dirs[0] + "/example-robot-data/robots"
+class TiagoOptimalCalibration(TiagoCalibration):
+    """
+    Generate optimal configurations for calibration.
+    """
 
-# # Create a robot object with the specified URDF file and package directories
-# robot = Robot(
-#     robot_dir + "/tiago_description/robots/tiago.urdf",
-#     package_dirs=package_dirs,
-# )
-ros_package_path = os.getenv("ROS_PACKAGE_PATH")
-package_dirs = ros_package_path.split(":")
-robot = Robot(
-    "data/tiago.urdf",
-    package_dirs=package_dirs,
-)
-model = robot.model
-data = robot.data
+    def __init__(self, robot, config_file):
+        super().__init__(robot, config_file)
+        self._sampleConfigs_file = self.param["sample_configs_file"]
+        if self.param["calib_model"] == "full_params":
+            self.minNbChosen = (
+                int(
+                    len(self.param["actJoint_idx"])
+                    * 6
+                    / self.param["calibration_index"]
+                )
+                + 1
+            )
+        elif self.param["calib_model"] == "joint_offset":
+            self.minNbChosen = (
+                int(
+                    len(self.param["actJoint_idx"])
+                    / self.param["calibration_index"]
+                )
+                + 1
+            )
+        else:
+            assert False, "Calibration model not supported."
 
-# Load calibration configuration from YAML file
-with open("config/tiago_config.yaml", "r") as f:
-    config = yaml.load(f, Loader=SafeLoader)
-    pprint.pprint(config["calibration"])
-calib_data = config["calibration"]
-param = get_param_from_yaml(robot, calib_data)
+    def initialize(self):
+        """
+        Initialize the generation process.
+        """
+        self.load_data_set()
+        self.calculate_regressor()
+        self.calculate_detroot_whole()
 
-# Read sample configuration pool from file, otherwise random configs
-q = []
-with open(
-    "data/tiago_calibration_joint_configurations_500_pmb2_hey5.yaml", "r"
-) as file:
-    configs = yaml.load(file, Loader=SafeLoader)
+    def solve(self):
+        """
+        Solve the optimization problem.
+        """
+        self.calculate_optimal_configurations()
+        self.write_to_file()
+        self.plot()
 
-q_jointNames = configs["calibration_joint_names"]
-q_jointConfigs = np.array(configs["calibration_joint_configurations"]).T
-df = pd.DataFrame.from_dict(dict(zip(q_jointNames, q_jointConfigs)))
-q = np.zeros([len(df), robot.q0.shape[0]])
-for i in range(len(df)):
-    for j, name in enumerate(q_jointNames):
-        jointidx = rank_in_configuration(model, name)
-        q[i, jointidx] = df[name][i]
-path = abspath("data/eye_hand_calibration_recorded_data_500.csv")
+    def load_data_set(self):
+        """
+        Load data from yaml file.
+        """
+        if "csv" in self._sampleConfigs_file:
+            self.load_data_set()
+        elif "yaml" in self._sampleConfigs_file:
+            with open(self._sampleConfigs_file, "r") as file:
+                self._configs = yaml.load(file, Loader=SafeLoader)
 
-# # Load data from file
-_, q = load_data(path, model, param)
-# Calculate regressor and individual information matrix
-(
-    Rrand_b,
-    R_b,
-    R_e,
-    paramsrand_base,
-    paramsrand_e,
-) = calculate_base_kinematics_regressor(q, model, data, param)
-R_rearr = rearrange_rb(R_b, param)
-subX_list, subX_dict = sub_info_matrix(R_rearr, param)
-for ii, param_b in enumerate(paramsrand_base):
-    print(ii + 1, param_b)
+            q_jointNames = self._configs["calibration_joint_names"]
+            q_jointConfigs = np.array(
+                self._configs["calibration_joint_configurations"]
+            ).T
 
-# Find optimal combination of data samples from a candidate pool
-# Required minimum number of configurations
-if param["calib_model"] == "full_params":
-    NbChosen = (
-        int(len(param["actJoint_idx"]) * 6 / param["calibration_index"]) + 1
-    )
-elif param["calib_model"] == "joint_offset":
-    NbChosen = int(len(param["actJoint_idx"]) / param["calibration_index"]) + 1
+            df = pd.DataFrame.from_dict(
+                dict(zip(q_jointNames, q_jointConfigs))
+            )
 
-# Picos optimization (A-optimality, C-optimality, D-optimality)
-prev_time = time.time()
-M_whole = np.matmul(R_rearr.T, R_rearr)
-det_root_whole = pc.DetRootN(M_whole)
-print("detrootn of whole matrix:", det_root_whole)
+            q = np.zeros([len(df), self._robot.q0.shape[0]])
+            for i in range(len(df)):
+                for j, name in enumerate(q_jointNames):
+                    jointidx = rank_in_configuration(self.model, name)
+                    q[i, jointidx] = df[name][i]
+            self.q_measured = q
 
-SOCP_algo = SOCP(subX_dict, param)
-w_list, w_dict_sort = SOCP_algo.solve()
-solve_time = time.time() - prev_time
-print("solve time of socp: ", solve_time)
+            # update number of samples
+            self.param["NbSample"] = self.q_measured.shape[0]
+        else:
+            assert False, "Data file format not supported."
 
-min_NbChosen = NbChosen
+    def calculate_regressor(self):
+        """
+        Calculate regressor.
+        """
+        (
+            Rrand_b,
+            R_b,
+            R_e,
+            paramsrand_base,
+            paramsrand_e,
+        ) = calculate_base_kinematics_regressor(
+            self.q_measured, self.model, self.data, self.param
+        )
+        for ii, param_b in enumerate(paramsrand_base):
+            print(ii + 1, param_b)
 
-# Select optimal config based on values of weight
-eps = 1e-5
-chosen_config = []
-for i in list(w_dict_sort.keys()):
-    if w_dict_sort[i] > eps:
-        chosen_config.append(i)
-if len(chosen_config) < min_NbChosen:
-    print("Infeasible design")
-else:
-    print(len(chosen_config), "configs are chosen: ", chosen_config)
+        # Rearrange the kinematic regressor by sample numbered order
+        self.R_rearr = rearrange_rb(R_b, self.param)
+        subX_list, subX_dict = sub_info_matrix(self.R_rearr, self.param)
+        self._subX_dict = subX_dict
+        self._subX_list = subX_list
+        return True
 
-# Save congfigs to file
-opt_ids = chosen_config
-opt_configs_values = []
-for opt_id in opt_ids:
-    opt_configs_values.append(
-        configs["calibration_joint_configurations"][opt_id]
-    )
+    def calculate_detroot_whole(self):
+        """
+        Calculate detrootn of whole matrix
+        """
+        assert self.calculate_regressor(), "Calculate regressor first."
+        M_whole = np.matmul(self.R_rearr.T, self.R_rearr)
+        self.detroot_whole = pc.DetRootN(M_whole)
+        print("detrootn of whole matrix:", self.detroot_whole)
 
-opt_configs = configs.copy()
-opt_configs["calibration_joint_configurations"] = list(opt_configs_values)
+    def calculate_optimal_configurations(self):
+        """
+        Calculate optimal configurations.
+        """
+        assert self.calculate_regressor(), "Calculate regressor first."
 
-# print(opt_configs)
-# with open("data/optimal_tiago_calib_configs_pmb2_hey5.yaml", "w") as output:
-#     yaml.safe_dump(opt_configs, output)
-# import json
+        # Picos optimization (A-optimality, C-optimality, D-optimality)
+        prev_time = time.time()
+        SOCP_algo = SOCP(self._subX_dict, self.param)
+        self.w_list, self.w_dict_sort = SOCP_algo.solve()
+        solve_time = time.time() - prev_time
+        print("solve time of socp: ", solve_time)
 
-# json.dump(
-#     opt_configs_values,
-#     open("data/optimal_tiago_calib_configs_pmb2_hey5.txt", "w"),
-# )
+        # Select optimal config based on values of weight
+        self.eps_opt = 1e-5
+        chosen_config = []
+        for i in list(self.w_dict_sort.keys()):
+            if self.w_dict_sort[i] > self.eps_opt:
+                chosen_config.append(i)
 
-# Plotting
-det_root_list = []
-n_key_list = []
+        assert (
+            len(chosen_config) >= self.minNbChosen
+        ), "Infeasible design, try to increase NbSample."
 
-# Calculate det_root_list and n_key_list
-for nbc in range(min_NbChosen, param["NbSample"] + 1):
-    n_key = list(w_dict_sort.keys())[0:nbc]
-    n_key_list.append(n_key)
-    M_i = pc.sum(w_dict_sort[i] * subX_list[i] for i in n_key)
-    det_root_list.append(pc.DetRootN(M_i))
+        print(len(chosen_config), "configs are chosen: ", chosen_config)
 
-idx_subList = range(len(det_root_list))
+        opt_ids = chosen_config
+        opt_configs_values = []
+        for opt_id in opt_ids:
+            opt_configs_values.append(
+                self._configs["calibration_joint_configurations"][opt_id]
+            )
+        self.opt_configs = self._configs.copy()
+        self.opt_configs["calibration_joint_configurations"] = list(
+            opt_configs_values
+        )
+        return True
 
-# Create subplots
-fig, ax = plt.subplots(2)
+    def write_to_file(self):
+        """
+        Write optimal configurations to file.
+        """
+        assert (
+            self.calculate_optimal_configurations()
+        ), "Calculate optimal configurations first."
 
-# Plot D-optimality criterion
-ratio = det_root_whole / det_root_list[-1]
-plot_range = param["NbSample"] - NbChosen
-ax[0].set_ylabel("D-optimality criterion", fontsize=20)
-ax[0].tick_params(axis="y", labelsize=18)
-ax[0].plot(ratio * np.array(det_root_list[:plot_range]))
-ax[0].spines["top"].set_visible(False)
-ax[0].spines["right"].set_visible(False)
-ax[0].grid(True, linestyle="--")
-ax[0].legend(fontsize=18)
+        with open("modified.yaml", "w") as stream:
+            try:
+                yaml.dump(
+                    self.opt_configs,
+                    stream,
+                    sort_keys=False,
+                    default_flow_style=None,
+                )
+            except yaml.YAMLError as exc:
+                print(exc)
+        return True
 
-# Plot quality of estimation
-ax[1].set_ylabel("Weight values (log)", fontsize=20)
-ax[1].set_xlabel("Data sample", fontsize=20)
-ax[1].tick_params(axis="both", labelsize=18)
-ax[1].tick_params(axis="y", labelrotation=30)
-ax[1].scatter(
-    np.arange(len(list(w_dict_sort.values()))), list(w_dict_sort.values())
-)
-ax[1].set_yscale("log")
-ax[1].spines["top"].set_visible(False)
-ax[1].spines["right"].set_visible(False)
-ax[1].grid(True, linestyle="--")
-plt.show()
+    def plot(self):
+        # Plotting
+        det_root_list = []
+        n_key_list = []
+
+        # Calculate det_root_list and n_key_list
+        for nbc in range(self.minNbChosen, self.param["NbSample"] + 1):
+            n_key = list(self.w_dict_sort.keys())[0:nbc]
+            n_key_list.append(n_key)
+            M_i = pc.sum(
+                self.w_dict_sort[i] * self._subX_list[i] for i in n_key
+            )
+            det_root_list.append(pc.DetRootN(M_i))
+
+        # Create subplots
+        fig, ax = plt.subplots(2)
+
+        # Plot D-optimality criterion
+        ratio = self.detroot_whole / det_root_list[-1]
+        plot_range = self.param["NbSample"] - self.minNbChosen
+        ax[0].set_ylabel("D-optimality criterion", fontsize=20)
+        ax[0].tick_params(axis="y", labelsize=18)
+        ax[0].plot(ratio * np.array(det_root_list[:plot_range]))
+        ax[0].spines["top"].set_visible(False)
+        ax[0].spines["right"].set_visible(False)
+        ax[0].grid(True, linestyle="--")
+        ax[0].legend(fontsize=18)
+
+        # Plot quality of estimation
+        ax[1].set_ylabel("Weight values (log)", fontsize=20)
+        ax[1].set_xlabel("Data sample", fontsize=20)
+        ax[1].tick_params(axis="both", labelsize=18)
+        ax[1].tick_params(axis="y", labelrotation=30)
+        ax[1].scatter(
+            np.arange(len(list(self.w_dict_sort.values()))),
+            list(self.w_dict_sort.values()),
+        )
+        ax[1].set_yscale("log")
+        ax[1].spines["top"].set_visible(False)
+        ax[1].spines["right"].set_visible(False)
+        ax[1].grid(True, linestyle="--")
+        plt.show()
+
+        return True
+
+
+def main():
+    robot = load_robot("data/tiago_hey5.urdf")
+    tiago_optcalib = TiagoOptimalCalibration(robot, "config/tiago_config.yaml")
+    tiago_optcalib.initialize()
+    tiago_optcalib.solve()
+
+
+if __name__ == "__main__":
+    main()
