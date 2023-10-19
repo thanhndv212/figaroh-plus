@@ -1,16 +1,16 @@
-camera_position_x:0.09235329034016931
-camera_position_y:0.0911779019959962
-camera_position_z:-0.01904344255378423
-camera_orientation_r:-1.5685996600244396
-camera_orientation_p:0.009835912907695666
-camera_orientation_y:0.028200840398446492
-head_2_joint_offset:-0.014147347536290308
-head_1_joint_offset:-0.012989764971417978
-torso_lift_joint_offset:4.082326110123257e-05
-arm_1_joint_offset:0.05703692346601275
-arm_2_joint_offset:-0.06532994147977031
-arm_3_joint_offset:0.012112352265263717
-arm_4_joint_offset:0.015530217898229686
-arm_5_joint_offset:0.02391351707341917
-arm_6_joint_offset:-0.021480448197096425
-arm_7_joint_offset:-0.08205515328951395
+camera_position_x: 0.09235329034016931
+camera_position_y: 0.0911779019959962
+camera_position_z: -0.01904344255378423
+camera_orientation_r: -1.5685996600244396
+camera_orientation_p: 0.009835912907695666
+camera_orientation_y: 0.028200840398446492
+head_2_joint_offset: -0.014147347536290308
+head_1_joint_offset: -0.012989764971417978
+torso_lift_joint_offset: 4.082326110123257e-05
+arm_1_joint_offset: 0.05703692346601275
+arm_2_joint_offset: -0.06532994147977031
+arm_3_joint_offset: 0.012112352265263717
+arm_4_joint_offset: 0.015530217898229686
+arm_5_joint_offset: 0.02391351707341917
+arm_6_joint_offset: -0.021480448197096425
+arm_7_joint_offset: -0.08205515328951395
