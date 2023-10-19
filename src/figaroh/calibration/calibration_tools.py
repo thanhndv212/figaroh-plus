@@ -150,26 +150,35 @@ def get_param_from_yaml(robot, calib_data):
             param_name.append(elastic_gain[i])
 
     param = {
-        'robot_name': robot_name,
-        'q0': q0,
-        'x_opt_prev': x_opt_prev,
-        'NbSample': NbSample,
-        'start_frame': start_frame,
-        'end_frame': end_frame,
-        'IDX_TOOL': IDX_TOOL,
-        'tool_joint': tool_joint,
-        'eps': 1e-3,
-        'config_idx': config_idx,
-        'actJoint_idx': actJoint_idx,
-        'PLOT': 0,
-        'NbMarkers': NbMarkers,
-        'calib_model': calib_data['calib_level'],  # 'joint_offset' / 'full_params'
-        'measurability': measurability,
-        'calibration_index': calib_idx,  # 3 / 6
-        'NbJoint': NbJoint,
-        'free_flyer': calib_data['free_flyer'],
-        'param_name': param_name,
-        'non_geom': calib_data['non_geom'],
+        "robot_name": robot_name,
+        "q0": q0,
+        "x_opt_prev": x_opt_prev,
+        "NbSample": NbSample,
+        "start_frame": start_frame,
+        "end_frame": end_frame,
+        "base_to_ref_frame": base_to_ref_frame,
+        "ref_frame": ref_frame,
+        "IDX_TOOL": IDX_TOOL,
+        "tool_joint": tool_joint,
+        "eps": 1e-3,
+        "config_idx": config_idx,
+        "actJoint_idx": actJoint_idx,
+        "PLOT": 0,
+        "NbMarkers": NbMarkers,
+        "calib_model": calib_data[
+            "calib_level"
+        ],  # 'joint_offset' / 'full_params'
+        "measurability": measurability,
+        "calibration_index": calib_idx,  # 3 / 6
+        "NbJoint": NbJoint,
+        "free_flyer": calib_data["free_flyer"],
+        "param_name": param_name,
+        "non_geom": calib_data["non_geom"],
+        "camera_pose": camera_pose,
+        "tip_pose": tip_pose,
+        "coeff_regularize": calib_data["coeff_regularize"],
+        "data_file": calib_data["data_file"],
+        "sample_configs_file": calib_data["sample_configs_file"],
     }
     pprint.pprint(param)
     return param

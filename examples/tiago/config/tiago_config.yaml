@@ -16,7 +16,12 @@ calibration:
     - ref_joint: arm_7_joint
       measure: [True, True, True, False, False, False]  
   free_flyer: False
-  nb_sample: 35
+  camera_pose: [0.0908, 0.08, 0.0, -1.57, 0.0, 0.0]
+  tip_pose: [0.2163, 0.03484, 0.004, 0.0, -1.57, -1.57]
+  coeff_regularize: 0.01
+  data_file: data/eye_hand_calibration_recorded_data_500.csv
+  sample_configs_file: data/tiago_calibration_joint_configurations_500_pmb2_hey5.yaml
+  nb_sample: 500
 identification:
   robot_params:
     - q_lim_def: 1.57
