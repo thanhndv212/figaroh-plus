@@ -206,6 +206,7 @@ def get_param_from_yaml(robot, calib_data):
         "tip_pose": tip_pose,
         "coeff_regularize": calib_data["coeff_regularize"],
         "data_file": calib_data["data_file"],
+        "sample_configs_file": calib_data["sample_configs_file"],
     }
     pprint.pprint(param)
     return param
