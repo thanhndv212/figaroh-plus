@@ -288,9 +288,31 @@ def get_joint_offset(joint_names):
             Output: joint_off: a dictionary of joint offsets.
     """
     joint_off = []
-
-    for i, name in enumerate(joint_names):
-        joint_off.append("off_" + name)
+    joint_names = list(model.names[1:])
+    joints = list(model.joints[1:])
+    assert len(joint_names) == len(
+        joints
+    ), "Number of jointnames does not match number of joints! Please check\
+        imported model."
+    for id, joint in enumerate(joints):
+        name = joint_names[id]
+        shortname = joint.shortname()
+        if model.name == "canopies":
+            if "RevoluteUnaligned" in shortname:
+                shortname = shortname.replace("RevoluteUnaligned", "RZ")
+        for i in range(joint.nv):
+            if i > 0:
+                offset_param = (
+                    shortname.replace("JointModel", "offset")
+                    + "{}".format(i+1)
+                    + "_"
+                    + name
+                )
+            else:
+                offset_param = (
+                    shortname.replace("JointModel", "offset") + "_" + name
+                )
+            joint_off.append(offset_param)
 
     phi_jo = [0] * len(joint_off)  # default zero values
     joint_off = dict(zip(joint_off, phi_jo))
