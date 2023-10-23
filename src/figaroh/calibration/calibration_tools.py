@@ -343,7 +343,7 @@ def get_joint_offset(model):
             if i > 0:
                 offset_param = (
                     shortname.replace("JointModel", "offset")
-                    + f"{i+1}"
+                    + "{}".format(i+1)
                     + "_"
                     + name
                 )
