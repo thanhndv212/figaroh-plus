@@ -213,6 +213,7 @@ def get_param_from_yaml(robot, calib_data):
         "coeff_regularize": calib_data["coeff_regularize"],
         "data_file": calib_data["data_file"],
         "sample_configs_file": calib_data["sample_configs_file"],
+        "outlier_eps": calib_data['outlier_eps']
     }
     pprint.pprint(param)
     return param
@@ -338,7 +339,7 @@ def get_joint_offset(joint_names):
             if i > 0:
                 offset_param = (
                     shortname.replace("JointModel", "offset")
-                    + "{}".format(i+1)
+                    + "{}".format(i + 1)
                     + "_"
                     + name
                 )
