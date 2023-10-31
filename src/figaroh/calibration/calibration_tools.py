@@ -106,8 +106,21 @@ def get_param_from_yaml(robot, calib_data):
     frames = [f.name for f in robot.model.frames]
     assert (start_frame in frames), "Start_frame {} does not exist.".format(start_frame)
 
-    assert (end_frame in frames), "End_frame {} does not exist.".format(end_frame)
-
+    assert end_frame in frames, "End_frame {} does not exist.".format(
+        end_frame
+    )
+    if base_to_ref_frame != "None":
+        assert (
+            base_to_ref_frame in frames
+        ), "base_to_ref_frame {} does not exist.".format(base_to_ref_frame)
+    else:
+        base_to_ref_frame = None
+    if ref_frame != "None":
+        assert ref_frame in frames, "ref_frame {} does not exist.".format(
+            ref_frame
+        )
+    else:
+        ref_frame = None
     # q0: default zero configuration
     q0 = robot.q0
     NbSample = calib_data['nb_sample']
@@ -134,7 +147,28 @@ def get_param_from_yaml(robot, calib_data):
 
     # list of calibrating parameters name
     param_name = []
-    if calib_data['non_geom']:
+    if base_to_ref_frame is not None:
+        base_tpl = [
+            "base_px",
+            "base_py",
+            "base_pz",
+            "base_phix",
+            "base_phiy",
+            "base_phiz",
+        ]
+        param_name += base_tpl
+    else:
+        if calib_data["calib_level"] == "joint_offset":
+            base_tpl = [
+                "base_px",
+                "base_py",
+                "base_pz",
+                "base_phix",
+                "base_phiy",
+                "base_phiz",
+            ]
+            param_name += base_tpl
+    if calib_data["non_geom"]:
         # list of elastic gain parameter names
         elastic_gain = []
         axis = ['kx', 'ky', 'kz']
@@ -641,9 +675,36 @@ def update_forward_kinematics(model, data, var, q, param, verbose=0):
     # convert translation: add a vector of 3 to SE3.translation
     # convert orientation: convert SE3.rotation 3x3 matrix to vector rpy, add
     #  to vector rpy, convert back to to 3x3 matrix
-    axis_tpl = ['d_px', 'd_py', 'd_pz', 'd_phix', 'd_phiy', 'd_phiz']
-    elas_tpl = ['kx', 'ky', 'kz']
-    pee_tpl = ['pEEx', 'pEEy', 'pEEz', 'phiEEx', 'phiEEy','phiEEz']
+
+    # name reference of calibration parameters
+    if param["calib_model"] == "full_params":
+        axis_tpl = ["d_px", "d_py", "d_pz", "d_phix", "d_phiy", "d_phiz"]
+    elif param["calib_model"] == "joint_offset":
+        axis_tpl = [
+            "offsetPX",
+            "offsetPY",
+            "offsetPZ",
+            "offsetRX",
+            "offsetRY",
+            "offsetRZ",
+        ]
+    elas_tpl = [
+        "k_PX",
+        "k_PY",
+        "k_PZ",
+        "k_RX",
+        "k_RY",
+        "k_RZ",
+    ]  # ONLY REVOLUTE JOINT FOR NOW
+    pee_tpl = ["pEEx", "pEEy", "pEEz", "phiEEx", "phiEEy", "phiEEz"]
+    base_tpl = [
+        "base_px",
+        "base_py",
+        "base_pz",
+        "base_phix",
+        "base_phiy",
+        "base_phiz",
+    ]
     # order of joint in variables are arranged as in param['actJoint_idx']
     assert len(var) == len(param['param_name']), "Length of variables != length of params"
     param_dict = dict(zip(param['param_name'], var))
@@ -651,14 +712,37 @@ def update_forward_kinematics(model, data, var, q, param, verbose=0):
 
     # update model.jointPlacements
     updated_params = []
+    start_f = param["start_frame"]
+    end_f = param["end_frame"]
 
-    # base placement
-    # TODO: add axis of base
-    if 'base_placement' in list(param_dict.keys())[5]:
-        base_placement = cartesian_to_SE3(var[0: 6])
-        updated_params = param['param_name'][0:6]
-        
-    for j_id in param['actJoint_idx']:
+    # define transformation for camera frame
+    if param["base_to_ref_frame"] is not None:
+        start_f = param["ref_frame"]
+        # base frame to ref frame (i.e. Tiago: camera transformation)
+        base_tf = np.zeros(6)
+        for key in param_dict.keys():
+            for base_id, base_ax in enumerate(base_tpl):
+                if base_ax in key:
+                    base_tf[base_id] = param_dict[key]
+                    updated_params.append(key)
+        b_to_cam = get_rel_transform(
+            model, data, param["start_frame"], param["base_to_ref_frame"]
+        )
+        ref_to_cam = cartesian_to_SE3(base_tf)
+        cam_to_ref = ref_to_cam.actInv(pin.SE3.Identity())
+        bMo = b_to_cam * cam_to_ref
+    else:
+        if param["calib_model"] == "joint_offset":
+            base_tf = np.zeros(6)
+            for key in param_dict.keys():
+                for base_id, base_ax in enumerate(base_tpl):
+                    if base_ax in key:
+                        base_tf[base_id] = param_dict[key]
+                        updated_params.append(key)
+            bMo = cartesian_to_SE3(base_tf)
+
+    # update model.jointPlacements with joint 'full_params'/'joint_offset'
+    for j_id in param["actJoint_idx"]:
         xyz_rpy = np.zeros(6)
         j_name = model.names[j_id]
         for key in param_dict.keys():
@@ -889,60 +973,30 @@ def update_forward_kinematics_2(model, data, var, q, param, verbose=0):
                 model = update_joint_placement(model, j_id, -xyz_rpy)
 
         else:
-            oMee = get_rel_transform(model, data, param['start_frame'], param['end_frame'])
+            oMf = oMee
 
+        if param["base_to_ref_frame"] is not None:
+            oMf = bMo * oMf
+        else:
+            if param["calib_model"] == "joint_offset":
+                oMf = bMo * oMf
+        # final transform
+        trans = oMf.translation.tolist()
+        orient = pin.rpy.matrixToRpy(oMf.rotation).tolist()
+        loc = trans + orient
+        measure = []
+        for mea_id, mea in enumerate(param["measurability"]):
+            if mea:
+                measure.append(loc[mea_id])
+        PEE_marker[:, i] = np.array(measure)
+    PEE_marker = PEE_marker.flatten("C")
+    PEE = np.append(PEE, PEE_marker)
 
-        # update last frame if there is 
-        # if len(updated_params) < len(param_dict):
-        #     pee = np.zeros(6)
-        #     for n_id in range(len(updated_params), len(param_dict)):
-        #         for axis_id, axis in enumerate(pee_tpl):
-        #             if axis in param['param_name'][n_id]:
-        #                 if verbose==1:
-        #                     print("Updating end_effector frame [{}] with [{}]".format(axis, param['param_name'][n_id]))
-        #                 pee[axis_id] = var[n_id]
-        #     eeMf = cartesian_to_SE3(pee)
-        #     oMf = oMee*eeMf
-        # else:
-        #     oMf = oMee
-        
-        # # final transform
-        # trans = oMf.translation.tolist()
-        # orient = pin.rpy.matrixToRpy(oMf.rotation).tolist()
-        # loc = trans + orient
-        # measure = []
-        # for mea_id, mea in enumerate(param['measurability']):
-        #     if mea:
-        #         measure.append(loc[mea_id])
-        # PEE[:, i] = np.array(measure)
-        if len(updated_params) < len(param_dict):
-            # pee = np.zeros(6)
-            # for n_id in range(len(updated_params), len(param_dict)):
-            #     for axis_id, axis in enumerate(pee_tpl):
-            #         if axis in param['param_name'][n_id]:
-            #             if verbose==1:
-            #                 print("Updating last frame with [{}]".format(param['param_name'][n_id]))
-            #             pee[axis_id] = var[n_id]
-            #             updated_params.append(param['param_name'][n_id])
-            for marker_idx_ in range(1,param['NbMarkers']+1):
-                oMf = oMee*ee_frames[marker_idx_-1]
-                # final transform
-                trans = oMf.translation.tolist()
-                orient = pin.rpy.matrixToRpy(oMf.rotation).tolist()
-                loc = trans + orient
-                measure = []
-                for mea_id, mea in enumerate(param['measurability']):
-                    if mea:
-                        measure.append(loc[mea_id])
-                # PEE[(marker_idx-1)*param['calibration_index']:marker_idx*param['calibration_index'], i] = np.array(measure)
-                PEE[(marker_idx_-1)*param['calibration_index']:marker_idx_*param['calibration_index'], i] = np.array(measure)
-        
-            # assert len(updated_params) == len(param_dict), "Not all parameters are updated"
-            
-    PEE = PEE.flatten('C')
-    # revert model back to original 
-    assert origin_model.jointPlacements != model.jointPlacements, 'before revert'
-    for j_id in param['actJoint_idx']:
+    # revert model back to original
+    assert (
+        origin_model.jointPlacements != model.jointPlacements
+    ), "before revert"
+    for j_id in param["actJoint_idx"]:
         xyz_rpy = np.zeros(6)
         j_name = model.names[j_id]
         for key in param_dict.keys():
