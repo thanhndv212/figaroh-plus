@@ -32,11 +32,11 @@ import matplotlib.pyplot as plt
 
 
 class TiagoCalibration:
-    def __init__(self, robot, config_file):
+    def __init__(self, robot, config_file, del_list=[]):
         self._robot = robot
         self.model = self._robot.model
         self.data = self._robot.data
-
+        self.del_list_ = del_list
         self.load_param(config_file)
         self.nvars = len(self.param["param_name"])
 
@@ -50,7 +50,7 @@ class TiagoCalibration:
     def solve(self):
         self.solve_optimisation()
         self.calc_stddev()
-        if self.param['PLOT']:
+        if self.param["PLOT"]:
             self.plot()
 
     def plot(self):
@@ -94,7 +94,7 @@ class TiagoCalibration:
         Load the data set from the data file.
         """
         self.PEE_measured, self.q_measured = load_data(
-            self._data_path, self.model, self.param
+            self._data_path, self.model, self.param, self.del_list_
         )
 
     def cost_function(self, var):
@@ -131,9 +131,9 @@ class TiagoCalibration:
         iterate = True
         iter_max = 10
         count = 0
-        del_list = []
+        del_list_ = []
         res = _var_0
-        outlier_eps = 0.05
+        outlier_eps = self.param['outlier_eps']
 
         while count < iter_max and iterate:
             print("*" * 50)
@@ -187,20 +187,23 @@ class TiagoCalibration:
             for i in range(self.param["NbMarkers"]):
                 for k in range(self.param["NbSample"]):
                     if PEE_dist[i, k] > outlier_eps:
-                        del_list.append((i, k))
+                        del_list_.append((i, k))
             print(
                 "indices of samples with >{} m deviation: ".format(
                     outlier_eps
                 ),
-                del_list,
+                del_list_,
             )
 
             # reset iteration with outliers removal
-            if len(del_list) > 0 and count < iter_max:
-                self.PEEm_LM, q_LM = load_data(
-                    self._data_path, self.model, self.param, del_list
+            if len(del_list_) > 0 and count < iter_max:
+                self.PEE_measured, self.q_measured = load_data(
+                    self._data_path,
+                    self.model,
+                    self.param,
+                    self.del_list_ + del_list_,
                 )
-                self.param["NbSample"] = q_LM.shape[0]
+                self.param["NbSample"] = self.q_measured.shape[0]
                 count += 1
                 _var_0 = res + np.random.normal(0, 0.01, size=res.shape)
             else:
@@ -277,7 +280,7 @@ class TiagoCalibration:
         """
         assert self.STATUS == "CALIBRATED", "Calibration not performed yet"
 
-        fig2 = plt.figure(2)
+        fig2 = plt.figure()
         fig2.suptitle(
             "Visualization of estimated poses and measured pose in Cartesian"
         )
@@ -416,18 +419,32 @@ def write_to_xacro(tiago_calib, file_type="yaml"):
     param = tiago_calib.param
 
     calibration_parameters = {}
-    calibration_parameters["camera_position_x"] = float(calib_result["base_px"])
-    calibration_parameters["camera_position_y"] = float(calib_result["base_py"])
-    calibration_parameters["camera_position_z"] = float(calib_result["base_pz"])
-    calibration_parameters["camera_orientation_r"] = float(calib_result["base_phix"])
-    calibration_parameters["camera_orientation_p"] = float(calib_result["base_phiy"])
-    calibration_parameters["camera_orientation_y"] = float(calib_result["base_phiz"])
+    calibration_parameters["camera_position_x"] = float(
+        calib_result["base_px"]
+    )
+    calibration_parameters["camera_position_y"] = float(
+        calib_result["base_py"]
+    )
+    calibration_parameters["camera_position_z"] = float(
+        calib_result["base_pz"]
+    )
+    calibration_parameters["camera_orientation_r"] = float(
+        calib_result["base_phix"]
+    )
+    calibration_parameters["camera_orientation_p"] = float(
+        calib_result["base_phiy"]
+    )
+    calibration_parameters["camera_orientation_y"] = float(
+        calib_result["base_phiz"]
+    )
 
     for idx in param["actJoint_idx"]:
         joint = model.names[idx]
         for key in calib_result.keys():
             if joint in key:
-                calibration_parameters[joint + "_offset"] = float(calib_result[key])
+                calibration_parameters[joint + "_offset"] = float(
+                    calib_result[key]
+                )
 
     if file_type == "xacro":
         path_save_xacro = abspath(
@@ -466,6 +483,7 @@ def write_to_xacro(tiago_calib, file_type="yaml"):
                 )
             except yaml.YAMLError as exc:
                 print(exc)
+
 
 def main():
     tiago = load_robot("data/tiago_hey5.urdf")
