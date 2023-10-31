@@ -109,15 +109,18 @@ def get_param_from_yaml(robot, calib_data):
     assert end_frame in frames, "End_frame {} does not exist.".format(
         end_frame
     )
-
-    assert (
-        base_to_ref_frame in frames
-    ), "base_to_ref_frame {} does not exist.".format(base_to_ref_frame)
-
-    assert ref_frame in frames, "ref_frame {} does not exist.".format(
-        ref_frame
-    )
-
+    if base_to_ref_frame != "None":
+        assert (
+            base_to_ref_frame in frames
+        ), "base_to_ref_frame {} does not exist.".format(base_to_ref_frame)
+    else:
+        base_to_ref_frame = None
+    if ref_frame != "None":
+        assert ref_frame in frames, "ref_frame {} does not exist.".format(
+            ref_frame
+        )
+    else:
+        ref_frame = None
     # q0: default zero configuration
     q0 = robot.q0
     NbSample = calib_data["nb_sample"]
@@ -142,7 +145,7 @@ def get_param_from_yaml(robot, calib_data):
 
     # list of calibrating parameters name
     param_name = []
-    if calib_data["base_to_ref_frame"] is not None:
+    if base_to_ref_frame is not None:
         base_tpl = [
             "base_px",
             "base_py",
@@ -152,7 +155,17 @@ def get_param_from_yaml(robot, calib_data):
             "base_phiz",
         ]
         param_name += base_tpl
-
+    else:
+        if calib_data["calib_level"] == "joint_offset":
+            base_tpl = [
+                "base_px",
+                "base_py",
+                "base_pz",
+                "base_phix",
+                "base_phiy",
+                "base_phiz",
+            ]
+            param_name += base_tpl
     if calib_data["non_geom"]:
         # list of elastic gain parameter names
         elastic_gain = []
@@ -714,7 +727,14 @@ def update_forward_kinematics(model, data, var, q, param):
         "k_RZ",
     ]  # ONLY REVOLUTE JOINT FOR NOW
     pee_tpl = ["pEEx", "pEEy", "pEEz", "phiEEx", "phiEEy", "phiEEz"]
-
+    base_tpl = [
+        "base_px",
+        "base_py",
+        "base_pz",
+        "base_phix",
+        "base_phiy",
+        "base_phiz",
+    ]
     # order of joint in variables are arranged as in param['actJoint_idx']
     assert len(var) == len(
         param["param_name"]
@@ -726,15 +746,9 @@ def update_forward_kinematics(model, data, var, q, param):
     updated_params = []
     start_f = param["start_frame"]
     end_f = param["end_frame"]
+
+    # define transformation for camera frame
     if param["base_to_ref_frame"] is not None:
-        base_tpl = [
-            "base_px",
-            "base_py",
-            "base_pz",
-            "base_phix",
-            "base_phiy",
-            "base_phiz",
-        ]
         start_f = param["ref_frame"]
         # base frame to ref frame (i.e. Tiago: camera transformation)
         base_tf = np.zeros(6)
@@ -749,6 +763,15 @@ def update_forward_kinematics(model, data, var, q, param):
         ref_to_cam = cartesian_to_SE3(base_tf)
         cam_to_ref = ref_to_cam.actInv(pin.SE3.Identity())
         bMo = b_to_cam * cam_to_ref
+    else:
+        if param["calib_model"] == "joint_offset":
+            base_tf = np.zeros(6)
+            for key in param_dict.keys():
+                for base_id, base_ax in enumerate(base_tpl):
+                    if base_ax in key:
+                        base_tf[base_id] = param_dict[key]
+                        updated_params.append(key)
+            bMo = cartesian_to_SE3(base_tf)
 
     # update model.jointPlacements with joint 'full_params'/'joint_offset'
     for j_id in param["actJoint_idx"]:
@@ -823,7 +846,9 @@ def update_forward_kinematics(model, data, var, q, param):
 
         if param["base_to_ref_frame"] is not None:
             oMf = bMo * oMf
-
+        else:
+            if param["calib_model"] == "joint_offset":
+                oMf = bMo * oMf
         # final transform
         trans = oMf.translation.tolist()
         orient = pin.rpy.matrixToRpy(oMf.rotation).tolist()
