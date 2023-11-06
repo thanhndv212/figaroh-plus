@@ -534,6 +534,7 @@ def write_to_xacro(tiago_calib, file_name=None, file_type="yaml"):
             calib_result["phiEEz_1"]
         )
 
+
     if file_type == "xacro":
         if file_name is None:
             path_save_xacro = abspath(
