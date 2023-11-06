@@ -37,6 +37,7 @@ class TiagoCalibration:
         self.model = self._robot.model
         self.data = self._robot.data
         self.del_list_ = del_list
+        self.param = None
         self.load_param(config_file)
         self.nvars = len(self.param["param_name"])
 
@@ -88,6 +89,32 @@ class TiagoCalibration:
 
         # Add markers name to param['param_name']
         add_pee_name(self.param)
+        return True
+
+    def load_calibration_param(self, param_file):
+        with open(param_file, "r") as param_file:
+            param_dict_ = yaml.load(param_file, Loader=SafeLoader)
+        assert len(self.param["param_name"]) == len(
+            param_dict_
+        ), "The loaded param list does not match calibration config."
+        self.var_ = np.zeros(len(self.param["param_name"]))
+        updated_var_ = []
+        for i_, name_ in enumerate(self.param["param_name"]):
+            assert name_ == list(param_dict_.keys())[i_]
+            self.var_[i_] = list(param_dict_.values())[i_]
+            updated_var_.append(name_)
+        assert len(updated_var_) == len(self.var_), "Not all param imported."
+
+    def validate_model(self):
+        assert (
+            self.var_ is not None
+        ), "Call load_calibration_param() to load model parameters first."
+        pee_valid_ = self.get_pose_from_measure(self.var_)
+        rmse_ = np.sqrt(np.mean((pee_valid_ - self.PEE_measured) ** 2))
+        mae_ = np.mean(np.abs(pee_valid_ - self.PEE_measured))
+        print("position root-mean-squared error of end-effector: ", rmse_)
+        print("position mean absolute error of end-effector: ", mae_)
+        return rmse_, mae_
 
     def load_data_set(self):
         """
@@ -133,7 +160,7 @@ class TiagoCalibration:
         count = 0
         del_list_ = []
         res = _var_0
-        outlier_eps = self.param['outlier_eps']
+        outlier_eps = self.param["outlier_eps"]
 
         while count < iter_max and iterate:
             print("*" * 50)
@@ -209,19 +236,22 @@ class TiagoCalibration:
             else:
                 iterate = False
         self._PEE_dist = PEE_dist
-        self.calibrated_param = dict(zip(self.param["param_name"], list(res)))
+        param_values_ = [float(res_i_) for res_i_ in res]
+        self.calibrated_param = dict(
+            zip(self.param["param_name"], param_values_)
+        )
         self.LM_result = LM_solve
         self.rmse = rmse
         self.mae = mae
         if self.LM_result.success:
             self.STATUS = "CALIBRATED"
 
-    def get_pose_from_measure(self, _res):
+    def get_pose_from_measure(self, res_):
         """
         Get the pose of the robot given a set of parameters.
         """
         return update_forward_kinematics(
-            self.model, self.data, _res, self.q_measured, self.param
+            self.model, self.data, res_, self.q_measured, self.param
         )
 
     def calc_stddev(self):
@@ -409,7 +439,7 @@ def load_robot(robot_urdf, package_dirs=None, isFext=False, load_by_urdf=True):
     return robot
 
 
-def write_to_xacro(tiago_calib, file_type="yaml"):
+def write_to_xacro(tiago_calib, file_name=None, file_type="yaml"):
     """
     Write calibration result to xacro file.
     """
@@ -446,11 +476,21 @@ def write_to_xacro(tiago_calib, file_type="yaml"):
                     calib_result[key]
                 )
 
-    if file_type == "xacro":
-        path_save_xacro = abspath(
-            "data/tiago_master_calibration_{}.xacro".format(param["NbSample"])
-        )
+    calibration_parameters["tip_position_x"] = float(calib_result["pEEx_1"])
+    calibration_parameters["tip_position_y"] = float(calib_result["pEEy_1"])
+    calibration_parameters["tip_position_z"] = float(calib_result["pEEz_1"])
 
+    if file_type == "xacro":
+        if file_name is None:
+            path_save_xacro = abspath(
+                "data/calibration_paramters/tiago_master_calibration_{}.xacro".format(
+                    param["NbSample"]
+                )
+            )
+        else:
+            path_save_xacro = abspath(
+                "data/calibration_parameters/" + file_name
+            )
         with open(path_save_xacro, "w") as output_file:
             for parameter in calibration_parameters.keys():
                 update_name = parameter
@@ -464,9 +504,16 @@ def write_to_xacro(tiago_calib, file_type="yaml"):
                 output_file.write("\n")
 
     elif file_type == "yaml":
-        path_save_yaml = abspath(
-            "data/tiago_master_calibration_{}.yaml".format(param["NbSample"])
-        )
+        if file_name is None:
+            path_save_yaml = abspath(
+                "data/calibration_parameters/tiago_master_calibration_{}.yaml".format(
+                    param["NbSample"]
+                )
+            )
+        else:
+            path_save_yaml = abspath(
+                "data/calibration_parameters/" + file_name
+            )
         with open(path_save_yaml, "w") as output_file:
             # for parameter in calibration_parameters.keys():
             #     update_name = parameter
@@ -486,14 +533,17 @@ def write_to_xacro(tiago_calib, file_type="yaml"):
 
 
 def main():
-    tiago = load_robot("data/tiago_hey5.urdf")
-    tiago_calib = TiagoCalibration(tiago, "config/tiago_config.yaml")
-    tiago_calib.initialize()
-    tiago_calib.solve()
-    tiago_calib.plot()
-    write_to_xacro(tiago_calib, file_type="yaml")
     return 0
 
 
 if __name__ == "__main__":
-    main()
+    tiago = load_robot("data/urdf/tiago_hey5.urdf")
+    tiago_calib = TiagoCalibration(tiago, "config/tiago_config.yaml")
+    tiago_calib.initialize()
+    tiago_calib.solve()
+    tiago_calib.plot()
+    # write_to_xacro(
+    #     tiago_calib,
+    #     file_name="tiago_master_calibration.yaml",
+    #     file_type="yaml",
+    # )
