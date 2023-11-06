@@ -14,8 +14,11 @@
 
 from tiago_tools import TiagoCalibration, load_robot, write_to_xacro
 
-tiago = load_robot("data/tiago_hey5.urdf")
+tiago = load_robot("data/urdf/tiago_hey5.urdf")
 tiago_calib = TiagoCalibration(tiago, "config/tiago_config.yaml")
 tiago_calib.initialize()
 tiago_calib.solve()
 tiago_calib.plot()
+write_to_xacro(
+    tiago_calib, file_name="tiago_master_calibration.yaml", file_type="yaml"
+)

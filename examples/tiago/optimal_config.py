@@ -189,12 +189,12 @@ class TiagoOptimalCalibration(TiagoCalibration):
         self.calculate_regressor()
         self.calculate_detroot_whole()
 
-    def solve(self):
+    def solve(self, file_name=None):
         """
         Solve the optimization problem.
         """
         self.calculate_optimal_configurations()
-        self.write_to_file()
+        self.write_to_file(name_=file_name)
         self.plot()
 
     def load_data_set(self):
@@ -306,8 +306,10 @@ class TiagoOptimalCalibration(TiagoCalibration):
             self.calculate_optimal_configurations()
         ), "Calculate optimal configurations first."
         if name_ is None:
-            name_ = "data/tiago_optimal_configurations.yaml"
-        with open(name_, "w") as stream:
+            path_save = "data/optimal_configs/tiago_optimal_configurations.yaml"
+        else:
+            path_save = "data/optimal_configs/" + name_
+        with open(path_save, "w") as stream:
             try:
                 yaml.dump(
                     self.opt_configs,
@@ -366,10 +368,10 @@ class TiagoOptimalCalibration(TiagoCalibration):
 
 
 def main():
-    robot = load_robot("data/tiago_hey5.urdf")
+    robot = load_robot("data/urdf/tiago_hey5.urdf")
     tiago_optcalib = TiagoOptimalCalibration(robot, "config/tiago_config.yaml")
     tiago_optcalib.initialize()
-    tiago_optcalib.solve()
+    tiago_optcalib.solve(file_name=None)
 
 
 if __name__ == "__main__":
