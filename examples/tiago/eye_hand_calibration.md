@@ -46,6 +46,7 @@ Note: If `tiago_optimal_configurations.yaml` is not in `pal_eye_hand_calibration
 
 Keep monitoring on rviz, if the projected image of the hand is over-layed correctly with the actual image of the hand. On tiago-48c, the  `arm_5_joint_absolute_encoder` might give incorrect values by a large margin like this.
 
+**![](https://lh7-us.googleusercontent.com/2v-tGE5Ls3fOezkHBTMCrDkB9UMIOcLvgDu2m55Hd9-ibTeCvMZ3xmcadHjjSl52MzYTBDJPQOPR8aMG7rm9ytYRz5oGrHLOHerKPSI1af3S7oSJJmo91WrkIDT63_VDsXYtZDAVN0d7K-yIHShKAzQ)**
 
 ### 4. Convert serialized data to csv file:
 On **terminal 1** on robot:
