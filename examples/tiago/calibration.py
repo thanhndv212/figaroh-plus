@@ -19,7 +19,7 @@ tiago = load_robot("data/urdf/tiago_48_hey5.urdf", load_by_urdf=False)
 tiago_calib = TiagoCalibration(tiago, "config/tiago_config.yaml", del_list=[])
 tiago_calib.initialize()
 tiago_calib.solve()
-tiago_calib.plot()
 write_to_xacro(
     tiago_calib, file_name="tiago_master_calibration.yaml", file_type="yaml"
 )
+tiago_calib.plot()
