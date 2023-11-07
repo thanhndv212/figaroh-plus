@@ -49,7 +49,6 @@ tiago_calib.initialize()
 
 # solve least_squares estimation
 tiago_calib.solve()
-
 write_to_xacro(
     tiago_calib,
     file_name="tiago_master_calibration_{}.yaml".format(args.end_effector),
