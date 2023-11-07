@@ -446,7 +446,7 @@ def load_robot(robot_urdf, package_dirs=None, isFext=False, load_by_urdf=True):
     """
     import pinocchio
     import rospkg
-
+    
     if load_by_urdf:
         # import os
         # ros_package_path = os.getenv('ROS_PACKAGE_PATH')
@@ -471,9 +471,7 @@ def load_robot(robot_urdf, package_dirs=None, isFext=False, load_by_urdf=True):
                 )
             )
         else:
-            robot = RobotWrapper(pinocchio.buildModelFromXML(robot_xml))
-        print("Robot model is loaded from /robot_description")
-
+            robot = pinocchio.buildModelFromXML(robot_xml, root_joint=None)
     return robot
 
 
