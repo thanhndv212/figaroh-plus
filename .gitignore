@@ -2,3 +2,6 @@ old_files/
 data_list.docx
 **.pyc
 **/.DS_Store
+build/*
+cmake/*
+.vscode/*
