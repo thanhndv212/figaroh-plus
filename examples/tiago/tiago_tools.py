@@ -29,6 +29,7 @@ from figaroh.calibration.calibration_tools import (
 )
 from figaroh.tools.robot import Robot
 import matplotlib.pyplot as plt
+import pinocchio as pin
 
 
 class TiagoCalibration:
@@ -54,10 +55,13 @@ class TiagoCalibration:
         if self.param["PLOT"]:
             self.plot()
 
-    def plot(self):
-        self.plot_errors_distribution()
-        self.plot_3d_poses()
-        self.plot_joint_configurations()
+    def plot(self, lvl=1):
+        if lvl == 1:
+            self.plot_errors_distribution()
+        if lvl > 1:
+            self.plot_errors_distribution()
+            self.plot_3d_poses()
+            self.plot_joint_configurations()
         plt.show()
 
     def load_param(self, config_file, setting_type="calibration"):
@@ -104,17 +108,45 @@ class TiagoCalibration:
             self.var_[i_] = list(param_dict_.values())[i_]
             updated_var_.append(name_)
         assert len(updated_var_) == len(self.var_), "Not all param imported."
+        self.LOAD_NEWMODEL = True
 
     def validate_model(self):
         assert (
-            self.var_ is not None
+            self.LOAD_NEWMODEL
         ), "Call load_calibration_param() to load model parameters first."
         pee_valid_ = self.get_pose_from_measure(self.var_)
-        rmse_ = np.sqrt(np.mean((pee_valid_ - self.PEE_measured) ** 2))
-        mae_ = np.mean(np.abs(pee_valid_ - self.PEE_measured))
-        print("position root-mean-squared error of end-effector: ", rmse_)
-        print("position mean absolute error of end-effector: ", mae_)
-        return rmse_, mae_
+        self.calc_errors(pee_valid_)
+
+    def calc_errors(self, pee_):
+        PEE_errors = pee_ - self.PEE_measured
+        if self.param["measurability"][0:3] == [True, True, True]:
+            rmse_pos = np.sqrt(
+                np.mean((PEE_errors[0 : self.param["NbSample"] * 3]) ** 2)
+            )
+            mae_pos = np.mean(
+                np.abs(PEE_errors[0 : self.param["NbSample"] * 3])
+            )
+            print(
+                "position root-mean-squared error of end-effector: ", rmse_pos
+            )
+            print("position mean absolute error of end-effector: ", mae_pos)
+            if self.param["measurability"][3:6] == [True, True, True]:
+                rmse_rot = np.sqrt(
+                    np.mean((PEE_errors[self.param["NbSample"] * 3 :]) ** 2)
+                )
+                mae_rot = np.mean(
+                    np.abs(PEE_errors[self.param["NbSample"] * 3 :])
+                )
+                print(
+                    "rotation root-mean-squared error of end-effector: ",
+                    rmse_rot,
+                )
+                print(
+                    "rotation mean absolute error of end-effector: ", mae_rot
+                )
+                return [rmse_pos, mae_pos, rmse_rot, mae_rot]
+            else:
+                return [rmse_pos, mae_pos]
 
     def load_data_set(self):
         """
@@ -183,14 +215,12 @@ class TiagoCalibration:
             _PEEe_sol = update_forward_kinematics(
                 self.model, self.data, res, self.q_measured, self.param
             )
-            rmse = np.sqrt(np.mean((_PEEe_sol - self.PEE_measured) ** 2))
-            mae = np.mean(np.abs(_PEEe_sol - self.PEE_measured))
 
             print("solution of calibrated parameters: ")
             for x_i, xname in enumerate(self.param["param_name"]):
                 print(x_i + 1, xname, list(res)[x_i])
-            print("position root-mean-squared error of end-effector: ", rmse)
-            print("position mean absolute error of end-effector: ", mae)
+
+            self.calc_errors(_PEEe_sol)
             print("optimality: ", LM_solve.optimality)
 
             # check for unrealistic values
@@ -241,8 +271,6 @@ class TiagoCalibration:
             zip(self.param["param_name"], param_values_)
         )
         self.LM_result = LM_solve
-        self.rmse = rmse
-        self.mae = mae
         if self.LM_result.success:
             self.STATUS = "CALIBRATED"
 
@@ -283,7 +311,7 @@ class TiagoCalibration:
 
         fig1, ax1 = plt.subplots(self.param["NbMarkers"], 1)
         colors = ["blue", "red", "yellow", "purple"]
-
+        fig1.suptitle("Distribution of the distance errors")
         if self.param["NbMarkers"] == 1:
             ax1.bar(np.arange(self.param["NbSample"]), self._PEE_dist[0, :])
             ax1.set_xlabel("Sample", fontsize=25)
@@ -418,7 +446,7 @@ def load_robot(robot_urdf, package_dirs=None, isFext=False, load_by_urdf=True):
     """
     import pinocchio
     import rospkg
-    
+
     if load_by_urdf:
         # import os
         # ros_package_path = os.getenv('ROS_PACKAGE_PATH')
@@ -436,9 +464,11 @@ def load_robot(robot_urdf, package_dirs=None, isFext=False, load_by_urdf=True):
 
         robot_xml = rospy.get_param("robot_description")
         if isFext:
-            robot = RobotWrapper(pinocchio.buildModelFromXML(
-                robot_xml, root_joint=pinocchio.JointModelFreeFlyer()
-            ))
+            robot = RobotWrapper(
+                pinocchio.buildModelFromXML(
+                    robot_xml, root_joint=pinocchio.JointModelFreeFlyer()
+                )
+            )
         else:
             robot = RobotWrapper(pinocchio.buildModelFromXML(robot_xml))
     return robot
@@ -535,6 +565,52 @@ def write_to_xacro(tiago_calib, file_name=None, file_type="yaml"):
                 )
             except yaml.YAMLError as exc:
                 print(exc)
+
+
+def model_todict(robot_model):
+    """
+    Convert the robot model jointPlacements in dictionary format.
+    """
+    model_dict = {}
+    for jname in robot_model.names:
+        model_dict[jname] = [
+            round(num, 6)
+            for num in robot_model.jointPlacements[jj].translation.tolist()
+            + pin.rpy.matrixToRpy(
+                robot_model.jointPlacements[jj].rotation
+            ).tolist()
+        ]
+    return model_dict
+
+
+def save_model(robot_model, model_name):
+    """
+    Save the robot model in dictionary format.
+    """
+    model_dict = model_todict(robot_model)
+    with open(
+        "data/calibration_parameters/{}.yaml".format(model_name), "w"
+    ) as output_file:
+        try:
+            yaml.dump(
+                model_dict,
+                output_file,
+                sort_keys=False,
+                default_flow_style=True,
+            )
+        except yaml.YAMLError as exc:
+            print(exc)
+
+
+def compare_model(model_dict1, model_dict2):
+    """
+    Compare two robot models in dictionary format.
+    """
+    for jname in model_dict1.keys():
+        assert jname in model_dict2.keys()
+        assert len(model_dict1[jname]) == len(model_dict2[jname])
+        for i in range(len(model_dict1[jname])):
+            assert model_dict1[jname][i] == model_dict2[jname][i]
 
 
 def main():
