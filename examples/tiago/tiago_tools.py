@@ -506,14 +506,30 @@ def write_to_xacro(tiago_calib, file_name=None, file_type="yaml"):
     for idx in param["actJoint_idx"]:
         joint = model.names[idx]
         for key in calib_result.keys():
-            if joint in key:
+            if joint in key and "torso" not in key:
                 calibration_parameters[joint + "_offset"] = float(
                     calib_result[key]
                 )
-
-    calibration_parameters["tip_position_x"] = float(calib_result["pEEx_1"])
-    calibration_parameters["tip_position_y"] = float(calib_result["pEEy_1"])
-    calibration_parameters["tip_position_z"] = float(calib_result["pEEz_1"])
+    if tiago_calib.param["measurability"][0:3] == [True, True, True]:
+        calibration_parameters["tip_position_x"] = float(
+            calib_result["pEEx_1"]
+        )
+        calibration_parameters["tip_position_y"] = float(
+            calib_result["pEEy_1"]
+        )
+        calibration_parameters["tip_position_z"] = float(
+            calib_result["pEEz_1"]
+        )
+    if tiago_calib.param["measurability"][3:6] == [True, True, True]:
+        calibration_parameters["tip_orientation_r"] = float(
+            calib_result["phiEEx_1"]
+        )
+        calibration_parameters["tip_orientation_p"] = float(
+            calib_result["phiEEy_1"]
+        )
+        calibration_parameters["tip_orientation_y"] = float(
+            calib_result["phiEEz_1"]
+        )
 
     if file_type == "xacro":
         if file_name is None:
