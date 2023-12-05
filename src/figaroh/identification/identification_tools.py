@@ -20,11 +20,16 @@ import quadprog
 import operator
 
 def get_param_from_yaml(robot,identif_data):
-    """This function allows to create a dictionnary of the settings set in a yaml file.
-    Input:  robot: (Robot Tpl) a robot (extracted from an URDF for instance)
-            identif_data: (dict) a dictionnary containing the parameters settings for identification (set in a config yaml file)  
-    Output: param: (dict) a dictionnary of parameters settings
+    """_This function allows to create a dictionnary of the settings set in a yaml file._
+
+    Args:
+        robot (_robot_): _Pinocchio robot_
+        identif_data (_dict_): _a dictionnary containing the parameters settings for identification (set in a config yaml file) _
+
+    Returns:
+        _dict_: _a dictionnary of parameters settings_
     """
+
     # robot_name: anchor as a reference point for executing
     robot_name = robot.model.name
 
@@ -63,6 +68,15 @@ def get_param_from_yaml(robot,identif_data):
     return param
 
 def set_missing_params_setting(robot, params_settings):
+    """_Set the missing parameters of a robot, for instance if the urdf does not mention them_
+
+    Args:
+        robot (_robot_): _Pinocchio robot_
+        params_settings (_dict_): _Dictionnary of parameters settings_
+
+    Returns:
+        _dict_: _Dictionnary of updated parameter settings. Note : the robot is updated also_
+    """
 
     diff_limit = np.setdiff1d(
         robot.model.lowerPositionLimit, robot.model.upperPositionLimit
@@ -115,11 +129,16 @@ def set_missing_params_setting(robot, params_settings):
     return params_settings
 
 def base_param_from_standard(phi_standard,params_base):
-    """This function allows to calculate numerically the base parameters with the values of the standard ones.
-    Input:  phi_standard: (tuple) a dictionnary containing the values of the standard parameters of the model (usually from get_standard_parameters)
-            params_base: (list) a list containing the analytical relations between standard parameters to give the base parameters  
-    Output: phi_base: (list) a list containing the numeric values of the base parameters
+    """_This function allows to calculate numerically the base parameters with the values of the standard ones._
+
+    Args:
+        phi_standard (_dict_): _a dictionnary containing the values of the standard parameters of the model (usually from get_standard_parameters)_
+        params_base (_list_): _a list containing the analytical relations between standard parameters to give the base parameters_
+
+    Returns:
+        _list_: _a list containing the numeric values of the base parameters_
     """
+
     phi_base=[]
     ops = { "+": operator.add, "-": operator.sub }
     for ii in range(len(params_base)):
@@ -143,7 +162,16 @@ def base_param_from_standard(phi_standard,params_base):
     return phi_base
 
 def relative_stdev(W_b, phi_b, tau):
-    """ Calculates relative standard deviation of estimated parameters using the residual errro[Pressé & Gautier 1991]"""
+    """_Calculates relative standard deviation of estimated parameters using the residual errro[Pressé & Gautier 1991]_
+
+    Args:
+        W_b (_array_): _Base regressor matrix_
+        phi_b (_list_): _List containing the relationship for the base parameters_
+        tau (_array_): _Array of force measurements_
+
+    Returns:
+        _array_: _An array containing the relative standard deviation for each base parameter_
+    """
     # stdev of residual error ro
     sig_ro_sqr = np.linalg.norm((tau - np.dot(W_b, phi_b))) ** 2 / (
         W_b.shape[0] - phi_b.shape[0]
@@ -160,13 +188,68 @@ def relative_stdev(W_b, phi_b, tau):
 
     return std_xr
 
+def index_in_base_params(params,id_segments):
+    """_This function finds the base parameters in which a parameter of a given segment (referenced with its id) appear_
+
+    Args:
+        params (_list_): _A list containing the relation for the base parameters_
+        id_segments (_list_): _A list containing the ids of the segments_
+
+    Returns:
+        _dict_: _A dictionnary containing the link between base parameters and id of segments_
+    """
+    base_index=[]
+    params_name = ["Ixx",
+            "Ixy",
+            "Ixz",
+            "Iyy",
+            "Iyz",
+            "Izz",
+            "mx",
+            "my",
+            "mz",
+            "m",]
+    
+    id_segments_new = [i for i in range(len(id_segments))]
+    
+    for id in id_segments:
+        for ii in range(len(params)):
+            param_base_i=params[ii].split(' ')
+            for jj in range(len(param_base_i)):
+                param_base_j=param_base_i[jj].split('*')
+                for ll in range(len(param_base_j)):
+                    for kk in params_name:
+                        if kk+str(id) == param_base_j[ll]:
+                            base_index.append((id,ii))
+    
+    base_index[:] = list(set(base_index))
+    base_index=sorted(base_index) 
+
+    dictio={}
+
+    for i in base_index:
+        dictio.setdefault(i[0],[]).append(i[1])
+
+    values = []
+    for ii in dictio:
+        values.append(dictio[ii])
+
+    return dict(zip(id_segments_new,values))
+
 def weigthed_least_squares(robot,phi_b,W_b,tau_meas,tau_est,param):
-    '''This function computes the weigthed least square solution of the identification problem see [Gautier, 1997] for details
-            inputs:
-            - robot: pinocchio robot structure
-            - W_b: base regressor matrix
-            - tau: measured joint torques
-            '''
+    """_This function computes the weigthed least square solution of the identification problem see [Gautier, 1997] for details_
+
+    Args:
+        robot (_robot_): _Pinocchio robot_
+        phi_b (_liste_): _A list containing the relation for the base parameters_
+        W_b (_array_): _The base regressor matrix_
+        tau_meas (_array_): _An array containing the measured forces_
+        tau_est (_array_): _An array containing the estimated forces_
+        param (_dict_): _A dictionnary settings_
+
+    Returns:
+        _array_: _An array for the weighted base parameters_
+    """
     sigma=np.zeros(robot.model.nq) # Needs to be modified for taking into account the GRFM
     zero_identity_matrix=np.identity(len(tau_meas))
     P=np.zeros((len(tau_meas),len(tau_meas)))
@@ -190,14 +273,18 @@ def weigthed_least_squares(robot,phi_b,W_b,tau_meas,tau_est,param):
     return phi_b
 
 def calculate_first_second_order_differentiation(model,q,param,dt=None):
-    """This function calculates the derivatives (velocities and accelerations here) by central difference for given angular configurations accounting that the robot has a freeflyer or not (which is indicated in the params_settings).
-    Input:  model: (Model Tpl) the robot model
-            q: (array) the angular configurations whose derivatives need to be calculated
-            param: (dict) a dictionnary containing the settings 
-            dt:  (list) a list containing the different timesteps between the samples (set to None by default, which means that the timestep is constant and to be found in param['ts'])  
-    Output: q: (array) angular configurations (whose size match the samples removed by central differences)
-            dq: (array) angular velocities
-            ddq: (array) angular accelerations
+    """_This function calculates the derivatives (velocities and accelerations here) by central difference for given angular configurations accounting that the robot has a freeflyer or not (which is indicated in the params_settings)._
+
+    Args:
+        model (_model_): _Pinocchio model_
+        q (_array_): _the angular configurations whose derivatives need to be calculated_
+        param (_dict_): _a dictionnary containing the settings_
+        dt (_list_, optional): _ a list containing the different timesteps between the samples (set to None by default, which means that the timestep is constant and to be found in param['ts'])_. Defaults to None.
+
+    Returns:
+        _array_: _angular configurations (whose size match the samples removed by central differences)_
+        _array_: _angular velocities_
+        _array_: _angular accelerations_
     """
 
     if param['is_joint_torques']:
@@ -231,10 +318,18 @@ def calculate_first_second_order_differentiation(model,q,param,dt=None):
 
     return q, dq, ddq
 
-def low_pass_filter_data(data,param,nbutter):
-    '''This function filters and elaborates data used in the identification process. 
-    It is based on a return of experience  of Prof Maxime Gautier (LS2N, Nantes, France)'''
-    
+def low_pass_filter_data(data,param,nbutter=5):
+    """_This function filters and elaborates data used in the identification process. The filter used is a zero phase lag butterworth filter_
+
+    Args:
+        data (_array_): _The data to filter_
+        param (_dict_): _Dictionnary of settings_
+        nbutter (_int_): _Order of the butterworth filter_ Defaults to 5
+
+    Returns:
+        _array_: _The filtered data_
+    """
+
     b, a = signal.butter(nbutter, param['ts']*param['cut_off_frequency_butterworth'] / 2, "low")
    
     #data = signal.medfilt(data, 3)
@@ -248,88 +343,6 @@ def low_pass_filter_data(data,param,nbutter):
     data = np.delete(data, np.s_[(data.shape[0] - nbord): data.shape[0]], axis=0)
      
     return data
-
-# Function for the total least square
-
-def build_total_regressor(W_b_u, W_b_l,W_l, I_u, I_l,param_standard_l, param):
-    '''Inputs:  W_b_u  base regressor for unloaded case 
-                W_b_l:  base Regressor for loaded case 
-                W_l: Full  regressor for loaded case
-                I_u: measured current in uloaded case in A
-                I_l: measured current in loaded case in A
-        Ouputs: W_tot: total regressor matrix
-                V_norm= Normalised solution vector
-                residue'''
-             
-    # build the total regressor matrix for TLS
-    # we have to add a minus in front of the regressors for TLS
-    W_tot=np.concatenate((-W_b_u, -W_b_l), axis=0)
-  
-    nb_j=int(len(I_u)/param['nb_samples'])
-   
-    # nv (or 6) columns for the current
-    V_a=np.concatenate( (I_u[0:param['nb_samples']].reshape(param['nb_samples'],1), np.zeros(((nb_j-1)*param['nb_samples'],1))), axis=0) 
-    V_b=np.concatenate( (I_l[0:param['nb_samples']].reshape(param['nb_samples'],1), np.zeros(((nb_j-1)*param['nb_samples'],1))), axis=0) 
-
-    for ii in range(1,nb_j):
-        V_a_ii=np.concatenate((np.concatenate((np.zeros((param['nb_samples']*(ii),1)),I_u[param['nb_samples']*(ii):(ii+1)*param['nb_samples']].reshape(param['nb_samples'],1)), axis=0),np.zeros((param['nb_samples']*(5-(ii)),1))), axis=0)
-        V_b_ii=np.concatenate((np.concatenate((np.zeros((param['nb_samples']*(ii),1)),I_l[param['nb_samples']*(ii):(ii+1)*param['nb_samples']].reshape(param['nb_samples'],1)), axis=0),np.zeros((param['nb_samples']*(5-(ii)),1))), axis=0)
-        V_a=np.concatenate((V_a, V_a_ii), axis=1) 
-        V_b=np.concatenate((V_b, V_b_ii), axis=1) 
-    
-    W_current=np.concatenate((V_a, V_b), axis=0)
-     
-    
-    W_tot=np.concatenate((W_tot,W_current), axis=1)
-
-    
-    # selection and reduction of the regressor for the unknown parameters for the mass
-
-    if param['has_friction']: #adds fv and fs
-        W_l_temp=np.zeros((len(W_l),12))
-        for k in [0,1,2,3,4,5,6,7,8,10,11]:
-            W_l_temp[:, k]=W_l[:,(param['which_body_loaded'])*12 + k] # adds columns belonging to Ixx Ixy Iyy Iyz Izz mx my mz fs fv
-        idx_e_temp,params_r_temp= get_index_eliminate(W_l_temp,param_standard_l, 1e-6)
-        W_e_l = build_regressor_reduced(W_l_temp,idx_e_temp)
-        W_upayload = np.concatenate((np.zeros((len(W_l),W_e_l.shape[1])),-W_e_l), axis=0)
-        W_tot = np.concatenate((W_tot,W_upayload), axis=1) 
-        W_kpayload = np.concatenate((np.zeros((len(W_l),1)),-W_l[:,(param['which_body_loaded'])*12+9].reshape(len(W_l),1)), axis=0)# the mass
-        W_tot = np.concatenate((W_tot,W_kpayload), axis=1) 
-
-    elif param['has_actuator_inertia']: #adds ia fv fs off 
-        W_l_temp=np.zeros((len(W_l),14))
-        for k in [0,1,2,3,4,5,6,7,8,10,11,12,13]:
-            W_l_temp[:, k]=W_l[:,(param['which_body_loaded'])*14 + k] # adds columns belonging to Ixx Ixy Iyy Iyz Izz mx my mz ia fv fs off
-        idx_e_temp,params_r_temp = get_index_eliminate(W_l_temp,param_standard_l, 1e-6)
-        W_e_l = build_regressor_reduced(W_l_temp,idx_e_temp)
-        W_upayload = np.concatenate((np.zeros((len(W_l),W_e_l.shape[1])),-W_e_l), axis=0)
-        W_tot = np.concatenate((W_tot,W_upayload), axis=1) 
-        W_kpayload = np.concatenate((np.zeros((len(W_l),1)),-W_l[:,(param['which_body_loaded'])*14+9].reshape(len(W_l),1)), axis=0)# the mass
-        W_tot = np.concatenate((W_tot,W_kpayload), axis=1)
-
-    else:
-        W_l_temp=np.zeros((len(W_l),9))
-        for k in range(9):
-            W_l_temp[:, k] = W_l[:,(param['which_body_loaded'])*10 + k] # adds columns belonging to Ixx Ixy Iyy Iyz Izz mx my mz
-        idx_e_temp,params_r_temp = get_index_eliminate(W_l_temp,param_standard_l, 1e-6)
-        W_e_l = build_regressor_reduced(W_l_temp,idx_e_temp)
-        W_upayload = np.concatenate((np.zeros((len(W_l),W_e_l.shape[1])),-W_e_l), axis=0)
-        W_tot = np.concatenate((W_tot,W_upayload), axis=1) 
-        W_kpayload = np.concatenate((np.zeros((len(W_l),1)),-W_l[:,(param['which_body_loaded'])*10+9].reshape(len(W_l),1)), axis=0)# the mass
-        W_tot = np.concatenate((W_tot,W_kpayload), axis=1) 
-
-    U, S, Vh = np.linalg.svd(W_tot, full_matrices=False)
-    
-    V = np.transpose(Vh).conj()
-    
-    # for validation purpose
-    # W_tot_est=W_tot#-S[-1]*np.matmul(U[:,-1].reshape(len(W_tot),1),np.transpose(V[:,-1].reshape(len(Vh),1)))
-  
-    V_norm=param['mass_load']*np.divide(V[:,-1],V[-1,-1])
-    
-    residue=np.matmul(W_tot,V_norm)
-    
-    return W_tot, V_norm, residue
 
 # SIP QP OPTIMISATION
 
@@ -346,45 +359,36 @@ def quadprog_solve_qp(P, q, G=None, h=None, A=None, b=None):
         meq = 0
     return quadprog.solve_qp(qp_G, qp_a, qp_C, qp_b, meq)[0]  
 
-def sample_spherical(npoints, ndim=3):
-    vec = np.random.randn(ndim, npoints)
-    vec /= np.linalg.norm(vec, axis=0)
-    return vec
+# def sample_spherical(npoints, ndim=3):
+#     vec = np.random.randn(ndim, npoints)
+#     vec /= np.linalg.norm(vec, axis=0)
+#     return vec
 
-def calculate_standard_parameters_vold(robot,W,tau,COM_max,COM_min,params_settings):
-    """This function retrieves the 10 standard parameters (m, 3D COM, 6D Inertias) for each body in the body tree thanks to a QP optimisation (cf Jovic 2016). 
-    Input:  robot : (Robot Tpl) a robot extracted from an urdf for instance
-            W : ((Nsamples*njoints,14*nbodies) array) the full dynamic regressor (calculated thanks to build regressor basic )   
-            tau : ((Nbsamples*njoints,) array) the joint torque array      
-            COM_max : (list) sup boundaries for COM in the form (x,y,z) for each body 
-            COM_min : (list) sup boundaries for COM in the form (x,y,z) for each body
-            params_settings : (dict) a dictionnary indicating the settings (extracted from get_parameters_from_yaml)
-    Output: phi_standard: (list) a list containing the numeric values of the standard parameters
-            phi_ref : (list) a list containing the numeric values of the standard parameters as they are set in the urdf
+def calculate_standard_parameters(model,W,tau,COM_max,COM_min,params_standard_u,alpha):
+    """_This function solves a qp problem to find standard parameters that are not too far from the reference value while fitting the measurements_
+
+    Args:
+        model (_model_): _Pinocchio model_
+        W (_array_): _Basic regressor matrix_
+        tau (_array_): _External wrench measurements_
+        COM_max (_array_): _Upper boundaries for the center of mass position_
+        COM_min (_array_): _Upper boundaries for the center of mass position_
+        params_standard_u (_dict_): _Dictionnary containg the standard parameters from the urdf_
+        alpha (_float_): _Pareto front coefficient_
+
+    Returns:
+        _array_: _An array containing the standard parameters values_
+        _array_: -An array containing the standard parameters values as they are set in the urdf_
     """
-    alpha=0.9
+    np.set_printoptions(threshold=np.inf)
     phi_ref=[]
     id_inertias=[]
-    id_virtual=[]
 
-    if params_settings['is_external_wrench'] : 
-        for jj in range(1,len(robot.model.inertias.tolist())):
-            if robot.model.inertias.tolist()[jj].mass !=0:
-                id_inertias.append(jj-1)
-            else:
-                id_virtual.append(jj-1)
-    else : 
-        for jj in range(len(robot.model.inertias.tolist())):
-            if robot.model.inertias.tolist()[jj].mass !=0:
-                id_inertias.append(jj)
-            else:
-                id_virtual.append(jj)
+    for jj in range(len(model.inertias.tolist())):
+        if model.inertias.tolist()[jj].mass !=0:
+            id_inertias.append(jj)
 
     nreal=len(id_inertias)
-    nvirtual=len(id_virtual)
-    nbodies=nreal+nvirtual
-
-    params_standard_u = robot.get_standard_parameters(params_settings)
 
     params_name = (
                     "Ixx",
@@ -399,138 +403,59 @@ def calculate_standard_parameters_vold(robot,W,tau,COM_max,COM_min,params_settin
                     "m",
                 )
 
-    for k in range(1,nbodies+1):
+    for k in range(nreal):
         for j in params_name:
-            phi_ref_temp=params_standard_u[j+str(k)]
+            phi_ref_temp=params_standard_u[j+str(id_inertias[k])]
             phi_ref.append(phi_ref_temp)
-   
 
     phi_ref=np.array(phi_ref)
 
-    P=np.matmul(W.T,W) + alpha*np.eye(10*(nbodies))
-    r=-(np.matmul(tau.T,W)+alpha*phi_ref.T)
-    
+    sf1 = 1/(np.max(phi_ref)*len(phi_ref))
+    sf2 = 1/(np.max(tau)*len(tau))
+
+    P=((1-alpha)*sf1*np.eye(W.shape[1])+alpha*sf2*np.matmul(W.T,W))
+    r=-((1-alpha)*sf1*phi_ref.T+sf2*alpha*np.matmul(tau.T,W))
+
     # Setting constraints
-    epsilon=0.001
-    v=sample_spherical(2000) # vectors over the unit sphere
+    G=np.zeros(((14)*(nreal),10*nreal))
+    h=np.zeros((((14)*(nreal),1)))
 
-    G=np.zeros(((7+len(v[0]))*(nreal),10*(nbodies)))
-    h=np.zeros((((7+len(v[0]))*(nreal),1)))
-    # A=np.zeros((10*(nvirtual),10*(nbodies)))
-    # b=np.zeros((10*nvirtual,1))
-    
-    for ii in range(len(id_inertias)):
-        for k in range(len(v[0])): # inertia matrix def pos for enough (ie. 2000 here) vectors on unit sphere
-            G[ii*(len(v[0])+7)+k][id_inertias[ii]*10+0]=-v[0][k]**2
-            G[ii*(len(v[0])+7)+k][id_inertias[ii]*10+1]=-2*v[0][k]*v[1][k]
-            G[ii*(len(v[0])+7)+k][id_inertias[ii]*10+2]=-2*v[0][k]*v[2][k]
-            G[ii*(len(v[0])+7)+k][id_inertias[ii]*10+3]=-v[1][k]**2
-            G[ii*(len(v[0])+7)+k][id_inertias[ii]*10+4]=-2*v[1][k]*v[2][k]
-            G[ii*(len(v[0])+7)+k][id_inertias[ii]*10+5]=-v[2][k]**2
-            h[ii*(len(v[0])+7)+k]=epsilon
-        G[len(v[0])+ii*(len(v[0])+7)][id_inertias[ii]*10+6]=1 # mx<mx+
-        G[len(v[0])+ii*(len(v[0])+7)][id_inertias[ii]*10+9]=-COM_max[3*ii] # mx<mx+
-        G[len(v[0])+ii*(len(v[0])+7)+1][id_inertias[ii]*10+6]=-1 # mx>mx-
-        G[len(v[0])+ii*(len(v[0])+7)+1][id_inertias[ii]*10+9]=COM_min[3*ii] # mx>mx-
-        G[len(v[0])+ii*(len(v[0])+7)+2][id_inertias[ii]*10+7]=1 # my<my+
-        G[len(v[0])+ii*(len(v[0])+7)+2][id_inertias[ii]*10+9]=-COM_max[3*ii+1] # my<my+
-        G[len(v[0])+ii*(len(v[0])+7)+3][id_inertias[ii]*10+7]=-1 # my>my-
-        G[len(v[0])+ii*(len(v[0])+7)+3][id_inertias[ii]*10+9]=COM_min[3*ii+1] # my>my-
-        G[len(v[0])+ii*(len(v[0])+7)+4][id_inertias[ii]*10+8]=1 # mz<mz+
-        G[len(v[0])+ii*(len(v[0])+7)+4][id_inertias[ii]*10+9]=-COM_max[3*ii+2] # mz<mz+
-        G[len(v[0])+ii*(len(v[0])+7)+5][id_inertias[ii]*10+8]=-1 # mz>mz-
-        G[len(v[0])+ii*(len(v[0])+7)+5][id_inertias[ii]*10+9]=COM_min[3*ii+2] # mz>mz-
-        G[len(v[0])+ii*(len(v[0])+7)+6][id_inertias[ii]*10+9]=-1 # m>0
+    for ii in range(nreal):
+        G[14*ii][ii*10+6]=1 # mx<mx+
+        h[14*ii]=COM_max[3*ii]
+        G[14*ii+1][ii*10+6]=-1 # mx>mx-
+        h[14*ii+1]=-COM_min[3*ii]
+        G[14*ii+2][ii*10+7]=1 # my<my+
+        h[14*ii+2]=COM_max[3*ii+1]
+        G[14*ii+3][ii*10+7]=-1 # my>my-
+        h[14*ii+3]=-COM_min[3*ii+1]
+        G[14*ii+4][ii*10+8]=1 # mz<mz+
+        h[14*ii+4]=COM_max[3*ii+2]
+        G[14*ii+5][ii*10+8]=-1 # mz>mz-
+        h[14*ii+5]=-COM_min[3*ii+2]
+        G[14*ii+6][ii*10+9]=1 # m<m+
+        h[14*ii+6]=1.3*phi_ref[ii*10+9]
+        G[14*ii+7][ii*10+9]=-1 # m>m-
+        h[14*ii+7]=-0.7*phi_ref[ii*10+9]
+        G[14*ii+8][ii*10+0]=1 # Ixx<Ixx+
+        h[14*ii+8]=1.3*phi_ref[ii*10+0]
+        G[14*ii+9][ii*10+0]=-1 # Ixx>Ixx-
+        h[14*ii+9]=-0.7*phi_ref[ii*10+0]
+        G[14*ii+10][ii*10+3]=1 # Iyy<Iyy+
+        h[14*ii+10]=1.3*phi_ref[ii*10+3]
+        G[14*ii+11][ii*10+3]=-1 # Iyy>Iyy-
+        h[14*ii+11]=-0.7*phi_ref[ii*10+3]
+        G[14*ii+12][ii*10+5]=1 # Izz<Izz+
+        h[14*ii+12]=1.3*phi_ref[ii*10+5]
+        G[14*ii+13][ii*10+5]=-1 # Izz>Izz-
+        h[14*ii+13]=-0.7*phi_ref[ii*10+5]
 
+    # print(G.shape,h.shape,A.shape,b.shape)
 
     # SOLVING
-    phi_standard=quadprog_solve_qp(P,r,G,h.reshape(((7+len(v[0]))*(nreal),))) # ,A,b.reshape((10*(nvirtual),)))
+    phi_standard=quadprog_solve_qp(P,r,G,h.reshape((G.shape[0],)))
 
     return phi_standard,phi_ref
-
-# def calculate_standard_parameters(robot,W,tau,COM_max,COM_min,params_settings):
-#     """This function retrieves the 10 standard parameters (m, 3D COM, 6D Inertias) for each body in the body tree thanks to a QP optimisation (cf Jovic 2016). 
-#     Input:  robot : (Robot Tpl) a robot extracted from an urdf for instance
-#             W : ((Nsamples*njoints,14*nbodies) array) the full dynamic regressor (calculated thanks to build regressor basic )   
-#             tau : ((Nbsamples*njoints,) array) the joint torque array      
-#             COM_max : (list) sup boundaries for COM in the form (x,y,z) for each body 
-#             COM_min : (list) sup boundaries for COM in the form (x,y,z) for each body
-#             params_settings : (dict) a dictionnary indicating the settings (extracted from get_parameters_from_yaml)
-#     Output: phi_standard: (list) a list containing the numeric values of the standard parameters
-#             phi_ref : (list) a list containing the numeric values of the standard parameters as they are set in the urdf
-#     """
-
-#     alpha=0.8
-#     phi_ref=[]
-    
-#     nbodies=len(robot.model.inertias)
-
-#     params_standard_u = robot.get_standard_parameters(params_settings)
-
-#     params_name = (
-#                     "Ixx",
-#                     "Ixy",
-#                     "Ixz",
-#                     "Iyy",
-#                     "Iyz",
-#                     "Izz",
-#                     "mx",
-#                     "my",
-#                     "mz",
-#                     "m",
-#                     "Ia",
-#                     "fv",
-#                     "fs",
-#                     "off"
-#                 )
-
-#     for k in range(1,nbodies):
-#         for j in params_name:
-#             if params_standard_u[j+str(k)] is not None :
-#                 phi_ref_temp = params_standard_u[j+str(k)]
-#             else : 
-#                 phi_ref_temp = 0
-#             phi_ref.append(phi_ref_temp)
-
-#     phi_ref=np.array(phi_ref)
-#     P = np.matmul(W.T,W) + alpha*np.eye(14*(nbodies-1))
-#     r = -(np.matmul(tau.T,W)+alpha*phi_ref.T)
-
-#     # Setting constraints
-
-#     epsilon=0.001
-#     v=sample_spherical(2000) # vectors over the unit sphere
-
-#     G=np.zeros(((7+len(v[0]))*(nbodies-1),14*(nbodies-1)))
-#     h=np.zeros((((7+len(v[0]))*(nbodies-1),1)))
-
-#     for ii in range(nbodies-1):
-#         for k in range(len(v[0])): # inertia matrix def pos for enough (ie. 2000 here) vectors on unit sphere
-#             G[ii*(len(v[0])+7)+k][ii*14+0]=-v[0][k]**2
-#             G[ii*(len(v[0])+7)+k][ii*14+1]=-2*v[0][k]*v[1][k]
-#             G[ii*(len(v[0])+7)+k][ii*14+2]=-2*v[0][k]*v[2][k]
-#             G[ii*(len(v[0])+7)+k][ii*14+3]=-v[1][k]**2
-#             G[ii*(len(v[0])+7)+k][ii*14+4]=-2*v[1][k]*v[2][k]
-#             G[ii*(len(v[0])+7)+k][ii*14+5]=-v[2][k]**2
-#             h[ii*(len(v[0])+7)+k]=epsilon
-#         G[len(v[0])+ii*(len(v[0])+7)][ii*14+6]=1 # mx<mx+
-#         G[len(v[0])+ii*(len(v[0])+7)][ii*14+9]=-COM_max[3*ii] # mx<mx+
-#         G[len(v[0])+ii*(len(v[0])+7)+1][ii*14+6]=-1 # mx>mx-
-#         G[len(v[0])+ii*(len(v[0])+7)+1][ii*14+9]=COM_min[3*ii] # mx>mx-
-#         G[len(v[0])+ii*(len(v[0])+7)+2][ii*14+7]=1 # my<my+
-#         G[len(v[0])+ii*(len(v[0])+7)+2][ii*14+9]=-COM_max[3*ii+1] # my<my+
-#         G[len(v[0])+ii*(len(v[0])+7)+3][ii*14+7]=-1 # my>my-
-#         G[len(v[0])+ii*(len(v[0])+7)+3][ii*14+9]=COM_min[3*ii+1] # my>my-
-#         G[len(v[0])+ii*(len(v[0])+7)+4][ii*14+8]=1 # mz<mz+
-#         G[len(v[0])+ii*(len(v[0])+7)+4][ii*14+9]=-COM_max[3*ii+2] # mz<mz+
-#         G[len(v[0])+ii*(len(v[0])+7)+5][ii*14+8]=-1 # mz>mz-
-#         G[len(v[0])+ii*(len(v[0])+7)+5][ii*14+9]=COM_min[3*ii+2] # mz>mz-
-#         G[len(v[0])+ii*(len(v[0])+7)+6][ii*14+9]=-1 # m>0
-
-#     # SOLVING
-#     phi_standard=quadprog_solve_qp(P,r,G,h.reshape(((7+len(v[0]))*(nbodies-1),)))
-
-#     return phi_standard,phi_ref
 
 
  
