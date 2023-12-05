@@ -26,6 +26,7 @@ class Robot(RobotWrapper):
         robot_urdf,
         package_dirs,
         isFext=False,
+        freeflyer_ori =None,
     ):
         # super().__init__()
 
@@ -55,6 +56,16 @@ class Robot(RobotWrapper):
         else:
             self.initFromURDF(robot_urdf, package_dirs=package_dirs,
                               root_joint=pin.JointModelFreeFlyer())
+        
+        if freeflyer_ori is not None and isFext == True : 
+            self.model.jointPlacements[self.model.getJointId('root_joint')].rotation = freeflyer_ori
+            ub = self.model.upperPositionLimit
+            ub[:7] = 1
+            self.model.upperPositionLimit = ub
+            lb = self.model.lowerPositionLimit
+            lb[:7] = -1
+            self.model.lowerPositionLimit = lb
+            self.data = self.model.createData()
 
         # self.geom_model = pin.buildGeomFromUrdf(
         #     self.model, robot_urdf, geom_type=pin.GeometryType.COLLISION,
