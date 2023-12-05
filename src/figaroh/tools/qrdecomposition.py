@@ -335,20 +335,20 @@ def cond_num(W_b, norm_type=None):
     return cond_num
 
 
-def relative_stdev(W_b, phi_b, tau):
-    """ Calculates relative deviation of estimated parameters."""
-    # stdev of residual error ro
-    sig_ro_sqr = np.linalg.norm((tau - np.dot(W_b, phi_b))) ** 2 / (
-        W_b.shape[0] - phi_b.shape[0]
-    )
+# def relative_stdev(W_b, phi_b, tau):
+#     """ Calculates relative deviation of estimated parameters."""
+#     # stdev of residual error ro
+#     sig_ro_sqr = np.linalg.norm((tau - np.dot(W_b, phi_b))) ** 2 / (
+#         W_b.shape[0] - phi_b.shape[0]
+#     )
 
-    # covariance matrix of estimated parameters
-    C_x = sig_ro_sqr * np.linalg.inv(np.dot(W_b.T, W_b))
+#     # covariance matrix of estimated parameters
+#     C_x = sig_ro_sqr * np.linalg.inv(np.dot(W_b.T, W_b))
 
-    # relative stdev of estimated parameters
-    std_x_sqr = np.diag(C_x)
-    std_xr = np.zeros(std_x_sqr.shape[0])
-    for i in range(std_x_sqr.shape[0]):
-        std_xr[i] = np.round(100 * np.sqrt(std_x_sqr[i]) / np.abs(phi_b[i]), 2)
+#     # relative stdev of estimated parameters
+#     std_x_sqr = np.diag(C_x)
+#     std_xr = np.zeros(std_x_sqr.shape[0])
+#     for i in range(std_x_sqr.shape[0]):
+#         std_xr[i] = np.round(100 * np.sqrt(std_x_sqr[i]) / np.abs(phi_b[i]), 2)
 
-    return std_xr
+#     return std_xr
