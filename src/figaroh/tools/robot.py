@@ -133,15 +133,10 @@ class Robot(RobotWrapper):
             if param['has_joint_offset']:
                 phi.extend([param['off'][i-1]])
             else:
-                phi.extend([0])
-                    
-        if param["external_wrench_offsets"]:
-            phi.extend([param['OFFX'],param['OFFY'],param['OFFZ']])
-            params.extend(["OFFX","OFFY","OFFZ"])  
+                phi.extend([0]) 
 
         params_std = dict(zip(params, phi))
         return params_std
-
 
     def display_q0(self):
         """If you want to visualize the robot in this example,

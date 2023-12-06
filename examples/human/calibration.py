@@ -14,8 +14,6 @@
 
 import csv
 import numpy as np
-import eigenpy
-import hppfcl
 import pinocchio as pin
 from figaroh.tools.robot import Robot
 import sys
