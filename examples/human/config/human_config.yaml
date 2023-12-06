@@ -30,7 +30,6 @@ identification:
     - is_external_wrench : True
       is_joint_torques : False
       force_torque : ['All']
-      external_wrench_offsets : False
       has_friction : False
       has_joint_offset : False
       has_actuator_inertia : False
@@ -39,8 +38,8 @@ identification:
       has_coupled_wrist: False
       embedded_forces : False
   processing_params:
-    - cut_off_frequency_butterworth: 10.0
-      ts : 0.033333
+    - cut_off_frequency_butterworth: 5.0
+      ts : 0.02
   tls_params:
     - mass_load : 3.0
       which_body_loaded : 19  
