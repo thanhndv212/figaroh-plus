@@ -14,9 +14,6 @@
 
 import numpy as np
 import pinocchio as pin
-from pinocchio.utils import rotate
-import hppfcl as fcl
-from PIL import ImageColor
 
 
 def place(viz, name, M):
@@ -56,66 +53,6 @@ def display_COM(model, data, viz, q, IDX):
         Placement.translation = +data.com[model.frames[IDX[ii]].parent - 1]
         viz.viewer.gui.addSphere(ballID[ii], radius, rgbt)
         place(viz, ballID[ii], Placement)
-
-
-def color_segment(viz, rate, nodes,color=None):
-    """This function displays the color for each body segment depending on the level of
-    identification specified in the list rate. It assumes that the user knows what nodes
-    he wants to color.
-    Inputs : viz (viz) a pinocchio visualizer such as gepetto_viewer (for instance)
-            rate (list) a list indicating the rate at which the segment are identified.
-            The length of this list is the same as the list nodes.
-            nodes (list) a list containing the nodes to color. Use
-            viz.viewer.gui.getNodes() for more informations.
-    Output : (void) Display in the gui the colors for each segment.
-    """
-    if color is None :
-        for ii in range(len(nodes)):
-            ratio = rate[ii]
-            if  ratio < 5:
-                color=[ImageColor.getrgb('#57bb8a')[0]/256,ImageColor.getrgb('#57bb8a')[1]/256,ImageColor.getrgb('#57bb8a')[2]/256,1]
-            elif  ratio <10:
-                color=[ImageColor.getrgb('#63b682')[0]/256,ImageColor.getrgb('#63b682')[1]/256,ImageColor.getrgb('#63b682')[2]/256,1]
-            elif  ratio <15:
-                color=[ImageColor.getrgb('#84bb7b')[0]/256,ImageColor.getrgb('#84bb7b')[1]/256,ImageColor.getrgb('#84bb7b')[2]/256,1]
-            elif  ratio <20:
-                color=[ImageColor.getrgb('#94bd77')[0]/256,ImageColor.getrgb('#94bd77')[1]/256,ImageColor.getrgb('#94bd77')[2]/256,1]
-            elif  ratio <25:
-                color=[ImageColor.getrgb('#a4c073')[0]/256,ImageColor.getrgb('#a4c073')[1]/256,ImageColor.getrgb('#a4c073')[2]/256,1]
-            elif  ratio <30:
-                color=[ImageColor.getrgb('#b0be6e')[0]/256,ImageColor.getrgb('#b0be6e')[1]/256,ImageColor.getrgb('#b0be6e')[2]/256,1]
-            elif  ratio <35:
-                color=[ImageColor.getrgb('#c4c56d')[0]/256,ImageColor.getrgb('#c4c56d')[1]/256,ImageColor.getrgb('#c4c56d')[2]/256,1]
-            elif  ratio <40:
-                color=[ImageColor.getrgb('#d4c86a')[0]/256,ImageColor.getrgb('#d4c86a')[1]/256,ImageColor.getrgb('#d4c86a')[2]/256,1]
-            elif  ratio <45:
-                color=[ImageColor.getrgb('#e2c965')[0]/256,ImageColor.getrgb('#e2c965')[1]/256,ImageColor.getrgb('#e2c965')[2]/256,1]
-            elif  ratio <50:
-                color=[ImageColor.getrgb('#f5ce62')[0]/256,ImageColor.getrgb('#f5ce62')[1]/256,ImageColor.getrgb('#f5ce62')[2]/256,1]
-            elif  ratio <55:
-                color=[ImageColor.getrgb('#f3c563')[0]/256,ImageColor.getrgb('#f3c563')[1]/256,ImageColor.getrgb('#f3c563')[2]/256,1]
-            elif  ratio <60:
-                color=[ImageColor.getrgb('#e9b861')[0]/256,ImageColor.getrgb('#e9b861')[1]/256,ImageColor.getrgb('#e9b861')[2]/256,1]
-            elif  ratio <65:
-                color=[ImageColor.getrgb('#e6ad61')[0]/256,ImageColor.getrgb('#e6ad61')[1]/256,ImageColor.getrgb('#e6ad61')[2]/256,1]
-            elif  ratio <70:
-                color=[ImageColor.getrgb('#ecac67')[0]/256,ImageColor.getrgb('#ecac67')[1]/256,ImageColor.getrgb('#ecac67')[2]/256,1]
-            elif  ratio <75:
-                color=[ImageColor.getrgb('#e9a268')[0]/256,ImageColor.getrgb('#e9a268')[1]/256,ImageColor.getrgb('#e9a268')[2]/256,1]
-            elif  ratio <80:
-                color=[ImageColor.getrgb('#e79a69')[0]/256,ImageColor.getrgb('#e79a69')[1]/256,ImageColor.getrgb('#e79a69')[2]/256,1]
-            elif  ratio <85:
-                color=[ImageColor.getrgb('#e5926b')[0]/256,ImageColor.getrgb('#e5926b')[1]/256,ImageColor.getrgb('#e5926b')[2]/256,1]
-            elif ratio <90:
-                color=[ImageColor.getrgb('#e2886c')[0]/256,ImageColor.getrgb('#e2886c')[1]/256,ImageColor.getrgb('#e2886c')[2]/256,1]
-            elif ratio < 95:
-                color=[ImageColor.getrgb('#e0816d')[0]/256,ImageColor.getrgb('#e0816d')[1]/256,ImageColor.getrgb('#e0816d')[2]/256,1]
-            elif ratio:
-                color=[1,0,0,1]
-            viz.viewer.gui.setColor(nodes[ii], color)
-    else :
-        for ii in range(len(nodes)):
-            viz.viewer.gui.setColor(nodes[ii], color)
 
 
 def display_axes(model, data, viz, q):
