@@ -306,7 +306,9 @@ class TiagoOptimalCalibration(TiagoCalibration):
             self.calculate_optimal_configurations()
         ), "Calculate optimal configurations first."
         if name_ is None:
-            path_save = "data/optimal_configs/tiago_optimal_configurations.yaml"
+            path_save = (
+                "data/optimal_configs/tiago_optimal_configurations.yaml"
+            )
         else:
             path_save = "data/optimal_configs/" + name_
         with open(path_save, "w") as stream:
@@ -368,10 +370,37 @@ class TiagoOptimalCalibration(TiagoCalibration):
 
 
 def main():
-    robot = load_robot("data/urdf/tiago_hey5.urdf")
-    tiago_optcalib = TiagoOptimalCalibration(robot, "config/tiago_config.yaml")
+    def parse_args():
+        parser = argparse.ArgumentParser(
+            description="parse calibration setups", add_help=False
+        )
+        parser.add_argument(
+            "-e", "--end_effector", default="hey5", dest="end_effector"
+        )
+        parser.add_argument(
+            "-u", "--load_by_urdf", default=True, dest="load_by_urdf"
+        )
+        args = parser.parse_args()
+
+        return args
+
+    args = parse_args()
+
+    # load_by_urdf = False, load robot from rospy.get_param(/robot_description)
+    tiago = load_robot(
+        "data/urdf/tiago_48_{}.urdf".format(args.end_effector),
+        load_by_urdf=True,
+    )
+
+    tiago_optcalib = TiagoOptimalCalibration(
+        tiago, "config/tiago_config_{}.yaml".format(args.end_effector)
+    )
     tiago_optcalib.initialize()
-    tiago_optcalib.solve(file_name=None)
+    tiago_optcalib.solve(
+        file_name="tiago_optimal_configurations_{}.yaml".format(
+            args.end_effector
+        )
+    )
 
 
 if __name__ == "__main__":
