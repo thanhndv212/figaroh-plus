@@ -451,13 +451,14 @@ def load_robot(robot_urdf, package_dirs=None, isFext=False, load_by_urdf=True):
         # import os
         # ros_package_path = os.getenv('ROS_PACKAGE_PATH')
         # package_dirs = ros_package_path.split(':')
-
         package_dirs = rospkg.RosPack().get_path("tiago_description")
         robot = Robot(
             robot_urdf,
             package_dirs=package_dirs,
             isFext=isFext,
         )
+        print("Robot model is loaded from " + package_dirs)
+
     else:
         import rospy
         from pinocchio.robot_wrapper import RobotWrapper
@@ -471,6 +472,8 @@ def load_robot(robot_urdf, package_dirs=None, isFext=False, load_by_urdf=True):
             )
         else:
             robot = RobotWrapper(pinocchio.buildModelFromXML(robot_xml))
+        print("Robot model is loaded from /robot_description")
+
     return robot
 
 
@@ -588,7 +591,7 @@ def model_todict(robot_model):
     Convert the robot model jointPlacements in dictionary format.
     """
     model_dict = {}
-    for jname in robot_model.names:
+    for jj, jname in enumerate(robot_model.names):
         model_dict[jname] = [
             round(num, 6)
             for num in robot_model.jointPlacements[jj].translation.tolist()
@@ -627,6 +630,7 @@ def compare_model(model_dict1, model_dict2):
         assert len(model_dict1[jname]) == len(model_dict2[jname])
         for i in range(len(model_dict1[jname])):
             assert model_dict1[jname][i] == model_dict2[jname][i]
+    print("Models are equal")
 
 
 def main():
@@ -634,13 +638,267 @@ def main():
 
 
 if __name__ == "__main__":
-    tiago = load_robot("data/urdf/tiago_hey5.urdf")
-    tiago_calib = TiagoCalibration(tiago, "config/tiago_config.yaml")
-    tiago_calib.initialize()
-    tiago_calib.solve()
-    tiago_calib.plot()
-    # write_to_xacro(
-    #     tiago_calib,
-    #     file_name="tiago_master_calibration.yaml",
-    #     file_type="yaml",
-    # )
+    tiago = load_robot("data/urdf/tiago_48_hey5.urdf")
+    TAGcalib_cen = TiagoCalibration(
+        tiago, "config/tiago_config_hey5_center.yaml"
+    )
+    TAGcalib_cen.initialize()
+    TAGcalib_cen.solve()
+
+    TAGcalib_tl = TiagoCalibration(
+        tiago, "config/tiago_config_hey5_topleft.yaml"
+    )
+    TAGcalib_tl.initialize()
+    TAGcalib_tl.solve()
+
+    var_cen0 = TAGcalib_cen.LM_result.x
+    var_tl0 = TAGcalib_tl.LM_result.x
+
+    var0_common = var_cen0[
+        0 : -(
+            TAGcalib_cen.param["NbMarkers"]
+            * TAGcalib_cen.param["calibration_index"]
+        )
+    ]
+    var0_cenPose = var_cen0[
+        -TAGcalib_cen.param["NbMarkers"]
+        * TAGcalib_cen.param["calibration_index"] :
+    ]
+    var0_tlPose = var_tl0[
+        -TAGcalib_tl.param["NbMarkers"]
+        * TAGcalib_tl.param["calibration_index"] :
+    ]
+    var0 = np.append(var0_common, var0_cenPose)
+    var0 = np.append(var0, var0_tlPose)
+
+    # cost function for the optimization problem
+    def cost_function(var):
+        """Combine two cost functions for the optimization problem."""
+        var_common = var[
+            0 : -(
+                TAGcalib_cen.param["NbMarkers"]
+                * TAGcalib_cen.param["calibration_index"]
+                + TAGcalib_tl.param["NbMarkers"]
+                * TAGcalib_tl.param["calibration_index"]
+            )
+        ]
+        var_cenPose = var[
+            -(
+                TAGcalib_cen.param["NbMarkers"]
+                * TAGcalib_cen.param["calibration_index"]
+                + TAGcalib_tl.param["NbMarkers"]
+                * TAGcalib_tl.param["calibration_index"]
+            ) : -TAGcalib_tl.param["NbMarkers"]
+            * TAGcalib_tl.param["calibration_index"]
+        ]
+        var_tlPose = var[
+            -TAGcalib_tl.param["NbMarkers"]
+            * TAGcalib_tl.param["calibration_index"] :
+        ]
+        # calib_center error function for the optimization problem
+        var_cen = np.append(var_common, var_cenPose)
+        # coeff_cen = TAGcalib_cen.param["coeff_regularize"]
+        PEEe_cen = update_forward_kinematics(
+            TAGcalib_cen.model,
+            TAGcalib_cen.data,
+            var_cen,
+            TAGcalib_cen.q_measured,
+            TAGcalib_cen.param,
+        )
+        res_vect = TAGcalib_cen.PEE_measured - PEEe_cen
+
+        # calib_topleft error function for the optimization problem
+        var_tl = np.append(var_common, var_tlPose)
+        # coeff_tl = TAGcalib_tl.param["coeff_regularize"]
+        PEEe_tl = update_forward_kinematics(
+            TAGcalib_tl.model,
+            TAGcalib_tl.data,
+            var_tl,
+            TAGcalib_tl.q_measured,
+            TAGcalib_tl.param,
+        )
+        res_vect = np.append(res_vect, (TAGcalib_tl.PEE_measured - PEEe_tl))
+        # res_vect = np.append(
+        #     res_vect,
+        #     np.sqrt(coeff_tl)
+        #     * var_tl[
+        #         6 : -TAGcalib_tl.param["NbMarkers"]
+        #         * TAGcalib_tl.param["calibration_index"]
+        #     ],
+        # )
+
+        # chessboard center displacement
+        displ_vect = var_tlPose - var_cenPose
+        displ_ref = np.array([0.01, 0, -0.02, 0, 0, 0])
+        res_vect = np.append(
+            res_vect,
+            0.01 * TAGcalib_cen.param["NbSample"] * (displ_vect - displ_ref),
+        )
+
+        # chessboard orientation
+        cb_orient = np.array([0, -np.pi / 2, -np.pi / 2])
+        res_vect = np.append(
+            res_vect,
+            0.01
+            * TAGcalib_cen.param["NbSample"]
+            * (var_cenPose[-3:] - cb_orient),
+        )
+        res_vect = np.append(
+            res_vect,
+            0.01
+            * TAGcalib_cen.param["NbSample"]
+            * (var_tlPose[-3:] - cb_orient),
+        )
+
+        # torso to zero
+        res_vect = np.append(
+            res_vect,
+            TAGcalib_cen.param["NbSample"]
+            * var[
+                TAGcalib_cen.param["param_name"].index(
+                    "offsetPZ_torso_lift_joint"
+                )
+            ],
+        )
+
+        # head joints to close to zero
+        res_vect = np.append(
+            res_vect,
+            0.1
+            * TAGcalib_cen.param["NbSample"]
+            * var[
+                TAGcalib_cen.param["param_name"].index("offsetRZ_head_1_joint")
+            ],
+        )
+        res_vect = np.append(
+            res_vect,
+            0.1
+            * TAGcalib_cen.param["NbSample"]
+            * var[
+                TAGcalib_cen.param["param_name"].index("offsetRZ_head_2_joint")
+            ],
+        )
+        # camera pose to close to initial pose
+        cam_pose = np.array([0.0908, 0.08, 0.0, -np.pi/2, 0.0, 0.0])
+        res_vect = np.append(
+            res_vect,
+            1
+            * TAGcalib_cen.param["NbSample"]
+            * (var[0:6] - cam_pose)
+        )
+        # arm1, arm2, arm3 to zero
+        arm123_coeff = 0.5
+        res_vect = np.append(
+            res_vect,
+            arm123_coeff
+            * TAGcalib_cen.param["NbSample"]
+            * (var[
+                TAGcalib_cen.param["param_name"].index("offsetRZ_arm_1_joint")
+            ] - 0.01),
+        )
+        res_vect = np.append(
+            res_vect,
+            arm123_coeff
+            * TAGcalib_cen.param["NbSample"]
+            * (var[
+                TAGcalib_cen.param["param_name"].index("offsetRZ_arm_2_joint")
+            ] - 0.005),
+        )
+        res_vect = np.append(
+            res_vect,
+            arm123_coeff
+            * TAGcalib_cen.param["NbSample"]
+            * var[
+                TAGcalib_cen.param["param_name"].index("offsetRZ_arm_3_joint")
+            ],
+        )
+        # arm5
+        # res_vect = np.append(
+        #     res_vect,
+        #     10
+        #     * TAGcalib_cen.param["NbSample"]
+        #     * var[
+        #         TAGcalib_cen.param["param_name"].index("offsetRZ_arm_5_joint")
+        #     ] + 0.2,
+        # )
+        return res_vect
+
+    # define solver parameters
+    del_list_ = []
+    res = var0
+    # outlier_eps = self.param["outlier_eps"]
+    print("*" * 50)
+    # define solver
+    LM_solve = least_squares(
+        cost_function,
+        var0,
+        method="lm",
+        verbose=1,
+        args=(),
+    )
+
+    # solution
+    res = LM_solve.x
+    res_cen = res[
+        0 : -TAGcalib_tl.param["NbMarkers"]
+        * TAGcalib_tl.param["calibration_index"]
+    ]
+    res_tl = np.append(
+        res[
+            0 : -(
+                TAGcalib_cen.param["NbMarkers"]
+                * TAGcalib_cen.param["calibration_index"]
+                + TAGcalib_tl.param["NbMarkers"]
+                * TAGcalib_tl.param["calibration_index"]
+            )
+        ],
+        res[
+            -TAGcalib_tl.param["NbMarkers"]
+            * TAGcalib_tl.param["calibration_index"] :
+        ],
+    )
+
+    def print_solution(TAGcalib, res_):
+        print("solution of calibrated parameters: ")
+        for x_i, xname in enumerate(TAGcalib.param["param_name"]):
+            print(x_i + 1, xname, list(res_)[x_i])
+
+    print("--------------------------------")
+    print("chessboard center")
+    print_solution(TAGcalib_cen, res_cen)
+
+    PEEe_censol = update_forward_kinematics(
+        TAGcalib_cen.model,
+        TAGcalib_cen.data,
+        res_cen,
+        TAGcalib_cen.q_measured,
+        TAGcalib_cen.param,
+    )
+    TAGcalib_cen.calc_errors(PEEe_censol)
+    print("--------------------------------")
+    print("chessboard center")
+    print_solution(TAGcalib_tl, res_tl)
+
+    PEEe_tlsol = update_forward_kinematics(
+        TAGcalib_tl.model,
+        TAGcalib_tl.data,
+        res_tl,
+        TAGcalib_tl.q_measured,
+        TAGcalib_tl.param,
+    )
+    TAGcalib_tl.calc_errors(PEEe_tlsol)
+    print("--------------------------------")
+    print("relative displacement of cb poses:", res_tl[-6:] - res_cen[-6:])
+    param_cen = [float(res_i_) for res_i_ in res_cen]
+    TAGcalib_cen.calibrated_param = dict(
+        zip(TAGcalib_cen.param["param_name"], param_cen)
+    )
+    param_tl = [float(res_i_) for res_i_ in res_tl]
+    TAGcalib_tl.calibrated_param = dict(
+        zip(TAGcalib_tl.param["param_name"], param_tl)
+    )
+    write_to_xacro(
+        TAGcalib_cen,
+        file_name="tiago_master_calibration_cbcenter.yaml",
+        file_type="yaml",
+    )
