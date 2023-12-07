@@ -35,148 +35,176 @@ from ..tools.robot import Robot
 ######################## INITIALIZATION TOOLS ########################################
 
 
-def get_param_from_yaml(robot, calib_data):
 
+# INITIALIZATION TOOLS ########################################
+def get_param_from_yaml(robot, calib_data) -> dict:
+    """Get parameter from the calibration config yaml file and return a
+    dictionary.
+
+    Args:
+        robot (_type_): robot instance
+        calib_data (_type_): calibration parameters parsed from config yaml file
+
+    Returns:
+        param (dict): a dictionary containing calibration parameters
+    """
     # NOTE: since joint 0 is universe and it is trivial,
     # indices of joints are different from indices of joint configuration,
     # different from indices of joint velocities
-
-    # robot_name: anchor as a reference point for executing
+    param = dict()
     robot_name = robot.model.name
+    frames = [f.name for f in robot.model.frames]
+    param["robot_name"] = robot_name
 
-    # End-effector sensing measurability: a BOOLEAN vector of 6 stands for px,
-    # py, pz, phix, phiy, phiz (mocap/camera/laser tracker/close-loop)
-    # number of "True" = calb_idx
-    NbMarkers = len(calib_data['markers'])
-    # TODO: generalize for the case where different measurability for each marker
-    measurability = calib_data['markers'][0]['measure']
+    # End-effector sensing measurability:
+    # number of "True" = calib_idx
+    NbMarkers = len(calib_data["markers"])
+    measurability = calib_data["markers"][0]["measure"]
     calib_idx = measurability.count(True)
+    param["NbMarkers"] = NbMarkers
+    param["measurability"] = measurability
+    param["calibration_index"] = calib_idx
 
-    # Calibration model: level 1: joint_offset (only joint offsets),
+    # Calibration model:
+    # level 1: joint_offset (only joint offsets),
     # level 2: full_params(geometric parameters),
     # level 3: non_geom(non-geometric parameters)
+    param["calib_model"] = calib_data[
+        "calib_level"
+    ]  # 'joint_offset' / 'full_params'
 
     # Kinematic chain: base frame: start_frame, end-effector frame: end_frame
-    start_frame = calib_data['base_frame']  # default
-    end_frame = calib_data['tool_frame']
-
-    frames = [f.name for f in robot.model.frames]
-    assert (start_frame in frames), "Start_frame {} does not exist.".format(start_frame)
+    start_frame = calib_data["base_frame"]  # default
+    end_frame = calib_data["tool_frame"]
+    assert start_frame in frames, "Start_frame {} does not exist.".format(
+        start_frame
+    )
 
     assert end_frame in frames, "End_frame {} does not exist.".format(
         end_frame
     )
-    if base_to_ref_frame != "None":
+    param["start_frame"] = start_frame
+    param["end_frame"] = end_frame
+
+    # eye-hand calibration
+    try:
+        base_to_ref_frame = calib_data["base_to_ref_frame"]
+        ref_frame = calib_data["ref_frame"]
+    except KeyError:
+        base_to_ref_frame = None
+        ref_frame = None
+        print("base_to_ref_frame and ref_frame are not defined.")
+
+    if base_to_ref_frame is not None:
         assert (
             base_to_ref_frame in frames
         ), "base_to_ref_frame {} does not exist.".format(base_to_ref_frame)
     else:
         base_to_ref_frame = None
-    if ref_frame != "None":
+
+    if ref_frame is not None:
         assert ref_frame in frames, "ref_frame {} does not exist.".format(
             ref_frame
         )
     else:
         ref_frame = None
+    param["base_to_ref_frame"] = base_to_ref_frame
+    param["ref_frame"] = ref_frame
+
+    try:
+        # initial pose of base frame and marker frame
+        camera_pose = calib_data["camera_pose"]
+        tip_pose = calib_data["tip_pose"]
+    except KeyError:
+        camera_pose = None
+        tip_pose = None
+        print("camera_pose and tip_pose are not defined.")
+
+    param["camera_pose"] = camera_pose
+    param["tip_pose"] = tip_pose
+
     # q0: default zero configuration
-    q0 = robot.q0
-    NbSample = calib_data['nb_sample']
+    param["q0"] = robot.q0
+    param["NbSample"] = calib_data["nb_sample"]
 
     # IDX_TOOL: frame ID of the tool
     IDX_TOOL = robot.model.getFrameId(end_frame)
+    param["IDX_TOOL"] = IDX_TOOL
 
     # tool_joint: ID of the joint right before the tool's frame (parent)
     tool_joint = robot.model.frames[IDX_TOOL].parent
+    param["tool_joint"] = tool_joint
 
-    # indices of active joints: from base to tool_joint (exclude the first universe joint)
+    # indices of active joints: from base to tool_joint
     actJoint_idx = get_sup_joints(robot.model, start_frame, end_frame)
+    param["actJoint_idx"] = actJoint_idx
 
     # indices of joint configuration corresponding to active joints
     config_idx = [robot.model.joints[i].idx_q for i in actJoint_idx]
+    param["config_idx"] = config_idx
 
     # number of active joints
     NbJoint = len(actJoint_idx)
+    param["NbJoint"] = NbJoint
 
-    # optimizing variable in optimization code
-    x_opt_prev = np.zeros([NbJoint])
-    
-    
-
-    # list of calibrating parameters name
+    # initialize a list of calibrating parameters name
     param_name = []
-    if base_to_ref_frame is not None:
-        base_tpl = [
-            "base_px",
-            "base_py",
-            "base_pz",
-            "base_phix",
-            "base_phiy",
-            "base_phiz",
-        ]
-        param_name += base_tpl
-    else:
-        if calib_data["calib_level"] == "joint_offset":
-            base_tpl = [
-                "base_px",
-                "base_py",
-                "base_pz",
-                "base_phix",
-                "base_phiy",
-                "base_phiz",
-            ]
-            param_name += base_tpl
     if calib_data["non_geom"]:
         # list of elastic gain parameter names
         elastic_gain = []
-        axis = ['kx', 'ky', 'kz']
+        joint_axes = ["PX", "PY", "PZ", "RX", "RY", "RZ"]
         for j_id, joint_name in enumerate(robot.model.names.tolist()):
-            if joint_name == 'universe':
-                axis_motion = 'null'
+            if joint_name == "universe":
+                axis_motion = "null"
             else:
-                for ii, ax in enumerate(AXIS_MOTION[j_id]):
-                    if ax == 1:
-                        axis_motion = axis[ii]
-            elastic_gain.append(axis_motion+'_'+joint_name)
+                # for ii, ax in enumerate(AXIS_MOTION[j_id]):
+                #     if ax == 1:
+                #         axis_motion = axis[ii]
+                shortname = robot.model.joints[
+                    j_id
+                ].shortname()  # ONLY TAKE PRISMATIC AND REVOLUTE JOINT
+                for ja in joint_axes:
+                    if ja in shortname:
+                        axis_motion = ja
+                    elif "RevoluteUnaligned" in shortname:
+                        axis_motion = "RZ"  # hard coded fix for canopies
+
+            elastic_gain.append("k_" + axis_motion + "_" + joint_name)
         for i in actJoint_idx:
             param_name.append(elastic_gain[i])
+    param["param_name"] = param_name
 
-    param = {
-        "robot_name": robot_name,
-        "q0": q0,
-        "x_opt_prev": x_opt_prev,
-        "NbSample": NbSample,
-        "start_frame": start_frame,
-        "end_frame": end_frame,
-        "base_to_ref_frame": base_to_ref_frame,
-        "ref_frame": ref_frame,
-        "IDX_TOOL": IDX_TOOL,
-        "tool_joint": tool_joint,
-        "eps": 1e-3,
-        "config_idx": config_idx,
-        "actJoint_idx": actJoint_idx,
-        "PLOT": 0,
-        "NbMarkers": NbMarkers,
-        "calib_model": calib_data[
-            "calib_level"
-        ],  # 'joint_offset' / 'full_params'
-        "measurability": measurability,
-        "calibration_index": calib_idx,  # 3 / 6
-        "NbJoint": NbJoint,
-        "free_flyer": calib_data["free_flyer"],
-        "param_name": param_name,
-        "non_geom": calib_data["non_geom"],
-        "camera_pose": camera_pose,
-        "tip_pose": tip_pose,
-        "coeff_regularize": calib_data["coeff_regularize"],
-        "data_file": calib_data["data_file"],
-        "sample_configs_file": calib_data["sample_configs_file"],
-        "outlier_eps": calib_data['outlier_eps']
-    }
+    param.update(
+        {
+            "free_flyer": calib_data["free_flyer"],
+            "non_geom": calib_data["non_geom"],
+            "eps": 1e-3,
+            "PLOT": 0,
+        }
+    )
+    try:
+        param.update(
+            {
+                "coeff_regularize": calib_data["coeff_regularize"],
+                "data_file": calib_data["data_file"],
+                "sample_configs_file": calib_data["sample_configs_file"],
+                "outlier_eps": calib_data["outlier_eps"],
+            }
+        )
+    except KeyError:
+        param.update(
+            {
+                "coeff_regularize": None,
+                "data_file": None,
+                "sample_configs_file": None,
+                "outlier_eps": None,
+            }
+        )
     pprint.pprint(param)
     return param
 
 
-def get_joint_offset(joint_names):
+def get_joint_offset(model, joint_names):
     """ This function give a dictionary of joint offset parameters.
             Input:  joint_names: a list of joint names (from model.names)
             Output: joint_off: a dictionary of joint offsets.
@@ -934,7 +962,7 @@ def calculate_base_kinematics_regressor(q, model, data, param):
     # obtain joint names
     joint_names = [name for i, name in enumerate(model.names[1:])]
     geo_params = get_geo_offset(joint_names)
-    joint_offsets = get_joint_offset(joint_names)
+    joint_offsets = get_joint_offset(model, joint_names)
 
     # calculate kinematic regressor with random configs
     if not param["free_flyer"]:
