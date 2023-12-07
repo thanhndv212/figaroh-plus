@@ -22,8 +22,8 @@ calibration:
   tip_pose: [0.2163, 0.03484, 0.004, 0.0, -1.57, -1.57]
   coeff_regularize: 0.01
   outlier_eps: 0.05 #meter
-  data_file: data/eye_hand_calibration_recorded_data.csv
-  sample_configs_file: data/optimal_configs/eye_hand_calibration_tiago_hey5_100.yaml
+  data_file: data/eye_hand_calibration_recorded_data_48c_hey5_12_test1.csv
+  sample_configs_file: data/optimal_configs/tiago_optimal_configurations.yaml
   nb_sample: 500
 identification:
   robot_params:
