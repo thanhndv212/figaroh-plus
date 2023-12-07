@@ -204,7 +204,7 @@ def get_baseParams(W_e, params_r, params_std=None):
     """ Returns symbolic expressions of base parameters and base regressor matrix and idenx of the base regressor matrix. """
     # scipy has QR pivoting using Householder reflection
     Q, R = np.linalg.qr(W_e)
-
+    
     # sort params as decreasing order of diagonal of R
     assert np.diag(R).shape[0] == len(
         params_r
@@ -214,9 +214,12 @@ def get_baseParams(W_e, params_r, params_std=None):
     idx_regroup = []
 
     # find rank of regressor
-
+    epsilon = np.finfo(float).eps  # machine epsilon
+    tolpal = W_e.shape[0]*abs(np.diag(R).max()) * \
+        epsilon  # rank revealing tolerance
     for i in range(len(params_r)):
-        if abs(np.diag(R)[i]) > TOL_QR:
+        # print("R-value: ", i+1, params_r[i], abs(np.diag(R)[i])) # for debugging to see the value of singular value
+        if abs(np.diag(R))[i] > tolpal:
             idx_base.append(i)
         else:
             idx_regroup.append(i)
@@ -233,18 +236,10 @@ def get_baseParams(W_e, params_r, params_std=None):
     for i in range(len(idx_base)):
         W1[:, i] = W_e[:, idx_base[i]]
         params_base.append(params_r[idx_base[i]])
+        # print(idx_base[i], params_r[idx_base[i]])
     for j in range(len(idx_regroup)):
         W2[:, j] = W_e[:, idx_regroup[j]]
         params_regroup.append(params_r[idx_regroup[j]])
-
-    # return base param indices 
-    idx_base = []
-
-    if params_std is not None:
-        params_names = list(params_std.keys())
-        for i in params_base:
-            if i in params_names:
-                idx_base.append(params_names.index(i))
                 
     W_regrouped = np.c_[W1, W2]
 
@@ -256,7 +251,7 @@ def get_baseParams(W_e, params_r, params_std=None):
     R2 = R_r[0:numrank_W, numrank_W: R.shape[1]]
 
     # regrouping coefficient
-    beta = np.around(np.dot(np.linalg.inv(R1), R2), 6)
+    beta = np.around(np.matmul(np.linalg.inv(R1), R2), 6)
 
     tol_beta = 1e-6  # for scipy.signal.decimate
     for i in range(numrank_W):
@@ -291,7 +286,6 @@ def get_baseParams(W_e, params_r, params_std=None):
 
 
     return W_b, params_base, idx_base
-
 
 def get_baseIndex(W_e, params_r):
     """ This function finds the linearly independent parameters.
@@ -335,20 +329,20 @@ def cond_num(W_b, norm_type=None):
     return cond_num
 
 
-def relative_stdev(W_b, phi_b, tau):
-    """ Calculates relative deviation of estimated parameters."""
-    # stdev of residual error ro
-    sig_ro_sqr = np.linalg.norm((tau - np.dot(W_b, phi_b))) ** 2 / (
-        W_b.shape[0] - phi_b.shape[0]
-    )
+# def relative_stdev(W_b, phi_b, tau):
+#     """ Calculates relative deviation of estimated parameters."""
+#     # stdev of residual error ro
+#     sig_ro_sqr = np.linalg.norm((tau - np.dot(W_b, phi_b))) ** 2 / (
+#         W_b.shape[0] - phi_b.shape[0]
+#     )
 
-    # covariance matrix of estimated parameters
-    C_x = sig_ro_sqr * np.linalg.inv(np.dot(W_b.T, W_b))
+#     # covariance matrix of estimated parameters
+#     C_x = sig_ro_sqr * np.linalg.inv(np.dot(W_b.T, W_b))
 
-    # relative stdev of estimated parameters
-    std_x_sqr = np.diag(C_x)
-    std_xr = np.zeros(std_x_sqr.shape[0])
-    for i in range(std_x_sqr.shape[0]):
-        std_xr[i] = np.round(100 * np.sqrt(std_x_sqr[i]) / np.abs(phi_b[i]), 2)
+#     # relative stdev of estimated parameters
+#     std_x_sqr = np.diag(C_x)
+#     std_xr = np.zeros(std_x_sqr.shape[0])
+#     for i in range(std_x_sqr.shape[0]):
+#         std_xr[i] = np.round(100 * np.sqrt(std_x_sqr[i]) / np.abs(phi_b[i]), 2)
 
-    return std_xr
+#     return std_xr

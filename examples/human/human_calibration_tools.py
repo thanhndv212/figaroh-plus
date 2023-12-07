@@ -19,69 +19,30 @@ from scipy.optimize import approx_fprime
 from os.path import dirname, join, abspath
 from pinocchio.robot_wrapper import RobotWrapper
 
-class Robot(RobotWrapper):
-    """ A class that create a pinocchio Robot with Robot Wrapper
-    Some of its attribute can specify if the robot has a  freeflyer, etc...
-    """
-    def __init__(
-        self,
-        robot_urdf,
-        package_dirs,
-        isFext=False,
-        isActuator_inertia=False,
-        isFrictionincld=False,
-        isOffset=False,
-        isCoupling=False,
-    ):
-
-        # intrinsic dynamic parameter names
-        self.params_name = (
-            "Ixx",
-            "Ixy",
-            "Ixz",
-            "Iyy",
-            "Iyz",
-            "Izz",
-            "mx",
-            "my",
-            "mz",
-            "m",
-        )
-
-        # defining conditions
-        self.isFext = isFext
-        self.isActuator_inertia = isActuator_inertia
-        self.isFrictionincld = isFrictionincld
-        self.isOffset = isOffset
-        self.isCoupling = isCoupling
-
-        # folder location
-        self.robot_urdf = robot_urdf
-
-        # initializing robot's models
-        if not isFext:
-            self.initFromURDF(robot_urdf, package_dirs=package_dirs)
-        else:
-            self.initFromURDF(robot_urdf, package_dirs=package_dirs,
-                              root_joint=pin.JointModelFreeFlyer())
-
-        # self.geom_model = pin.buildGeomFromUrdf(
-        #     self.model, robot_urdf, geom_type=pin.GeometryType.COLLISION,
-        #     package_dirs = package_dirs
-        # )
-
-        ## \todo test that this is equivalent to reloading the model
-        self.geom_model = self.collision_model
-
 def Rquat(x, y, z, w):
-    """ A function that returns the rotation matrix when a quaternion is given as input
+    """_Returns the rotation matrix for a quaternion given as input_
+
+    Args:
+        x (_float_): _Imaginary part of the quaternion_
+        y (_float_): _Imaginary part of the quaternion_
+        z (_float_): _Imaginary part of the quaternion_
+        w (_float_): _Real part of the quaternion_
+
+    Returns:
+        _array_: _Rotation matrix associated to the quaternion_
     """
+
     q = pin.Quaternion(x, y, z, w)
     q.normalize()
     return q.matrix()  
 
 def place(viz,name, M):
-    """ A function that set an object named "name" in the viewer viz with the transformation matrix M
+    """_Sets an object "name" in the viewer viz using the transformation matrix M_
+
+    Args:
+        viz (_Visualiser_): _Pinocchio visualiser_
+        name (_str_): _The name of the object_
+        M (_SE3_): _The transformation matrix to which we want the object to be_
     """
     viz.viewer.gui.applyConfiguration(name, pin.SE3ToXYZQUAT(M).tolist())
     viz.viewer.gui.refresh()
@@ -183,52 +144,76 @@ def chord_joint_centre(HalfJoint, JointMarker, TopJoint, StickMarker, beta = 0 )
         return JointMarker + E * HalfJoint
 
 def make_markers_dict_notime(PMarkers,markers_name,joints_width=None):
-    """ A function that creates a dictionnary linking markers names and their positions (it also includes joints _width for elbow,knee,wrist and ankle)
-    Input : PMarkers : (array) array containing the 3D positions (as sub array) of all markers in global frame
-            markers_names : (list of str) a list giving the names of all markers (here the 35 markers of plug in gait have been chosen)
-            joints_width : (list of float) a list giving the width of knee, ankle, elbow, wrist (for each joint the value is specified 2 times for left and right)
-    Output : a dictionary containing markers positions and names 
+    """_Creates a dictionnary linking markers names and their positions (it also includes joints_width for elbow,knee,wrist and ankle if required)_
+
+    Args:
+        PMarkers (_array_): _array containing the 3D positions (as sub array) of all markers in global frame_
+        markers_name (_list(str)_): _a list giving the names of all markers (here the 35 markers of plug in gait have been chosen)_
+        joints_width (_list(float)_, optional): _a list giving the width of knee, ankle, elbow, wrist (for each joint the value is specified 2 times for left and right)_. Defaults to None.
+
+    Returns:
+        _dict_: _a dictionary containing markers positions and names_
     """
+
     values=[]
+    markers_name_copy = markers_name.copy()
     for ii in range(len(PMarkers)):
         values.append(PMarkers[ii])
     if (joints_width is not None):
-        markers_name.append('LKNEW')
+        markers_name_copy.append('LKNEW')
         values.append(joints_width[0])
-        markers_name.append('RKNEW')
+        markers_name_copy.append('RKNEW')
         values.append(joints_width[1])
-        markers_name.append('LANKW')
+        markers_name_copy.append('LANKW')
         values.append(joints_width[2])
-        markers_name.append('RANKW')
+        markers_name_copy.append('RANKW')
         values.append(joints_width[3])
-        markers_name.append('LELBW')
+        markers_name_copy.append('LELBW')
         values.append(joints_width[4])
-        markers_name.append('RELBW')
+        markers_name_copy.append('RELBW')
         values.append(joints_width[5])
-        markers_name.append('LWRIW')
+        markers_name_copy.append('LWRIW')
         values.append(joints_width[6])
-        markers_name.append('RWRIW')
+        markers_name_copy.append('RWRIW')
         values.append(joints_width[7])
-    return dict(zip(markers_name,values))
+    return dict(zip(markers_name_copy,values))
 
 def compute_joint_centers(DMarkers):
-    """ A function that calculates the position of joint centers from a given dictionnary of markers positions
-    input : DMarkers : (dict) a dictionnary giving markers positions in global frame (from make_markers_dict_notime for instance)
-    Output : a dictionnary containing joint centers names and positions in global frame
+    """_Calculates the position of joint centers from a given dictionnary of markers positions_
+
+    Args:
+        DMarkers (_dict_): _a dictionnary giving markers positions in global frame (from make_markers_dict_notime for instance)_
+
+    Returns:
+        _dict_: _a dictionnary containing joint centers names and positions in global frame_
     """
+
     names=['PELC','THOC','LHIPC','LKNEC','LANKC','RHIPC','RKNEC','RANKC','LSHOC','LELBC','LWRC','RSHOC','RELBC','RWRC']
     positions=[]
 
-    ASIS_ASIS= np.linalg.norm(DMarkers['RASI']-DMarkers['LASI'])
-    offset_lasis=np.array([0.22*ASIS_ASIS,0.14*ASIS_ASIS,-0.3*ASIS_ASIS])
-    offset_rasis=np.array([0.22*ASIS_ASIS,-0.14*ASIS_ASIS,-0.3*ASIS_ASIS])
-    
-    LSHO_RSHO=np.linalg.norm(DMarkers['RSHO']-DMarkers['LSHO'])
-    offset_rshoulder=np.array([0,0,-0.17*LSHO_RSHO])
-    offset_lshoulder=np.array([0,0,-0.17*LSHO_RSHO])
-   
+    #Def of pelvis frame 
     PELC = ((DMarkers['RASI']+DMarkers['LASI'])/2+(DMarkers['RPSI']+DMarkers['LPSI'])/2)/2
-    positions.append(PELC) 
+
+    pel_xaxis = (DMarkers['RASI']+DMarkers['LASI'])/2-(DMarkers['RPSI']+DMarkers['LPSI'])/2
+    pel_zaxis = DMarkers['RASI']-DMarkers['LASI']
+
+    pel_xaxis = pel_xaxis/np.linalg.norm(pel_xaxis)
+    pel_zaxis = pel_zaxis/np.linalg.norm(pel_zaxis)
+
+    pel_yaxis = np.cross(pel_zaxis,pel_xaxis)
+
+    pel_xaxis = pel_xaxis/np.linalg.norm(pel_xaxis)
+    pel_yaxis = pel_yaxis/np.linalg.norm(pel_yaxis)
+    pel_zaxis = pel_zaxis/np.linalg.norm(pel_zaxis)
+
+    R_pelvis = np.array([[pel_xaxis[0],pel_yaxis[0],pel_zaxis[0]],[pel_xaxis[1],pel_yaxis[1],pel_zaxis[1]],[pel_xaxis[2],pel_yaxis[2],pel_zaxis[2]]])
+
+    ASIS_ASIS= np.linalg.norm(DMarkers['RASI']-DMarkers['LASI'])
+
+    offset_lasis = R_pelvis@np.array([-0.22*ASIS_ASIS,-0.3*ASIS_ASIS,0.14*ASIS_ASIS])
+    offset_rasis = R_pelvis@np.array([-0.22*ASIS_ASIS,-0.3*ASIS_ASIS,-0.14*ASIS_ASIS])
+
+    positions.append(PELC)
 
     THOC = (DMarkers['C7']+DMarkers['CLAV'])/2
     positions.append(THOC) 
@@ -251,6 +236,10 @@ def compute_joint_centers(DMarkers):
     RANKC = chord_joint_centre(DMarkers['RANKW'],DMarkers['RANK'],LKNEC,DMarkers['RTIB'])
     positions.append(RANKC)
 
+    LSHO_RSHO=np.linalg.norm(DMarkers['RSHO']-DMarkers['LSHO'])
+    offset_rshoulder=np.array([0,0,-0.17*LSHO_RSHO])
+    offset_lshoulder=np.array([0,0,-0.17*LSHO_RSHO])
+
     LSHOC = DMarkers['LSHO']+offset_lshoulder
     positions.append(LSHOC)
 
@@ -268,16 +257,16 @@ def compute_joint_centers(DMarkers):
     LELBC = DMarkers['LELB'] - cons_vector*DMarkers['LELBW']
     positions.append(LELBC)
 
-    V1 = (DMarkers['LWRA']-DMarkers['LWRB'])
-    V2 = lmid_wrist- LELBC
+    # V1 = (DMarkers['LWRA']-DMarkers['LWRB'])
+    # V2 = lmid_wrist- LELBC
 
-    V1 = V1 / np.linalg.norm(V1)  # Normalise vectors
-    V2 = V2 / np.linalg.norm(V2)
+    # V1 = V1 / np.linalg.norm(V1)  # Normalise vectors
+    # V2 = V2 / np.linalg.norm(V2)
 
-    # Take the cross product
-    cons_vector = np.cross(V1, V2)
+    # # Take the cross product
+    # cons_vector = np.cross(V1, V2)
 
-    LWRC = lmid_wrist + DMarkers['LWRIW']*cons_vector
+    LWRC = lmid_wrist #+ DMarkers['LWRIW']*cons_vector
     positions.append(LWRC)
 
     RSHOC = DMarkers['RSHO']+offset_rshoulder
@@ -297,22 +286,30 @@ def compute_joint_centers(DMarkers):
     RELBC = DMarkers['RELB'] + cons_vector*DMarkers['RELBW']
     positions.append(RELBC)
 
-    V1 = (DMarkers['RWRA']-DMarkers['RWRB'])
-    V2 = rmid_wrist- RELBC
+    # V1 = (DMarkers['RWRA']-DMarkers['RWRB'])
+    # V2 = rmid_wrist- RELBC
 
-    V1 = V1 / np.linalg.norm(V1)  # Normalise vectors
-    V2 = V2 / np.linalg.norm(V2)
+    # V1 = V1 / np.linalg.norm(V1)  # Normalise vectors
+    # V2 = V2 / np.linalg.norm(V2)
 
-    # Take the cross product
-    cons_vector = np.cross(V1, V2)
+    # # Take the cross product
+    # cons_vector = np.cross(V1, V2)
 
-    RWRC = rmid_wrist - DMarkers['RWRIW']*cons_vector
+    RWRC = rmid_wrist #- DMarkers['RWRIW']*cons_vector
     positions.append(RWRC)
 
     
     return dict(zip(names,positions))
 
 def compute_mean_joints_centers(joints_centers_list):
+    """_Calculates the mean joint centers when the joint centers have been calculated on several samples_
+
+    Args:
+        joints_centers_list (_list_): _A list of dictionnary containing the joint centers positions for each sample_
+
+    Returns:
+        _dict_: _a dictionnary containing joint centers names and mean positions in global frame_
+    """
     names=['PELC','THOC','LHIPC','LKNEC','LANKC','RHIPC','RKNEC','RANKC','LSHOC','LELBC','LWRC','RSHOC','RELBC','RWRC']
     positions=[]
 
@@ -363,13 +360,18 @@ def compute_mean_joints_centers(joints_centers_list):
     return(dict(zip(names,positions)))
 
 def scale_human_model_mocap(model,DMarkers):
-    """ A function that scales the lengths of the model to the lengths calculated thanks to joints centers positions
-    Input: model (ModelTpl) : the pinocchio model that we want to scale
-            DMarkers (dict) : a dictionnary containing joints centers positions and their names
-    output : model (ModelTpl): the model that is properly scaled
+    """_Scales the lengths of the human model to the lengths calculated thanks to joints centers positions_
+
+    Args:
+        model (_model_): _Pinocchio model to be scaled_
+        DMarkers (_dict_): _a dictionnary containing joints centers positions and their names_
+
+    Returns:
+        _model_: _the model that is properly scaled_
+        _data_: _the data associated_
     """
 
-    # Get the joint to scale ids 
+        # Get the joint to scale ids 
 
     IDX_JLANKZ = model.getJointId('left_ankle_Z')
     IDX_JRANKZ = model.getJointId('right_ankle_Z')
@@ -379,8 +381,8 @@ def scale_human_model_mocap(model,DMarkers):
     IDX_JRELBZ = model.getJointId('right_elbow_Z')
     IDX_JLWRZ = model.getJointId('left_wrist_Z')
     IDX_JRWRZ = model.getJointId('right_wrist_Z')
-    IDX_JLSHOY = model.getJointId('left_shoulder_Y')
-    IDX_JRSHOY = model.getJointId('right_shoulder_Y')
+    IDX_JLSHOY = model.getJointId('left_shoulder_Z')
+    IDX_JRSHOY = model.getJointId('right_shoulder_Z')
 
     # Retrieve the segments lengths from measures
 
@@ -418,126 +420,30 @@ def scale_human_model_mocap(model,DMarkers):
     model.jointPlacements[IDX_JRSHOY].translation[2]=r_trunk
     model.jointPlacements[IDX_JLSHOY].translation[2]=-l_trunk
 
-    return model
+    data=model.createData()
 
-def scale_human_model_mediapipe(model,Pos_landmarks):
-    """ Not used here but it can be of help if you plan to work with mediapipe
-    """
-
-    IDX_JLANKZ = model.getJointId('left_ankle_Z')
-    IDX_JRANKZ = model.getJointId('right_ankle_Z')
-    IDX_JRKNEE = model.getJointId('right_knee')
-    IDX_JLKNEE = model.getJointId('left_knee')
-    IDX_JLELBZ = model.getJointId('left_elbow_Z')
-    IDX_JRELBZ = model.getJointId('right_elbow_Z')
-    IDX_JLWRZ = model.getJointId('left_wrist_Z')
-    IDX_JRWRZ = model.getJointId('right_wrist_Z')
-    IDX_JLSHOY = model.getJointId('left_shoulder_Y')
-    IDX_JRSHOY = model.getJointId('right_shoulder_Y')
-    IDX_JNECK=model.getJointId('middle_cervical_X')
-
-    # Retrieve the segments lengths from measures
-
-    l_fem_lenght=np.linalg.norm(Pos_landmarks[25]-Pos_landmarks[23])
-    l_tib_lenght= np.linalg.norm(Pos_landmarks[27]-Pos_landmarks[25])
-    l_forearm_lenght= np.linalg.norm(Pos_landmarks[15]-Pos_landmarks[13])
-    l_upperarm_lenght= np.linalg.norm(Pos_landmarks[13]-Pos_landmarks[11])
-
-
-    r_fem_lenght= np.linalg.norm(Pos_landmarks[26]-Pos_landmarks[24])
-    r_tib_lenght= np.linalg.norm(Pos_landmarks[28]-Pos_landmarks[26])
-    r_forearm_lenght= np.linalg.norm(Pos_landmarks[16]-Pos_landmarks[14])
-    r_upperarm_lenght= np.linalg.norm(Pos_landmarks[14]-Pos_landmarks[12])
-
-    neck = closest_point_on_line(np.array(Pos_landmarks[12]),np.array(Pos_landmarks[11]),np.array(Pos_landmarks[0]))
-    abdomen = (Pos_landmarks[11]+Pos_landmarks[12]+Pos_landmarks[23]+Pos_landmarks[24])/4
-
-
-    length_trunk = np.linalg.norm(neck-abdomen)
-    
-
-    l_wtrunk=np.linalg.norm(Pos_landmarks[11]-neck)
-    r_wtrunk=np.linalg.norm(Pos_landmarks[12]-neck)
-
-    # KNEES
-    model.jointPlacements[IDX_JRKNEE].translation=np.array([0,-r_fem_lenght,0])
-    model.jointPlacements[IDX_JLKNEE].translation=np.array([0,-l_fem_lenght,0])
-
-    # ELBOWS
-    model.jointPlacements[IDX_JRELBZ].translation=np.array([0,-r_upperarm_lenght,0])
-    model.jointPlacements[IDX_JLELBZ].translation=np.array([0,-l_upperarm_lenght,0])
-
-    # ANKLES
-    model.jointPlacements[IDX_JRANKZ].translation=np.array([0,-r_tib_lenght,0])
-    model.jointPlacements[IDX_JLANKZ].translation=np.array([0,-l_tib_lenght,0])
-
-    # WRISTS
-    model.jointPlacements[IDX_JRWRZ].translation=np.array([0,-r_forearm_lenght,0])
-    model.jointPlacements[IDX_JLWRZ].translation=np.array([0,-l_forearm_lenght,0])
-
-    # SHOULDERS
-    model.jointPlacements[IDX_JRSHOY].translation[2]=r_wtrunk
-    model.jointPlacements[IDX_JLSHOY].translation[2]=-l_wtrunk
-
-    # NECK
-    model.jointPlacements[IDX_JNECK].translation=np.array([0,-length_trunk/2,0])
-
-    return model
-
-def mean_scale_model(model,mean_lengths):
-
-    IDX_JLANKZ = model.getJointId('left_ankle_Z')
-    IDX_JRANKZ = model.getJointId('right_ankle_Z')
-    IDX_JRKNEE = model.getJointId('right_knee')
-    IDX_JLKNEE = model.getJointId('left_knee')
-    IDX_JLELBZ = model.getJointId('left_elbow_Z')
-    IDX_JRELBZ = model.getJointId('right_elbow_Z')
-    IDX_JLWRZ = model.getJointId('left_wrist_Z')
-    IDX_JRWRZ = model.getJointId('right_wrist_Z')
-    IDX_JLSHOY = model.getJointId('left_shoulder_Y')
-    IDX_JRSHOY = model.getJointId('right_shoulder_Y')
-    IDX_JNECK= model.getJointId('middle_cervical_X')
-
-    # KNEES
-    model.jointPlacements[IDX_JRKNEE].translation=np.array([0,-mean_lengths[6],0])
-    model.jointPlacements[IDX_JLKNEE].translation=np.array([0,-mean_lengths[12],0])
-
-    # ELBOWS
-    model.jointPlacements[IDX_JRELBZ].translation=np.array([0,-mean_lengths[4],0])
-    model.jointPlacements[IDX_JLELBZ].translation=np.array([0,-mean_lengths[10],0])
-
-    # ANKLES
-    model.jointPlacements[IDX_JRANKZ].translation=np.array([0,-mean_lengths[7],0])
-    model.jointPlacements[IDX_JLANKZ].translation=np.array([0,-mean_lengths[13],0])
-
-    # WRISTS
-    model.jointPlacements[IDX_JRWRZ].translation=np.array([0,-mean_lengths[5],0])
-    model.jointPlacements[IDX_JLWRZ].translation=np.array([0,-mean_lengths[11],0])
-
-    # SHOULDERS
-    model.jointPlacements[IDX_JRSHOY].translation[2]=mean_lengths[3]
-    model.jointPlacements[IDX_JLSHOY].translation[2]=-mean_lengths[9]
-
-    # NECK
-    model.jointPlacements[IDX_JNECK].translation=np.array([0,-mean_lengths[2]/2,0])
-    return model
+    return model,data
 
 
 class calibration_mocap(object):
     """ A class that instantiate the optimisation problem that we solve to calibrate the model with a static pose. Here ipopt is used
     """
-    def __init__(self,  robot,DMarkers):
+    def __init__(self,  model,data,DMarkers):
         
         self.DMarkers=DMarkers
-        self.robot=robot
-        self.model=robot.model
-        self.data=robot.data
+        self.model=model
+        self.data=data
         
     def objective(self, x):
     # callback for objective 
-        q_tPose=np.zeros((43,))
-        q_tPose[20]=-np.pi/2
-        q_tPose[31]=-np.pi/2
+        q_tPose=0.0001*np.ones((self.model.nq,))
+
+        q_tPose[23]=np.pi/2
+        q_tPose[25]=0.1
+        q_tPose[26]=4*np.pi/9
+        q_tPose[34]=np.pi/2
+        q_tPose[36]=0.1
+        q_tPose[37]=4*np.pi/9
       
         Goal=np.empty(shape=[0,3])
 
@@ -545,20 +451,20 @@ class calibration_mocap(object):
             Goal=np.concatenate((Goal,np.reshape(np.array(valeur),(1,3))),axis=0)
 
         ids=[] # retrieve the index of joints of interest to fit
-        ids.append(self.model.getJointId('middle_lumbar_Z')) # PELC
-        ids.append(self.model.getJointId('middle_cervical_Z')) # THOC
-        ids.append(self.model.getJointId('left_hip_Z')) # LHIPC
+        ids.append(self.model.getJointId('middle_lumbar_X')) # PELC
+        ids.append(self.model.getJointId('middle_cervical_Y')) # THOC
+        ids.append(self.model.getJointId('left_hip_Y')) # LHIPC
         ids.append(self.model.getJointId('left_knee')) # LKNEC
-        ids.append(self.model.getJointId('left_ankle_Z')) # LANKC
-        ids.append(self.model.getJointId('right_hip_Z')) # RHIPC
+        ids.append(self.model.getJointId('left_ankle_X')) # LANKC
+        ids.append(self.model.getJointId('right_hip_Y')) # RHIPC
         ids.append(self.model.getJointId('right_knee')) # RKNEC
-        ids.append(self.model.getJointId('right_ankle_Z')) # RANKC
+        ids.append(self.model.getJointId('right_ankle_X')) # RANKC
         ids.append(self.model.getJointId('left_shoulder_Y')) # LSHOC
-        ids.append(self.model.getJointId('left_elbow_Z')) # LELBC
-        ids.append(self.model.getJointId('left_wrist_Z')) # LWRC
+        ids.append(self.model.getJointId('left_elbow_Y')) # LELBC
+        ids.append(self.model.getJointId('left_wrist_X')) # LWRC
         ids.append(self.model.getJointId('right_shoulder_Y')) # RSHOC
-        ids.append(self.model.getJointId('right_elbow_Z')) # RELBC
-        ids.append(self.model.getJointId('right_wrist_Z')) # RWRC
+        ids.append(self.model.getJointId('right_elbow_Y')) # RELBC
+        ids.append(self.model.getJointId('right_wrist_X')) # RWRC
 
         pin.forwardKinematics(self.model,self.data,x)
 
@@ -566,8 +472,6 @@ class calibration_mocap(object):
 
         for ii in range(len(ids)): 
             Mposition_joints=np.concatenate((Mposition_joints,np.reshape(self.data.oMi[ids[ii]].translation,(1,3))),axis=0)
-        
-        # Mposition_joints=np.concatenate((Mposition_joints,np.reshape(self.data.oMi[ids[1]].translation+[0,0,0.25],(1,3))),axis=0) #HC
 
         J=np.sum((Goal-Mposition_joints)**2)+1e-2*np.sum((q_tPose-x)**2)
 
@@ -590,18 +494,18 @@ class calibration_mocap(object):
 
         return jac
 
-def calibrate_human_model_mocap(robot,DMarkers,q0):
+def calibrate_human_model_mocap(model,data,DMarkers,q0):
     """ Set the optimisation problem : min || joint_centers_positions_measured - joint_center_of_model_positions ||² with q being the vector of optim
     """
 
-    lb = robot.model.lowerPositionLimit # lower joint limits
-    ub = robot.model.upperPositionLimit # upper joint limits
+    lb = model.lowerPositionLimit # lower joint limits
+    ub = model.upperPositionLimit # upper joint limits
     cl=cu=[1]
 
     nlp = cyipopt.Problem(
         n=len(q0),
         m=len(cl),
-        problem_obj=calibration_mocap(robot,DMarkers),
+        problem_obj=calibration_mocap(model,data,DMarkers),
         lb=lb,
         ub=ub,
         cl=cl,
@@ -615,32 +519,38 @@ def calibrate_human_model_mocap(robot,DMarkers,q0):
     return q_opt
 
 def get_local_markers(model,data,q0,markers_global):
-    """ This function creates a dictionnary that list the local positions of all markers with their respective names
-    Input : model (ModelTpl) : pinocchio model
-            data (DataTpl) : data associated to model
-            q0 (array) : angular configuration corresponding to angular configuration of the static pose retrieved by the optimisation problem
-            markers_global : positions of markers in global frame 
-    Output : a dictionnary that list the local positions of all markers with their respective names
+    """_Creates a dictionnary that list the local positions of all markers with their respective names_
+
+    Args:
+        model (_model_): _Pinocchio model_
+        data (_data_): _Pinocchio data_
+        q0 (_array_): _Angular configuration corresponding to angular configuration of the static pose retrieved by the optimisation problem_
+        markers_global (_dict_): _Dictionnary containing positions of markers in global frame _
+
+    Returns:
+        _dict_: _Dictionnary that lists the local positions of all markers with their respective names_
     """
+
     local_values=[]
     names=['LFHD','RFHD','LBHD','RBHD','C7','T10','CLAV','STRN','RBAK','LSHO','LELB','LWRA','LWRB','LFIN','RSHO','RELB','RWRA','RWRB','RFIN','LASI','RASI','LPSI','RPSI','LTHI','LKNE','LTIB','LANK','LHEE','LTOE','RTHI','RKNE','RTIB','RANK','RHEE','RTOE']
     pin.forwardKinematics(model,data,q0)
+    pin.updateFramePlacements
     oMi=dict(zip(model.names,data.oMi))
     local_values.append(oMi['middle_cervical_Y'].inverse().rotation@(markers_global['LFHD']-oMi['middle_cervical_Y'].translation))
     local_values.append(oMi['middle_cervical_Y'].inverse().rotation@(markers_global['RFHD']-oMi['middle_cervical_Y'].translation))
     local_values.append(oMi['middle_cervical_Y'].inverse().rotation@(markers_global['LBHD']-oMi['middle_cervical_Y'].translation))
     local_values.append(oMi['middle_cervical_Y'].inverse().rotation@(markers_global['RBHD']-oMi['middle_cervical_Y'].translation))
     local_values.append(oMi['middle_thoracic_Y'].inverse().rotation@(markers_global['C7']-oMi['middle_thoracic_Y'].translation))
-    local_values.append(oMi['middle_thoracic_Y'].inverse().rotation@(markers_global['T10']-oMi['middle_thoracic_Y'].translation))
+    local_values.append(oMi['middle_abdomen_Y'].inverse().rotation@(markers_global['T10']-oMi['middle_abdomen_Y'].translation))
     local_values.append(oMi['middle_thoracic_Y'].inverse().rotation@(markers_global['CLAV']-oMi['middle_thoracic_Y'].translation))
-    local_values.append(oMi['middle_thoracic_Y'].inverse().rotation@(markers_global['STRN']-oMi['middle_thoracic_Y'].translation))
+    local_values.append(oMi['middle_abdomen_Y'].inverse().rotation@(markers_global['STRN']-oMi['middle_abdomen_Y'].translation))
     local_values.append(oMi['middle_thoracic_Y'].inverse().rotation@(markers_global['RBAK']-oMi['middle_thoracic_Y'].translation))
-    local_values.append(oMi['left_shoulder_Z'].inverse().rotation@(markers_global['LSHO']-oMi['left_shoulder_Z'].translation))
+    local_values.append(oMi['left_shoulder_Y'].inverse().rotation@(markers_global['LSHO']-oMi['left_shoulder_Y'].translation))
     local_values.append(oMi['left_elbow_Y'].inverse().rotation@(markers_global['LELB']-oMi['left_elbow_Y'].translation))
     local_values.append(oMi['left_wrist_X'].inverse().rotation@(markers_global['LWRA']-oMi['left_wrist_X'].translation))
     local_values.append(oMi['left_wrist_X'].inverse().rotation@(markers_global['LWRB']-oMi['left_wrist_X'].translation))
     local_values.append(oMi['left_wrist_X'].inverse().rotation@(markers_global['LFIN']-oMi['left_wrist_X'].translation))
-    local_values.append(oMi['right_shoulder_Z'].inverse().rotation@(markers_global['RSHO']-oMi['right_shoulder_Z'].translation))
+    local_values.append(oMi['right_shoulder_Y'].inverse().rotation@(markers_global['RSHO']-oMi['right_shoulder_Y'].translation))
     local_values.append(oMi['right_elbow_Y'].inverse().rotation@(markers_global['RELB']-oMi['right_elbow_Y'].translation))
     local_values.append(oMi['right_wrist_X'].inverse().rotation@(markers_global['RWRA']-oMi['right_wrist_X'].translation))
     local_values.append(oMi['right_wrist_X'].inverse().rotation@(markers_global['RWRB']-oMi['right_wrist_X'].translation))
@@ -716,13 +626,20 @@ def mean_local_markers(mean):
     values.append(np.array([mean['RTOEx'],mean['RTOEy'],mean['RTOEz']]))
     return dict(zip(names,values))
 
-def add_markers_frames(model,data,markers_local):
-    """ This function adds the markers to the model as new frames
-    Input : model ,data as usual 
-            markers_local (dict) : a dictionnary containing all the local poses of markers
-    Output : data (DataTpl) : data refreshed with markers frames
-            imarkers (list) : a list of index of markers frames
+def add_plug_in_gait_markers(model,data,markers_local):
+    """_Adds the markers corresponding to the Vicon plug in gait template to the model as new frames_
+
+    Args:
+        model (_model_): _Pinocchio model_
+        data (_data_): _Pinocchio data_
+        markers_local (_dict_): _Dictionnary containing all the local poses of markers_
+
+    Returns:
+        _data_: _Data refreshed with markers frames_
+        _list_: _List of index of markers frames_
+        Note : the model has also been updated at this point
     """
+
     i_markers=[]
 
     # Get the index of frames of interest
@@ -735,6 +652,7 @@ def add_markers_frames(model,data,markers_local):
     IDX_MH = model.getFrameId('middle_head')
     IDX_MP = model.getFrameId('middle_pelvis')
     IDX_MT = model.getFrameId('middle_thorax')
+    IDX_MA = model.getFrameId('middle_abdomen')
     IDX_RF = model.getFrameId('right_foot')
     IDX_RH = model.getFrameId('right_hand')
     IDX_RLA = model.getFrameId('right_lowerarm')
@@ -748,16 +666,17 @@ def add_markers_frames(model,data,markers_local):
     IDX_JLH = model.getJointId('left_wrist_X')
     IDX_JLLA = model.getJointId('left_elbow_Y')
     IDX_JLLL = model.getJointId('left_knee')
-    IDX_JLUA = model.getJointId('left_shoulder_Z')
+    IDX_JLUA = model.getJointId('left_shoulder_Y')
     IDX_JLUL = model.getJointId('left_hip_Y')
     IDX_JMH = model.getJointId('middle_cervical_Y')
     IDX_JMP= model.getJointId('middle_lumbar_X')
     IDX_JMT = model.getJointId('middle_thoracic_Y')
+    IDX_JMA = model.getJointId('middle_abdomen_Y')
     IDX_JRF = model.getJointId('right_ankle_X')
     IDX_JRH = model.getJointId('right_wrist_X')
     IDX_JRLA = model.getJointId('right_elbow_Y')
     IDX_JRLL = model.getJointId('right_knee')
-    IDX_JRUA = model.getJointId('right_shoulder_Z')
+    IDX_JRUA = model.getJointId('right_shoulder_Y')
     IDX_JRUL = model.getJointId('right_hip_Y')
    
     # 35 MARKERS FRAMES TO ADD
@@ -831,13 +750,13 @@ def add_markers_frames(model,data,markers_local):
     F21=pin.Frame('C7',IDX_JMT,IDX_MT,pin.SE3(Rquat(1, 0, 0, 0), np.matrix([markers_local['C7'][0],markers_local['C7'][1],markers_local['C7'][2]]).T), pin.FrameType.OP_FRAME, inertia)
     i21=model.addFrame(F21,False)
     i_markers.append(i21)
-    F22=pin.Frame('T10',IDX_JMT,IDX_MT,pin.SE3(Rquat(1, 0, 0, 0), np.matrix([markers_local['T10'][0],markers_local['T10'][1],markers_local['T10'][2]]).T), pin.FrameType.OP_FRAME, inertia)
+    F22=pin.Frame('T10',IDX_JMA,IDX_MA,pin.SE3(Rquat(1, 0, 0, 0), np.matrix([markers_local['T10'][0],markers_local['T10'][1],markers_local['T10'][2]]).T), pin.FrameType.OP_FRAME, inertia)
     i22=model.addFrame(F22,False)
     i_markers.append(i22)
     F23=pin.Frame('CLAV',IDX_JMT,IDX_MT,pin.SE3(Rquat(1, 0, 0, 0), np.matrix([markers_local['CLAV'][0],markers_local['CLAV'][1],markers_local['CLAV'][2]]).T), pin.FrameType.OP_FRAME, inertia)
     i23=model.addFrame(F23,False)
     i_markers.append(i23)
-    F24=pin.Frame('STRN',IDX_JMT,IDX_MT,pin.SE3(Rquat(1, 0, 0, 0), np.matrix([markers_local['STRN'][0],markers_local['STRN'][1],markers_local['STRN'][2]]).T), pin.FrameType.OP_FRAME, inertia)
+    F24=pin.Frame('STRN',IDX_JMA,IDX_MA,pin.SE3(Rquat(1, 0, 0, 0), np.matrix([markers_local['STRN'][0],markers_local['STRN'][1],markers_local['STRN'][2]]).T), pin.FrameType.OP_FRAME, inertia)
     i24=model.addFrame(F24,False)
     i_markers.append(i24)
     F25=pin.Frame('RBAK',IDX_JMT,IDX_MT,pin.SE3(Rquat(1, 0, 0, 0), np.matrix([markers_local['RBAK'][0],markers_local['RBAK'][1],markers_local['RBAK'][2]]).T), pin.FrameType.OP_FRAME, inertia)
@@ -879,3 +798,4 @@ def add_markers_frames(model,data,markers_local):
     data = model.createData()
 
     return data,i_markers
+
