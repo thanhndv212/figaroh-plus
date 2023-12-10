@@ -48,16 +48,11 @@ from figaroh.tools.regressor import (
     add_friction,
     add_joint_offset)
 from figaroh.tools.qrdecomposition import get_baseParams, double_QR
+from tiago_tools import load_robot
 
 
 # 1/ Load robot model and create a dictionary containing reserved constants
-ros_package_path = os.getenv('ROS_PACKAGE_PATH')
-package_dirs = ros_package_path.split(':')
-robot = Robot(
-    'data/tiago.urdf',
-    package_dirs= package_dirs,
-    # isFext=True  # add free-flyer joint at base
-)
+robot = load_robot("data/urdf/tiago_48_schunk.urdf")
 active_joints = ["torso_lift_joint",
                  "arm_1_joint",
                  "arm_2_joint",
@@ -84,9 +79,9 @@ eff_lims = robot.model.effortLimit[params_settings["idx_act_joints"]]
 
 # load csv files
 path_to_folder = dirname(str(abspath(__file__)))
-pos_csv_path = 'data/tiago_position.csv'
-vel_csv_path = 'data/tiago_velocity.csv'
-eff_csv_path = 'data/tiago_effort.csv'
+pos_csv_path = 'data/identification/tiago_position.csv'
+vel_csv_path = 'data/identification/tiago_velocity.csv'
+eff_csv_path = 'data/identification/tiago_effort.csv'
 
 t = pd.read_csv(join(path_to_folder, pos_csv_path), usecols=[0]).to_numpy()
 pos = pd.read_csv(join(path_to_folder, pos_csv_path))
