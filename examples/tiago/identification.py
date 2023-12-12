@@ -48,17 +48,11 @@ from figaroh.tools.regressor import (
     add_friction,
     add_joint_offset)
 from figaroh.tools.qrdecomposition import get_baseParams, double_QR
+from tiago_tools import load_robot
 
 
-# create a robot object
-ros_package_path = os.getenv('ROS_PACKAGE_PATH')
-package_dirs = ros_package_path.split(':')
-robot_dir = package_dirs[0] + "/example-robot-data/robots"
-robot = Robot(
-    robot_dir + "/tiago_description/robots/tiago_no_hand.urdf",
-    package_dirs = package_dirs,
-    # isFext=True  # add free-flyer joint at base
-)
+# 1/ Load robot model and create a dictionary containing reserved constants
+robot = load_robot("data/urdf/tiago_48_schunk.urdf")
 active_joints = ["torso_lift_joint",
                  "arm_1_joint",
                  "arm_2_joint",
@@ -70,11 +64,10 @@ active_joints = ["torso_lift_joint",
 idx_act_joints = [robot.model.getJointId(i)-1 for i in active_joints]
 
 # load standard parameters
-with open('examples/tiago/config/tiago_config.yaml', 'r') as f:
+with open('config/tiago_config.yaml', 'r') as f:
     config = yaml.load(f, Loader=SafeLoader)
     pprint.pprint(config)
 identif_data = config['identification']
-pprint.pprint(dir(robot.model))
 for (i,joint) in enumerate(robot.model.joints):
     print(i,robot.model.names[i], joint)
 params_settings = get_param_from_yaml(robot, identif_data)
@@ -86,16 +79,32 @@ eff_lims = robot.model.effortLimit[params_settings["idx_act_joints"]]
 
 # load csv files
 path_to_folder = dirname(str(abspath(__file__)))
-pos_csv_path = 'data/tiago_position.csv'
-vel_csv_path = 'data/tiago_velocity.csv'
-eff_csv_path = 'data/tiago_effort.csv'
+pos_csv_path = 'data/identification/tiago_position.csv'
+vel_csv_path = 'data/identification/tiago_velocity.csv'
+eff_csv_path = 'data/identification/tiago_effort.csv'
+
 t = pd.read_csv(join(path_to_folder, pos_csv_path), usecols=[0]).to_numpy()
-q = pd.read_csv(join(path_to_folder, pos_csv_path),
-                usecols=list(range(1, 9))).to_numpy()
-dq = pd.read_csv(join(path_to_folder, vel_csv_path),
-                 usecols=list(range(1, 9))).to_numpy()
-tau = pd.read_csv(join(path_to_folder, eff_csv_path),
-                  usecols=list(range(1, 9))).to_numpy()
+pos = pd.read_csv(join(path_to_folder, pos_csv_path))
+vel = pd.read_csv(join(path_to_folder, vel_csv_path))
+eff = pd.read_csv(join(path_to_folder, eff_csv_path))
+
+pos_cols = []
+vel_cols = []
+eff_cols = []
+for jn in active_joints:
+    for ii in pos.columns:
+        if jn in ii:
+            pos_cols.append(ii)
+    for jj in vel.columns:
+        if jn in jj:
+            vel_cols.append(jj)
+    for kk in eff.columns:
+        if jn in kk:
+            eff_cols.append(kk)
+
+q = pos[pos_cols].to_numpy()
+dq = vel[vel_cols].to_numpy()
+tau = eff[eff_cols].to_numpy()
 print("shape of raw data arrays (t, q, dq, effort): ", t.shape, q.shape, dq.shape, tau.shape)
 
 
@@ -113,33 +122,33 @@ print("shape of data arrays (t, q, dq, effort) after truncated at both ends: ", 
 Ntotal = t.shape[0]
 
 # reduction ratio
-red_tor = 1
-red_arm1 = 100
-red_arm2 = 100
-red_arm3 = 100
-red_arm4 = 100
-red_arm5 = 336
-red_arm6 = 336
-red_arm7 = 336
+red = dict()
+red['torso_lift_joint'] = 1
+red['arm_1_joint'] = 100
+red['arm_2_joint'] = 100
+red['arm_3_joint'] = 100
+red['arm_4_joint'] = 100
+red['arm_5_joint'] = 336
+red['arm_6_joint'] = 336
+red['arm_7_joint'] = 336
 
 # current constant (Nm/A)
-ka_tor = 1
-ka_arm1 = 0.136
-ka_arm2 = 0.136
-ka_arm3 = -0.087
-ka_arm4 = -0.087
-ka_arm5 = -0.087
-ka_arm6 = -0.0613
-ka_arm7 = -0.0613
-ka = [ka_tor, ka_arm1, ka_arm2, ka_arm3,
-      ka_arm4, ka_arm5, ka_arm6, ka_arm7]
-red = [red_tor, red_arm1, red_arm2, red_arm3,
-       red_arm4, red_arm5, red_arm6, red_arm7]
-for i in range(len(red)):
-    if i == 0:
-        tau[:, i] = red[i]*ka[i]*tau[:, i] + 193
+ka = dict()
+ka['torso_lift_joint'] = 1
+ka['arm_1_joint'] = 0.136
+ka['arm_2_joint'] = 0.136
+ka['arm_3_joint'] = -0.087
+ka['arm_4_joint'] = -0.087
+ka['arm_5_joint'] = -0.087
+ka['arm_6_joint'] = -0.0613
+ka['arm_7_joint'] = -0.0613
+
+pin.computeSubtreeMasses(robot.model, robot.data)
+for i, jointn_ in enumerate(active_joints):
+    if jointn_ == "torso_lift_joint":
+        tau[:, i] = red[jointn_]*ka[jointn_]*tau[:, i] + 9.81*robot.data.mass[robot.model.getJointId(jointn_)]
     else:
-        tau[:, i] = red[i]*ka[i]*tau[:, i]
+        tau[:, i] = red[jointn_]*ka[jointn_]*tau[:, i]
 
 # median and lowpass filter
 nbutter = 4
@@ -286,7 +295,7 @@ tau_ref = tau_ref[range(len(params_settings["idx_act_joints"])*Ntotal)]
 plt.rcParams.update({'font.size': 30})
 # plot joint torque
 plot2 = plt.figure(2)
-axs2 = plot2.subplots(8, 1)
+axs2 = plot2.subplots(len(active_joints), 1)
 for i in range(len(params_settings["idx_act_joints"])):
     if i == 0:
         axs2[i].plot(t_dec, tau_dec[i], color='red', label='effort measured')
@@ -298,7 +307,7 @@ for i in range(len(params_settings["idx_act_joints"])):
         axs2[i].tick_params(labelbottom = False, bottom = False)
         # axs2[i].axhline(eff_lims[i], t[0], t[-1])
         axs2[i].grid()
-    elif i<8:
+    elif i<len(active_joints):
         axs2[i].plot(t_dec, tau_dec[i],color='red')
         axs2[i].plot(t_dec, tau_base[range(
             i*tau_dec[i].shape[0], (i+1)*tau_dec[i].shape[0])], color='green', )
@@ -317,7 +326,6 @@ for i in range(len(params_settings["idx_act_joints"])):
 
 plot2.legend()
 plt.show()
-
 
 # x = np.arange(len(params_b))
 # width = 0.5

@@ -29,8 +29,7 @@ import pinocchio as pin
 from pinocchio.robot_wrapper import RobotWrapper
 from figaroh.calibration.calibration_tools import (
     get_param_from_yaml,
-    calculate_base_kinematics_regressor,
-    get_param)
+    calculate_base_kinematics_regressor)
 from figaroh.tools.robot import Robot
 
 

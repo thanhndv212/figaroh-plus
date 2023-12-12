@@ -24,11 +24,19 @@ import pprint
 import yaml
 from yaml.loader import SafeLoader
 
-robot = Robot('models/others/robots/ur_description/urdf/ur10_robot.urdf','models/others/robots',False)
+# 1/ Load robot model and create a dictionary containing reserved constants
+ros_package_path = os.getenv('ROS_PACKAGE_PATH')
+package_dirs = ros_package_path.split(':')
+
+robot = Robot(
+    'data/robot.urdf',
+    package_dirs = package_dirs
+    # isFext=True  # add free-flyer joint at base
+)
 model = robot.model
 data = robot.data
 
-with open('examples/ur10/config/ur10_config.yaml', 'r') as f:
+with open('config/ur10_config.yaml', 'r') as f:
     config = yaml.load(f, Loader=SafeLoader)
     pprint.pprint(config)
     
@@ -81,7 +89,7 @@ nb_samples=100
 
 q=np.zeros((nb_samples,model.nq))
 
-with open('examples/ur10/data/identification_q_simulation.csv', 'r') as f:
+with open('data/identification_q_simulation.csv', 'r') as f:
     csvreader = csv.reader(f)
     ii = 0
     for row in csvreader:
@@ -102,7 +110,7 @@ print("When using all trajectories the cond num is", int(np.linalg.cond(W_base))
 # simulation of the measured joint torques
 tau_noised = np.empty(len(q)*model.nq)
 
-with open('examples/ur10/data/identification_tau_simulation.csv', 'r') as f:
+with open('data/identification_tau_simulation.csv', 'r') as f:
     csvreader = csv.reader(f)
     ii = 0
     for row in csvreader:

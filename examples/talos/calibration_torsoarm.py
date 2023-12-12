@@ -33,11 +33,11 @@ from figaroh.tools.robot import Robot
 
 
 from figaroh.calibration.calibration_tools import (
-    get_PEE_fullvar,
     get_param_from_yaml,
     add_pee_name,
     load_data,
     calculate_base_kinematics_regressor,
+    update_forward_kinematics_2,
     update_forward_kinematics,
     get_LMvariables)
 
@@ -68,12 +68,16 @@ q_rand = []
 Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e = calculate_base_kinematics_regressor(
     q_rand, model, data, param)
 
+# # change first 6 param to the base placement
+# for i in range(6):
+#     param['param_name'][i] = 'base_placement_%d' % (i+1)
+
 # add markers name to param['param_name']
 add_pee_name(param)
 
 # total calibrating parameter names
 for i, pn in enumerate(param['param_name']):
-        print(i, pn)
+    print(i, pn)
 
 # #############################################################
 
@@ -149,7 +153,7 @@ LM_solve = least_squares(cost_func, var_0,  method='lm', verbose=1,
 # 5/ Result analysis
 res = LM_solve.x
 # PEE estimated by solution
-PEEe_sol = update_forward_kinematics(model, data, res, q_LM, param)
+PEEe_sol = update_forward_kinematics(model, data, res, q_LM, param, verbose=1)
 
 # root mean square error
 rmse = np.sqrt(np.mean((PEEe_sol-PEEm_LM)**2))
