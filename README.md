@@ -16,7 +16,7 @@ pip3 install --user numdifftools quadprog numpy scipy picos pandas meshcat pyyam
 5. Install FIGAROH from source
 ``` bash
 git clone https://gitlab.laas.fr/gepetto/figaroh.git
-git checkout -b pal-tiago-calib origin/pal-tiago-calib
+git checkout -b devel origin/devel
 git submodule init
 git submodule update
 mkdir build
@@ -24,7 +24,7 @@ cd build
 cmake ..
 sudo make install
 ```
-Update python path, or put it permanent in ~/.bashrc
+Update python path, or put it permanently in ~/.bashrc
 ```bash
 export PYTHONPATH=:/usr/local/lib/python3/dist-packages:$PYTHONPATH
 ```
