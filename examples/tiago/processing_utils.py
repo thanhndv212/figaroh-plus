@@ -788,11 +788,14 @@ def cost_function_fb(var, robot_fb, Mmarker0, q_m, q_arm, dq_arm, ddq_arm, f_res
 
     # estimate dynamics
     tau_fb = np.zeros((NbSample, 6))
+    tau_jt = np.zeros((NbSample, 6))
     for i in range(NbSample):
         pin.computeCentroidalMomentumTimeVariation(robot_fb.model, robot_fb.data, q_fb[i, :], dq_fb[i, :], ddq_fb[i, :])
         tau_fb[i, :] = robot_fb.data.f[1].vector
+        pin.rnea(robot_fb.model, robot_fb.data, q_fb[i, :], dq_fb[i, :], ddq_fb[i, :])
+        tau_jt[i, :] = robot_fb.data.tau[0:6]
     tau_vector = tau_fb.flatten('F')
-
+    # tau_vector = tau_jt.flatten('F')
     # create R matrix
     R = create_R_matrix(NbSample, q_base[:, 0:3], dq_base[:, 0:3], rpy_base, dq_base[:, 3:6])
  
