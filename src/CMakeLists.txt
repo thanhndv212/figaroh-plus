@@ -67,8 +67,6 @@ endforeach()
 # Install submodule utils
 set(FILES
   __init__.py
-  square_fitting.py
-  transformation.py
   )
 foreach(F ${FILES})
     python_install_on_site("figaroh/utils" ${F})
