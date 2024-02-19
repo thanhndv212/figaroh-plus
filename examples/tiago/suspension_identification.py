@@ -27,9 +27,8 @@ from scipy.optimize import least_squares
 ################################ vicon (creps) ##########################
 ########################################################################
 
-end_effector = "hey5"
 tiago_fb = load_robot(
-    abspath("urdf/tiago_48_{}.urdf".format(end_effector)),
+    abspath("urdf/tiago_48_schunk.urdf"),
     isFext=True,
     load_by_urdf=True,
 )
@@ -41,65 +40,66 @@ data = tiago_fb.data
 
 ######## Raw data and processing
 
-# # import raw data
-#############################################################################
-vicon_path = (
-    "/home/thanhndv212/Downloads/experiment_data/suspension/bags/creps/vicon"
-)
-files = [
-    join(vicon_path, f)
-    for f in listdir(vicon_path)
-    if isfile(join(vicon_path, f))
-]
-for f in files:
-    if "csv" not in f:
-        files.remove(f)
-files.sort()
-input_file = files[10]
+# # # import raw data
+# #############################################################################
+# vicon_path = (
+#     "/home/thanhndv212/Downloads/experiment_data/suspension/bags/creps/vicon"
+# )
+# files = [
+#     join(vicon_path, f)
+#     for f in listdir(vicon_path)
+#     if isfile(join(vicon_path, f))
+# ]
+# for f in files:
+#     if "csv" not in f:
+#         files.remove(f)
+# files.sort()
+# input_file = files[10]
+
+# ######################################################################################
+# bag_path = "/home/thanhndv212/Downloads/experiment_data/suspension/bags/creps/creps_bags/"
+# file_path = [f for f in listdir(bag_path)]
+# file_path.sort()
+# input_path_joint = file_path[8]
+# assert (
+#     input_path_joint in input_file
+# ), "ERROR: Mocap data and joitn encoder data do not match!"
 
 ######################################################################################
-bag_path = "/home/thanhndv212/Downloads/experiment_data/suspension/bags/creps/creps_bags/"
-file_path = [f for f in listdir(bag_path)]
-file_path.sort()
-input_path_joint = file_path[8]
-assert (
-    input_path_joint in input_file
-), "ERROR: Mocap data and joitn encoder data do not match!"
-
-######################################################################################
-print("Read VICON data from ", input_file)
+dir_path = "/media/thanhndv212/Cooking/processed_data/tiago/develop/data/identification/suspension/creps/creps_bags/tiago_xyz_mirror_vicon_1642/"
+input_file = dir_path + "tiago_xyz_mirror_vicon_1642.csv"
 calib_df = pu.read_csv_vicon(input_file)
 
 f_res = 100
 f_cutoff = 10
-selected_range = range(0, 41000)
-# selected_range = range(0, 5336)
+# selected_range = range(0, 41000)
+selected_range = range(0, len(calib_df))
 plot = False  # plot the coordinates
 plot_raw = True
 alpha = 0.25
-time_stamps_vicon = [
-    830,
-    3130,
-    4980,
-    6350,
-    7740,
-    9100,
-    10860,
-    13410,
-    15830,
-    18170,
-    20000,
-    21860,
-    24320,
-    26170,
-    27530,
-    29410,
-    31740,
-    33710,
-    35050,
-    36560,
-    39000,
-]
+# time_stamps_vicon = [
+#     830,
+#     3130,
+#     4980,
+#     6350,
+#     7740,
+#     9100,
+#     10860,
+#     13410,
+#     15830,
+#     18170,
+#     20000,
+#     21860,
+#     24320,
+#     26170,
+#     27530,
+#     29410,
+#     31740,
+#     33710,
+#     35050,
+#     36560,
+#     39000,
+# ]
 time_stamps_vicon = [0]
 ####################################################
 ## filter the data and resample
@@ -439,21 +439,17 @@ for i in range(3):
 ######### concatenate joint data with floating base
 
 ######################################################################################
-# path to joint encoder data
-print("Read encoder data from ", input_path_joint)
-path_to_values = bag_path + input_path_joint + "/introspection_datavalues.csv"
-path_to_names = bag_path + input_path_joint + "/introspection_datanames.csv"
+path_to_values = dir_path + "introspection_datavalues.csv"
+path_to_names = dir_path + "introspection_datanames.csv"
 
 # create a robot
-ros_package_path = os.getenv("ROS_PACKAGE_PATH")
-package_dirs = ros_package_path.split(":")
-tiago = Robot(
-    "data/tiago_schunk.urdf",
-    package_dirs=package_dirs,
-    # isFext=True  # add free-flyer joint at base
+tiago = load_robot(
+    abspath("urdf/tiago_48_schunk.urdf"),
+    isFext=True,
+    load_by_urdf=True,
 )
 # add object to gripper
-# pu.addBox_to_gripper(robot)
+pu.addBox_to_gripper(tiago_fb)
 
 # read values from csv files
 t_res, f_res, joint_names, q_abs_res, q_pos_res = pu.get_q_arm(
@@ -475,13 +471,14 @@ for act_j in active_joints:
     joint_idx = tiago.model.getJointId(act_j)
     actJoint_idx.append(tiago.model.joints[joint_idx].idx_q)
     actJoint_idv.append(tiago.model.joints[joint_idx].idx_v)
-
+selected_range = range(20, t_res.shape[0]-20)
+# sample_range = selected_range
 q_arm, dq_arm, ddq_arm = pu.calc_vel_acc(
     tiago, q_pos_res, selected_range, joint_names, f_res, f_cutoff
 )
-q_fb = np.concatenate((q_base, q_arm), axis=1)
-dq_fb = np.concatenate((dq_base, dq_arm), axis=1)
-ddq_fb = np.concatenate((ddq_base, ddq_arm), axis=1)
+# q_fb = np.concatenate((q_base, q_arm), axis=1)
+# dq_fb = np.concatenate((dq_base, dq_arm), axis=1)
+# ddq_fb = np.concatenate((ddq_base, ddq_arm), axis=1)
 
 
 ######### Regressor matrix
@@ -632,7 +629,7 @@ plt.show()
 # # 20230912
 # # folder = '/adream/selected_suspension/sinu_motion_around_z_weight_2023-09-12-16-44-18'
 # # folder = '/adream/selected_suspension/sinu_motion_around_z_weight_2023-09-12-16-41-48'
-# folder = "/adream/selected_suspension/sinu_motion_around_x_fold_weight_2023-09-12-16-46-52"
+# folder = "/adream/sinu_motion_around_x_fold_weight_2023-09-12-16-46-52"
 
 
 # # swing motion
@@ -824,7 +821,7 @@ plt.show()
 # base_xyz = LM_solve.x[0:3]
 # # base_quat = np.array([0.7071, 0, 0, 0.7071])
 # base_quat = LM_solve.x[3:7]
-# Mbase_marker = convert_XYZQUAT_to_SE3norm(
+# Mbase_marker = pu.convert_XYZQUAT_to_SE3norm(
 #     np.concatenate((base_xyz, base_quat), axis=0)
 # )
 # print(Mbase_marker.translation)
