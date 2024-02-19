@@ -1,0 +1,108 @@
+gripper1 base1
+1 d_px_torso_lift_joint 0.0212
+2 d_py_torso_lift_joint 0.2203
+3 d_pz_torso_lift_joint -0.3042
+4 d_phix_torso_lift_joint 0.0175
+5 d_phiy_torso_lift_joint 0.0138
+6 d_phiz_torso_lift_joint 0.0334
+7 d_phix_arm_1_joint -0.0097
+8 d_phiy_arm_1_joint 0.0026
+9 d_px_arm_2_joint 0.0004
+10 d_pz_arm_2_joint -0.0006
+11 d_phix_arm_2_joint -0.0143
+12 d_phiz_arm_2_joint 0.0325
+13 d_px_arm_3_joint -0.5634
+14 d_pz_arm_3_joint -0.0065
+15 d_phix_arm_3_joint -0.0249
+16 d_phiz_arm_3_joint -0.022
+17 d_py_arm_4_joint -0.2793
+18 d_pz_arm_4_joint -0.5411
+19 d_phiy_arm_4_joint -0.0413
+20 d_phiz_arm_4_joint -0.0472
+21 d_py_arm_5_joint -0.0756
+22 d_pz_arm_5_joint 0.2745
+23 d_phiy_arm_5_joint -0.6452
+24 d_phiz_arm_5_joint 0.0287
+25 d_py_arm_6_joint 0.0174
+26 d_pz_arm_6_joint -0.0036
+27 d_phiy_arm_6_joint -0.3422
+28 d_phiz_arm_6_joint -0.6448
+29 d_pz_arm_7_joint 0.0319
+30 pEEx_1 0.131
+31 pEEy_1 0.0019
+32 pEEz_1 0.0346
+minimized cost function:  0.03214390878826484
+optimality:  5.4219694781074135e-06
+
+
+gripper 2 base 1
+1 d_px_torso_lift_joint 0.0115
+2 d_py_torso_lift_joint 0.2067
+3 d_pz_torso_lift_joint -0.3143
+4 d_phix_torso_lift_joint 0.0414
+5 d_phiy_torso_lift_joint 0.0122
+6 d_phiz_torso_lift_joint 0.0346
+7 d_phix_arm_1_joint 0.0036
+8 d_phiy_arm_1_joint -0.0442
+9 d_px_arm_2_joint -0.0037
+10 d_pz_arm_2_joint -0.0013
+11 d_phix_arm_2_joint 0.0047
+12 d_phiz_arm_2_joint 0.0324
+13 d_px_arm_3_joint 0.6344
+14 d_pz_arm_3_joint -0.0183
+15 d_phix_arm_3_joint 0.0188
+16 d_phiz_arm_3_joint -0.0401
+17 d_py_arm_4_joint 0.4114
+18 d_pz_arm_4_joint 0.6084
+19 d_phiy_arm_4_joint -0.4625
+20 d_phiz_arm_4_joint -0.0202
+21 d_py_arm_5_joint 0.0096
+22 d_pz_arm_5_joint -0.4195
+23 d_phiy_arm_5_joint -0.4409
+24 d_phiz_arm_5_joint 0.4629
+25 d_py_arm_6_joint 0.0391
+26 d_pz_arm_6_joint 0.0318
+27 d_phiy_arm_6_joint -0.987
+28 d_phiz_arm_6_joint 0.4491
+29 d_pz_arm_7_joint -0.0592
+30 pEEx_1 0.0904
+31 pEEy_1 -0.0078
+32 pEEz_1 0.0251
+minimized cost function:  0.031859901317755325
+optimality:  5.191459794606779e-06
+
+gripper3 base 1
+1 d_px_torso_lift_joint 0.0187
+2 d_py_torso_lift_joint 0.2159
+3 d_pz_torso_lift_joint -0.3144
+4 d_phix_torso_lift_joint 0.0057
+5 d_phiy_torso_lift_joint 0.0117
+6 d_phiz_torso_lift_joint 0.0264
+7 d_phix_arm_1_joint 0.0001
+8 d_phiy_arm_1_joint -0.0031
+9 d_px_arm_2_joint 0.0015
+10 d_pz_arm_2_joint 0.0
+11 d_phix_arm_2_joint -0.0001
+12 d_phiz_arm_2_joint 0.0264
+13 d_px_arm_3_joint -0.0272
+14 d_pz_arm_3_joint -0.0002
+15 d_phix_arm_3_joint 0.0007
+16 d_phiz_arm_3_joint -0.0116
+17 d_py_arm_4_joint -0.0178
+18 d_pz_arm_4_joint -0.0308
+19 d_phiy_arm_4_joint -0.0032
+20 d_phiz_arm_4_joint -0.003
+21 d_py_arm_5_joint -0.0086
+22 d_pz_arm_5_joint 0.0168
+23 d_phiy_arm_5_joint 0.0382
+24 d_phiz_arm_5_joint 0.0016
+25 d_py_arm_6_joint -0.0369
+26 d_pz_arm_6_joint 0.0103
+27 d_phiy_arm_6_joint -0.0046
+28 d_phiz_arm_6_joint -0.0816
+29 d_pz_arm_7_joint 0.0367
+30 pEEx_1 0.1621
+31 pEEy_1 -0.0001
+32 pEEz_1 0.0262
+minimized cost function:  0.0033313678934662576
+optimality:  0.036045096370096834
