@@ -1,6 +1,14 @@
 # FIGAROH
-(Free dynamics Identification and Geometrical cAlibration of RObot and Human)
-FIGAROH is a python toolbox aiming at providing efficient and highly flexible frameworks for dynamics identification and geometric calibration of rigid multi-body systems based on the popular modeling convention URDF. The considered systems can be serial (industrial manipulator) or tree-structures (human, humanoid robots). 
+FIGAROH-Plus is a fork of FIGAROH (by the same author), developed at LAAS-CNRS as the output of my thesis.
+
+This toolbox provides a conprehensive framework for parametric system identification of multi-body robotic systems based on the popular modeling convention URDF. Currently, it only support tree-like kinematic structures including floatbase robots such as humanoids.
+
+
+WIP:
+- online identification
+- mobile robot
+- GUI
+- parallel mechanism
 ## Installation from source
 1. Install `python3-pip`
 2. Set up the robotpkg repositories in your source list as explained here: http://robotpkg.openrobots.org/debian.html
