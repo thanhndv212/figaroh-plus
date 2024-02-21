@@ -671,10 +671,15 @@ def calc_angvel_fromQuatandDeriv(quat, dquat):
         q1 = quat[i, 0]
         q2 = quat[i, 1]
         q3 = quat[i, 2]
+        # angular velocity in fixed frame
         mat_E = np.array(
             [[-q1, q0, -q3, q2], [-q2, q3, q0, -q1], [-q3, -q2, q1, q0]]
         )
-        angvel[i, :] = 2 * mat_E.dot(dquat[i, :])
+        # angular velocity in body frame
+        mat_G = np.array(
+            [[-q1, q0, q3, -q2], [-q2, -q3, q0, q1], [-q3, q2, -q1, q0]]
+        )
+        angvel[i, :] = 2 * mat_G.dot(dquat[i, :])
     return angvel
 
 
