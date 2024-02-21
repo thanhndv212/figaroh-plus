@@ -544,17 +544,18 @@ if __name__ == "__main__":
     IJ = InspectJoint(tiago, joint_name, folder_sin, sample_range)
     orders = [5, 7]
     joint_names = [
-        # "arm_1_joint",
-        # "arm_2_joint",
-        # "arm_3_joint",
-        # "arm_4_joint",
-        # "arm_5_joint",
+        "arm_1_joint",
+        "arm_2_joint",
+        "arm_3_joint",
+        "arm_4_joint",
+        "arm_5_joint",
         "arm_6_joint",
         "arm_7_joint",
     ]
+    models = []
     for joint_name_ in joint_names:
         IJ.joint_inspected = joint_name_
         IJ.compute_entities()
         SF = SurfaceFitting(IJ, orders)
-        SF.solve()
-        SF.plot_3dregression()
+        models.append(SF.solve().x)
+        # SF.plot_3dregression()
