@@ -264,9 +264,9 @@ for base in ["base1", "base2", "base3"]:
     for shoulder in ["shoulder1", "shoulder2", "shoulder3", "shoulder4"]:
         for gripper in ["gripper3"]:
 
-            [base_rot, base_trans] = marker_data[base]
-            [shoulder_rot, shoulder_trans] = marker_data[shoulder]
-            [gripper_rot, gripper_trans] = marker_data[gripper]
+            [base_trans, base_rot] = marker_data[base]
+            [shoulder_trans, shoulder_rot] = marker_data[shoulder]
+            [gripper_trans, gripper_rot] = marker_data[gripper]
 
             base_frame = list()
             gripper_frame = list()

@@ -5,6 +5,257 @@ import rospy
 from os.path import dirname, join, abspath
 from matplotlib import pyplot as plt
 import pinocchio as pin
+from figaroh.tools.robot import Robot
+
+## utils for suspension_identification
+def initiating_robot(tiago_fb: Robot):
+    # initiating kinematic data
+    pin.framesForwardKinematics(tiago_fb.model, tiago_fb.data, tiago_fb.q0)
+    pin.updateFramePlacements(tiago_fb.model, tiago_fb.data)
+    # initiating dynamic data
+    pin.computeGeneralizedGravity(tiago_fb.model, tiago_fb.data, tiago_fb.q0)
+
+
+def process_vicon_data(input_file):
+
+    # load raw_data
+    calib_df = read_csv_vicon(input_file)
+
+    # set appropriate constants
+    f_res = 100
+    f_cutoff = 10
+    # selected_range = range(0, 41000)
+    selected_range = range(0, len(calib_df))
+    plot = False  # plot the coordinates
+    plot_raw = True
+    alpha = 0.25
+    time_stamps_vicon = None
+
+    ####################################################
+    # filtering raw data
+    def filter_data(name: str, col1: str, col2: str, col3: str):
+        return filter_xyz(
+            name,
+            calib_df.loc[:, [col1, col2, col3]].to_numpy()[selected_range],
+            f_res,
+            f_cutoff,
+            plot,
+            time_stamps_vicon,
+            plot_raw,
+            alpha,
+        )
+
+    [base1, base2, base3] = [
+        filter_data(
+            "base{}".format(ij),
+            "base{}_x".format(ij),
+            "base{}_y".format(ij),
+            "base{}_z".format(ij),
+        )
+        for ij in [1, 2, 3]
+    ]
+
+    [shoulder1, shoulder2, shoulder3, shoulder4] = [
+        filter_data(
+            "shoulder{}".format(ij),
+            "shoulder{}_x".format(ij),
+            "shoulder{}_y".format(ij),
+            "shoulder{}_z".format(ij),
+        )
+        for ij in [1, 2, 3, 4]
+    ]
+
+    [gripper1, gripper2, gripper3] = [
+        filter_data(
+            "gripper{}".format(ij),
+            "gripper{}_x".format(ij),
+            "gripper{}_y".format(ij),
+            "gripper{}_z".format(ij),
+        )
+        for ij in [1, 2, 3]
+    ]
+
+    [force, moment, cop] = [
+        filter_data(
+            "{}".format(ij),
+            "{}_x".format(ij),
+            "{}_y".format(ij),
+            "{}_z".format(ij),
+        )
+        for ij in ["F", "M", "COP"]
+    ]
+
+    ####################################################
+    # create rigid body frame
+
+    marker_data = dict()
+
+    marker_data["base1"] = create_rigidbody_frame(
+        [base1, base2, base3],
+        unit_rot=np.array([[0.0, 1.0, 0.0], [1.0, 0.0, 0], [0, 0, -1]]),
+    )
+    marker_data["base2"] = create_rigidbody_frame(
+        [base2, base1, base3],
+        unit_rot=np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0], [0, 0, 1]]),
+    )
+    marker_data["base3"] = create_rigidbody_frame(
+        [base3, base1, base2],
+        unit_rot=np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0], [0, 0, 1]]),
+    )
+
+    # gripper 1, 2 in vicon dataset were inaccurate, large deviation.
+    # consequently orientation data were reliable as well.
+
+    marker_data["gripper3"] = create_rigidbody_frame(
+        [
+            gripper3,
+            gripper2,
+            gripper1,
+        ]
+    )
+
+    marker_data["shoulder1"] = create_rigidbody_frame(
+        [shoulder1, shoulder4, shoulder2]
+    )
+
+    marker_data["shoulder2"] = create_rigidbody_frame(
+        [shoulder2, shoulder4, shoulder1]
+    )
+
+    marker_data["shoulder3"] = create_rigidbody_frame(
+        [shoulder3, shoulder4, shoulder2]
+    )
+
+    marker_data["shoulder4"] = create_rigidbody_frame(
+        [shoulder4, shoulder2, shoulder3]
+    )
+
+    ####################################################
+    return marker_data
+
+    def relative_projection(marker_data):
+        # convert to pinocchio frame
+        vicon_data = dict()
+        for base in ["base1", "base2", "base3"]:
+            for shoulder in ["shoulder1", "shoulder2", "shoulder3", "shoulder4"]:
+                for gripper in ["gripper3"]:
+                    [base_trans, base_rot] = marker_data[base]
+                    [shoulder_trans, shoulder_rot] = marker_data[shoulder]
+                    [gripper_trans, gripper_rot] = marker_data[gripper]
+
+                    base_frame = list()
+                    gripper_frame = list()
+                    shoulder_frame = list()
+
+                    for ti in range(len(base_rot)):
+                        base_frame.append(pin.SE3(base_rot[ti], base_trans[ti, :]))
+                        gripper_frame.append(
+                            pin.SE3(gripper_rot[ti], gripper_trans[ti, :])
+                        )
+                        shoulder_frame.append(
+                            pin.SE3(shoulder_rot[ti], shoulder_trans[ti, :])
+                        )
+
+                    # reproject end frame on to start frame
+                    vicon_data["{}-{}".format(gripper, base)] = project_frame(
+                        gripper_frame, base_frame
+                    )
+                    vicon_data["{}-{}".format(gripper, shoulder)] = project_frame(
+                        gripper_frame, shoulder_frame
+                    )
+                    vicon_data["{}-{}".format(shoulder, base)] = project_frame(
+                        shoulder_frame, base_frame
+                    )
+        return vicon_data
+
+    def plot_frames():
+        fig = plt.figure()
+        ax = fig.add_subplot(projection="3d")
+        ax.scatter(
+            base1[0, 0], base1[0, 1], base1[0, 2], marker="o", label="base1"
+        )
+        ax.scatter(
+            base2[0, 0], base2[0, 1], base2[0, 2], marker="o", label="base2"
+        )
+        ax.scatter(
+            base3[0, 0], base3[0, 1], base3[0, 2], marker="o", label="base3"
+        )
+        ax.scatter(
+            shoulder1[0, 0],
+            shoulder1[0, 1],
+            shoulder1[0, 2],
+            marker="*",
+            label="shoulder1",
+        )
+        ax.scatter(
+            shoulder2[0, 0],
+            shoulder2[0, 1],
+            shoulder2[0, 2],
+            marker="*",
+            label="shoulder2",
+        )
+        ax.scatter(
+            shoulder3[0, 0],
+            shoulder3[0, 1],
+            shoulder3[0, 2],
+            marker="*",
+            label="shoulder3",
+        )
+        ax.scatter(
+            shoulder4[0, 0],
+            shoulder4[0, 1],
+            shoulder4[0, 2],
+            marker="*",
+            label="shoulder4",
+        )
+        ax.scatter(
+            gripper1[0, 0],
+            gripper1[0, 1],
+            gripper1[0, 2],
+            marker=">",
+            label="gripper1",
+        )
+        ax.scatter(
+            gripper2[0, 0],
+            gripper2[0, 1],
+            gripper2[0, 2],
+            marker=">",
+            label="gripper2",
+        )
+        ax.scatter(
+            gripper3[0, 0],
+            gripper3[0, 1],
+            gripper3[0, 2],
+            marker=">",
+            label="gripper3",
+        )
+        ax.scatter(cop[0, 0], cop[0, 1], cop[0, 2], marker="x", label="cop")
+
+        ax.legend()
+        plot_SE3(pin.SE3.Identity())
+        plot_SE3(pin.SE3(marker_data["base1"][1][0], marker_data["base1"][0][0,:]), "base1-marker")
+
+        # plot_SE3(pin.SE3(shoulder_rot[0], shoulder_trans[0,:]), 's_marker')
+        # plot_SE3(pin.SE3(gripper_rot[0], gripper_trans[0,:]), 'g_marker')
+        # plot_SE3(universe_frame[0], "universe")
+        # plot_SE3(
+        #     pin.SE3(
+        #         universe_frame[0]
+        #         * data.oMi[model.getJointId("suspension_left_joint")]
+        #     ),
+        #     "suspension-left-joint",
+        # )
+        # plot_SE3(
+        #     pin.SE3(
+        #         universe_frame[0] * data.oMi[model.getJointId("wheel_left_joint")]
+        #     ),
+        #     "wheel-left-joint",
+        # )
+
+    def plot_vel(base1):
+        """Plot 1st derivate of an array"""
+        _, dbase1, _ = calc_derivatives(base1, f_res)
+        plot_markertf(np.arange(len(dbase1)), dbase1, "dbase1")
 
 
 def create_rigidbody_frame(markers=[], unit_rot=None):
