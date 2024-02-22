@@ -53,7 +53,7 @@ def create_rigidbody_frame(markers=[], unit_rot=None):
     assert len(origin) == len(
         rot_mat
     ), "ERROR: origin and rotation matrix do not match!"
-    return origin, rot_mat
+    return [origin, rot_mat]
 
 
 def save_selected_data(active_joints, xyz, q, path_to_save):
