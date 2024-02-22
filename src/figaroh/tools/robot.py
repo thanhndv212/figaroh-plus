@@ -113,16 +113,20 @@ class Robot(RobotWrapper):
             params.extend(["fv" + str(i), "fs" + str(i)])
             params.extend(["off" + str(i)])
 
+            # TODO: wrong indexing if no. joint change
             if param["has_actuator_inertia"]:
-                phi.extend([param["Ia"][i - 1]])
+                # phi.extend([param["Ia"][i - 1]])
+                phi.extend([0])
             else:
                 phi.extend([0])
             if param["has_friction"]:
-                phi.extend([param["fv"][i - 1], param["fs"][i - 1]])
+                # phi.extend([param["fv"][i - 1], param["fs"][i - 1]])
+                phi.extend([0, 0])
             else:
                 phi.extend([0, 0])
             if param["has_joint_offset"]:
-                phi.extend([param["off"][i - 1]])
+                # phi.extend([param["off"][i - 1]])
+                phi.extend([0])
             else:
                 phi.extend([0])
 
