@@ -134,8 +134,8 @@ class Robot(RobotWrapper):
             phi.extend([param["OFFX"], param["OFFY"], param["OFFZ"]])
             params.extend(["OFFX", "OFFY", "OFFZ"])
 
-        params_std = dict(zip(params, phi))
-        return params_std
+        self.params_std = dict(zip(params, phi))
+        return self.params_std
 
     def display_q0(self):
         """If you want to visualize the robot in this example,
