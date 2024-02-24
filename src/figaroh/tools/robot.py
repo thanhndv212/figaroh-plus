@@ -91,7 +91,7 @@ class Robot(RobotWrapper):
         # 'Ixz', 'Iyz','Izz'] - from pinoccchio corresponding to params_name
         # ['Ixx','Ixy','Ixz','Iyy','Iyz','Izz','mx','my','mz','m']
 
-        for i in range(1, len(model.inertias)):
+        for i in range(1, len(model.inertias)):  # exclude 'universe' joint
             P = model.inertias[i].toDynamicParameters()
             P_mod = np.zeros(P.shape[0])
             P_mod[9] = P[0]  # m
@@ -105,13 +105,14 @@ class Robot(RobotWrapper):
             P_mod[1] = P[5]  # Ixy
             P_mod[0] = P[4]  # Ixx
             for j in params_name:
-                params.append(j + str(i))
+                params.append(j + "_" + model.names[i])
             for k in P_mod:
                 phi.append(k)
 
-            params.extend(["Ia" + str(i)])
-            params.extend(["fv" + str(i), "fs" + str(i)])
-            params.extend(["off" + str(i)])
+            params.extend(["Ia" + "_" + model.names[i]])  # actuator inertia
+            params.extend(["fv" + "_" + model.names[i]])  # vicous friction
+            params.extend(["fs" + "_" + model.names[i]])  # couloumb friction
+            params.extend(["off" + "_" + model.names[i]])  # torque offset
 
             # TODO: wrong indexing if no. joint change
             if param["has_actuator_inertia"]:
