@@ -34,17 +34,6 @@ robot = load_robot(
     abspath("urdf/tiago.urdf"),
     load_by_urdf=True,
 )
-active_joints = [
-    "torso_lift_joint",
-    "arm_1_joint",
-    "arm_2_joint",
-    "arm_3_joint",
-    "arm_4_joint",
-    "arm_5_joint",
-    "arm_6_joint",
-    "arm_7_joint"
-]
-idx_act_joints = [robot.model.getJointId(i) - 1 for i in active_joints]
 
 # load standard parameters
 with open("config/tiago_config.yaml", "r") as f:
@@ -52,7 +41,9 @@ with open("config/tiago_config.yaml", "r") as f:
 identif_data = config["identification"]
 params_settings = get_param_from_yaml(robot, identif_data)
 standard_parameter = robot.get_standard_parameters(params_settings)
-params_settings["idx_act_joints"] = idx_act_joints
+params_settings["idx_act_joints"] = [
+    robot.model.getJointId(i) - 1 for i in params_settings["active_joints"]
+]
 eff_lims = robot.model.effortLimit[params_settings["idx_act_joints"]]
 
 # load csv files
@@ -68,7 +59,7 @@ eff = pd.read_csv(abspath(eff_csv_path))
 pos_cols = []
 vel_cols = []
 eff_cols = []
-for jn in active_joints:
+for jn in params_settings["active_joints"]:
     for ii in pos.columns:
         if jn in ii:
             pos_cols.append(ii)
@@ -89,7 +80,6 @@ print(
     dq.shape,
     tau.shape,
 )
-
 
 # truncate the trivial samples at starting and ending segments
 n_i = 921
@@ -133,7 +123,7 @@ k_motor["arm_6_joint"] = -0.0613
 k_motor["arm_7_joint"] = -0.0613
 
 pin.computeSubtreeMasses(robot.model, robot.data)
-for i, jointn_ in enumerate(active_joints):
+for i, jointn_ in enumerate(params_settings["active_joints"]):
     if jointn_ == "torso_lift_joint":
         tau[:, i] = (
             reduction_ratio[jointn_] * k_motor[jointn_] * tau[:, i]
@@ -236,7 +226,6 @@ a[:, params_settings["idx_act_joints"]] = ddq
 
 # build basic regressor
 W = build_regressor_basic(robot, p, v, a, params_settings)
-print(W.shape, len(standard_parameter))
 
 # remove zero columns
 idx_e, active_parameter = get_index_eliminate(
@@ -319,7 +308,7 @@ tau_ref = tau_ref[range(len(params_settings["idx_act_joints"]) * Ntotal)]
 # plot joint torque
 with plt.style.context(["seaborn-darkgrid"]):
     plot2 = plt.figure(2)
-    axs2 = plot2.subplots(len(active_joints), 1)
+    axs2 = plot2.subplots(len(params_settings["active_joints"]), 1)
     plt.style.library["seaborn-darkgrid"].update(
         {"font.size": 18, "grid.color": "grey"}
     )
@@ -354,7 +343,7 @@ with plt.style.context(["seaborn-darkgrid"]):
             axs2[i].tick_params(labelbottom=False, bottom=False)
             # axs2[i].axhline(eff_lims[i], t[0], t[-1])
             # axs2[i].grid()
-        elif i < len(active_joints):
+        elif i < len(params_settings["active_joints"]):
             axs2[i].plot(t_dec, tau_dec[i], color="red")
             axs2[i].plot(
                 t_dec,
@@ -380,7 +369,7 @@ with plt.style.context(["seaborn-darkgrid"]):
             axs2[i].tick_params(labelbottom=False, bottom=False)
             # axs2[i].grid()
 
-            if i == len(active_joints) - 1:
+            if i == len(params_settings["active_joints"]) - 1:
                 axs2[i].set_xlabel("time [sec]", fontsize=15)
                 axs2[i].tick_params(axis="y", color="black")
                 axs2[i].tick_params(labelbottom=True, bottom=True)
