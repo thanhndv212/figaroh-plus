@@ -38,6 +38,7 @@ def get_param_from_yaml(robot, identif_data):
 
     param = {
         "robot_name": robot_name,
+        "active_joints": problem_params["active_joints"],
         "nb_samples": int(1 / (process_params["ts"])),
         "q_lim_def": robots_params["q_lim_def"],
         "dq_lim_def": robots_params["dq_lim_def"],

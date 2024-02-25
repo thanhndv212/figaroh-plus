@@ -41,7 +41,17 @@ identification:
       ddq_lim_def : 20.0
       tau_lim_def : 4.0
   problem_params:
-    - is_external_wrench : False
+    - active_joints: [
+                      "torso_lift_joint",
+                      "arm_1_joint",
+                      "arm_2_joint",
+                      "arm_3_joint",
+                      "arm_4_joint",
+                      "arm_5_joint",
+                      "arm_6_joint",
+                      "arm_7_joint"
+                    ]
+      is_external_wrench : False
       is_joint_torques : True
       force_torque : None
       external_wrench_offsets : False
