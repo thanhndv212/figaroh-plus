@@ -29,7 +29,7 @@ class Robot(RobotWrapper):
         # super().__init__()
 
         # intrinsic dynamic parameter names
-        self.params_name = (
+        self.dynamic_param_basename = (
             "Ixx",
             "Ixy",
             "Ixz",
@@ -65,16 +65,17 @@ class Robot(RobotWrapper):
 
         self.geom_model = self.collision_model
 
-    def get_standard_parameters(self, param):
+    def get_standard_parameters(self, params_settings):
         """This function prints out the standard inertial parameters defined
         in urdf model.
-        Output: params_std: a dictionary of parameter names and their values"""
+        Output:
+            standard_parameter: a dictionary of {name: value}"""
 
         model = self.model
-        phi = []
-        params = []
+        phi = []  # initial design value of standard parameter
+        params = []  # names of standard parameter
 
-        params_name = (
+        dynamic_param_basename = (
             "Ixx",
             "Ixy",
             "Ixz",
@@ -88,7 +89,7 @@ class Robot(RobotWrapper):
         )
 
         # change order of values in phi['m', 'mx','my','mz','Ixx','Ixy','Iyy',
-        # 'Ixz', 'Iyz','Izz'] - from pinoccchio corresponding to params_name
+        # 'Ixz', 'Iyz','Izz'] - from pinoccchio corresponding to dynamic_param_basename
         # ['Ixx','Ixy','Ixz','Iyy','Iyz','Izz','mx','my','mz','m']
 
         for i in range(1, len(model.inertias)):  # exclude 'universe' joint
@@ -104,7 +105,7 @@ class Robot(RobotWrapper):
             P_mod[2] = P[7]  # Ixz
             P_mod[1] = P[5]  # Ixy
             P_mod[0] = P[4]  # Ixx
-            for j in params_name:
+            for j in dynamic_param_basename:
                 params.append(j + "_" + model.names[i])
             for k in P_mod:
                 phi.append(k)
@@ -115,28 +116,34 @@ class Robot(RobotWrapper):
             params.extend(["off" + "_" + model.names[i]])  # torque offset
 
             # TODO: wrong indexing if no. joint change
-            if param["has_actuator_inertia"]:
+            if params_settings["has_actuator_inertia"]:
                 # phi.extend([param["Ia"][i - 1]])
                 phi.extend([0])
             else:
                 phi.extend([0])
-            if param["has_friction"]:
+            if params_settings["has_friction"]:
                 # phi.extend([param["fv"][i - 1], param["fs"][i - 1]])
                 phi.extend([0, 0])
             else:
                 phi.extend([0, 0])
-            if param["has_joint_offset"]:
+            if params_settings["has_joint_offset"]:
                 # phi.extend([param["off"][i - 1]])
                 phi.extend([0])
             else:
                 phi.extend([0])
 
-        if param["external_wrench_offsets"]:
-            phi.extend([param["OFFX"], param["OFFY"], param["OFFZ"]])
+        if params_settings["external_wrench_offsets"]:
+            phi.extend(
+                [
+                    params_settings["OFFX"],
+                    params_settings["OFFY"],
+                    params_settings["OFFZ"],
+                ]
+            )
             params.extend(["OFFX", "OFFY", "OFFZ"])
 
-        self.params_std = dict(zip(params, phi))
-        return self.params_std
+        self.standard_parameter = dict(zip(params, phi))
+        return self.standard_parameter
 
     def display_q0(self):
         """If you want to visualize the robot in this example,
