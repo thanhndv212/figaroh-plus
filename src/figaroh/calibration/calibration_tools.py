@@ -429,7 +429,8 @@ def get_rel_transform(model, data, start_frame, end_frame):
     end_frameId = model.getFrameId(end_frame)
     oMef = data.oMf[end_frameId]
     # relative transformation from start_frame to end_frame
-    sMef = oMsf.actInv(oMef)
+    # sMef = oMsf.actInv(oMef)
+    sMef = oMsf.inverse() * oMef
     return sMef
 
 
