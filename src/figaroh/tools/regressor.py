@@ -32,196 +32,194 @@ def build_regressor_basic(robot, q, v, a, param, tau=None):
     # see if all have been correctly handled + add similiar code for external
     # wrench case (+ friction, ia,off,etc..)
 
-    N = len(q)  # nb of samples
+    nsample = len(q)  # number of samples
     nb_in = len(robot.model.inertias) - 1
     # -1 if base link has inertia without external wrench, -1 for freeflyer
-    nv = robot.model.nv
-
+    njoints = robot.model.njoints - 1  # number of joints 
+    nv = robot.model.nv  # degree of freedom
     add_col = 4
+
     # TODO: build regressor for  both joint torques/external wrenches.
     if param["is_joint_torques"]:
-        W = np.zeros([N * nv, (10 + add_col) * nv])
-        W_mod = np.zeros([N * nv, (10 + add_col) * nv])
-        for i in range(N):
+        W = np.zeros([nsample * nv, (10 + add_col) * njoints])
+        W_mod = np.zeros([nsample * nv, (10 + add_col) * njoints])
+        for i in range(nsample):
             W_temp = pin.computeJointTorqueRegressor(
                 robot.model, robot.data, q[i, :], v[i, :], a[i, :]
             )
-            for j in range(W_temp.shape[0]):
-                W[j * N + i, 0: 10 * nv] = W_temp[j, :]
+            assert (
+                W_temp.shape[0] == nv
+            ), "Torque Regressor's size does not match model.nv"
+            for j in range(nv):
+                W[j * nsample + i, 0 : 10 * njoints] = W_temp[j, :]
+                for k in range(njoints):
+                    if param["has_friction"]:
+                        W[j * nsample + i, 10 * njoints + 2 * k] = v[i, j]  # fv
+                        W[j * nsample + i, 10 * njoints + 2 * k + 1] = np.sign(
+                            v[i, j]
+                        )  # fs
+                    else:
+                        W[j * nsample + i, 10 * njoints + 2 * k] = 0  # fv
+                        W[j * nsample + i, 10 * njoints + 2 * k + 1] = 0  # fs
 
-                if param["has_friction"]:
-                    W[j * N + i, 10 * nv + 2 * j] = v[i, j]  # fv
-                    W[j * N + i, 10 * nv + 2 * j + 1] = np.sign(v[i, j])  # fs
-                else:
-                    W[j * N + i, 10 * nv + 2 * j] = 0  # fv
-                    W[j * N + i, 10 * nv + 2 * j + 1] = 0  # fs
+                    if param["has_actuator_inertia"]:
+                        W[j * nsample + i, 10 * njoints + 2 * njoints + k] = a[
+                            i, j
+                        ]  # ia
+                    else:
+                        W[j * nsample + i, 10 * njoints + 2 * njoints + k] = (
+                            0  # ia
+                        )
 
-                if param["has_actuator_inertia"]:
-                    W[j * N + i, 10 * nv + 2 * nv + j] = a[i, j]  # ia
-                else:
-                    W[j * N + i, 10 * nv + 2 * nv + j] = 0  # ia
+                    if param["has_joint_offset"]:
+                        W[
+                            j * nsample + i,
+                            10 * njoints + 2 * njoints + njoints + k,
+                        ] = 1  # off
+                    else:
+                        W[
+                            j * nsample + i,
+                            10 * njoints + 2 * njoints + njoints + k,
+                        ] = 0  # off
 
-                if param["has_joint_offset"]:
-                    W[j * N + i, 10 * nv + 2 * nv + nv + j] = 1  # off
-                else:
-                    W[j * N + i, 10 * nv + 2 * nv + nv + j] = 0  # off
+        for k_ in range(njoints):
+            W_mod[:, (10 + add_col) * k_ + 9] = W[:, 10 * k_ + 0]  # m
+            W_mod[:, (10 + add_col) * k_ + 8] = W[:, 10 * k_ + 3]  # mz
+            W_mod[:, (10 + add_col) * k_ + 7] = W[:, 10 * k_ + 2]  # my
+            W_mod[:, (10 + add_col) * k_ + 6] = W[:, 10 * k_ + 1]  # mx
+            W_mod[:, (10 + add_col) * k_ + 5] = W[:, 10 * k_ + 9]  # Izz
+            W_mod[:, (10 + add_col) * k_ + 4] = W[:, 10 * k_ + 8]  # Iyz
+            W_mod[:, (10 + add_col) * k_ + 3] = W[:, 10 * k_ + 6]  # Iyy
+            W_mod[:, (10 + add_col) * k_ + 2] = W[:, 10 * k_ + 7]  # Ixz
+            W_mod[:, (10 + add_col) * k_ + 1] = W[:, 10 * k_ + 5]  # Ixy
+            W_mod[:, (10 + add_col) * k_ + 0] = W[:, 10 * k_ + 4]  # Ixx
 
-        for k in range(nv):
-            W_mod[:, (10 + add_col) * k + 9] = W[:, 10 * k + 0]  # m
-            W_mod[:, (10 + add_col) * k + 8] = W[:, 10 * k + 3]  # mz
-            W_mod[:, (10 + add_col) * k + 7] = W[:, 10 * k + 2]  # my
-            W_mod[:, (10 + add_col) * k + 6] = W[:, 10 * k + 1]  # mx
-            W_mod[:, (10 + add_col) * k + 5] = W[:, 10 * k + 9]  # Izz
-            W_mod[:, (10 + add_col) * k + 4] = W[:, 10 * k + 8]  # Iyz
-            W_mod[:, (10 + add_col) * k + 3] = W[:, 10 * k + 6]  # Iyy
-            W_mod[:, (10 + add_col) * k + 2] = W[:, 10 * k + 7]  # Ixz
-            W_mod[:, (10 + add_col) * k + 1] = W[:, 10 * k + 5]  # Ixy
-            W_mod[:, (10 + add_col) * k + 0] = W[:, 10 * k + 4]  # Ixx
-
-            W_mod[:, (10 + add_col) * k + 10] = W[
-                :, 10 * nv + 2 * nv + k
+            W_mod[:, (10 + add_col) * k_ + 10] = W[
+                :, 10 * njoints + 2 * njoints + k_
             ]  # ia
-            W_mod[:, (10 + add_col) * k + 11] = W[:, 10 * nv + 2 * k]  # fv
-            W_mod[:, (10 + add_col) * k + 12] = W[:, 10 * nv + 2 * k + 1]  # fs
-            W_mod[:, (10 + add_col) * k + 13] = W[
-                :, 10 * nv + 2 * nv + nv + k
+            W_mod[:, (10 + add_col) * k_ + 11] = W[
+                :, 10 * njoints + 2 * k_
+            ]  # fv
+            W_mod[:, (10 + add_col) * k_ + 12] = W[
+                :, 10 * njoints + 2 * k_ + 1
+            ]  # fs
+            W_mod[:, (10 + add_col) * k_ + 13] = W[
+                :, 10 * njoints + 2 * njoints + njoints + k_
             ]  # off
 
     elif param["is_external_wrench"]:
         ft = param["force_torque"]
-        W = np.zeros([N * 6, (10 + add_col) * (nb_in)])
-        for i in range(N):
+        W = np.zeros([nsample * 6, (10 + add_col) * (nb_in)])
+        for i in range(nsample):
             W_temp = pin.computeJointTorqueRegressor(
                 robot.model, robot.data, q[i, :], v[i, :], a[i, :]
             )
-            for k in range(len(ft)):
-                if ft[k] == "Fx":
+            for jj in range(len(ft)):
+                if ft[jj] == "Fx":
                     j = 0
-                    W[j * N + i, 0: 10 * nb_in] = W_temp[j, :]
-                elif ft[k] == "Fy":
+                    W[j * nsample + i, 0 : 10 * nb_in] = W_temp[j, :]
+                elif ft[jj] == "Fy":
                     j = 1
-                    W[j * N + i, 0: 10 * nb_in] = W_temp[j, :]
-                elif ft[k] == "Fz":
+                    W[j * nsample + i, 0 : 10 * nb_in] = W_temp[j, :]
+                elif ft[jj] == "Fz":
                     j = 2
-                    W[j * N + i, 0: 10 * nb_in] = W_temp[j, :]
-                elif ft[k] == "Mx":
+                    W[j * nsample + i, 0 : 10 * nb_in] = W_temp[j, :]
+                elif ft[jj] == "Mx":
                     j = 3
-                    W[j * N + i, 0: 10 * nb_in] = W_temp[j, :]
-                elif ft[k] == "My":
+                    W[j * nsample + i, 0 : 10 * nb_in] = W_temp[j, :]
+                elif ft[jj] == "My":
                     j = 4
-                    W[j * N + i, 0: 10 * nb_in] = W_temp[j, :]
-                elif ft[k] == "Mz":
+                    W[j * nsample + i, 0 : 10 * nb_in] = W_temp[j, :]
+                elif ft[jj] == "Mz":
                     j = 5
-                    W[j * N + i, 0: 10 * nb_in] = W_temp[j, :]
-                elif ft[k] == "All":
+                    W[j * nsample + i, 0 : 10 * nb_in] = W_temp[j, :]
+                elif ft[jj] == "All":
                     for j in range(6):
-                        W[j * N + i, 0: 10 * nb_in] = W_temp[j, :]
+                        W[j * nsample + i, 0 : 10 * nb_in] = W_temp[j, :]
                 else:
                     raise ValueError("Please enter valid parameters")
 
             if param["has_friction"]:
-                W[j * N + i, 10 * nb_in + 2 * j] = v[i, j]  # fv
-                W[j * N + i, 10 * nb_in + 2 * j + 1] = np.sign(v[i, j])  # fs
+                W[j * nsample + i, 10 * nb_in + 2 * j] = v[i, j]  # fv
+                W[j * nsample + i, 10 * nb_in + 2 * j + 1] = np.sign(
+                    v[i, j]
+                )  # fs
             else:
-                W[j * N + i, 10 * nb_in + 2 * j] = 0  # fv
-                W[j * N + i, 10 * nb_in + 2 * j + 1] = 0  # fs
+                W[j * nsample + i, 10 * nb_in + 2 * j] = 0  # fv
+                W[j * nsample + i, 10 * nb_in + 2 * j + 1] = 0  # fs
 
             if param["has_actuator_inertia"]:
-                W[j * N + i, 10 * nb_in + 2 * nb_in + j] = a[i, j]  # ia
+                W[j * nsample + i, 10 * nb_in + 2 * nb_in + j] = a[i, j]  # ia
             else:
-                W[j * N + i, 10 * nb_in + 2 * nb_in + j] = 0  # ia
+                W[j * nsample + i, 10 * nb_in + 2 * nb_in + j] = 0  # ia
 
             if param["has_joint_offset"]:
-                W[j * N + i, 10 * nb_in + 2 * nb_in + nb_in + j] = 1  # off
+                W[j * nsample + i, 10 * nb_in + 2 * nb_in + nb_in + j] = (
+                    1  # off
+                )
             else:
-                W[j * N + i, 10 * nb_in + 2 * nb_in + nb_in + j] = 0  # off
+                W[j * nsample + i, 10 * nb_in + 2 * nb_in + nb_in + j] = (
+                    0  # off
+                )
 
-        W_mod = np.zeros([N * 6, (10 + add_col) * (nb_in)])
+        W_mod = np.zeros([nsample * 6, (10 + add_col) * (nb_in)])
 
         if param["external_wrench_offsets"]:
-            W_mod = np.zeros([N * 6, (10 + add_col) * (nb_in) + 3])
+            W_mod = np.zeros([nsample * 6, (10 + add_col) * (nb_in) + 3])
 
             if tau is not None:
-                for k in range(3, 6):
-                    if k == 3:
-                        for ii in range(N):
-                            W_mod[ii + k * N, -2] = tau[ii + N]
-                            W_mod[ii + k * N, -1] = tau[ii + 2 * N]
-                    if k == 4:
-                        for ii in range(N):
-                            W_mod[ii + k * N, -3] = tau[ii]
-                            W_mod[ii + k * N, -1] = tau[ii + 2 * N]
-                    if k == 5:
-                        for ii in range(N):
-                            W_mod[ii + k * N, -3] = tau[ii]
-                            W_mod[ii + k * N, -2] = tau[ii + N]
+                for jj_ in range(3, 6):
+                    if jj_ == 3:
+                        for ii in range(nsample):
+                            W_mod[ii + jj_ * nsample, -2] = tau[ii + nsample]
+                            W_mod[ii + jj_ * nsample, -1] = tau[ii + 2 * nsample]
+                    if jj_ == 4:
+                        for ii in range(nsample):
+                            W_mod[ii + jj_ * nsample, -3] = tau[ii]
+                            W_mod[ii + jj_ * nsample, -1] = tau[ii + 2 * nsample]
+                    if jj_ == 5:
+                        for ii in range(nsample):
+                            W_mod[ii + jj_ * nsample, -3] = tau[ii]
+                            W_mod[ii + jj_ * nsample, -2] = tau[ii + nsample]
 
-        for k in range(nb_in):
-            W_mod[:, (10 + add_col) * k + 9] = W[:, 10 * k + 0]  # m
-            W_mod[:, (10 + add_col) * k + 8] = W[:, 10 * k + 3]  # mz
-            W_mod[:, (10 + add_col) * k + 7] = W[:, 10 * k + 2]  # my
-            W_mod[:, (10 + add_col) * k + 6] = W[:, 10 * k + 1]  # mx
-            W_mod[:, (10 + add_col) * k + 5] = W[:, 10 * k + 9]  # Izz
-            W_mod[:, (10 + add_col) * k + 4] = W[:, 10 * k + 8]  # Iyz
-            W_mod[:, (10 + add_col) * k + 3] = W[:, 10 * k + 6]  # Iyy
-            W_mod[:, (10 + add_col) * k + 2] = W[:, 10 * k + 7]  # Ixz
-            W_mod[:, (10 + add_col) * k + 1] = W[:, 10 * k + 5]  # Ixy
-            W_mod[:, (10 + add_col) * k + 0] = W[:, 10 * k + 4]  # Ixx
+        for k_ in range(nb_in):
+            W_mod[:, (10 + add_col) * k_ + 9] = W[:, 10 * k_ + 0]  # m
+            W_mod[:, (10 + add_col) * k_ + 8] = W[:, 10 * k_ + 3]  # mz
+            W_mod[:, (10 + add_col) * k_ + 7] = W[:, 10 * k_ + 2]  # my
+            W_mod[:, (10 + add_col) * k_ + 6] = W[:, 10 * k_ + 1]  # mx
+            W_mod[:, (10 + add_col) * k_ + 5] = W[:, 10 * k_ + 9]  # Izz
+            W_mod[:, (10 + add_col) * k_ + 4] = W[:, 10 * k_ + 8]  # Iyz
+            W_mod[:, (10 + add_col) * k_ + 3] = W[:, 10 * k_ + 6]  # Iyy
+            W_mod[:, (10 + add_col) * k_ + 2] = W[:, 10 * k_ + 7]  # Ixz
+            W_mod[:, (10 + add_col) * k_ + 1] = W[:, 10 * k_ + 5]  # Ixy
+            W_mod[:, (10 + add_col) * k_ + 0] = W[:, 10 * k_ + 4]  # Ixx
 
-            W_mod[:, (10 + add_col) * k + 10] = W[
-                :, 10 * nb_in + 2 * nb_in + k
+            W_mod[:, (10 + add_col) * k_ + 10] = W[
+                :, 10 * nb_in + 2 * nb_in + k_
             ]  # ia
-            W_mod[:, (10 + add_col) * k + 11] = W[:, 10 * nb_in + 2 * k]  # fv
-            W_mod[:, (10 + add_col) * k + 12] = W[
-                :, 10 * nb_in + 2 * k + 1
+            W_mod[:, (10 + add_col) * k_ + 11] = W[:, 10 * nb_in + 2 * k_]  # fv
+            W_mod[:, (10 + add_col) * k_ + 12] = W[
+                :, 10 * nb_in + 2 * k_ + 1
             ]  # fs
-            W_mod[:, (10 + add_col) * k + 13] = W[
-                :, 10 * nb_in + 2 * nb_in + nb_in + k
+            W_mod[:, (10 + add_col) * k_ + 13] = W[
+                :, 10 * nb_in + 2 * nb_in + nb_in + k_
             ]  # off
 
     return W_mod
 
 
-# def add_actuator_inertia(W, robot, q, v, a, param):
-#     N = len(q)  # nb of samples
-#     nv = robot.model.nv
-#     add_col = 4
-#     for k in range(nv):
-#         W[:, (10 + add_col) * k + 10] = a[i, j]
-#     return W
-
-
-# def add_friction(W, robot, q, v, a, param):
-#     N = len(q)  # nb of samples
-#     nv = robot.model.nv
-#     add_col = 4
-#     for k in range(nv):
-#         W[:, (10 + add_col) * k + 11] = v[i, j]
-#         W[:, (10 + add_col) * k + 12] = np.sign(v[i, j])
-#     return W
-
-
-# def add_joint_offset(W, robot, q, v, a, param):
-#     N = len(q)  # nb of samples
-#     nv = robot.model.nv
-#     add_col = 4
-#     for k in range(nv):
-#         W[:, (10 + add_col) * k + 13] = 1
-#     return W
-
-
-def add_coupling_TX40(W, model, data, N, nq, nv, njoints, q, v, a):
+def add_coupling_TX40(W, model, data, nsample, nq, nv, njoints, q, v, a):
     """Dedicated function for Staubli TX40"""
     W = np.c_[W, np.zeros([W.shape[0], 3])]
-    for i in range(N):
+    for i in range(nsample):
         # joint 5
-        W[4 * N + i, W.shape[1] - 3] = a[i, 5]
-        W[4 * N + i, W.shape[1] - 2] = v[i, 5]
-        W[4 * N + i, W.shape[1] - 1] = np.sign(v[i, 4] + v[i, 5])
+        W[4 * nsample + i, W.shape[1] - 3] = a[i, 5]
+        W[4 * nsample + i, W.shape[1] - 2] = v[i, 5]
+        W[4 * nsample + i, W.shape[1] - 1] = np.sign(v[i, 4] + v[i, 5])
         # joint 6
-        W[5 * N + i, W.shape[1] - 3] = a[i, 4]
-        W[5 * N + i, W.shape[1] - 2] = v[i, 4]
-        W[5 * N + i, W.shape[1] - 1] = np.sign(v[i, 4] + v[i, 5])
+        W[5 * nsample + i, W.shape[1] - 3] = a[i, 4]
+        W[5 * nsample + i, W.shape[1] - 2] = v[i, 4]
+        W[5 * nsample + i, W.shape[1] - 1] = np.sign(v[i, 4] + v[i, 5])
 
     return W
 
