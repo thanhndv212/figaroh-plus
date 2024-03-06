@@ -7,7 +7,12 @@ from matplotlib import pyplot as plt
 import pinocchio as pin
 from figaroh.tools.robot import Robot
 
-## utils for suspension_identification
+
+def rmse(y, y_pred):
+    return np.sqrt(np.mean((y_pred - y) ** 2))
+
+
+# utils for suspension_identification
 def initiating_robot(tiago_fb: Robot):
     # initiating kinematic data
     pin.framesForwardKinematics(tiago_fb.model, tiago_fb.data, tiago_fb.q0)
@@ -16,14 +21,13 @@ def initiating_robot(tiago_fb: Robot):
     pin.computeGeneralizedGravity(tiago_fb.model, tiago_fb.data, tiago_fb.q0)
 
 
-def process_vicon_data(input_file):
+def process_vicon_data(input_file, f_cutoff=10):
 
     # load raw_data
     calib_df = read_csv_vicon(input_file)
 
     # set appropriate constants
     f_res = 100
-    f_cutoff = 10
     # selected_range = range(0, 41000)
     selected_range = range(0, len(calib_df))
     plot = False  # plot the coordinates
@@ -130,14 +134,22 @@ def process_vicon_data(input_file):
         [shoulder4, shoulder2, shoulder3]
     )
 
-    ####################################################
+    marker_data["force"] = force
+    marker_data["moment"] = moment
+    marker_data["cop"] = cop
+
     return marker_data
 
     def relative_projection(marker_data):
         # convert to pinocchio frame
         vicon_data = dict()
         for base in ["base1", "base2", "base3"]:
-            for shoulder in ["shoulder1", "shoulder2", "shoulder3", "shoulder4"]:
+            for shoulder in [
+                "shoulder1",
+                "shoulder2",
+                "shoulder3",
+                "shoulder4",
+            ]:
                 for gripper in ["gripper3"]:
                     [base_trans, base_rot] = marker_data[base]
                     [shoulder_trans, shoulder_rot] = marker_data[shoulder]
@@ -148,7 +160,9 @@ def process_vicon_data(input_file):
                     shoulder_frame = list()
 
                     for ti in range(len(base_rot)):
-                        base_frame.append(pin.SE3(base_rot[ti], base_trans[ti, :]))
+                        base_frame.append(
+                            pin.SE3(base_rot[ti], base_trans[ti, :])
+                        )
                         gripper_frame.append(
                             pin.SE3(gripper_rot[ti], gripper_trans[ti, :])
                         )
@@ -160,8 +174,8 @@ def process_vicon_data(input_file):
                     vicon_data["{}-{}".format(gripper, base)] = project_frame(
                         gripper_frame, base_frame
                     )
-                    vicon_data["{}-{}".format(gripper, shoulder)] = project_frame(
-                        gripper_frame, shoulder_frame
+                    vicon_data["{}-{}".format(gripper, shoulder)] = (
+                        project_frame(gripper_frame, shoulder_frame)
                     )
                     vicon_data["{}-{}".format(shoulder, base)] = project_frame(
                         shoulder_frame, base_frame
@@ -233,7 +247,10 @@ def process_vicon_data(input_file):
 
         ax.legend()
         plot_SE3(pin.SE3.Identity())
-        plot_SE3(pin.SE3(marker_data["base1"][1][0], marker_data["base1"][0][0,:]), "base1-marker")
+        plot_SE3(
+            pin.SE3(marker_data["base1"][1][0], marker_data["base1"][0][0, :]),
+            "base1-marker",
+        )
 
         # plot_SE3(pin.SE3(shoulder_rot[0], shoulder_trans[0,:]), 's_marker')
         # plot_SE3(pin.SE3(gripper_rot[0], gripper_trans[0,:]), 'g_marker')
@@ -670,9 +687,18 @@ def filter_xyz(
 
 
 # plot
-def plot_markertf(t_tf, posXYZ, marker_frame_name, fig=None, ax=None, alpha=1):
+def plot_markertf(
+    posXYZ,
+    title="Not defined",
+    t_tf=None,
+    fig=None,
+    ax=None,
+    alpha=1,
+):
     if ax is None:
         fig, ax = plt.subplots(3, 1)
+    if t_tf is None:
+        t_tf = np.arange(len(posXYZ))
     ax[0].plot(t_tf, posXYZ[:, 0], color="red", alpha=alpha)
     ax[1].plot(t_tf, posXYZ[:, 1], color="blue", alpha=alpha)
     ax[2].plot(t_tf, posXYZ[:, 2], color="green", alpha=alpha)
@@ -680,7 +706,7 @@ def plot_markertf(t_tf, posXYZ, marker_frame_name, fig=None, ax=None, alpha=1):
     ax[1].set_ylabel("y component")
     ax[2].set_ylabel("z component")
     ax[2].set_xlabel("time")
-    fig.suptitle("Marker Position of {}".format(marker_frame_name))
+    fig.suptitle("Marker Position of {}".format(title))
     return fig, ax
 
 
@@ -977,7 +1003,7 @@ def create_R_matrix(NbSample, pos_res, pos_vel, rpy_res, ang_vel):
     """Create a regressor matrix R for least square of size 6*NbSample x 12
     (12: 6 for translation and 6 for rotation)
     """
-    R = np.zeros((6 * NbSample, 12))
+    R = np.zeros((6 * NbSample, 6 * 3))
     # translation: fx, fy, fz
     for i_f in range(3):
         R[(i_f) * NbSample : (i_f + 1) * NbSample, 2 * i_f] = pos_res[
@@ -986,18 +1012,24 @@ def create_R_matrix(NbSample, pos_res, pos_vel, rpy_res, ang_vel):
         R[(i_f) * NbSample : (i_f + 1) * NbSample, 2 * i_f + 1] = pos_vel[
             :, i_f
         ]  # linear damping
+        R[(i_f) * NbSample : (i_f + 1) * NbSample, 2 * i_f + 2] = np.full(
+            NbSample, 1
+        )
     # rotation: mx, my, mz
     for i_m in range(3):
-        R[(3 + i_m) * NbSample : (3 + i_m + 1) * NbSample, 2 * 3 + 2 * i_m] = (
+        R[(3 + i_m) * NbSample : (3 + i_m + 1) * NbSample, 3 * 3 + 2 * i_m] = (
             rpy_res[:, i_m]
         )  # angular stiffness
         R[
             (3 + i_m) * NbSample : (3 + i_m + 1) * NbSample,
-            2 * 3 + 2 * i_m + 1,
+            3 * 3 + 2 * i_m + 1,
         ] = ang_vel[
             :, i_m
         ]  # angulardamping
-
+        R[
+            (3 + i_m) * NbSample : (3 + i_m + 1) * NbSample,
+            3 * 3 + 2 * i_m + 2,
+        ] = np.full(NbSample, 1)
     # force-contributation moment: m_fx, m_fy, m_fz, skew_matrix of r (3x3) * f (3x1)
     # # m_fx -> mx
     # R[(3)*NbSample:(4)*NbSample, 2] = np.multiply(-pos_res[:, 2], pos_res[:, 1]) # - z*y
@@ -1015,44 +1047,44 @@ def create_R_matrix(NbSample, pos_res, pos_vel, rpy_res, ang_vel):
     # R[(5)*NbSample:(6)*NbSample, 2] = np.multiply(pos_res[:, 0], pos_res[:, 1]) # x*y
     # R[(5)*NbSample:(6)*NbSample, 3] = np.multiply(pos_res[:, 0], pos_vel[:, 1]) # x*y'
     # m_fx -> mx
-    R[(3) * NbSample : (4) * NbSample, 2] = np.multiply(
-        -pos_res[:, 2], pos_res[:, 1]
-    )  # - z*y
-    R[(3) * NbSample : (4) * NbSample, 3] = np.multiply(
-        -pos_res[:, 2], pos_vel[:, 1]
-    )  # - z*y'
-    R[(3) * NbSample : (4) * NbSample, 4] = np.multiply(
-        pos_res[:, 1], pos_res[:, 2]
-    )  # y*z
-    R[(3) * NbSample : (4) * NbSample, 5] = np.multiply(
-        pos_res[:, 1], pos_vel[:, 2]
-    )  # y*z'
-    # m_fy -> my
-    R[(4) * NbSample : (5) * NbSample, 0] = np.multiply(
-        pos_res[:, 2], pos_res[:, 0]
-    )  # z*x
-    R[(4) * NbSample : (5) * NbSample, 1] = np.multiply(
-        pos_res[:, 2], pos_vel[:, 0]
-    )  # z*x'
-    R[(4) * NbSample : (5) * NbSample, 4] = np.multiply(
-        -pos_res[:, 0], pos_res[:, 2]
-    )  # - x*z
-    R[(4) * NbSample : (5) * NbSample, 5] = np.multiply(
-        -pos_res[:, 0], pos_vel[:, 2]
-    )  # - x*z'
-    # m_fz -> mz
-    R[(5) * NbSample : (6) * NbSample, 0] = np.multiply(
-        -pos_res[:, 1], pos_res[:, 0]
-    )  # - y*x
-    R[(5) * NbSample : (6) * NbSample, 1] = np.multiply(
-        -pos_res[:, 1], pos_vel[:, 0]
-    )  # - y*x'
-    R[(5) * NbSample : (6) * NbSample, 2] = np.multiply(
-        pos_res[:, 0], pos_res[:, 1]
-    )  # x*y
-    R[(5) * NbSample : (6) * NbSample, 3] = np.multiply(
-        pos_res[:, 0], pos_vel[:, 1]
-    )  # x*y'
+    # R[(3) * NbSample : (4) * NbSample, 2] = np.multiply(
+    #     -pos_res[:, 2], pos_res[:, 1]
+    # )  # - z*y
+    # R[(3) * NbSample : (4) * NbSample, 3] = np.multiply(
+    #     -pos_res[:, 2], pos_vel[:, 1]
+    # )  # - z*y'
+    # R[(3) * NbSample : (4) * NbSample, 4] = np.multiply(
+    #     pos_res[:, 1], pos_res[:, 2]
+    # )  # y*z
+    # R[(3) * NbSample : (4) * NbSample, 5] = np.multiply(
+    #     pos_res[:, 1], pos_vel[:, 2]
+    # )  # y*z'
+    # # m_fy -> my
+    # R[(4) * NbSample : (5) * NbSample, 0] = np.multiply(
+    #     pos_res[:, 2], pos_res[:, 0]
+    # )  # z*x
+    # R[(4) * NbSample : (5) * NbSample, 1] = np.multiply(
+    #     pos_res[:, 2], pos_vel[:, 0]
+    # )  # z*x'
+    # R[(4) * NbSample : (5) * NbSample, 4] = np.multiply(
+    #     -pos_res[:, 0], pos_res[:, 2]
+    # )  # - x*z
+    # R[(4) * NbSample : (5) * NbSample, 5] = np.multiply(
+    #     -pos_res[:, 0], pos_vel[:, 2]
+    # )  # - x*z'
+    # # m_fz -> mz
+    # R[(5) * NbSample : (6) * NbSample, 0] = np.multiply(
+    #     -pos_res[:, 1], pos_res[:, 0]
+    # )  # - y*x
+    # R[(5) * NbSample : (6) * NbSample, 1] = np.multiply(
+    #     -pos_res[:, 1], pos_vel[:, 0]
+    # )  # - y*x'
+    # R[(5) * NbSample : (6) * NbSample, 2] = np.multiply(
+    #     pos_res[:, 0], pos_res[:, 1]
+    # )  # x*y
+    # R[(5) * NbSample : (6) * NbSample, 3] = np.multiply(
+    #     pos_res[:, 0], pos_vel[:, 1]
+    # )  # x*y'
 
     return R
 
