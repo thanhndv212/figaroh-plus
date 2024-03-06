@@ -304,83 +304,332 @@ def plot_compare_suspension(
     fig.suptitle("Marker Position of {}".format(lookup_marker))
 
 
+# fixed frame:
+# mocap frame = marker position measures
+# forceplate frame = force and moment measures
+# fixed base frame = base_footprint (free-flyer joint) at stationary state
+
+# dynamic frame:
+# floating base frame = base_footprint in dynamic state
+# marker_shoulder frame = marker on shoulder
+# marker_base frame = marker on base
+# marker_gripper frame = marker on gripper
+
+# [mocap frame] ---- <marker base frame> ---(4) Mmarker_floatingbase---><floating base frame>
+#     |        \
+#     |                  \
+# (1) Mmocap_forceplate                \
+#     |                                 (2) Mmocap_fixedbase
+#     |                                             \
+#     |                                                         \
+# [forceplate frame]---(3) Mforceplate_fixedbase----->[fixed base frame or robot frame]
+
+
+# (1) forceplate - mocap reference frame transformation
+forceplate_frame_rot = np.array([[-1, 0.0, 0.0], [0, 1.0, 0], [0, 0, -1]])
+forceplate_frame_trans = np.array([0.9, 0.45, 0.0])
+
+Mmocap_forceplate = pin.SE3(forceplate_frame_rot, forceplate_frame_trans)
+Mforceplate_mocap = Mmocap_forceplate.inverse()
+
+
+# (2.1) mocap - fixedbase footprint
+Mmocap_fixedfootprint = cartesian_to_SE3(
+    np.array(
+        [
+            9.21473783e-01,
+            5.16372267e-01,
+            -5.44391042e-03,
+            1.42087717e-02,
+            7.31715478e-04,
+            -1.61396925e00,
+        ]
+    )
+)
+Mfixedfootprint_mocap = Mmocap_fixedfootprint.inverse()
+
+# (2.2) mocap - fixedbase baselink
+Mmocap_fixedbaselink = cartesian_to_SE3(
+    np.array(
+        [
+            9.20782862e-01,
+            5.17310886e-01,
+            9.31457902e-02,
+            1.42957502e-02,
+            6.76446542e-04,
+            -1.61388066e00,
+        ]
+    )
+)
+Mfixedbaselink_mocap = Mmocap_fixedbaselink.inverse()
+
+
+# (3.1) forceplate - robot fixed baselink frame transformation
+Mforceplate_fixedfootprint = Mforceplate_mocap * Mmocap_fixedfootprint
+Mfixedfootprint_forceplate = Mforceplate_fixedfootprint.inverse()
+
+# (3.2) forceplate - robot fixed baselink frame transformation
+Mforceplate_fixedbaselink = Mforceplate_mocap * Mmocap_fixedbaselink
+Mfixedbaselink_forceplate = Mforceplate_fixedbaselink.inverse()
+
+# (4.1) marker on the base - robot floating base_footprint transformation
+marker_footprint = dict()
+marker_footprint["base2"] = np.array(
+    [
+        0.01905164792882577,
+        -0.20057504109760418,
+        -0.3148863380453684,
+        0.006911212803801684,
+        0.009815807728356198,
+        0.053830497405014326,
+    ]
+)
+Mmarker_footprint = cartesian_to_SE3(marker_footprint["base2"])
+Mfootprint_marker = Mmarker_footprint.inverse()
+
+# (4.2) marker on the base - robot floating baselink transformation
+marker_baselink = dict()
+marker_baselink["base2"] = np.array(
+    [
+        0.01904,
+        -0.200587,
+        -0.21628975,
+        0.006999,
+        0.00976118669378908,
+        0.0539194899,
+    ]
+)
+Mmarker_baselink = cartesian_to_SE3(marker_baselink["base2"])
+Mbaselink_marker = Mmarker_baselink.inverse()
+
+# (5) gripper_tool_link to gripper 3 marker
+Mwrist_gripper3 = cartesian_to_SE3(
+    np.array(
+        [
+            -0.02686200922255708,
+            -0.00031620763696974614,
+            -0.1514577985136796,
+            0,
+            0,
+            0,
+        ]
+    )
+)
+
+# (6) torso_lift_link to shoulder_1 marker
+Mshoulder_torso = cartesian_to_SE3(
+    np.array(
+        [
+            0.14574771716972612,
+            0.1581171862116727,
+            -0.0176625098292798,
+            -0.005016136500979825,
+            0.006322745940971755,
+            0.027530310085705736,
+        ]
+    )
+)
+Mtorso_shoulder = Mshoulder_torso.inverse()
+
+
+# pu.plot_SE3(pin.SE3.Identity())
+
+# pu.plot_SE3(estimate_fixed_base(marker_datas[0], marker_baselink, "base2", range(50, 1000)), "baselink")
+
+# pu.plot_SE3(pin.SE3(marker_datas[0]["base2"][1][0], marker_datas[0]["base2"][0][0]), "base2")
+# pu.plot_SE3(estimate_fixed_base(marker_datas[0], marker_footprint, "base2", range(50, 1000)), "footprint")
+# pu.plot_markertf(marker_datas[0]["base2"][0])
+
+##########################################
+f_res = 100
+f_cutoff = 2
 tiago_fb = load_robot(
     abspath("urdf/tiago_48_schunk.urdf"),
     isFext=True,
     load_by_urdf=True,
 )
-
 model = tiago_fb.model
 data = tiago_fb.data
-
+pu.addBox_to_gripper(tiago_fb)
 pu.initiating_robot(tiago_fb)
 
-dir_path = "/media/thanhndv212/Cooking/processed_data/tiago/develop/data/identification/suspension/creps/creps_bags/tiago_xyz_mirror_vicon_1642/"
-input_file = dir_path + "tiago_xyz_mirror_vicon_1642.csv"
-marker_data = pu.process_vicon_data(input_file)
+# load settings
+with open("config/tiago_config.yaml", "r") as f:
+    config = yaml.load(f, Loader=SafeLoader)
+identif_data = config["identification"]
+params_settings = get_param_from_yaml(tiago_fb, identif_data)
+standard_parameter = tiago_fb.get_standard_parameters(params_settings)
 
-# ######## Find transformation from base link to observed marker ##############
-# ## note: run calibration.py with the same data to get the transformation from mocap to base_link
-# # # translation
-marker_base = dict()
-marker_base["base1"] = np.array(
-    [0.0187, 0.2159, -0.3144, 0.0057, -0.1964, 0.0264]
+# load data
+file_names = [
+    "tiago_around_x_vicon_1634",  # 0
+    "tiago_around_y_vicon_1638",  # 1
+    "tiago_around_z_vicon_1622",  # 2
+    "tiago_x_fold_vicon_1632",  # 3
+    "tiago_xyz_mirror_vicon_1630",  # 4
+    "tiago_xyz_mirror_vicon_1642",  # 5
+    "tiago_xyz_vicon_1628",  # 6
+    "tiago_xyz_vicon_1640",  # 7
+    "tiago_y_fold_vicon_1636",  # 8
+]
+
+marker_datas = []
+marker_meas = []
+dir_paths = []
+for file_name in file_names:
+    dir_path_ = "/media/thanhndv212/Cooking/processed_data/tiago/develop/data/identification/suspension/creps/creps_bags/{}/".format(
+        file_name
+    )
+    input_file = dir_path_ + "{}.csv".format(file_name)
+    marker_datas.append(pu.process_vicon_data(input_file, f_cutoff))
+    marker_meas.append(pu.process_vicon_data(input_file, 70))
+    dir_paths.append(dir_path_)
+# process data
+mocap_ranges = [
+    range(2450, 3450),  # 0
+    range(2700, 4200),  # 1
+    range(2700, 4200),  # 2
+    range(5053, 6553),  # 3
+    range(2700, 4200),  # 4
+    range(2700, 4200),  # 5
+    range(2700, 4200),  # 6
+    range(3000, 4500),  # 7
+    range(3000, 4500),  # 8
+]
+
+selected_data = [
+    0,  # good fit on mx, my
+    # 1, # bad
+    # 2, # very good fit on fx
+    # 3,  # good fit on mx, my
+    # 4, # good fit on fz
+    # 5, # good fit on fx
+    # 6, # bad
+    # 7, # good fit on fz
+    # 8, # my, and somehow mz good
+]
+xyz = []
+rpy = []
+dxyz = []
+drpy = []
+tau_mea = []
+for ij_ in selected_data:
+    marker_data = marker_datas[ij_]
+    mocap_range_ = mocap_ranges[ij_]
+    NbSample = len(mocap_range_)
+
+    # calculate floatingbase poses and velocities
+    xyz_u, rpy_u, quat_u = calc_floatingbase_pose(
+        "base2", marker_data, marker_footprint, Mforceplate_mocap
+    )
+    _, dxyz_u, ddxyz_u = pu.calc_derivatives(xyz_u, f_res)
+    _, drpy_u, ddrpy_u = pu.calc_derivatives(rpy_u, f_res)
+
+    # measured force plate data
+    force = marker_data["force"]
+    moment = marker_data["moment"]
+    tau_ = np.concatenate(
+        (force[mocap_range_, :], moment[mocap_range_, :]), axis=1
+    )
+
+    xyz.append(xyz_u)
+    rpy.append(rpy_u)
+    dxyz.append(dxyz_u)
+    drpy.append(drpy_u)
+    tau_mea.append(tau_)
+
+# concatenate over several dataset
+xyz_u = xyz[0][mocap_ranges[selected_data[0]], :]
+rpy_u = rpy[0][mocap_ranges[selected_data[0]], :]
+dxyz_u = dxyz[0][mocap_ranges[selected_data[0]], :]
+drpy_u = drpy[0][mocap_ranges[selected_data[0]], :]
+tau_mea_concat = tau_mea[0]
+if len(selected_data) > 1:
+    for ij in range(1, len(selected_data)):
+        xyz_u = np.concatenate(
+            (xyz_u, xyz[ij][mocap_ranges[selected_data[ij]], :]), axis=0
+        )
+        rpy_u = np.concatenate(
+            (rpy_u, rpy[ij][mocap_ranges[selected_data[ij]], :]), axis=0
+        )
+        dxyz_u = np.concatenate(
+            (dxyz_u, dxyz[ij][mocap_ranges[selected_data[ij]], :]), axis=0
+        )
+        drpy_u = np.concatenate(
+            (drpy_u, drpy[ij][mocap_ranges[selected_data[ij]], :]), axis=0
+        )
+        tau_mea_concat = np.concatenate((tau_mea_concat, tau_mea[ij]), axis=0)
+tau_mea_vector = np.reshape(tau_mea_concat.T, (6 * len(tau_mea_concat)))
+
+# Regressor matrix
+Ntotal = len(xyz_u)
+reg_mat = pu.create_R_matrix(
+    Ntotal,
+    xyz_u,
+    dxyz_u,
+    rpy_u,
+    drpy_u,
 )
-marker_base["base2"] = np.array(
-    [0.0186, -0.1964, -0.3215, 0.0052, 0.0118, 0.0265]
+param_base = ["k", "c", "n"]
+axis = ["x", "y", "z"]
+dof = ["t", "r"]
+suspension_parameter = []
+for d_ in dof:
+    for a_ in axis:
+        for b_ in param_base:
+            suspension_parameter.append(b_ + a_ + "_" + d_)
+
+# Parameter estimation
+N_d = 6
+count = 0
+rmse = 1e8
+var_init = 1000 * np.ones(3 * N_d)
+
+while rmse > 5 * 1e-1 and count < 100:
+    LM_solve = least_squares(
+        pu.cost_function,
+        var_init,
+        method="lm",
+        verbose=1,
+        args=(reg_mat[:, 0 : 3 * N_d], tau_mea_vector),
+    )
+    tau_predict_vector = reg_mat[:, 0 : 3 * N_d] @ LM_solve.x
+    rmse = np.sqrt(np.mean((tau_mea_vector - tau_predict_vector) ** 2))
+    print("*" * 40)
+    print("iteration: ", count, "rmse: ", rmse)
+    print("solution: ", dict(zip(suspension_parameter, LM_solve.x)))
+    print("initial guess: ", var_init)
+    var_init = LM_solve.x + 20000 * np.random.randn(3 * N_d)
+    count += 1
+print(LM_solve.x)
+
+######## validation
+fig, ax = plt.subplots(N_d, 1)
+tau_ylabel = ["fx (N)", "fy(N)", "fz(N)", "mx(N.m)", "my(N.m)", "mz(N.m)"]
+for i in range(N_d):
+    ax[i].plot(
+        tau_mea_vector[i * Ntotal : (i + 1) * Ntotal],
+        color="red",
+    )
+    ax[i].plot(
+        tau_predict_vector[i * Ntotal : (i + 1) * Ntotal],
+        color="blue",
+    )
+    ax[i].set_ylabel(tau_ylabel[i])
+    ax[i].set_xlabel("time(ms)")
+    ax[0].legend(["forceplate_measures", "suspension_predicted_values"])
+plt.show()
+
+
+######################################################################################
+dir_path = dir_paths[0]
+path_to_values = dir_path + "introspection_datavalues.csv"
+path_to_names = dir_path + "introspection_datanames.csv"
+
+# read values from csv files
+t_res, f_res, joint_names, q_abs_res, q_rel_res = pu.get_q_arm(
+    tiago_fb, path_to_values, path_to_names, f_cutoff=0.625
 )
-
-
-def calc_baselink_pose(marker_data, base_marker_name: str):
-    Mmarker_base = cartesian_to_SE3(marker_base[base_marker_name])
-    Mbase_marker = Mmarker_base.inverse()
-    universe_frame = list()
-    [base_trans, base_rot] = marker_data[base_marker_name]
-    xyz_u = np.zeros((len(base_rot), 3))
-    rpy_u = np.zeros((len(base_rot), 3))
-    quat_u = np.zeros((len(base_rot), 4))
-    for i in range(len(base_rot)):
-        SE3_base = pin.SE3(base_rot[i], base_trans[i, :]) * Mmarker_base
-        universe_frame.append(SE3_base)
-        xyz_u[i, :] = SE3_base.translation
-        rpy_u[i, :] = pin.rpy.matrixToRpy(SE3_base.rotation)
-        quat_u[i, :] = pin.Quaternion(SE3_base.rotation).coeffs()
-    return xyz_u, rpy_u, quat_u
-
-
-xyz_u, rpy_u, quat_u = calc_baselink_pose(marker_data, "base2")
-
-# # # observed markers data and derivatives
-# _, dxyz_u, ddxyz_u = pu.calc_derivatives(xyz_u, f_res)
-# _, drpy_u, ddrpy_u = pu.calc_derivatives(rpy_u, f_res)
-
-# sample_range = range(3000, 4000)
-# NbSample = len(sample_range)
-# xyz_us = np.zeros_like(xyz_u[sample_range, :])
-# rpy_us = np.zeros_like(rpy_u[sample_range, :])
-# for i in range(3):
-#     xyz_us[:, i] = xyz_u[sample_range, i] - np.mean(xyz_u[sample_range, i])
-#     print("mean of sample range:", np.mean(xyz_u[sample_range, i]))
-#     rpy_us[:, i] = rpy_u[sample_range, i] - np.mean(rpy_u[sample_range, i])
-
-
-# # ######################################################################################
-# path_to_values = dir_path + "introspection_datavalues.csv"
-# path_to_names = dir_path + "introspection_datanames.csv"
-
-# # # create a robot
-# # tiago = load_robot(
-# #     abspath("urdf/tiago_48_schunk.urdf"),
-# #     isFext=True,
-# #     load_by_urdf=True,
-# # )
-# # add object to gripper
-# pu.addBox_to_gripper(tiago_fb)
-
-# # read values from csv files
-# t_res, f_res, joint_names, q_abs_res, q_pos_res = pu.get_q_arm(
-#     tiago_fb, path_to_values, path_to_names, f_cutoff
-# )
 # active_joints = [
 #     "torso_lift_joint",
 #     "arm_1_joint",
@@ -397,12 +646,141 @@ xyz_u, rpy_u, quat_u = calc_baselink_pose(marker_data, "base2")
 #     joint_idx = tiago_fb.model.getJointId(act_j)
 #     actJoint_idx.append(tiago_fb.model.joints[joint_idx].idx_q)
 #     actJoint_idv.append(tiago_fb.model.joints[joint_idx].idx_v)
-# selected_range = range(20, t_res.shape[0]-20)
-# # sample_range = selected_range
-# q_arm, dq_arm, ddq_arm = pu.calc_vel_acc(
-#     tiago_fb, q_pos_res, selected_range, joint_names, f_res, f_cutoff
-# )
-# tau_id = pin.rnea(model, data, q_arm[0, :], dq[0, :], ddq_arm[0, :])
+# encoder_range = range(10, t_res.shape[0] - 10)
+encoder_range = range(2430, 3430)
+
+# mocap_range = encoder_range
+q_arm, dq_arm, ddq_arm = pu.calc_vel_acc(
+    tiago_fb, q_rel_res, encoder_range, joint_names, f_res, f_cutoff=0.625
+)
+# [base_trans, base_rot] = marker_datas[0]["base2"]
+
+
+shoulder1_pos = marker_meas[selected_data[0]]["shoulder2"][0][
+    mocap_ranges[selected_data[0]], :
+]
+gripper3_pos = marker_meas[selected_data[0]]["gripper3"][0][
+    mocap_ranges[selected_data[0]], :
+]
+base2_pos = marker_meas[selected_data[0]]["base2"][0][
+    mocap_ranges[selected_data[0]], :
+]
+
+
+def lookup_compare(lookup_marker="shoulder"):
+    if lookup_marker == "gripper":
+        pee_est, peews_est = compute_estimated_pee(
+            "gripper_tool_link",
+            "base2",
+            marker_footprint,
+            Mmocap_fixedfootprint,
+            Mwrist_gripper3,
+            mocap_ranges[selected_data[0]],
+            q_arm,
+        )
+        plot_compare_suspension(
+            pee_est, peews_est, gripper3_pos, lookup_marker=lookup_marker
+        )
+
+    elif lookup_marker == "shoulder":
+        pee_est, peews_est = compute_estimated_pee(
+            "torso_lift_link",
+            "base2",
+            marker_footprint,
+            Mmocap_fixedfootprint,
+            Mtorso_shoulder,
+            mocap_ranges[selected_data[0]],
+            q_arm,
+        )
+        pee_est[:, 0] += 0.02
+        peews_est[:, 0] += 0.02
+        pee_est[:, 1] += 0.007
+        peews_est[:, 1] += 0.007
+        pee_est[:, 2] += 0.0035
+        peews_est[:, 2] += 0.0035
+
+        plot_compare_suspension(
+            pee_est, peews_est, shoulder1_pos, lookup_marker=lookup_marker
+        )
+        for ii, xx in enumerate(["x", "y", "z"]):
+            print(
+                "rmse without --> with susp. along {} axis at shoulder in millimeter: ".format(
+                    xx
+                ),
+                np.around(
+                    1e3 * pu.rmse(shoulder1_pos[:, ii], pee_est[:, ii]), 2
+                ),
+                " --> ",
+                np.around(
+                    1e3 * pu.rmse(shoulder1_pos[:, ii], peews_est[:, ii]), 2
+                ),
+            )
+
+    elif lookup_marker == "base":
+        pee_est, peews_est = compute_estimated_pee(
+            "base_link",
+            "base2",
+            marker_footprint,
+            Mmocap_fixedfootprint,
+            Mmarker_baselink.inverse(),
+            mocap_ranges[selected_data[0]],
+            q_arm,
+        )
+        pee_est[:, 0] += 0.00075
+        peews_est[:, 0] += 0.00075
+        pee_est[:, 1] += 0.001
+        peews_est[:, 1] += 0.001
+        pee_est[:, 2] += 0.0001
+        peews_est[:, 2] += 0.0001
+        plot_compare_suspension(
+            pee_est, peews_est, base2_pos, lookup_marker=lookup_marker
+        )
+        for ii, xx in enumerate(["x", "y", "z"]):
+            print(
+                "rmse without --> with susp. along {} axis at base in millimeter: ".format(
+                    xx
+                ),
+                np.around(1e3 * pu.rmse(base2_pos[:, ii], pee_est[:, ii]), 2),
+                " --> ",
+                np.around(
+                    1e3 * pu.rmse(base2_pos[:, ii], peews_est[:, ii]), 2
+                ),
+            )
+
+for lm in ['base', 'shoulder', 'gripper']:
+    lookup_compare(lm)
+# # concatenate with floating base kinematic entities
+# q_arm[:, 0:3] = xyz_u[2463:4863, :]
+# q_arm[:, 3:7] = quat_u[2463:4863, :]
+# dq_arm[:, 0:3] = dxyz_u[2463:4863, :]
+# dq_arm[:, 3:6] = drpy_u[2463:4863, :]
+# ddq_arm[:, 0:3] = ddxyz_u[2463:4863, :]
+# ddq_arm[:, 3:6] = ddrpy_u[2463:4863, :]
+
+# # modify baselink mass
+
+# init_root_inertia = model.inertias[1].copy()
+# delta_base_mass = np.mean(-force[:, 2]) / 9.81 - total_mass
+# model.inertias[1].mass += -8
+
+
+# # build basic regressor
+# W = build_regressor_basic(tiago_fb, q_arm, dq_arm, ddq_arm, params_settings)
+# print(W.shape, len(standard_parameter))
+
+# # remove zero columns
+# idx_e, active_parameter = get_index_eliminate(W, standard_parameter, tol_e=0.001)
+# W_e = build_regressor_reduced(W, idx_e)
+# print(W_e.shape)
+
+# calculate joint torque by inverse dynamic
+
+# tau_id = []
+# for i_ in range(q_arm.shape[0]):
+#     tau_id.append(
+#         pin.rnea(model, data, q_arm[i_, :], dq_arm[i_, :], ddq_arm[i_, :])
+#     )
+# tau_id = np.array(tau_id)
 # for ii, joint in enumerate(tiago_fb.model.joints):
 #     print(
 #         "{}. Joint name: {}, mass (kg): {}, joint torque (N/N.m): ".format(
@@ -417,72 +795,33 @@ xyz_u, rpy_u, quat_u = calc_baselink_pose(marker_data, "base2")
 #             "grf measured: ", np.mean(force, axis=0), np.mean(moment, axis=0)
 #         )
 #     print(np.round(tau_id[joint.idx_v]))
-# plt.plot(force[:, 2])
-# plt.show()
 
-# calculate joint torque by inverse dynamic
 
-# ######### Regressor matrix
-# reg_mat = pu.create_R_matrix(
-#     len(sample_range),
-#     xyz_us,
-#     dxyz_u[sample_range, :],
-#     rpy_us,
-#     drpy_u[sample_range, :],
-# )
+# fig_, ax_ = plt.subplots(6, 1)
+# invdyn_tau = tau_id[:, 0:6]
+# invdyn_tau_in_fpframe = np.zeros_like(invdyn_tau)
+# for jj in range(len(invdyn_tau)):
+#     invdyn_tau_in_fpframe[jj, :] = np.dot(Mforceplate_baselink.action, invdyn_tau[jj, :])
+# f = [force[2463:4863, 0], force[2463:4863, 1], -force[2463:4863, 2]]
+# m = [moment[2463:4863, 0], moment[2463:4863, 1], moment[2463:4863, 2]]
 
-# ######### Inverse dynamics
-# # # get joint torques from inverse dynamics
-# tau_mea_vector = np.zeros(6 * NbSample)
-# for i in range(3):
-#     tau_mea_vector[i * NbSample : (i + 1) * NbSample] = force[
-#         sample_range, i
-#     ] - np.mean(force[sample_range, i])
-#     tau_mea_vector[(3 + i) * NbSample : (3 + i + 1) * NbSample] = moment[
-#         sample_range, i
-#     ] - np.mean(moment[sample_range, i])
+# f_tick = ["fx", "fy", "fz"]
+# m_tick = ["mx", "my", "mz"]
 
-# ######## Parameter estimation model
-# N_d = 3
-# count = 0
-# rmse = 1e8
-# var_init = 100 * np.ones(2 * N_d)
-
-# while rmse > 1e-1 and count < 10:
-#     LM_solve = least_squares(
-#         pu.cost_function,
-#         var_init,
-#         method="lm",
-#         verbose=1,
-#         args=(reg_mat[:, 0 : 2 * N_d], tau_mea_vector),
+# for j_ in range(3):
+#     ax_[j_].plot(f[j_], label="measured force")
+#     ax_[j_].plot(
+#         np.array(invdyn_tau_in_fpframe)[:, j_], label="inverse dyn force"
 #     )
-#     tau_predict_vector = reg_mat[:, 0 : 2 * N_d] @ LM_solve.x
-#     rmse = np.sqrt(np.mean((tau_mea_vector - tau_predict_vector) ** 2))
-#     print("*" * 40)
-#     print("iteration: ", count, "rmse: ", rmse)
-#     print("solution: ", LM_solve.x)
-#     print("initial guess: ", var_init)
-#     var_init = LM_solve.x + 20000 * np.random.randn(2 * N_d)
-#     count += 1
-# print(LM_solve.x)
-# ######## validation
-# fig, ax = plt.subplots(N_d, 1)
-# tau_ylabel = ["fx (N)", "fy(N)", "fz(N)", "mx(N.m)", "my(N.m)", "mz(N.m)"]
-# for i in range(N_d):
-#     ax[i].plot(
-#         tau_mea_vector[i * len(sample_range) : (i + 1) * len(sample_range)],
-#         color="red",
+#     ax_[j_].set_ylabel(f_tick[j_])
+#     ax_[j_].legend(loc="upper left")
+#     ax_[3 + j_].plot(m[j_], label="measured force")
+#     ax_[3 + j_].plot(
+#         np.array(invdyn_tau_in_fpframe)[:, 3 + j_], label="inverse dyn moment"
 #     )
-#     ax[i].plot(
-#         tau_predict_vector[
-#             i * len(sample_range) : (i + 1) * len(sample_range)
-#         ],
-#         color="blue",
-#     )
-#     ax[i].set_ylabel(tau_ylabel[i])
-#     ax[i].set_xlabel("time(ms)")
-#     ax[0].legend(["forceplate_measures", "suspension_predicted_values"])
-# plt.show()
+#     ax_[3 + j_].set_ylabel(m_tick[j_])
+#     ax_[3 + j_].legend(loc="upper left")
+
 
 ############ visualization
 # robot.initViewer(loadModel=True)
@@ -597,9 +936,9 @@ xyz_u, rpy_u, quat_u = calc_baselink_pose(marker_data, "base2")
 # f_tf = 120
 
 # # only take samples in a range
-# sample_range = range(3000, 4000)
-# sample_range_ext = range(sample_range[0] - 10, sample_range[-1] + 1 + 10)
-# NbSample = len(sample_range)
+# mocap_range = range(3000, 4000)
+# mocap_range_ext = range(mocap_range[0] - 10, mocap_range[-1] + 1 + 10)
+# NbSample = len(mocap_range)
 
 # ########################################################################
 
@@ -614,7 +953,7 @@ xyz_u, rpy_u, quat_u = calc_baselink_pose(marker_data, "base2")
 # pu.addBox_to_gripper(robot)
 
 # # retrieve marker data
-# t_res, f_res, joint_names, q_abs_res, q_pos_res = pu.get_q_arm(
+# t_res, f_res, joint_names, q_abs_res, q_rel_res = pu.get_q_arm(
 #     robot, path_to_values, path_to_names, f_cutoff
 # )
 # posXYZ_res, quatXYZW_res = get_XYZQUAT_marker(
@@ -634,9 +973,9 @@ xyz_u, rpy_u, quat_u = calc_baselink_pose(marker_data, "base2")
 # ########################################################################
 
 # # processed data
-# t_sample = t_res[sample_range]
+# t_sample = t_res[mocap_range]
 # q_arm, dq_arm, ddq_arm = pu.calc_vel_acc(
-#     robot, q_abs_res, sample_range, joint_names, f_res, f_cutoff
+#     robot, q_abs_res, mocap_range, joint_names, f_res, f_cutoff
 # )
 # (
 #     q_marker,
@@ -645,7 +984,7 @@ xyz_u, rpy_u, quat_u = calc_baselink_pose(marker_data, "base2")
 #     rpy_marker,
 #     Mmarker0_mocap,
 #     q_marker_ext,
-# ) = pu.calc_fb_vel_acc(posXYZ_res, quatXYZW_res, sample_range, f_res)
+# ) = pu.calc_fb_vel_acc(posXYZ_res, quatXYZW_res, mocap_range, f_res)
 # (
 #     q_markerBase,
 #     dq_markerBase,
@@ -653,7 +992,7 @@ xyz_u, rpy_u, quat_u = calc_baselink_pose(marker_data, "base2")
 #     rpy_markerBase,
 #     Mmarker0_mocapBase,
 #     q_marker_extBase,
-# ) = pu.calc_fb_vel_acc(posXYZ_base, quatXYZW_base, sample_range, f_res)
+# ) = pu.calc_fb_vel_acc(posXYZ_base, quatXYZW_base, mocap_range, f_res)
 # # u_marker, s_marker = find_isa(q_marker, dq_marker)
 # # u_markerBase, s_markerBase = find_isa(q_markerBase, dq_markerBase)
 
@@ -728,7 +1067,7 @@ xyz_u, rpy_u, quat_u = calc_baselink_pose(marker_data, "base2")
 # )
 # error_tau = np.abs(tau_predict_vector - tau_mea_vector)
 
-# print("sample_range: ", sample_range)
+# print("mocap_range: ", mocap_range)
 
 
 # # plot dynamics
@@ -736,22 +1075,22 @@ xyz_u, rpy_u, quat_u = calc_baselink_pose(marker_data, "base2")
 # tau_ylabel = ["fx (N)", "fy(N)", "fz(N)", "mx(N.m)", "my(N.m)", "mz(N.m)"]
 # for i in range(6):
 #     ax[i].plot(
-#         np.arange(len(sample_range)),
-#         tau_mea_vector[i * len(sample_range) : (i + 1) * len(sample_range)],
+#         np.arange(len(mocap_range)),
+#         tau_mea_vector[i * len(mocap_range) : (i + 1) * len(mocap_range)],
 #         color="red",
 #     )
 #     ax[i].plot(
-#         np.arange(len(sample_range)),
+#         np.arange(len(mocap_range)),
 #         tau_predict_vector[
-#             i * len(sample_range) : (i + 1) * len(sample_range)
+#             i * len(mocap_range) : (i + 1) * len(mocap_range)
 #         ],
 #         color="blue",
 #     )
 #     ax[i].set_ylabel(tau_ylabel[i])
 #     ax[i].set_xlabel("time(ms)")
 #     ax[i].bar(
-#         np.arange(len(sample_range)),
-#         error_tau[i * len(sample_range) : (i + 1) * len(sample_range)],
+#         np.arange(len(mocap_range)),
+#         error_tau[i * len(mocap_range) : (i + 1) * len(mocap_range)],
 #     )
 #     ax[0].legend(["pinocchio_estimate", "suspension_predicted"])
 # plt.show()
