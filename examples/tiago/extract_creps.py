@@ -55,13 +55,13 @@ dir_path = "/media/thanhndv212/Cooking/processed_data/tiago/develop/data/identif
 ######################################################################################
 input_file = dir_path + "tiago_calib_vicon_1607.csv"
 print("Read VICON data from ", input_file)
-calib_df = rpu.ead_csv_vicon(input_file)
+calib_df = pu.read_csv_vicon(input_file)
 
 f_res = 100
 f_cutoff = 5
 selected_range = range(0, 41000)
 # selected_range = range(0, 5336)
-plot = True  # plot the coordinates
+plot = False  # plot the coordinates
 plot_raw = True
 alpha = 0.25
 time_stamps_vicon = [
@@ -151,7 +151,7 @@ marker_data["base1"] = pu.create_rigidbody_frame(
     [base1, base2, base3],
     unit_rot=np.array([[0.0, 1.0, 0.0], [1.0, 0.0, 0], [0, 0, -1]]),
 )
-marker_data["base2"] = pu.create_rigidbody_frame(
+marker_data["base2"] = pu.create_$300,644,rigidbody_frame(
     [base2, base1, base3],
     unit_rot=np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0], [0, 0, 1]]),
 )
@@ -186,6 +186,99 @@ marker_data["shoulder3"] = pu.create_rigidbody_frame(
 marker_data["shoulder4"] = pu.create_rigidbody_frame(
     [shoulder4, shoulder2, shoulder3]
 )
+forceplate_frame_rot = np.array([[-1, 0.0, 0.0], [0, 1.0, 0], [0, 0, -1]])
+forceplate_frame_trans = np.array([0.9, 0.45, 0.0])
+forceplate_SE3 = pin.SE3(forceplate_frame_rot, forceplate_frame_trans)
+
+def plot_frames():
+    fig = plt.figure()
+    ax = fig.add_subplot(projection="3d")
+    ax.scatter(
+        base1[0, 0], base1[0, 1], base1[0, 2], marker="o", label="base1"
+    )
+    ax.scatter(
+        base2[0, 0], base2[0, 1], base2[0, 2], marker="o", label="base2"
+    )
+    ax.scatter(
+        base3[0, 0], base3[0, 1], base3[0, 2], marker="o", label="base3"
+    )
+    ax.scatter(
+        shoulder1[0, 0],
+        shoulder1[0, 1],
+        shoulder1[0, 2],
+        marker="*",
+        label="shoulder1",
+    )
+    ax.scatter(
+        shoulder2[0, 0],
+        shoulder2[0, 1],
+        shoulder2[0, 2],
+        marker="*",
+        label="shoulder2",
+    )
+    ax.scatter(
+        shoulder3[0, 0],
+        shoulder3[0, 1],
+        shoulder3[0, 2],
+        marker="*",
+        label="shoulder3",
+    )
+    ax.scatter(
+        shoulder4[0, 0],
+        shoulder4[0, 1],
+        shoulder4[0, 2],
+        marker="*",
+        label="shoulder4",
+    )
+    ax.scatter(
+        gripper1[0, 0],
+        gripper1[0, 1],
+        gripper1[0, 2],
+        marker=">",
+        label="gripper1",
+    )
+    ax.scatter(
+        gripper2[0, 0],
+        gripper2[0, 1],
+        gripper2[0, 2],
+        marker=">",
+        label="gripper2",
+    )
+    ax.scatter(
+        gripper3[0, 0],
+        gripper3[0, 1],
+        gripper3[0, 2],
+        marker=">",
+        label="gripper3",
+    )
+    ax.scatter(cop[0, 0], cop[0, 1], cop[0, 2], marker="x", label="cop")
+
+    ax.legend()
+    pu.plot_SE3(pin.SE3.Identity())
+    pu.plot_SE3(
+        pin.SE3(marker_data["base1"][1][0], marker_data["base1"][0][0, :]),
+        "base1-marker",
+    )
+    # plot_SE3(pin.SE3(shoulder_rot[0], shoulder_trans[0,:]), 's_marker')
+    # plot_SE3(pin.SE3(gripper_rot[0], gripper_trans[0,:]), 'g_marker')
+    pu.plot_SE3(forceplate_SE3, "forceplate")
+    # pu.plot_SE3(universe_frame[0], "universe")
+    # plot_SE3(
+    #     pin.SE3(
+    #         universe_frame[0]
+    #         * data.oMi[model.getJointId("suspension_left_joint")]
+    #     ),
+    #     "suspension-left-joint",
+    # )
+    # plot_SE3(
+    #     pin.SE3(
+    #         universe_frame[0] * data.oMi[model.getJointId("wheel_left_joint")]
+    #     ),
+    #     "wheel-left-joint",
+    # )
+
+
+plot_frames()
 
 #####################################################################################
 
@@ -202,7 +295,7 @@ robot = load_robot(
 # addBox_to_gripper(robot)
 
 # read values from csv files
-t_res, f_res, joint_names, q_abs_res, q_pos_res = pu.get_q_arm(
+t_res, f_res, joint_names, q_abs_res, q_rel_res = pu.get_q_arm(
     robot, path_to_values, path_to_names, f_cutoff
 )
 active_joints = [
@@ -223,9 +316,9 @@ for act_j in active_joints:
     actJoint_idv.append(robot.model.joints[joint_idx].idx_v)
 
 q_arm, dq_arm, ddq_arm = pu.calc_vel_acc(
-    robot, q_abs_res, selected_range, joint_names, f_res, f_cutoff
+    robot, q_rel_res, selected_range, joint_names, f_res, f_cutoff
 )
-q_arm = q_abs_res[:, actJoint_idx]
+q_arm = q_rel_res[:, actJoint_idx]
 time_stamps = [
     960,
     3367,
@@ -292,7 +385,7 @@ for base in ["base1", "base2", "base3"]:
                 q_sel,
                 join(
                     dirname(str(abspath(__file__))),
-                    "data/calibration/mocap/vicon/absolute_encoder/vicon_calibration_fc10_{}_{}.csv".format(
+                    "data/calibration/mocap/vicon/relative_encoder/vicon_calibration_fc10_{}_{}.csv".format(
                         gripper, base
                     ),
                 ),
@@ -303,7 +396,7 @@ for base in ["base1", "base2", "base3"]:
                 q_sel,
                 join(
                     dirname(str(abspath(__file__))),
-                    "data/calibration/mocap/vicon/absolute_encoder/vicon_calibration_fc10_{}_{}.csv".format(
+                    "data/calibration/mocap/vicon/relative_encoder/vicon_calibration_fc10_{}_{}.csv".format(
                         gripper, shoulder
                     ),
                 ),
@@ -314,7 +407,7 @@ for base in ["base1", "base2", "base3"]:
                 q_sel,
                 join(
                     dirname(str(abspath(__file__))),
-                    "data/calibration/mocap/vicon/absolute_encoder/vicon_calibration_fc10_{}_{}.csv".format(
+                    "data/calibration/mocap/vicon/relative_encoder/vicon_calibration_fc10_{}_{}.csv".format(
                         shoulder, base
                     ),
                 ),
