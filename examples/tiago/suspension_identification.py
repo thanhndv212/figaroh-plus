@@ -22,9 +22,96 @@ import tiago_utils.suspension.processing_utils as pu
 from tiago_utils.tiago_tools import load_robot
 from scipy.optimize import least_squares
 from figaroh.calibration.calibration_tools import cartesian_to_SE3
+from figaroh.tools.regressor import (
+    build_regressor_basic,
+    build_regressor_reduced,
+    get_index_eliminate,
+)
+import yaml
+from yaml.loader import SafeLoader
+from figaroh.identification.identification_tools import get_param_from_yaml
+from figaroh.tools.qrdecomposition import get_baseParams
 
 
-# vicon at creps
+def calc_floatingbase_pose(
+    base_marker_name: str,
+    marker_data: dict,
+    marker_base: dict,
+    Mref=pin.SE3.Identity(),
+):
+    """Calculate floatingbase pose w.r.t a fixed frame from measures expressed
+    in mocap frame.
+
+    Args:
+        marker_data (dict): vicon marker data
+        marker_base (dict): SE3 from a marker to a fixed base
+        base_marker_name (str): base marker name
+        Mref (_type_, optional): Defaults to pin.SE3.Identity().
+
+    Returns:
+        numpy.ndarray, numpy.ndarray, numpy.ndarray : position, rpy, quaternion
+    """
+
+    Mmarker_floatingbase = cartesian_to_SE3(marker_base[base_marker_name])
+    [base_trans, base_rot] = marker_data[base_marker_name]
+
+    n_ = len(base_rot)
+    xyz_u = np.zeros((n_, 3))
+    rpy_u = np.zeros((n_, 3))
+    quat_u = np.zeros((n_, 4))
+
+    for i in range(n_):
+        SE3_floatingbase = (
+            Mref
+            * pin.SE3(base_rot[i], base_trans[i, :])
+            * Mmarker_floatingbase
+        )
+
+        xyz_u[i, :] = SE3_floatingbase.translation
+        rpy_u[i, :] = pin.rpy.matrixToRpy(SE3_floatingbase.rotation)
+        quat_u[i, :] = pin.Quaternion(SE3_floatingbase.rotation).coeffs()
+
+    return xyz_u, rpy_u, quat_u
+
+
+def estimate_fixed_base(
+    base_marker_name: str,
+    marker_data: dict,
+    marker_fixedbase: dict,
+    stationary_range: range,
+    Mref=pin.SE3.Identity(),
+):
+    """Estimate fixed base frame of robot expressed in a fixed frame
+
+    Args:
+        marker_data (dict): vicon marker data
+        marker_fixedbase (dict): SE3 from a marker to a fixed base
+        base_marker_name (str): base marker name
+        stationary_range (range): range to extract data
+        Mref (SE3, optional): Defaults to pin.SE3.Identity() as mocap frame.
+
+    Returns:
+        SE3: transformatiom SE3
+    """
+
+    Mmarker_fixedbase = cartesian_to_SE3(marker_fixedbase[base_marker_name])
+    [base_trans, base_rot] = marker_data[base_marker_name]
+
+    ne_ = len(stationary_range)
+    xyz_u_ = np.zeros((ne_, 3))
+    rpy_u_ = np.zeros((ne_, 3))
+
+    for j, i in enumerate(stationary_range):
+        SE3_fixdebase = (
+            pin.SE3(base_rot[i], base_trans[i, :]) * Mmarker_fixedbase
+        )
+        xyz_u_[j, :] = SE3_fixdebase.translation
+        rpy_u_[j, :] = pin.rpy.matrixToRpy(SE3_fixdebase.rotation)
+
+    xyz_mean = np.mean(xyz_u_, axis=0)
+    rpy_mean = np.mean(rpy_u_, axis=0)
+
+    return cartesian_to_SE3(np.append(xyz_mean, rpy_mean))
 
 tiago_fb = load_robot(
     abspath("urdf/tiago_48_schunk.urdf"),
