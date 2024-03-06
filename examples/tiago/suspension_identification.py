@@ -113,6 +113,197 @@ def estimate_fixed_base(
 
     return cartesian_to_SE3(np.append(xyz_mean, rpy_mean))
 
+
+def compute_estimated_pee(
+    endframe_name: str,
+    base_marker_name: str,
+    marker_fixedbase: dict,
+    Mmocap_fixedbase,
+    Mendframe_marker,
+    mocap_range_: range,
+    q_arm: np.ndarray,
+):
+    """_summary_
+
+    Args:
+        endframe_name (str): name of the end of kinematic chain
+        base_marker_name (str): name of base marker measured
+        marker_fixedbase (dict): fixed transformation from marker to fixed base
+        Mmocap_fixedbase (SE3): transf. from mocap to fixed base
+        Mendframe_marker (SE3): transf. from end of kin.chain to last marker
+        mocap_range_ (range): range of selected mocap data
+        q_arm (np.ndarray): encoder data within 'encoder_range'
+
+    Returns:
+        numpy.ndarray, numpy.ndarray: estimate of last marker in mocap frame
+    """
+    assert len(q_arm) == len(
+        mocap_range_
+    ), "joint configuration range is not matched with mocap range."
+
+    endframe_id = model.getFrameId(endframe_name)
+    Mmarker_fixedbase = cartesian_to_SE3(marker_fixedbase[base_marker_name])
+    [base_trans, base_rot] = marker_data[base_marker_name]
+
+    nc_ = len(mocap_range_)
+    pee_est = np.zeros((nc_, 3))
+    peews_est = np.zeros((nc_, 3))
+
+    for jj, ii in enumerate(mocap_range_):
+        pin.framesForwardKinematics(model, data, q_arm[jj])
+        pin.updateFramePlacements(model, data)
+
+        Mmocap_floatingbase = (
+            pin.SE3(base_rot[ii], base_trans[ii, :]) * Mmarker_fixedbase
+        )
+
+        pee_SE3 = Mmocap_fixedbase * data.oMf[endframe_id] * Mendframe_marker
+
+        peews_SE3 = (
+            Mmocap_floatingbase * data.oMf[endframe_id] * Mendframe_marker
+        )
+
+        pee_est[jj, :] = pee_SE3.translation
+        peews_est[jj, :] = peews_SE3.translation
+
+    return pee_est, peews_est
+
+
+def plot_compare_suspension(
+    pee_est=None,
+    peews_est=None,
+    gripper3_pos=None,
+    lookup_marker="gripper",
+    plot_err=True,
+):
+    fig, ax = plt.subplots(3, 1)
+    t_tf2 = []
+    t_tf = []
+    if pee_est is not None:
+        t_tf = np.arange(len(pee_est))
+        ax[0].plot(
+            t_tf,
+            peews_est[:, 0],
+            color="red",
+            label="estimated with suspension added",
+        )
+        ax[1].plot(
+            t_tf,
+            peews_est[:, 1],
+            color="blue",
+            label="estimated with suspension added",
+        )
+        ax[2].plot(
+            t_tf,
+            peews_est[:, 2],
+            color="green",
+            label="estimated with suspension added",
+        )
+    if peews_est is not None:
+        t_tf = np.arange(len(peews_est))
+        ax[0].plot(
+            t_tf,
+            pee_est[:, 0],
+            color="red",
+            linestyle="dotted",
+            label="estimated without suspension added",
+        )
+        ax[1].plot(
+            t_tf,
+            pee_est[:, 1],
+            color="blue",
+            linestyle="dotted",
+            label="estimated without suspension added",
+        )
+        ax[2].plot(
+            t_tf,
+            pee_est[:, 2],
+            color="green",
+            linestyle="dotted",
+            label="estimated without suspension added",
+        )
+    if gripper3_pos is not None:
+        t_tf2 = np.arange(len(gripper3_pos))
+        ax[0].plot(
+            t_tf2,
+            gripper3_pos[:, 0],
+            color="red",
+            label="measured",
+            linestyle="--",
+        )
+        ax[1].plot(
+            t_tf2,
+            gripper3_pos[:, 1],
+            color="blue",
+            label="measured",
+            linestyle="--",
+        )
+        ax[2].plot(
+            t_tf2,
+            gripper3_pos[:, 2],
+            color="green",
+            label="measured",
+            linestyle="--",
+        )
+
+    ax3 = ax[0].twinx()
+    ax4 = ax[1].twinx()
+    ax5 = ax[2].twinx()
+    if plot_err:
+        if pee_est is not None and gripper3_pos is not None:
+            ax3.bar(
+                t_tf,
+                pee_est[:, 0] - gripper3_pos[:, 0],
+                color="black",
+                label="errors - x axis",
+                alpha=0.3,
+            )
+            ax4.bar(
+                t_tf,
+                pee_est[:, 1] - gripper3_pos[:, 1],
+                color="black",
+                label="errors - without susspension added",
+                alpha=0.3,
+            )
+            ax5.bar(
+                t_tf,
+                pee_est[:, 2] - gripper3_pos[:, 2],
+                color="black",
+                label="errors - z axis",
+                alpha=0.3,
+            )
+        if peews_est is not None and gripper3_pos is not None:
+
+            ax3.bar(
+                t_tf,
+                peews_est[:, 0] - gripper3_pos[:, 0],
+                color="red",
+                label="errors - x axis",
+                alpha=0.3,
+            )
+            ax4.bar(
+                t_tf,
+                peews_est[:, 1] - gripper3_pos[:, 1],
+                color="blue",
+                label="errors - with susspension added",
+                alpha=0.3,
+            )
+            ax5.bar(
+                t_tf,
+                peews_est[:, 2] - gripper3_pos[:, 2],
+                color="green",
+                label="errors - z axis",
+                alpha=0.3,
+            )
+    ax4.legend()
+    ax[0].legend()
+    ax[0].set_ylabel("x component (meter)")
+    ax[1].set_ylabel("y component (meter)")
+    ax[2].set_ylabel("z component (meter)")
+    ax[2].set_xlabel("sample")
+    fig.suptitle("Marker Position of {}".format(lookup_marker))
+
+
 tiago_fb = load_robot(
     abspath("urdf/tiago_48_schunk.urdf"),
     isFext=True,
