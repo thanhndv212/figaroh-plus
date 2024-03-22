@@ -1006,30 +1006,30 @@ def create_R_matrix(NbSample, pos_res, pos_vel, rpy_res, ang_vel):
     R = np.zeros((6 * NbSample, 6 * 3))
     # translation: fx, fy, fz
     for i_f in range(3):
-        R[(i_f) * NbSample : (i_f + 1) * NbSample, 2 * i_f] = pos_res[
+        R[(i_f) * NbSample : (i_f + 1) * NbSample, 3 * i_f] = pos_res[
             :, i_f
         ]  # linear stiffness
-        R[(i_f) * NbSample : (i_f + 1) * NbSample, 2 * i_f + 1] = pos_vel[
+        R[(i_f) * NbSample : (i_f + 1) * NbSample, 3 * i_f + 1] = pos_vel[
             :, i_f
         ]  # linear damping
-        R[(i_f) * NbSample : (i_f + 1) * NbSample, 2 * i_f + 2] = np.full(
+        R[(i_f) * NbSample : (i_f + 1) * NbSample, 3 * i_f + 2] = np.full(
             NbSample, 1
-        )
+        )  # offset
     # rotation: mx, my, mz
     for i_m in range(3):
-        R[(3 + i_m) * NbSample : (3 + i_m + 1) * NbSample, 3 * 3 + 2 * i_m] = (
+        R[(3 + i_m) * NbSample : (3 + i_m + 1) * NbSample, 3 * 3 + 3 * i_m] = (
             rpy_res[:, i_m]
         )  # angular stiffness
         R[
             (3 + i_m) * NbSample : (3 + i_m + 1) * NbSample,
-            3 * 3 + 2 * i_m + 1,
+            3 * 3 + 3 * i_m + 1,
         ] = ang_vel[
             :, i_m
         ]  # angulardamping
         R[
             (3 + i_m) * NbSample : (3 + i_m + 1) * NbSample,
-            3 * 3 + 2 * i_m + 2,
-        ] = np.full(NbSample, 1)
+            3 * 3 + 3 * i_m + 2,
+        ] = np.full(NbSample, 1)  # offset
     # force-contributation moment: m_fx, m_fy, m_fz, skew_matrix of r (3x3) * f (3x1)
     # # m_fx -> mx
     # R[(3)*NbSample:(4)*NbSample, 2] = np.multiply(-pos_res[:, 2], pos_res[:, 1]) # - z*y
@@ -1046,7 +1046,7 @@ def create_R_matrix(NbSample, pos_res, pos_vel, rpy_res, ang_vel):
     # R[(5)*NbSample:(6)*NbSample, 1] = np.multiply(-pos_res[:, 1], pos_vel[:, 0]) # - y*x'
     # R[(5)*NbSample:(6)*NbSample, 2] = np.multiply(pos_res[:, 0], pos_res[:, 1]) # x*y
     # R[(5)*NbSample:(6)*NbSample, 3] = np.multiply(pos_res[:, 0], pos_vel[:, 1]) # x*y'
-    # m_fx -> mx
+    # # m_fx -> mx
     # R[(3) * NbSample : (4) * NbSample, 2] = np.multiply(
     #     -pos_res[:, 2], pos_res[:, 1]
     # )  # - z*y
@@ -1087,6 +1087,92 @@ def create_R_matrix(NbSample, pos_res, pos_vel, rpy_res, ang_vel):
     # )  # x*y'
 
     return R
+
+
+def create_linmodel(var, wheels):
+    """ Create a 6 * 13 observation matrix, modeling wheels as linear
+    spring-dampers.
+    Each wheel has a name, a position vector ri w.r.t ref frame F0, a set
+    of 6 parameters.
+    6 offset parameters at the last column.
+    wheels['name'] = [ri, kx, ky, kz, cx, cy, cz, nx, ny, nz]
+    """
+    assert len(var) == int(6 * (len(wheels.keys()) + 1 + 1)), \
+        "size of variable shoudl (nb of wheels + 1) * 6"
+    M = np.zeros((6, 13))
+    for ii, key in enumerate(wheels.keys()):
+        Mi = np.zeros((6, 13))
+        ri = wheels[key]
+        [kx, ky, kz, cx, cy, cz] = var[ii * 6 : (ii + 1) * 6]
+        # F
+        K_ = np.diag([kx, ky, kz])
+        C_ = np.diag([cx, cy, cz])
+        Mi[0:3, 0:3] = K_  # t
+        Mi[0:3, 3:6] = - np.matmul(K_, skew(ri))  # theta
+        Mi[0:3, 6:9] = C_  # t dot
+        Mi[0:3, 9:12] = - np.matmul(C_, skew(ri))  # theta dot
+        # M
+        Mi[3:6, 0:3] = np.matmul(skew(ri), K_)  # t
+        Mi[3:6, 3:6] = - np.matmul(np.matmul(skew(ri), K_), skew(ri))  # theta
+        Mi[3:6, 6:9] = np.matmul(skew(ri), C_)  # t dot
+        Mi[3:6, 9:12] = - np.matmul(np.matmul(skew(ri), C_), skew(ri))  # theta dot
+
+        M = M + Mi
+
+    # added spatial torsional spring and damper
+    # n_t = 6 * len(wheels.keys())
+    # Kt = np.diag([var[n_t : (n_t + 3)]])
+    # M[0:3, 0:3] = M[0:3, 0:3] + Kt
+    # Ct = np.diag([var[(n_t + 3): (n_t + 6)]])
+    # M[0:3, 6:9] = M[0:3, 6:9] + Ct
+    # # added spatial torsional spring and damper
+    n_r = 6 * len(wheels.keys())
+    Kr = np.diag([var[n_r : (n_r + 3)]])
+    M[3:6, 3:6] = M[3:6, 3:6] + Kr
+    Cr = np.diag([var[(n_r + 3): (n_r + 6)]])
+    M[3:6, 9:12] = M[3:6, 9:12] + Cr
+    # offset
+    offset = var[(n_r + 6):]
+    M[:, 12] = offset
+    return M
+
+
+def skew(a):
+    """ Returns a skew-symmetric matrix from a vector.
+    """
+    return np.cross(np.identity(a.shape[0]), a)
+
+
+def multi_linear_models(var, NbSample, wheels, pos_res, pos_vel, rpy_res, ang_vel):
+    """Calculate cost function as a 1-d vector, modeling wheels as linear
+    spring-dampers.
+        Each wheel: 1 3-d vector of position, 6 susp. parameters.
+        Variables are 6 * number of wheels.
+        Columns correspond to 3*4 vector (t, theta, \dot{t}, \dot{theta}) and 1 offset
+        Make 6 * 13 observation matrix for each data sample.
+        Running through NbSample => 6 * NbSample vector 
+        [Fx...Fy...Fz...Mx...My...Mz...]
+    """
+    tau = np.zeros((6, NbSample))
+    for i_ in range(NbSample):
+        pi = np.zeros(13)
+        pi[0:3] = pos_res[i_, :]  # t
+        pi[3:6] = rpy_res[i_, :]  # theta
+        pi[6:9] = pos_vel[i_, :]  # t dot
+        pi[9:12] = ang_vel[i_, :]  # theta dot
+        pi[12] = 1
+        Mi = create_linmodel(var, wheels)
+        tau_i = Mi.dot(pi)
+        tau[:, i_] = tau_i
+    est_tau = tau.flatten("C")
+    return est_tau
+
+
+def cost_function_multiwheels(
+    var, NbSample, wheels, pos_res, pos_vel, rpy_res, ang_vel, tau_vector
+):
+    est_tau = multi_linear_models(var, NbSample, wheels, pos_res, pos_vel, rpy_res, ang_vel)
+    return est_tau - tau_vector
 
 
 def create_tau_vector(tau):
