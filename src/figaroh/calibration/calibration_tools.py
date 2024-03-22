@@ -1187,7 +1187,7 @@ def calculate_identifiable_kinematics_model(q, model, data, param):
 
     # obtain aggreated Jacobian matrix J and kinematic regressor R
     R = np.zeros([6 * param["NbSample"], 6 * (model.njoints - 1)])
-    J = np.zeros([6 * param["NbSample"], model.njoints - 1])
+    J = np.zeros([6 * param["NbSample"], model.nv])
     for i in range(param["NbSample"]):
         if MIN_MODEL == 1:
             q_rand = pin.randomConfiguration(model)
