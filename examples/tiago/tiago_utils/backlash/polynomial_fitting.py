@@ -190,6 +190,7 @@ class SurfaceFitting:
         self.co_order = co_order
 
         if isinstance(self.IJ_, list):
+            # self.IJ_.joint_inspected = self.IJ_[0].joint_inspected
             qd_ = self.IJ_[0].joint_inspected_rel
             tau_ = self.IJ_[0].tau_g
             signal_bl = self.IJ_[0].dq_joint_inspected
@@ -198,7 +199,9 @@ class SurfaceFitting:
             for j in range(1, len(self.IJ_)):
                 qd_ = np.append(qd_, self.IJ_[j].joint_inspected_rel)
                 tau_ = np.append(tau_, self.IJ_[j].tau_g)
-                signal_bl = np.append(signal_bl, self.IJ_[j].dq_joint_inspected)
+                signal_bl = np.append(
+                    signal_bl, self.IJ_[j].dq_joint_inspected
+                )
                 ed = np.append(ed, self.IJ_[j].encoder_diff)
             qd = np.array([qd_]).T
             tau = np.array([tau_]).T
@@ -236,9 +239,9 @@ class SurfaceFitting:
         C_l = np.dot(self.A_l, np.array([x[self.A_r.shape[1] :]]).T)
         for jj in range(self.qd.shape[0]):
             bl[jj] = (C_r[jj]) * (
-                1 / (1 + np.exp(- self.rho_0 * (self.signal_bl[jj])))
+                1 / (1 + np.exp(-self.rho_0 * (self.signal_bl[jj])))
             ) + (C_l[jj]) * (
-                1 - (1 / (1 + np.exp(- self.rho_0 * (self.signal_bl[jj]))))
+                1 - (1 / (1 + np.exp(-self.rho_0 * (self.signal_bl[jj]))))
             )
         return bl
 
@@ -295,7 +298,7 @@ class SurfaceFitting:
         else:
             pass
 
-    def plot_3dregression(self, renderer="browser"):
+    def plot_3dregression(self, renderer="browser", save_=False):
         marker_data = go.Scatter3d(
             # x=rad_deg * self.qd_,
             x=self.qd_,
@@ -322,24 +325,83 @@ class SurfaceFitting:
             name="Predicted encoder difference by surface fitting",
         )
         fig.update_layout(showlegend=True)
-        fig.update_scenes(
-            xaxis_title_text="joint angle measure",
-            yaxis_title_text="joint torque estimate",
-            zaxis_title_text="encoder measure difference",
-        )
+
+        # fig.update_layout(
+        #     scene=dict(
+        #         xaxis_title="Joint Angle [rad]",
+        #         yaxis_title="Joint Torque [N.m]",
+        #         zaxis_title="Two Encoders Measure Difference [rad]",
+        #     ),
+        #     margin=dict(r=10, l=10, b=10, t=10)
+        # )
+        # fig.update_xaxes(
+        #     title_text="joint angle measure (deg)",
+        #     title_font={"size": 25},
+        #     tickfont=dict(family="Rockwell", size=20),
+        #     gridcolor="black",
+        # )
         fig.update_layout(
-            width=1200,
-            height=1000,
-            title_text="Polynomial of order {}, rms = {}, R2 score = {}".format(
-                self.IJ_.joint_inspected + "_" + str(self.co_order), self.rmse, self.r2_score
-            ),
+            width=1400,
+            height=1400,
+            # title_text="Polynomial of order {}, rms = {}, R2 score = {}".format(
+            #     self.IJ_.joint_inspected + "_" + str(self.co_order),
+            #     round(self.rmse, 4),
+            #     round(self.r2_score, 4),
+            # ),
         )
-        fig.show(renderer=renderer)
-        fig.write_html(
-            "/home/thanhndv212/develop/figaroh/examples/tiago/data/calibration/backlash/media/{}.html".format(
-                self.IJ_.joint_inspected + "_" + str(self.co_order)
+        # grid
+        fig.update_layout(
+            scene=dict(
+                xaxis=dict(
+                    gridcolor="black",
+                    showbackground=True,
+                ),
+                yaxis=dict(
+                    gridcolor="black",
+                    showbackground=True,
+                ),
+                zaxis=dict(
+                    gridcolor="black",
+                    showbackground=True,
+                ),
             )
         )
+        fig.update_layout(
+            scene=dict(
+                xaxis=dict(
+                    nticks=5,
+                    tickfont=dict(
+                        color="black",
+                        size=24,
+                    ),
+                    title_font=dict(color="black", size=5),
+                ),
+                yaxis=dict(
+                    nticks=5,
+                    tickfont=dict(
+                        color="black",
+                        size=24,
+                    ),
+                    title_font=dict(color="black", size=5),
+                ),
+                zaxis=dict(
+                    nticks=5,
+                    tickfont=dict(
+                        color="black",
+                        size=24,
+                    ),
+                    title_font=dict(color="black", size=5),
+                ),
+            ),
+            margin=dict(r=30, l=30, b=30, t=10)
+        )
+        fig.show(renderer=renderer)
+        if save_:
+            fig.write_html(
+                "/home/thanhndv212/develop/figaroh/examples/tiago/data/calibration/backlash/media/{}.html".format(
+                    self.IJ_.joint_inspected + "_" + str(self.co_order)
+                )
+            )
 
 
 # # generate some random 3-dim points
