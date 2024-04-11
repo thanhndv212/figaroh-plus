@@ -12,6 +12,18 @@ from tiago_utils.backlash.polynomial_fitting import SurfaceFitting
 
 rad_deg = 180 / np.pi
 
+params = {
+    "axes.labelsize": 16,
+    "axes.titlesize": 16,
+    "xtick.labelsize": 16,
+    "ytick.labelsize": 16,
+    "legend.fontsize": 14,
+    "axes.labelpad": 4,
+    "axes.spines.top": False,
+    "axes.spines.right": False,
+}
+plt.rcParams.update(params)
+
 
 class InspectJoint:
     def __init__(self, tiago, joint_name, folder, sample_range):
@@ -315,10 +327,14 @@ def read_result(files):
     for file in files:
         result_data = pd.read_csv(data_dir + file)
         # data_header = ["order", "rms", "r2", "coeficient and rho"]
-        list_order = list_order + [str(order) for order in result_data.loc[:, "order"].values]
+        list_order = list_order + [
+            str(order) for order in result_data.loc[:, "order"].values
+        ]
         list_rms = list_rms + list(result_data.loc[:, "rms"].values)
         list_r2 = list_r2 + list(result_data.loc[:, "r2"].values)
-        list_coeff = list_coeff + list(result_data.loc[:, "coeficient and rho"].values)
+        list_coeff = list_coeff + list(
+            result_data.loc[:, "coeficient and rho"].values
+        )
 
     # print(list({tuple(sorted(i)): i for i in result_data.loc[:, "order"].values}.values()))
     fig, ax1 = plt.subplots()
@@ -349,6 +365,7 @@ def read_result(files):
 
 def write_result(SF: SurfaceFitting):
     import csv
+
     with open("surface_fitting_{}.csv".format("0202"), "w") as ofile:
         w = csv.writer(ofile)
         w.writerow(["order", "rms", "r2", "coeficient and rho"])
@@ -533,29 +550,138 @@ def main():
 
 
 if __name__ == "__main__":
+    # joint_name = "arm_1_joint"
+    # sample_range = None
+    # orders = [5, 5]
+
+    # tiago = load_robot(
+    #     abspath("urdf/tiago_48_schunk.urdf"),
+    #     load_by_urdf=True,
+    # )
+    # # folder_sin = "/backlash/20230916/creps_calib_vicon.csv"
+    # folder_sin = "/backlash/20230916/sinus_amp3_period10_bottom.csv"
+    # IJ = InspectJoint(tiago, joint_name, folder_sin, sample_range)
+    # joint_names = [
+    #     "arm_1_joint",
+    #     "arm_2_joint",
+    #     "arm_3_joint",
+    #     "arm_4_joint",
+    #     "arm_5_joint",
+    #     "arm_6_joint",
+    #     "arm_7_joint",
+    # ]
+    # models = []
+    # SFs = []
+    # for joint_name_ in joint_names:
+    #     IJ.joint_inspected = joint_name_
+    #     IJ.compute_entities()
+    #     SF = SurfaceFitting(IJ, orders)
+    #     models.append(SF.solve().x)
+    #     SFs.append(SF)
+    #     # SF.plot_3dregression()
+    # SFs[0].plot_3dregression()
+
+    # arm6
     joint_name = "arm_1_joint"
     sample_range = None
-    tiago = load_robot(
-        abspath("urdf/tiago_48_schunk.urdf"),
+    tiago_hey5 = load_robot(
+        abspath("urdf/tiago_48_hey5.urdf"),
         load_by_urdf=True,
     )
-    folder_sin = "/backlash/20230916/creps_calib_vicon.csv"
-
-    IJ = InspectJoint(tiago, joint_name, folder_sin, sample_range)
-    orders = [5, 7]
-    joint_names = [
-        "arm_1_joint",
-        "arm_2_joint",
-        "arm_3_joint",
-        "arm_4_joint",
-        "arm_5_joint",
-        "arm_6_joint",
-        "arm_7_joint",
+    folder_arm6 = [
+        "/backlash/20240202/arm5_minus_1_57.csv",
+        "/backlash/20240202/arm5_minus_1_2.csv",
+        "/backlash/20240202/arm5_minus_0_8_2.csv",
+        "/backlash/20240202/arm5_minus_0_8.csv",
+        "/backlash/20240202/arm5_minus_0_5_2.csv",
+        "/backlash/20240202/arm5_minus_0_5.csv",
+        "/backlash/20240202/arm5_minus_0_1.csv",
+        "/backlash/20240202/arm5_1_2.csv",
+        "/backlash/20240202/arm5_0.csv",
+        "/backlash/20240202/arm5_0_8.csv",
+        "/backlash/20240202/arm5_0_5.csv",
+        "/backlash/20240202/arm5_0_4.csv",
+        "/backlash/20240202/arm5_0_2.csv",
     ]
-    models = []
-    for joint_name_ in joint_names:
-        IJ.joint_inspected = joint_name_
-        IJ.compute_entities()
-        SF = SurfaceFitting(IJ, orders)
-        models.append(SF.solve().x)
-        # SF.plot_3dregression()
+    IJS = []
+    for fa6 in folder_arm6:
+        IJ_arm6 = InspectJoint(tiago_hey5, "arm_6_joint", fa6, sample_range)
+        IJ_arm6.compute_entities()
+        IJS.append(IJ_arm6)
+    orders = [
+        [x, y]
+        for n in range(1, 5 + 1)
+        for y in range(1, n + 1)
+        for x in range(1, n + 1)
+        if x + y == n]
+    SF_arm6 = SurfaceFitting(IJS, orders)
+    SF_arm6.solve()
+    SFs.append(SF_arm6)
+
+    # import pandas as pd
+    # df = pd.read_csv(abspath('data/calibration/backlash/result/surface_fitting_rho100_0202.csv'))
+    # fig, ax1 = plt.subplots()
+    # %matplotlib
+    # ax2 = ax1.twinx()
+    # ax1.plot(list(df['order']), np.array(df['rms']), color='black', marker='+', label='rmse')
+    # ax2.plot(list(df['order']), np.array(df['r2']), color='black', marker='o', label='R-squared')
+    # ax1.set_xticklabels(list(df['order']), fontsize=8, rotation=90)
+    # ax1.set_ylabel('RMSE of $arm\_6$[rad]')
+    # ax2.set_ylabel('R-Squared value')
+    # ax1.set_xlabel('Order of polynomial function')
+    # ax1.legend(loc='upper left')
+    # ax2.legend(loc='lower left')
+
+    # # %matplotlib
+    # data = []
+    # data_ed = []
+
+    # for sf in SFs:
+    #     data.append(sf.ed - sf.calc_bl(sf.bl_solve.x))
+    #     data_ed.append(sf.ed)
+
+    # params = {
+    #     "axes.labelsize": 24,
+    #     "axes.titlesize": 24,
+    #     "axes.labelsize": 24,
+    #     "xtick.labelsize": 24,
+    #     "ytick.labelsize": 24,
+    #     "legend.fontsize": 24,
+    #     "axes.labelpad": 4,
+    #     "axes.spines.top": False,
+    #     "axes.spines.right": False,
+    # }
+    # plt.rcParams.update(params)
+    # joints = [
+    #     "arm_1",
+    #     "arm_2",
+    #     "arm_3",
+    #     "arm_4",
+    #     "arm_5",
+    #     "arm_6",
+    #     "arm_7",
+    # ]
+    # bp1 = plt.boxplot(
+    #     data[:5] + [data[7]] + [data[6]],
+    #     positions=2 * np.arange(1, 8),
+    #     showfliers=False,
+    #     notch=True,
+    #     sym="k+",
+    #     patch_artist=True,
+    # )
+    # plt.setp(bp1["boxes"], facecolor="red")
+
+    # bp2 = plt.boxplot(
+    #     data_ed[:5] + [data_ed[7]] + [data_ed[6]],
+    #     positions=2 * np.arange(1, 8) - 1,
+    #     showfliers=False,
+    #     notch=True,
+    #     sym="k+",
+    #     patch_artist=True,
+    # )
+    # plt.setp(bp2["boxes"], facecolor="blue")
+
+    # plt.xticks(2 * np.arange(1, 8) - 0.5, joints)
+    # plt.xticks(rotation=45)
+    # plt.ylabel("Two Encoders Measure Difference [rad]")
+    # # plt.legend([bp1["boxes"][0], bp2["boxes"][0]], ['No compensation', 'Compensated with backlash model'])
