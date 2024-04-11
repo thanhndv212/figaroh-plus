@@ -19,8 +19,11 @@ from tiago_utils.robot_tools import (
 )
 from os.path import abspath
 
-
-tiago = load_robot(abspath("urdf/tiago_48_schunk.urdf"))
+tiago = load_robot(
+    abspath("urdf/tiago_48_schunk.urdf"),
+    isFext=True,
+    load_by_urdf=True,
+)
 tiago_calib = RobotCalibration(tiago, abspath("config/tiago_config_mocap_vicon.yaml"))
 tiago_calib.initialize()
 # tiago_calib.param["param_name"].remove('d_pz_arm_2_joint')
