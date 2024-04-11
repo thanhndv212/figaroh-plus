@@ -138,6 +138,12 @@ def process_vicon_data(input_file, f_cutoff=10):
     marker_data["moment"] = moment
     marker_data["cop"] = cop
 
+    from datetime import datetime
+
+    marker_data["timestamp"] = [
+        datetime.strptime(ti, "%Y-%m-%d_%H:%M:%S.%f").timestamp()
+        for ti in calib_df.loc[:, "time"].to_numpy()
+    ]
     return marker_data
 
     def relative_projection(marker_data):
@@ -337,7 +343,15 @@ def save_selected_data(active_joints, xyz, q, path_to_save):
 # raw extracted data
 ########################################################################
 # vicon
-def read_csv_vicon(filename):
+def read_csv_vicon(filename: str) -> dict:
+    """Read csv and load data to dictionary format with predefined headers.
+
+    Args:
+        filename (str): Input file name
+
+    Returns:
+        dict: Output dictionary
+    """
     vicon_xyz = pd.read_csv(filename, header=None, skiprows=1).to_numpy()
     vicon_headers = [
         "time",
@@ -506,6 +520,7 @@ def extract_instrospection(
     sec_val = dt_values.loc[:, sec_col].values
     nsec_val = dt_values.loc[:, nsec_col].values
     t_val = []
+    timestamps = []
 
     starting_t = rospy.rostime.Time(
         sec_val[0], nsec_val[0]
@@ -515,7 +530,7 @@ def extract_instrospection(
         t_val.append(
             rospy.rostime.Time(sec_val[i], nsec_val[i]).to_sec() - starting_t
         )
-
+        timestamps.append(rospy.rostime.Time(sec_val[i], nsec_val[i]).to_sec())
     # t_idx (list): get list of instants where data samples are picked up based on t_list
     # if t_list = [], extract the whole collumn
     if not t_list:
@@ -592,6 +607,7 @@ def extract_instrospection(
         for i in range(len(joint_idx)):
             extracted_val[:, i] = joint_val[:, joint_idx[i]]
             val_dict[value_names[i]] = joint_val[:, joint_idx[i]]
+        val_dict["timestamp"] = timestamps
     return val_dict
 
 
@@ -1029,7 +1045,9 @@ def create_R_matrix(NbSample, pos_res, pos_vel, rpy_res, ang_vel):
         R[
             (3 + i_m) * NbSample : (3 + i_m + 1) * NbSample,
             3 * 3 + 3 * i_m + 2,
-        ] = np.full(NbSample, 1)  # offset
+        ] = np.full(
+            NbSample, 1
+        )  # offset
     # force-contributation moment: m_fx, m_fy, m_fz, skew_matrix of r (3x3) * f (3x1)
     # # m_fx -> mx
     # R[(3)*NbSample:(4)*NbSample, 2] = np.multiply(-pos_res[:, 2], pos_res[:, 1]) # - z*y
@@ -1089,16 +1107,57 @@ def create_R_matrix(NbSample, pos_res, pos_vel, rpy_res, ang_vel):
     return R
 
 
+def create_linmodel_regmatrix(
+    var, NbSample, wheels, pos_res, pos_vel, rpy_res, ang_vel
+):
+    M = np.zeros((6 * NbSample, len(var)))
+
+    for i in range(NbSample):
+        A_ = np.zeros((3, len(var)))
+        B_ = np.zeros((3, len(var)))
+        t = pos_res[i, :]
+        t_dot = pos_vel[i, :]
+        theta = rpy_res[i, :]
+        theta_dot = ang_vel[i, :]
+        # linear wheel spring-dampers
+        for wi, key in enumerate(wheels.keys()):
+            AF_i = np.zeros((3, 6))
+            ri = wheels[key]
+            AF_i[:, 0:3] = np.diag(t - np.matmul(skew(ri), theta))
+            AF_i[:, 3:6] = np.diag(t_dot - np.matmul(skew(ri), theta_dot))
+            A_[:, 6 * wi : 6 * (wi + 1)] = AF_i
+            BF_i = np.matmul(skew(ri), AF_i)
+            B_[:, 6 * wi : 6 * (wi + 1)] = BF_i
+
+        # generalized torsion spring-damper
+        B_[:, -12:-9] = np.diag(rpy_res)
+        B_[:, -9:-6] = np.diag(ang_vel)
+
+        # offset nominal
+        A_[:, -6:-3] = np.diag([1, 1, 1])
+        B_[:, -3:] = np.diag([1, 1, 1])
+
+        # update M
+        M[0 * NbSample + i, :] = A_[0, :]  # fx
+        M[1 * NbSample + i, :] = A_[1, :]  # fy
+        M[2 * NbSample + i, :] = A_[2, :]  # fz
+        M[3 * NbSample + i, :] = B_[0, :]  # mx
+        M[4 * NbSample + i, :] = B_[1, :]  # my
+        M[5 * NbSample + i, :] = B_[2, :]  # mz
+    return M
+
+
 def create_linmodel(var, wheels):
-    """ Create a 6 * 13 observation matrix, modeling wheels as linear
+    """Create a 6 * 13 observation matrix, modeling wheels as linear
     spring-dampers.
     Each wheel has a name, a position vector ri w.r.t ref frame F0, a set
     of 6 parameters.
     6 offset parameters at the last column.
     wheels['name'] = [ri, kx, ky, kz, cx, cy, cz, nx, ny, nz]
     """
-    assert len(var) == int(6 * (len(wheels.keys()) + 1 + 1)), \
-        "size of variable shoudl (nb of wheels + 1) * 6"
+    assert len(var) == int(
+        6 * (len(wheels.keys()) + 1 + 1)
+    ), "size of variable shoudl (nb of wheels + 1) * 6"
     M = np.zeros((6, 13))
     for ii, key in enumerate(wheels.keys()):
         Mi = np.zeros((6, 13))
@@ -1108,14 +1167,16 @@ def create_linmodel(var, wheels):
         K_ = np.diag([kx, ky, kz])
         C_ = np.diag([cx, cy, cz])
         Mi[0:3, 0:3] = K_  # t
-        Mi[0:3, 3:6] = - np.matmul(K_, skew(ri))  # theta
+        Mi[0:3, 3:6] = -np.matmul(K_, skew(ri))  # theta
         Mi[0:3, 6:9] = C_  # t dot
-        Mi[0:3, 9:12] = - np.matmul(C_, skew(ri))  # theta dot
+        Mi[0:3, 9:12] = -np.matmul(C_, skew(ri))  # theta dot
         # M
         Mi[3:6, 0:3] = np.matmul(skew(ri), K_)  # t
-        Mi[3:6, 3:6] = - np.matmul(np.matmul(skew(ri), K_), skew(ri))  # theta
+        Mi[3:6, 3:6] = -np.matmul(np.matmul(skew(ri), K_), skew(ri))  # theta
         Mi[3:6, 6:9] = np.matmul(skew(ri), C_)  # t dot
-        Mi[3:6, 9:12] = - np.matmul(np.matmul(skew(ri), C_), skew(ri))  # theta dot
+        Mi[3:6, 9:12] = -np.matmul(
+            np.matmul(skew(ri), C_), skew(ri)
+        )  # theta dot
 
         M = M + Mi
 
@@ -1129,28 +1190,29 @@ def create_linmodel(var, wheels):
     n_r = 6 * len(wheels.keys())
     Kr = np.diag([var[n_r : (n_r + 3)]])
     M[3:6, 3:6] = M[3:6, 3:6] + Kr
-    Cr = np.diag([var[(n_r + 3): (n_r + 6)]])
+    Cr = np.diag([var[(n_r + 3) : (n_r + 6)]])
     M[3:6, 9:12] = M[3:6, 9:12] + Cr
     # offset
-    offset = var[(n_r + 6):]
+    offset = var[(n_r + 6) :]
     M[:, 12] = offset
     return M
 
 
 def skew(a):
-    """ Returns a skew-symmetric matrix from a vector.
-    """
+    """Returns a skew-symmetric matrix from a vector."""
     return np.cross(np.identity(a.shape[0]), a)
 
 
-def multi_linear_models(var, NbSample, wheels, pos_res, pos_vel, rpy_res, ang_vel):
+def multi_linear_models(
+    var, NbSample, wheels, pos_res, pos_vel, rpy_res, ang_vel
+):
     """Calculate cost function as a 1-d vector, modeling wheels as linear
     spring-dampers.
         Each wheel: 1 3-d vector of position, 6 susp. parameters.
         Variables are 6 * number of wheels.
         Columns correspond to 3*4 vector (t, theta, \dot{t}, \dot{theta}) and 1 offset
         Make 6 * 13 observation matrix for each data sample.
-        Running through NbSample => 6 * NbSample vector 
+        Running through NbSample => 6 * NbSample vector
         [Fx...Fy...Fz...Mx...My...Mz...]
     """
     tau = np.zeros((6, NbSample))
@@ -1171,7 +1233,9 @@ def multi_linear_models(var, NbSample, wheels, pos_res, pos_vel, rpy_res, ang_ve
 def cost_function_multiwheels(
     var, NbSample, wheels, pos_res, pos_vel, rpy_res, ang_vel, tau_vector
 ):
-    est_tau = multi_linear_models(var, NbSample, wheels, pos_res, pos_vel, rpy_res, ang_vel)
+    est_tau = multi_linear_models(
+        var, NbSample, wheels, pos_res, pos_vel, rpy_res, ang_vel
+    )
     return est_tau - tau_vector
 
 
@@ -1411,6 +1475,7 @@ def get_q_arm(robot, path_to_values, path_to_names, f_cutoff):
     # joint data
     # original sampling rate
     t_q = encoder_dict["t"]
+    timestamp = encoder_dict["timestamp"]
 
     q_abs = np.zeros((len(t_q), robot.model.nq))
     q_pos = np.zeros((len(t_q), robot.model.nq))
@@ -1434,7 +1499,10 @@ def get_q_arm(robot, path_to_values, path_to_names, f_cutoff):
 
     # resample timestamps to uniform sampling rate f_res
     t_res = np.linspace(t_q[0], t_q[-1], len(t_q))
-    f_res = 1 / (t_res[1] - t_res[0])
+    delta_ts = []
+    for ii in range(len(t_res) - 1):
+        delta_ts.append(1 / (t_res[ii + 1] - t_res[ii]))
+    f_res = np.mean(delta_ts)
 
     # filter
     q_abs_butf = np.zeros_like(q_abs)
@@ -1465,7 +1533,7 @@ def get_q_arm(robot, path_to_values, path_to_names, f_cutoff):
         q_pos_res[:, i] = sig_resample(
             q_pos_butf[:, i], t_q, len(t_res), f_res
         )
-    return t_res, f_res, joint_names, q_abs_res, q_pos_res
+    return timestamp, t_res, f_res, joint_names, q_abs_res, q_pos_res
 
 
 ########################################################################
