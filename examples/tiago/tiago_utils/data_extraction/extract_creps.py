@@ -10,6 +10,15 @@ import pinocchio as pin
 
 import tiago_utils.suspension.processing_utils as pu
 from tiago_utils.tiago_tools import load_robot
+from suspension_helper import (
+    marker_footprint,
+    Mforceplate_mocap,
+    Mmocap_fixedfootprint,
+    Mwrist_gripper3,
+    Mtorso_shoulder,
+    Mbaselink_marker,
+    Mfootprint_marker,
+)
 
 # ######################################################################################
 # vicon_path = '/home/thanhndv212/Downloads/experiment_data/suspension/bags/creps/vicon'
@@ -151,7 +160,7 @@ marker_data["base1"] = pu.create_rigidbody_frame(
     [base1, base2, base3],
     unit_rot=np.array([[0.0, 1.0, 0.0], [1.0, 0.0, 0], [0, 0, -1]]),
 )
-marker_data["base2"] = pu.create_$300,644,rigidbody_frame(
+marker_data["base2"] = pu.create_rigidbody_frame(
     [base2, base1, base3],
     unit_rot=np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0], [0, 0, 1]]),
 )
@@ -257,25 +266,17 @@ def plot_frames():
     pu.plot_SE3(pin.SE3.Identity())
     pu.plot_SE3(
         pin.SE3(marker_data["base1"][1][0], marker_data["base1"][0][0, :]),
-        "base1-marker",
+        "base-marker",
     )
-    # plot_SE3(pin.SE3(shoulder_rot[0], shoulder_trans[0,:]), 's_marker')
+    pu.plot_SE3(
+        pin.SE3(
+            marker_data["shoulder1"][1][0], marker_data["shoulder1"][0][0, :]
+        ),
+        "shoulder-marker",
+    )
     # plot_SE3(pin.SE3(gripper_rot[0], gripper_trans[0,:]), 'g_marker')
-    pu.plot_SE3(forceplate_SE3, "forceplate")
-    # pu.plot_SE3(universe_frame[0], "universe")
-    # plot_SE3(
-    #     pin.SE3(
-    #         universe_frame[0]
-    #         * data.oMi[model.getJointId("suspension_left_joint")]
-    #     ),
-    #     "suspension-left-joint",
-    # )
-    # plot_SE3(
-    #     pin.SE3(
-    #         universe_frame[0] * data.oMi[model.getJointId("wheel_left_joint")]
-    #     ),
-    #     "wheel-left-joint",
-    # )
+    # pu.plot_SE3(forceplate_SE3, "forceplate")
+    pu.plot_SE3(Mmocap_fixedfootprint, "robot-footprint")
 
 
 plot_frames()
