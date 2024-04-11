@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+# %% load data
 from os.path import abspath
 
 # from os.path import abspath
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MultipleLocator
+import pprint
 
 import numpy as np
 import tiago_utils.suspension.processing_utils as pu
@@ -25,9 +26,10 @@ from scipy.optimize import least_squares
 import yaml
 from yaml.loader import SafeLoader
 from tabulate import tabulate
-import pprint
 import pinocchio as pin
 from figaroh.identification.identification_tools import get_param_from_yaml
+from figaroh.calibration.calibration_tools import get_baseParams
+
 from tiago_utils.robot_tools import (
     RobotCalibration,
     load_robot,
@@ -76,21 +78,6 @@ pu.initiating_robot(tiago_fb)
 model = tiago_fb.model
 data = tiago_fb.data
 
-# wheels
-wheel_names = [
-    "wheel_left_joint",
-    "wheel_right_joint",
-    "caster_back_left_2_joint",
-    "caster_back_right_2_joint",
-    "caster_front_left_2_joint",
-    "caster_front_right_2_joint",
-]
-wheels = dict()
-for wn in wheel_names:
-    # wheel_ri = Mforceplate_fixedfootprint * data.oMf[model.getFrameId(wn)]
-    wheel_ri = data.oMf[model.getFrameId(wn)]
-    wheels[wn] = wheel_ri.translation
-    wheels[wn][2] = 0
 # load settings
 with open("config/tiago_config.yaml", "r") as f:
     config = yaml.load(f, Loader=SafeLoader)
@@ -114,6 +101,7 @@ file_names = [
 marker_datas = []
 marker_meas = []
 dir_paths = []
+encoder_datas = []
 for file_name in file_names:
     dir_path_ = "/media/thanhndv212/Cooking/processed_data/tiago/develop/data/identification/suspension/creps/creps_bags/{}/".format(
         file_name
@@ -122,6 +110,25 @@ for file_name in file_names:
     marker_datas.append(pu.process_vicon_data(input_file, f_cutoff))
     marker_meas.append(pu.process_vicon_data(input_file, 30))
     dir_paths.append(dir_path_)
+
+    path_to_values = dir_path_ + "introspection_datavalues.csv"
+    path_to_names = dir_path_ + "introspection_datanames.csv"
+
+    # read values from csv files
+    encoder_data_ = dict()
+
+    (
+        encoder_data_["timestamp"],
+        encoder_data_["t_res"],
+        encoder_data_["f_res"],
+        encoder_data_["jointnames"],
+        encoder_data_["q_abs_res"],
+        encoder_data_["q_rel_res"],
+    ) = pu.get_q_arm(
+        tiago_fb, path_to_values, path_to_names, f_cutoff=f_cutoff
+    )
+    encoder_datas.append(encoder_data_)
+
 # process data
 mocap_ranges = [
     range(2950, 3450),  # 0
@@ -134,46 +141,246 @@ mocap_ranges = [
     range(3000, 4500),  # 7
     range(3000, 4500),  # 8
 ]
+encoder_ranges = [
+    range(2930, 3430),  # 0
+    range(2785, 4285),  # 1
+    range(2746, 4246),  # 2
+    range(4906, 6406),  # 3
+    range(2812, 4312),  # 4
+    range(2604, 4104),  # 5
+    range(2712, 4212),  # 6
+    range(2990, 4490),  # 7
+    range(3027, 4527),  # 8
+]
 
 
-xyz = []
-rpy = []
-dxyz = []
-drpy = []
-tau_mea = []
-pee_mea_mocap3d = None
-gripper_base = None
-ref_frame = "footprint"
-
-
-def new_susp_identification():
-    selected_data = [
-        # 0,  # good fit on mx, my
-        # 1,  # bad
-        ##2,  # very good fit on fx
-        # 3,  # good fit on mx, my
-        ##4,  # good fit on fz
-        ##5,  # good fit on fx
-        6,  # bad
-        ##7,  # good fit on fz
-        # 8,  # my, and somehow mz good
+def plot_validation(file_name_, tau_mea_vector, tau_predict_vector, Ntotal):
+    #  validation
+    N_d = 6
+    fig, ax = plt.subplots(N_d, 1)
+    tau_ylabel = [
+        "Fx [N]",
+        "Fy [N]",
+        "Fz [N]",
+        "Mx [N.m]",
+        "My [N.m]",
+        "Mz [N.m]",
     ]
+    for i in range(N_d):
+        ax[i].plot(
+            tau_mea_vector[i * Ntotal : (i + 1) * Ntotal],
+            color="red",
+        )
+        ax[i].plot(
+            tau_predict_vector[i * Ntotal : (i + 1) * Ntotal],
+            color="blue",
+            linestyle="--",
+        )
+        ax[i].set_ylabel(tau_ylabel[i])
+        ax[i].spines[["right", "top"]].set_visible(False)
+        ax[0].legend(["measured", "predicted"], loc="lower right")
+        if i != int(N_d - 1):
+            ax[i].set_xticklabels([])
+        else:
+            ax[i].set_xlabel("sample")
+    fig.align_ylabels(ax)
+    fig.suptitle(file_name_)
+
+
+# %% process data
+
+from figaroh.identification.identification_tools import relative_stdev
+
+
+def new_suspension_solve(
+    file_name_: str,
+    xyz_u: np.ndarray,
+    dxyz_u: np.ndarray,
+    rpy_u: np.ndarray,
+    drpy_u: np.ndarray,
+    tau_mea_concat: np.ndarray,
+):
+    """Assume each wheel could be modeled as a 3D spring-damper.
+    The displacement of wheel i with ri is the constant position vector to
+    fixed reference frame of robot, is calculated by: delta_ri = R*ri+t-ri,
+    where [t theta] is floating base 6D pose. Since theta is small,
+    R = I + exp([theta]_X).
+    => delta_ri = t + [theta]+X * ri.
+    Suspension model:
+    F = sum(k*delta_ri) + sum(c*dot(delta_ri))
+    M = sum(ri X Fi)
+
+    Args:
+        file_name_ (str): imported data file
+        xyz_u (np.ndarray): floating base linear position
+        dxyz_u (np.ndarray): floating base linear velocity
+        rpy_u (np.ndarray): floating base angular position
+        drpy_u (np.ndarray): floating base angular velocity
+        tau_mea_concat (np.ndarray): measured ground reaction wrench
+
+    Returns:
+        x: solution of parameters
+        tau_est: predicted values of wrench
+    """
+    # Regressor matrix
+    Ntotal = len(xyz_u)
+
+    # measure output
+    tau_mea_vector = np.reshape(tau_mea_concat.T, (6 * len(tau_mea_concat)))
+    # Parameter estimation
+    # n_wheel = len(wheel_names)
+    count = 0
+    rmse = 1e8
+    var_init = 1000 * np.ones(len(suspension_parameter))
+    # var_init[-12:-6] = np.array(
+    #     [4000, 12500, 37700, 200, 21500, 14400]
+    # )  # torsional
+    # var_init[-6:] = np.array([0, 0, 725, 0, 0, 0])  # offset
+
+    lower_bound = (
+        6 * [0, 0, 0, 0, 0, 0]
+        # + 4 * [-np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf]
+        + [0] * 6
+        + [-np.inf] * 6
+    )
+    while rmse > 5 * 1e-1 and count < 1:
+        LM_solve = least_squares(
+            pu.cost_function_multiwheels,
+            var_init,
+            # method="trf",
+            bounds=(lower_bound, np.inf),
+            verbose=1,
+            args=(
+                Ntotal,
+                wheels,
+                xyz_u,
+                dxyz_u,
+                rpy_u,
+                drpy_u,
+                tau_mea_vector,
+            ),
+        )
+        tau_predict_vector = pu.multi_linear_models(
+            LM_solve.x, Ntotal, wheels, xyz_u, dxyz_u, rpy_u, drpy_u
+        )
+        rmse = np.sqrt(np.mean((tau_mea_vector - tau_predict_vector) ** 2))
+        # print("*" * 40)
+        # print("iteration: ", count, "rmse: ", rmse)
+        # susp_param = dict(zip(suspension_parameter, np.array(list(LM_solve.x), dtype=float64)))
+        var_init = LM_solve.x + 1000 * np.random.randn(len(var_init))
+        print(
+            "Iteration {}".format(count),
+            dict(zip(suspension_parameter, np.array(list(LM_solve.x)))),
+        )
+        count += 1
+    plot_validation(file_name_, tau_mea_vector, tau_predict_vector, Ntotal)
+    tau_predict_ = np.reshape(tau_predict_vector, (6, Ntotal))
+    return np.array(list(LM_solve.x), dtype=np.float64), tau_predict_.T
+
+
+# wheels
+wheel_names = [
+    "wheel_left_joint",
+    "wheel_right_joint",
+    "caster_back_left_2_joint",
+    "caster_back_right_2_joint",
+    "caster_front_left_2_joint",
+    "caster_front_right_2_joint",
+]
+wheels = dict()
+for wn in wheel_names:
+    wheel_ri = data.oMf[model.getFrameId(wn)]
+    wheels[wn] = wheel_ri.translation
+    # wheels[wn][2] = 0
+
+# comb = []
+# for i1 in [-1, 1]:
+#     for i2 in [-1, 1]:
+#         for i3 in [-1, 1]:
+#             for i4 in [-1, 1]:
+#                 for i5 in [-1, 1]:
+#                     for i6 in [-1, 1]:
+#                         comb.append([i1, i2, i3, i4, i5, i6])
+# comb = [[-1, 1, 1, -1, 1, 1]]
+# comb = [[-1, 1, 1, 1, 1, 1]]
+
+comb = [
+    [-1, 1, 1, -1, 1, 1],
+    # [-1, -1, -1, -1, -1, -1],
+
+    # [-1, -1, -1, 1, 1, 1],
+
+    # [-1, -1, 1, -1, -1, 1],
+
+    # [-1, -1, 1, 1, 1, 1],
+
+    # [-1, 1, -1, -1, -1, -1],
+
+    # [-1, 1, -1, 1, 1, 1],
+
+    # [-1, 1, 1, -1, -1, -1],
+
+    # [-1, 1, 1, 1, 1, 1],
+
+    # [1, -1, -1, -1, -1, -1],
+
+    # [1, -1, -1, 1, 1, 1],
+
+    # [1, -1, 1, -1, -1, -1],
+
+    # [1, -1, 1, 1, 1, 1],
+
+    # [1, 1, -1, -1, -1, -1],
+
+    # [1, 1, -1, 1, 1, 1],
+
+    # [1, 1, 1, -1, -1, -1],
+
+    # [1, 1, 1, 1, 1, 1],
+]
+susp_list = []
+suspbase_list = []
+for const in comb:
+    print("*******{}********".format(const))
+    pee_mea_mocap3d = None
+    gripper_base = None
+    ref_frame = "footprint"
+
+    param_base = ["k", "c"]
+    axis = ["x", "y", "z"]
+    # dof = ["t", "r"]
+    suspension_parameter = []
+
+    for wn in wheels.keys():
+        for b_ in param_base:
+            for a_ in axis:
+                suspension_parameter.append(b_ + a_ + "_" + wn)
+    # suspension_parameter += ['kt_x', 'kt_y', 'kt_z', 'ct_x', 'ct_y', 'ct_z']
+
+    suspension_parameter += ["kr_x", "kr_y", "kr_z", "cr_x", "cr_y", "cr_z"]
+
+    suspension_parameter += ["fo_x", "fo_y", "fo_z", "mo_x", "mo_y", "mo_z"]
+    xyz = []
+    rpy = []
+    dxyz = []
+    drpy = []
+    tau_mea = []
+    selected_data = [
+        # 0,  # "tiago_around_x_vicon_1634",  # 0
+        # 1,  # "tiago_around_y_vicon_1638",  # 1
+        # 2,  # "tiago_around_z_vicon_1622",  # 2
+        # 3,  # "tiago_x_fold_vicon_1632",  # 3
+        # 4,  # "tiago_xyz_mirror_vicon_1630",  # 4
+        # 5,  # "tiago_xyz_mirror_vicon_1642",  # 5
+        # 6,  # "tiago_xyz_vicon_1628",  # 6
+        7,  # "tiago_xyz_vicon_1640",  # 7
+        # 8,  # "tiago_y_fold_vicon_1636",  # 8
+    ]
+    # load data
+
     for ij_ in selected_data:
         marker_data = marker_datas[ij_]
         mocap_range_ = mocap_ranges[ij_]
-
-        # # project gripper3 marker onto base2 marker
-        # [base_trans, base_rot] = marker_data["base2"]
-        # [gripper_trans, gripper_rot] = marker_data["gripper3"]
-        # [gripper_trans_, sad] = marker_meas[ij_]["gripper3"]
-        # base_frame = list()
-        # gripper_frame = list()
-
-        # for ti in mocap_range_:
-        #     base_frame.append(pin.SE3(base_rot[ti], base_trans[ti, :]))
-        #     gripper_frame.append(
-        #         pin.SE3(gripper_rot[ti], gripper_trans[ti, :])
-        #     )
 
         if ref_frame == "footprint":
             # calculate floatingbase poses and velocities
@@ -184,8 +391,16 @@ def new_susp_identification():
             _, drpy_u, ddrpy_u = pu.calc_derivatives(rpy_u, f_res)
 
             # measured force plate data
-            force = marker_data["force"]
-            moment = marker_data["moment"]
+            force = np.zeros_like(marker_data["force"])
+            force[:, 0] = const[0] * marker_data["force"][:, 0]
+            force[:, 1] = const[1] * marker_data["force"][:, 1]
+            force[:, 2] = const[2] * marker_data["force"][:, 2]
+
+            moment = np.zeros_like(marker_data["moment"])
+            moment[:, 0] = const[3] * marker_data["moment"][:, 0]
+            moment[:, 1] = const[4] * marker_data["moment"][:, 1]
+            moment[:, 2] = const[5] * marker_data["moment"][:, 2]
+
             tau_ = np.concatenate(
                 (force[mocap_range_, :], moment[mocap_range_, :]), axis=1
             )
@@ -216,22 +431,436 @@ def new_susp_identification():
         drpy.append(drpy_u)
         tau_mea.append(tau_)
 
-    # parameter
-    param_base = ["k", "c"]
-    axis = ["x", "y", "z"]
-    # dof = ["t", "r"]
-    suspension_parameter = []
+    ## LS_susp
+    pos_res = xyz[0][mocap_ranges[selected_data[0]], :]
+    pos_vel = dxyz[0][mocap_ranges[selected_data[0]], :]
+    rpy_res = rpy[0][mocap_ranges[selected_data[0]], :]
+    ang_vel = drpy[0][mocap_ranges[selected_data[0]], :]
+    tau_mea_s = tau_mea[0]
 
-    for wn in wheels.keys():
-        # for d_ in dof:
-        for a_ in axis:
-            for b_ in param_base:
-                suspension_parameter.append(b_ + a_ + "_" + wn)
-    # suspension_parameter += ['kt_x', 'kt_y', 'kt_z', 'ct_x', 'ct_y', 'ct_z']
+    var = len(suspension_parameter) * [0]
+    NbSample = len(pos_res)
 
-    suspension_parameter += ['kr_x', 'kr_y', 'kr_z', 'cr_x', 'cr_y', 'cr_z']
+    wheels = dict()
+    for wn in wheel_names:
+        wheel_ri = data.oMf[model.getFrameId(wn)]
+        wheels[wn] = wheel_ri.translation
 
-    suspension_parameter += ['fo_x', 'fo_y', 'fo_z', 'mo_x', 'mo_y', 'mo_z']
+    M = pu.create_linmodel_regmatrix(
+        var, NbSample, wheels, pos_res, pos_vel, rpy_res, ang_vel
+    )
+
+    MB, base_supsParam, _ = get_baseParams(M, suspension_parameter)
+    tau_mea_vec = tau_mea_s.T.flatten("C")
+    sol = np.dot(np.linalg.pinv(MB), tau_mea_vec)
+
+    rel_stddev = relative_stdev(MB, sol, tau_mea_vec)
+    plot_validation("base param {}".format(const), tau_mea_vec, np.dot(MB, sol), NbSample)
+    susp_baseparam = dict(zip(base_supsParam, np.around(sol, 2)))
+    pprint.pprint(susp_baseparam)
+    pprint.pprint(dict(zip(base_supsParam, np.around(rel_stddev, 2))))
+
+    # # new_susp
+    # xyz_s = []
+    # dxyz_s = []
+    # rpy_s = []
+    # drpy_s = []
+    # tau_s = []
+    # tau_pred_s = []
+    # for ij in range(len(selected_data)):
+    #     xyz_s.append(xyz[ij][mocap_ranges[selected_data[ij]], :])
+    #     dxyz_s.append(dxyz[ij][mocap_ranges[selected_data[ij]], :])
+    #     rpy_s.append(rpy[ij][mocap_ranges[selected_data[ij]], :])
+    #     drpy_s.append(drpy[ij][mocap_ranges[selected_data[ij]], :])
+    #     tau_s.append(tau_mea[ij])
+    # sols = []
+    # for i in range(len(selected_data)):
+    #     sol_, tau_pred_ = new_suspension_solve(
+    #         # str(selected_data[i]) + file_names[selected_data[i]],
+    #         "full param {}".format(const),
+    #         xyz_s[i],
+    #         dxyz_s[i],
+    #         rpy_s[i],
+    #         drpy_s[i],
+    #         tau_s[i],
+    #     )
+
+    #     sols.append(sol_)
+    #     tau_pred_s.append(tau_pred_)
+
+    # susp_param = dict(zip(suspension_parameter, np.around(sols[0], 2)))
+    # susp_list.append(susp_param)
+    suspbase_list.append(susp_baseparam)
+
+# %% new_susp
+def new_suspension_solve(
+    file_name_: str,
+    xyz_u: np.ndarray,
+    dxyz_u: np.ndarray,
+    rpy_u: np.ndarray,
+    drpy_u: np.ndarray,
+    tau_mea_concat: np.ndarray,
+):
+    """Assume each wheel could be modeled as a 3D spring-damper.
+    The displacement of wheel i with ri is the constant position vector to
+    fixed reference frame of robot, is calculated by: delta_ri = R*ri+t-ri,
+    where [t theta] is floating base 6D pose. Since theta is small,
+    R = I + exp([theta]_X).
+    => delta_ri = t + [theta]+X * ri.
+    Suspension model:
+    F = sum(k*delta_ri) + sum(c*dot(delta_ri))
+    M = sum(ri X Fi)
+
+    Args:
+        file_name_ (str): imported data file
+        xyz_u (np.ndarray): floating base linear position
+        dxyz_u (np.ndarray): floating base linear velocity
+        rpy_u (np.ndarray): floating base angular position
+        drpy_u (np.ndarray): floating base angular velocity
+        tau_mea_concat (np.ndarray): measured ground reaction wrench
+
+    Returns:
+        x: solution of parameters
+        tau_est: predicted values of wrench
+    """
+    # Regressor matrix
+    Ntotal = len(xyz_u)
+
+    # measure output
+    tau_mea_vector = np.reshape(tau_mea_concat.T, (6 * len(tau_mea_concat)))
+    # Parameter estimation
+    # n_wheel = len(wheel_names)
+    count = 0
+    rmse = 1e8
+    var_init = 1000 * np.ones(len(suspension_parameter))
+    var_init[-12:-6] = np.array(
+        [4000, 12500, 37700, 200, 21500, 14400]
+    )  # torsional
+    var_init[-6:] = np.array([0, 0, 725, 0, 0, 0])  # offset
+
+    lower_bound = 6 * [0, 0, 0, -np.inf, -np.inf, -np.inf] + [-np.inf] * 12
+    while rmse > 5 * 1e-1 and count < 1:
+        LM_solve = least_squares(
+            pu.cost_function_multiwheels,
+            var_init,
+            # method="trf",
+            # bounds=(lower_bound, np.inf),
+            verbose=1,
+            args=(
+                Ntotal,
+                wheels,
+                xyz_u,
+                dxyz_u,
+                rpy_u,
+                drpy_u,
+                tau_mea_vector,
+            ),
+        )
+        tau_predict_vector = pu.multi_linear_models(
+            LM_solve.x, Ntotal, wheels, xyz_u, dxyz_u, rpy_u, drpy_u
+        )
+        rmse = np.sqrt(np.mean((tau_mea_vector - tau_predict_vector) ** 2))
+        # print("*" * 40)
+        # print("iteration: ", count, "rmse: ", rmse)
+        # susp_param = dict(zip(suspension_parameter, np.array(list(LM_solve.x), dtype=float64)))
+        var_init = LM_solve.x + 1000 * np.random.randn(len(var_init))
+        print(
+            "Iteration {}".format(count),
+            dict(zip(suspension_parameter, np.array(list(LM_solve.x)))),
+        )
+        count += 1
+    plot_validation(file_name_, tau_mea_vector, tau_predict_vector, Ntotal)
+    tau_predict_ = np.reshape(tau_predict_vector, (6, Ntotal))
+    return np.array(list(LM_solve.x), dtype=np.float64), tau_predict_.T
+
+
+# xyz_s = []
+# dxyz_s = []
+# rpy_s = []
+# drpy_s = []
+# tau_s = []
+# tau_pred_s = []
+# for ij in range(len(selected_data)):
+#     xyz_s.append(xyz[ij][mocap_ranges[selected_data[ij]], :])
+#     dxyz_s.append(dxyz[ij][mocap_ranges[selected_data[ij]], :])
+#     rpy_s.append(rpy[ij][mocap_ranges[selected_data[ij]], :])
+#     drpy_s.append(drpy[ij][mocap_ranges[selected_data[ij]], :])
+#     tau_s.append(tau_mea[ij])
+# sols = []
+# for i in range(len(selected_data)):
+#     sol_, tau_pred_ = new_suspension_solve(
+#         str(selected_data[i]) + file_names[selected_data[i]],
+#         xyz_s[i],
+#         dxyz_s[i],
+#         rpy_s[i],
+#         drpy_s[i],
+#         tau_s[i],
+#     )
+
+#     sols.append(sol_)
+#     tau_pred_s.append(tau_pred_)
+
+# susp_param = dict(zip(suspension_parameter, np.around(sols[0], 2)))
+
+
+# %%
+def LS_susp_identification():
+    xyz = []
+    rpy = []
+    dxyz = []
+    drpy = []
+    tau_mea = []
+    selected_data = [
+        # 0,  # good fit on mx, my
+        # 1,  # bad
+        # 2,  # very good fit on fx
+        # 3,  # good fit on mx, my
+        # 4,  # good fit on fz
+        # 5,  # good fit on fx
+        # 6,  # bad
+        7,  # good fit on fz
+        # 8,  # my, and somehow mz good
+    ]
+    for ij_ in selected_data:
+        marker_data = marker_datas[ij_]
+        mocap_range_ = mocap_ranges[ij_]
+
+        if ref_frame == "footprint":
+            # calculate floatingbase poses and velocities
+            xyz_u, rpy_u, quat_u = calc_floatingbase_pose(
+                "base2", marker_data, marker_footprint, Mfixedfootprint_mocap
+            )
+            _, dxyz_u, ddxyz_u = pu.calc_derivatives(xyz_u, f_res)
+            _, drpy_u, ddrpy_u = pu.calc_derivatives(rpy_u, f_res)
+
+            # measured force plate data
+            force = marker_data["force"]
+            force[:, 0] = -force[:, 0]
+            force[:, 1] = -force[:, 1]
+            # force[:, 2] = -force[:, 2]
+
+            moment = marker_data["moment"]
+            moment[:, 0] = -moment[:, 0]
+            moment[:, 1] = -moment[:, 1]
+            # moment[:, 2] = -moment[:, 2]
+
+            tau_ = np.concatenate(
+                (force[mocap_range_, :], moment[mocap_range_, :]), axis=1
+            )
+
+            # transform measured force and moment to robot fixed ref frame
+            for jj in range(len(tau_)):
+                tau_[jj, :] = np.dot(
+                    Mfixedfootprint_forceplate.action, tau_[jj, :]
+                )
+        elif ref_frame == "forceplate":
+            # calculate floatingbase poses and velocities
+            xyz_u, rpy_u, quat_u = calc_floatingbase_pose(
+                "base2", marker_data, marker_footprint, Mforceplate_mocap
+            )
+            _, dxyz_u, ddxyz_u = pu.calc_derivatives(xyz_u, f_res)
+            _, drpy_u, ddrpy_u = pu.calc_derivatives(rpy_u, f_res)
+
+            # measured force plate data
+            force = marker_data["force"]
+            moment = marker_data["moment"]
+            tau_ = np.concatenate(
+                (force[mocap_range_, :], moment[mocap_range_, :]), axis=1
+            )
+
+        xyz.append(xyz_u)
+        rpy.append(rpy_u)
+        dxyz.append(dxyz_u)
+        drpy.append(drpy_u)
+        tau_mea.append(tau_)
+    pos_res = xyz[0][mocap_ranges[selected_data[0]], :]
+    pos_vel = dxyz[0][mocap_ranges[selected_data[0]], :]
+    rpy_res = rpy[0][mocap_ranges[selected_data[0]], :]
+    ang_vel = drpy[0][mocap_ranges[selected_data[0]], :]
+    tau_mea_s = tau_mea[0]
+
+    var = 48 * [0]
+    NbSample = len(pos_res)
+
+    def skew(a):
+        """Returns a skew-symmetric matrix from a vector."""
+        return np.cross(np.identity(a.shape[0]), a)
+
+    def create_linmodel_regmatrix(
+        var, NbSample, wheels, pos_res, pos_vel, rpy_res, ang_vel
+    ):
+        M = np.zeros((6 * NbSample, len(var)))
+
+        for i in range(NbSample):
+            A_ = np.zeros((3, len(var)))
+            B_ = np.zeros((3, len(var)))
+            t = pos_res[i, :]
+            t_dot = pos_vel[i, :]
+            theta = rpy_res[i, :]
+            theta_dot = ang_vel[i, :]
+            # linear wheel spring-dampers
+            for wi, key in enumerate(wheels.keys()):
+                AF_i = np.zeros((3, 6))
+                ri = wheels[key]
+                AF_i[:, 0:3] = np.diag(t - np.matmul(skew(ri), theta))
+                AF_i[:, 3:6] = np.diag(t_dot - np.matmul(skew(ri), theta_dot))
+                A_[:, 6 * wi : 6 * (wi + 1)] = AF_i
+                BF_i = np.matmul(skew(ri), AF_i)
+                B_[:, 6 * wi : 6 * (wi + 1)] = BF_i
+
+            # generalized torsion spring-damper
+            B_[:, -12:-9] = np.diag(theta)
+            B_[:, -9:-6] = np.diag(theta_dot)
+
+            # offset nominal
+            A_[:, -6:-3] = np.diag([1, 1, 1])
+            B_[:, -3:] = np.diag([1, 1, 1])
+
+            # update M
+            M[0 * NbSample + i, :] = A_[0, :]  # fx
+            M[1 * NbSample + i, :] = A_[1, :]  # fy
+            M[2 * NbSample + i, :] = A_[2, :]  # fz
+            M[3 * NbSample + i, :] = B_[0, :]  # mx
+            M[4 * NbSample + i, :] = B_[1, :]  # my
+            M[5 * NbSample + i, :] = B_[2, :]  # mz
+        return M
+
+    wheels = dict()
+    for wn in wheel_names:
+        # wheel_ri = Mforceplate_fixedfootprint * data.oMf[model.getFrameId(wn)]
+        wheel_ri = data.oMf[model.getFrameId(wn)]
+        wheels[wn] = wheel_ri.translation
+
+    M = create_linmodel_regmatrix(
+        var, NbSample, wheels, pos_res, pos_vel, rpy_res, ang_vel
+    )
+
+    from figaroh.calibration.calibration_tools import get_baseParams
+    
+    MB, base_supsParam, _ = get_baseParams(M, suspension_parameter)
+    tau_mea_vec = tau_mea_s.T.flatten("C")
+    sol = np.dot(np.linalg.pinv(MB), tau_mea_vec)
+
+    def plot_validation(
+        file_name_, tau_mea_vector, tau_predict_vector, Ntotal
+    ):
+        #  validation
+        N_d = 6
+        fig, ax = plt.subplots(N_d, 1)
+        tau_ylabel = [
+            "Fx [N]",
+            "Fy [N]",
+            "Fz [N]",
+            "Mx [N.m]",
+            "My [N.m]",
+            "Mz [N.m]",
+        ]
+        for i in range(N_d):
+            ax[i].plot(
+                tau_mea_vector[i * Ntotal : (i + 1) * Ntotal],
+                color="red",
+            )
+            ax[i].plot(
+                tau_predict_vector[i * Ntotal : (i + 1) * Ntotal],
+                color="blue",
+                linestyle="--",
+            )
+            ax[i].set_ylabel(tau_ylabel[i])
+            ax[i].spines[["right", "top"]].set_visible(False)
+            ax[0].legend(["measured", "predicted"], loc="lower right")
+            if i != int(N_d - 1):
+                ax[i].set_xticklabels([])
+            else:
+                ax[i].set_xlabel("sample")
+        fig.align_ylabels(ax)
+        fig.suptitle(file_name_)
+
+    plot_validation("base param", tau_mea_vec, np.dot(MB, sol), NbSample)
+    return dict(zip(base_supsParam, sol))
+
+
+def new_susp_identification():
+    xyz = []
+    rpy = []
+    dxyz = []
+    drpy = []
+    tau_mea = []
+    selected_data = [
+        # 0,  # good fit on mx, my
+        # 1,  # bad
+        # 2,  # very good fit on fx
+        # 3,  # good fit on mx, my
+        # 4,  # good fit on fz
+        # 5,  # good fit on fx
+        # 6,  # bad
+        7,  # good fit on fz
+        # 8,  # my, and somehow mz good
+    ]
+    for ij_ in selected_data:
+        marker_data = marker_datas[ij_]
+        mocap_range_ = mocap_ranges[ij_]
+
+        # # project gripper3 marker onto base2 marker
+        # [base_trans, base_rot] = marker_data["base2"]
+        # [gripper_trans, gripper_rot] = marker_data["gripper3"]
+        # [gripper_trans_, sad] = marker_meas[ij_]["gripper3"]
+        # base_frame = list()
+        # gripper_frame = list()
+
+        # for ti in mocap_range_:
+        #     base_frame.append(pin.SE3(base_rot[ti], base_trans[ti, :]))
+        #     gripper_frame.append(
+        #         pin.SE3(gripper_rot[ti], gripper_trans[ti, :])
+        #     )
+
+        if ref_frame == "footprint":
+            # calculate floatingbase poses and velocities
+            xyz_u, rpy_u, quat_u = calc_floatingbase_pose(
+                "base2", marker_data, marker_footprint, Mfixedfootprint_mocap
+            )
+            _, dxyz_u, ddxyz_u = pu.calc_derivatives(xyz_u, f_res)
+            _, drpy_u, ddrpy_u = pu.calc_derivatives(rpy_u, f_res)
+
+            # measured force plate data
+            force = marker_data["force"]
+            force[:, 0] = -force[:, 0]
+            force[:, 1] = -force[:, 1]
+            # force[:, 2] = - force[:, 2]
+
+            moment = marker_data["moment"]
+            moment[:, 0] = -moment[:, 0]
+            moment[:, 1] = -moment[:, 1]
+            # moment[:, 2] = - moment[:, 2]
+
+            tau_ = np.concatenate(
+                (force[mocap_range_, :], moment[mocap_range_, :]), axis=1
+            )
+
+            # transform measured force and moment to robot fixed ref frame
+            for jj in range(len(tau_)):
+                tau_[jj, :] = np.dot(
+                    Mfixedfootprint_forceplate.action, tau_[jj, :]
+                )
+        elif ref_frame == "forceplate":
+            # calculate floatingbase poses and velocities
+            xyz_u, rpy_u, quat_u = calc_floatingbase_pose(
+                "base2", marker_data, marker_footprint, Mforceplate_mocap
+            )
+            _, dxyz_u, ddxyz_u = pu.calc_derivatives(xyz_u, f_res)
+            _, drpy_u, ddrpy_u = pu.calc_derivatives(rpy_u, f_res)
+
+            # measured force plate data
+            force = marker_data["force"]
+            moment = marker_data["moment"]
+            tau_ = np.concatenate(
+                (force[mocap_range_, :], moment[mocap_range_, :]), axis=1
+            )
+
+        xyz.append(xyz_u)
+        rpy.append(rpy_u)
+        dxyz.append(dxyz_u)
+        drpy.append(drpy_u)
+        tau_mea.append(tau_)
 
     def new_suspension_solve(
         file_name_: str,
@@ -275,12 +904,18 @@ def new_susp_identification():
         count = 0
         rmse = 1e8
         var_init = 1000 * np.ones(len(suspension_parameter))
+        var_init[-12:-6] = np.array(
+            [4000, 12500, 37700, 200, 21500, 14400]
+        )  # torsional
+        var_init[-6:] = np.array([0, 0, 725, 0, 0, 0])  # offset
 
-        while rmse > 5 * 1e-1 and count < 10:
+        lower_bound = 6 * [0, 0, 0, -np.inf, -np.inf, -np.inf] + [-np.inf] * 12
+        while rmse > 5 * 1e-1 and count < 1:
             LM_solve = least_squares(
                 pu.cost_function_multiwheels,
                 var_init,
-                method="lm",
+                # method="trf",
+                # bounds=(lower_bound, np.inf),
                 verbose=1,
                 args=(
                     Ntotal,
@@ -299,9 +934,12 @@ def new_susp_identification():
             # print("*" * 40)
             # print("iteration: ", count, "rmse: ", rmse)
             # susp_param = dict(zip(suspension_parameter, np.array(list(LM_solve.x), dtype=float64)))
-            var_init = LM_solve.x + 20000 * np.random.randn(len(var_init))
+            var_init = LM_solve.x + 1000 * np.random.randn(len(var_init))
+            print(
+                "Iteration {}".format(count),
+                dict(zip(suspension_parameter, np.array(list(LM_solve.x)))),
+            )
             count += 1
-
         plot_validation(file_name_, tau_mea_vector, tau_predict_vector, Ntotal)
         tau_predict_ = np.reshape(tau_predict_vector, (6, Ntotal))
         return np.array(list(LM_solve.x), dtype=np.float64), tau_predict_.T
@@ -382,9 +1020,6 @@ def new_susp_identification():
     #     print(pu.rmse(tau_s[lj][:, j], tau_pred_s[lj][:, j]))
     # plot_validation("identification", tau_m, tau_p, N_sample)
     return sols, tau_pred_s, tau_s
-
-
-# sols, tau_pred, tau_mea = new_susp_identification()
 
 
 def aggr_data(selected_data):
@@ -613,7 +1248,12 @@ def susp_identification():
     sols = []
     for i in range(len(selected_data)):
         sol_, tau_pred_ = suspension_solve(
-            str(selected_data[i])+file_names[selected_data[i]], xyz_s[i], dxyz_s[i], rpy_s[i], drpy_s[i], tau_s[i]
+            str(selected_data[i]) + file_names[selected_data[i]],
+            xyz_s[i],
+            dxyz_s[i],
+            rpy_s[i],
+            drpy_s[i],
+            tau_s[i],
         )
         sols.append(sol_)
         tau_pred_s.append(tau_pred_)
@@ -632,8 +1272,14 @@ def susp_identification():
 
     # list_plot = [4, 6, 4, 3, 3, 2]  # with base footprint in forceplate frame
     # list_plot = [2, 8, 6, 3, 3, 2]  # with base 2 marker in forceplate frame
-    list_plot = [3, 2, 6, 2, 2, 2]  # with base footprint marker in footprint frame
-
+    list_plot = [
+        3,
+        2,
+        6,
+        2,
+        2,
+        2,
+    ]  # with base footprint marker in footprint frame
 
     for j, lj in enumerate(list_plot):
         tau_m[j * N_sample : (j + 1) * N_sample] = tau_s[lj][:, j]
@@ -641,9 +1287,6 @@ def susp_identification():
         print(pu.rmse(tau_s[lj][:, j], tau_pred_s[lj][:, j]))
     plot_validation("identification", tau_m, tau_p, N_sample)
     return sols, tau_pred_s, tau_s
-
-
-sols, tau_pred, tau_mea = new_susp_identification()
 
 
 # # ##############################################################################
@@ -689,15 +1332,13 @@ def complete_calib():
         drpy.append(drpy_u)
         tau_mea.append(tau_)
 
-    dir_path = dir_paths[0]
-    path_to_values = dir_path + "introspection_datavalues.csv"
-    path_to_names = dir_path + "introspection_datanames.csv"
-
-    # read values from csv files
-    t_res, f_res, joint_names, q_abs_res, q_rel_res = pu.get_q_arm(
-        tiago_fb, path_to_values, path_to_names, f_cutoff=0.625
-    )
-
+    encoder_data = encoder_datas[selected_data[0]]
+    timestamp = encoder_data["timestamp"]
+    t_res = encoder_data["t_res"]
+    f_res = encoder_data["f_res"]
+    joint_names = encoder_data["jointnames"]
+    q_abs_res = encoder_data["q_abs_res"]
+    q_rel_res = encoder_data["q_rel_res"]
     encoder_range = range(2930, 3430)
 
     # mocap_range = encoder_range
@@ -892,7 +1533,7 @@ def complete_calib():
     tiago_calib.calc_errors(pee_mocap)
     none_err = tiago_calib.calc_errors(pee_mocap0)
 
-    # 3) suspension + calibration in mocap frame
+    # 3) backlash + suspension + calibration in mocap frame
     tiago_calib.q_measured = qabs_arm
     pee_calib_abs = tiago_calib.get_pose_from_measure(tiago_calib.LM_result.x)
     pee_calib3d_abs = np.reshape(pee_calib_abs, (3, N_))
@@ -1034,6 +1675,7 @@ def complete_calib():
     print(tabulate(errors, headers=errors.keys()))
 
 
+# %%
 # # concatenate with floating base kinematic entities
 # q_arm[:, 0:3] = xyz_u[2463:4863, :]
 # q_arm[:, 3:7] = quat_u[2463:4863, :]
@@ -1115,60 +1757,6 @@ def complete_calib():
 
 # robot.display(robot.q0)
 
-# B. Consider each wheel as an individual suspension system
-## general idea:
-# 1. get wheel locations in base link frame, these are fixed, r_io
-# 2. given a configuration q, find the wheel locations in world frame, r_ow
-# which represents the moving suspension points
-# 3. Retrieve coordinates data of the base from tracking system, i.e. mocap
-# a) locate the markers frame in the base link frame, p_mkr
-# b) get the configuration of the base in world frame, q_base
-# c) filter get 1st derivs of the base configuration, dq_base
-# 4. construct regressor matrix from the data, R(q, dq, r_io, r_ow)
-# 5. solve for the parameters, p = R^+ * tau
-
-# ## get wheel locations in base link frame
-# from figaroh.calibration.calibration_tools import (get_rel_transform)
-# wheel_locs = []
-# wheel_frames = []
-
-# robot.updateGeometryPlacements(robot.q0)
-# model = robot.model
-# data = robot.data
-# pin.framesForwardKinematics(model, data, robot.q0)
-# pin.updateFramePlacements(model, data)
-# for frame in model.frames:
-#     if 'wheel' in frame.name and 'joint' in frame.name:
-#         wheel_frames.append(frame.name)
-#     elif 'caster' in frame.name and 'joint' in frame.name:
-#         wheel_frames.append(frame.name)
-# for frame in wheel_frames:
-#     wheel_locs.append(data.oMf[model.getFrameId(frame)])
-
-# r_io = np.zeros((3, len(wheel_locs)))
-
-# q = pin.randomConfiguration(model)
-# q[:7] = np.array([0.01, 0.01, 0.01, 0.0 , 0.0, 0.0, 1.0])
-# print(q)
-# pin.framesForwardKinematics(model, data, q)
-# pin.updateFramePlacements(model, data)
-# print(data.oMf[model.getFrameId('base_link')].translation)
-# print(data.oMf[model.getFrameId('root_joint')].translation)
-# for i in range(len(wheel_locs)):
-#     r_io[:, i] = wheel_locs[i].translation
-#     print(wheel_frames[i], wheel_locs[i].translation)
-
-
-# # get wheel locations in world frame
-# # given a configuration q, find the wheel locations in world frame
-# r_ow = np.zeros((3, len(wheel_locs)))
-
-# # for i in range(len(wheel_locs)):
-#     pin.framesForwardKinematics(model, data, q)
-#     pin.updateFramePlacements(model, data)
-#     r_ow[:, i] = data.oMf[model.getFrameId(wheel_frames[i])].translation
-
-
 # ########################################################################
 # ################################ optitrack ##########################
 # ########################################################################
@@ -1238,7 +1826,7 @@ def complete_calib():
 # pu.addBox_to_gripper(robot)
 
 # # retrieve marker data
-# t_res, f_res, joint_names, q_abs_res, q_rel_res = pu.get_q_arm(
+# timestamp, t_res, f_res, joint_names, q_abs_res, q_rel_res = pu.get_q_arm(
 #     robot, path_to_values, path_to_names, f_cutoff
 # )
 # posXYZ_res, quatXYZW_res = get_XYZQUAT_marker(
@@ -1417,4 +2005,3 @@ def complete_calib():
 # #     plt.plot(tx_base_est, label='tx_marker_est')
 # #     plt.plot(q_base[:,ij], label='q_marker')
 # #     plt.legend()
-#
