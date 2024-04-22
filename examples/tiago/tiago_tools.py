@@ -216,11 +216,11 @@ class TiagoCalibration:
                 self.model, self.data, res, self.q_measured, self.param
             )
 
-            print("solution of calibrated parameters: ")
-            for x_i, xname in enumerate(self.param["param_name"]):
-                print(x_i + 1, xname, list(res)[x_i])
+            # print("solution of calibrated parameters: ")
+            # for x_i, xname in enumerate(self.param["param_name"]):
+            #     print(x_i + 1, xname, list(res)[x_i])
 
-            self.calc_errors(_PEEe_sol)
+            # self.calc_errors(_PEEe_sol)
             print("optimality: ", LM_solve.optimality)
 
             # check for unrealistic values
@@ -750,15 +750,15 @@ if __name__ == "__main__":
         )
 
         # torso to zero
-        res_vect = np.append(
-            res_vect,
-            TAGcalib_cen.param["NbSample"]
-            * var[
-                TAGcalib_cen.param["param_name"].index(
-                    "offsetPZ_torso_lift_joint"
-                )
-            ],
-        )
+        # res_vect = np.append(
+        #     res_vect,
+        #     TAGcalib_cen.param["NbSample"]
+        #     * var[
+        #         TAGcalib_cen.param["param_name"].index(
+        #             "offsetPZ_torso_lift_joint"
+        #         )
+        #     ],
+        # )
 
         # head joints to close to zero
         res_vect = np.append(
