@@ -622,6 +622,7 @@ def get_sup_joints(model, start_frame, end_frame):
 
     # find over-lapping joints in two branches
     shared_joints = list(set(branch_s) & set(branch_e))
+
     # create a list of supporting joints between two frames
     list_1 = [x for x in branch_s if x not in branch_e]
     list_1.reverse()
@@ -632,13 +633,15 @@ def get_sup_joints(model, start_frame, end_frame):
     else:
         # case 1: branch_s is part of branch_e
         if shared_joints == branch_s:
-            sup_joints = [branch_s[-1]] + list_2
+            # sup_joints = [branch_s[-1]] + list_2
+            sup_joints = list_2
         else:
             assert (
                 shared_joints != branch_e
             ), "End frame should be before start frame."
             # case 3: there are overlapping joints between two branches
-            sup_joints = list_1 + [shared_joints[-1]] + list_2
+            # sup_joints = list_1 + [shared_joints[-1]] + list_2
+            sup_joints = list_1 + list_2
     return sup_joints
 
 
