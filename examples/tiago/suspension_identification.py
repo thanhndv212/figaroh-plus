@@ -14,8 +14,6 @@
 
 # %% load data
 from os.path import abspath
-
-# from os.path import abspath
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MultipleLocator
 import pprint
@@ -29,6 +27,7 @@ from tabulate import tabulate
 import pinocchio as pin
 from figaroh.identification.identification_tools import get_param_from_yaml
 from figaroh.calibration.calibration_tools import get_baseParams
+from figaroh.identification.identification_tools import relative_stdev
 
 from tiago_utils.robot_tools import (
     RobotCalibration,
@@ -189,8 +188,6 @@ def plot_validation(file_name_, tau_mea_vector, tau_predict_vector, Ntotal):
 
 # %% process data
 
-from figaroh.identification.identification_tools import relative_stdev
-
 
 def new_suspension_solve(
     file_name_: str,
@@ -293,51 +290,36 @@ for wn in wheel_names:
     wheels[wn] = wheel_ri.translation
     # wheels[wn][2] = 0
 
-# comb = []
-# for i1 in [-1, 1]:
-#     for i2 in [-1, 1]:
-#         for i3 in [-1, 1]:
-#             for i4 in [-1, 1]:
-#                 for i5 in [-1, 1]:
-#                     for i6 in [-1, 1]:
-#                         comb.append([i1, i2, i3, i4, i5, i6])
+comb = []
+for i1 in [-1, 1]:
+    for i2 in [-1, 1]:
+        for i3 in [-1, 1]:
+            for i4 in [-1, 1]:
+                for i5 in [-1, 1]:
+                    for i6 in [-1, 1]:
+                        comb.append([i1, i2, i3, i4, i5, i6])
 # comb = [[-1, 1, 1, -1, 1, 1]]
-# comb = [[-1, 1, 1, 1, 1, 1]]
+comb = [[1, 1, 1, 1, 1, 1]]
 
-comb = [
-    [-1, 1, 1, -1, 1, 1],
+# comb = [
+#     [-1, -1, 1, -1, -1, 1],
     # [-1, -1, -1, -1, -1, -1],
-
     # [-1, -1, -1, 1, 1, 1],
-
     # [-1, -1, 1, -1, -1, 1],
-
     # [-1, -1, 1, 1, 1, 1],
-
     # [-1, 1, -1, -1, -1, -1],
-
     # [-1, 1, -1, 1, 1, 1],
-
     # [-1, 1, 1, -1, -1, -1],
-
     # [-1, 1, 1, 1, 1, 1],
-
     # [1, -1, -1, -1, -1, -1],
-
     # [1, -1, -1, 1, 1, 1],
-
     # [1, -1, 1, -1, -1, -1],
-
     # [1, -1, 1, 1, 1, 1],
-
     # [1, 1, -1, -1, -1, -1],
-
     # [1, 1, -1, 1, 1, 1],
-
     # [1, 1, 1, -1, -1, -1],
-
     # [1, 1, 1, 1, 1, 1],
-]
+# ]
 susp_list = []
 suspbase_list = []
 for const in comb:
@@ -455,10 +437,13 @@ for const in comb:
     sol = np.dot(np.linalg.pinv(MB), tau_mea_vec)
 
     rel_stddev = relative_stdev(MB, sol, tau_mea_vec)
-    plot_validation("base param {}".format(const), tau_mea_vec, np.dot(MB, sol), NbSample)
+    plot_validation(
+        "base param {}".format(const), tau_mea_vec, np.dot(MB, sol), NbSample
+    )
     susp_baseparam = dict(zip(base_supsParam, np.around(sol, 2)))
     pprint.pprint(susp_baseparam)
-    pprint.pprint(dict(zip(base_supsParam, np.around(rel_stddev, 2))))
+    # pprint.pprint(dict(zip(base_supsParam, np.around(rel_stddev, 2))),
+    # )
 
     # # new_susp
     # xyz_s = []
@@ -491,6 +476,7 @@ for const in comb:
     # susp_param = dict(zip(suspension_parameter, np.around(sols[0], 2)))
     # susp_list.append(susp_param)
     suspbase_list.append(susp_baseparam)
+
 
 # %% new_susp
 def new_suspension_solve(
@@ -736,7 +722,7 @@ def LS_susp_identification():
     )
 
     from figaroh.calibration.calibration_tools import get_baseParams
-    
+
     MB, base_supsParam, _ = get_baseParams(M, suspension_parameter)
     tau_mea_vec = tau_mea_s.T.flatten("C")
     sol = np.dot(np.linalg.pinv(MB), tau_mea_vec)
