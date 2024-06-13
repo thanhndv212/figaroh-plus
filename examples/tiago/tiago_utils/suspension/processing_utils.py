@@ -330,13 +330,14 @@ def create_rigidbody_frame(markers=[], unit_rot=None):
     return [origin, rot_mat]
 
 
-def save_selected_data(active_joints, xyz, q, path_to_save):
-    headers = ["x1", "y1", "z1"] + active_joints
+def save_selected_data(active_joints, xyz, rpy, q, path_to_save):
+    headers = ["x1", "y1", "z1", "phix1", "phiy1", "phiz1"] + active_joints
     with open(path_to_save, "w") as output_file:
         w = csv.writer(output_file)
         w.writerow(headers)
         for i in range(q.shape[0]):
-            row = list(np.concatenate((xyz[i, :], q[i, :])))
+            xyzrpy = np.concatenate((xyz[i, :], rpy[i, :]))
+            row = list(np.concatenate((xyzrpy, q[i, :])))
             w.writerow(row)
 
 
@@ -780,6 +781,8 @@ def project_frame(prj_frame, ref_frame, rot=False):
 
     if isinstance(prj_frame[0], pin.SE3) and isinstance(ref_frame[0], pin.SE3):
         projected_pos = np.empty((len(prj_frame), 3))
+        projected_rpy = np.empty((len(prj_frame), 3))
+
         assert len(prj_frame) == len(
             ref_frame
         ), "projecting two frames have different sizes! Projected positions are empty!"
@@ -789,11 +792,14 @@ def project_frame(prj_frame, ref_frame, rot=False):
             projected_se3 = pin.SE3.inverse(ref_se3) * prj_se3
             projected_pos[i, :] = projected_se3.translation
             projected_rot.append(projected_se3.rotation)
+            projected_rpy[i, :] = pin.rpy.matrixToRpy(projected_se3.rotation)
 
     elif isinstance(prj_frame[0], np.ndarray) and isinstance(
         ref_frame[0], np.ndarray
     ):
         projected_pos = np.empty((prj_frame.shape[0], 3))
+        projected_rpy = np.empty((prj_frame.shape[0], 3))
+
         assert (
             prj_frame.shape == ref_frame.shape
         ), "projecting two frames have different sizes! Projected positions are empty!"
@@ -803,8 +809,9 @@ def project_frame(prj_frame, ref_frame, rot=False):
             projected_se3 = pin.SE3.inverse(ref_se3) * prj_se3
             projected_pos[i, :] = projected_se3.translation
             projected_rot.append(projected_se3.rotation)
+            projected_rpy[i, :] = pin.rpy.matrixToRpy(projected_se3.rotation)
     if rot:
-        return projected_pos, projected_rot
+        return projected_pos, projected_rpy
     else:
         return projected_pos
 

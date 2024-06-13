@@ -117,7 +117,7 @@ def compute_estimated_pee(
 
     model = tiago_fb.model
     data = tiago_fb.data
-    
+
     endframe_id = model.getFrameId(endframe_name)
     Mmarker_fixedbase = cartesian_to_SE3(marker_fixedbase[base_marker_name])
     [base_trans, base_rot] = marker_data[base_marker_name]
@@ -125,6 +125,8 @@ def compute_estimated_pee(
     nc_ = len(mocap_range_)
     pee_est = np.zeros((nc_, 3))
     peews_est = np.zeros((nc_, 3))
+    phiee_est = np.zeros((nc_, 3))
+    phieews_est = np.zeros((nc_, 3))
 
     for jj, ii in enumerate(mocap_range_):
         pin.framesForwardKinematics(model, data, q_arm[jj])
@@ -142,8 +144,14 @@ def compute_estimated_pee(
 
         pee_est[jj, :] = pee_SE3.translation
         peews_est[jj, :] = peews_SE3.translation
-
-    return pee_est, peews_est
+        phiee_est[jj, :] = pin.rpy.matrixToRpy(pee_SE3.rotation)
+        phieews_est[jj, :] = pin.rpy.matrixToRpy(peews_SE3.rotation)
+    return (
+        pee_est,
+        peews_est,
+        phiee_est,
+        phieews_est,
+    )
 
 
 def plot_compare_suspension(
