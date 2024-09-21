@@ -313,7 +313,7 @@ class RobotCalibration:
     def plot(self, lvl=1):
         if lvl == 1:
             self.plot_errors_distribution()
-        else:
+        elif lvl == 2:
             self.plot_errors_distribution()
             self.plot_3d_poses()
             self.plot_joint_configurations()
