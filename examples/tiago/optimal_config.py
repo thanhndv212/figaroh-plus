@@ -19,9 +19,7 @@ import matplotlib.pyplot as plt
 import yaml
 from yaml.loader import SafeLoader
 import picos as pc
-
-import pinocchio as pin
-from pinocchio.robot_wrapper import RobotWrapper
+import pandas as pd
 from figaroh.calibration.calibration_tools import (
     calculate_base_kinematics_regressor,
     rank_in_configuration,
@@ -370,6 +368,8 @@ class TiagoOptimalCalibration(TiagoCalibration):
 
 
 def main():
+    import argparse
+
     def parse_args():
         parser = argparse.ArgumentParser(
             description="parse calibration setups", add_help=False
@@ -385,20 +385,24 @@ def main():
         return args
 
     args = parse_args()
+    if args is not None:
+        end_effector = args.end_effector
+    else:
+        end_effector = "hey5"
 
     # load_by_urdf = False, load robot from rospy.get_param(/robot_description)
     tiago = load_robot(
-        "data/urdf/tiago_48_{}.urdf".format(args.end_effector),
+        "data/urdf/tiago_48_{}.urdf".format(end_effector),
         load_by_urdf=True,
     )
 
     tiago_optcalib = TiagoOptimalCalibration(
-        tiago, "config/tiago_config_{}.yaml".format(args.end_effector)
+        tiago, "config/tiago_config_{}.yaml".format(end_effector)
     )
     tiago_optcalib.initialize()
     tiago_optcalib.solve(
         file_name="tiago_optimal_configurations_{}.yaml".format(
-            args.end_effector
+            end_effector
         )
     )
 
