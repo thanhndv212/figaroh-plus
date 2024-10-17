@@ -17,11 +17,16 @@ import ndcurves
 import numpy as np
 from matplotlib import pyplot as plt
 from figaroh.tools.randomdata import get_torque_rand
-from figaroh.tools.robot import Robot
-import icecream as ic
-import eigenpy
-import os
-eigenpy.switchToNumpyArray()
+# from figaroh.tools.robot import Robot
+# import icecream as ic
+# import eigenpy
+# import os
+from tiago_tools import load_robot
+from figaroh.identification.identification_tools import get_param_from_yaml
+import yaml
+from yaml.loader import SafeLoader
+
+# eigenpy.switchToNumpyArray()
 
 # This script inherits class robot with its all attrs/funcs, receives
 # infor of activated joints, then generate feasible cubic splines which
@@ -33,7 +38,7 @@ class CubicSpline:
                  robot,
                  num_waypoints: int,
                  active_joints: list,
-                 soft_lim = 0):
+                 soft_lim=0):
 
         self.robot = robot
         self.rmodel = self.robot.model
@@ -50,17 +55,20 @@ class CubicSpline:
         self.upper_effort = self.rmodel.effortLimit[self.active_joints]
         self.lower_effort = -self.rmodel.effortLimit[self.active_joints]
 
-     # joint limits on active joints with soft limit on both limit ends
-        if soft_lim >0:
-            self.upper_q = self.upper_q - soft_lim*abs(self.upper_q-self.lower_q)
-            self.lower_q = self.lower_q + soft_lim*abs(self.upper_q-self.lower_q)
-            self.upper_dq = self.upper_dq - soft_lim*abs(self.upper_dq - self.lower_dq)
-            self.lower_dq = self.lower_dq + soft_lim*abs(self.upper_dq - self.lower_dq)
+    # joint limits on active joints with soft limit on both limit ends
+        if soft_lim > 0:  # Added space after '>' for clarity
+            self.upper_q = self.upper_q - soft_lim * abs(
+                self.upper_q - self.lower_q)  # Added spaces around '*'
+            self.lower_q = self.lower_q + soft_lim * abs(
+                self.upper_q - self.lower_q)  # Added spaces around '*'
+            self.upper_dq = self.upper_dq - soft_lim * abs(
+                self.upper_dq - self.lower_dq)  # Added spaces around '*'
+            self.lower_dq = self.lower_dq + soft_lim * abs(
+                self.upper_dq - self.lower_dq)  # Added spaces around '*'
             self.upper_effort = self.upper_effort - soft_lim * \
                 abs(self.upper_effort - self.lower_effort)
             self.lower_effort = self.lower_effort + soft_lim * \
                 abs(self.upper_effort - self.lower_effort)
-
 
     def get_active_config(self,
                           freq: int,
@@ -74,7 +82,7 @@ class CubicSpline:
         assert (
             self.dim == waypoints.shape), "(Pos) Check size \
                                         (num_active_joints,num_waypoints)!"
-        self.pc = ndcurves.piecewise() # set piecewise object to join segments
+        self.pc = ndcurves.piecewise()  # set piecewise object to join segments
 
         # C_2 continuous at waypoints
         if vel_waypoints is not None and acc_waypoints is not None:
@@ -87,32 +95,34 @@ class CubicSpline:
                                         (num_active_joints, num_waypoints)!"
 
             # make exact cubic WITH constraints on vel and acc on both ends
-            for i in range(self.num_waypoints-1):
+            for i in range(self.num_waypoints - 1):
                 self.c = ndcurves.curve_constraints()
                 self.c.init_vel = np.matrix(vel_waypoints[:, i]).transpose()
-                self.c.end_vel = np.matrix(vel_waypoints[:, i+1]).transpose()
+                self.c.end_vel = np.matrix(vel_waypoints[:, i + 1]).transpose()
                 self.c.init_acc = np.matrix(acc_waypoints[:, i]).transpose()
-                self.c.end_acc = np.matrix(acc_waypoints[:, i+1]).transpose()
-                ec = ndcurves.exact_cubic(waypoints[:, range(i, i+2)],
-                                          time_points[range(i, i+2), 0], self.c)
+                self.c.end_acc = np.matrix(acc_waypoints[:, i + 1]).transpose()
+                ec = ndcurves.exact_cubic(
+                    waypoints[:, range(i, i + 2)],
+                    time_points[range(i, i + 2), 0], self.c
+                )
                 self.pc.append(ec)
 
         # make exact cubic WITHOUT constraints on vel and acc on both ends
         else:
             for i in range(self.num_waypoints - 1):
                 ec = ndcurves.exact_cubic(
-                    waypoints[:, range(i, i+2)], time_points[range(i, i+2), 0])
+                    waypoints[:, range(i, i + 2)], time_points[range(i, i + 2), 0])  # Added spaces around '+'
                 self.pc.append(ec)
 
         # time step
-        self.delta_t = 1/freq
+        self.delta_t = 1 / freq  # Added spaces around '/'
         # total travel time
         self.T = self.pc.max() - self.pc.min()
         # get number sample points from generated trajectory
-        self.N = int(self.T/self.delta_t) + 1
+        self.N = int(self.T / self.delta_t) + 1
         # create time stamps on all sample points
         self.t = self.pc.min() + \
-            np.matrix([i*self.delta_t for i in range(self.N)]).transpose()
+            np.matrix([i * self.delta_t for i in range(self.N)]).transpose()
 
         # compute derivatives to obtain pos/vel/acc on all samples (bad)
         self.q_act = np.array([self.pc(self.t[i, 0]) for i in range(self.N)],
@@ -161,11 +171,11 @@ class CubicSpline:
                     abs(self.rmodel.upperPositionLimit[j] -
                         self.rmodel.lowerPositionLimit[j])
                 if q[i, j] > self.rmodel.upperPositionLimit[j] - delta_lim:
-                    # print("Joint %d upper limit violated!" % j)
+                    print("Joint q %d upper limit violated!" % j)
                     __isViolated_pos = True
 
                 elif q[i, j] < self.rmodel.lowerPositionLimit[j] + delta_lim:
-                    # print("Joint %d lower limit violated!" % j)
+                    print("Joint q %d lower limit violated!" % j)
                     __isViolated_pos = True
                 else:
                     __isViolated_pos = False
@@ -174,8 +184,9 @@ class CubicSpline:
         if v is not None:
             for i in range(v.shape[0]):
                 for j in range(v.shape[1]):
-                    if abs(v[i, j]) > (1-soft_lim)*abs(self.rmodel.velocityLimit[j]):
-                        # print("Velocity joint %d limits violated!" % j)
+                    if abs(v[i, j]) > (1 - soft_lim) * \
+                       abs(self.rmodel.velocityLimit[j]):
+                        print("Joint v %d limits violated!" % j)
                         __isViolated_vel = True
                     else:
                         __isViolated_vel = False
@@ -184,8 +195,9 @@ class CubicSpline:
         if tau is not None:
             for i in range(tau.shape[0]):
                 for j in range(tau.shape[1]):
-                    if abs(tau[i, j]) > (1-soft_lim)*abs(self.rmodel.effortLimit[j]):
-                        # print("Effort joint %d limits violated!" % j)
+                    if abs(tau[i, j]) > (1 - soft_lim) * \
+                       abs(self.rmodel.effortLimit[j]):
+                        print("Joint effort v %d limits violated!" % j)
                         __isViolated_eff = True
                     else:
                         __isViolated_eff = False
@@ -226,7 +238,7 @@ class WaypointsGeneration(CubicSpline):
                  num_waypoints: int,
                  active_joints: list,
                  soft_lim=0):
-        super().__init__(robot, num_waypoints, active_joints,soft_lim=0)
+        super().__init__(robot, num_waypoints, active_joints, soft_lim=0)
         self.n_set = 20
         self.pool_q = np.zeros((self.n_set, len(self.active_joints)))
         self.pool_dq = np.zeros((self.n_set, len(self.active_joints)))
@@ -315,7 +327,6 @@ class WaypointsGeneration(CubicSpline):
                     vel_wps_rand[:, i] = np.random.choice(
                         self.pool_dq[:, i], self.num_waypoints)
 
-
         if vel_wp_init is not None:
             acc_wps_rand[0, :] = vel_wp_init
             if not acc_set_zero:
@@ -346,32 +357,37 @@ class WaypointsGeneration(CubicSpline):
 
         if vel_wp_init is not None:
             vel_wps_equal = np.tile(vel_wp_init, (self.num_waypoints,1))
-        
+
         if acc_wp_init is not None:
             acc_wps_equal = np.tile(acc_wp_init, (self.num_waypoints,1))
         return wps_equal.transpose(), vel_wps_equal.transpose(), acc_wps_equal.transpose()
 
+
+def init_robot(robot):
+    import pinocchio as pin
+
+    pin.framesForwardKinematics(robot.model, robot.data, robot.q0)
+    pin.updateFramePlacements(robot.model, robot.data)
+
+
 def main():
-    
     # 1/ Load robot model and create a dictionary containing reserved constants
-    ros_package_path = os.getenv('ROS_PACKAGE_PATH')
-    package_dirs = ros_package_path.split(':')
-    robot_dir = package_dirs[0] + "/example-robot-data/robots"
-    robot = Robot(
-                robot_dir + "/tiago_description/robots/tiago_no_hand.urdf",
-                package_dirs = package_dirs,
-                # isFext=True  # add free-flyer joint at base
-                )
+    robot = load_robot("data/urdf/tiago_48_schunk.urdf")
+    # init_robot(robot)
+    with open('config/tiago_config.yaml', 'r') as f:
+        config = yaml.load(f, Loader=SafeLoader)
+    identif_data = config['identification']
+    params_settings = get_param_from_yaml(robot, identif_data)
     num_waypoints = 2
     active_joints = ["torso_lift_joint",
-                     "arm_1_joint",
-                     "arm_2_joint",
-                     "arm_3_joint",
-                     "arm_4_joint",
-                     "arm_5_joint",
-                     "arm_6_joint",
-                     "arm_7_joint"]
-
+                        "arm_1_joint",
+                        "arm_2_joint",
+                        "arm_3_joint",
+                        "arm_4_joint",
+                        "arm_5_joint",
+                        "arm_6_joint",
+                        "arm_7_joint"]
+    params_settings["active_joints"] = active_joints
     f = 50
     T1 = 0.0
     T2 = 30
@@ -380,6 +396,7 @@ def main():
     soft_lim_pool = np.array([[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
                             [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
                             [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]])
+
     CB = CubicSpline(robot, num_waypoints, active_joints, soft_lim)
     WP = WaypointsGeneration(robot, num_waypoints, active_joints, soft_lim)
     isViolated = True  # constraint flag
@@ -390,20 +407,23 @@ def main():
         wp_init[idx] = np.random.choice(WP.pool_q[:, idx], 1)
     while isViolated:
         count += 1
-        print("----------","run %s " % count, "----------")
-        # wps, vel_wps, acc_wps = WP.gen_rand_wp()
-        wps, vel_wps, acc_wps = WP.gen_equal_wp(wp_init)
+        print("----------" , "run %s " % count, "----------")
+        wps, vel_wps, acc_wps = WP.gen_rand_wp()
+        # wps, vel_wps, acc_wps = WP.gen_equal_wp(wp_init)
         # print(WP.pool_q[0, 0])
         time_points = np.matrix([T1, T2]).transpose()
         t, p_act, v_act, a_act = CB.get_full_config(
-            f, time_points, wps, vel_waypoints=vel_wps, acc_waypoints=acc_wps)
-        tau = get_torque_rand(p_act.shape[0], robot, p_act, v_act, a_act)
+            f, time_points, wps,
+            vel_waypoints=vel_wps,
+            acc_waypoints=acc_wps
+        )
+        tau = get_torque_rand(
+            p_act.shape[0], robot, p_act, v_act, a_act, params_settings
+        )
         tau = np.reshape(tau, (v_act.shape[1], v_act.shape[0])).transpose()
         isViolated = CB.check_cfg_constraints(p_act, v_act, tau)
-
-
     CB.plot_spline(t, p_act, v_act, a_act)
-    print(t.shape)
+
 
 if __name__ == '__main__':
     main()
