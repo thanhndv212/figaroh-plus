@@ -43,13 +43,21 @@ identification:
       is_joint_torques : True
       force_torque : None
       external_wrench_offsets : False
-      has_friction : True
-      has_joint_offset : True
-      has_actuator_inertia : True
+      has_friction : False
+      has_joint_offset : False
+      has_actuator_inertia : False
       is_static_regressor : True
       is_inertia_regressor : True
       has_coupled_wrist: True
       embedded_forces : False
+      active_joints: ["torso_lift_joint",
+                     "arm_1_joint",
+                     "arm_2_joint",
+                     "arm_3_joint",
+                     "arm_4_joint",
+                     "arm_5_joint",
+                     "arm_6_joint",
+                     "arm_7_joint"]
   processing_params:
     - cut_off_frequency_butterworth: 100.0
       ts : 0.0002
