@@ -14,42 +14,31 @@
 
 from datetime import datetime
 import numpy as np
-from numpy import pi
 import cyipopt
-import os
-from os.path import dirname, join, abspath
 from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import seaborn as sns
 import time
 import numdifftools as nd
-import hppfcl
-import pinocchio as pin
-import csv
 import yaml
 from yaml.loader import SafeLoader
 import pprint
 
-from figaroh.tools.robot import Robot
 from figaroh.tools.regressor import (
     build_regressor_basic, 
     build_regressor_reduced, 
     get_index_eliminate, 
-    eliminate_non_dynaffect,
-    add_actuator_inertia,
-    add_friction,
-    add_joint_offset)
+    eliminate_non_dynaffect)
 from figaroh.tools.qrdecomposition import (
-    get_baseParams, 
-    double_QR, 
+    # get_baseParams, 
+    # double_QR, 
     get_baseIndex,
     build_baseRegressor)
 from figaroh.tools.randomdata import get_torque_rand
 from figaroh.tools.robotcollisions import CollisionWrapper
-from figaroh.meshcat_viewer_wrapper import MeshcatVisualizer
+from figaroh.meshcat_viewer_wrapper.visualizer import MeshcatVisualizer
 from simplified_colission_model import build_tiago_simplified
 from cubic_spline import CubicSpline, WaypointsGeneration
 from figaroh.identification.identification_tools import get_param_from_yaml
+from tiago_tools import load_robot
 
 # HELPER FUNCTIONS TO OBTAIN BASE REGRESSOR (BASE REG)
 
@@ -358,14 +347,7 @@ def add_options_nlp(nlp):
 start = time.time()
 
 # 1/ Load robot model and create a dictionary containing reserved constants
-ros_package_path = os.getenv('ROS_PACKAGE_PATH')
-package_dirs = ros_package_path.split(':')
-robot_dir = package_dirs[0] + "/example-robot-data/robots"
-robot = Robot(
-    robot_dir + "/tiago_description/robots/tiago_no_hand.urdf",
-    package_dirs = package_dirs,
-    # isFext=True  # add free-flyer joint at base
-)
+robot = load_robot("data/urdf/tiago_48_schunk.urdf")
 active_joints = ["torso_lift_joint",
                  "arm_1_joint",
                  "arm_2_joint",
@@ -386,7 +368,7 @@ soft_lim_pool = np.array([[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
 # step 2: load simplified collsion model
 robot = build_tiago_simplified(robot)
 # load standard parameters
-with open('examples/tiago/config/tiago_config.yaml', 'r') as f:
+with open('config/tiago_config.yaml', 'r') as f:
     config = yaml.load(f, Loader=SafeLoader)
     pprint.pprint(config)
 identif_data = config['identification']
@@ -401,7 +383,7 @@ n_wps = 2  # number of waypoints for spline trajectory include the destination
 stop_count = 0
 tol_stop = 0.1
 last_obj = 0
-stack_reps = 5  # stacks
+stack_reps = 2  # stacks
 freq = 100  # Hz
 t_s = 2
 stop_flag = False
@@ -429,16 +411,16 @@ W_stack = None
 
 # step 6: path to save file
 # dt = datetime.now()
-# current_time = dt.strftime("%d_%b_%Y_%H%M") 
+# current_time = dt.strftime("%d_%b_%Y_%H%M")
 # path_save_bp = join(
 #     dirname(dirname(str(abspath(__file__)))),
 #     f"tiago/data/tiago_stacking_{current_time}.csv")
 
 # with open(path_save_bp, "w") as output_file:
-    # w = csv.writer(output_file)
-    # first_row = ["%d" % i for i in range(15+12+12)]
-    # first_row.insert(0, 't')
-    # w.writerow(first_row)
+# w = csv.writer(output_file)
+# first_row = ["%d" % i for i in range(15+12+12)]
+# first_row.insert(0, 't')
+# w.writerow(first_row)
 # pos_dict = []  # list(dist) to dump on yaml
 
 
@@ -467,12 +449,13 @@ for s_rep in range(stack_reps):
         # ATTENTION: joint torque specially arranged!
         tau_i = np.reshape(tau_i, (v_i.shape[1], v_i.shape[0])).transpose()
         is_constr_violated = CB.check_cfg_constraints(p_i, v_i, tau_i)
-        if count >1000:
+  
+        if count > 1000:
             break
     # reshape wps to a vector of search variable
     X0 = wps[:, range(1, n_wps)]
     X0 = np.reshape(X0.transpose(),
-                    ((len(active_joints)*(n_wps-1),))).tolist()
+                    ((len(active_joints) * (n_wps - 1),))).tolist()
 
     print("1st waypoint at the beginning: ", wp_init)
     print("next waypoint(s) (initial guess): ", X0)
@@ -549,7 +532,7 @@ for s_rep in range(stack_reps):
 
         # conditional break stacking if does not improve
         cur_obj = list_obj_value[-1]
-        if abs((last_obj-cur_obj)/cur_obj) < tol_stop:
+        if abs((last_ob - cur_obj) / cur_obj) < tol_stop:
             stop_count += 1
         else:
             stop_count = 0
@@ -600,7 +583,6 @@ for s_rep in range(stack_reps):
             
     # add plot of one segment 
     print("#########################END of %s-th OPTIMIZATION##########################################" % (s_rep+1))
-    
 print("RUNTIME IS ", start - time.time(), "(secs)")
 
 # write to yaml file
