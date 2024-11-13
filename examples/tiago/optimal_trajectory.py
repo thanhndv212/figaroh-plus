@@ -23,22 +23,19 @@ from yaml.loader import SafeLoader
 import pprint
 
 from figaroh.tools.regressor import (
-    build_regressor_basic, 
-    build_regressor_reduced, 
-    get_index_eliminate, 
-    eliminate_non_dynaffect)
+    build_regressor_basic,
+    build_regressor_reduced,
+    get_index_eliminate)
 from figaroh.tools.qrdecomposition import (
-    # get_baseParams, 
-    # double_QR, 
     get_baseIndex,
     build_baseRegressor)
-from figaroh.tools.randomdata import get_torque_rand
 from figaroh.tools.robotcollisions import CollisionWrapper
 from figaroh.meshcat_viewer_wrapper.visualizer import MeshcatVisualizer
-from simplified_colission_model import build_tiago_simplified
-from cubic_spline import CubicSpline, WaypointsGeneration
 from figaroh.identification.identification_tools import get_param_from_yaml
-from tiago_tools import load_robot
+
+from utils.simplified_colission_model import build_tiago_simplified
+from utils.cubic_spline import CubicSpline, WaypointsGeneration, calc_torque
+from utils.tiago_tools import load_robot
 
 # HELPER FUNCTIONS TO OBTAIN BASE REGRESSOR (BASE REG)
 
@@ -64,11 +61,6 @@ def build_W_b(robot, q, v, a, param, idx_e_, idx_base_, W_stack=None):
     W = build_regressor_basic(robot, q, v, a, param)
     W_e_ = build_regressor_reduced(W, idx_e_)
     W_b_ = build_baseRegressor(W_e_, idx_base_)
-    # list_idx = []
-    # for k in range(len(idx_act_joints)):
-    #     list_idx.extend(
-    #         list(range(idx_act_joints[k]*Ns, (idx_act_joints[k]+1)*Ns)))
-    # W_b = W_b_[list_idx, :]
     W_b = W_b_
 
     # stack the computed base reg below the previous base reg
@@ -158,7 +150,7 @@ def get_constraints_all_samples(Ns,  X, opt_cb, tps, vel_wps, acc_wps,
         freq, tps, wps, vel_wps, acc_wps)
 
     # compute joint effort given full profile
-    tau = get_torque_rand(p_f.shape[0], robot, p_f, v_f, a_f, params_settings)
+    tau = calc_torque(p_f.shape[0], robot, p_f, v_f, a_f, params_settings)
 
     # pos constraints at waypoints
     idx_waypoints = []
@@ -168,16 +160,16 @@ def get_constraints_all_samples(Ns,  X, opt_cb, tps, vel_wps, acc_wps,
         if t_f[i, 0] in time_points:
             idx_waypoints.append(i)
     q_constraints = p_f[idx_waypoints, :]
-    q_constraints = q_constraints[:, idx_act_joints]
+    q_constraints = q_constraints[:, CB.act_idxq]
 
     # vel constraints at all samples
-    v_constraints = v_f[:, idx_act_joints]
+    v_constraints = v_f[:, CB.act_idxv]
 
     # effort constraints at all samples
-    tau_constraints = np.zeros((Ns, len(idx_act_joints)))
-    for k in range(len(idx_act_joints)):
+    tau_constraints = np.zeros((Ns, len(CB.act_idxv)))
+    for k in range(len(CB.act_idxv)):
         tau_constraints[:, k] = tau[range(
-            idx_act_joints[k]*Ns, (idx_act_joints[k]+1)*Ns)]
+            CB.act_idxv[k]*Ns, (CB.act_idxv[k]+1)*Ns)]
 
     # auto collision constraints for all pairs
     collision = CollisionWrapper(robot=robot, viz=None)
@@ -265,7 +257,7 @@ class Problem_cond_Wb:
         self.opt_cb = opt_cb  # optimal cubic spline stored
 
     def gen_cb(self, X):
-            # add the start waypoint and re-arrange waypoints
+        # add the start waypoint and re-arrange waypoints
         X = np.array(X)
         wps_X = np.reshape(X, (n_wps-1, len(active_joints)))
         wps = np.vstack((wp_init, wps_X))
@@ -276,7 +268,7 @@ class Problem_cond_Wb:
             freq, tps, wps, vel_wps, acc_wps)
 
         # compute joint effort given full profile
-        tau = get_torque_rand(p_f.shape[0], robot, p_f, v_f, a_f, params_settings)
+        tau = calc_torque(p_f.shape[0], robot, p_f, v_f, a_f, params_settings)
 
         self.opt_cb['t_f'] = t_f
         self.opt_cb['p_f'] = p_f
@@ -347,7 +339,7 @@ def add_options_nlp(nlp):
 start = time.time()
 
 # 1/ Load robot model and create a dictionary containing reserved constants
-robot = load_robot("data/urdf/tiago_48_schunk.urdf")
+robot = load_robot("urdf/tiago_48_schunk.urdf")
 active_joints = ["torso_lift_joint",
                  "arm_1_joint",
                  "arm_2_joint",
@@ -370,7 +362,7 @@ robot = build_tiago_simplified(robot)
 # load standard parameters
 with open('config/tiago_config.yaml', 'r') as f:
     config = yaml.load(f, Loader=SafeLoader)
-    pprint.pprint(config)
+    # pprint.pprint(config)
 identif_data = config['identification']
 params_settings = get_param_from_yaml(robot, identif_data)
 
@@ -379,13 +371,13 @@ idx_e, idx_b = get_idx_b_cubic(robot, params_settings, active_joints)
 
 
 # stop condition for iterative stacking
-n_wps = 2  # number of waypoints for spline trajectory include the destination
+n_wps = 5  # number of waypoints for spline trajectory include the destination
 stop_count = 0
 tol_stop = 0.1
 last_obj = 0
 stack_reps = 2  # stacks
 freq = 100  # Hz
-t_s = 2
+t_s = 2  # window time between two waypoints
 stop_flag = False
 fig_cond = plt.figure()
 
@@ -395,18 +387,18 @@ V_F = []
 A_F = []
 
 CB = CubicSpline(robot, n_wps, active_joints, soft_lim)
-WP = WaypointsGeneration(robot, n_wps, active_joints,soft_lim)
-## generate a pool to choo
+WP = WaypointsGeneration(robot, n_wps, active_joints, soft_lim)
+
 WP.gen_rand_pool(3*soft_lim_pool)
 # step 4: define boundaries of search vars, and constraints
-idx_act_joints = CB.active_joints
+# idx_act_joints = CB.act_Jid
 
 # step 5: initialize 1st waypoint
-wp_init = np.zeros(len(idx_act_joints))
-vel_wp_init = np.zeros(len(idx_act_joints))
-acc_wp_init = np.zeros(len(idx_act_joints))
-for idx in range(len(idx_act_joints)):
-        wp_init[idx] = np.random.choice(WP.pool_q[:, idx], 1)
+wp_init = np.zeros(len(CB.act_idxq))
+vel_wp_init = np.zeros(len(CB.act_idxv))
+acc_wp_init = np.zeros(len(CB.act_idxv))
+for idx in range(len(CB.act_idxq)):
+    wp_init[idx] = np.random.choice(WP.pool_q[:, idx], 1)
 W_stack = None
 
 # step 6: path to save file
@@ -431,7 +423,7 @@ for s_rep in range(stack_reps):
     iter_num = []
     is_constr_violated = True
     count = 0
-    print("AT THE BEGINNING OF SEGMENT %s : " %(s_rep+1), wp_init)
+    print("AT THE BEGINNING OF SEGMENT %s : " % (s_rep + 1), wp_init)
     # generate feasible initial guess
     while is_constr_violated:
         count += 1
@@ -442,14 +434,14 @@ for s_rep in range(stack_reps):
             # wp_init, vel_wp_init, acc_wp_init)
         tps = t_s*s_rep + np.matrix(
             [t_s * i_wp for i_wp in range(n_wps)]).transpose()
-        
+
         t_i, p_i, v_i, a_i = CB.get_full_config(
             freq, tps, wps, vel_wps, acc_wps)
-        tau_i = get_torque_rand(p_i.shape[0], robot, p_i, v_i, a_i, params_settings)
+        tau_i = calc_torque(p_i.shape[0], robot, p_i, v_i, a_i, p   arams_settings)
         # ATTENTION: joint torque specially arranged!
         tau_i = np.reshape(tau_i, (v_i.shape[1], v_i.shape[0])).transpose()
         is_constr_violated = CB.check_cfg_constraints(p_i, v_i, tau_i)
-  
+
         if count > 1000:
             break
     # reshape wps to a vector of search variable
@@ -460,27 +452,30 @@ for s_rep in range(stack_reps):
     print("1st waypoint at the beginning: ", wp_init)
     print("next waypoint(s) (initial guess): ", X0)
     Ns = p_i.shape[0]
-    
+
     # set search bounds
     lb, ub = get_bounds(CB, n_wps)
 
     # set constraints bounds
     cl, cu = get_constr_value(robot, CB, n_wps, Ns)
 
-    # optimal segment trajectory 
-    opt_cb = {  't_f': None,
+    # optimal segment trajectory
+    opt_cb = {
+        't_f': None,
         'p_f': None,
         'v_f': None,
         'a_f': None,
-        "tau_f": None
-        }
+        'tau_f': None
+    }
 
-    #ipopt problem formulation
+    # ipopt problem formulation
     nlp = cyipopt.Problem(
         n=len(X0),
         m=len(cl),
-        problem_obj=Problem_cond_Wb(Ns, params_settings, opt_cb, tps, vel_wps, acc_wps,
-                                    wp_init, vel_wp_init, acc_wp_init, W_stack, stop_flag),
+        problem_obj=Problem_cond_Wb(
+            Ns, params_settings, opt_cb, tps, vel_wps, acc_wps,
+            wp_init, vel_wp_init, acc_wp_init, W_stack, stop_flag
+        ),
         lb=lb,
         ub=ub,
         cl=cl,
@@ -489,9 +484,9 @@ for s_rep in range(stack_reps):
 
     # ipopt result
     X_opt, infor = nlp.solve(X0)
-    wps_X = np.reshape(np.array(X_opt), (n_wps-1, len(active_joints)))
-    print("1st waypoint at solution: ", opt_cb['p_f'][0,idx_act_joints])
-    print("next waypoint(s) (solution): ", wps_X)
+    wps_X = np.reshape(np.array(X_opt), (n_wps - 1, len(active_joints)))
+    # print("1st waypoint at solution: ", opt_cb['p_f'][0,idx_act_joints])
+    # print("next waypoint(s) (solution): ", wps_X)
     print("###################################################")
     print("SOLUTION INFOR: ",infor["status"],infor["status_msg"])
 
@@ -500,14 +495,14 @@ for s_rep in range(stack_reps):
         # code 1: acceptable solved
         # code -1: maximum iteration reached    
         T_F.append(opt_cb['t_f'])
-        P_F.append(opt_cb['p_f'][:,idx_act_joints])
-        V_F.append(opt_cb['v_f'][:,idx_act_joints])
-        A_F.append(opt_cb['a_f'][:,idx_act_joints])
+        P_F.append(opt_cb['p_f'][:, CB.act_idxq])
+        V_F.append(opt_cb['v_f'][:, CB.act_idxv])
+        A_F.append(opt_cb['a_f'][:, CB.act_idxv])
         # check contraints violation for solution segment trajectory
 
 
         # if generated trajectory violated constraints, break 
-        tau = get_torque_rand(opt_cb['p_f'].shape[0], robot, opt_cb['p_f'], opt_cb['v_f'], opt_cb['a_f'], params_settings)
+        tau = calc_torque(opt_cb['p_f'].shape[0], robot, opt_cb['p_f'], opt_cb['v_f'], opt_cb['a_f'], params_settings)
         tau = np.reshape(tau, (opt_cb['v_f'].shape[1], opt_cb['v_f'].shape[0])).transpose()
         is_constr_violated = CB.check_cfg_constraints(opt_cb['p_f'], opt_cb['v_f'], tau)
         if is_constr_violated: 
@@ -532,12 +527,12 @@ for s_rep in range(stack_reps):
 
         # conditional break stacking if does not improve
         cur_obj = list_obj_value[-1]
-        if abs((last_ob - cur_obj) / cur_obj) < tol_stop:
+        if abs((last_obj - cur_obj) / cur_obj) < tol_stop:
             stop_count += 1
         else:
             stop_count = 0
         
-        if stop_count == 3:
+        if stop_count == 5:
             stop_flag = True
             print("Optimizing stops because \
                 bjective func value does not improve over %s iterations" % stop_count)
@@ -600,7 +595,7 @@ plt.ylabel("Cond(Wb)")
 plt.xlabel("Iteration counts")
 plt.legend(loc="upper right")
 plt.grid()
-# plt.yscale("log")
+plt.yscale("log")
 plt.show()
 # current_time = datetime.now().strftime("%d_%b_%Y_%H%M")
 # plt.savefig(join(
@@ -608,9 +603,9 @@ plt.show()
 #     f"tiago/data/tiago_ipopt_evo_{current_time}.png"))
 
 ## plot trajectory
-fig_cb, ax_cb = plt.subplots(len(idx_act_joints),3, sharex=True)
+fig_cb, ax_cb = plt.subplots(len(CB.act_Jid),3, sharex=True)
 for jj in range(len(T_F)):
-    for ii in range(len(idx_act_joints)):
+    for ii in range(len(CB.act_Jid)):
         ax_cb[ii,0].plot(T_F[jj], P_F[jj][:,ii])
 
         ax_cb[ii,1].plot(T_F[jj], V_F[jj][:,ii])

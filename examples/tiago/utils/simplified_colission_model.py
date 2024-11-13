@@ -199,7 +199,7 @@ def main():
     time.sleep(1)
     from tiago_tools import load_robot
     # 1/ Load robot model and create a dictionary containing reserved constants
-    robot = load_robot("data/urdf/tiago_48_hey5.urdf")
+    robot = load_robot("../urdf/tiago_48_hey5.urdf")
     robot = build_tiago_simplified(robot)
     collision = CollisionWrapper(robot, viz=None)
 

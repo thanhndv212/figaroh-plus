@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from tiago_tools import TiagoCalibration, load_robot, write_to_xacro
+from utils.tiago_tools import TiagoCalibration, load_robot, write_to_xacro
 import argparse
 
 
 # load_by_urdf = False, load robot from rospy.get_param(/robot_description)
 tiago = load_robot(
-    "data/urdf/tiago_48_hey5.urdf", load_by_urdf=True
+    "urdf/tiago_48_hey5.urdf", load_by_urdf=True
 )
 
 # create a calibration object from config file
