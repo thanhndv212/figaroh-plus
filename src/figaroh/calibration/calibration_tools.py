@@ -1005,18 +1005,18 @@ def calculate_base_kinematics_regressor(q, model, data, param, tol_qr=TOL_QR):
         Rrand_sel, geo_params_sel, tol_e=1e-6)
 
     # get indices of independent columns (base param) w.r.t to reduced regressor
-    idx_base = get_baseIndex(Rrand_e, paramsrand_e, tol_qr=TOL_QR)
+    idx_base = get_baseIndex(Rrand_e, paramsrand_e, tol_qr=tol_qr)
 
     # get base regressor and base params from random data
-    Rrand_b, paramsrand_base, _ = get_baseParams(Rrand_e, paramsrand_e, tol_qr=TOL_QR)
+    Rrand_b, paramsrand_base, _ = get_baseParams(Rrand_e, paramsrand_e, tol_qr=tol_qr)
 
     # remove non affect columns from GIVEN data
     R_e, params_e = eliminate_non_dynaffect(
         R_sel, geo_params_sel, tol_e=1e-6)
 
     # get base param from given data 
-    idx_gbase = get_baseIndex(R_e, params_e, tol_qr=TOL_QR)
-    R_gb, params_gbase, _ = get_baseParams(R_e, params_e, tol_qr=TOL_QR)
+    idx_gbase = get_baseIndex(R_e, params_e, tol_qr=tol_qr)
+    R_gb, params_gbase, _ = get_baseParams(R_e, params_e, tol_qr=tol_qr)
 
     # get base regressor from GIVEN data
     R_b = build_baseRegressor(R_e, idx_base)
