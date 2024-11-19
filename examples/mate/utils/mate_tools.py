@@ -84,12 +84,11 @@ class MateCalibration:
             paramsrand_base,
             paramsrand_e,
         ) = calculate_base_kinematics_regressor(
-            q_, self.model, self.data, self.param
-        )
+            q_, self.model, self.data, self.param, tol_qr=1e-6)
         # Add markers name to param['param_name']
         print("{} param base".format(len(paramsrand_base)), paramsrand_base)
         print("{} param e".format(len(paramsrand_e)), paramsrand_e)
-        print("param name before", self.param["param_name"])
+        print("{} param name before".format(len(self.param['param_name'])), self.param["param_name"])
         add_pee_name(self.param)
 
         return True

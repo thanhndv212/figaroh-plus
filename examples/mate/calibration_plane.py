@@ -48,19 +48,21 @@ q = []
 pee = []
 
 for mate_ in [mate_x, mate_y, mate_z]:
+    mate_.q_measured = mate_.q_measured/180*np.pi
     q.append(mate_.q_measured)
     pee.append(mate_.PEE_measured)
     mate_.param['param_name'] = params_list
-
+    print(mate_.q_measured)
 
 def cost_function(var, mate_x, mate_y, mate_z):
     """
     Cost function for the optimization problem.
     """
-    # coeff_ = self.param["coeff_regularize"]
+    coeff_ = mate_x.param["coeff_regularize"]
     PEEe_x = update_forward_kinematics(
         model, data, var, mate_x.q_measured, mate_x.param
     )
+    print("PEEe_x", PEEe_x)
     PEEe_y = update_forward_kinematics(
         model, data, var, mate_y.q_measured, mate_y.param
     )
@@ -71,11 +73,11 @@ def cost_function(var, mate_x, mate_y, mate_z):
         (mate_x.PEE_measured - PEEe_x), (mate_y.PEE_measured - PEEe_y)
     )
     res_vect = np.append(res_vect, (mate_z.PEE_measured - PEEe_z))
-    # res_vect = np.append(
-    #     (self.PEE_measured - PEEe),
-    #     np.sqrt(coeff_)
-    #     * var[6 : -self.param["NbMarkers"] * self.param["calibration_index"]],
-    # )
+    res_vect = np.append(
+        res_vect,
+        np.sqrt(coeff_)
+        * var[0:6],
+    )
     return res_vect
 
 
@@ -108,7 +110,7 @@ def solve_optimisation():
 
     # solution
     res = LM_solve.x
-    
+
     # rmse = np.sqrt(np.mean((_PEEe_sol - self.PEE_measured) ** 2))
     # mae = np.mean(np.abs(_PEEe_sol - self.PEE_measured))
 
@@ -121,3 +123,18 @@ def solve_optimisation():
 
 
 solve_optimisation()
+
+
+# robot.setVisualizer(GepettoVisualizer())
+# robot.initViewer(loadModel=True)
+
+# gui = robot.viewer.gui
+
+# gui.setFloatProperty("world/pinocchio/visuals", "Alpha", 1)
+# gui.setBackgroundColor1("python-pinocchio", [1.0, 1, 1, 1])
+# gui.setBackgroundColor2("python-pinocchio", [1.0, 1, 1, 1])
+
+# for mate_ in [mate_x, mate_y, mate_z]:
+#     for q_i in mate_.q_measured:
+#         robot.display(q_i)
+#         time.sleep(3)

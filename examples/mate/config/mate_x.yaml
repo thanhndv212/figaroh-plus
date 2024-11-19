@@ -16,7 +16,7 @@ calibration:
   free_flyer: False
   camera_pose: [0.3, 0.0, 0.0, 0, 0.0, 1.57]
   tip_pose: [0, 0, 0, 0, 0, 0]
-  coeff_regularize: 0.000
+  coeff_regularize: 0.1
   outlier_eps: 0.15 #meter
   # data_file: data/eye_hand_calibration_recorded_data_palhey5_17_test1.csv
   data_file: data/10_points_x.csv
