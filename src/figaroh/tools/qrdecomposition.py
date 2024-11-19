@@ -23,7 +23,7 @@ from scipy import linalg, signal
 TOL_QR = 1e-8
 
 
-def QR_pivoting(tau, W_e, params_r):
+def QR_pivoting(tau, W_e, params_r, tol_qr=TOL_QR):
     """This function calculates QR decompostion with pivoting, finds rank of regressor,
     and calculates base parameters
             Input:  W_e: regressor matrix (normally after eliminating zero columns)
@@ -44,7 +44,7 @@ def QR_pivoting(tau, W_e, params_r):
     numrank_W = 0
 
     for i in range(np.diag(R).shape[0]):
-        if abs(np.diag(R)[i]) > TOL_QR:
+        if abs(np.diag(R)[i]) > tol_qr:
             continue
         else:
             numrank_W = i
@@ -92,7 +92,7 @@ def QR_pivoting(tau, W_e, params_r):
     return W_b, base_parameters
 
 
-def double_QR(tau, W_e, params_r, params_std=None):
+def double_QR(tau, W_e, params_r, params_std=None, tol_qr=TOL_QR):
     """This function calculates QR decompostion 2 times, first to find symbolic 
     expressions of base parameters, second to find their values after re-organizing 
     regressor matrix.
@@ -114,7 +114,7 @@ def double_QR(tau, W_e, params_r, params_std=None):
     # find rank of regressor
 
     for i in range(len(params_r)):
-        if abs(np.diag(R)[i]) > TOL_QR:
+        if abs(np.diag(R)[i]) > tol_qr:
             idx_base.append(i)
         else:
             idx_regroup.append(i)
@@ -200,7 +200,7 @@ def double_QR(tau, W_e, params_r, params_std=None):
         return W_b, base_parameters, params_base, phi_b
 
 
-def get_baseParams(W_e, params_r, params_std=None):
+def get_baseParams(W_e, params_r, params_std=None, tol_qr=TOL_QR):
     """ Returns symbolic expressions of base parameters and base regressor matrix and idenx of the base regressor matrix. """
     # scipy has QR pivoting using Householder reflection
     Q, R = np.linalg.qr(W_e)
@@ -219,7 +219,7 @@ def get_baseParams(W_e, params_r, params_std=None):
         epsilon  # rank revealing tolerance
     for i in range(len(params_r)):
         # print("R-value: ", i+1, params_r[i], abs(np.diag(R)[i])) # for debugging to see the value of singular value
-        if abs(np.diag(R))[i] > tolpal:
+        if abs(np.diag(R))[i] > tol_qr:
             idx_base.append(i)
         else:
             idx_regroup.append(i)
@@ -287,7 +287,7 @@ def get_baseParams(W_e, params_r, params_std=None):
 
     return W_b, params_base, idx_base
 
-def get_baseIndex(W_e, params_r):
+def get_baseIndex(W_e, params_r, tol_qr=TOL_QR):
     """ This function finds the linearly independent parameters.
             Input:  W_e: regressor matrix
                     params_r: a dictionary of parameters
@@ -303,7 +303,7 @@ def get_baseIndex(W_e, params_r):
     epsilon = np.finfo(float).eps  # machine epsilon
     for i in range(len(params_r)):
         # print("R-value: ", i+1, params_r[i], abs(np.diag(R)[i]))
-        if abs(np.diag(R)[i]) > TOL_QR:
+        if abs(np.diag(R)[i]) > tol_qr:
             idx_base.append(i)
     idx_base = tuple(idx_base)
     return idx_base
