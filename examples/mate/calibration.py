@@ -28,20 +28,21 @@ robot_calib = MateCalibration(
 
 # # load data file and determine parameters to be calibrated
 robot_calib.load_data_set()
+
 robot_calib.create_param_list()
-print(robot_calib.param['param_name'])
+# print(robot_calib.param['param_name'])
 # robot_calib.solve()
 # robot_calib.plot()
 
-robot.setVisualizer(GepettoVisualizer())
-robot.initViewer(loadModel=True)
+# robot.setVisualizer(GepettoVisualizer())
+# robot.initViewer(loadModel=True)
 
-gui = robot.viewer.gui
+# gui = robot.viewer.gui
 
-gui.setFloatProperty("world/pinocchio/visuals", "Alpha", 1)
-gui.setBackgroundColor1("python-pinocchio", [1.0, 1, 1, 1])
-gui.setBackgroundColor2("python-pinocchio", [1.0, 1, 1, 1])
+# gui.setFloatProperty("world/pinocchio/visuals", "Alpha", 1)
+# gui.setBackgroundColor1("python-pinocchio", [1.0, 1, 1, 1])
+# gui.setBackgroundColor2("python-pinocchio", [1.0, 1, 1, 1])
 
-for q in robot_calib.q_measured:
-    robot.display(q)
-    time.sleep(0.5)
+# for q in robot_calib.q_measured:
+#     robot.display(q)
+#     time.sleep(0.5)

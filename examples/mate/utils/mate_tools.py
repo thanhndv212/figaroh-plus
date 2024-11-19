@@ -46,7 +46,7 @@ class MateCalibration:
 
     def initialize(self):
         self.load_data_set()
-        self.create_param_list(self.q_measured)
+        self.create_param_list()
 
     def solve(self):
         self.solve_optimisation()
@@ -86,9 +86,12 @@ class MateCalibration:
         ) = calculate_base_kinematics_regressor(
             q_, self.model, self.data, self.param
         )
-
         # Add markers name to param['param_name']
+        print("{} param base".format(len(paramsrand_base)), paramsrand_base)
+        print("{} param e".format(len(paramsrand_e)), paramsrand_e)
+        print("param name before", self.param["param_name"])
         add_pee_name(self.param)
+
         return True
 
     def load_calibration_param(self, param_file):
@@ -304,7 +307,7 @@ class MateCalibration:
                 ax1[i].tick_params(axis="both", labelsize=30)
                 ax1[i].grid()
 
-    def plot_3d_poses(self, INCLUDE_UNCALIB=True):
+    def plot_3d_poses(self, INCLUDE_UNCALIB=False):
         """
         Plot the 3D poses of the robot.
         """
