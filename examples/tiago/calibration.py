@@ -18,7 +18,7 @@ import argparse
 
 # load_by_urdf = False, load robot from rospy.get_param(/robot_description)
 tiago = load_robot(
-    "urdf/tiago_48_hey5.urdf", load_by_urdf=True
+    "urdf/tiago_48_schunk.urdf", load_by_urdf=True
 )
 
 # create a calibration object from config file
@@ -26,11 +26,12 @@ tiago = load_robot(
 tiago_calib = TiagoCalibration(
     tiago, "config/tiago_config.yaml", del_list=[]
 )
-
+tiago_calib.param["known_baseframe"] = False
+tiago_calib.param["known_tipframe"] = False
 # load data file and determine parameters to be calibrated
 tiago_calib.initialize()
-
+print(tiago_calib.param["param_name"])
 # solve least_squares estimation
 tiago_calib.solve()
 
-tiago_calib.plot()
+# tiago_calib.plot()

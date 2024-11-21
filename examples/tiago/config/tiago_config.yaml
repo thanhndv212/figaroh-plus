@@ -2,7 +2,7 @@
 # robot: tiago
 ---
 calibration:
-  calib_level: full_params
+  calib_level: full_params # joint_offset, full_params
   non_geom: False
   base_frame: universe
   tool_frame: wrist_ft_tool_link

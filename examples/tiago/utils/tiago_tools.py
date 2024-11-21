@@ -21,10 +21,12 @@ from yaml.loader import SafeLoader
 
 from figaroh.calibration.calibration_tools import (
     get_param_from_yaml,
+    add_base_name,
     add_pee_name,
     load_data,
     calculate_base_kinematics_regressor,
     update_forward_kinematics,
+    calc_updated_fkm,
     get_LMvariables,
 )
 from figaroh.tools.robot import Robot
@@ -40,7 +42,8 @@ class TiagoCalibration:
         self.param = None
         self.load_param(config_file)
         self.nvars = len(self.param["param_name"])
-
+        self.param["known_baseframe"] = True
+        self.param["known_tipframe"] = False
         self._data_path = abspath(self.param["data_file"])
         self.STATUS = "NOT CALIBRATED"
 
@@ -88,7 +91,10 @@ class TiagoCalibration:
         )
 
         # Add markers name to param['param_name']
-        add_pee_name(self.param)
+        if self.param["known_baseframe"] is False:
+            add_base_name(self.param)
+        if self.param["known_tipframe"] is False:
+            add_pee_name(self.param)
         return True
 
     def load_calibration_param(self, param_file):
@@ -129,7 +135,7 @@ class TiagoCalibration:
         Cost function for the optimization problem.
         """
         coeff_ = self.param["coeff_regularize"]
-        PEEe = update_forward_kinematics(
+        PEEe = calc_updated_fkm(
             self.model, self.data, var, self.q_measured, self.param
         )
         res_vect = np.append(
@@ -180,7 +186,7 @@ class TiagoCalibration:
 
             # solution
             res = LM_solve.x
-            _PEEe_sol = update_forward_kinematics(
+            _PEEe_sol = calc_updated_fkm(
                 self.model, self.data, res, self.q_measured, self.param
             )
             rmse = np.sqrt(np.mean((_PEEe_sol - self.PEE_measured) ** 2))
@@ -250,7 +256,7 @@ class TiagoCalibration:
         """
         Get the pose of the robot given a set of parameters.
         """
-        return update_forward_kinematics(
+        return calc_updated_fkm(
             self.model, self.data, res_, self.q_measured, self.param
         )
 
@@ -304,7 +310,7 @@ class TiagoCalibration:
                 ax1[i].tick_params(axis="both", labelsize=30)
                 ax1[i].grid()
 
-    def plot_3d_poses(self, INCLUDE_UNCALIB=True):
+    def plot_3d_poses(self, INCLUDE_UNCALIB=False):
         """
         Plot the 3D poses of the robot.
         """
