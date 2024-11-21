@@ -259,6 +259,19 @@ def get_geo_offset(joint_names):
 
 # TODO: to add to tools
 
+
+def add_base_name(param):
+    # base_names = []
+    # for i in range(param['NbMarkers']):
+    #     for j, state in enumerate(param['measurability']):
+    #         if state:
+    #             base_names.extend(['{}_{}'.format(BASE_TPL[j], i+1)])
+    if param['calib_model'] == 'full_params':
+        param['param_name'][0:6] = BASE_TPL
+    elif param['calib_model'] == 'joint_offset':
+        param['param_name'] = BASE_TPL + param['param_name']
+
+
 def add_pee_name(param):
     PEE_names = []
     pee_tpl = ['pEEx', 'pEEy', 'pEEz', 'phiEEx', 'phiEEy','phiEEz']
