@@ -867,6 +867,176 @@ def update_forward_kinematics_2(model, data, var, q, param, verbose=0):
     return PEE
 
 
+def calc_updated_fkm(model, data, var, q, param, verbose=0):
+    """Update jointplacements with offset parameters, recalculate fkm
+    to find end-effector's position and orientation.
+    """
+    # read param['param_name'] to allocate offset parameters to correct SE3
+    # convert translation: add a vector of 3 to SE3.translation
+    # convert orientation: convert SE3.rotation 3x3 matrix to vector rpy, add
+    #  to vector rpy, convert back to to 3x3 matrix
+
+    # name reference of calibration parameters
+    if param["calib_model"] == "full_params":
+        axis_tpl = FULL_PARAMTPL
+
+    elif param["calib_model"] == "joint_offset":
+        axis_tpl = JOINT_OFFSETTPL
+
+    # order of joint in variables are arranged as in param['actJoint_idx']
+    assert len(var) == len(
+        param["param_name"]
+    ), "Length of variables != length of params"
+    param_dict = dict(zip(param["param_name"], var))
+    origin_model = model.copy()
+
+    # store parameter updated to the model
+    updated_params = []
+
+    # check if baseframe and end--effector frame are known
+    for key in param_dict.keys():
+        if "base" in key:
+            base_param_incl = True
+            break
+        else:
+            base_param_incl = False
+    for key in param_dict.keys():
+        if "EE" in key:
+            ee_param_incl = True
+            break
+        else:
+            ee_param_incl = False
+
+    # kinematic chain
+    start_f = param["start_frame"]
+    end_f = param["end_frame"]
+
+    # if world frame (measurement ref frame) to the start frame is not known,
+    # base_tpl needs to be used to define the first 6 parameters
+
+    # 1/ calc transformation from the world frame to start frame: wMo
+    if base_param_incl:
+        base_tf = np.zeros(6)
+        for key in param_dict.keys():
+            for base_id, base_ax in enumerate(BASE_TPL):
+                if base_ax in key:
+                    base_tf[base_id] = param_dict[key]
+                    updated_params.append(key)
+
+        wMo = cartesian_to_SE3(base_tf)
+    else:
+        wMo = pin.SE3.Identity()
+
+    # 2/ calculate transformation from the end frame to the end-effector frame,
+    # if not known: eeMf
+    if ee_param_incl and param["NbMarkers"] == 1:
+        for marker_idx in range(1, param["NbMarkers"] + 1):
+            pee = np.zeros(6)
+            ee_name = "EE"
+            for key in param_dict.keys():
+                if ee_name in key and str(marker_idx) in key:
+                    # update xyz_rpy with kinematic errors
+                    for axis_pee_id, axis_pee in enumerate(EE_TPL):
+                        if axis_pee in key:
+                            if verbose == 1:
+                                print(
+                                    "Updating [{}_{}] joint placement at axis {} with [{}]".format(
+                                        ee_name, str(marker_idx), axis_pee, key
+                                    )
+                                )
+                            pee[axis_pee_id] += param_dict[key]
+                            updated_params.append(key)
+
+            eeMf = cartesian_to_SE3(pee)
+    else:
+        if param["NbMarkers"] > 1:
+            print("Multiple markers are not supported.")
+        else:
+            eeMf = pin.SE3.Identity()
+
+    # 3/ calculate transformation from start frame to end frame of kinematic chain using updated model: oMee
+
+    # update model.jointPlacements with kinematic error parameter
+    for j_id in param["actJoint_idx"]:
+        xyz_rpy = np.zeros(6)
+        j_name = model.names[j_id]
+
+        # check joint name in param dict
+        for key in param_dict.keys():
+            if j_name in key:
+
+                # update xyz_rpy with kinematic errors based on identifiable axis
+                for axis_id, axis in enumerate(axis_tpl):
+                    if axis in key:
+                        if verbose == 1:
+                            print(
+                                "Updating [{}] joint placement at axis {} with [{}]".format(
+                                    j_name, axis, key
+                                )
+                            )
+                        xyz_rpy[axis_id] += param_dict[key]
+                        updated_params.append(key)
+
+        # updaet joint placement
+        model = update_joint_placement(model, j_id, xyz_rpy)
+
+    # check if all parameters are updated to the model
+    assert len(updated_params) == len(
+        list(param_dict.keys())
+    ), "Not all parameters are updated {} and {}".format(updated_params, list(param_dict.keys()))
+
+    # pose vector of the end-effector
+    PEE = np.zeros((param["calibration_index"], param["NbSample"]))
+
+    q_ = np.copy(q)
+    for i in range(param["NbSample"]):
+
+        pin.framesForwardKinematics(model, data, q_[i, :])
+        pin.updateFramePlacements(model, data)
+
+        # NOTE: joint elastic error is not considered in this version
+
+        oMee = get_rel_transform(model, data, start_f, end_f)
+
+        # calculate transformation from world frame to end-effector frame
+        wMee = wMo * oMee
+        wMf = wMee * eeMf
+
+        # final transform
+        trans = wMf.translation.tolist()
+        orient = pin.rpy.matrixToRpy(wMf.rotation).tolist()
+        loc = trans + orient
+        measure = []
+        for mea_id, mea in enumerate(param["measurability"]):
+            if mea:
+                measure.append(loc[mea_id])
+        PEE[:, i] = np.array(measure)
+
+    # final result of updated fkm
+    PEE = PEE.flatten("C")
+
+    # revert model back to original
+    assert (
+        origin_model.jointPlacements != model.jointPlacements
+    ), "before revert"
+    for j_id in param["actJoint_idx"]:
+        xyz_rpy = np.zeros(6)
+        j_name = model.names[j_id]
+        for key in param_dict.keys():
+            if j_name in key:
+                # update xyz_rpy
+                for axis_id, axis in enumerate(axis_tpl):
+                    if axis in key:
+                        xyz_rpy[axis_id] = param_dict[key]
+        model = update_joint_placement(model, j_id, -xyz_rpy)
+
+    assert (
+        origin_model.jointPlacements != model.jointPlacements
+    ), "after revert"
+
+    return PEE
+
+
 def update_joint_placement(model, joint_idx, xyz_rpy):
     """ Update joint placement given a vector of 6 offsets.
     """
