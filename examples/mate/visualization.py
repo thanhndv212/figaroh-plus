@@ -7,7 +7,7 @@ from pinocchio.visualize import GepettoVisualizer
 import time
 
 
-def add_joint(name, joint):
+def add_joint(gui, name, joint):
     """Add a visual representation of a joint to the scene."""
     def rotation(q, color_):
         gui.addCylinder(name + "/axis", 0.01, 0.1, color_)
@@ -32,42 +32,46 @@ def add_joint(name, joint):
             rotation([0, 0, 0, 0, 0, 0, 1], Color.blue)
         elif jointtype == "JointModelPZ":
             translation([0, 0, 0, 0, 0, 0, 1], Color.red)
+    gui.refresh()
 
 
-def display(q):
+def display(gui, model, data, q):
     """Update the display with new joint configurations."""
     robot.display(q)
-    # for name, oMi in zip(model.names[1:], robot.viz.data.oMi[1:]):
-    #     gui.applyConfiguration(name, pin.SE3ToXYZQUATtuple(oMi))
-    # gui.refresh()
+    for name, oMi in zip(model.names[1:], data.oMi[1:]):
+        gui.applyConfiguration(name, pin.SE3ToXYZQUATtuple(oMi))
+        gui.refresh()
 
 
-def add_axis_to_frame(data, model, frame):
+def add_axis_to_frame(gui, data, model, frame):
     """Add coordinate axes to a frame."""
     if "_joint" not in frame:
         gui.createGroup(frame)
         gui.addToGroup(frame, "world")
         placement = pin.SE3ToXYZQUATtuple(data.oMf[model.getFrameId(frame)])
         axis_name = frame + "/frame"
-        print(axis_name, placement)
+
         gui.addXYZaxis(axis_name, Color.blue, 0.01, 0.1)
         gui.applyConfiguration(axis_name, placement)
+        gui.refresh()
+
     else:
         joint_frame = frame + "_frame"
         gui.createGroup(joint_frame)
         gui.addToGroup(joint_frame, "world")
         placement = pin.SE3ToXYZQUATtuple(data.oMf[model.getFrameId(frame)])
         axis_name = joint_frame + "/frame"
-        print(axis_name, placement)
+
         gui.addXYZaxis(axis_name, Color.blue, 0.01, 0.1)
         gui.applyConfiguration(axis_name, placement)
 
 
 robot = load_robot("urdf/mate.urdf", load_by_urdf=True)
-
+model = robot.model
 data = robot.model.createData()
 robot.setVisualizer(GepettoVisualizer())
 robot.initViewer(loadModel=True)
+q = robot.q0
 
 gui = robot.viewer.gui
 
@@ -75,9 +79,22 @@ gui.setFloatProperty("world/pinocchio/visuals", "Alpha", 1)
 gui.setBackgroundColor1("python-pinocchio", [1.0, 1, 1, 1])
 gui.setBackgroundColor2("python-pinocchio", [1.0, 1, 1, 1])
 
+pin.forwardKinematics(model, data, q)
+pin.updateFramePlacements(model, data)
 
-q = robot.q0
-for i in range(10):
-    q = pin.randomConfiguration(robot.model)
-    robot.display(q)
-    time.sleep(0.5)
+# for name, joint in zip(model.names, model.joints):
+#     add_joint(gui, name, joint)
+display(gui, model, data, q)
+
+# add_axis_to_frame(gui, data, model, 'Base')
+
+add_axis_to_frame(gui, data, model, "q_1")
+
+add_axis_to_frame(gui, data, model, "q_2")
+
+add_axis_to_frame(gui, data, model, "q_3")
+
+# for frame in model.frames:
+#     add_axis_to_frame(gui, data, model, frame.name)
+
+# time.sleep(0.5)
