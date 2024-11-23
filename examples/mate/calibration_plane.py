@@ -34,6 +34,8 @@ data = robot.data
 mate_xyz = MateCalibration(robot, "config/mate.yaml", del_list=[])
 mate_xyz.create_param_list()
 params_list = mate_xyz.param["param_name"]
+mate_xyz.param["known_baseframe"] = False
+mate_xyz.param["known_tipframe"] = False
 
 mate_x = MateCalibration(robot, "config/mate_x.yaml", del_list=[])
 mate_y = MateCalibration(robot, "config/mate_y.yaml", del_list=[])
@@ -48,21 +50,20 @@ q = []
 pee = []
 
 for mate_ in [mate_x, mate_y, mate_z]:
-    mate_.q_measured = mate_.q_measured/180*np.pi
+    mate_.q_measured = mate_.q_measured / 180 * np.pi
     q.append(mate_.q_measured)
     pee.append(mate_.PEE_measured)
     mate_.param['param_name'] = params_list
-    print(mate_.q_measured)
 
 def cost_function(var, mate_x, mate_y, mate_z):
     """
     Cost function for the optimization problem.
     """
-    coeff_ = mate_x.param["coeff_regularize"]
+    coeff_b = 0.01
+    coeff_ee = 0.01
     PEEe_x = update_forward_kinematics(
         model, data, var, mate_x.q_measured, mate_x.param
     )
-    print("PEEe_x", PEEe_x)
     PEEe_y = update_forward_kinematics(
         model, data, var, mate_y.q_measured, mate_y.param
     )
@@ -75,34 +76,56 @@ def cost_function(var, mate_x, mate_y, mate_z):
     res_vect = np.append(res_vect, (mate_z.PEE_measured - PEEe_z))
     res_vect = np.append(
         res_vect,
-        np.sqrt(coeff_)
+        np.sqrt(coeff_b)
         * var[0:6],
     )
+    return res_vect
+
+
+def pee_error(var, mate_x, mate_y, mate_z):
+    """
+    Cost function for the optimization problem.
+    """
+
+    PEEe_x = update_forward_kinematics(
+        model, data, var, mate_x.q_measured, mate_x.param
+    )
+    PEEe_y = update_forward_kinematics(
+        model, data, var, mate_y.q_measured, mate_y.param
+    )
+    PEEe_z = update_forward_kinematics(
+        model, data, var, mate_z.q_measured, mate_z.param
+    )
+    res_vect = np.append(
+        (mate_x.PEE_measured - PEEe_x), (mate_y.PEE_measured - PEEe_y)
+    )
+    res_vect = np.append(res_vect, (mate_z.PEE_measured - PEEe_z))
+
     return res_vect
 
 
 def solve_optimisation():
 
     # set initial guess
-    _var_0, _ = get_LMvariables(mate_xyz.param, mode=0)
-
+    init_guess, _ = get_LMvariables(mate_xyz.param, mode=0)
+    init_guess[-3:] = np.array([0., 0., 0.])
     # define solver parameters
-    iterate = True
-    iter_max = 10
+    # iterate = True
+    # iter_max = 10
     count = 0
-    res = _var_0
+    res = init_guess
 
     # while count < iter_max and iterate:
     print("*" * 50)
     print(
         "{} iter guess".format(count),
-        dict(zip(mate_xyz.param["param_name"], list(_var_0))),
+        dict(zip(mate_xyz.param["param_name"], list(init_guess))),
     )
 
     # define solver
     LM_solve = least_squares(
         cost_function,
-        _var_0,
+        init_guess,
         method="lm",
         verbose=1,
         args=(mate_x, mate_y, mate_z),
@@ -120,21 +143,10 @@ def solve_optimisation():
     # print("position root-mean-squared error of end-effector: ", rmse)
     # print("position mean absolute error of end-effector: ", mae)
     print("optimality: ", LM_solve.optimality)
+    return LM_solve
 
 
-solve_optimisation()
-
-
-# robot.setVisualizer(GepettoVisualizer())
-# robot.initViewer(loadModel=True)
-
-# gui = robot.viewer.gui
-
-# gui.setFloatProperty("world/pinocchio/visuals", "Alpha", 1)
-# gui.setBackgroundColor1("python-pinocchio", [1.0, 1, 1, 1])
-# gui.setBackgroundColor2("python-pinocchio", [1.0, 1, 1, 1])
-
-# for mate_ in [mate_x, mate_y, mate_z]:
-#     for q_i in mate_.q_measured:
-#         robot.display(q_i)
-#         time.sleep(3)
+sol = solve_optimisation()
+error = pee_error(sol.x, mate_x, mate_y, mate_z)
+print("position root-mean-squared error of end-effector: ", np.sqrt(np.mean(error ** 2)))
+print("position mean absolute error of end-effector: ", np.mean(np.abs(error)))

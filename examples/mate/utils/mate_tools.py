@@ -21,10 +21,12 @@ from yaml.loader import SafeLoader
 
 from figaroh.calibration.calibration_tools import (
     get_param_from_yaml,
+    add_base_name,
     add_pee_name,
     load_data,
     calculate_base_kinematics_regressor,
     update_forward_kinematics,
+    calc_updated_fkm,
     get_LMvariables,
 )
 from figaroh.tools.robot import Robot
@@ -85,12 +87,12 @@ class MateCalibration:
             paramsrand_e,
         ) = calculate_base_kinematics_regressor(
             q_, self.model, self.data, self.param, tol_qr=1e-6)
-        # Add markers name to param['param_name']
-        print("{} param base".format(len(paramsrand_base)), paramsrand_base)
-        print("{} param e".format(len(paramsrand_e)), paramsrand_e)
-        print("{} param name before".format(len(self.param['param_name'])), self.param["param_name"])
-        add_pee_name(self.param)
 
+        # Add markers name to param['param_name']
+        if self.param["known_baseframe"] is False:
+            add_base_name(self.param)
+        if self.param["known_tipframe"] is False:
+            add_pee_name(self.param)
         return True
 
     def load_calibration_param(self, param_file):
@@ -131,7 +133,7 @@ class MateCalibration:
         Cost function for the optimization problem.
         """
         coeff_ = self.param["coeff_regularize"]
-        PEEe = update_forward_kinematics(
+        PEEe = calc_updated_fkm(
             self.model, self.data, var, self.q_measured, self.param
         )
         res_vect = np.append(
@@ -182,7 +184,7 @@ class MateCalibration:
 
             # solution
             res = LM_solve.x
-            _PEEe_sol = update_forward_kinematics(
+            _PEEe_sol = calc_updated_fkm(
                 self.model, self.data, res, self.q_measured, self.param
             )
             rmse = np.sqrt(np.mean((_PEEe_sol - self.PEE_measured) ** 2))
@@ -252,7 +254,7 @@ class MateCalibration:
         """
         Get the pose of the robot given a set of parameters.
         """
-        return update_forward_kinematics(
+        return calc_updated_fkm(
             self.model, self.data, res_, self.q_measured, self.param
         )
 

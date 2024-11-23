@@ -25,14 +25,15 @@ robot = load_robot(
 robot_calib = MateCalibration(
     robot, "config/mate.yaml", del_list=[]
 )
-
+robot_calib.param["known_baseframe"] = False
+robot_calib.param["known_tipframe"] = False
 # # load data file and determine parameters to be calibrated
 robot_calib.load_data_set()
 
 robot_calib.create_param_list()
 # print(robot_calib.param['param_name'])
-# robot_calib.solve()
-# robot_calib.plot()
+robot_calib.solve()
+robot_calib.plot()
 
 # robot.setVisualizer(GepettoVisualizer())
 # robot.initViewer(loadModel=True)
