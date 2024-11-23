@@ -24,7 +24,7 @@ from figaroh.calibration.calibration_tools import (
     calculate_base_kinematics_regressor,
     rank_in_configuration,
 )
-from tiago_tools import load_robot, TiagoCalibration
+from utils.tiago_tools import load_robot, TiagoCalibration
 
 
 def rearrange_rb(R_b, param):
@@ -187,12 +187,13 @@ class TiagoOptimalCalibration(TiagoCalibration):
         self.calculate_regressor()
         self.calculate_detroot_whole()
 
-    def solve(self, file_name=None):
+    def solve(self, file_name=None,write_file=False):
         """
         Solve the optimization problem.
         """
         self.calculate_optimal_configurations()
-        self.write_to_file(name_=file_name)
+        if write_file:
+            self.write_to_file(name_=file_name)
         self.plot()
 
     def load_data_set(self):
@@ -255,7 +256,7 @@ class TiagoOptimalCalibration(TiagoCalibration):
         """
         assert self.calculate_regressor(), "Calculate regressor first."
         M_whole = np.matmul(self.R_rearr.T, self.R_rearr)
-        self.detroot_whole = pc.DetRootN(M_whole)
+        self.detroot_whole = pc.DetRootN(M_whole) / np.sqrt(M_whole.shape[0])
         print("detrootn of whole matrix:", self.detroot_whole)
 
     def calculate_optimal_configurations(self):
@@ -305,7 +306,7 @@ class TiagoOptimalCalibration(TiagoCalibration):
         ), "Calculate optimal configurations first."
         if name_ is None:
             path_save = (
-                "data/optimal_configs/tiago_optimal_configurations.yaml"
+                "data/optimal_configurations/tiago_optimal_configurations.yaml"
             )
         else:
             path_save = "data/optimal_configs/" + name_
@@ -333,13 +334,14 @@ class TiagoOptimalCalibration(TiagoCalibration):
             M_i = pc.sum(
                 self.w_dict_sort[i] * self._subX_list[i] for i in n_key
             )
-            det_root_list.append(pc.DetRootN(M_i))
+            det_root_list.append(pc.DetRootN(M_i)/np.sqrt(nbc))
 
         # Create subplots
         fig, ax = plt.subplots(2)
 
         # Plot D-optimality criterion
         ratio = self.detroot_whole / det_root_list[-1]
+        # ratio = 1
         plot_range = self.param["NbSample"] - self.minNbChosen
         ax[0].set_ylabel("D-optimality criterion", fontsize=20)
         ax[0].tick_params(axis="y", labelsize=18)
@@ -392,13 +394,15 @@ def main():
 
     # load_by_urdf = False, load robot from rospy.get_param(/robot_description)
     tiago = load_robot(
-        "data/urdf/tiago_48_{}.urdf".format(end_effector),
+        "urdf/tiago_48_{}.urdf".format(end_effector),
         load_by_urdf=True,
     )
 
     tiago_optcalib = TiagoOptimalCalibration(
         tiago, "config/tiago_config_{}.yaml".format(end_effector)
     )
+    tiago_optcalib.param["known_baseframe"] = False
+    tiago_optcalib.param["known_tipframe"] = False
     tiago_optcalib.initialize()
     tiago_optcalib.solve(
         file_name="tiago_optimal_configurations_{}.yaml".format(

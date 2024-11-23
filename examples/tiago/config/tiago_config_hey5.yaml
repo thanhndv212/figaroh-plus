@@ -2,7 +2,7 @@
 # robot: tiago
 ---
 calibration:
-  calib_level: full_params # full_params /joint_offset
+  calib_level: joint_offset # full_params /joint_offset
   non_geom: False
   base_frame: xtion_rgb_optical_frame # start_frame of kinematic chain
   tool_frame: hand_tool_link # end_frame of kinematic chain
@@ -23,8 +23,8 @@ calibration:
   coeff_regularize: 0.000
   outlier_eps: 0.05 #meter
   # data_file: data/eye_hand_calibration_recorded_data_palhey5_17_test1.csv
-  data_file: data/eye_hand_calibration_recorded_data_48c_hey5_cb_topleft.csv
-  sample_configs_file: data/optimal_configs/eye_hand_calibration_tiago_hey5_100.yaml
+  data_file: data/
+  sample_configs_file: data/calibration/optimal_configurations/tiago_calibration_joint_configurations_500_pmb2_hey5.yaml
   nb_sample: 500
 identification:
   robot_params:
