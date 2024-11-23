@@ -437,7 +437,7 @@ for s_rep in range(stack_reps):
 
         t_i, p_i, v_i, a_i = CB.get_full_config(
             freq, tps, wps, vel_wps, acc_wps)
-        tau_i = calc_torque(p_i.shape[0], robot, p_i, v_i, a_i, p   arams_settings)
+        tau_i = calc_torque(p_i.shape[0], robot, p_i, v_i, a_i, params_settings)
         # ATTENTION: joint torque specially arranged!
         tau_i = np.reshape(tau_i, (v_i.shape[1], v_i.shape[0])).transpose()
         is_constr_violated = CB.check_cfg_constraints(p_i, v_i, tau_i)
