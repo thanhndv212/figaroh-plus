@@ -1,3 +1,4 @@
+# Copyright [2021-2025] Thanh Nguyen
 # Copyright [2022-2023] [CNRS, Toward SAS]
 
 # Licensed under the Apache License, Version 2.0 (the "License");

@@ -1,3 +1,4 @@
+# Copyright [2021-2025] Thanh Nguyen
 """
 figaroh: Robot and Human Identification Tools
 """

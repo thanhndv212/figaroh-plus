@@ -1,3 +1,4 @@
+# Copyright [2021-2025] Thanh Nguyen
 import pinocchio as pin
 from gepetto import Color
 import numpy as np

@@ -1,3 +1,4 @@
+# Copyright [2021-2025] Thanh Nguyen
 import csv
 import numpy as np
 import pinocchio as pin
