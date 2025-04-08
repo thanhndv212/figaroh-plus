@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "figaroh"
+version = "0.1.0"
+description = "Robot and Human Identification Tools"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+dependencies = [
+    "numpy",
+    "scipy",
+    "numdifftools",
+    "example-robot-data",
+    "matplotlib",
+    "meshcat",
+    "cyipopt",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/figaroh"]
+
+[project.urls]
+Repository = "https://github.com/username/figaroh-plus"
+Issues = "https://github.com/username/figaroh-plus/issues"
