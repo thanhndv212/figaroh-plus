@@ -172,8 +172,10 @@ def build_tiago_simplified(robot):
     for i in mask_link_ids:
         for j in arm_link_ids:
             robot.geom_model.addCollisionPair(pin.CollisionPair(i, j))
-    print("number of collision pairs of simplified model is: ",
-          len(robot.geom_model.collisionPairs))
+    print(
+        "number of collision pairs of simplified model is: ",
+        len(robot.geom_model.collisionPairs),
+    )
 
     return robot
 
@@ -199,6 +201,7 @@ def main():
     print("Start 'meshcat-serve' in a terminal ... ")
     time.sleep(1)
     from tiago_tools import load_robot
+
     # 1/ Load robot model and create a dictionary containing reserved constants
     robot = load_robot("../urdf/tiago_48_hey5.urdf")
     robot = build_tiago_simplified(robot)
@@ -212,11 +215,15 @@ def main():
         else:
             print("self-collision is violated!")
         return is_collision
+
     # TODO: write for checking collision model and collision data
 
     print(robot.model)
     viz = MeshcatVisualizer(
-        model=robot.model, collision_model=robot.collision_model, visual_model=robot.visual_model, url='classical'
+        model=robot.model,
+        collision_model=robot.collision_model,
+        visual_model=robot.visual_model,
+        url="classical",
     )
     time.sleep(3)
     for i in range(20):
@@ -228,5 +235,5 @@ def main():
         time.sleep(0.5)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

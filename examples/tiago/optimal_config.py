@@ -29,18 +29,19 @@ from utils.tiago_tools import load_robot, TiagoCalibration
 
 
 def rearrange_rb(R_b, param):
-    """ rearrange the kinematic regressor by sample numbered order
-    """
+    """rearrange the kinematic regressor by sample numbered order"""
     Rb_rearr = np.empty_like(R_b)
-    for i in range(param['calibration_index']):
-        for j in range(param['NbSample']):
-            Rb_rearr[j*param['calibration_index'] + i, :] = R_b[i*param['NbSample'] + j]
+    for i in range(param["calibration_index"]):
+        for j in range(param["NbSample"]):
+            Rb_rearr[j * param["calibration_index"] + i, :] = R_b[
+                i * param["NbSample"] + j
+            ]
     return Rb_rearr
 
 
 def sub_info_matrix(R, param):
-    """ Returns a list of sub infor matrices (product of transpose of regressor and regressor)
-        which corresponds to each data sample
+    """Returns a list of sub infor matrices (product of transpose of regressor and regressor)
+    which corresponds to each data sample
     """
     subX_list = []
     idex = param["calibration_index"]
@@ -48,11 +49,18 @@ def sub_info_matrix(R, param):
         sub_R = R[it * idex : (it * idex + idex), :]
         subX = np.matmul(sub_R.T, sub_R)
         subX_list.append(subX)
-    subX_dict = dict(zip(np.arange(param['NbSample'],), subX_list))
+    subX_dict = dict(
+        zip(
+            np.arange(
+                param["NbSample"],
+            ),
+            subX_list,
+        )
+    )
     return subX_list, subX_dict
 
 
-class Detmax():
+class Detmax:
     def __init__(self, candidate_pool, NbChosen):
         self.pool = candidate_pool
         self.nd = NbChosen
@@ -62,7 +70,7 @@ class Detmax():
         self.opt_critD = []
 
     def get_critD(self, set):
-        """ given a list of indices in the candidate pool, output the n-th squared determinant
+        """given a list of indices in the candidate pool, output the n-th squared determinant
         of infomation matrix constructed by given list
         """
         infor_mat = 0
@@ -78,16 +86,16 @@ class Detmax():
         cur_set = random.sample(pool_idx, self.nd)
         updated_pool = list(set(pool_idx) - set(self.cur_set))
 
-        # adding samples from remaining pool: k = 1 
+        # adding samples from remaining pool: k = 1
         opt_k = updated_pool[0]
-        opt_critD = self.get_critD(cur_set)       
+        opt_critD = self.get_critD(cur_set)
         init_set = set(cur_set)
         fin_set = set([])
         rm_j = cur_set[0]
 
-        while opt_k != rm_j: 
+        while opt_k != rm_j:
             # add
-            for k in updated_pool: 
+            for k in updated_pool:
                 cur_set.append(k)
                 cur_critD = self.get_critD(cur_set)
                 if opt_critD < cur_critD:
@@ -98,46 +106,46 @@ class Detmax():
             opt_critD = self.get_critD(cur_set)
             # print(opt_k)
             # print(opt_critD)
-            # remove 
+            # remove
             delta_critD = opt_critD
             rm_j = cur_set[0]
-            for j in cur_set: 
+            for j in cur_set:
                 rm_set = cur_set.copy()
                 rm_set.remove(j)
                 cur_delta_critD = opt_critD - self.get_critD(rm_set)
 
-                if cur_delta_critD < delta_critD: 
+                if cur_delta_critD < delta_critD:
                     delta_critD = cur_delta_critD
-                    rm_j = j         
+                    rm_j = j
             cur_set.remove(rm_j)
             opt_critD = self.get_critD(cur_set)
             fin_set = set(cur_set)
             # print(opt_k == rm_j)
             # print(opt_critD)
-            self.opt_critD.append(opt_critD)       
+            self.opt_critD.append(opt_critD)
         return self.opt_critD
 
 
-class SOCP():
+class SOCP:
     def __init__(self, subX_dict, param):
         self.pool = subX_dict
         self.param = param
         self.problem = pc.Problem()
-        self.w = pc.RealVariable('w', self.param['NbSample'], lower=0)
-        self.t = pc.RealVariable('t', 1)
+        self.w = pc.RealVariable("w", self.param["NbSample"], lower=0)
+        self.t = pc.RealVariable("t", 1)
 
     def add_constraints(self):
-        Mw = pc.sum(self.w[i]*self.pool[i] for i in range(self.param['NbSample']))
-        wgt_cons = self.problem.add_constraint(1|self.w <= 1)
+        Mw = pc.sum(self.w[i] * self.pool[i] for i in range(self.param["NbSample"]))
+        wgt_cons = self.problem.add_constraint(1 | self.w <= 1)
         det_root_cons = self.problem.add_constraint(self.t <= pc.DetRootN(Mw))
 
     def set_objective(self):
-        self.problem.set_objective('max', self.t)
+        self.problem.set_objective("max", self.t)
 
     def solve(self):
         self.add_constraints()
         self.set_objective()
-        self.solution = self.problem.solve(solver='cvxopt')
+        self.solution = self.problem.solve(solver="cvxopt")
         # print(solution.problemStatus)
         # print(solution.info)
 
@@ -147,7 +155,7 @@ class SOCP():
         print("sum of all element in vector solution: ", sum(w_list))
 
         # to dict
-        w_dict = dict(zip(np.arange(self.param['NbSample']), w_list))
+        w_dict = dict(zip(np.arange(self.param["NbSample"]), w_list))
         w_dict_sort = dict(reversed(sorted(w_dict.items(), key=lambda item: item[1])))
         return w_list, w_dict_sort
 
@@ -171,10 +179,7 @@ class TiagoOptimalCalibration(TiagoCalibration):
             )
         elif self.param["calib_model"] == "joint_offset":
             self.minNbChosen = (
-                int(
-                    len(self.param["actJoint_idx"])
-                    / self.param["calibration_index"]
-                )
+                int(len(self.param["actJoint_idx"]) / self.param["calibration_index"])
                 + 1
             )
         else:
@@ -188,7 +193,7 @@ class TiagoOptimalCalibration(TiagoCalibration):
         self.calculate_regressor()
         self.calculate_detroot_whole()
 
-    def solve(self, file_name=None,write_file=False):
+    def solve(self, file_name=None, write_file=False):
         """
         Solve the optimization problem.
         """
@@ -212,9 +217,7 @@ class TiagoOptimalCalibration(TiagoCalibration):
                 self._configs["calibration_joint_configurations"]
             ).T
 
-            df = pd.DataFrame.from_dict(
-                dict(zip(q_jointNames, q_jointConfigs))
-            )
+            df = pd.DataFrame.from_dict(dict(zip(q_jointNames, q_jointConfigs)))
 
             q = np.zeros([len(df), self._robot.q0.shape[0]])
             for i in range(len(df)):
@@ -293,9 +296,7 @@ class TiagoOptimalCalibration(TiagoCalibration):
                 self._configs["calibration_joint_configurations"][opt_id]
             )
         self.opt_configs = self._configs.copy()
-        self.opt_configs["calibration_joint_configurations"] = list(
-            opt_configs_values
-        )
+        self.opt_configs["calibration_joint_configurations"] = list(opt_configs_values)
         return True
 
     def write_to_file(self, name_=None):
@@ -306,9 +307,7 @@ class TiagoOptimalCalibration(TiagoCalibration):
             self.calculate_optimal_configurations()
         ), "Calculate optimal configurations first."
         if name_ is None:
-            path_save = (
-                "data/optimal_configurations/tiago_optimal_configurations.yaml"
-            )
+            path_save = "data/optimal_configurations/tiago_optimal_configurations.yaml"
         else:
             path_save = "data/optimal_configs/" + name_
         with open(path_save, "w") as stream:
@@ -332,10 +331,8 @@ class TiagoOptimalCalibration(TiagoCalibration):
         for nbc in range(self.minNbChosen, self.param["NbSample"] + 1):
             n_key = list(self.w_dict_sort.keys())[0:nbc]
             n_key_list.append(n_key)
-            M_i = pc.sum(
-                self.w_dict_sort[i] * self._subX_list[i] for i in n_key
-            )
-            det_root_list.append(pc.DetRootN(M_i)/np.sqrt(nbc))
+            M_i = pc.sum(self.w_dict_sort[i] * self._subX_list[i] for i in n_key)
+            det_root_list.append(pc.DetRootN(M_i) / np.sqrt(nbc))
 
         # Create subplots
         fig, ax = plt.subplots(2)
@@ -377,12 +374,8 @@ def main():
         parser = argparse.ArgumentParser(
             description="parse calibration setups", add_help=False
         )
-        parser.add_argument(
-            "-e", "--end_effector", default="hey5", dest="end_effector"
-        )
-        parser.add_argument(
-            "-u", "--load_by_urdf", default=True, dest="load_by_urdf"
-        )
+        parser.add_argument("-e", "--end_effector", default="hey5", dest="end_effector")
+        parser.add_argument("-u", "--load_by_urdf", default=True, dest="load_by_urdf")
         args = parser.parse_args()
 
         return args
@@ -406,9 +399,7 @@ def main():
     tiago_optcalib.param["known_tipframe"] = False
     tiago_optcalib.initialize()
     tiago_optcalib.solve(
-        file_name="tiago_optimal_configurations_{}.yaml".format(
-            end_effector
-        )
+        file_name="tiago_optimal_configurations_{}.yaml".format(end_effector)
     )
 
 

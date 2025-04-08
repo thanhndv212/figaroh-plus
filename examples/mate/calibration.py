@@ -19,13 +19,9 @@ from pinocchio.visualize import GepettoVisualizer
 import time
 
 # load_by_urdf = False, load robot from rospy.get_param(/robot_description)
-robot = load_robot(
-    "urdf/mate.urdf", load_by_urdf=True
-)
+robot = load_robot("urdf/mate.urdf", load_by_urdf=True)
 
-robot_calib = MateCalibration(
-    robot, "config/mate.yaml", del_list=[]
-)
+robot_calib = MateCalibration(robot, "config/mate.yaml", del_list=[])
 robot_calib.param["known_baseframe"] = False
 robot_calib.param["known_tipframe"] = False
 # # load data file and determine parameters to be calibrated

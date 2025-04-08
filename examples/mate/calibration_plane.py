@@ -25,9 +25,7 @@ import numpy as np
 from scipy.optimize import least_squares
 
 # load_by_urdf = False, load robot from rospy.get_param(/robot_description)
-robot = load_robot(
-    "urdf/mate.urdf", load_by_urdf=True
-)
+robot = load_robot("urdf/mate.urdf", load_by_urdf=True)
 model = robot.model
 data = robot.data
 
@@ -54,7 +52,8 @@ for mate_ in [mate_x, mate_y, mate_z]:
     mate_.q_measured = mate_.q_measured / 180 * np.pi
     q.append(mate_.q_measured)
     pee.append(mate_.PEE_measured)
-    mate_.param['param_name'] = params_list
+    mate_.param["param_name"] = params_list
+
 
 def cost_function(var, mate_x, mate_y, mate_z):
     """
@@ -71,14 +70,11 @@ def cost_function(var, mate_x, mate_y, mate_z):
     PEEe_z = update_forward_kinematics(
         model, data, var, mate_z.q_measured, mate_z.param
     )
-    res_vect = np.append(
-        (mate_x.PEE_measured - PEEe_x), (mate_y.PEE_measured - PEEe_y)
-    )
+    res_vect = np.append((mate_x.PEE_measured - PEEe_x), (mate_y.PEE_measured - PEEe_y))
     res_vect = np.append(res_vect, (mate_z.PEE_measured - PEEe_z))
     res_vect = np.append(
         res_vect,
-        np.sqrt(coeff_b)
-        * var[0:6],
+        np.sqrt(coeff_b) * var[0:6],
     )
     return res_vect
 
@@ -97,9 +93,7 @@ def pee_error(var, mate_x, mate_y, mate_z):
     PEEe_z = update_forward_kinematics(
         model, data, var, mate_z.q_measured, mate_z.param
     )
-    res_vect = np.append(
-        (mate_x.PEE_measured - PEEe_x), (mate_y.PEE_measured - PEEe_y)
-    )
+    res_vect = np.append((mate_x.PEE_measured - PEEe_x), (mate_y.PEE_measured - PEEe_y))
     res_vect = np.append(res_vect, (mate_z.PEE_measured - PEEe_z))
 
     return res_vect
@@ -109,7 +103,7 @@ def solve_optimisation():
 
     # set initial guess
     init_guess, _ = get_LMvariables(mate_xyz.param, mode=0)
-    init_guess[-3:] = np.array([0., 0., 0.])
+    init_guess[-3:] = np.array([0.0, 0.0, 0.0])
     # define solver parameters
     # iterate = True
     # iter_max = 10
@@ -149,5 +143,7 @@ def solve_optimisation():
 
 sol = solve_optimisation()
 error = pee_error(sol.x, mate_x, mate_y, mate_z)
-print("position root-mean-squared error of end-effector: ", np.sqrt(np.mean(error ** 2)))
+print(
+    "position root-mean-squared error of end-effector: ", np.sqrt(np.mean(error**2))
+)
 print("position mean absolute error of end-effector: ", np.mean(np.abs(error)))

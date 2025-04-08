@@ -1807,7 +1807,7 @@
   </gazebo>
    --&gt;
 
-    
+
   <joint name="gripper_finger_joint" type="prismatic">
     <parent link="gripper_link"/>
     <child link="gripper_left_finger_link"/>
@@ -1873,7 +1873,7 @@
       <hasPID/>
     </plugin>
   </gazebo>
-  <!-- 
+  <!--
     <gazebo reference="${joint_name_to_mimic}_link">
       <kp>1000000.0</kp>
       <kd>1.0</kd>
@@ -2009,4 +2009,3 @@
     </inertial>
   </link>
 </robot>
-

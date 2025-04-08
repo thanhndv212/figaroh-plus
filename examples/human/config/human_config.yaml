@@ -2,18 +2,18 @@
 # robot: human
 ---
 calibration:
-  calib_level: 
-  non_geom: 
-  base_frame: 
-  tool_frame: 
+  calib_level:
+  non_geom:
+  base_frame:
+  tool_frame:
   markers:
     - ref_joint:
       measure: []
-  free_flyer: 
-  nb_sample: 
+  free_flyer:
+  nb_sample:
 identification:
   robot_params:
-    - q_lim_def: 1.57 
+    - q_lim_def: 1.57
       dq_lim_def : 5.0
       ddq_lim_def : 20.0
       tau_lim_def : 4.0
@@ -43,6 +43,6 @@ identification:
       ts : 0.01
   tls_params:
     - mass_load : 3.0
-      which_body_loaded : 19  
-      sync_joint_motion : False 
+      which_body_loaded : 19
+      sync_joint_motion : False
 ...

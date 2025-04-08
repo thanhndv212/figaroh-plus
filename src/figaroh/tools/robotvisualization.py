@@ -93,7 +93,9 @@ def rotation_matrix_from_vectors(vec1, vec2):
     :return mat: A transform matrix (3x3) which when applied to vec1, aligns it with
     vec2.
     """
-    a, b = (vec1 / np.linalg.norm(vec1)).reshape(3), (vec2 / np.linalg.norm(vec2)).reshape(3)
+    a, b = (vec1 / np.linalg.norm(vec1)).reshape(3), (
+        vec2 / np.linalg.norm(vec2)
+    ).reshape(3)
     v = np.cross(a, b)
     c = np.dot(a, b)
     s = np.linalg.norm(v)
@@ -116,8 +118,10 @@ def display_force(viz, phi, M_se3):
     radius = 0.01
     phi = phi.se3Action(M_se3)
     force = [phi.linear[0], phi.linear[1], phi.linear[2]]
-    lenght = np.linalg.norm(force)*1e-3
-    Rot = rotation_matrix_from_vectors([1, 0, 0], phi.linear)   # addArrow in pinocchio is always along the x_axis so we have to project the x_axis on the direction of the force vector for display purposes # noqa
+    lenght = np.linalg.norm(force) * 1e-3
+    Rot = rotation_matrix_from_vectors(
+        [1, 0, 0], phi.linear
+    )  # addArrow in pinocchio is always along the x_axis so we have to project the x_axis on the direction of the force vector for display purposes # noqa
     M_se3_temp.rotation = Rot
     viz.viewer.gui.addArrow("world/arrow", radius, lenght, color)
     place(viz, "world/arrow", M_se3_temp)
@@ -152,12 +156,25 @@ def display_bounding_boxes(viz, model, data, q, COM_min, COM_max, IDX):
         place(viz, "world/box" + str(ii), M)
 
 
-def display_joints(viz,model,data,q_ii):
-    pin.forwardKinematics(model,data,q_ii)
-    pin.updateFramePlacements(model,data)
+def display_joints(viz, model, data, q_ii):
+    pin.forwardKinematics(model, data, q_ii)
+    pin.updateFramePlacements(model, data)
     for ii in range(model.nv):
         joint_pos = data.oMi[ii].translation
         joint_ori = pin.Quaternion(data.oMi[ii].rotation)
-        viz.viewer.gui.addXYZaxis('world/joint'+str(ii), [1.0, 0.0, 0.0, 1.0], 0.01, 0.15)
-        viz.viewer.gui.applyConfiguration('world/joint'+str(ii),[joint_pos[0],joint_pos[1],joint_pos[2],joint_ori[0],joint_ori[1],joint_ori[2],joint_ori[3]])
+        viz.viewer.gui.addXYZaxis(
+            "world/joint" + str(ii), [1.0, 0.0, 0.0, 1.0], 0.01, 0.15
+        )
+        viz.viewer.gui.applyConfiguration(
+            "world/joint" + str(ii),
+            [
+                joint_pos[0],
+                joint_pos[1],
+                joint_pos[2],
+                joint_ori[0],
+                joint_ori[1],
+                joint_ori[2],
+                joint_ori[3],
+            ],
+        )
         viz.viewer.gui.refresh()

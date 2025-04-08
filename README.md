@@ -1,6 +1,6 @@
 # FIGAROH
 (Free dynamics Identification and Geometrical cAlibration of RObot and Human)
-FIGAROH is a python toolbox aiming at providing efficient and highly flexible frameworks for dynamics identification and geometric calibration of rigid multi-body systems based on the popular modeling convention URDF. The considered systems can be serial (industrial manipulator) or tree-structures (human, humanoid robots). 
+FIGAROH is a python toolbox aiming at providing efficient and highly flexible frameworks for dynamics identification and geometric calibration of rigid multi-body systems based on the popular modeling convention URDF. The considered systems can be serial (industrial manipulator) or tree-structures (human, humanoid robots).
 
 ## Installation
 
@@ -27,7 +27,7 @@ pip install -e .
 ![figaroh_features](figaroh_flowchart.png)
 As described in the following figure it provides:
 + Dynamic Identification:
-    - Dynamic model including effects of frictions, actuator inertia and joint torque offset. 
+    - Dynamic model including effects of frictions, actuator inertia and joint torque offset.
     - Generation of continuous optimal exciting trajectories that can be played onto the robot.
     - Guide line on data filtering/pre-processing.
     - Identification pipeline with a selection of dynamic parameter estimation algorithms.
@@ -37,7 +37,7 @@ As described in the following figure it provides:
     - Generation of optimal calibration postures based on combinatorial optimization.
     - Calibration pipeline with customized kinematic chains and different selection of external sensoring methods (eye-hand camera, motion capture) or non-external methods (planar constraints).
     - Calculatation of kinematic parameters that can be updated in URDF model.
-## How to use 
+## How to use
 Overall, a calibration/identification project folder would like this:
 ```
 \considered-system
@@ -69,8 +69,8 @@ A step-by-step procedure is presented as follow.
     ```
     identification:
         robot_params:
-            -   q_lim_def: 1.57 
-                dq_lim_def : 5.0 
+            -   q_lim_def: 1.57
+                dq_lim_def : 5.0
                 ddq_lim_def : 20.0
                 tau_lim_def : 4.0
                 fv : None
@@ -99,8 +99,8 @@ A step-by-step procedure is presented as follow.
                 ts : 0.01
         tls_params:
             -   mass_load : None
-                which_body_loaded : None  
-                sync_joint_motion : False 
+                which_body_loaded : None
+                sync_joint_motion : False
     ```
 + Step 2: Generate sampled exciting postures and trajectories for experimentation.
     - For geomeotric calibration: Firstly, considering the infinite possibilities of combination of postures can be generated, a finite pool of feasible sampled postures in working space for the considered system needs to be provided thanks to simulator. Then, the pool can be input for a script ```optimal_config.py``` with a combinatorial optimization algorithm which will calculate and propose an optimal set of calibration postures chosen from the pool with much less number of postures while maximizing the excitation.
@@ -114,7 +114,7 @@ A step-by-step procedure is presented as follow.
 ## Examples (TODO: input link)
 ### 1/ Human model
 ### 2/ Industrial manipulator Staubli TX40
-### 3/ Industrial manipulator Universal UR10 
+### 3/ Industrial manipulator Universal UR10
 ### 4/ Mobile base manipulator TIAGo
 ## Tools (TODO: explanation for main methods)
 + Calibration tools
@@ -122,7 +122,7 @@ A step-by-step procedure is presented as follow.
 + Measurements
 + Meshcat viewer
 + Common tools
-## Prerequisites 
+## Prerequisites
 The following packages are required:
 * numpy
 * scipy

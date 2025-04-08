@@ -42,9 +42,7 @@ def load_config(file_path):
 
 def load_csv_data(params_settings):
     """Load and process CSV data."""
-    ts = pd.read_csv(
-        abspath(params_settings["pos_data"]), usecols=[0]
-    ).to_numpy()
+    ts = pd.read_csv(abspath(params_settings["pos_data"]), usecols=[0]).to_numpy()
     pos = pd.read_csv(abspath(params_settings["pos_data"]))
     vel = pd.read_csv(abspath(params_settings["vel_data"]))
     eff = pd.read_csv(abspath(params_settings["torque_data"]))
@@ -181,9 +179,7 @@ def decimate_data(t, tau, W_e, params_settings, Ntotal):
     # rejoining sub  regresosrs into one complete regressor
     W_rf = np.zeros((tau_rf.shape[0], W_list[0].shape[1]))
     for i in range(len(W_list)):
-        W_rf[
-            range(i * W_list[i].shape[0], (i + 1) * W_list[i].shape[0]), :
-        ] = W_list[i]
+        W_rf[range(i * W_list[i].shape[0], (i + 1) * W_list[i].shape[0]), :] = W_list[i]
 
     # time
     t_dec = signal.decimate(t[:, 0], q=10, zero_phase=True)
@@ -201,9 +197,7 @@ def plot_torque(t, t_dec, tau_dec, tau_base, tau_ref, params_settings):
     plt.rcParams.update({"font.size": 12, "grid.color": "lightgrey"})
 
     for i, ax in enumerate(axs):
-        ax.plot(
-            t_dec, tau_dec[i], color="red", label="Measured" if i == 0 else ""
-        )
+        ax.plot(t_dec, tau_dec[i], color="red", label="Measured" if i == 0 else "")
         ax.plot(
             t_dec,
             tau_base[i * len(t_dec) : (i + 1) * len(t_dec)],
@@ -261,9 +255,7 @@ class TiagoIdentification:
         """
         with open(config_file, "r") as f:
             config = yaml.load(f, Loader=SafeLoader)
-        self.params_settings = get_param_from_yaml(
-            self._robot, config[setting_type]
-        )
+        self.params_settings = get_param_from_yaml(self._robot, config[setting_type])
 
     def process_data(self, truncate=True):
         """Load and process data"""
@@ -343,9 +335,7 @@ class TiagoIdentification:
         W_b, bp_dict, base_parameter, phi_b, phi_std = double_QR(
             tau_rf, W_rf, active_parameter_, self.standard_parameter
         )
-        rmse = np.linalg.norm(tau_rf - np.dot(W_b, phi_b)) / np.sqrt(
-            tau_rf.shape[0]
-        )
+        rmse = np.linalg.norm(tau_rf - np.dot(W_b, phi_b)) / np.sqrt(tau_rf.shape[0])
         std_xr_ols = relative_stdev(W_b, phi_b, tau_rf)
 
         self.result = {
@@ -369,9 +359,7 @@ class TiagoIdentification:
             with open(bp_csv, "w") as output_file:
                 w = csv.writer(output_file)
                 for i in range(len(base_parameter)):
-                    w.writerow(
-                        [base_parameter[i], phi_b[i], 100 * std_xr_ols[i]]
-                    )
+                    w.writerow([base_parameter[i], phi_b[i], 100 * std_xr_ols[i]])
 
         if save_params:
             save_to_csv()
@@ -427,9 +415,7 @@ def main():
     ]
 
     # joint id of active joints
-    ps["act_Jid"] = [
-        TiagoIden.model.getJointId(i) for i in ps["active_joints"]
-    ]
+    ps["act_Jid"] = [TiagoIden.model.getJointId(i) for i in ps["active_joints"]]
     # active joint objects
     ps["act_J"] = [TiagoIden.model.joints[jid] for jid in ps["act_Jid"]]
     # joint config id (e.g one joint might have >1 DOF)

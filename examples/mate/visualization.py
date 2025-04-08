@@ -10,6 +10,7 @@ import time
 
 def add_joint(gui, name, joint):
     """Add a visual representation of a joint to the scene."""
+
     def rotation(q, color_):
         gui.addCylinder(name + "/axis", 0.01, 0.1, color_)
         gui.applyConfiguration(name + "/axis", q)

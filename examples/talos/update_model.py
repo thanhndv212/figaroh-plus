@@ -27,16 +27,25 @@ arm4_list = [24, 27]
 arm5_list = [30, 33]
 arm6_list = [36, 39]
 arm7_list = [43, 46]  # include phiz7
-total_list = [torso_list, arm1_list, arm2_list, arm3_list, arm4_list, arm5_list,
-              arm6_list, arm7_list]
+total_list = [
+    torso_list,
+    arm1_list,
+    arm2_list,
+    arm3_list,
+    arm4_list,
+    arm5_list,
+    arm6_list,
+    arm7_list,
+]
 
 zero_list = []
 for i in range(len(total_list)):
     zero_list = [*zero_list, *total_list[i]]
 
+
 def update_parameters(model, res, param):
 
-    param_list = np.zeros((param['NbJoint'], 6))
+    param_list = np.zeros((param["NbJoint"], 6))
 
     # torso all zeros
 
@@ -81,32 +90,38 @@ def update_parameters(model, res, param):
     param_list[7, 5] = res[31]
 
     joint_names = [name for i, name in enumerate(model.names)]
-    offset_name = ['_x_offset', '_y_offset', '_z_offset', '_roll_offset',
-                '_pitch_offset', '_yaw_offset']
+    offset_name = [
+        "_x_offset",
+        "_y_offset",
+        "_z_offset",
+        "_roll_offset",
+        "_pitch_offset",
+        "_yaw_offset",
+    ]
     path_save_xacro = join(
-        dirname(dirname(str(abspath(__file__)))),
-        f"data/offset.xacro")
+        dirname(dirname(str(abspath(__file__)))), f"data/offset.xacro"
+    )
     with open(path_save_xacro, "w") as output_file:
-        for i in range(param['NbJoint']):
+        for i in range(param["NbJoint"]):
             for j in range(6):
-                update_name = joint_names[i+1] + offset_name[j]
+                update_name = joint_names[i + 1] + offset_name[j]
                 update_value = param_list[i, j]
-                update_line = "<xacro:property name=\"{}\" value=\"{}\" / >".format(
-                    update_name, update_value)
+                update_line = '<xacro:property name="{}" value="{}" / >'.format(
+                    update_name, update_value
+                )
                 output_file.write(update_line)
-                output_file.write('\n')
-    path_save_yaml = join(
-        dirname(dirname(str(abspath(__file__)))),
-        f"data/offset.yaml")
+                output_file.write("\n")
+    path_save_yaml = join(dirname(dirname(str(abspath(__file__)))), f"data/offset.yaml")
     with open(path_save_yaml, "w") as output_file:
-        for i in range(param['NbJoint']):
+        for i in range(param["NbJoint"]):
             for j in range(6):
-                update_name = joint_names[i+1] + offset_name[j]
+                update_name = joint_names[i + 1] + offset_name[j]
                 update_value = param_list[i, j]
-                update_line = "{}: {}".format(
-                    update_name, update_value)
+                update_line = "{}: {}".format(update_name, update_value)
                 output_file.write(update_line)
-                output_file.write('\n')
+                output_file.write("\n")
+
+
 ############################################################
 # # path_save_ep = join(
 # #     dirname(dirname(str(abspath(__file__)))),

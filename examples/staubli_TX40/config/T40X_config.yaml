@@ -3,14 +3,14 @@
 ---
 calibration:
   calib_level:
-  non_geom: 
-  base_frame: 
-  tool_frame: 
+  non_geom:
+  base_frame:
+  tool_frame:
   markers:
-    - ref_joint: 
+    - ref_joint:
       measure: []
   free_flyer:
-  nb_sample: 
+  nb_sample:
 identification:
   robot_params:
     - q_lim_def: 1.57
@@ -43,6 +43,6 @@ identification:
       ts : 0.0002
   tls_params:
     - mass_load : 0.0
-      which_body_loaded : 0.0  
-      sync_joint_motion : False 
+      which_body_loaded : 0.0
+      sync_joint_motion : False
 ...

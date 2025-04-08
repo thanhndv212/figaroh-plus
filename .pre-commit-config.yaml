@@ -10,25 +10,19 @@ repos:
     rev: v4.3.0
     hooks:
     -   id: check-added-large-files
+        args: ['--maxkb=100000']
+        exclude: |
+            (?x)^(
+                models/.*|
+            )$
     -   id: check-ast
-    -   id: check-executables-have-shebangs
-    -   id: check-json
     -   id: check-merge-conflict
-    -   id: check-symlinks
-    -   id: check-toml
     -   id: check-yaml
     -   id: debug-statements
-    -   id: destroyed-symlinks
-    -   id: detect-private-key
-    -   id: end-of-file-fixer
-    -   id: fix-byte-order-marker
-    -   id: mixed-line-ending
     -   id: trailing-whitespace
--   repo: https://github.com/psf/black
-    rev: 22.6.0
-    hooks:
-    -   id: black
 -   repo: https://github.com/PyCQA/flake8
-    rev: 4.0.1
+    rev: 6.1.0  # Updated to latest stable version
     hooks:
     -   id: flake8
+        args: ['--ignore=E501']
+        additional_dependencies: ['importlib-metadata<7.0']

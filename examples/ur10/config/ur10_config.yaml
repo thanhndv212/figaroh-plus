@@ -13,8 +13,8 @@ calibration:
   nb_sample: 29
 identification:
   robot_params:
-    - q_lim_def: 1.57 
-      dq_lim_def : 5.0 
+    - q_lim_def: 1.57
+      dq_lim_def : 5.0
       ddq_lim_def : 20.0
       tau_lim_def : 4.0
       fv : None
@@ -43,6 +43,6 @@ identification:
       ts : 0.01
   tls_params:
     - mass_load : None
-      which_body_loaded : None  
-      sync_joint_motion : False 
+      which_body_loaded : None
+      sync_joint_motion : False
 ...

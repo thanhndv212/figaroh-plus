@@ -18,15 +18,11 @@ import argparse
 
 
 # load_by_urdf = False, load robot from rospy.get_param(/robot_description)
-tiago = load_robot(
-    "urdf/tiago_48_schunk.urdf", load_by_urdf=True
-)
+tiago = load_robot("urdf/tiago_48_schunk.urdf", load_by_urdf=True)
 
 # create a calibration object from config file
 # del_list=[(0, 1)], 0: numbered marker, 1: numbered sample will be removed
-tiago_calib = TiagoCalibration(
-    tiago, "config/tiago_config.yaml", del_list=[]
-)
+tiago_calib = TiagoCalibration(tiago, "config/tiago_config.yaml", del_list=[])
 tiago_calib.param["known_baseframe"] = False
 tiago_calib.param["known_tipframe"] = False
 # load data file and determine parameters to be calibrated

@@ -14,7 +14,7 @@ calibration:
     # - ref_joint: arm_7_joint
     #   measure: [True, True, True, False, False, False]
     # - ref_joint: arm_7_joint
-    #   measure: [True, True, True, False, False, False]  
+    #   measure: [True, True, True, False, False, False]
   free_flyer: False
   camera_pose: [0.0908, 0.08, 0.0, -1.57, 0.0, 0.0]
   tip_pose: [0.2163, 0.03484, 0.004, 0.0, -1.57, -1.57]
@@ -63,6 +63,6 @@ identification:
       ts : 0.0002
   tls_params:
     - mass_load : 0.0
-      which_body_loaded : 0.0  
-      sync_joint_motion : False 
+      which_body_loaded : 0.0
+      sync_joint_motion : False
 ...

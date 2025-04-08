@@ -87,9 +87,7 @@ class TiagoCalibration:
             R_e,
             paramsrand_base,
             paramsrand_e,
-        ) = calculate_base_kinematics_regressor(
-            q_, self.model, self.data, self.param
-        )
+        ) = calculate_base_kinematics_regressor(q_, self.model, self.data, self.param)
 
         # Add markers name to param['param_name']
         if self.param["known_baseframe"] is False:
@@ -136,15 +134,11 @@ class TiagoCalibration:
         Cost function for the optimization problem.
         """
         coeff_ = self.param["coeff_regularize"]
-        PEEe = calc_updated_fkm(
-            self.model, self.data, var, self.q_measured, self.param
-        )
+        PEEe = calc_updated_fkm(self.model, self.data, var, self.q_measured, self.param)
         res_vect = np.append(
             (self.PEE_measured - PEEe),
             np.sqrt(coeff_)
-            * var[
-                6 : -self.param["NbMarkers"] * self.param["calibration_index"]
-            ],
+            * var[6 : -self.param["NbMarkers"] * self.param["calibration_index"]],
         )
         return res_vect
 
@@ -156,9 +150,9 @@ class TiagoCalibration:
         # set initial guess
         _var_0, _ = get_LMvariables(self.param, mode=0)
         _var_0[0:6] = np.array(self.param["camera_pose"])
-        _var_0[-self.param["calibration_index"] :] = np.array(
-            self.param["tip_pose"]
-        )[: self.param["calibration_index"]]
+        _var_0[-self.param["calibration_index"] :] = np.array(self.param["tip_pose"])[
+            : self.param["calibration_index"]
+        ]
         self._var_0 = _var_0
 
         # define solver parameters
@@ -208,9 +202,7 @@ class TiagoCalibration:
                     self.param["NbSample"],
                 )
             )
-            PEE_dist = np.zeros(
-                (self.param["NbMarkers"], self.param["NbSample"])
-            )
+            PEE_dist = np.zeros((self.param["NbMarkers"], self.param["NbSample"]))
             for i in range(self.param["NbMarkers"]):
                 for j in range(self.param["NbSample"]):
                     PEE_dist[i, j] = np.sqrt(
@@ -223,9 +215,7 @@ class TiagoCalibration:
                     if PEE_dist[i, k] > outlier_eps:
                         del_list_.append((i, k))
             print(
-                "indices of samples with >{} m deviation: ".format(
-                    outlier_eps
-                ),
+                "indices of samples with >{} m deviation: ".format(outlier_eps),
                 del_list_,
             )
 
@@ -244,9 +234,7 @@ class TiagoCalibration:
                 iterate = False
         self._PEE_dist = PEE_dist
         param_values_ = [float(res_i_) for res_i_ in res]
-        self.calibrated_param = dict(
-            zip(self.param["param_name"], param_values_)
-        )
+        self.calibrated_param = dict(zip(self.param["param_name"], param_values_))
         self.LM_result = LM_solve
         self.rmse = rmse
         self.mae = mae
@@ -267,8 +255,7 @@ class TiagoCalibration:
         """
         assert self.STATUS == "CALIBRATED", "Calibration not performed yet"
         sigma_ro_sq = (self.LM_result.cost**2) / (
-            self.param["NbSample"] * self.param["calibration_index"]
-            - self.nvars
+            self.param["NbSample"] * self.param["calibration_index"] - self.nvars
         )
         J = self.LM_result.jac
         C_param = sigma_ro_sq * np.linalg.pinv(np.dot(J.T, J))
@@ -276,9 +263,7 @@ class TiagoCalibration:
         std_pctg = []
         for i_ in range(self.nvars):
             std_dev.append(np.sqrt(C_param[i_, i_]))
-            std_pctg.append(
-                abs(np.sqrt(C_param[i_, i_]) / self.LM_result.x[i_])
-            )
+            std_pctg.append(abs(np.sqrt(C_param[i_, i_]) / self.LM_result.x[i_]))
         self.std_dev = std_dev
         self.std_pctg = std_pctg
 
@@ -305,9 +290,7 @@ class TiagoCalibration:
                     color=colors[i],
                 )
                 ax1[i].set_xlabel("Sample", fontsize=25)
-                ax1[i].set_ylabel(
-                    "Error of marker %s (meter)" % (i + 1), fontsize=25
-                )
+                ax1[i].set_ylabel("Error of marker %s (meter)" % (i + 1), fontsize=25)
                 ax1[i].tick_params(axis="both", labelsize=30)
                 ax1[i].grid()
 
@@ -318,9 +301,7 @@ class TiagoCalibration:
         assert self.STATUS == "CALIBRATED", "Calibration not performed yet"
 
         fig2 = plt.figure()
-        fig2.suptitle(
-            "Visualization of estimated poses and measured pose in Cartesian"
-        )
+        fig2.suptitle("Visualization of estimated poses and measured pose in Cartesian")
         ax2 = fig2.add_subplot(111, projection="3d")
         PEEm_LM2d = self.PEE_measured.reshape(
             (
@@ -410,9 +391,7 @@ class TiagoCalibration:
         for i in range(len(self.param["actJoint_idx"])):
             ax4.scatter3D(q_actJoint[:, i], sample_range, i)
         for i in range(len(self.param["actJoint_idx"])):
-            ax4.plot(
-                [lb[i], ub[i]], [sample_range[0], sample_range[0]], [i, i]
-            )
+            ax4.plot([lb[i], ub[i]], [sample_range[0], sample_range[0]], [i, i])
             ax4.set_xlabel("Angle (rad)")
             ax4.set_ylabel("Sample")
             ax4.set_zlabel("Joint")
@@ -425,7 +404,7 @@ def load_robot(robot_urdf, package_dirs=None, isFext=False, load_by_urdf=True):
     """
     import pinocchio
     import rospkg
-    
+
     if load_by_urdf:
         # import os
         # ros_package_path = os.getenv('ROS_PACKAGE_PATH')
@@ -443,9 +422,11 @@ def load_robot(robot_urdf, package_dirs=None, isFext=False, load_by_urdf=True):
 
         robot_xml = rospy.get_param("robot_description")
         if isFext:
-            robot = RobotWrapper(pinocchio.buildModelFromXML(
-                robot_xml, root_joint=pinocchio.JointModelFreeFlyer()
-            ))
+            robot = RobotWrapper(
+                pinocchio.buildModelFromXML(
+                    robot_xml, root_joint=pinocchio.JointModelFreeFlyer()
+                )
+            )
         else:
             robot = RobotWrapper(pinocchio.buildModelFromXML(robot_xml))
     return robot
@@ -461,52 +442,26 @@ def write_to_xacro(tiago_calib, file_name=None, file_type="yaml"):
     param = tiago_calib.param
 
     calibration_parameters = {}
-    calibration_parameters["camera_position_x"] = float(
-        calib_result["base_px"]
-    )
-    calibration_parameters["camera_position_y"] = float(
-        calib_result["base_py"]
-    )
-    calibration_parameters["camera_position_z"] = float(
-        calib_result["base_pz"]
-    )
-    calibration_parameters["camera_orientation_r"] = float(
-        calib_result["base_phix"]
-    )
-    calibration_parameters["camera_orientation_p"] = float(
-        calib_result["base_phiy"]
-    )
-    calibration_parameters["camera_orientation_y"] = float(
-        calib_result["base_phiz"]
-    )
+    calibration_parameters["camera_position_x"] = float(calib_result["base_px"])
+    calibration_parameters["camera_position_y"] = float(calib_result["base_py"])
+    calibration_parameters["camera_position_z"] = float(calib_result["base_pz"])
+    calibration_parameters["camera_orientation_r"] = float(calib_result["base_phix"])
+    calibration_parameters["camera_orientation_p"] = float(calib_result["base_phiy"])
+    calibration_parameters["camera_orientation_y"] = float(calib_result["base_phiz"])
 
     for idx in param["actJoint_idx"]:
         joint = model.names[idx]
         for key in calib_result.keys():
             if joint in key and "torso" not in key:
-                calibration_parameters[joint + "_offset"] = float(
-                    calib_result[key]
-                )
+                calibration_parameters[joint + "_offset"] = float(calib_result[key])
     if tiago_calib.param["measurability"][0:3] == [True, True, True]:
-        calibration_parameters["tip_position_x"] = float(
-            calib_result["pEEx_1"]
-        )
-        calibration_parameters["tip_position_y"] = float(
-            calib_result["pEEy_1"]
-        )
-        calibration_parameters["tip_position_z"] = float(
-            calib_result["pEEz_1"]
-        )
+        calibration_parameters["tip_position_x"] = float(calib_result["pEEx_1"])
+        calibration_parameters["tip_position_y"] = float(calib_result["pEEy_1"])
+        calibration_parameters["tip_position_z"] = float(calib_result["pEEz_1"])
     if tiago_calib.param["measurability"][3:6] == [True, True, True]:
-        calibration_parameters["tip_orientation_r"] = float(
-            calib_result["phiEEx_1"]
-        )
-        calibration_parameters["tip_orientation_p"] = float(
-            calib_result["phiEEy_1"]
-        )
-        calibration_parameters["tip_orientation_y"] = float(
-            calib_result["phiEEz_1"]
-        )
+        calibration_parameters["tip_orientation_r"] = float(calib_result["phiEEx_1"])
+        calibration_parameters["tip_orientation_p"] = float(calib_result["phiEEy_1"])
+        calibration_parameters["tip_orientation_y"] = float(calib_result["phiEEz_1"])
 
     if file_type == "xacro":
         if file_name is None:
@@ -516,17 +471,13 @@ def write_to_xacro(tiago_calib, file_name=None, file_type="yaml"):
                 )
             )
         else:
-            path_save_xacro = abspath(
-                "data/calibration_parameters/" + file_name
-            )
+            path_save_xacro = abspath("data/calibration_parameters/" + file_name)
         with open(path_save_xacro, "w") as output_file:
             for parameter in calibration_parameters.keys():
                 update_name = parameter
                 update_value = calibration_parameters[parameter]
-                update_line = (
-                    '<xacro:property name="{}" value="{}" / >'.format(
-                        update_name, update_value
-                    )
+                update_line = '<xacro:property name="{}" value="{}" / >'.format(
+                    update_name, update_value
                 )
                 output_file.write(update_line)
                 output_file.write("\n")
@@ -539,9 +490,7 @@ def write_to_xacro(tiago_calib, file_name=None, file_type="yaml"):
                 )
             )
         else:
-            path_save_yaml = abspath(
-                "data/calibration_parameters/" + file_name
-            )
+            path_save_yaml = abspath("data/calibration_parameters/" + file_name)
         with open(path_save_yaml, "w") as output_file:
             # for parameter in calibration_parameters.keys():
             #     update_name = parameter

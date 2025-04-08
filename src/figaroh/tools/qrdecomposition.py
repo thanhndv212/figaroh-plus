@@ -54,7 +54,7 @@ def QR_pivoting(tau, W_e, params_r, tol_qr=TOL_QR):
     # regrouping, calculating base params, base regressor
     R1 = R[0:numrank_W, 0:numrank_W]
     Q1 = Q[:, 0:numrank_W]
-    R2 = R[0:numrank_W, numrank_W: R.shape[1]]
+    R2 = R[0:numrank_W, numrank_W : R.shape[1]]
 
     # regrouping coefficient
     beta = np.around(np.dot(np.linalg.inv(R1), R2), 6)
@@ -94,8 +94,8 @@ def QR_pivoting(tau, W_e, params_r, tol_qr=TOL_QR):
 
 
 def double_QR(tau, W_e, params_r, params_std=None, tol_qr=TOL_QR):
-    """This function calculates QR decompostion 2 times, first to find symbolic 
-    expressions of base parameters, second to find their values after re-organizing 
+    """This function calculates QR decompostion 2 times, first to find symbolic
+    expressions of base parameters, second to find their values after re-organizing
     regressor matrix.
             Input:  W_e: regressor matrix (normally after eliminating zero columns)
                     params_r: a list of parameters corresponding to W_e
@@ -143,7 +143,7 @@ def double_QR(tau, W_e, params_r, params_std=None, tol_qr=TOL_QR):
 
     R1 = R_r[0:numrank_W, 0:numrank_W]
     Q1 = Q_r[:, 0:numrank_W]
-    R2 = R_r[0:numrank_W, numrank_W: R.shape[1]]
+    R2 = R_r[0:numrank_W, numrank_W : R.shape[1]]
 
     # regrouping coefficient
     beta = np.around(np.dot(np.linalg.inv(R1), R2), 6)
@@ -162,8 +162,7 @@ def double_QR(tau, W_e, params_r, params_std=None, tol_qr=TOL_QR):
             phi_std.append(params_std[x])
         for i in range(numrank_W):
             for j in range(beta.shape[1]):
-                phi_std[i] = phi_std[i] + beta[i, j] * \
-                    params_std[params_regroup[j]]
+                phi_std[i] = phi_std[i] + beta[i, j] * params_std[params_regroup[j]]
         phi_std = np.around(phi_std, 5)
 
     tol_beta = 1e-6  # for scipy.signal.decimate
@@ -202,10 +201,10 @@ def double_QR(tau, W_e, params_r, params_std=None, tol_qr=TOL_QR):
 
 
 def get_baseParams(W_e, params_r, params_std=None, tol_qr=TOL_QR):
-    """ Returns symbolic expressions of base parameters and base regressor matrix and idenx of the base regressor matrix. """
+    """Returns symbolic expressions of base parameters and base regressor matrix and idenx of the base regressor matrix."""
     # scipy has QR pivoting using Householder reflection
     Q, R = np.linalg.qr(W_e)
-    
+
     # sort params as decreasing order of diagonal of R
     assert np.diag(R).shape[0] == len(
         params_r
@@ -216,8 +215,7 @@ def get_baseParams(W_e, params_r, params_std=None, tol_qr=TOL_QR):
 
     # find rank of regressor
     epsilon = np.finfo(float).eps  # machine epsilon
-    tolpal = W_e.shape[0]*abs(np.diag(R).max()) * \
-        epsilon  # rank revealing tolerance
+    tolpal = W_e.shape[0] * abs(np.diag(R).max()) * epsilon  # rank revealing tolerance
     for i in range(len(params_r)):
         # print("R-value: ", i+1, params_r[i], abs(np.diag(R)[i])) # for debugging to see the value of singular value
         if abs(np.diag(R))[i] > tol_qr:
@@ -241,7 +239,7 @@ def get_baseParams(W_e, params_r, params_std=None, tol_qr=TOL_QR):
     for j in range(len(idx_regroup)):
         W2[:, j] = W_e[:, idx_regroup[j]]
         params_regroup.append(params_r[idx_regroup[j]])
-                
+
     W_regrouped = np.c_[W1, W2]
 
     # perform QR decomposition second time on regrouped regressor
@@ -249,7 +247,7 @@ def get_baseParams(W_e, params_r, params_std=None, tol_qr=TOL_QR):
 
     R1 = R_r[0:numrank_W, 0:numrank_W]
     Q1 = Q_r[:, 0:numrank_W]
-    R2 = R_r[0:numrank_W, numrank_W: R.shape[1]]
+    R2 = R_r[0:numrank_W, numrank_W : R.shape[1]]
 
     # regrouping coefficient
     beta = np.around(np.matmul(np.linalg.inv(R1), R2), 6)
@@ -285,14 +283,14 @@ def get_baseParams(W_e, params_r, params_std=None, tol_qr=TOL_QR):
     W_b = np.dot(Q1, R1)
     assert np.allclose(W1, W_b), "base regressors is wrongly calculated!  "
 
-
     return W_b, params_base, idx_base
 
+
 def get_baseIndex(W_e, params_r, tol_qr=TOL_QR):
-    """ This function finds the linearly independent parameters.
-            Input:  W_e: regressor matrix
-                    params_r: a dictionary of parameters
-            Output: idx_base: a tuple of indices of only independent parameters.
+    """This function finds the linearly independent parameters.
+    Input:  W_e: regressor matrix
+            params_r: a dictionary of parameters
+    Output: idx_base: a tuple of indices of only independent parameters.
     """
     Q, R = np.linalg.qr(W_e)
     # print(np.diag(R))
@@ -311,7 +309,7 @@ def get_baseIndex(W_e, params_r, tol_qr=TOL_QR):
 
 
 def build_baseRegressor(W_e, idx_base):
-    """ Create base regressor matrix corresponding to base parameters."""
+    """Create base regressor matrix corresponding to base parameters."""
     W_b = np.zeros([W_e.shape[0], len(idx_base)])
 
     for i in range(len(idx_base)):
@@ -320,11 +318,11 @@ def build_baseRegressor(W_e, idx_base):
 
 
 def cond_num(W_b, norm_type=None):
-    """ Calculates different types of condition number of a matrix."""
-    if norm_type == 'fro':
-        cond_num = np.linalg.cond(W_b, 'fro')
-    elif norm_type == 'max_over_min_sigma':
-        cond_num = np.linalg.cond(W_b, 2)/np.linalg.cond(W_b, -2)
+    """Calculates different types of condition number of a matrix."""
+    if norm_type == "fro":
+        cond_num = np.linalg.cond(W_b, "fro")
+    elif norm_type == "max_over_min_sigma":
+        cond_num = np.linalg.cond(W_b, 2) / np.linalg.cond(W_b, -2)
     else:
         cond_num = np.linalg.cond(W_b)
     return cond_num

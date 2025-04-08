@@ -7,7 +7,7 @@ calibration:
   base_frame: xtion_rgb_optical_frame # start_frame of kinematic chain
   tool_frame: gripper_link # end_frame of kinematic chain
   base_to_ref_frame: xtion_link # camera frame
-  ref_frame: head_2_joint # parent joint frame of camera frame 
+  ref_frame: head_2_joint # parent joint frame of camera frame
   markers:
     - ref_joint: arm_7_joint
       measure:  [True, True, True, True, True, True]
@@ -16,7 +16,7 @@ calibration:
     # - ref_joint: arm_7_joint
     #   measure: [True, True, True, False, False, False]
     # - ref_joint: arm_7_joint
-    #   measure: [True, True, True, False, False, False]  
+    #   measure: [True, True, True, False, False, False]
   free_flyer: False
   camera_pose: [ 0.0972589, 0.0550938, 0.00241599, -1.58912, -0.0181115, 0.03029]
   tip_pose: [0.0146, -0.0, 0.35162, -1.57, 0.0,  -1.57]
@@ -57,6 +57,6 @@ identification:
       ts : 0.0002
   tls_params:
     - mass_load : 0.0
-      which_body_loaded : 0.0  
-      sync_joint_motion : False 
+      which_body_loaded : 0.0
+      sync_joint_motion : False
 ...

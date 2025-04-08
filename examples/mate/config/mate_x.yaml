@@ -7,7 +7,7 @@ calibration:
   base_frame: Base # start_frame of kinematic chain
   tool_frame: end_effector # end_frame of kinematic chain
   base_to_ref_frame:  # camera frame
-  ref_frame:  # parent joint frame of camera frame 
+  ref_frame:  # parent joint frame of camera frame
   markers:
     - ref_joint: q_3
       measure:  [True, False, False, False, False, False]
@@ -54,6 +54,6 @@ identification:
       ts : 0.0002
   tls_params:
     - mass_load : 0.0
-      which_body_loaded : 0.0  
-      sync_joint_motion : False 
+      which_body_loaded : 0.0
+      sync_joint_motion : False
 ...
