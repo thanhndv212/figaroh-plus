@@ -1,33 +1,28 @@
 # FIGAROH
 (Free dynamics Identification and Geometrical cAlibration of RObot and Human)
 FIGAROH is a python toolbox aiming at providing efficient and highly flexible frameworks for dynamics identification and geometric calibration of rigid multi-body systems based on the popular modeling convention URDF. The considered systems can be serial (industrial manipulator) or tree-structures (human, humanoid robots). 
-## Installation from source
-1. Install `python3-pip`
-2. Set up the robotpkg repositories in your source list as explained here: http://robotpkg.openrobots.org/debian.html
-Then, replace `3*` with your python 3 version and then execute:
+
+## Installation
+
+### Prerequisites
+Install the following dependencies using conda:
 ```bash
-sudo apt-get install robotpkg-py3*-pinocchio robotpkg-py3*-hpp-fcl robotpkg-py3*-ndcurves
+conda install -c conda-forge pinocchio
 ```
-3. Install other dependencies
+
+### Package Installation
+
+1. Create and activate the conda environment:
 ```bash
-pip3 install --user numdifftools quadprog numpy scipy picos pandas meshcat pyyaml
+conda env create -f environment.yml
+conda activate figaroh-dev
 ```
-4. Install `cmake` as explained here: https://apt.kitware.com
-5. Install FIGAROH from source
-``` bash
-git clone https://gitlab.laas.fr/gepetto/figaroh.git
-git checkout -b devel origin/devel
-git submodule init
-git submodule update
-mkdir build
-cd build
-cmake ..
-sudo make install
-```
-Update python path, or put it permanently in ~/.bashrc
+
+2. Install the package in development mode:
 ```bash
-export PYTHONPATH=:/usr/local/lib/python3/dist-packages:$PYTHONPATH
+pip install -e .
 ```
+
 ## Features
 ![figaroh_features](figaroh_flowchart.png)
 As described in the following figure it provides:
@@ -127,15 +122,16 @@ A step-by-step procedure is presented as follow.
 + Measurements
 + Meshcat viewer
 + Common tools
-## Prequisites 
-+ cyipopt
-+ numdifftools
-+ quadprog
-+ numpy
-+ scipy
-+ pinocchio
-+ ndcurves
-+ hppfcl
+## Prerequisites 
+The following packages are required:
+* numpy
+* scipy
+* numdifftools
+* cyipopt
+* matplotlib
+* meshcat
+* example-robot-data
+* pinocchio (conda install)
 ## Reference
 + Pinocchio (source)
 + Ipopt (source)
