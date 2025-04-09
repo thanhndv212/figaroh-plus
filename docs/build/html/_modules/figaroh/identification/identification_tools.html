@@ -1,0 +1,708 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>figaroh.identification.identification_tools &mdash; figaroh 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            figaroh
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/identification.html">Identification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/calibration.html">Calibration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/measurements.html">Measurements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/tools.html">Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/visualisation.html">Visualisation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">figaroh</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">figaroh.identification.identification_tools</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for figaroh.identification.identification_tools</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright [2021-2025] Thanh Nguyen</span>
+<span class="c1"># Copyright [2022-2023] [CNRS, Toward SAS]</span>
+
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="kn">import</span> <span class="nn">pinocchio</span> <span class="k">as</span> <span class="nn">pin</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">signal</span>
+<span class="kn">import</span> <span class="nn">quadprog</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+
+
+<div class="viewcode-block" id="get_param_from_yaml">
+<a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.get_param_from_yaml">[docs]</a>
+<span class="k">def</span> <span class="nf">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse identification parameters from YAML configuration file.</span>
+
+<span class="sd">    Extracts robot parameters, problem settings, signal processing options and total </span>
+<span class="sd">    least squares parameters from a YAML config file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        robot (pin.RobotWrapper): Robot instance containing model</span>
+<span class="sd">        identif_data (dict): YAML configuration containing:</span>
+<span class="sd">            - robot_params: Joint limits, friction, inertia settings</span>
+<span class="sd">            - problem_params: External wrench, friction, actuator settings</span>
+<span class="sd">            - processing_params: Sample rate, filter settings</span>
+<span class="sd">            - tls_params: Load mass and location</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Parameter dictionary with unified settings</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; config = yaml.safe_load(config_file)</span>
+<span class="sd">        &gt;&gt;&gt; params = get_param_from_yaml(robot, config)</span>
+<span class="sd">        &gt;&gt;&gt; print(params[&quot;nb_samples&quot;])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># robot_name: anchor as a reference point for executing</span>
+    <span class="n">robot_name</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="n">robots_params</span> <span class="o">=</span> <span class="n">identif_data</span><span class="p">[</span><span class="s2">&quot;robot_params&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">problem_params</span> <span class="o">=</span> <span class="n">identif_data</span><span class="p">[</span><span class="s2">&quot;problem_params&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">process_params</span> <span class="o">=</span> <span class="n">identif_data</span><span class="p">[</span><span class="s2">&quot;processing_params&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">tls_params</span> <span class="o">=</span> <span class="n">identif_data</span><span class="p">[</span><span class="s2">&quot;tls_params&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">param</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;robot_name&quot;</span><span class="p">:</span> <span class="n">robot_name</span><span class="p">,</span>
+        <span class="s2">&quot;nb_samples&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">process_params</span><span class="p">[</span><span class="s2">&quot;ts&quot;</span><span class="p">])),</span>
+        <span class="s2">&quot;q_lim_def&quot;</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">&quot;q_lim_def&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;dq_lim_def&quot;</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">&quot;dq_lim_def&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;is_external_wrench&quot;</span><span class="p">:</span> <span class="n">problem_params</span><span class="p">[</span><span class="s2">&quot;is_external_wrench&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;is_joint_torques&quot;</span><span class="p">:</span> <span class="n">problem_params</span><span class="p">[</span><span class="s2">&quot;is_joint_torques&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;force_torque&quot;</span><span class="p">:</span> <span class="n">problem_params</span><span class="p">[</span><span class="s2">&quot;force_torque&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;external_wrench_offsets&quot;</span><span class="p">:</span> <span class="n">problem_params</span><span class="p">[</span><span class="s2">&quot;external_wrench_offsets&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;has_friction&quot;</span><span class="p">:</span> <span class="n">problem_params</span><span class="p">[</span><span class="s2">&quot;has_friction&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;fv&quot;</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">&quot;fv&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;fs&quot;</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">&quot;fs&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;has_actuator_inertia&quot;</span><span class="p">:</span> <span class="n">problem_params</span><span class="p">[</span><span class="s2">&quot;has_actuator_inertia&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;Ia&quot;</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">&quot;Ia&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;has_joint_offset&quot;</span><span class="p">:</span> <span class="n">problem_params</span><span class="p">[</span><span class="s2">&quot;has_joint_offset&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;off&quot;</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">&quot;offset&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;has_coupled_wrist&quot;</span><span class="p">:</span> <span class="n">problem_params</span><span class="p">[</span><span class="s2">&quot;has_coupled_wrist&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;Iam6&quot;</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">&quot;Iam6&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;fvm6&quot;</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">&quot;fvm6&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;fsm6&quot;</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">&quot;fsm6&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;N&quot;</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">&quot;N&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;ratio_essential&quot;</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">&quot;ratio_essential&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;cut_off_frequency_butterworth&quot;</span><span class="p">:</span> <span class="n">process_params</span><span class="p">[</span>
+            <span class="s2">&quot;cut_off_frequency_butterworth&quot;</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;ts&quot;</span><span class="p">:</span> <span class="n">process_params</span><span class="p">[</span><span class="s2">&quot;ts&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;mass_load&quot;</span><span class="p">:</span> <span class="n">tls_params</span><span class="p">[</span><span class="s2">&quot;mass_load&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;which_body_loaded&quot;</span><span class="p">:</span> <span class="n">tls_params</span><span class="p">[</span><span class="s2">&quot;which_body_loaded&quot;</span><span class="p">],</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">param</span></div>
+
+
+
+<div class="viewcode-block" id="set_missing_params_setting">
+<a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.set_missing_params_setting">[docs]</a>
+<span class="k">def</span> <span class="nf">set_missing_params_setting</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">params_settings</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set default values for missing robot parameters.</span>
+<span class="sd">    </span>
+<span class="sd">    Fills in missing parameters in the robot model with default values from </span>
+<span class="sd">    params_settings when URDF doesn&#39;t specify them.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        robot (pin.RobotWrapper): Robot instance to update </span>
+<span class="sd">        params_settings (dict): Default parameter values containing:</span>
+<span class="sd">            - q_lim_def: Default joint position limits</span>
+<span class="sd">            - dq_lim_def: Default joint velocity limits</span>
+<span class="sd">            - tau_lim_def: Default joint torque limits</span>
+<span class="sd">            - ddq_lim_def: Default acceleration limits</span>
+<span class="sd">            - fv, fs: Default friction parameters</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Updated params_settings with all required parameters</span>
+
+<span class="sd">    Side Effects:</span>
+<span class="sd">        Modifies robot model in place:</span>
+<span class="sd">        - Sets joint limits if undefined</span>
+<span class="sd">        - Sets velocity limits if zero</span>
+<span class="sd">        - Sets effort limits if zero</span>
+<span class="sd">        - Adds acceleration limits</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Compare lower and upper position limits</span>
+    <span class="n">diff_limit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">setdiff1d</span><span class="p">(</span>
+        <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">lowerPositionLimit</span><span class="p">,</span> 
+        <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">upperPositionLimit</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># Set default joint limits if none defined</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">diff_limit</span><span class="o">.</span><span class="n">any</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No joint limits. Set default values&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nq</span><span class="p">):</span>
+            <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">lowerPositionLimit</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">params_settings</span><span class="p">[</span><span class="s2">&quot;q_lim_def&quot;</span><span class="p">]</span>
+            <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">upperPositionLimit</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">params_settings</span><span class="p">[</span><span class="s2">&quot;q_lim_def&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Set default velocity limits if zero</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">velocityLimit</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No velocity limit. Set default value&quot;</span><span class="p">)</span> 
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nq</span><span class="p">):</span>
+            <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">velocityLimit</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">params_settings</span><span class="p">[</span><span class="s2">&quot;dq_lim_def&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Set default torque limits if zero</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">velocityLimit</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No joint torque limit. Set default value&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nq</span><span class="p">):</span>
+            <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">effortLimit</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">params_settings</span><span class="p">[</span><span class="s2">&quot;tau_lim_def&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Set acceleration limits</span>
+    <span class="n">accelerationLimit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nq</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nq</span><span class="p">):</span>
+        <span class="c1"># accelerationLimit to be consistent with PIN naming</span>
+        <span class="n">accelerationLimit</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">params_settings</span><span class="p">[</span><span class="s2">&quot;ddq_lim_def&quot;</span><span class="p">]</span>
+    <span class="n">params_settings</span><span class="p">[</span><span class="s2">&quot;accelerationLimit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">accelerationLimit</span>
+
+    <span class="c1"># Set friction parameters if needed</span>
+    <span class="k">if</span> <span class="n">params_settings</span><span class="p">[</span><span class="s2">&quot;has_friction&quot;</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nv</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">ii</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># Default viscous friction values</span>
+                <span class="n">fv</span> <span class="o">=</span> <span class="p">[(</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span><span class="p">]</span>
+                <span class="c1"># Default static friction values  </span>
+                <span class="n">fs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fv</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span>
+                <span class="n">fs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span>
+
+        <span class="n">params_settings</span><span class="p">[</span><span class="s2">&quot;fv&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fv</span>
+        <span class="n">params_settings</span><span class="p">[</span><span class="s2">&quot;fs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fs</span>
+
+    <span class="c1"># Set external wrench offsets if needed</span>
+    <span class="k">if</span> <span class="n">params_settings</span><span class="p">[</span><span class="s2">&quot;external_wrench_offsets&quot;</span><span class="p">]:</span>
+        <span class="c1"># Set for a footprint of dim (1.8mx0.9m) at its center</span>
+        <span class="n">params_settings</span><span class="p">[</span><span class="s2">&quot;OFFX&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">900</span>
+        <span class="n">params_settings</span><span class="p">[</span><span class="s2">&quot;OFFY&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">450</span>
+        <span class="n">params_settings</span><span class="p">[</span><span class="s2">&quot;OFFZ&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">params_settings</span></div>
+
+
+
+<div class="viewcode-block" id="base_param_from_standard">
+<a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.base_param_from_standard">[docs]</a>
+<span class="k">def</span> <span class="nf">base_param_from_standard</span><span class="p">(</span><span class="n">phi_standard</span><span class="p">,</span> <span class="n">params_base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert standard parameters to base parameters.</span>
+
+<span class="sd">    Takes standard dynamic parameters and calculates the corresponding base </span>
+<span class="sd">    parameters using analytical relationships between them.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        phi_standard (dict): Standard parameters from model/URDF</span>
+<span class="sd">        params_base (list): Analytical parameter relationships </span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: Base parameter values calculated from standard parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">phi_base</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">ops</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;+&quot;</span><span class="p">:</span> <span class="n">operator</span><span class="o">.</span><span class="n">add</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span> <span class="n">operator</span><span class="o">.</span><span class="n">sub</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">params_base</span><span class="p">)):</span>
+        <span class="n">param_base_i</span> <span class="o">=</span> <span class="n">params_base</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">list_ops</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">param_base_i</span><span class="p">)):</span>
+            <span class="n">param_base_j</span> <span class="o">=</span> <span class="n">param_base_i</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">param_base_j</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">param_base_j</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">phi_standard</span><span class="p">[</span><span class="n">param_base_j</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+                <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">param_base_j</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;+&quot;</span> <span class="ow">and</span> <span class="n">param_base_j</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">phi_standard</span><span class="p">[</span><span class="n">param_base_j</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">list_ops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ops</span><span class="p">[</span><span class="n">param_base_j</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="n">value_phi_base</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">kk</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">list_ops</span><span class="p">)):</span>
+            <span class="n">value_phi_base</span> <span class="o">=</span> <span class="n">list_ops</span><span class="p">[</span><span class="n">kk</span><span class="p">](</span><span class="n">value_phi_base</span><span class="p">,</span> <span class="n">values</span><span class="p">[</span><span class="n">kk</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">phi_base</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value_phi_base</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">phi_base</span></div>
+
+
+
+<div class="viewcode-block" id="relative_stdev">
+<a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.relative_stdev">[docs]</a>
+<span class="k">def</span> <span class="nf">relative_stdev</span><span class="p">(</span><span class="n">W_b</span><span class="p">,</span> <span class="n">phi_b</span><span class="p">,</span> <span class="n">tau</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate relative standard deviation of identified parameters.</span>
+<span class="sd">    </span>
+<span class="sd">    Implements the residual error method from [Pressé &amp; Gautier 1991] to </span>
+<span class="sd">    estimate parameter uncertainty.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        W_b (ndarray): Base regressor matrix</span>
+<span class="sd">        phi_b (list): Base parameter values</span>
+<span class="sd">        tau (ndarray): Measured joint torques/forces</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ndarray: Relative standard deviation (%) for each base parameter</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># stdev of residual error ro </span>
+    <span class="n">sig_ro_sqr</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">((</span><span class="n">tau</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">W_b</span><span class="p">,</span> <span class="n">phi_b</span><span class="p">)))</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> 
+                 <span class="p">(</span><span class="n">W_b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">phi_b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+    <span class="c1"># covariance matrix of estimated parameters</span>
+    <span class="n">C_x</span> <span class="o">=</span> <span class="n">sig_ro_sqr</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">W_b</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">W_b</span><span class="p">))</span>
+
+    <span class="c1"># relative stdev of estimated parameters</span>
+    <span class="n">std_x_sqr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">C_x</span><span class="p">)</span>
+    <span class="n">std_xr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">std_x_sqr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">std_x_sqr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">std_xr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span>
+            <span class="mi">100</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">std_x_sqr</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">phi_b</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> 
+            <span class="mi">2</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">std_xr</span></div>
+
+
+
+<div class="viewcode-block" id="index_in_base_params">
+<a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.index_in_base_params">[docs]</a>
+<span class="k">def</span> <span class="nf">index_in_base_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">id_segments</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Map segment IDs to their base parameters.</span>
+<span class="sd">    </span>
+<span class="sd">    For each segment ID, finds which base parameters contain inertial </span>
+<span class="sd">    parameters from that segment.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        params (list): Base parameter expressions</span>
+<span class="sd">        id_segments (list): Segment IDs to map</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Maps segment IDs to lists of base parameter indices</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">base_index</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">params_name</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;Ixx&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Ixy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Ixz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Iyy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Iyz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Izz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mx&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;my&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;m&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">id_segments_new</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">id_segments</span><span class="p">))]</span>
+
+    <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">id_segments</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)):</span>
+            <span class="n">param_base_i</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">param_base_i</span><span class="p">)):</span>
+                <span class="n">param_base_j</span> <span class="o">=</span> <span class="n">param_base_i</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">ll</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">param_base_j</span><span class="p">)):</span>
+                    <span class="k">for</span> <span class="n">kk</span> <span class="ow">in</span> <span class="n">params_name</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">kk</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span> <span class="o">==</span> <span class="n">param_base_j</span><span class="p">[</span><span class="n">ll</span><span class="p">]:</span>
+                            <span class="n">base_index</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">id</span><span class="p">,</span> <span class="n">ii</span><span class="p">))</span>
+
+    <span class="n">base_index</span><span class="p">[:]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">base_index</span><span class="p">))</span>
+    <span class="n">base_index</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">base_index</span><span class="p">)</span>
+
+    <span class="n">dictio</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">base_index</span><span class="p">:</span>
+        <span class="n">dictio</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">dictio</span><span class="p">:</span>
+        <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dictio</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">id_segments_new</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="weigthed_least_squares">
+<a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.weigthed_least_squares">[docs]</a>
+<span class="k">def</span> <span class="nf">weigthed_least_squares</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">phi_b</span><span class="p">,</span> <span class="n">W_b</span><span class="p">,</span> <span class="n">tau_meas</span><span class="p">,</span> <span class="n">tau_est</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute weighted least squares solution for parameter identification.</span>
+<span class="sd">    </span>
+<span class="sd">    Implements iteratively reweighted least squares method from </span>
+<span class="sd">    [Gautier, 1997]. Accounts for heteroscedastic noise.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        robot (pin.Robot): Robot model</span>
+<span class="sd">        phi_b (ndarray): Initial base parameters</span>
+<span class="sd">        W_b (ndarray): Base regressor matrix</span>
+<span class="sd">        tau_meas (ndarray): Measured joint torques</span>
+<span class="sd">        tau_est (ndarray): Estimated joint torques</span>
+<span class="sd">        param (dict): Settings including idx_tau_stop</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ndarray: Identified base parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nq</span><span class="p">)</span>  <span class="c1"># For ground reaction force model</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">tau_meas</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau_meas</span><span class="p">)))</span>
+    <span class="n">nb_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;idx_tau_stop&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">start_idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nq</span><span class="p">):</span>
+        <span class="n">tau_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start_idx</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;idx_tau_stop&quot;</span><span class="p">][</span><span class="n">ii</span><span class="p">]))</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">tau_meas</span><span class="p">[</span><span class="n">tau_slice</span><span class="p">]</span> <span class="o">-</span> <span class="n">tau_est</span><span class="p">[</span><span class="n">tau_slice</span><span class="p">])</span>
+        <span class="n">denom</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau_meas</span><span class="p">[</span><span class="n">tau_slice</span><span class="p">])</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">phi_b</span><span class="p">)</span>
+        <span class="n">sigma</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span> <span class="o">/</span> <span class="n">denom</span>
+
+        <span class="n">start_idx</span> <span class="o">=</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;idx_tau_stop&quot;</span><span class="p">][</span><span class="n">ii</span><span class="p">]</span>
+        
+        <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nb_samples</span><span class="p">):</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">jj</span> <span class="o">+</span> <span class="n">ii</span> <span class="o">*</span> <span class="n">nb_samples</span>
+            <span class="n">P</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+
+        <span class="n">phi_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">W_b</span><span class="p">)),</span> 
+            <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">tau_meas</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="n">phi_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">phi_b</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">phi_b</span></div>
+
+
+
+<div class="viewcode-block" id="calculate_first_second_order_differentiation">
+<a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.calculate_first_second_order_differentiation">[docs]</a>
+<span class="k">def</span> <span class="nf">calculate_first_second_order_differentiation</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate joint velocities and accelerations from positions.</span>
+
+<span class="sd">    Computes first and second order derivatives of joint positions using central </span>
+<span class="sd">    differences. Handles both constant and variable timesteps.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model (pin.Model): Robot model</span>
+<span class="sd">        q (ndarray): Joint position matrix (n_samples, n_joints)</span>
+<span class="sd">        param (dict): Parameters containing:</span>
+<span class="sd">            - is_joint_torques: Whether using joint torques</span>
+<span class="sd">            - is_external_wrench: Whether using external wrench</span>
+<span class="sd">            - ts: Timestep if constant</span>
+<span class="sd">        dt (ndarray, optional): Variable timesteps between samples.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple:</span>
+<span class="sd">            - q (ndarray): Trimmed position matrix</span>
+<span class="sd">            - dq (ndarray): Joint velocity matrix  </span>
+<span class="sd">            - ddq (ndarray): Joint acceleration matrix</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Two samples are removed from start/end due to central differences</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;is_joint_torques&quot;</span><span class="p">]:</span>
+        <span class="n">dq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="n">ddq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+
+    <span class="k">if</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;is_external_wrench&quot;</span><span class="p">]:</span>
+        <span class="n">dq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">ddq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">dt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;ts&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">dq</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">q</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="p">:],</span> <span class="n">q</span><span class="p">[</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:])</span> <span class="o">/</span> <span class="n">dt</span>
+
+        <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">nq</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">ddq</span><span class="p">[:,</span> <span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">dq</span><span class="p">[:,</span> <span class="n">jj</span><span class="p">],</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">dt</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">dq</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">q</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="p">:],</span> <span class="n">q</span><span class="p">[</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:])</span> <span class="o">/</span> <span class="n">dt</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">nq</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">ddq</span><span class="p">[:,</span> <span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">dq</span><span class="p">[:,</span> <span class="n">jj</span><span class="p">],</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">dt</span>
+
+    <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">dq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">dq</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dq</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">ddq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">ddq</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ddq</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">q</span><span class="p">,</span> <span class="n">dq</span><span class="p">,</span> <span class="n">ddq</span></div>
+
+
+
+<div class="viewcode-block" id="low_pass_filter_data">
+<a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.low_pass_filter_data">[docs]</a>
+<span class="k">def</span> <span class="nf">low_pass_filter_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">nbutter</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply zero-phase Butterworth low-pass filter to measurement data.</span>
+<span class="sd">    </span>
+<span class="sd">    Uses scipy&#39;s filtfilt for zero-phase digital filtering. Removes high </span>
+<span class="sd">    frequency noise while preserving signal phase. Handles border effects by</span>
+<span class="sd">    trimming filtered data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (ndarray): Raw measurement data to filter</span>
+<span class="sd">        param (dict): Filter parameters containing:</span>
+<span class="sd">            - ts: Sample time</span>
+<span class="sd">            - cut_off_frequency_butterworth: Cutoff frequency in Hz</span>
+<span class="sd">        nbutter (int, optional): Filter order. Higher order gives sharper</span>
+<span class="sd">            frequency cutoff. Defaults to 5.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ndarray: Filtered data with border regions removed</span>
+
+<span class="sd">    Note: </span>
+<span class="sd">        Border effects are handled by removing nborder = 5*nbutter samples</span>
+<span class="sd">        from start and end of filtered signal.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cutoff</span> <span class="o">=</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;ts&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;cut_off_frequency_butterworth&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">butter</span><span class="p">(</span><span class="n">nbutter</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="s2">&quot;low&quot;</span><span class="p">)</span>
+
+    <span class="n">padlen</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">filtfilt</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">padtype</span><span class="o">=</span><span class="s2">&quot;odd&quot;</span><span class="p">,</span> <span class="n">padlen</span><span class="o">=</span><span class="n">padlen</span><span class="p">)</span>
+
+    <span class="c1"># Remove border effects</span>
+    <span class="n">nbord</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">nbutter</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">s_</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">nbord</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">end_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">nbord</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> 
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">end_slice</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+
+<span class="c1"># SIP QP OPTIMISATION</span>
+
+
+<div class="viewcode-block" id="quadprog_solve_qp">
+<a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.quadprog_solve_qp">[docs]</a>
+<span class="k">def</span> <span class="nf">quadprog_solve_qp</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">G</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">A</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Solve a Quadratic Program defined as:</span>
+<span class="sd">        </span>
+<span class="sd">    minimize    1/2 x^T P x + q^T x</span>
+<span class="sd">    subject to  G x &lt;= h</span>
+<span class="sd">                A x = b</span>
+<span class="sd">                </span>
+<span class="sd">    Args:</span>
+<span class="sd">        P (ndarray): Symmetric quadratic cost matrix (n x n)</span>
+<span class="sd">        q (ndarray): Linear cost vector (n)</span>
+<span class="sd">        G (ndarray, optional): Linear inequality constraint matrix (m x n).</span>
+<span class="sd">        h (ndarray, optional): Linear inequality constraint vector (m).</span>
+<span class="sd">        A (ndarray, optional): Linear equality constraint matrix (p x n).</span>
+<span class="sd">        b (ndarray, optional): Linear equality constraint vector (p).</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        ndarray: Optimal solution vector x* (n)</span>
+<span class="sd">        </span>
+<span class="sd">    Note:</span>
+<span class="sd">        Ensures P is symmetric positive definite by adding small identity matrix</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">qp_G</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">P</span> <span class="o">+</span> <span class="n">P</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="mf">1e-5</span>
+    <span class="p">)</span>  <span class="c1"># make sure P is symmetric, pos,def</span>
+    <span class="n">qp_a</span> <span class="o">=</span> <span class="o">-</span><span class="n">q</span>
+    <span class="k">if</span> <span class="n">A</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">qp_C</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">A</span><span class="p">,</span> <span class="n">G</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">qp_b</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">b</span><span class="p">,</span> <span class="n">h</span><span class="p">])</span>
+        <span class="n">meq</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># no equality constraint</span>
+        <span class="n">qp_C</span> <span class="o">=</span> <span class="o">-</span><span class="n">G</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">qp_b</span> <span class="o">=</span> <span class="o">-</span><span class="n">h</span>
+        <span class="n">meq</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">quadprog</span><span class="o">.</span><span class="n">solve_qp</span><span class="p">(</span><span class="n">qp_G</span><span class="p">,</span> <span class="n">qp_a</span><span class="p">,</span> <span class="n">qp_C</span><span class="p">,</span> <span class="n">qp_b</span><span class="p">,</span> <span class="n">meq</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="calculate_standard_parameters">
+<a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.calculate_standard_parameters">[docs]</a>
+<span class="k">def</span> <span class="nf">calculate_standard_parameters</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">COM_max</span><span class="p">,</span> <span class="n">COM_min</span><span class="p">,</span> <span class="n">params_standard_u</span><span class="p">,</span> <span class="n">alpha</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate optimal standard inertial parameters via quadratic</span>
+<span class="sd">    programming.</span>
+<span class="sd">    </span>
+<span class="sd">    Finds standard parameters that:</span>
+<span class="sd">    1. Best fit measurement data (tau)</span>
+<span class="sd">    2. Stay close to reference values from URDF</span>
+<span class="sd">    3. Keep COM positions within physical bounds</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model (pin.Model): Robot model containing inertias</span>
+<span class="sd">        W (ndarray): Regressor matrix mapping parameters to measurements</span>
+<span class="sd">        tau (ndarray): Measured force/torque data</span>
+<span class="sd">        COM_max (ndarray): Upper bounds on center of mass positions</span>
+<span class="sd">        COM_min (ndarray): Lower bounds on center of mass positions </span>
+<span class="sd">        params_standard_u (dict): Reference parameters from URDF</span>
+<span class="sd">        alpha (float): Weight between fitting data (1) vs staying near refs (0)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple:</span>
+<span class="sd">            - phi_standard (ndarray): Optimized standard parameters</span>
+<span class="sd">            - phi_ref (ndarray): Reference parameters from URDF</span>
+<span class="sd">            </span>
+<span class="sd">    Note:</span>
+<span class="sd">        Constrains parameters to stay within [0.7, 1.3] times reference values</span>
+<span class="sd">        except for COM positions which use explicit bounds.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+    <span class="n">phi_ref</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">id_inertias</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">inertias</span><span class="o">.</span><span class="n">tolist</span><span class="p">())):</span>
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">inertias</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="n">jj</span><span class="p">]</span><span class="o">.</span><span class="n">mass</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">id_inertias</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">jj</span><span class="p">)</span>
+
+    <span class="n">nreal</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">id_inertias</span><span class="p">)</span>
+
+    <span class="n">params_name</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;Ixx&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Ixy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Ixz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Iyy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Iyz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Izz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mx&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;my&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;m&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nreal</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">params_name</span><span class="p">:</span>
+            <span class="n">phi_ref_temp</span> <span class="o">=</span> <span class="n">params_standard_u</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">id_inertias</span><span class="p">[</span><span class="n">k</span><span class="p">])]</span>
+            <span class="n">phi_ref</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">phi_ref_temp</span><span class="p">)</span>
+
+    <span class="n">phi_ref</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">phi_ref</span><span class="p">)</span>
+
+    <span class="n">sf1</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">phi_ref</span><span class="p">)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">phi_ref</span><span class="p">))</span>
+    <span class="n">sf2</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">tau</span><span class="p">)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau</span><span class="p">))</span>
+
+    <span class="n">P</span> <span class="o">=</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">sf1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> 
+         <span class="n">alpha</span> <span class="o">*</span> <span class="n">sf2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">W</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">sf1</span> <span class="o">*</span> <span class="n">phi_ref</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> 
+           <span class="n">sf2</span> <span class="o">*</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">tau</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">W</span><span class="p">)))</span>
+
+    <span class="c1"># Setting constraints</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(((</span><span class="mi">14</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">nreal</span><span class="p">),</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">nreal</span><span class="p">))</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((((</span><span class="mi">14</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">nreal</span><span class="p">),</span> <span class="mi">1</span><span class="p">)))</span>
+
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nreal</span><span class="p">):</span>
+        <span class="n">G</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span><span class="p">][</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># mx&lt;mx+</span>
+        <span class="n">h</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">COM_max</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">ii</span><span class="p">]</span>
+        <span class="n">G</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># mx&gt;mx-</span>
+        <span class="n">h</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">COM_min</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">ii</span><span class="p">]</span>
+        <span class="n">G</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">2</span><span class="p">][</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># my&lt;my+</span>
+        <span class="n">h</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">COM_max</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">G</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">3</span><span class="p">][</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># my&gt;my-</span>
+        <span class="n">h</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">COM_min</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">G</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">4</span><span class="p">][</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># mz&lt;mz+</span>
+        <span class="n">h</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">COM_max</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">G</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">5</span><span class="p">][</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># mz&gt;mz-</span>
+        <span class="n">h</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">COM_min</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">G</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">6</span><span class="p">][</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># m&lt;m+</span>
+        <span class="n">h</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="n">phi_ref</span><span class="p">[</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">9</span><span class="p">]</span>
+        <span class="n">G</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">7</span><span class="p">][</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># m&gt;m-</span>
+        <span class="n">h</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.7</span> <span class="o">*</span> <span class="n">phi_ref</span><span class="p">[</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">9</span><span class="p">]</span>
+        <span class="n">G</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">8</span><span class="p">][</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Ixx&lt;Ixx+</span>
+        <span class="n">h</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="n">phi_ref</span><span class="p">[</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">G</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">9</span><span class="p">][</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># Ixx&gt;Ixx-</span>
+        <span class="n">h</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.7</span> <span class="o">*</span> <span class="n">phi_ref</span><span class="p">[</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">G</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">10</span><span class="p">][</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Iyy&lt;Iyy+</span>
+        <span class="n">h</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="n">phi_ref</span><span class="p">[</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span>
+        <span class="n">G</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">11</span><span class="p">][</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># Iyy&gt;Iyy-</span>
+        <span class="n">h</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">11</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.7</span> <span class="o">*</span> <span class="n">phi_ref</span><span class="p">[</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span>
+        <span class="n">G</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">12</span><span class="p">][</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Izz&lt;Izz+</span>
+        <span class="n">h</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">12</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="n">phi_ref</span><span class="p">[</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">5</span><span class="p">]</span>
+        <span class="n">G</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">13</span><span class="p">][</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># Izz&gt;Izz-</span>
+        <span class="n">h</span><span class="p">[</span><span class="mi">14</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">13</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.7</span> <span class="o">*</span> <span class="n">phi_ref</span><span class="p">[</span><span class="n">ii</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">5</span><span class="p">]</span>
+
+    <span class="c1"># print(G.shape,h.shape,A.shape,b.shape)</span>
+
+    <span class="c1"># SOLVING</span>
+    <span class="n">phi_standard</span> <span class="o">=</span> <span class="n">quadprog_solve_qp</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">h</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">G</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],)))</span>
+
+    <span class="k">return</span> <span class="n">phi_standard</span><span class="p">,</span> <span class="n">phi_ref</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2025, Thanh Nguyen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
