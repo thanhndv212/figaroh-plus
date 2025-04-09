@@ -13,14 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pinocchio.robot_wrapper import RobotWrapper
-from pinocchio.visualize import GepettoVisualizer, MeshcatVisualizer
-import pinocchio as pin
 from sys import argv
 import numpy as np
+import pinocchio as pin
+from pinocchio.robot_wrapper import RobotWrapper
+from pinocchio.visualize import GepettoVisualizer, MeshcatVisualizer
 
 
 class Robot(RobotWrapper):
+    """Robot class extending Pinocchio's RobotWrapper with additional features."""
+
     def __init__(
         self,
         robot_urdf,
@@ -28,62 +30,58 @@ class Robot(RobotWrapper):
         isFext=False,
         freeflyer_ori=None,
     ):
-        # super().__init__()
-
-        # intrinsic dynamic parameter names
+        """Initialize robot model from URDF.
+        
+        Args:
+            robot_urdf: Path to URDF file
+            package_dirs: Package directories for mesh files
+            isFext: Whether to add floating base joint
+            freeflyer_ori: Optional orientation for floating base
+        """
+        # Intrinsic dynamic parameter names 
         self.params_name = (
-            "Ixx",
-            "Ixy",
-            "Ixz",
-            "Iyy",
-            "Iyz",
-            "Izz",
-            "mx",
-            "my",
-            "mz",
-            "m",
+            "Ixx", "Ixy", "Ixz", "Iyy", "Iyz", "Izz",
+            "mx", "my", "mz", "m"
         )
 
-        # defining conditions
         self.isFext = isFext
-
-        # folder location
         self.robot_urdf = robot_urdf
 
-        # initializing robot's models
+        # Initialize robot model
         if not isFext:
             self.initFromURDF(robot_urdf, package_dirs=package_dirs)
         else:
             self.initFromURDF(
                 robot_urdf,
-                package_dirs=package_dirs,
-                root_joint=pin.JointModelFreeFlyer(),
+                package_dirs=package_dirs, 
+                root_joint=pin.JointModelFreeFlyer()
             )
 
-        if freeflyer_ori is not None and isFext == True:
-            self.model.jointPlacements[
-                self.model.getJointId("root_joint")
-            ].rotation = freeflyer_ori
+        # Set floating base parameters if provided
+        if freeflyer_ori is not None and isFext:
+            joint_id = self.model.getJointId("root_joint")
+            self.model.jointPlacements[joint_id].rotation = freeflyer_ori
+            
+            # Update position limits
             ub = self.model.upperPositionLimit
-            ub[:7] = 1
-            self.model.upperPositionLimit = ub
             lb = self.model.lowerPositionLimit
+            ub[:7] = 1
             lb[:7] = -1
+            self.model.upperPositionLimit = ub
             self.model.lowerPositionLimit = lb
             self.data = self.model.createData()
 
-        # self.geom_model = pin.buildGeomFromUrdf(
-        #     self.model, robot_urdf, geom_type=pin.GeometryType.COLLISION,
-        #     package_dirs = package_dirs
-        # )
-
-        ## \todo test that this is equivalent to reloading the model
         self.geom_model = self.collision_model
 
     def get_standard_parameters(self, param):
-        """This function prints out the standard inertial parameters defined in urdf model.
-        Output: params_std: a dictionary of parameter names and their values"""
+        """Get standard inertial parameters from URDF model.
+        
+        Args:
+            param: Dictionary of parameter settings
 
+        Returns:
+            dict: Parameter names mapped to values
+        """
         model = self.model
         phi = []
         params = []
@@ -101,8 +99,10 @@ class Robot(RobotWrapper):
             "m",
         )
 
-        # change order of values in phi['m', 'mx','my','mz','Ixx','Ixy','Iyy','Ixz', 'Iyz','Izz'] - from pinoccchio
-        # corresponding to params_name ['Ixx','Ixy','Ixz','Iyy','Iyz','Izz','mx','my','mz','m']
+        # Change order of values in phi['m', 'mx','my','mz','Ixx','Ixy','Iyy',
+        # 'Ixz', 'Iyz', 'Izz'] - from Pinocchio
+        # Corresponding to params_name ['Ixx','Ixy','Ixz','Iyy','Iyz','Izz',
+        # 'mx','my','mz','m']
 
         for i in range(1, len(model.inertias)):
             P = model.inertias[i].toDynamicParameters()
@@ -155,11 +155,11 @@ class Robot(RobotWrapper):
         return params_std
 
     def display_q0(self):
-        """If you want to visualize the robot in this example,
-        you can choose which visualizer to employ
-        by specifying an option from the command line:
-        GepettoVisualizer: -g
-        MeshcatVisualizer: -m"""
+        """Display robot in initial configuration.
+        
+        Uses either Gepetto (-g) or Meshcat (-m) visualizer based on 
+        command line argument.
+        """
         VISUALIZER = None
         if len(argv) > 1:
             opt = argv[1]

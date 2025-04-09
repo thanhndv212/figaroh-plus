@@ -16,20 +16,31 @@
 import pinocchio as pin
 import numpy as np
 from scipy import signal
-from ..tools.regressor import build_regressor_reduced, get_index_eliminate
 import quadprog
 import operator
 
 
 def get_param_from_yaml(robot, identif_data):
-    """_This function allows to create a dictionnary of the settings set in a yaml file._
+    """Parse identification parameters from YAML configuration file.
+
+    Extracts robot parameters, problem settings, signal processing options and total 
+    least squares parameters from a YAML config file.
 
     Args:
-        robot (_robot_): _Pinocchio robot_
-        identif_data (_dict_): _a dictionnary containing the parameters settings for identification (set in a config yaml file) _
+        robot (pin.RobotWrapper): Robot instance containing model
+        identif_data (dict): YAML configuration containing:
+            - robot_params: Joint limits, friction, inertia settings
+            - problem_params: External wrench, friction, actuator settings
+            - processing_params: Sample rate, filter settings
+            - tls_params: Load mass and location
 
     Returns:
-        _dict_: _a dictionnary of parameters settings_
+        dict: Parameter dictionary with unified settings
+
+    Example:
+        >>> config = yaml.safe_load(config_file)
+        >>> params = get_param_from_yaml(robot, config)
+        >>> print(params["nb_samples"])
     """
 
     # robot_name: anchor as a reference point for executing
@@ -73,51 +84,69 @@ def get_param_from_yaml(robot, identif_data):
 
 
 def set_missing_params_setting(robot, params_settings):
-    """_Set the missing parameters of a robot, for instance if the urdf does not mention them_
+    """Set default values for missing robot parameters.
+    
+    Fills in missing parameters in the robot model with default values from 
+    params_settings when URDF doesn't specify them.
 
     Args:
-        robot (_robot_): _Pinocchio robot_
-        params_settings (_dict_): _Dictionnary of parameters settings_
+        robot (pin.RobotWrapper): Robot instance to update 
+        params_settings (dict): Default parameter values containing:
+            - q_lim_def: Default joint position limits
+            - dq_lim_def: Default joint velocity limits
+            - tau_lim_def: Default joint torque limits
+            - ddq_lim_def: Default acceleration limits
+            - fv, fs: Default friction parameters
 
     Returns:
-        _dict_: _Dictionnary of updated parameter settings. Note : the robot is updated also_
-    """
+        dict: Updated params_settings with all required parameters
 
+    Side Effects:
+        Modifies robot model in place:
+        - Sets joint limits if undefined
+        - Sets velocity limits if zero
+        - Sets effort limits if zero
+        - Adds acceleration limits
+    """
+    # Compare lower and upper position limits
     diff_limit = np.setdiff1d(
-        robot.model.lowerPositionLimit, robot.model.upperPositionLimit
+        robot.model.lowerPositionLimit, 
+        robot.model.upperPositionLimit
     )
-    # upper and lower joint limits are the same so use defaut values for all joints
+    
+    # Set default joint limits if none defined
     if not diff_limit.any:
         print("No joint limits. Set default values")
         for ii in range(robot.model.nq):
             robot.model.lowerPositionLimit[ii] = -params_settings["q_lim_def"]
             robot.model.upperPositionLimit[ii] = params_settings["q_lim_def"]
 
+    # Set default velocity limits if zero
     if np.sum(robot.model.velocityLimit) == 0:
-        print("No velocity limit. Set default value")
+        print("No velocity limit. Set default value") 
         for ii in range(robot.model.nq):
             robot.model.velocityLimit[ii] = params_settings["dq_lim_def"]
 
-    # maybe we need to check an other field somethnibg weird here
+    # Set default torque limits if zero
     if np.sum(robot.model.velocityLimit) == 0:
         print("No joint torque limit. Set default value")
         for ii in range(robot.model.nq):
             robot.model.effortLimit[ii] = -params_settings["tau_lim_def"]
 
+    # Set acceleration limits
     accelerationLimit = np.zeros(robot.model.nq)
     for ii in range(robot.model.nq):
         # accelerationLimit to be consistent with PIN naming
         accelerationLimit[ii] = params_settings["ddq_lim_def"]
     params_settings["accelerationLimit"] = accelerationLimit
-    # print(model.accelerationLimit)
 
+    # Set friction parameters if needed
     if params_settings["has_friction"]:
-
         for ii in range(robot.model.nv):
             if ii == 0:
-                # default values of the joint viscous friction in case they are used
+                # Default viscous friction values
                 fv = [(ii + 1) / 10]
-                # default value of the joint static friction in case they are used
+                # Default static friction values  
                 fs = [(ii + 1) / 10]
             else:
                 fv.append((ii + 1) / 10)
@@ -126,9 +155,9 @@ def set_missing_params_setting(robot, params_settings):
         params_settings["fv"] = fv
         params_settings["fs"] = fs
 
-    if params_settings[
-        "external_wrench_offsets"
-    ]:  # set for a fp of dim (1.8mx0.9m) at its center
+    # Set external wrench offsets if needed
+    if params_settings["external_wrench_offsets"]:
+        # Set for a footprint of dim (1.8mx0.9m) at its center
         params_settings["OFFX"] = 900
         params_settings["OFFY"] = 450
         params_settings["OFFZ"] = 0
@@ -137,16 +166,18 @@ def set_missing_params_setting(robot, params_settings):
 
 
 def base_param_from_standard(phi_standard, params_base):
-    """_This function allows to calculate numerically the base parameters with the values of the standard ones._
+    """Convert standard parameters to base parameters.
+
+    Takes standard dynamic parameters and calculates the corresponding base 
+    parameters using analytical relationships between them.
 
     Args:
-        phi_standard (_dict_): _a dictionnary containing the values of the standard parameters of the model (usually from get_standard_parameters)_
-        params_base (_list_): _a list containing the analytical relations between standard parameters to give the base parameters_
+        phi_standard (dict): Standard parameters from model/URDF
+        params_base (list): Analytical parameter relationships 
 
     Returns:
-        _list_: _a list containing the numeric values of the base parameters_
+        list: Base parameter values calculated from standard parameters
     """
-
     phi_base = []
     ops = {"+": operator.add, "-": operator.sub}
     for ii in range(len(params_base)):
@@ -171,20 +202,22 @@ def base_param_from_standard(phi_standard, params_base):
 
 
 def relative_stdev(W_b, phi_b, tau):
-    """_Calculates relative standard deviation of estimated parameters using the residual errro[Pressé & Gautier 1991]_
+    """Calculate relative standard deviation of identified parameters.
+    
+    Implements the residual error method from [Pressé & Gautier 1991] to 
+    estimate parameter uncertainty.
 
     Args:
-        W_b (_array_): _Base regressor matrix_
-        phi_b (_list_): _List containing the relationship for the base parameters_
-        tau (_array_): _Array of force measurements_
+        W_b (ndarray): Base regressor matrix
+        phi_b (list): Base parameter values
+        tau (ndarray): Measured joint torques/forces
 
     Returns:
-        _array_: _An array containing the relative standard deviation for each base parameter_
+        ndarray: Relative standard deviation (%) for each base parameter
     """
-    # stdev of residual error ro
-    sig_ro_sqr = np.linalg.norm((tau - np.dot(W_b, phi_b))) ** 2 / (
-        W_b.shape[0] - phi_b.shape[0]
-    )
+    # stdev of residual error ro 
+    sig_ro_sqr = (np.linalg.norm((tau - np.dot(W_b, phi_b))) ** 2 / 
+                 (W_b.shape[0] - phi_b.shape[0]))
 
     # covariance matrix of estimated parameters
     C_x = sig_ro_sqr * np.linalg.inv(np.dot(W_b.T, W_b))
@@ -193,20 +226,26 @@ def relative_stdev(W_b, phi_b, tau):
     std_x_sqr = np.diag(C_x)
     std_xr = np.zeros(std_x_sqr.shape[0])
     for i in range(std_x_sqr.shape[0]):
-        std_xr[i] = np.round(100 * np.sqrt(std_x_sqr[i]) / np.abs(phi_b[i]), 2)
+        std_xr[i] = np.round(
+            100 * np.sqrt(std_x_sqr[i]) / np.abs(phi_b[i]), 
+            2
+        )
 
     return std_xr
 
 
 def index_in_base_params(params, id_segments):
-    """_This function finds the base parameters in which a parameter of a given segment (referenced with its id) appear_
+    """Map segment IDs to their base parameters.
+    
+    For each segment ID, finds which base parameters contain inertial 
+    parameters from that segment.
 
     Args:
-        params (_list_): _A list containing the relation for the base parameters_
-        id_segments (_list_): _A list containing the ids of the segments_
+        params (list): Base parameter expressions
+        id_segments (list): Segment IDs to map
 
     Returns:
-        _dict_: _A dictionnary containing the link between base parameters and id of segments_
+        dict: Maps segment IDs to lists of base parameter indices
     """
     base_index = []
     params_name = [
@@ -250,42 +289,42 @@ def index_in_base_params(params, id_segments):
 
 
 def weigthed_least_squares(robot, phi_b, W_b, tau_meas, tau_est, param):
-    """_This function computes the weigthed least square solution of the identification problem see [Gautier, 1997] for details_
+    """Compute weighted least squares solution for parameter identification.
+    
+    Implements iteratively reweighted least squares method from 
+    [Gautier, 1997]. Accounts for heteroscedastic noise.
 
     Args:
-        robot (_robot_): _Pinocchio robot_
-        phi_b (_liste_): _A list containing the relation for the base parameters_
-        W_b (_array_): _The base regressor matrix_
-        tau_meas (_array_): _An array containing the measured forces_
-        tau_est (_array_): _An array containing the estimated forces_
-        param (_dict_): _A dictionnary settings_
+        robot (pin.Robot): Robot model
+        phi_b (ndarray): Initial base parameters
+        W_b (ndarray): Base regressor matrix
+        tau_meas (ndarray): Measured joint torques
+        tau_est (ndarray): Estimated joint torques
+        param (dict): Settings including idx_tau_stop
 
     Returns:
-        _array_: _An array for the weighted base parameters_
+        ndarray: Identified base parameters
     """
-    sigma = np.zeros(
-        robot.model.nq
-    )  # Needs to be modified for taking into account the GRFM
-    zero_identity_matrix = np.identity(len(tau_meas))
+    sigma = np.zeros(robot.model.nq)  # For ground reaction force model
     P = np.zeros((len(tau_meas), len(tau_meas)))
     nb_samples = int(param["idx_tau_stop"][0])
     start_idx = int(0)
     for ii in range(robot.model.nq):
-
-        sigma[ii] = np.linalg.norm(
-            tau_meas[int(start_idx) : int(param["idx_tau_stop"][ii])]
-            - tau_est[int(start_idx) : int(param["idx_tau_stop"][ii])]
-        ) / (
-            len(tau_meas[int(start_idx) : int(param["idx_tau_stop"][ii])]) - len(phi_b)
-        )
+        tau_slice = slice(int(start_idx), int(param["idx_tau_stop"][ii]))
+        diff = (tau_meas[tau_slice] - tau_est[tau_slice])
+        denom = len(tau_meas[tau_slice]) - len(phi_b)
+        sigma[ii] = np.linalg.norm(diff) / denom
 
         start_idx = param["idx_tau_stop"][ii]
-
+        
         for jj in range(nb_samples):
+            idx = jj + ii * nb_samples
+            P[idx, idx] = 1 / sigma[ii]
 
-            P[jj + ii * (nb_samples), jj + ii * (nb_samples)] = 1 / sigma[ii]
-
-        phi_b = np.matmul(np.linalg.pinv(np.matmul(P, W_b)), np.matmul(P, tau_meas))
+        phi_b = np.matmul(
+            np.linalg.pinv(np.matmul(P, W_b)), 
+            np.matmul(P, tau_meas)
+        )
 
     phi_b = np.around(phi_b, 6)
 
@@ -293,18 +332,28 @@ def weigthed_least_squares(robot, phi_b, W_b, tau_meas, tau_est, param):
 
 
 def calculate_first_second_order_differentiation(model, q, param, dt=None):
-    """_This function calculates the derivatives (velocities and accelerations here) by central difference for given angular configurations accounting that the robot has a freeflyer or not (which is indicated in the params_settings)._
+    """Calculate joint velocities and accelerations from positions.
+
+    Computes first and second order derivatives of joint positions using central 
+    differences. Handles both constant and variable timesteps.
 
     Args:
-        model (_model_): _Pinocchio model_
-        q (_array_): _the angular configurations whose derivatives need to be calculated_
-        param (_dict_): _a dictionnary containing the settings_
-        dt (_list_, optional): _ a list containing the different timesteps between the samples (set to None by default, which means that the timestep is constant and to be found in param['ts'])_. Defaults to None.
+        model (pin.Model): Robot model
+        q (ndarray): Joint position matrix (n_samples, n_joints)
+        param (dict): Parameters containing:
+            - is_joint_torques: Whether using joint torques
+            - is_external_wrench: Whether using external wrench
+            - ts: Timestep if constant
+        dt (ndarray, optional): Variable timesteps between samples.
 
     Returns:
-        _array_: _angular configurations (whose size match the samples removed by central differences)_
-        _array_: _angular velocities_
-        _array_: _angular accelerations_
+        tuple:
+            - q (ndarray): Trimmed position matrix
+            - dq (ndarray): Joint velocity matrix  
+            - ddq (ndarray): Joint acceleration matrix
+
+    Note:
+        Two samples are removed from start/end due to central differences
     """
 
     if param["is_joint_torques"]:
@@ -339,30 +388,38 @@ def calculate_first_second_order_differentiation(model, q, param, dt=None):
 
 
 def low_pass_filter_data(data, param, nbutter=5):
-    """_This function filters and elaborates data used in the identification process. The filter used is a zero phase lag butterworth filter_
+    """Apply zero-phase Butterworth low-pass filter to measurement data.
+    
+    Uses scipy's filtfilt for zero-phase digital filtering. Removes high 
+    frequency noise while preserving signal phase. Handles border effects by
+    trimming filtered data.
 
     Args:
-        data (_array_): _The data to filter_
-        param (_dict_): _Dictionnary of settings_
-        nbutter (_int_): _Order of the butterworth filter_ Defaults to 5
+        data (ndarray): Raw measurement data to filter
+        param (dict): Filter parameters containing:
+            - ts: Sample time
+            - cut_off_frequency_butterworth: Cutoff frequency in Hz
+        nbutter (int, optional): Filter order. Higher order gives sharper
+            frequency cutoff. Defaults to 5.
 
     Returns:
-        _array_: _The filtered data_
+        ndarray: Filtered data with border regions removed
+
+    Note: 
+        Border effects are handled by removing nborder = 5*nbutter samples
+        from start and end of filtered signal.
     """
+    cutoff = param["ts"] * param["cut_off_frequency_butterworth"] / 2
+    b, a = signal.butter(nbutter, cutoff, "low")
 
-    b, a = signal.butter(
-        nbutter, param["ts"] * param["cut_off_frequency_butterworth"] / 2, "low"
-    )
+    padlen = 3 * (max(len(b), len(a)) - 1)
+    data = signal.filtfilt(b, a, data, axis=0, padtype="odd", padlen=padlen)
 
-    # data = signal.medfilt(data, 3)
-    data = signal.filtfilt(
-        b, a, data, axis=0, padtype="odd", padlen=3 * (max(len(b), len(a)) - 1)
-    )
-
-    # suppress end segments of samples due to the border effect
+    # Remove border effects
     nbord = 5 * nbutter
     data = np.delete(data, np.s_[0:nbord], axis=0)
-    data = np.delete(data, np.s_[(data.shape[0] - nbord) : data.shape[0]], axis=0)
+    end_slice = slice(data.shape[0] - nbord, data.shape[0]) 
+    data = np.delete(data, end_slice, axis=0)
 
     return data
 
@@ -371,6 +428,26 @@ def low_pass_filter_data(data, param, nbutter=5):
 
 
 def quadprog_solve_qp(P, q, G=None, h=None, A=None, b=None):
+    """Solve a Quadratic Program defined as:
+        
+    minimize    1/2 x^T P x + q^T x
+    subject to  G x <= h
+                A x = b
+                
+    Args:
+        P (ndarray): Symmetric quadratic cost matrix (n x n)
+        q (ndarray): Linear cost vector (n)
+        G (ndarray, optional): Linear inequality constraint matrix (m x n).
+        h (ndarray, optional): Linear inequality constraint vector (m).
+        A (ndarray, optional): Linear equality constraint matrix (p x n).
+        b (ndarray, optional): Linear equality constraint vector (p).
+    
+    Returns:
+        ndarray: Optimal solution vector x* (n)
+        
+    Note:
+        Ensures P is symmetric positive definite by adding small identity matrix
+    """
     qp_G = 0.5 * (P + P.T) + np.eye(P.shape[0]) * (
         1e-5
     )  # make sure P is symmetric, pos,def
@@ -386,29 +463,34 @@ def quadprog_solve_qp(P, q, G=None, h=None, A=None, b=None):
     return quadprog.solve_qp(qp_G, qp_a, qp_C, qp_b, meq)[0]
 
 
-# def sample_spherical(npoints, ndim=3):
-#     vec = np.random.randn(ndim, npoints)
-#     vec /= np.linalg.norm(vec, axis=0)
-#     return vec
-
-
 def calculate_standard_parameters(
     model, W, tau, COM_max, COM_min, params_standard_u, alpha
 ):
-    """_This function solves a qp problem to find standard parameters that are not too far from the reference value while fitting the measurements_
+    """Calculate optimal standard inertial parameters via quadratic
+    programming.
+    
+    Finds standard parameters that:
+    1. Best fit measurement data (tau)
+    2. Stay close to reference values from URDF
+    3. Keep COM positions within physical bounds
 
     Args:
-        model (_model_): _Pinocchio model_
-        W (_array_): _Basic regressor matrix_
-        tau (_array_): _External wrench measurements_
-        COM_max (_array_): _Upper boundaries for the center of mass position_
-        COM_min (_array_): _Upper boundaries for the center of mass position_
-        params_standard_u (_dict_): _Dictionnary containg the standard parameters from the urdf_
-        alpha (_float_): _Pareto front coefficient_
+        model (pin.Model): Robot model containing inertias
+        W (ndarray): Regressor matrix mapping parameters to measurements
+        tau (ndarray): Measured force/torque data
+        COM_max (ndarray): Upper bounds on center of mass positions
+        COM_min (ndarray): Lower bounds on center of mass positions 
+        params_standard_u (dict): Reference parameters from URDF
+        alpha (float): Weight between fitting data (1) vs staying near refs (0)
 
     Returns:
-        _array_: _An array containing the standard parameters values_
-        _array_: -An array containing the standard parameters values as they are set in the urdf_
+        tuple:
+            - phi_standard (ndarray): Optimized standard parameters
+            - phi_ref (ndarray): Reference parameters from URDF
+            
+    Note:
+        Constrains parameters to stay within [0.7, 1.3] times reference values
+        except for COM positions which use explicit bounds.
     """
     np.set_printoptions(threshold=np.inf)
     phi_ref = []
@@ -443,8 +525,10 @@ def calculate_standard_parameters(
     sf1 = 1 / (np.max(phi_ref) * len(phi_ref))
     sf2 = 1 / (np.max(tau) * len(tau))
 
-    P = (1 - alpha) * sf1 * np.eye(W.shape[1]) + alpha * sf2 * np.matmul(W.T, W)
-    r = -((1 - alpha) * sf1 * phi_ref.T + sf2 * alpha * np.matmul(tau.T, W))
+    P = ((1 - alpha) * sf1 * np.eye(W.shape[1]) + 
+         alpha * sf2 * np.matmul(W.T, W))
+    r = (-((1 - alpha) * sf1 * phi_ref.T + 
+           sf2 * alpha * np.matmul(tau.T, W)))
 
     # Setting constraints
     G = np.zeros(((14) * (nreal), 10 * nreal))

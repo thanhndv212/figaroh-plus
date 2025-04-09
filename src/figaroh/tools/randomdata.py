@@ -18,34 +18,49 @@ import numpy as np
 
 
 def generate_waypoints(N, robot, mlow, mhigh):
-    """This function generates N random values for joints' position,velocity, acceleration.
-    Input:  N: number of samples
-                    nq: length of q, nv : length of v
-                    mlow and mhigh: the bound for random function
-    Output: q, v, a: joint's position, velocity, acceleration"""
+    """Generate random values for joint positions, velocities, accelerations.
+
+    Args:
+        N: Number of samples
+        robot: Robot model object
+        mlow: Lower bound for random values
+        mhigh: Upper bound for random values
+
+    Returns:
+        tuple: (q, v, a) joint position, velocity, acceleration arrays
+    """
     q = np.empty((1, robot.model.nq))
     v = np.empty((1, robot.model.nv))
     a = np.empty((1, robot.model.nv))
     for i in range(N):
-        q = np.vstack(
-            (q, np.random.uniform(low=mlow, high=mhigh, size=(robot.model.nq,)))
-        )
-        v = np.vstack(
-            (v, np.random.uniform(low=mlow, high=mhigh, size=(robot.model.nv,)))
-        )
-        a = np.vstack(
-            (a, np.random.uniform(low=mlow, high=mhigh, size=(robot.model.nv,)))
-        )
+        q = np.vstack((
+            q,
+            np.random.uniform(low=mlow, high=mhigh, size=(robot.model.nq,))
+        ))
+        v = np.vstack((
+            v,
+            np.random.uniform(low=mlow, high=mhigh, size=(robot.model.nv,))
+        ))
+        a = np.vstack((
+            a,
+            np.random.uniform(low=mlow, high=mhigh, size=(robot.model.nv,))
+        ))
     return q, v, a
 
 
 # TODO: generalize determine number of joints after the base link
 def generate_waypoints_fext(N, robot, mlow, mhigh):
-    """This function generates N random values for joints' position,velocity, acceleration.
-    Input:  N: number of samples
-                    nq: length of q, nv : length of v
-                    mlow and mhigh: the bound for random function
-    Output: q, v, a: joint's position, velocity, acceleration"""
+    """Generate random values for joints with external forces.
+
+    Args:
+        N: Number of samples
+        robot: Robot model object
+        mlow: Lower bound for random values
+        mhigh: Upper bound for random values
+
+    Returns:
+        tuple: (q, v, a) joint position, velocity, acceleration arrays
+    """
     nq = robot.model.nq
     nv = robot.model.nv
     q0 = robot.q0[:7]
@@ -55,31 +70,51 @@ def generate_waypoints_fext(N, robot, mlow, mhigh):
     v = np.empty((1, nv))
     a = np.empty((1, nv))
     for i in range(N):
-
-        q_ = np.append(q0, np.random.uniform(low=mlow, high=mhigh, size=(nq - 7,)))
+        q_ = np.append(
+            q0,
+            np.random.uniform(low=mlow, high=mhigh, size=(nq - 7,))
+        )
         q = np.vstack((q, q_))
 
-        v_ = np.append(v0, np.random.uniform(low=mlow, high=mhigh, size=(nv - 6,)))
+        v_ = np.append(
+            v0,
+            np.random.uniform(low=mlow, high=mhigh, size=(nv - 6,))
+        )
         v = np.vstack((v, v_))
 
-        a_ = np.append(a0, np.random.uniform(low=mlow, high=mhigh, size=(nv - 6,)))
+        a_ = np.append(
+            a0,
+            np.random.uniform(low=mlow, high=mhigh, size=(nv - 6,))
+        )
         a = np.vstack((a, a_))
     return q, v, a
 
 
 def get_torque_rand(N, robot, q, v, a, param):
+    """Calculate random torque values including various dynamic effects.
+
+    Args:
+        N: Number of samples
+        robot: Robot model object
+        q: Joint positions array
+        v: Joint velocities array
+        a: Joint accelerations array
+        param: Dictionary of dynamic parameters
+
+    Returns:
+        array: Joint torques array
+    """
     tau = np.zeros(robot.model.nv * N)
     for i in range(N):
         for j in range(robot.model.nv):
             tau[j * N + i] = pin.rnea(
-                robot.model, robot.data, q[i, :], v[i, :], a[i, :]
-            )[j]
+                robot.model, robot.data, q[i, :], v[i, :], a[i, :])[j]
     if param["has_friction"]:
         for i in range(N):
             for j in range(robot.model.nv):
-                tau[j * N + i] += (
-                    v[i, j] * param["fv"][j] + np.sign(v[i, j]) * param["fs"][j]
-                )
+                fv_term = v[i, j] * param["fv"][j]
+                fs_term = np.sign(v[i, j]) * param["fs"][j]
+                tau[j * N + i] += fv_term + fs_term
     if param["has_actuator_inertia"]:
         for i in range(N):
             for j in range(robot.model.nv):
@@ -89,7 +124,6 @@ def get_torque_rand(N, robot, q, v, a, param):
             for j in range(robot.model.nv):
                 tau[j * N + i] += param["off"][j]
     if param["has_coupled_wrist"]:
-
         for i in range(N):
             for j in range(robot.model.nv):
                 if j == robot.model.nv - 2:
@@ -97,16 +131,20 @@ def get_torque_rand(N, robot, q, v, a, param):
                         param["Iam6"] * v[i, robot.model.nv - 1]
                         + param["fvm6"] * v[i, robot.model.nv - 1]
                         + param["fsm6"]
-                        * np.sign(v[i, robot.model.nv - 2] + v[i, robot.model.nv - 1])
+                        * np.sign(
+                            v[i, robot.model.nv - 2] + v[i, robot.model.nv - 1]
+                        )
                     )
                 if j == robot.model.nv - 1:
                     tau[j * N + i] += (
                         param["Iam6"] * v[i, robot.model.nv - 2]
                         + param["fvm6"] * v[i, robot.model.nv - 2]
                         + param["fsm6"]
-                        * np.sign(v[i, robot.model.nv - 2] + v[i, robot.model.nv - 1])
+                        * np.sign(
+                            v[i, robot.model.nv - 2] + v[i, robot.model.nv - 1]
+                        )
                     )
     return tau
 
 
-# TODO: finsish complete identification on any robot
+# TODO: finish complete identification on any robot

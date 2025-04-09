@@ -18,14 +18,17 @@ import numpy as np
 
 
 class Measurement:
+    """Class for handling different types of measurements."""
+
     def __init__(self, name, joint, frame, type, value):
-        """
-        Input : name (str) : the name of the measurement
-                joint (str) : the joint in which the measurement is expressed
-                frame (str) : the closest frame from the measurement
-                type (str) : type of measurement, choice between SE3, wrench or current
-                value (6D array) : value of the measurement. Suppose that value is given wrt the joint placement
-                      (what if current ?)
+        """Initialize measurement.
+
+        Args:
+            name: Name of measurement
+            joint: Joint where measurement is expressed 
+            frame: Closest frame from measurement
+            type: Type of measurement (SE3, wrench, current)
+            value: 6D measurement value wrt joint placement
         """
         self.name = name
         self.joint = joint
@@ -44,8 +47,14 @@ class Measurement:
             raise TypeError("The type of your measurement is not valid")
 
     def add_SE3_measurement(self, model):
-        """Adds the SE3 measurement to a given model"""
+        """Add SE3 measurement to model.
 
+        Args:
+            model: Pinocchio model to add measurement to
+
+        Returns:
+            tuple: Updated model and data
+        """
         if self.type == "SE3":
             self.frame_index = model.addFrame(
                 pin.Frame(

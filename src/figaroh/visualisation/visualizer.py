@@ -21,14 +21,22 @@ from . import colors
 
 
 def materialFromColor(color):
-    if isinstance(color, meshcat.geometry.MeshPhongMaterial):
+    """Convert color to Material.
+    
+    Args:
+        color: Color specification (Material, string, list, or None)
+        
+    Returns:
+        meshcat.geometry.Material: Material object
+    """
+    if isinstance(color, meshcat.geometry.Material):
         return color
     elif isinstance(color, str):
         material = colors.colormap[color]
     elif isinstance(color, list):
         from .colors import rgb2int
 
-        material = meshcat.geometry.MeshPhongMaterial()
+        material = meshcat.geometry.Material()
         material.color = rgb2int(*[int(c * 255) for c in color[:3]])
         if len(color) == 3:
             material.transparent = False
@@ -45,11 +53,32 @@ def materialFromColor(color):
 
 
 class MeshcatVisualizer(PMV):
+    """Extension of Pinocchio MeshcatVisualizer with additional features."""
+    
     def __init__(
-        self, robot=None, model=None, collision_model=None, visual_model=None, url=None
+        self,
+        robot=None,
+        model=None, 
+        collision_model=None,
+        visual_model=None,
+        url=None
     ):
+        """Initialize visualizer.
+
+        Args:
+            robot: Robot object
+            model: Pinocchio model
+            collision_model: Collision model
+            visual_model: Visual model  
+            url: Server URL for visualization
+        """
         if robot is not None:
-            PMV.__init__(self, robot.model, robot.collision_model, robot.visual_model)
+            PMV.__init__(
+                self,
+                robot.model,
+                robot.collision_model,
+                robot.visual_model
+            )
         elif model is not None:
             PMV.__init__(self, model, collision_model, visual_model)
 
