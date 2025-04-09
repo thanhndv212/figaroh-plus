@@ -17,7 +17,7 @@ extensions = [
 # HTML output options
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
-html_baseurl = 'https://thanhndv212.github.io/figaroh/'
+html_baseurl = 'https://thanhndv212.github.io/figaroh-plus/'
 
 # Other Sphinx settings
 nitpicky = True
@@ -27,7 +27,7 @@ nitpick_ignore = []
 html_context = {
     'display_github': True,
     'github_user': 'thanhndv212',
-    'github_repo': 'figaroh',
+    'github_repo': 'figaroh-plus',
     'github_version': 'main',
     'conf_py_path': '/docs/source/'
 }
