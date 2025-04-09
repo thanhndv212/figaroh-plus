@@ -5,9 +5,8 @@ sys.path.insert(0, os.path.abspath('../../src'))
 project = 'figaroh'
 copyright = '2021-2025, Thanh Nguyen'
 author = 'Thanh Nguyen'
-version = '0.1.0'
-release = '0.1.0'
 
+# Extensions configuration
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
@@ -15,17 +14,20 @@ extensions = [
     'sphinx.ext.githubpages'
 ]
 
-templates_path = ['_templates']
-exclude_patterns = []
-
-# GitHub Pages config
-html_baseurl = 'https://thanhndv212.github.io/figaroh/'
+# HTML output options
 html_theme = 'sphinx_rtd_theme'
-html_theme_options = {
-    'display_version': True,
-    'prev_next_buttons_location': 'bottom',
-    'style_external_links': False,
-    'style_nav_header_background': '#2980B9',
-}
-
 html_static_path = ['_static']
+html_baseurl = 'https://thanhndv212.github.io/figaroh/'
+
+# Other Sphinx settings
+nitpicky = True
+nitpick_ignore = []
+
+# GitHub Pages settings
+html_context = {
+    'display_github': True,
+    'github_user': 'thanhndv212',
+    'github_repo': 'figaroh',
+    'github_version': 'main',
+    'conf_py_path': '/docs/source/'
+}
