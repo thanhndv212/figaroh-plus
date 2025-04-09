@@ -1,24 +1,25 @@
 name: Build and Deploy Docs
+
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
 
-permissions:
-  contents: write
-
 jobs:
-  docs:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup Python
+      - name: Checkout 
+        uses: actions/checkout@v3
+
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
-      
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -26,20 +27,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install sphinx sphinx-rtd-theme
           pip install -e .
-      
-      - name: Build docs
-        working-directory: ./docs
+
+      - name: Build Documentation
         run: |
-          make clean
+          cd docs
           make html
-          cp -r build/html/* build/  # Move HTML files up one level
-          touch build/.nojekyll  # Prevent Jekyll processing
-      
+          touch build/html/.nojekyll
+
       - name: Deploy to GitHub Pages
-        if: success() && github.ref == 'refs/heads/main'
-        uses: peaceiris/actions-gh-pages@v3
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/build  # Changed from build/html
-          force_orphan: true
-          enable_jekyll: false
+          repository-name: thanhndv212/figaroh
+          branch: gh-pages
+          folder: docs/build/html
+          clean: true
