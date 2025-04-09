@@ -19,6 +19,16 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 html_baseurl = 'https://thanhndv212.github.io/figaroh-plus/'
 
+# Disable Jekyll
+html_extra_path = ['.nojekyll']
+
+# Theme options
+html_theme_options = {
+    'display_version': True,
+    'prev_next_buttons_location': 'bottom',
+    'style_external_links': False,
+}
+
 # Other Sphinx settings
 nitpicky = True
 nitpick_ignore = []
