@@ -23,9 +23,8 @@ jobs:
           pip install -e .
       
       - name: Build docs
-        run: |
-          cd docs
-          make html
+        working-directory: ./docs
+        run: make html
       
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/main'
