@@ -99,18 +99,12 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">CollisionWrapper</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper class for handling collision checking and visualization.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">robot</span><span class="p">,</span>
-        <span class="n">geom_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">geom_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">viz</span><span class="o">=</span><span class="kc">None</span>
-    <span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">geom_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geom_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">viz</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize collision wrapper.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            robot: Robot model</span>
-<span class="sd">            geom_model: Optional geometry model </span>
+<span class="sd">            geom_model: Optional geometry model</span>
 <span class="sd">            geom_data: Optional geometry data</span>
 <span class="sd">            viz: Optional visualizer instance</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -163,11 +157,11 @@
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper.getCollisionList">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">getCollisionList</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get list of collision triplets.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            list: Triplets [index, collision, result] where:</span>
 <span class="sd">                - index: Index of collision pair</span>
-<span class="sd">                - collision: gmodel.collisionPairs[index]  </span>
+<span class="sd">                - collision: gmodel.collisionPairs[index]</span>
 <span class="sd">                - result: gdata.collisionResults[index]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span>
@@ -184,7 +178,7 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            collisions: Optional list of collision triplets</span>
-<span class="sd">            </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            ndarray: Array of minimum distances</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -192,20 +186,24 @@
             <span class="n">collisions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getCollisionList</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">collisions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
-        <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">gdata</span><span class="o">.</span><span class="n">distanceResults</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">min_distance</span> 
-            <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="ow">in</span> <span class="n">collisions</span>
-        <span class="p">])</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gdata</span><span class="o">.</span><span class="n">distanceResults</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">min_distance</span>
+                <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="ow">in</span> <span class="n">collisions</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="n">dist</span></div>
 
 
 <div class="viewcode-block" id="CollisionWrapper.getDistances">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper.getDistances">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">getDistances</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">dist_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
-            <span class="n">pin</span><span class="o">.</span><span class="n">computeDistance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdata</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">min_distance</span>
-            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span><span class="o">.</span><span class="n">collisionPairs</span><span class="p">))</span>
-        <span class="p">])</span>
+        <span class="n">dist_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">pin</span><span class="o">.</span><span class="n">computeDistance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdata</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">min_distance</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span><span class="o">.</span><span class="n">collisionPairs</span><span class="p">))</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="n">dist_all</span></div>
 
 
@@ -219,9 +217,14 @@
             <span class="n">name2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span><span class="o">.</span><span class="n">geometryObjects</span><span class="p">[</span><span class="n">cp</span><span class="o">.</span><span class="n">second</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
             <span class="n">is_collision</span> <span class="o">=</span> <span class="s2">&quot;Yes&quot;</span> <span class="k">if</span> <span class="n">cr</span><span class="o">.</span><span class="n">isCollision</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;No&quot;</span>
             <span class="nb">print</span><span class="p">(</span>
-                <span class="s2">&quot;collision pair:&quot;</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">,</span>
-                <span class="n">name1</span><span class="p">,</span> <span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">name2</span><span class="p">,</span>
-                <span class="s2">&quot;- collision:&quot;</span><span class="p">,</span> <span class="n">is_collision</span><span class="p">,</span>
+                <span class="s2">&quot;collision pair:&quot;</span><span class="p">,</span>
+                <span class="n">k</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="n">name1</span><span class="p">,</span>
+                <span class="s2">&quot;,&quot;</span><span class="p">,</span>
+                <span class="n">name2</span><span class="p">,</span>
+                <span class="s2">&quot;- collision:&quot;</span><span class="p">,</span>
+                <span class="n">is_collision</span><span class="p">,</span>
             <span class="p">)</span></div>
 
 
@@ -262,10 +265,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncollisions</span><span class="p">,</span> <span class="n">ncollisions</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="o">.</span><span class="n">addCylinder</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">patchName</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">),</span>
-                    <span class="mf">0.0005</span><span class="p">,</span>
-                    <span class="mf">0.05</span><span class="p">,</span>
-                    <span class="s2">&quot;red&quot;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">patchName</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="mf">0.0005</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span>
                 <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">ncollisions</span> <span class="o">=</span> <span class="n">ncollisions</span></div>
@@ -282,15 +282,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">patchName</span> <span class="o">%</span> <span class="p">(</span><span class="n">ipatch</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
         <span class="n">R</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">Quaternion</span><span class="o">.</span><span class="n">FromTwoVectors</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> 
-            <span class="n">contact</span><span class="o">.</span><span class="n">normal</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">contact</span><span class="o">.</span><span class="n">normal</span>
         <span class="p">)</span><span class="o">.</span><span class="n">matrix</span><span class="p">()</span>
         <span class="n">M</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">SE3</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">contact</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="o">.</span><span class="n">addCylinder</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">patchName</span> <span class="o">%</span> <span class="p">(</span><span class="n">ipatch</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">),</span>
-            <span class="mf">0.0005</span><span class="p">,</span>
-            <span class="mf">0.05</span><span class="p">,</span>
-            <span class="s2">&quot;red&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">patchName</span> <span class="o">%</span> <span class="p">(</span><span class="n">ipatch</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="mf">0.0005</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="o">.</span><span class="n">applyConfiguration</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">M</span><span class="p">)</span></div>
 
