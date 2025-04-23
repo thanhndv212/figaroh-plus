@@ -261,6 +261,43 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">q</span><span class="p">)</span></div>
 </div>
 
+
+
+<div class="viewcode-block" id="load_robot">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robot.load_robot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_robot</span><span class="p">(</span><span class="n">robot_urdf</span><span class="p">,</span> <span class="n">package_dirs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">isFext</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">load_by_urdf</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">robot_pkg</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load the robot model from the URDF file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pinocchio</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">rospkg</span>
+
+    <span class="k">if</span> <span class="n">load_by_urdf</span><span class="p">:</span>
+        <span class="c1"># import os</span>
+        <span class="c1"># ros_package_path = os.getenv(&#39;ROS_PACKAGE_PATH&#39;)</span>
+        <span class="c1"># package_dirs = ros_package_path.split(&#39;:&#39;)</span>
+
+        <span class="n">package_dirs</span> <span class="o">=</span> <span class="n">rospkg</span><span class="o">.</span><span class="n">RosPack</span><span class="p">()</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">robot_pkg</span><span class="p">)</span>
+        <span class="n">robot</span> <span class="o">=</span> <span class="n">Robot</span><span class="p">(</span>
+            <span class="n">robot_urdf</span><span class="p">,</span>
+            <span class="n">package_dirs</span><span class="o">=</span><span class="n">package_dirs</span><span class="p">,</span>
+            <span class="n">isFext</span><span class="o">=</span><span class="n">isFext</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">rospy</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pinocchio.robot_wrapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">RobotWrapper</span>
+
+        <span class="n">robot_xml</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;robot_description&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">isFext</span><span class="p">:</span>
+            <span class="n">robot</span> <span class="o">=</span> <span class="n">RobotWrapper</span><span class="p">(</span>
+                <span class="n">pinocchio</span><span class="o">.</span><span class="n">buildModelFromXML</span><span class="p">(</span>
+                    <span class="n">robot_xml</span><span class="p">,</span> <span class="n">root_joint</span><span class="o">=</span><span class="n">pinocchio</span><span class="o">.</span><span class="n">JointModelFreeFlyer</span><span class="p">()</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">robot</span> <span class="o">=</span> <span class="n">RobotWrapper</span><span class="p">(</span><span class="n">pinocchio</span><span class="o">.</span><span class="n">buildModelFromXML</span><span class="p">(</span><span class="n">robot_xml</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">robot</span></div>
+
 </pre></div>
 
            </div>
