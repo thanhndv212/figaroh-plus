@@ -6,10 +6,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>figaroh.identification.identification_tools &mdash; figaroh 0.1.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
+    <link rel="canonical" href="https://thanhndv212.github.io/figaroh/_modules/figaroh/identification/identification_tools.html" />
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../../../_static/documentation_options.js?v=01f34227"></script>
@@ -24,7 +25,7 @@
   <div class="wy-grid-for-nav">
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
 
           
           
@@ -53,7 +54,7 @@
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../../index.html">figaroh</a>
       </nav>
@@ -89,19 +90,19 @@
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
 
-<span class="kn">import</span> <span class="nn">pinocchio</span> <span class="k">as</span> <span class="nn">pin</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">signal</span>
-<span class="kn">import</span> <span class="nn">quadprog</span>
-<span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pinocchio</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">signal</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">quadprog</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">operator</span>
 
 
 <div class="viewcode-block" id="get_param_from_yaml">
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.get_param_from_yaml">[docs]</a>
-<span class="k">def</span> <span class="nf">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse identification parameters from YAML configuration file.</span>
 
-<span class="sd">    Extracts robot parameters, problem settings, signal processing options and total </span>
+<span class="sd">    Extracts robot parameters, problem settings, signal processing options and total</span>
 <span class="sd">    least squares parameters from a YAML config file.</span>
 
 <span class="sd">    Args:</span>
@@ -164,14 +165,14 @@
 
 <div class="viewcode-block" id="set_missing_params_setting">
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.set_missing_params_setting">[docs]</a>
-<span class="k">def</span> <span class="nf">set_missing_params_setting</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">params_settings</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_missing_params_setting</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">params_settings</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set default values for missing robot parameters.</span>
-<span class="sd">    </span>
-<span class="sd">    Fills in missing parameters in the robot model with default values from </span>
+
+<span class="sd">    Fills in missing parameters in the robot model with default values from</span>
 <span class="sd">    params_settings when URDF doesn&#39;t specify them.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        robot (pin.RobotWrapper): Robot instance to update </span>
+<span class="sd">        robot (pin.RobotWrapper): Robot instance to update</span>
 <span class="sd">        params_settings (dict): Default parameter values containing:</span>
 <span class="sd">            - q_lim_def: Default joint position limits</span>
 <span class="sd">            - dq_lim_def: Default joint velocity limits</span>
@@ -191,10 +192,9 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Compare lower and upper position limits</span>
     <span class="n">diff_limit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">setdiff1d</span><span class="p">(</span>
-        <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">lowerPositionLimit</span><span class="p">,</span> 
-        <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">upperPositionLimit</span>
+        <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">lowerPositionLimit</span><span class="p">,</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">upperPositionLimit</span>
     <span class="p">)</span>
-    
+
     <span class="c1"># Set default joint limits if none defined</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">diff_limit</span><span class="o">.</span><span class="n">any</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No joint limits. Set default values&quot;</span><span class="p">)</span>
@@ -204,7 +204,7 @@
 
     <span class="c1"># Set default velocity limits if zero</span>
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">velocityLimit</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No velocity limit. Set default value&quot;</span><span class="p">)</span> 
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No velocity limit. Set default value&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nq</span><span class="p">):</span>
             <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">velocityLimit</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">params_settings</span><span class="p">[</span><span class="s2">&quot;dq_lim_def&quot;</span><span class="p">]</span>
 
@@ -227,7 +227,7 @@
             <span class="k">if</span> <span class="n">ii</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="c1"># Default viscous friction values</span>
                 <span class="n">fv</span> <span class="o">=</span> <span class="p">[(</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span><span class="p">]</span>
-                <span class="c1"># Default static friction values  </span>
+                <span class="c1"># Default static friction values</span>
                 <span class="n">fs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">fv</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span>
@@ -249,15 +249,15 @@
 
 <div class="viewcode-block" id="base_param_from_standard">
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.base_param_from_standard">[docs]</a>
-<span class="k">def</span> <span class="nf">base_param_from_standard</span><span class="p">(</span><span class="n">phi_standard</span><span class="p">,</span> <span class="n">params_base</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">base_param_from_standard</span><span class="p">(</span><span class="n">phi_standard</span><span class="p">,</span> <span class="n">params_base</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert standard parameters to base parameters.</span>
 
-<span class="sd">    Takes standard dynamic parameters and calculates the corresponding base </span>
+<span class="sd">    Takes standard dynamic parameters and calculates the corresponding base</span>
 <span class="sd">    parameters using analytical relationships between them.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        phi_standard (dict): Standard parameters from model/URDF</span>
-<span class="sd">        params_base (list): Analytical parameter relationships </span>
+<span class="sd">        params_base (list): Analytical parameter relationships</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        list: Base parameter values calculated from standard parameters</span>
@@ -288,10 +288,10 @@
 
 <div class="viewcode-block" id="relative_stdev">
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.relative_stdev">[docs]</a>
-<span class="k">def</span> <span class="nf">relative_stdev</span><span class="p">(</span><span class="n">W_b</span><span class="p">,</span> <span class="n">phi_b</span><span class="p">,</span> <span class="n">tau</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">relative_stdev</span><span class="p">(</span><span class="n">W_b</span><span class="p">,</span> <span class="n">phi_b</span><span class="p">,</span> <span class="n">tau</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate relative standard deviation of identified parameters.</span>
-<span class="sd">    </span>
-<span class="sd">    Implements the residual error method from [Pressé &amp; Gautier 1991] to </span>
+
+<span class="sd">    Implements the residual error method from [Pressé &amp; Gautier 1991] to</span>
 <span class="sd">    estimate parameter uncertainty.</span>
 
 <span class="sd">    Args:</span>
@@ -302,9 +302,10 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        ndarray: Relative standard deviation (%) for each base parameter</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># stdev of residual error ro </span>
-    <span class="n">sig_ro_sqr</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">((</span><span class="n">tau</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">W_b</span><span class="p">,</span> <span class="n">phi_b</span><span class="p">)))</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> 
-                 <span class="p">(</span><span class="n">W_b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">phi_b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="c1"># stdev of residual error ro</span>
+    <span class="n">sig_ro_sqr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">((</span><span class="n">tau</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">W_b</span><span class="p">,</span> <span class="n">phi_b</span><span class="p">)))</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span>
+        <span class="n">W_b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">phi_b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="p">)</span>
 
     <span class="c1"># covariance matrix of estimated parameters</span>
     <span class="n">C_x</span> <span class="o">=</span> <span class="n">sig_ro_sqr</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">W_b</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">W_b</span><span class="p">))</span>
@@ -313,10 +314,7 @@
     <span class="n">std_x_sqr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">C_x</span><span class="p">)</span>
     <span class="n">std_xr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">std_x_sqr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">std_x_sqr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-        <span class="n">std_xr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span>
-            <span class="mi">100</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">std_x_sqr</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">phi_b</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> 
-            <span class="mi">2</span>
-        <span class="p">)</span>
+        <span class="n">std_xr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">std_x_sqr</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">phi_b</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="mi">2</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">std_xr</span></div>
 
@@ -324,10 +322,10 @@
 
 <div class="viewcode-block" id="index_in_base_params">
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.index_in_base_params">[docs]</a>
-<span class="k">def</span> <span class="nf">index_in_base_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">id_segments</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">index_in_base_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">id_segments</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Map segment IDs to their base parameters.</span>
-<span class="sd">    </span>
-<span class="sd">    For each segment ID, finds which base parameters contain inertial </span>
+
+<span class="sd">    For each segment ID, finds which base parameters contain inertial</span>
 <span class="sd">    parameters from that segment.</span>
 
 <span class="sd">    Args:</span>
@@ -381,10 +379,10 @@
 
 <div class="viewcode-block" id="weigthed_least_squares">
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.weigthed_least_squares">[docs]</a>
-<span class="k">def</span> <span class="nf">weigthed_least_squares</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">phi_b</span><span class="p">,</span> <span class="n">W_b</span><span class="p">,</span> <span class="n">tau_meas</span><span class="p">,</span> <span class="n">tau_est</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">weigthed_least_squares</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">phi_b</span><span class="p">,</span> <span class="n">W_b</span><span class="p">,</span> <span class="n">tau_meas</span><span class="p">,</span> <span class="n">tau_est</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute weighted least squares solution for parameter identification.</span>
-<span class="sd">    </span>
-<span class="sd">    Implements iteratively reweighted least squares method from </span>
+
+<span class="sd">    Implements iteratively reweighted least squares method from</span>
 <span class="sd">    [Gautier, 1997]. Accounts for heteroscedastic noise.</span>
 
 <span class="sd">    Args:</span>
@@ -404,19 +402,18 @@
     <span class="n">start_idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nq</span><span class="p">):</span>
         <span class="n">tau_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start_idx</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;idx_tau_stop&quot;</span><span class="p">][</span><span class="n">ii</span><span class="p">]))</span>
-        <span class="n">diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">tau_meas</span><span class="p">[</span><span class="n">tau_slice</span><span class="p">]</span> <span class="o">-</span> <span class="n">tau_est</span><span class="p">[</span><span class="n">tau_slice</span><span class="p">])</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">tau_meas</span><span class="p">[</span><span class="n">tau_slice</span><span class="p">]</span> <span class="o">-</span> <span class="n">tau_est</span><span class="p">[</span><span class="n">tau_slice</span><span class="p">]</span>
         <span class="n">denom</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau_meas</span><span class="p">[</span><span class="n">tau_slice</span><span class="p">])</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">phi_b</span><span class="p">)</span>
         <span class="n">sigma</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span> <span class="o">/</span> <span class="n">denom</span>
 
         <span class="n">start_idx</span> <span class="o">=</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;idx_tau_stop&quot;</span><span class="p">][</span><span class="n">ii</span><span class="p">]</span>
-        
+
         <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nb_samples</span><span class="p">):</span>
             <span class="n">idx</span> <span class="o">=</span> <span class="n">jj</span> <span class="o">+</span> <span class="n">ii</span> <span class="o">*</span> <span class="n">nb_samples</span>
             <span class="n">P</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
 
         <span class="n">phi_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">W_b</span><span class="p">)),</span> 
-            <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">tau_meas</span><span class="p">)</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">W_b</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">tau_meas</span><span class="p">)</span>
         <span class="p">)</span>
 
     <span class="n">phi_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">phi_b</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
@@ -427,10 +424,10 @@
 
 <div class="viewcode-block" id="calculate_first_second_order_differentiation">
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.calculate_first_second_order_differentiation">[docs]</a>
-<span class="k">def</span> <span class="nf">calculate_first_second_order_differentiation</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_first_second_order_differentiation</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate joint velocities and accelerations from positions.</span>
 
-<span class="sd">    Computes first and second order derivatives of joint positions using central </span>
+<span class="sd">    Computes first and second order derivatives of joint positions using central</span>
 <span class="sd">    differences. Handles both constant and variable timesteps.</span>
 
 <span class="sd">    Args:</span>
@@ -445,7 +442,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        tuple:</span>
 <span class="sd">            - q (ndarray): Trimmed position matrix</span>
-<span class="sd">            - dq (ndarray): Joint velocity matrix  </span>
+<span class="sd">            - dq (ndarray): Joint velocity matrix</span>
 <span class="sd">            - ddq (ndarray): Joint acceleration matrix</span>
 
 <span class="sd">    Note:</span>
@@ -486,10 +483,10 @@
 
 <div class="viewcode-block" id="low_pass_filter_data">
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.low_pass_filter_data">[docs]</a>
-<span class="k">def</span> <span class="nf">low_pass_filter_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">nbutter</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">low_pass_filter_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">nbutter</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply zero-phase Butterworth low-pass filter to measurement data.</span>
-<span class="sd">    </span>
-<span class="sd">    Uses scipy&#39;s filtfilt for zero-phase digital filtering. Removes high </span>
+
+<span class="sd">    Uses scipy&#39;s filtfilt for zero-phase digital filtering. Removes high</span>
 <span class="sd">    frequency noise while preserving signal phase. Handles border effects by</span>
 <span class="sd">    trimming filtered data.</span>
 
@@ -504,7 +501,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        ndarray: Filtered data with border regions removed</span>
 
-<span class="sd">    Note: </span>
+<span class="sd">    Note:</span>
 <span class="sd">        Border effects are handled by removing nborder = 5*nbutter samples</span>
 <span class="sd">        from start and end of filtered signal.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -517,7 +514,7 @@
     <span class="c1"># Remove border effects</span>
     <span class="n">nbord</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">nbutter</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">s_</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">nbord</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">end_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">nbord</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> 
+    <span class="n">end_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">nbord</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">end_slice</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">data</span></div>
@@ -529,13 +526,13 @@
 
 <div class="viewcode-block" id="quadprog_solve_qp">
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.quadprog_solve_qp">[docs]</a>
-<span class="k">def</span> <span class="nf">quadprog_solve_qp</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">G</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">A</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">quadprog_solve_qp</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">G</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">A</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Solve a Quadratic Program defined as:</span>
-<span class="sd">        </span>
+
 <span class="sd">    minimize    1/2 x^T P x + q^T x</span>
 <span class="sd">    subject to  G x &lt;= h</span>
 <span class="sd">                A x = b</span>
-<span class="sd">                </span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        P (ndarray): Symmetric quadratic cost matrix (n x n)</span>
 <span class="sd">        q (ndarray): Linear cost vector (n)</span>
@@ -543,10 +540,10 @@
 <span class="sd">        h (ndarray, optional): Linear inequality constraint vector (m).</span>
 <span class="sd">        A (ndarray, optional): Linear equality constraint matrix (p x n).</span>
 <span class="sd">        b (ndarray, optional): Linear equality constraint vector (p).</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        ndarray: Optimal solution vector x* (n)</span>
-<span class="sd">        </span>
+
 <span class="sd">    Note:</span>
 <span class="sd">        Ensures P is symmetric positive definite by adding small identity matrix</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -568,12 +565,12 @@
 
 <div class="viewcode-block" id="calculate_standard_parameters">
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.identification_tools.calculate_standard_parameters">[docs]</a>
-<span class="k">def</span> <span class="nf">calculate_standard_parameters</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_standard_parameters</span><span class="p">(</span>
     <span class="n">model</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">COM_max</span><span class="p">,</span> <span class="n">COM_min</span><span class="p">,</span> <span class="n">params_standard_u</span><span class="p">,</span> <span class="n">alpha</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate optimal standard inertial parameters via quadratic</span>
 <span class="sd">    programming.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Finds standard parameters that:</span>
 <span class="sd">    1. Best fit measurement data (tau)</span>
 <span class="sd">    2. Stay close to reference values from URDF</span>
@@ -584,7 +581,7 @@
 <span class="sd">        W (ndarray): Regressor matrix mapping parameters to measurements</span>
 <span class="sd">        tau (ndarray): Measured force/torque data</span>
 <span class="sd">        COM_max (ndarray): Upper bounds on center of mass positions</span>
-<span class="sd">        COM_min (ndarray): Lower bounds on center of mass positions </span>
+<span class="sd">        COM_min (ndarray): Lower bounds on center of mass positions</span>
 <span class="sd">        params_standard_u (dict): Reference parameters from URDF</span>
 <span class="sd">        alpha (float): Weight between fitting data (1) vs staying near refs (0)</span>
 
@@ -592,7 +589,7 @@
 <span class="sd">        tuple:</span>
 <span class="sd">            - phi_standard (ndarray): Optimized standard parameters</span>
 <span class="sd">            - phi_ref (ndarray): Reference parameters from URDF</span>
-<span class="sd">            </span>
+
 <span class="sd">    Note:</span>
 <span class="sd">        Constrains parameters to stay within [0.7, 1.3] times reference values</span>
 <span class="sd">        except for COM positions which use explicit bounds.</span>
@@ -630,10 +627,10 @@
     <span class="n">sf1</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">phi_ref</span><span class="p">)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">phi_ref</span><span class="p">))</span>
     <span class="n">sf2</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">tau</span><span class="p">)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau</span><span class="p">))</span>
 
-    <span class="n">P</span> <span class="o">=</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">sf1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> 
-         <span class="n">alpha</span> <span class="o">*</span> <span class="n">sf2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">W</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">sf1</span> <span class="o">*</span> <span class="n">phi_ref</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> 
-           <span class="n">sf2</span> <span class="o">*</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">tau</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">W</span><span class="p">)))</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">sf1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">sf2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span>
+        <span class="n">W</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">W</span>
+    <span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="o">-</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">sf1</span> <span class="o">*</span> <span class="n">phi_ref</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="n">sf2</span> <span class="o">*</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">tau</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
 
     <span class="c1"># Setting constraints</span>
     <span class="n">G</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(((</span><span class="mi">14</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">nreal</span><span class="p">),</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">nreal</span><span class="p">))</span>

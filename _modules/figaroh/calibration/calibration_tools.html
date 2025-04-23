@@ -6,10 +6,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>figaroh.calibration.calibration_tools &mdash; figaroh 0.1.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
+    <link rel="canonical" href="https://thanhndv212.github.io/figaroh/_modules/figaroh/calibration/calibration_tools.html" />
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../../../_static/documentation_options.js?v=01f34227"></script>
@@ -24,7 +25,7 @@
   <div class="wy-grid-for-nav">
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
 
           
           
@@ -53,7 +54,7 @@
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../../index.html">figaroh</a>
       </nav>
@@ -89,14 +90,14 @@
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pinocchio</span> <span class="k">as</span> <span class="nn">pin</span>
-<span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pinocchio</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pprint</span>
 
 <span class="c1"># import quadprog as qp</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">..tools.regressor</span> <span class="kn">import</span> <span class="n">eliminate_non_dynaffect</span>
-<span class="kn">from</span> <span class="nn">..tools.qrdecomposition</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..tools.regressor</span><span class="w"> </span><span class="kn">import</span> <span class="n">eliminate_non_dynaffect</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..tools.qrdecomposition</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">get_baseParams</span><span class="p">,</span>
     <span class="n">get_baseIndex</span><span class="p">,</span>
     <span class="n">build_baseRegressor</span><span class="p">,</span>
@@ -131,24 +132,24 @@
 <span class="p">]</span>
 
 
-<span class="c1"># INITIALIZATION TOOLS </span>
+<span class="c1"># INITIALIZATION TOOLS</span>
 <div class="viewcode-block" id="get_param_from_yaml">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.get_param_from_yaml">[docs]</a>
-<span class="k">def</span> <span class="nf">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse calibration parameters from YAML configuration file.</span>
 
-<span class="sd">    Processes robot and calibration data to build a parameter dictionary containing </span>
+<span class="sd">    Processes robot and calibration data to build a parameter dictionary containing</span>
 <span class="sd">    all necessary settings for robot calibration. Handles configuration of:</span>
 <span class="sd">    - Frame identifiers and relationships</span>
 <span class="sd">    - Marker/measurement settings</span>
-<span class="sd">    - Joint indices and configurations  </span>
+<span class="sd">    - Joint indices and configurations</span>
 <span class="sd">    - Non-geometric parameters</span>
 <span class="sd">    - Eye-hand calibration setup</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        robot (pin.RobotWrapper): Robot instance containing model and data</span>
 <span class="sd">        calib_data (dict): Calibration parameters parsed from YAML file containing:</span>
-<span class="sd">            - markers: List of marker configurations </span>
+<span class="sd">            - markers: List of marker configurations</span>
 <span class="sd">            - calib_level: Calibration model type</span>
 <span class="sd">            - base_frame: Starting frame name</span>
 <span class="sd">            - tool_frame: End frame name</span>
@@ -197,16 +198,16 @@
     <span class="n">param</span><span class="p">[</span><span class="s2">&quot;calib_model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;calib_level&quot;</span><span class="p">]</span>
 
     <span class="c1"># Get start and end frames</span>
-    <span class="n">start_frame</span> <span class="o">=</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;base_frame&quot;</span><span class="p">]</span> 
+    <span class="n">start_frame</span> <span class="o">=</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;base_frame&quot;</span><span class="p">]</span>
     <span class="n">end_frame</span> <span class="o">=</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;tool_frame&quot;</span><span class="p">]</span>
-    
+
     <span class="c1"># Validate frames exist</span>
     <span class="n">err_msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_frame </span><span class="si">{}</span><span class="s2"> does not exist&quot;</span>
     <span class="k">if</span> <span class="n">start_frame</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="n">err_msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;Start&quot;</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">end_frame</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="n">err_msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;End&quot;</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">))</span>
-        
+
     <span class="n">param</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">start_frame</span>
     <span class="n">param</span><span class="p">[</span><span class="s2">&quot;end_frame&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">end_frame</span>
 
@@ -225,7 +226,7 @@
             <span class="n">err_msg</span> <span class="o">=</span> <span class="s2">&quot;base_to_ref_frame </span><span class="si">{}</span><span class="s2"> does not exist&quot;</span>
             <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="n">err_msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_to_ref_frame</span><span class="p">))</span>
 
-    <span class="c1"># Validate ref frame if provided  </span>
+    <span class="c1"># Validate ref frame if provided</span>
     <span class="k">if</span> <span class="n">ref_frame</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">ref_frame</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
             <span class="n">err_msg</span> <span class="o">=</span> <span class="s2">&quot;ref_frame </span><span class="si">{}</span><span class="s2"> does not exist&quot;</span>
@@ -330,10 +331,10 @@
 
 <div class="viewcode-block" id="get_joint_offset">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.get_joint_offset">[docs]</a>
-<span class="k">def</span> <span class="nf">get_joint_offset</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">joint_names</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_joint_offset</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">joint_names</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get dictionary of joint offset parameters.</span>
-<span class="sd">    </span>
-<span class="sd">    Maps joint names to their offset parameters, handling special cases for </span>
+
+<span class="sd">    Maps joint names to their offset parameters, handling special cases for</span>
 <span class="sd">    different joint types and multiple DOF joints.</span>
 
 <span class="sd">    Args:</span>
@@ -343,10 +344,10 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        dict: Mapping of joint offset parameter names to initial zero values.</span>
 <span class="sd">            Keys have format: &quot;{offset_type}_{joint_name}&quot;</span>
-<span class="sd">            </span>
+
 <span class="sd">    Example:</span>
 <span class="sd">        &gt;&gt;&gt; offsets = get_joint_offset(robot.model, robot.model.names[1:])</span>
-<span class="sd">        &gt;&gt;&gt; print(offsets[&quot;offsetRZ_joint1&quot;]) </span>
+<span class="sd">        &gt;&gt;&gt; print(offsets[&quot;offsetRZ_joint1&quot;])</span>
 <span class="sd">        0.0</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">joint_off</span> <span class="o">=</span> <span class="p">[]</span>
@@ -371,7 +372,9 @@
                     <span class="o">+</span> <span class="n">name</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">offset_param</span> <span class="o">=</span> <span class="n">shortname</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;JointModel&quot;</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">name</span>
+                <span class="n">offset_param</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">shortname</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;JointModel&quot;</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">name</span>
+                <span class="p">)</span>
             <span class="n">joint_off</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">offset_param</span><span class="p">)</span>
 
     <span class="n">phi_jo</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">joint_off</span><span class="p">)</span>  <span class="c1"># default zero values</span>
@@ -382,10 +385,10 @@
 
 <div class="viewcode-block" id="get_geo_offset">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.get_geo_offset">[docs]</a>
-<span class="k">def</span> <span class="nf">get_geo_offset</span><span class="p">(</span><span class="n">joint_names</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_geo_offset</span><span class="p">(</span><span class="n">joint_names</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get dictionary of geometric parameter variations.</span>
-<span class="sd">    </span>
-<span class="sd">    Creates mapping of geometric offset parameters for each joint&#39;s </span>
+
+<span class="sd">    Creates mapping of geometric offset parameters for each joint&#39;s</span>
 <span class="sd">    position and orientation.</span>
 
 <span class="sd">    Args:</span>
@@ -418,9 +421,9 @@
 
 <div class="viewcode-block" id="add_base_name">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.add_base_name">[docs]</a>
-<span class="k">def</span> <span class="nf">add_base_name</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_base_name</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Add base frame parameters to parameter list.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Updates param[&quot;param_name&quot;] with base frame parameters depending on</span>
 <span class="sd">    calibration model type.</span>
 
@@ -443,9 +446,9 @@
 
 <div class="viewcode-block" id="add_pee_name">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.add_pee_name">[docs]</a>
-<span class="k">def</span> <span class="nf">add_pee_name</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_pee_name</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Add end-effector marker parameters to parameter list.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Adds parameters for each active measurement DOF of each marker.</span>
 
 <span class="sd">    Args:</span>
@@ -456,7 +459,7 @@
 
 <span class="sd">    Side Effects:</span>
 <span class="sd">        Modifies param[&quot;param_name&quot;] in place by appending marker parameters</span>
-<span class="sd">        in format: &quot;{param_type}_{marker_num}&quot; </span>
+<span class="sd">        in format: &quot;{param_type}_{marker_num}&quot;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">PEE_names</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]):</span>
@@ -469,9 +472,9 @@
 
 <div class="viewcode-block" id="add_eemarker_frame">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.add_eemarker_frame">[docs]</a>
-<span class="k">def</span> <span class="nf">add_eemarker_frame</span><span class="p">(</span><span class="n">frame_name</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">rpy</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_eemarker_frame</span><span class="p">(</span><span class="n">frame_name</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">rpy</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Add a new frame attached to the end-effector.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Creates and adds a fixed frame to the robot model at the end-effector location,</span>
 <span class="sd">    typically used for marker or tool frames.</span>
 
@@ -516,7 +519,7 @@
 <span class="c1"># and optimize this procedure.</span>
 <div class="viewcode-block" id="read_config_data">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.read_config_data">[docs]</a>
-<span class="k">def</span> <span class="nf">read_config_data</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">path_to_file</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_config_data</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">path_to_file</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read joint configurations from CSV file.</span>
 
 <span class="sd">    Args:</span>
@@ -538,12 +541,12 @@
 
 <div class="viewcode-block" id="load_data">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.load_data">[docs]</a>
-<span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="n">path_to_file</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">del_list</span><span class="o">=</span><span class="p">[]):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="n">path_to_file</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">del_list</span><span class="o">=</span><span class="p">[]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Load joint configuration and marker data from CSV file.</span>
 
 <span class="sd">    Reads marker positions/orientations and joint configurations from a CSV file.</span>
 <span class="sd">    Handles data validation, bad sample removal, and conversion to numpy arrays.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        path_to_file (str): Path to CSV file containing recorded data</span>
 <span class="sd">        model (pin.Model): Robot model containing joint information</span>
@@ -562,12 +565,12 @@
 
 <span class="sd">    Note:</span>
 <span class="sd">        CSV file must contain columns:</span>
-<span class="sd">        - For each marker i: [xi, yi, zi, phixi, phiyi, phizi] </span>
+<span class="sd">        - For each marker i: [xi, yi, zi, phixi, phiyi, phizi]</span>
 <span class="sd">        - Joint names matching model.names for active joints</span>
-<span class="sd">        </span>
+
 <span class="sd">    Raises:</span>
 <span class="sd">        KeyError: If required columns are missing from CSV</span>
-<span class="sd">        </span>
+
 <span class="sd">    Side Effects:</span>
 <span class="sd">        - Prints joint headers</span>
 <span class="sd">        - Updates param[&quot;NbSample&quot;] with number of valid samples</span>
@@ -625,7 +628,7 @@
 
 <div class="viewcode-block" id="rank_in_configuration">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.rank_in_configuration">[docs]</a>
-<span class="k">def</span> <span class="nf">rank_in_configuration</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">joint_name</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">rank_in_configuration</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">joint_name</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get index of joint in configuration vector.</span>
 
 <span class="sd">    Args:</span>
@@ -647,12 +650,12 @@
 
 <div class="viewcode-block" id="cartesian_to_SE3">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.cartesian_to_SE3">[docs]</a>
-<span class="k">def</span> <span class="nf">cartesian_to_SE3</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cartesian_to_SE3</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert cartesian coordinates to SE3 transformation.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        X (ndarray): (6,) array with [x,y,z,rx,ry,rz] coordinates</span>
-<span class="sd">        </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        pin.SE3: SE3 transformation with:</span>
 <span class="sd">            - translation from X[0:3]</span>
@@ -669,16 +672,16 @@
 
 <div class="viewcode-block" id="xyzquat_to_SE3">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.xyzquat_to_SE3">[docs]</a>
-<span class="k">def</span> <span class="nf">xyzquat_to_SE3</span><span class="p">(</span><span class="n">xyzquat</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">xyzquat_to_SE3</span><span class="p">(</span><span class="n">xyzquat</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert XYZ position and quaternion orientation to SE3 transformation.</span>
 
-<span class="sd">    Takes a 7D vector containing XYZ position and WXYZ quaternion and creates </span>
+<span class="sd">    Takes a 7D vector containing XYZ position and WXYZ quaternion and creates</span>
 <span class="sd">    an SE3 transformation matrix.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        xyzquat (ndarray): (7,) array containing:</span>
 <span class="sd">            - xyzquat[0:3]: XYZ position coordinates</span>
-<span class="sd">            - xyzquat[3:7]: WXYZ quaternion orientation </span>
+<span class="sd">            - xyzquat[3:7]: WXYZ quaternion orientation</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        pin.SE3: Rigid body transformation with:</span>
@@ -686,7 +689,7 @@
 <span class="sd">            - Rotation matrix from normalized quaternion</span>
 
 <span class="sd">    Example:</span>
-<span class="sd">        &gt;&gt;&gt; pos_quat = np.array([0.1, 0.2, 0.3, 1.0, 0, 0, 0]) </span>
+<span class="sd">        &gt;&gt;&gt; pos_quat = np.array([0.1, 0.2, 0.3, 1.0, 0, 0, 0])</span>
 <span class="sd">        &gt;&gt;&gt; transform = xyzquat_to_SE3(pos_quat)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">xyzquat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">xyzquat</span><span class="p">)</span>
@@ -700,9 +703,9 @@
 
 <div class="viewcode-block" id="get_rel_transform">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.get_rel_transform">[docs]</a>
-<span class="k">def</span> <span class="nf">get_rel_transform</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_rel_transform</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get relative transformation between two frames.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Calculates the transform from start_frame to end_frame in the kinematic chain.</span>
 <span class="sd">    Assumes forward kinematics has been updated.</span>
 
@@ -732,9 +735,9 @@
 
 <div class="viewcode-block" id="get_sup_joints">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.get_sup_joints">[docs]</a>
-<span class="k">def</span> <span class="nf">get_sup_joints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_sup_joints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get list of supporting joints between two frames in kinematic chain.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Finds all joints that contribute to relative motion between start_frame and</span>
 <span class="sd">    end_frame by analyzing their support branches in the kinematic tree.</span>
 
@@ -751,9 +754,9 @@
 
 <span class="sd">    Raises:</span>
 <span class="sd">        AssertionError: If end frame appears before start frame in chain</span>
-<span class="sd">        </span>
+
 <span class="sd">    Note:</span>
-<span class="sd">        Excludes &quot;universe&quot; joints from returned list since they don&#39;t </span>
+<span class="sd">        Excludes &quot;universe&quot; joints from returned list since they don&#39;t</span>
 <span class="sd">        contribute to relative motion.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">start_frameId</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getFrameId</span><span class="p">(</span><span class="n">start_frame</span><span class="p">)</span>
@@ -782,7 +785,9 @@
         <span class="k">if</span> <span class="n">shared_joints</span> <span class="o">==</span> <span class="n">branch_s</span><span class="p">:</span>
             <span class="n">sup_joints</span> <span class="o">=</span> <span class="p">[</span><span class="n">branch_s</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="n">list_2</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="n">shared_joints</span> <span class="o">!=</span> <span class="n">branch_e</span><span class="p">,</span> <span class="s2">&quot;End frame should be before start frame.&quot;</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="n">shared_joints</span> <span class="o">!=</span> <span class="n">branch_e</span>
+            <span class="p">),</span> <span class="s2">&quot;End frame should be before start frame.&quot;</span>
             <span class="c1"># case 3: there are overlapping joints between two branches</span>
             <span class="n">sup_joints</span> <span class="o">=</span> <span class="n">list_1</span> <span class="o">+</span> <span class="p">[</span><span class="n">shared_joints</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="n">list_2</span>
     <span class="k">return</span> <span class="n">sup_joints</span></div>
@@ -791,14 +796,14 @@
 
 <div class="viewcode-block" id="get_rel_kinreg">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.get_rel_kinreg">[docs]</a>
-<span class="k">def</span> <span class="nf">get_rel_kinreg</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_rel_kinreg</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate relative kinematic regressor between frames.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Computes frame Jacobian-based regressor matrix mapping small joint displacements</span>
 <span class="sd">    to spatial velocities.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        model (pin.Model): Robot model </span>
+<span class="sd">        model (pin.Model): Robot model</span>
 <span class="sd">        data (pin.Data): Robot data</span>
 <span class="sd">        start_frame (str): Starting frame name</span>
 <span class="sd">        end_frame (str): Target frame name</span>
@@ -824,9 +829,9 @@
 
 <div class="viewcode-block" id="get_rel_jac">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.get_rel_jac">[docs]</a>
-<span class="k">def</span> <span class="nf">get_rel_jac</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_rel_jac</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate relative Jacobian matrix between two frames.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Computes the difference between Jacobians of end_frame and start_frame,</span>
 <span class="sd">    giving the differential mapping from joint velocities to relative spatial velocity.</span>
 
@@ -834,7 +839,7 @@
 <span class="sd">        model (pin.Model): Robot model</span>
 <span class="sd">        data (pin.Data): Robot data</span>
 <span class="sd">        start_frame (str): Starting frame name</span>
-<span class="sd">        end_frame (str): Target frame name </span>
+<span class="sd">        end_frame (str): Target frame name</span>
 <span class="sd">        q (ndarray): Joint configuration vector</span>
 
 <span class="sd">    Returns:</span>
@@ -842,7 +847,7 @@
 <span class="sd">            - Rows represent [dx,dy,dz,wx,wy,wz] spatial velocities</span>
 <span class="sd">            - Columns represent joint velocities</span>
 <span class="sd">            - n is number of joints</span>
-<span class="sd">    </span>
+
 <span class="sd">    Note:</span>
 <span class="sd">        Updates forward kinematics before computing Jacobians</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -854,7 +859,9 @@
     <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 
     <span class="c1"># relative Jacobian</span>
-    <span class="n">J_start</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeFrameJacobian</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">start_frameId</span><span class="p">,</span> <span class="n">pin</span><span class="o">.</span><span class="n">LOCAL</span><span class="p">)</span>
+    <span class="n">J_start</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeFrameJacobian</span><span class="p">(</span>
+        <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">start_frameId</span><span class="p">,</span> <span class="n">pin</span><span class="o">.</span><span class="n">LOCAL</span>
+    <span class="p">)</span>
     <span class="n">J_end</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeFrameJacobian</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">end_frameId</span><span class="p">,</span> <span class="n">pin</span><span class="o">.</span><span class="n">LOCAL</span><span class="p">)</span>
     <span class="n">J_rel</span> <span class="o">=</span> <span class="n">J_end</span> <span class="o">-</span> <span class="n">J_start</span>
     <span class="k">return</span> <span class="n">J_rel</span></div>
@@ -866,7 +873,7 @@
 
 <div class="viewcode-block" id="get_LMvariables">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.get_LMvariables">[docs]</a>
-<span class="k">def</span> <span class="nf">get_LMvariables</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_LMvariables</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize variables for Levenberg-Marquardt optimization.</span>
 
 <span class="sd">    Creates initial parameter vector either as zeros or random values within bounds.</span>
@@ -901,10 +908,10 @@
 
 <div class="viewcode-block" id="update_forward_kinematics">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.update_forward_kinematics">[docs]</a>
-<span class="k">def</span> <span class="nf">update_forward_kinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">update_forward_kinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update forward kinematics with calibration parameters.</span>
-<span class="sd">    </span>
-<span class="sd">    Applies geometric and kinematic error parameters to update joint placements </span>
+
+<span class="sd">    Applies geometric and kinematic error parameters to update joint placements</span>
 <span class="sd">    and compute end-effector poses. Handles:</span>
 <span class="sd">    1. Base/camera transformations</span>
 <span class="sd">    2. Joint placement offsets</span>
@@ -925,7 +932,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        ndarray: Flattened end-effector measurements for all samples</span>
-<span class="sd">        </span>
+
 <span class="sd">    Side Effects:</span>
 <span class="sd">        - Modifies model joint placements temporarily</span>
 <span class="sd">        - Reverts model to original state before returning</span>
@@ -1085,7 +1092,9 @@
 
     <span class="n">PEE</span> <span class="o">=</span> <span class="n">PEE</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">)</span>
     <span class="c1"># revert model back to original</span>
-    <span class="k">assert</span> <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span><span class="p">,</span> <span class="s2">&quot;before revert&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span>
+    <span class="p">),</span> <span class="s2">&quot;before revert&quot;</span>
     <span class="k">for</span> <span class="n">j_id</span> <span class="ow">in</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">]:</span>
         <span class="n">xyz_rpy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
         <span class="n">j_name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">j_id</span><span class="p">]</span>
@@ -1097,7 +1106,9 @@
                         <span class="n">xyz_rpy</span><span class="p">[</span><span class="n">axis_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">j_id</span><span class="p">,</span> <span class="o">-</span><span class="n">xyz_rpy</span><span class="p">)</span>
 
-    <span class="k">assert</span> <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span><span class="p">,</span> <span class="s2">&quot;after revert&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span>
+    <span class="p">),</span> <span class="s2">&quot;after revert&quot;</span>
 
     <span class="k">return</span> <span class="n">PEE</span></div>
 
@@ -1105,10 +1116,10 @@
 
 <div class="viewcode-block" id="update_forward_kinematics_2">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.update_forward_kinematics_2">[docs]</a>
-<span class="k">def</span> <span class="nf">update_forward_kinematics_2</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">update_forward_kinematics_2</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update forward kinematics with multiple markers.</span>
-<span class="sd">    </span>
-<span class="sd">    Similar to update_forward_kinematics() but handles multiple end-effector </span>
+
+<span class="sd">    Similar to update_forward_kinematics() but handles multiple end-effector</span>
 <span class="sd">    markers. Each marker can have its own frame transformation.</span>
 
 <span class="sd">    Args:</span>
@@ -1124,7 +1135,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        ndarray: Concatenated marker measurements for all samples</span>
-<span class="sd">        </span>
+
 <span class="sd">    Raises:</span>
 <span class="sd">        AssertionError: If number of markers doesn&#39;t match frames</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1166,7 +1177,9 @@
                         <span class="n">xyz_rpy</span><span class="p">[</span><span class="n">axis_id</span><span class="p">]</span> <span class="o">+=</span> <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
                         <span class="n">updated_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">j_id</span><span class="p">,</span> <span class="n">xyz_rpy</span><span class="p">)</span>
-    <span class="n">PEE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;calibration_index&quot;</span><span class="p">],</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]))</span>
+    <span class="n">PEE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;calibration_index&quot;</span><span class="p">],</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">])</span>
+    <span class="p">)</span>
 
     <span class="c1"># update end_effector frame</span>
     <span class="n">ee_frames</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1257,7 +1270,9 @@
     <span class="n">PEE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">PEE</span><span class="p">,</span> <span class="n">PEE_marker</span><span class="p">)</span>
 
     <span class="c1"># revert model back to original</span>
-    <span class="k">assert</span> <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span><span class="p">,</span> <span class="s2">&quot;before revert&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span>
+    <span class="p">),</span> <span class="s2">&quot;before revert&quot;</span>
     <span class="k">for</span> <span class="n">j_id</span> <span class="ow">in</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">]:</span>
         <span class="n">xyz_rpy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
         <span class="n">j_name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">j_id</span><span class="p">]</span>
@@ -1269,7 +1284,9 @@
                         <span class="n">xyz_rpy</span><span class="p">[</span><span class="n">axis_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">j_id</span><span class="p">,</span> <span class="o">-</span><span class="n">xyz_rpy</span><span class="p">)</span>
 
-    <span class="k">assert</span> <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span><span class="p">,</span> <span class="s2">&quot;after revert&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span>
+    <span class="p">),</span> <span class="s2">&quot;after revert&quot;</span>
 
     <span class="k">return</span> <span class="n">PEE</span></div>
 
@@ -1277,19 +1294,19 @@
 
 <div class="viewcode-block" id="calc_updated_fkm">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.calc_updated_fkm">[docs]</a>
-<span class="k">def</span> <span class="nf">calc_updated_fkm</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calc_updated_fkm</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update forward kinematics with world frame transformations.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Specialized version that explicitly handles transformations between:</span>
 <span class="sd">    1. World frame to start frame (wMo)</span>
-<span class="sd">    2. Start frame to end frame (oMee) </span>
+<span class="sd">    2. Start frame to end frame (oMee)</span>
 <span class="sd">    3. End frame to marker frame (eeMf)</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model (pin.Model): Robot model to update</span>
 <span class="sd">        data (pin.Data): Robot data</span>
 <span class="sd">        var (ndarray): Parameter vector matching param[&quot;param_name&quot;]</span>
-<span class="sd">        q (ndarray): Joint configurations matrix (n_samples, n_joints) </span>
+<span class="sd">        q (ndarray): Joint configurations matrix (n_samples, n_joints)</span>
 <span class="sd">        param (dict): Calibration parameters containing:</span>
 <span class="sd">            - Frames and parameters from update_forward_kinematics()</span>
 <span class="sd">            - NbMarkers=1 (only supports single marker)</span>
@@ -1297,7 +1314,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        ndarray: Flattened marker measurements in world frame</span>
-<span class="sd">        </span>
+
 <span class="sd">    Notes:</span>
 <span class="sd">        - Excludes joint elasticity effects</span>
 <span class="sd">        - Requires base or end-effector parameters in param_name</span>
@@ -1446,7 +1463,9 @@
     <span class="n">PEE</span> <span class="o">=</span> <span class="n">PEE</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">)</span>
 
     <span class="c1"># revert model back to original</span>
-    <span class="k">assert</span> <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span><span class="p">,</span> <span class="s2">&quot;before revert&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span>
+    <span class="p">),</span> <span class="s2">&quot;before revert&quot;</span>
     <span class="k">for</span> <span class="n">j_id</span> <span class="ow">in</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">]:</span>
         <span class="n">xyz_rpy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
         <span class="n">j_name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">j_id</span><span class="p">]</span>
@@ -1458,7 +1477,9 @@
                         <span class="n">xyz_rpy</span><span class="p">[</span><span class="n">axis_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">j_id</span><span class="p">,</span> <span class="o">-</span><span class="n">xyz_rpy</span><span class="p">)</span>
 
-    <span class="k">assert</span> <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span><span class="p">,</span> <span class="s2">&quot;after revert&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span>
+    <span class="p">),</span> <span class="s2">&quot;after revert&quot;</span>
 
     <span class="k">return</span> <span class="n">PEE</span></div>
 
@@ -1466,7 +1487,7 @@
 
 <div class="viewcode-block" id="update_joint_placement">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.update_joint_placement">[docs]</a>
-<span class="k">def</span> <span class="nf">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">joint_idx</span><span class="p">,</span> <span class="n">xyz_rpy</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">joint_idx</span><span class="p">,</span> <span class="n">xyz_rpy</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update joint placement with offset parameters.</span>
 
 <span class="sd">    Modifies a joint&#39;s placement transform by adding position and orientation offsets.</span>
@@ -1503,10 +1524,10 @@
 
 <div class="viewcode-block" id="calculate_kinematics_model">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.calculate_kinematics_model">[docs]</a>
-<span class="k">def</span> <span class="nf">calculate_kinematics_model</span><span class="p">(</span><span class="n">q_i</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_kinematics_model</span><span class="p">(</span><span class="n">q_i</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate Jacobian and kinematic regressor for single configuration.</span>
-<span class="sd">    </span>
-<span class="sd">    Computes frame Jacobian and kinematic regressor matrices for tool frame </span>
+
+<span class="sd">    Computes frame Jacobian and kinematic regressor matrices for tool frame</span>
 <span class="sd">    at given joint configuration.</span>
 
 <span class="sd">    Args:</span>
@@ -1518,32 +1539,36 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        tuple:</span>
 <span class="sd">            - model (pin.Model): Updated model</span>
-<span class="sd">            - data (pin.Data): Updated data </span>
+<span class="sd">            - data (pin.Data): Updated data</span>
 <span class="sd">            - R (ndarray): (6,6n) Kinematic regressor matrix</span>
 <span class="sd">            - J (ndarray): (6,n) Frame Jacobian matrix</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">pin</span><span class="o">.</span><span class="n">forwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_i</span><span class="p">)</span>
     <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 
-    <span class="n">J</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeFrameJacobian</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_i</span><span class="p">,</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;IDX_TOOL&quot;</span><span class="p">],</span> <span class="n">pin</span><span class="o">.</span><span class="n">LOCAL</span><span class="p">)</span>
-    <span class="n">R</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeFrameKinematicRegressor</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;IDX_TOOL&quot;</span><span class="p">],</span> <span class="n">pin</span><span class="o">.</span><span class="n">LOCAL</span><span class="p">)</span>
+    <span class="n">J</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeFrameJacobian</span><span class="p">(</span>
+        <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_i</span><span class="p">,</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;IDX_TOOL&quot;</span><span class="p">],</span> <span class="n">pin</span><span class="o">.</span><span class="n">LOCAL</span>
+    <span class="p">)</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeFrameKinematicRegressor</span><span class="p">(</span>
+        <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;IDX_TOOL&quot;</span><span class="p">],</span> <span class="n">pin</span><span class="o">.</span><span class="n">LOCAL</span>
+    <span class="p">)</span>
     <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">J</span></div>
 
 
 
 <div class="viewcode-block" id="calculate_identifiable_kinematics_model">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.calculate_identifiable_kinematics_model">[docs]</a>
-<span class="k">def</span> <span class="nf">calculate_identifiable_kinematics_model</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_identifiable_kinematics_model</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate identifiable Jacobian and regressor matrices.</span>
 
 <span class="sd">    Builds aggregated Jacobian and regressor matrices from either:</span>
-<span class="sd">    1. Given set of configurations, or </span>
+<span class="sd">    1. Given set of configurations, or</span>
 <span class="sd">    2. Random configurations if none provided</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        q (ndarray, optional): Joint configurations matrix. If empty, uses random configs.</span>
 <span class="sd">        model (pin.Model): Robot model</span>
-<span class="sd">        data (pin.Data): Robot data </span>
+<span class="sd">        data (pin.Data): Robot data</span>
 <span class="sd">        param (dict): Parameters containing:</span>
 <span class="sd">            - NbSample: Number of configurations</span>
 <span class="sd">            - calibration_index: Number of active DOFs</span>
@@ -1552,7 +1577,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        ndarray: Either:</span>
-<span class="sd">            - Joint offset case: Frame Jacobian matrix </span>
+<span class="sd">            - Joint offset case: Frame Jacobian matrix</span>
 <span class="sd">            - Full params case: Kinematic regressor matrix</span>
 
 <span class="sd">    Note:</span>
@@ -1578,13 +1603,17 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">q_i</span> <span class="o">=</span> <span class="n">q_temp</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
         <span class="k">if</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;universe&quot;</span><span class="p">:</span>
-            <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">Ri</span><span class="p">,</span> <span class="n">Ji</span> <span class="o">=</span> <span class="n">calculate_kinematics_model</span><span class="p">(</span><span class="n">q_i</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
+            <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">Ri</span><span class="p">,</span> <span class="n">Ji</span> <span class="o">=</span> <span class="n">calculate_kinematics_model</span><span class="p">(</span>
+                <span class="n">q_i</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">param</span>
+            <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">Ri</span> <span class="o">=</span> <span class="n">get_rel_kinreg</span><span class="p">(</span>
                 <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">],</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;end_frame&quot;</span><span class="p">],</span> <span class="n">q_i</span>
             <span class="p">)</span>
             <span class="c1"># Ji = np.zeros([6, model.njoints-1]) ## TODO: get_rel_jac</span>
-            <span class="n">Ji</span> <span class="o">=</span> <span class="n">get_rel_jac</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">],</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;end_frame&quot;</span><span class="p">],</span> <span class="n">q_i</span><span class="p">)</span>
+            <span class="n">Ji</span> <span class="o">=</span> <span class="n">get_rel_jac</span><span class="p">(</span>
+                <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">],</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;end_frame&quot;</span><span class="p">],</span> <span class="n">q_i</span>
+            <span class="p">)</span>
         <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">state</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;measurability&quot;</span><span class="p">]):</span>
             <span class="k">if</span> <span class="n">state</span><span class="p">:</span>
                 <span class="n">R</span><span class="p">[</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">j</span> <span class="o">+</span> <span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">Ri</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:]</span>
@@ -1610,16 +1639,16 @@
 
 <div class="viewcode-block" id="calculate_base_kinematics_regressor">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.calculate_base_kinematics_regressor">[docs]</a>
-<span class="k">def</span> <span class="nf">calculate_base_kinematics_regressor</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">tol_qr</span><span class="o">=</span><span class="n">TOL_QR</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_base_kinematics_regressor</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">tol_qr</span><span class="o">=</span><span class="n">TOL_QR</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate base regressor matrix for calibration parameters.</span>
 
 <span class="sd">    Identifies base (identifiable) parameters by:</span>
 <span class="sd">    1. Computing regressors with random/given configurations</span>
-<span class="sd">    2. Eliminating unidentifiable parameters </span>
+<span class="sd">    2. Eliminating unidentifiable parameters</span>
 <span class="sd">    3. Finding independent regressor columns</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        q (ndarray): Joint configurations matrix </span>
+<span class="sd">        q (ndarray): Joint configurations matrix</span>
 <span class="sd">        model (pin.Model): Robot model</span>
 <span class="sd">        data (pin.Data): Robot data</span>
 <span class="sd">        param (dict): Contains calibration settings:</span>
@@ -1630,7 +1659,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        tuple:</span>
 <span class="sd">            - Rrand_b (ndarray): Base regressor from random configs</span>
-<span class="sd">            - R_b (ndarray): Base regressor from given configs  </span>
+<span class="sd">            - R_b (ndarray): Base regressor from given configs</span>
 <span class="sd">            - R_e (ndarray): Full regressor after eliminating unidentifiable params</span>
 <span class="sd">            - paramsrand_base (list): Names of base parameters from random configs</span>
 <span class="sd">            - paramsrand_e (list): Names of identifiable parameters</span>
@@ -1680,7 +1709,9 @@
     <span class="n">idx_base</span> <span class="o">=</span> <span class="n">get_baseIndex</span><span class="p">(</span><span class="n">Rrand_e</span><span class="p">,</span> <span class="n">paramsrand_e</span><span class="p">,</span> <span class="n">tol_qr</span><span class="o">=</span><span class="n">tol_qr</span><span class="p">)</span>
 
     <span class="c1"># get base regressor and base params from random data</span>
-    <span class="n">Rrand_b</span><span class="p">,</span> <span class="n">paramsrand_base</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_baseParams</span><span class="p">(</span><span class="n">Rrand_e</span><span class="p">,</span> <span class="n">paramsrand_e</span><span class="p">,</span> <span class="n">tol_qr</span><span class="o">=</span><span class="n">tol_qr</span><span class="p">)</span>
+    <span class="n">Rrand_b</span><span class="p">,</span> <span class="n">paramsrand_base</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_baseParams</span><span class="p">(</span>
+        <span class="n">Rrand_e</span><span class="p">,</span> <span class="n">paramsrand_e</span><span class="p">,</span> <span class="n">tol_qr</span><span class="o">=</span><span class="n">tol_qr</span>
+    <span class="p">)</span>
 
     <span class="c1"># remove non affect columns from GIVEN data</span>
     <span class="n">R_e</span><span class="p">,</span> <span class="n">params_e</span> <span class="o">=</span> <span class="n">eliminate_non_dynaffect</span><span class="p">(</span><span class="n">R_sel</span><span class="p">,</span> <span class="n">geo_params_sel</span><span class="p">,</span> <span class="n">tol_e</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
