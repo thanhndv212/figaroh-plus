@@ -48,6 +48,22 @@
 <li class="toctree-l1"><a class="reference internal" href="identification.html">Identification</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Calibration</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#calibration-tools">calibration_tools</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.BaseCalibration"><code class="docutils literal notranslate"><span class="pre">BaseCalibration</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.calibration_tools.BaseCalibration.calc_stddev"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.calc_stddev()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.calibration_tools.BaseCalibration.create_param_list"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.create_param_list()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.calibration_tools.BaseCalibration.get_pose_from_measure"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.get_pose_from_measure()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.calibration_tools.BaseCalibration.initialize"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.initialize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.calibration_tools.BaseCalibration.load_calibration_param"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.load_calibration_param()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.calibration_tools.BaseCalibration.load_data_set"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.load_data_set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.calibration_tools.BaseCalibration.load_param"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.load_param()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.calibration_tools.BaseCalibration.plot"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.calibration_tools.BaseCalibration.plot_3d_poses"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.plot_3d_poses()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.calibration_tools.BaseCalibration.plot_errors_distribution"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.plot_errors_distribution()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.calibration_tools.BaseCalibration.plot_joint_configurations"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.plot_joint_configurations()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.calibration_tools.BaseCalibration.solve"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.solve()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.calibration_tools.BaseCalibration.validate_model"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.validate_model()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.add_base_name"><code class="docutils literal notranslate"><span class="pre">add_base_name()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.add_eemarker_frame"><code class="docutils literal notranslate"><span class="pre">add_eemarker_frame()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.add_pee_name"><code class="docutils literal notranslate"><span class="pre">add_pee_name()</span></code></a></li>
@@ -109,7 +125,83 @@
 <h1>Calibration<a class="headerlink" href="#calibration" title="Link to this heading"></a></h1>
 <section id="calibration-tools">
 <h2>calibration_tools<a class="headerlink" href="#calibration-tools" title="Link to this heading"></a></h2>
-<dl class="py function" id="module-figaroh.calibration.calibration_tools">
+<dl class="py class" id="module-figaroh.calibration.calibration_tools">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.BaseCalibration">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">BaseCalibration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">del_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#BaseCalibration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.BaseCalibration" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.BaseCalibration.calc_stddev">
+<span class="sig-name descname"><span class="pre">calc_stddev</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#BaseCalibration.calc_stddev"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.BaseCalibration.calc_stddev" title="Link to this definition"></a></dt>
+<dd><p>Calculate the standard deviation of the calibrated parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.BaseCalibration.create_param_list">
+<span class="sig-name descname"><span class="pre">create_param_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#BaseCalibration.create_param_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.BaseCalibration.create_param_list" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.BaseCalibration.get_pose_from_measure">
+<span class="sig-name descname"><span class="pre">get_pose_from_measure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res_</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#BaseCalibration.get_pose_from_measure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.BaseCalibration.get_pose_from_measure" title="Link to this definition"></a></dt>
+<dd><p>Get the pose of the robot given a set of parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.BaseCalibration.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#BaseCalibration.initialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.BaseCalibration.initialize" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.BaseCalibration.load_calibration_param">
+<span class="sig-name descname"><span class="pre">load_calibration_param</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#BaseCalibration.load_calibration_param"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.BaseCalibration.load_calibration_param" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.BaseCalibration.load_data_set">
+<span class="sig-name descname"><span class="pre">load_data_set</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#BaseCalibration.load_data_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.BaseCalibration.load_data_set" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.BaseCalibration.load_param">
+<span class="sig-name descname"><span class="pre">load_param</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'calibration'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#BaseCalibration.load_param"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.BaseCalibration.load_param" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.BaseCalibration.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#BaseCalibration.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.BaseCalibration.plot" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.BaseCalibration.plot_3d_poses">
+<span class="sig-name descname"><span class="pre">plot_3d_poses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">INCLUDE_UNCALIB</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#BaseCalibration.plot_3d_poses"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.BaseCalibration.plot_3d_poses" title="Link to this definition"></a></dt>
+<dd><p>Plot the 3D poses of the robot.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.BaseCalibration.plot_errors_distribution">
+<span class="sig-name descname"><span class="pre">plot_errors_distribution</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#BaseCalibration.plot_errors_distribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.BaseCalibration.plot_errors_distribution" title="Link to this definition"></a></dt>
+<dd><p>Plot the distribution of the errors.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.BaseCalibration.plot_joint_configurations">
+<span class="sig-name descname"><span class="pre">plot_joint_configurations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#BaseCalibration.plot_joint_configurations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.BaseCalibration.plot_joint_configurations" title="Link to this definition"></a></dt>
+<dd><p>Joint configurations within range bound.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.BaseCalibration.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#BaseCalibration.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.BaseCalibration.solve" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.BaseCalibration.validate_model">
+<span class="sig-name descname"><span class="pre">validate_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#BaseCalibration.validate_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.BaseCalibration.validate_model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.add_base_name">
 <span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">add_base_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#add_base_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.add_base_name" title="Link to this definition"></a></dt>
 <dd><p>Add base frame parameters to parameter list.</p>

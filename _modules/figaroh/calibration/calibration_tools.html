@@ -93,6 +93,10 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pinocchio</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pin</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pprint</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">yaml.loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">SafeLoader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">os.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">abspath</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
 <span class="c1"># import quadprog as qp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
@@ -1734,6 +1738,290 @@
         <span class="n">Rrand_b</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">Rrand_b</span><span class="p">,</span> <span class="n">R_b</span><span class="p">,</span> <span class="n">R_e</span><span class="p">,</span> <span class="n">paramsrand_base</span><span class="p">,</span> <span class="n">paramsrand_e</span></div>
+
+
+
+<div class="viewcode-block" id="BaseCalibration">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BaseCalibration</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">config_file</span><span class="p">,</span> <span class="n">del_list</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_robot</span> <span class="o">=</span> <span class="n">robot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_robot</span><span class="o">.</span><span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_robot</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">del_list_</span> <span class="o">=</span> <span class="n">del_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">param</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_param</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nvars</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;param_name&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_path</span> <span class="o">=</span> <span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;data_file&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">STATUS</span> <span class="o">=</span> <span class="s2">&quot;NOT CALIBRATED&quot;</span>
+
+<div class="viewcode-block" id="BaseCalibration.initialize">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.initialize">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_data_set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_param_list</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.solve">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.solve">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solve_optimisation</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calc_stddev</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;PLOT&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.plot">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.plot">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_errors_distribution</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_3d_poses</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_joint_configurations</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.load_param">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.load_param">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_file</span><span class="p">,</span> <span class="n">setting_type</span><span class="o">=</span><span class="s2">&quot;calibration&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">SafeLoader</span><span class="p">)</span>
+        <span class="n">calib_data</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">setting_type</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">param</span> <span class="o">=</span> <span class="n">get_param_from_yaml</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.create_param_list">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.create_param_list">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_param_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">q</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">q_</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">q_</span> <span class="o">=</span> <span class="n">q</span>
+        <span class="p">(</span>
+            <span class="n">Rrand_b</span><span class="p">,</span>
+            <span class="n">R_b</span><span class="p">,</span>
+            <span class="n">R_e</span><span class="p">,</span>
+            <span class="n">paramsrand_base</span><span class="p">,</span>
+            <span class="n">paramsrand_e</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">calculate_base_kinematics_regressor</span><span class="p">(</span>
+            <span class="n">q_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">,</span> <span class="n">tol_qr</span><span class="o">=</span><span class="mf">1e-6</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;known_baseframe&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">add_base_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;known_tipframe&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">add_pee_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.load_data_set">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.load_data_set">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_data_set</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_measured</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">del_list_</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.load_calibration_param">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.load_calibration_param">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_calibration_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_file</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">param_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">param_file</span><span class="p">:</span>
+            <span class="n">param_dict_</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">param_file</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">SafeLoader</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;param_name&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span>
+            <span class="n">param_dict_</span>
+        <span class="p">),</span> <span class="s2">&quot;The loaded param list does not match calibration config.&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;param_name&quot;</span><span class="p">]))</span>
+        <span class="n">updated_var_</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i_</span><span class="p">,</span> <span class="n">name_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;param_name&quot;</span><span class="p">]):</span>
+            <span class="k">assert</span> <span class="n">name_</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="n">param_dict_</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="n">i_</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">var_</span><span class="p">[</span><span class="n">i_</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">param_dict_</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="n">i_</span><span class="p">]</span>
+            <span class="n">updated_var_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name_</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">updated_var_</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_</span><span class="p">),</span> <span class="s2">&quot;Not all param imported.&quot;</span></div>
+
+        
+<div class="viewcode-block" id="BaseCalibration.validate_model">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.validate_model">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">var_</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">),</span> <span class="s2">&quot;Call load_calibration_param() to load model parameters first.&quot;</span>
+        <span class="n">pee_valid_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pose_from_measure</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_</span><span class="p">)</span>
+        <span class="n">rmse_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">pee_valid_</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">mae_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">pee_valid_</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;position root-mean-squared error of end-effector: &quot;</span><span class="p">,</span> <span class="n">rmse_</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;position mean absolute error of end-effector: &quot;</span><span class="p">,</span> <span class="n">mae_</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rmse_</span><span class="p">,</span> <span class="n">mae_</span></div>
+
+
+
+<div class="viewcode-block" id="BaseCalibration.get_pose_from_measure">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.get_pose_from_measure">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_pose_from_measure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">res_</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the pose of the robot given a set of parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">calc_updated_fkm</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">res_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_measured</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.calc_stddev">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.calc_stddev">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calc_stddev</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the standard deviation of the calibrated parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">STATUS</span> <span class="o">==</span> <span class="s2">&quot;CALIBRATED&quot;</span><span class="p">,</span> <span class="s2">&quot;Calibration not performed yet&quot;</span>
+        <span class="n">sigma_ro_sq</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LM_result</span><span class="o">.</span><span class="n">cost</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;calibration_index&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">nvars</span>
+        <span class="p">)</span>
+        <span class="n">J</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">LM_result</span><span class="o">.</span><span class="n">jac</span>
+        <span class="n">C_param</span> <span class="o">=</span> <span class="n">sigma_ro_sq</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">J</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">J</span><span class="p">))</span>
+        <span class="n">std_dev</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">std_pctg</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nvars</span><span class="p">):</span>
+            <span class="n">std_dev</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">C_param</span><span class="p">[</span><span class="n">i_</span><span class="p">,</span> <span class="n">i_</span><span class="p">]))</span>
+            <span class="n">std_pctg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">C_param</span><span class="p">[</span><span class="n">i_</span><span class="p">,</span> <span class="n">i_</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">LM_result</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">i_</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std_dev</span> <span class="o">=</span> <span class="n">std_dev</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std_pctg</span> <span class="o">=</span> <span class="n">std_pctg</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.plot_errors_distribution">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.plot_errors_distribution">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_errors_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot the distribution of the errors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">STATUS</span> <span class="o">==</span> <span class="s2">&quot;CALIBRATED&quot;</span><span class="p">,</span> <span class="s2">&quot;Calibration not performed yet&quot;</span>
+
+        <span class="n">fig1</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;yellow&quot;</span><span class="p">,</span> <span class="s2">&quot;purple&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PEE_dist</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:])</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Sample&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Error (meter)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]):</span>
+                <span class="n">ax1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_PEE_dist</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="p">)</span>
+                <span class="n">ax1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Sample&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+                <span class="n">ax1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Error of marker </span><span class="si">%s</span><span class="s2"> (meter)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+                <span class="n">ax1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+                <span class="n">ax1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.plot_3d_poses">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.plot_3d_poses">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_3d_poses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">INCLUDE_UNCALIB</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot the 3D poses of the robot.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">STATUS</span> <span class="o">==</span> <span class="s2">&quot;CALIBRATED&quot;</span><span class="p">,</span> <span class="s2">&quot;Calibration not performed yet&quot;</span>
+
+        <span class="n">fig2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">fig2</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Visualization of estimated poses and measured pose in Cartesian&quot;</span><span class="p">)</span>
+        <span class="n">ax2</span> <span class="o">=</span> <span class="n">fig2</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;3d&quot;</span><span class="p">)</span>
+        <span class="n">PEEm_LM2d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;calibration_index&quot;</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">PEEe_sol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pose_from_measure</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LM_result</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">PEEe_sol2d</span> <span class="o">=</span> <span class="n">PEEe_sol</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;calibration_index&quot;</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">PEEe_uncalib</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pose_from_measure</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_var_0</span><span class="p">)</span>
+        <span class="n">PEEe_uncalib2d</span> <span class="o">=</span> <span class="n">PEEe_uncalib</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;calibration_index&quot;</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]):</span>
+            <span class="n">ax2</span><span class="o">.</span><span class="n">scatter3D</span><span class="p">(</span>
+                <span class="n">PEEm_LM2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="p">:],</span>
+                <span class="n">PEEm_LM2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:],</span>
+                <span class="n">PEEm_LM2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="p">:],</span>
+                <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;^&quot;</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Measured&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">ax2</span><span class="o">.</span><span class="n">scatter3D</span><span class="p">(</span>
+                <span class="n">PEEe_sol2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="p">:],</span>
+                <span class="n">PEEe_sol2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:],</span>
+                <span class="n">PEEe_sol2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="p">:],</span>
+                <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Estimated&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">INCLUDE_UNCALIB</span><span class="p">:</span>
+                <span class="n">ax2</span><span class="o">.</span><span class="n">scatter3D</span><span class="p">(</span>
+                    <span class="n">PEEe_uncalib2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="p">:],</span>
+                    <span class="n">PEEe_uncalib2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:],</span>
+                    <span class="n">PEEe_uncalib2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="p">:],</span>
+                    <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Uncalibrated&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]):</span>
+                <span class="n">ax2</span><span class="o">.</span><span class="n">plot3D</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">PEEm_LM2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">PEEe_sol2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">j</span><span class="p">]],</span>
+                    <span class="p">[</span><span class="n">PEEm_LM2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">PEEe_sol2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">]],</span>
+                    <span class="p">[</span><span class="n">PEEm_LM2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">PEEe_sol2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">j</span><span class="p">]],</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">INCLUDE_UNCALIB</span><span class="p">:</span>
+                    <span class="n">ax2</span><span class="o">.</span><span class="n">plot3D</span><span class="p">(</span>
+                        <span class="p">[</span><span class="n">PEEm_LM2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">PEEe_uncalib2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">j</span><span class="p">]],</span>
+                        <span class="p">[</span>
+                            <span class="n">PEEm_LM2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span>
+                            <span class="n">PEEe_uncalib2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span>
+                        <span class="p">],</span>
+                        <span class="p">[</span>
+                            <span class="n">PEEm_LM2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span>
+                            <span class="n">PEEe_uncalib2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span>
+                        <span class="p">],</span>
+                        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;X - front (meter)&quot;</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Y - side (meter)&quot;</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s2">&quot;Z - height (meter)&quot;</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.plot_joint_configurations">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.plot_joint_configurations">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_joint_configurations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Joint configurations within range bound.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fig4</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">fig4</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Joint configurations with joint bounds&quot;</span><span class="p">)</span>
+        <span class="n">ax4</span> <span class="o">=</span> <span class="n">fig4</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;3d&quot;</span><span class="p">)</span>
+        <span class="n">lb</span> <span class="o">=</span> <span class="n">ub</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;config_idx&quot;</span><span class="p">]:</span>
+            <span class="n">lb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">lowerPositionLimit</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+            <span class="n">ub</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ub</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">upperPositionLimit</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+        <span class="n">q_actJoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_measured</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;config_idx&quot;</span><span class="p">]]</span>
+        <span class="n">sample_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">])):</span>
+            <span class="n">ax4</span><span class="o">.</span><span class="n">scatter3D</span><span class="p">(</span><span class="n">q_actJoint</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">sample_range</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">])):</span>
+            <span class="n">ax4</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">lb</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">ub</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="p">[</span><span class="n">sample_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sample_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">])</span>
+            <span class="n">ax4</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Angle (rad)&quot;</span><span class="p">)</span>
+            <span class="n">ax4</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Sample&quot;</span><span class="p">)</span>
+            <span class="n">ax4</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s2">&quot;Joint&quot;</span><span class="p">)</span>
+            <span class="n">ax4</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span></div>
+</div>
 
 </pre></div>
 

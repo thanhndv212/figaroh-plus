@@ -268,21 +268,53 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">load_robot</span><span class="p">(</span><span class="n">robot_urdf</span><span class="p">,</span> <span class="n">package_dirs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">isFext</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">load_by_urdf</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">robot_pkg</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Load the robot model from the URDF file.</span>
+<span class="sd">Args:</span>
+<span class="sd">        robot_urdf (str): Path to the URDF file.</span>
+<span class="sd">        package_dirs (str): Package directories for mesh files.</span>
+<span class="sd">        isFext (bool): Whether to add floating base joint.</span>
+<span class="sd">        load_by_urdf (bool): Whether to load the robot by URDF.</span>
+<span class="sd">        robot_pkg (str): Name of the robot package.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Robot: An instance of the Robot class.</span>
+<span class="sd">    </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        ImportError: If the required packages are not installed.</span>
+
+<span class="sd">    Note: For loading by URDF, robot_urdf and package_dirs can be different.</span>
+<span class="sd">          1/ If package_dirs is not provided directly, robot_pkg is used to</span>
+<span class="sd">          look up the package directory.</span>
+<span class="sd">            - If the robot description ROS package is</span>
+<span class="sd">          installed, the path to this package will be used</span>
+<span class="sd">          to load the robot model.</span>
+<span class="sd">            - If not, it will be loaded from /models directory.</span>
+<span class="sd">          2/ There is no mesh files, package_dirs and robot_pkg are not used.</span>
+<span class="sd">          3/ If load_by_urdf is False, the robot is loaded from the ROS</span>
+<span class="sd">          parameter server.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">pinocchio</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">rospkg</span>
 
     <span class="k">if</span> <span class="n">load_by_urdf</span><span class="p">:</span>
-        <span class="c1"># import os</span>
-        <span class="c1"># ros_package_path = os.getenv(&#39;ROS_PACKAGE_PATH&#39;)</span>
-        <span class="c1"># package_dirs = ros_package_path.split(&#39;:&#39;)</span>
+        <span class="k">if</span> <span class="n">package_dirs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">robot_pkg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">package_dirs</span> <span class="o">=</span> <span class="n">rospkg</span><span class="o">.</span><span class="n">RosPack</span><span class="p">()</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">robot_pkg</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">rospkg</span><span class="o">.</span><span class="n">ResourceNotFound</span><span class="p">:</span>
+                    <span class="c1"># Resolve relative path to models directory</span>
+                    <span class="n">current_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+                    <span class="n">project_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">current_dir</span><span class="p">)))</span>
+                    <span class="n">package_dirs</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_root</span><span class="p">,</span> <span class="s2">&quot;models&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">package_dirs</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">robot_urdf</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">package_dirs</span> <span class="o">==</span> <span class="s2">&quot;models&quot;</span><span class="p">:</span>
+            <span class="n">current_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+            <span class="n">project_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">current_dir</span><span class="p">)))</span>
+            <span class="n">package_dirs</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_root</span><span class="p">,</span> <span class="s2">&quot;models&quot;</span><span class="p">)</span>
 
-        <span class="n">package_dirs</span> <span class="o">=</span> <span class="n">rospkg</span><span class="o">.</span><span class="n">RosPack</span><span class="p">()</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">robot_pkg</span><span class="p">)</span>
-        <span class="n">robot</span> <span class="o">=</span> <span class="n">Robot</span><span class="p">(</span>
-            <span class="n">robot_urdf</span><span class="p">,</span>
-            <span class="n">package_dirs</span><span class="o">=</span><span class="n">package_dirs</span><span class="p">,</span>
-            <span class="n">isFext</span><span class="o">=</span><span class="n">isFext</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">robot_urdf</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;URDF file not found: </span><span class="si">{</span><span class="n">robot_urdf</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">robot</span> <span class="o">=</span> <span class="n">Robot</span><span class="p">(</span><span class="n">robot_urdf</span><span class="p">,</span> <span class="n">package_dirs</span><span class="o">=</span><span class="n">package_dirs</span><span class="p">,</span> <span class="n">isFext</span><span class="o">=</span><span class="n">isFext</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">rospy</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">pinocchio.robot_wrapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">RobotWrapper</span>

@@ -92,6 +92,7 @@
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
  | <a href="#X"><strong>X</strong></a>
  
@@ -129,12 +130,14 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules/identification.html#figaroh.identification.identification_tools.base_param_from_standard">base_param_from_standard() (in module figaroh.identification.identification_tools)</a>
 </li>
-      <li><a href="modules/tools.html#figaroh.tools.qrdecomposition.build_baseRegressor">build_baseRegressor() (in module figaroh.tools.qrdecomposition)</a>
+      <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration">BaseCalibration (class in figaroh.calibration.calibration_tools)</a>
 </li>
-      <li><a href="modules/tools.html#figaroh.tools.regressor.build_regressor_basic">build_regressor_basic() (in module figaroh.tools.regressor)</a>
+      <li><a href="modules/tools.html#figaroh.tools.qrdecomposition.build_baseRegressor">build_baseRegressor() (in module figaroh.tools.qrdecomposition)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/tools.html#figaroh.tools.regressor.build_regressor_basic">build_regressor_basic() (in module figaroh.tools.regressor)</a>
+</li>
       <li><a href="modules/tools.html#figaroh.tools.regressor.build_regressor_reduced">build_regressor_reduced() (in module figaroh.tools.regressor)</a>
 </li>
       <li><a href="modules/tools.html#figaroh.tools.regressor.build_total_regressor_current">build_total_regressor_current() (in module figaroh.tools.regressor)</a>
@@ -147,6 +150,8 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.calc_stddev">calc_stddev() (figaroh.calibration.calibration_tools.BaseCalibration method)</a>
+</li>
       <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.calc_updated_fkm">calc_updated_fkm() (in module figaroh.calibration.calibration_tools)</a>
 </li>
       <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.calculate_base_kinematics_regressor">calculate_base_kinematics_regressor() (in module figaroh.calibration.calibration_tools)</a>
@@ -170,6 +175,8 @@
       <li><a href="modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper.computeCollisions">computeCollisions() (figaroh.tools.robotcollisions.CollisionWrapper method)</a>
 </li>
       <li><a href="modules/tools.html#figaroh.tools.qrdecomposition.cond_num">cond_num() (in module figaroh.tools.qrdecomposition)</a>
+</li>
+      <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.create_param_list">create_param_list() (figaroh.calibration.calibration_tools.BaseCalibration method)</a>
 </li>
       <li><a href="modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper.createDisplayPatchs">createDisplayPatchs() (figaroh.tools.robotcollisions.CollisionWrapper method)</a>
 </li>
@@ -311,6 +318,8 @@
         <li><a href="modules/identification.html#figaroh.identification.identification_tools.get_param_from_yaml">(in module figaroh.identification.identification_tools)</a>
 </li>
       </ul></li>
+      <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.get_pose_from_measure">get_pose_from_measure() (figaroh.calibration.calibration_tools.BaseCalibration method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.get_rel_jac">get_rel_jac() (in module figaroh.calibration.calibration_tools)</a>
@@ -343,16 +352,24 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper.initDisplay">initDisplay() (figaroh.tools.robotcollisions.CollisionWrapper method)</a>
 </li>
+      <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.initialize">initialize() (figaroh.calibration.calibration_tools.BaseCalibration method)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.load_calibration_param">load_calibration_param() (figaroh.calibration.calibration_tools.BaseCalibration method)</a>
+</li>
       <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.load_data">load_data() (in module figaroh.calibration.calibration_tools)</a>
+</li>
+      <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.load_data_set">load_data_set() (figaroh.calibration.calibration_tools.BaseCalibration method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.load_param">load_param() (figaroh.calibration.calibration_tools.BaseCalibration method)</a>
+</li>
       <li><a href="modules/tools.html#figaroh.tools.robot.load_robot">load_robot() (in module figaroh.tools.robot)</a>
 </li>
       <li><a href="modules/identification.html#figaroh.identification.identification_tools.low_pass_filter_data">low_pass_filter_data() (in module figaroh.identification.identification_tools)</a>
@@ -402,6 +419,16 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules/tools.html#figaroh.tools.robotvisualization.place">place() (in module figaroh.tools.robotvisualization)</a>
 </li>
+      <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.plot">plot() (figaroh.calibration.calibration_tools.BaseCalibration method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.plot_3d_poses">plot_3d_poses() (figaroh.calibration.calibration_tools.BaseCalibration method)</a>
+</li>
+      <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.plot_errors_distribution">plot_errors_distribution() (figaroh.calibration.calibration_tools.BaseCalibration method)</a>
+</li>
+      <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.plot_joint_configurations">plot_joint_configurations() (figaroh.calibration.calibration_tools.BaseCalibration method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -443,6 +470,10 @@
       <li><a href="modules/identification.html#figaroh.identification.identification_tools.set_missing_params_setting">set_missing_params_setting() (in module figaroh.identification.identification_tools)</a>
 </li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.solve">solve() (figaroh.calibration.calibration_tools.BaseCalibration method)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="U">U</h2>
@@ -455,6 +486,14 @@
       <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.update_forward_kinematics_2">update_forward_kinematics_2() (in module figaroh.calibration.calibration_tools)</a>
 </li>
       <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.update_joint_placement">update_joint_placement() (in module figaroh.calibration.calibration_tools)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/calibration.html#figaroh.calibration.calibration_tools.BaseCalibration.validate_model">validate_model() (figaroh.calibration.calibration_tools.BaseCalibration method)</a>
 </li>
   </ul></td>
 </tr></table>
