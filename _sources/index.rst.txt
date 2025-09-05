@@ -15,7 +15,7 @@ is a comprehensive Python toolbox for robot calibration and identification.
 **Quick Links:**
 - `PyPI Package <https://pypi.org/project/figaroh/>`_
 - `Examples Repository <https://github.com/thanhndv212/figaroh-examples>`_
-- `GitHub Repository <https://github.com/thanhndv212/figaroh>`_
+- `GitHub Repository <https://github.com/thanhndv212/figaroh-plus>`_
 
 .. toctree::
    :maxdepth: 2
