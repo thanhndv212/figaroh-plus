@@ -1,0 +1,584 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>figaroh.tools.regressor &mdash; figaroh 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="canonical" href="https://thanhndv212.github.io/figaroh/_modules/figaroh/tools/regressor.html" />
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            figaroh
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Modules:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/calibration.html">Calibration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/identification.html">Identification</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tools and Utilities:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/tools.html">Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/measurements.html">Measurements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/visualisation.html">Visualisation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Advanced Features:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/optimal.html">figaroh.optimal package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">figaroh</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">figaroh.tools.regressor</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for figaroh.tools.regressor</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Regressor matrix computation utilities for robot dynamic identification.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pinocchio</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+
+
+<div class="viewcode-block" id="RegressorConfig">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.regressor.RegressorConfig">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RegressorConfig</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration for regressor computation.&quot;&quot;&quot;</span>
+    <span class="n">has_friction</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">has_actuator_inertia</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">has_joint_offset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">is_joint_torques</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">is_external_wrench</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">force_torque</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">additional_columns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span></div>
+
+
+
+<div class="viewcode-block" id="RegressorBuilder">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.regressor.RegressorBuilder">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RegressorBuilder</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enhanced regressor builder with better organization.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RegressorConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span> <span class="o">=</span> <span class="n">robot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span> <span class="ow">or</span> <span class="n">RegressorConfig</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nv</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nv</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nonzero_inertias</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_nonzero_inertias</span><span class="p">()</span>
+    
+<div class="viewcode-block" id="RegressorBuilder.build_basic_regressor">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.regressor.RegressorBuilder.build_basic_regressor">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_basic_regressor</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">tau</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build basic regressor matrix.&quot;&quot;&quot;</span>
+        <span class="c1"># Normalize inputs</span>
+        <span class="n">Q</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_inputs</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">is_joint_torques</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_joint_torque_regressor</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">is_external_wrench</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_external_wrench_regressor</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must specify either joint_torques or external_wrench mode&quot;</span><span class="p">)</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize and validate inputs.&quot;&quot;&quot;</span>
+        <span class="n">Q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_2d</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nq</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">)</span>
+        <span class="n">V</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_2d</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nv</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">)</span> 
+        <span class="n">A</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_2d</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nv</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+        
+        <span class="n">N</span> <span class="o">=</span> <span class="n">Q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">V</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">N</span> <span class="ow">or</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">N</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inconsistent sample counts: q=</span><span class="si">{</span><span class="n">N</span><span class="si">}</span><span class="s2">, v=</span><span class="si">{</span><span class="n">V</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, a=</span><span class="si">{</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">Q</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">N</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">expected_width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure input is 2D array with correct width.&quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">expected_width</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> must have </span><span class="si">{</span><span class="n">expected_width</span><span class="si">}</span><span class="s2"> columns, got </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_nonzero_inertias</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get indices of bodies with non-zero mass.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">inertia</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">inertias</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span> 
+                <span class="k">if</span> <span class="n">inertia</span><span class="o">.</span><span class="n">mass</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">]</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_joint_torque_regressor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build regressor for joint torque identification.&quot;&quot;&quot;</span>
+        <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">N</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nv</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">additional_columns</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nv</span><span class="p">])</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+            <span class="n">W_temp</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeJointTorqueRegressor</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">Q</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">V</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fill_joint_regressor_sample</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">W_temp</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reorder_parameters</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nv</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_external_wrench_regressor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build regressor for external wrench identification.&quot;&quot;&quot;</span>
+        <span class="n">nb_bodies</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">inertias</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">ft_components</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">force_torque</span> <span class="ow">or</span> <span class="p">[]</span>
+        
+        <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">N</span> <span class="o">*</span> <span class="mi">6</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">additional_columns</span><span class="p">)</span> <span class="o">*</span> <span class="n">nb_bodies</span><span class="p">])</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+            <span class="n">W_temp</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeJointTorqueRegressor</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">Q</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">V</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fill_wrench_regressor_sample</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">W_temp</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">ft_components</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">nb_bodies</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reorder_parameters</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">nb_bodies</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fill_joint_regressor_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">W_temp</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">sample_idx</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fill regressor for one sample in joint torque mode.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">W_temp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">base_idx</span> <span class="o">=</span> <span class="n">j</span> <span class="o">*</span> <span class="n">N</span> <span class="o">+</span> <span class="n">sample_idx</span>
+            <span class="n">W</span><span class="p">[</span><span class="n">base_idx</span><span class="p">,</span> <span class="p">:</span><span class="mi">10</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nv</span><span class="p">]</span> <span class="o">=</span> <span class="n">W_temp</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:]</span>
+            
+            <span class="c1"># Additional parameters</span>
+            <span class="n">param_start</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nv</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">has_friction</span><span class="p">:</span>
+                <span class="n">W</span><span class="p">[</span><span class="n">base_idx</span><span class="p">,</span> <span class="n">param_start</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">V</span><span class="p">[</span><span class="n">sample_idx</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>  <span class="c1"># fv</span>
+                <span class="n">W</span><span class="p">[</span><span class="n">base_idx</span><span class="p">,</span> <span class="n">param_start</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">sample_idx</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>  <span class="c1"># fs</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">has_actuator_inertia</span><span class="p">:</span>
+                <span class="n">W</span><span class="p">[</span><span class="n">base_idx</span><span class="p">,</span> <span class="n">param_start</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">nv</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">sample_idx</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>  <span class="c1"># ia</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">has_joint_offset</span><span class="p">:</span>
+                <span class="n">W</span><span class="p">[</span><span class="n">base_idx</span><span class="p">,</span> <span class="n">param_start</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">nv</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nv</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># offset</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fill_wrench_regressor_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">W_temp</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">ft_components</span><span class="p">,</span> <span class="n">sample_idx</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">nb_bodies</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fill regressor for one sample in external wrench mode.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">ft</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ft_components</span><span class="p">):</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="s2">&quot;Fx Fy Fz Mx My Mz&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">ft</span><span class="p">)</span>
+            <span class="n">base_idx</span> <span class="o">=</span> <span class="n">j</span> <span class="o">*</span> <span class="n">N</span> <span class="o">+</span> <span class="n">sample_idx</span>
+            <span class="n">W</span><span class="p">[</span><span class="n">base_idx</span><span class="p">,</span> <span class="p">:</span><span class="mi">10</span> <span class="o">*</span> <span class="n">nb_bodies</span><span class="p">]</span> <span class="o">=</span> <span class="n">W_temp</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:</span><span class="mi">10</span> <span class="o">*</span> <span class="n">nb_bodies</span><span class="p">]</span>
+        
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nb_bodies</span><span class="p">):</span>
+            <span class="n">base_idx</span> <span class="o">=</span> <span class="n">j</span> <span class="o">*</span> <span class="mi">6</span> <span class="o">+</span> <span class="n">sample_idx</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">has_friction</span><span class="p">:</span>
+                <span class="n">W</span><span class="p">[</span><span class="n">base_idx</span><span class="p">,</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">nb_bodies</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">V</span><span class="p">[</span><span class="n">sample_idx</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>  <span class="c1"># fv</span>
+                <span class="n">W</span><span class="p">[</span><span class="n">base_idx</span><span class="p">,</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">nb_bodies</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">sample_idx</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>  <span class="c1"># fs</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">has_actuator_inertia</span><span class="p">:</span>
+                <span class="n">W</span><span class="p">[</span><span class="n">base_idx</span><span class="p">,</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">nb_bodies</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">nb_bodies</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">sample_idx</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>  <span class="c1"># ia</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">has_joint_offset</span><span class="p">:</span>
+                <span class="n">W</span><span class="p">[</span><span class="n">base_idx</span><span class="p">,</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">nb_bodies</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">nb_bodies</span> <span class="o">+</span> <span class="n">nb_bodies</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># offset</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reorder_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_params</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reorder parameters to standard format.&quot;&quot;&quot;</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">additional_columns</span>
+        <span class="n">W_reordered</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cols</span> <span class="o">*</span> <span class="n">num_params</span><span class="p">])</span>
+        
+        <span class="c1"># Parameter order: [Ixx, Ixy, Ixz, Iyy, Iyz, Izz, mx, my, mz, m, ia, fv, fs, offset]</span>
+        <span class="n">param_order</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># Pinocchio to standard order</span>
+        
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_params</span><span class="p">):</span>
+            <span class="n">base_out</span> <span class="o">=</span> <span class="n">k</span> <span class="o">*</span> <span class="n">cols</span>
+            <span class="n">base_in</span> <span class="o">=</span> <span class="n">k</span> <span class="o">*</span> <span class="mi">10</span>
+            
+            <span class="c1"># Reorder inertial parameters</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">old_idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">param_order</span><span class="p">):</span>
+                <span class="n">W_reordered</span><span class="p">[:,</span> <span class="n">base_out</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">W</span><span class="p">[:,</span> <span class="n">base_in</span> <span class="o">+</span> <span class="n">old_idx</span><span class="p">]</span>
+            
+            <span class="c1"># Add additional parameters</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">additional_columns</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">param_start</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">num_params</span>
+                <span class="n">W_reordered</span><span class="p">[:,</span> <span class="n">base_out</span> <span class="o">+</span> <span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">W</span><span class="p">[:,</span> <span class="n">param_start</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">num_params</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span>  <span class="c1"># ia</span>
+                <span class="n">W_reordered</span><span class="p">[:,</span> <span class="n">base_out</span> <span class="o">+</span> <span class="mi">11</span><span class="p">]</span> <span class="o">=</span> <span class="n">W</span><span class="p">[:,</span> <span class="n">param_start</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">k</span><span class="p">]</span>  <span class="c1"># fv</span>
+                <span class="n">W_reordered</span><span class="p">[:,</span> <span class="n">base_out</span> <span class="o">+</span> <span class="mi">12</span><span class="p">]</span> <span class="o">=</span> <span class="n">W</span><span class="p">[:,</span> <span class="n">param_start</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># fs</span>
+                <span class="n">W_reordered</span><span class="p">[:,</span> <span class="n">base_out</span> <span class="o">+</span> <span class="mi">13</span><span class="p">]</span> <span class="o">=</span> <span class="n">W</span><span class="p">[:,</span> <span class="n">param_start</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">num_params</span> <span class="o">+</span> <span class="n">num_params</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span>  <span class="c1"># offset</span>
+        
+        <span class="k">return</span> <span class="n">W_reordered</span></div>
+
+
+
+<span class="c1"># Backward compatibility functions</span>
+<div class="viewcode-block" id="build_regressor_basic">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.regressor.build_regressor_basic">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_regressor_basic</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">identif_config</span><span class="p">,</span> <span class="n">tau</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Legacy function for backward compatibility.&quot;&quot;&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">RegressorConfig</span><span class="p">(</span>
+        <span class="n">has_friction</span><span class="o">=</span><span class="n">identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;has_friction&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+        <span class="n">has_actuator_inertia</span><span class="o">=</span><span class="n">identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;has_actuator_inertia&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+        <span class="n">has_joint_offset</span><span class="o">=</span><span class="n">identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;has_joint_offset&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+        <span class="n">is_joint_torques</span><span class="o">=</span><span class="n">identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;is_joint_torques&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+        <span class="n">is_external_wrench</span><span class="o">=</span><span class="n">identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;is_external_wrench&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+        <span class="n">force_torque</span><span class="o">=</span><span class="n">identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;force_torque&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="p">)</span>
+    
+    <span class="n">builder</span> <span class="o">=</span> <span class="n">RegressorBuilder</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">builder</span><span class="o">.</span><span class="n">build_basic_regressor</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">tau</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># Keep other functions with minor improvements...</span>
+<div class="viewcode-block" id="eliminate_non_dynaffect">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.regressor.eliminate_non_dynaffect">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">eliminate_non_dynaffect</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">params_std</span><span class="p">,</span> <span class="n">tol_e</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Eliminate columns with small L2 norm.&quot;&quot;&quot;</span>
+    <span class="n">col_norms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">W</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">W</span><span class="p">)</span>
+    <span class="n">param_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">params_std</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    
+    <span class="n">keep_indices</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">keep_params</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">norm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">col_norms</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">norm</span> <span class="o">&gt;=</span> <span class="n">tol_e</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">param_keys</span><span class="p">):</span>
+            <span class="n">keep_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">keep_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_keys</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    
+    <span class="n">W_reduced</span> <span class="o">=</span> <span class="n">W</span><span class="p">[:,</span> <span class="n">keep_indices</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">W_reduced</span><span class="p">,</span> <span class="n">keep_params</span></div>
+
+
+
+<div class="viewcode-block" id="get_index_eliminate">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.regressor.get_index_eliminate">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_index_eliminate</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">params_std</span><span class="p">,</span> <span class="n">tol_e</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get indices of columns to eliminate based on tolerance.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        W: Joint torque regressor matrix</span>
+<span class="sd">        params_std: Standard parameters dictionary</span>
+<span class="sd">        tol_e: Tolerance value</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple:</span>
+<span class="sd">            - List of indices to eliminate</span>
+<span class="sd">            - List of remaining parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">col_norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">W</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
+    <span class="n">idx_e</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">params_r</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">col_norm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">col_norm</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">tol_e</span><span class="p">:</span>
+            <span class="n">idx_e</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">params_r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">params_std</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">idx_e</span><span class="p">,</span> <span class="n">params_r</span></div>
+
+
+
+<div class="viewcode-block" id="build_regressor_reduced">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.regressor.build_regressor_reduced">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_regressor_reduced</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">idx_e</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build reduced regressor matrix.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        W: Input regressor matrix</span>
+<span class="sd">        idx_e: Indices of columns to eliminate</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ndarray: Reduced regressor matrix</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">W_e</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">idx_e</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">W_e</span></div>
+
+
+
+<div class="viewcode-block" id="build_total_regressor_current">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.regressor.build_total_regressor_current">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_total_regressor_current</span><span class="p">(</span>
+    <span class="n">W_b_u</span><span class="p">,</span> <span class="n">W_b_l</span><span class="p">,</span> <span class="n">W_l</span><span class="p">,</span> <span class="n">I_u</span><span class="p">,</span> <span class="n">I_l</span><span class="p">,</span> <span class="n">param_standard_l</span><span class="p">,</span> <span class="n">identif_config</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build regressor for total least squares with current measurements.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        W_b_u: Base regressor for unloaded case</span>
+<span class="sd">        W_b_l: Base regressor for loaded case</span>
+<span class="sd">        W_l: Full regressor for loaded case</span>
+<span class="sd">        I_u: Joint currents in unloaded case</span>
+<span class="sd">        I_l: Joint currents in loaded case</span>
+<span class="sd">        param_standard_l: Standard parameters in loaded case</span>
+<span class="sd">        identif_config: Dictionary of settings</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple:</span>
+<span class="sd">            - Total regressor matrix</span>
+<span class="sd">            - Normalized identif_configeter vector</span>
+<span class="sd">            - Residual vector</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">W_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="o">-</span><span class="n">W_b_u</span><span class="p">,</span> <span class="o">-</span><span class="n">W_b_l</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">nb_joints</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">I_u</span><span class="p">)</span> <span class="o">/</span> <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;nb_samples&quot;</span><span class="p">])</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;nb_samples&quot;</span><span class="p">]</span>
+
+    <span class="n">V_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span>
+        <span class="n">I_u</span><span class="p">[:</span><span class="n">n_samples</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(((</span><span class="n">nb_joints</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">V_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span>
+        <span class="n">I_l</span><span class="p">[:</span><span class="n">n_samples</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(((</span><span class="n">nb_joints</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nb_joints</span><span class="p">):</span>
+        <span class="n">V_a_ii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_samples</span> <span class="o">*</span> <span class="n">ii</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+            <span class="n">I_u</span><span class="p">[</span><span class="n">n_samples</span> <span class="o">*</span> <span class="n">ii</span><span class="p">:(</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_samples</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_samples</span> <span class="o">*</span> <span class="p">(</span><span class="n">nb_joints</span> <span class="o">-</span> <span class="n">ii</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">V_b_ii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_samples</span> <span class="o">*</span> <span class="n">ii</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+            <span class="n">I_l</span><span class="p">[</span><span class="n">n_samples</span> <span class="o">*</span> <span class="n">ii</span><span class="p">:(</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_samples</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_samples</span> <span class="o">*</span> <span class="p">(</span><span class="n">nb_joints</span> <span class="o">-</span> <span class="n">ii</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">V_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">V_a</span><span class="p">,</span> <span class="n">V_a_ii</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">V_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">V_b</span><span class="p">,</span> <span class="n">V_b_ii</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">W_current</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">V_a</span><span class="p">,</span> <span class="n">V_b</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">W_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">W_tot</span><span class="p">,</span> <span class="n">W_current</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;has_friction&quot;</span><span class="p">]:</span>
+        <span class="n">W_l_temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">W_l</span><span class="p">),</span> <span class="mi">12</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">]:</span>
+            <span class="n">W_l_temp</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">W_l</span><span class="p">[:,</span> <span class="p">(</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;which_body_loaded&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="mi">12</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span>
+        <span class="n">idx_e_temp</span><span class="p">,</span> <span class="n">params_r_temp</span> <span class="o">=</span> <span class="n">get_index_eliminate</span><span class="p">(</span><span class="n">W_l_temp</span><span class="p">,</span> <span class="n">param_standard_l</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">)</span>
+        <span class="n">W_e_l</span> <span class="o">=</span> <span class="n">build_regressor_reduced</span><span class="p">(</span><span class="n">W_l_temp</span><span class="p">,</span> <span class="n">idx_e_temp</span><span class="p">)</span>
+        <span class="n">W_upayload</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">W_l</span><span class="p">),</span> <span class="n">W_e_l</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span> <span class="o">-</span><span class="n">W_e_l</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="n">W_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">W_tot</span><span class="p">,</span> <span class="n">W_upayload</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">W_kpayload</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">W_l</span><span class="p">),</span> <span class="mi">1</span><span class="p">)),</span>
+                <span class="o">-</span><span class="n">W_l</span><span class="p">[:,</span> <span class="p">(</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;which_body_loaded&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="mi">12</span> <span class="o">+</span> <span class="mi">9</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">W_l</span><span class="p">),</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">W_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">W_tot</span><span class="p">,</span> <span class="n">W_kpayload</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;has_actuator_inertia&quot;</span><span class="p">]:</span>
+        <span class="n">W_l_temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">W_l</span><span class="p">),</span> <span class="mi">14</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">]:</span>
+            <span class="n">W_l_temp</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">W_l</span><span class="p">[:,</span> <span class="p">(</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;which_body_loaded&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="mi">14</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span>
+        <span class="n">idx_e_temp</span><span class="p">,</span> <span class="n">params_r_temp</span> <span class="o">=</span> <span class="n">get_index_eliminate</span><span class="p">(</span><span class="n">W_l_temp</span><span class="p">,</span> <span class="n">param_standard_l</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">)</span>
+        <span class="n">W_e_l</span> <span class="o">=</span> <span class="n">build_regressor_reduced</span><span class="p">(</span><span class="n">W_l_temp</span><span class="p">,</span> <span class="n">idx_e_temp</span><span class="p">)</span>
+        <span class="n">W_upayload</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">W_l</span><span class="p">),</span> <span class="n">W_e_l</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span> <span class="o">-</span><span class="n">W_e_l</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="n">W_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">W_tot</span><span class="p">,</span> <span class="n">W_upayload</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">W_kpayload</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">W_l</span><span class="p">),</span> <span class="mi">1</span><span class="p">)),</span>
+                <span class="o">-</span><span class="n">W_l</span><span class="p">[:,</span> <span class="p">(</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;which_body_loaded&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="mi">14</span> <span class="o">+</span> <span class="mi">9</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">W_l</span><span class="p">),</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">W_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">W_tot</span><span class="p">,</span> <span class="n">W_kpayload</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">W_l_temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">W_l</span><span class="p">),</span> <span class="mi">9</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">):</span>
+            <span class="n">W_l_temp</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">W_l</span><span class="p">[:,</span> <span class="p">(</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;which_body_loaded&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span>
+        <span class="n">idx_e_temp</span><span class="p">,</span> <span class="n">params_r_temp</span> <span class="o">=</span> <span class="n">get_index_eliminate</span><span class="p">(</span><span class="n">W_l_temp</span><span class="p">,</span> <span class="n">param_standard_l</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">)</span>
+        <span class="n">W_e_l</span> <span class="o">=</span> <span class="n">build_regressor_reduced</span><span class="p">(</span><span class="n">W_l_temp</span><span class="p">,</span> <span class="n">idx_e_temp</span><span class="p">)</span>
+        <span class="n">W_upayload</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">W_l</span><span class="p">),</span> <span class="n">W_e_l</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span> <span class="o">-</span><span class="n">W_e_l</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="n">W_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">W_tot</span><span class="p">,</span> <span class="n">W_upayload</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">W_kpayload</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">W_l</span><span class="p">),</span> <span class="mi">1</span><span class="p">)),</span>
+                <span class="o">-</span><span class="n">W_l</span><span class="p">[:,</span> <span class="p">(</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;which_body_loaded&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">9</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">W_l</span><span class="p">),</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">W_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">W_tot</span><span class="p">,</span> <span class="n">W_kpayload</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">U</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">Vh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">W_tot</span><span class="p">,</span> <span class="n">full_matrices</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">Vh</span><span class="p">)</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span>
+    <span class="n">V_norm</span> <span class="o">=</span> <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;mass_load&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">V</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">V</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">residue</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">W_tot</span><span class="p">,</span> <span class="n">V_norm</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">W_tot</span><span class="p">,</span> <span class="n">V_norm</span><span class="p">,</span> <span class="n">residue</span></div>
+
+
+
+<div class="viewcode-block" id="build_total_regressor_wrench">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.regressor.build_total_regressor_wrench">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_total_regressor_wrench</span><span class="p">(</span>
+    <span class="n">W_b_u</span><span class="p">,</span> <span class="n">W_b_l</span><span class="p">,</span> <span class="n">W_l</span><span class="p">,</span> <span class="n">tau_u</span><span class="p">,</span> <span class="n">tau_l</span><span class="p">,</span> <span class="n">param_standard_l</span><span class="p">,</span> <span class="n">param</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build regressor for total least squares with external wrench measurements.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        W_b_u: Base regressor for unloaded case</span>
+<span class="sd">        W_b_l: Base regressor for loaded case</span>
+<span class="sd">        W_l: Full regressor for loaded case</span>
+<span class="sd">        tau_u: External wrench in unloaded case</span>
+<span class="sd">        tau_l: External wrench in loaded case</span>
+<span class="sd">        param_standard_l: Standard parameters in loaded case</span>
+<span class="sd">        param: Dictionary of settings</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple:</span>
+<span class="sd">            - Total regressor matrix</span>
+<span class="sd">            - Normalized parameter vector</span>
+<span class="sd">            - Residual vector</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">W_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="o">-</span><span class="n">W_b_u</span><span class="p">,</span> <span class="o">-</span><span class="n">W_b_l</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">tau_meast_ul</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">tau_u</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tau_u</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">tau_meast_l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">tau_l</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tau_l</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="n">nb_samples_ul</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tau_meast_ul</span><span class="p">)</span> <span class="o">/</span> <span class="mi">6</span><span class="p">)</span>
+    <span class="n">nb_samples_l</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tau_meast_l</span><span class="p">)</span> <span class="o">/</span> <span class="mi">6</span><span class="p">)</span>
+
+    <span class="n">tau_ul</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span>
+        <span class="n">tau_meast_ul</span><span class="p">[:</span><span class="n">nb_samples_ul</span><span class="p">],</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">tau_meast_ul</span><span class="p">)</span> <span class="o">-</span> <span class="n">nb_samples_ul</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    
+    <span class="n">tau_l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span>
+        <span class="n">tau_meast_l</span><span class="p">[:</span><span class="n">nb_samples_l</span><span class="p">],</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">tau_meast_l</span><span class="p">)</span> <span class="o">-</span> <span class="n">nb_samples_l</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span>
+        <span class="n">tau_ul_ii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nb_samples_ul</span> <span class="o">*</span> <span class="n">ii</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+                <span class="n">tau_meast_ul</span><span class="p">[</span>
+                    <span class="n">nb_samples_ul</span> <span class="o">*</span> <span class="n">ii</span><span class="p">:(</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">nb_samples_ul</span>
+                <span class="p">]</span>
+            <span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nb_samples_ul</span> <span class="o">*</span> <span class="p">(</span><span class="mi">5</span> <span class="o">-</span> <span class="n">ii</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">tau_l_ii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nb_samples_l</span> <span class="o">*</span> <span class="n">ii</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+                <span class="n">tau_meast_l</span><span class="p">[</span>
+                    <span class="n">nb_samples_l</span> <span class="o">*</span> <span class="n">ii</span><span class="p">:(</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">nb_samples_l</span>
+                <span class="p">]</span>
+            <span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nb_samples_l</span> <span class="o">*</span> <span class="p">(</span><span class="mi">5</span> <span class="o">-</span> <span class="n">ii</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">tau_ul</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">tau_ul</span><span class="p">,</span> <span class="n">tau_ul_ii</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">tau_l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">tau_l</span><span class="p">,</span> <span class="n">tau_l_ii</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">W_tau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">tau_ul</span><span class="p">,</span> <span class="n">tau_l</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">W_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">W_tot</span><span class="p">,</span> <span class="n">W_tau</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">W_l_temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">W_l</span><span class="p">),</span> <span class="mi">9</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">):</span>
+        <span class="n">W_l_temp</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">W_l</span><span class="p">[</span>
+            <span class="p">:,</span> <span class="p">(</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;which_body_loaded&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="n">k</span>
+        <span class="p">]</span>
+    <span class="n">W_upayload</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">W_l</span><span class="p">),</span> <span class="n">W_l_temp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span> <span class="o">-</span><span class="n">W_l_temp</span><span class="p">),</span>
+        <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+    <span class="p">)</span>
+    <span class="n">W_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">W_tot</span><span class="p">,</span> <span class="n">W_upayload</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="n">W_kpayload</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">W_l</span><span class="p">),</span> <span class="mi">1</span><span class="p">)),</span>
+        <span class="o">-</span><span class="n">W_l</span><span class="p">[:,</span> <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;which_body_loaded&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">9</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">W_l</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">W_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">W_tot</span><span class="p">,</span> <span class="n">W_kpayload</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">U</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">Vh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">W_tot</span><span class="p">,</span> <span class="n">full_matrices</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">Vh</span><span class="p">)</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span>
+    <span class="n">V_norm</span> <span class="o">=</span> <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;mass_load&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">V</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">V</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">residue</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">W_tot</span><span class="p">,</span> <span class="n">V_norm</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">W_tot</span><span class="p">,</span> <span class="n">V_norm</span><span class="p">,</span> <span class="n">residue</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2025, Thanh Nguyen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
