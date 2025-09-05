@@ -40,14 +40,25 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../modules/identification.html">Identification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Modules:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../modules/calibration.html">Calibration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../modules/measurements.html">Measurements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/identification.html">Identification</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tools and Utilities:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../modules/tools.html">Tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../modules/utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/measurements.html">Measurements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../modules/visualisation.html">Visualisation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Advanced Features:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/optimal.html">figaroh.optimal package</a></li>
 </ul>
 
         </div>
@@ -90,20 +101,224 @@
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
 
+<span class="sd">&quot;&quot;&quot;Enhanced robot visualization utilities with better performance.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pinocchio</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 
 
+<div class="viewcode-block" id="VisualizationConfig">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotvisualization.VisualizationConfig">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">VisualizationConfig</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration for robot visualization.&quot;&quot;&quot;</span>
+    <span class="n">com_color</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">axes_color</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">force_color</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">bbox_color</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">scale_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">com_color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">com_color</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>  <span class="c1"># Red</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes_color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axes_color</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>  <span class="c1"># Red</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">force_color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">force_color</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>  <span class="c1"># Yellow</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bbox_color</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]</span>  <span class="c1"># Purple, transparent</span></div>
+
+
+
+<div class="viewcode-block" id="RobotVisualizer">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotvisualization.RobotVisualizer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RobotVisualizer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enhanced robot visualizer with better organization.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">pin</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">pin</span><span class="o">.</span><span class="n">Data</span><span class="p">,</span> <span class="n">viz</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">VisualizationConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viz</span> <span class="o">=</span> <span class="n">viz</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span> <span class="ow">or</span> <span class="n">VisualizationConfig</span><span class="p">()</span>
+        
+        <span class="c1"># Cache frequently used values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_names</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nv</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">nv</span>
+    
+<div class="viewcode-block" id="RobotVisualizer.update_kinematics">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotvisualization.RobotVisualizer.update_kinematics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_kinematics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update robot kinematics efficiently.&quot;&quot;&quot;</span>
+        <span class="n">pin</span><span class="o">.</span><span class="n">forwardKinematics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+        <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">pin</span><span class="o">.</span><span class="n">centerOfMass</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">pin</span><span class="o">.</span><span class="n">computeSubtreeMasses</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="RobotVisualizer.display_com">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotvisualization.RobotVisualizer.display_com">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">display_com</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">frame_indices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Display center of mass positions with better naming.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_kinematics</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">frame_idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">frame_indices</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>  <span class="c1"># Exclude last frame</span>
+            <span class="n">next_frame_idx</span> <span class="o">=</span> <span class="n">frame_indices</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            
+            <span class="c1"># Calculate link properties</span>
+            <span class="n">link_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">oMf</span><span class="p">[</span><span class="n">next_frame_idx</span><span class="p">]</span><span class="o">.</span><span class="n">translation</span> <span class="o">-</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">oMf</span><span class="p">[</span><span class="n">frame_idx</span><span class="p">]</span><span class="o">.</span><span class="n">translation</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># Mass-based radius scaling</span>
+            <span class="n">mass_ratio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mass</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mass</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mass</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.1</span>
+            <span class="n">radius</span> <span class="o">=</span> <span class="n">link_length</span> <span class="o">*</span> <span class="n">mass_ratio</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scale_factor</span>
+            
+            <span class="c1"># COM placement</span>
+            <span class="n">placement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">oMf</span><span class="p">[</span><span class="n">frame_idx</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">parent_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">frame_idx</span><span class="p">]</span><span class="o">.</span><span class="n">parent</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">parent_id</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">translation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">com</span><span class="p">[</span><span class="n">parent_id</span><span class="p">]</span>
+            
+            <span class="c1"># Create and place sphere</span>
+            <span class="n">sphere_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;world/com_sphere_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">addSphere</span><span class="p">(</span><span class="n">sphere_name</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">com_color</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_apply_placement</span><span class="p">(</span><span class="n">sphere_name</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="RobotVisualizer.display_axes">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotvisualization.RobotVisualizer.display_axes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">display_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">axis_length</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.15</span><span class="p">,</span> <span class="n">axis_radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Display coordinate axes for joints.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_kinematics</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">joint_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">joint_names</span><span class="p">):</span>
+            <span class="n">joint_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">getJointId</span><span class="p">(</span><span class="n">joint_name</span><span class="p">)</span>
+            <span class="n">axis_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;world/axis_</span><span class="si">{</span><span class="n">joint_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+            
+            <span class="c1"># Create axis visualization</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">addXYZaxis</span><span class="p">(</span>
+                <span class="n">axis_name</span><span class="p">,</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">axes_color</span><span class="p">,</span> 
+                <span class="n">axis_radius</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scale_factor</span><span class="p">,</span> 
+                <span class="n">axis_length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scale_factor</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># Apply joint placement</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_apply_placement</span><span class="p">(</span><span class="n">axis_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">oMi</span><span class="p">[</span><span class="n">joint_id</span><span class="p">])</span></div>
+
+    
+<div class="viewcode-block" id="RobotVisualizer.display_force">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotvisualization.RobotVisualizer.display_force">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">display_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="n">pin</span><span class="o">.</span><span class="n">Force</span><span class="p">,</span> <span class="n">placement</span><span class="p">:</span> <span class="n">pin</span><span class="o">.</span><span class="n">SE3</span><span class="p">,</span> 
+                     <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;force_vector&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Display force vector with better scaling.&quot;&quot;&quot;</span>
+        <span class="c1"># Transform force to world frame</span>
+        <span class="n">world_force</span> <span class="o">=</span> <span class="n">force</span><span class="o">.</span><span class="n">se3Action</span><span class="p">(</span><span class="n">placement</span><span class="p">)</span>
+        <span class="n">force_magnitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">world_force</span><span class="o">.</span><span class="n">linear</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">force_magnitude</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>  <span class="c1"># Skip negligible forces</span>
+            <span class="k">return</span>
+        
+        <span class="c1"># Calculate arrow properties</span>
+        <span class="n">arrow_length</span> <span class="o">=</span> <span class="n">force_magnitude</span> <span class="o">*</span> <span class="n">scale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scale_factor</span>
+        <span class="n">arrow_radius</span> <span class="o">=</span> <span class="n">arrow_length</span> <span class="o">*</span> <span class="mf">0.05</span>
+        
+        <span class="c1"># Align arrow with force direction</span>
+        <span class="n">force_direction</span> <span class="o">=</span> <span class="n">world_force</span><span class="o">.</span><span class="n">linear</span> <span class="o">/</span> <span class="n">force_magnitude</span>
+        <span class="n">rotation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_from_vectors</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">force_direction</span><span class="p">)</span>
+        
+        <span class="n">arrow_placement</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">arrow_placement</span><span class="o">.</span><span class="n">rotation</span> <span class="o">=</span> <span class="n">rotation</span>
+        
+        <span class="c1"># Create and place arrow</span>
+        <span class="n">arrow_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;world/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_arrow&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">addArrow</span><span class="p">(</span><span class="n">arrow_name</span><span class="p">,</span> <span class="n">arrow_radius</span><span class="p">,</span> <span class="n">arrow_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">force_color</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_apply_placement</span><span class="p">(</span><span class="n">arrow_name</span><span class="p">,</span> <span class="n">arrow_placement</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="RobotVisualizer.display_bounding_boxes">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotvisualization.RobotVisualizer.display_bounding_boxes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">display_bounding_boxes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">com_min</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> 
+                              <span class="n">com_max</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">frame_indices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Display COM bounding boxes for optimization visualization.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_kinematics</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">frame_idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">frame_indices</span><span class="p">):</span>
+            <span class="c1"># Get COM bounds for this segment</span>
+            <span class="n">bounds_start</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">i</span>
+            <span class="n">min_bounds</span> <span class="o">=</span> <span class="n">com_min</span><span class="p">[</span><span class="n">bounds_start</span><span class="p">:</span><span class="n">bounds_start</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span>
+            <span class="n">max_bounds</span> <span class="o">=</span> <span class="n">com_max</span><span class="p">[</span><span class="n">bounds_start</span><span class="p">:</span><span class="n">bounds_start</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span>
+            
+            <span class="c1"># Calculate box dimensions</span>
+            <span class="n">box_size</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_bounds</span> <span class="o">-</span> <span class="n">min_bounds</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scale_factor</span>
+            
+            <span class="c1"># Box placement at COM location</span>
+            <span class="n">placement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">oMf</span><span class="p">[</span><span class="n">frame_idx</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">parent_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">frame_idx</span><span class="p">]</span><span class="o">.</span><span class="n">parent</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">parent_id</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">translation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">com</span><span class="p">[</span><span class="n">parent_id</span><span class="p">]</span>
+            
+            <span class="c1"># Create and place box</span>
+            <span class="n">box_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;world/com_bbox_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">addBox</span><span class="p">(</span>
+                <span class="n">box_name</span><span class="p">,</span> <span class="n">box_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">box_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">box_size</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">bbox_color</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_apply_placement</span><span class="p">(</span><span class="n">box_name</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="RobotVisualizer.display_joints">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotvisualization.RobotVisualizer.display_joints">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">display_joints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Display joint frames efficiently.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_kinematics</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nv</span><span class="p">):</span>
+            <span class="n">joint_placement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">oMi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">joint_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;world/joint_frame_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+            
+            <span class="c1"># Create joint frame visualization</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">addXYZaxis</span><span class="p">(</span>
+                <span class="n">joint_name</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">axes_color</span><span class="p">,</span>
+                <span class="mf">0.01</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scale_factor</span><span class="p">,</span>
+                <span class="mf">0.15</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scale_factor</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># Apply configuration</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_apply_placement</span><span class="p">(</span><span class="n">joint_name</span><span class="p">,</span> <span class="n">joint_placement</span><span class="p">)</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_apply_placement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">placement</span><span class="p">:</span> <span class="n">pin</span><span class="o">.</span><span class="n">SE3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply SE3 placement to visualization object.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">applyConfiguration</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">pin</span><span class="o">.</span><span class="n">SE3ToXYZQUATtuple</span><span class="p">(</span><span class="n">placement</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_rotation_from_vectors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vec1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">vec2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate rotation matrix aligning vec1 to vec2.&quot;&quot;&quot;</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">vec1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vec1</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">vec2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vec2</span><span class="p">)</span>
+        
+        <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">s</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>  <span class="c1"># Vectors are parallel</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="k">if</span> <span class="n">c</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        
+        <span class="c1"># Rodrigues&#39; rotation formula</span>
+        <span class="n">vx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="p">[</span><span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">]])</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">vx</span> <span class="o">+</span> <span class="n">vx</span> <span class="o">@</span> <span class="n">vx</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">s</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span></div>
+
+
+
+<span class="c1"># Backward compatibility functions</span>
 <div class="viewcode-block" id="place">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotvisualization.place">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">place</span><span class="p">(</span><span class="n">viz</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">M</span><span class="p">:</span> <span class="n">pin</span><span class="o">.</span><span class="n">SE3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Place coordinate system in GUI visualization.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        viz: Robot visualizer (e.g. gepetto-viewer)</span>
-<span class="sd">        name: Name of coordinate system object</span>
-<span class="sd">        M: Homogeneous transformation matrix</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Legacy placement function.&quot;&quot;&quot;</span>
     <span class="n">viz</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">applyConfiguration</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">pin</span><span class="o">.</span><span class="n">SE3ToXYZQUATtuple</span><span class="p">(</span><span class="n">M</span><span class="p">))</span></div>
 
 
@@ -111,204 +326,55 @@
 <div class="viewcode-block" id="display_COM">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotvisualization.display_COM">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">display_COM</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">pin</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">pin</span><span class="o">.</span><span class="n">Data</span><span class="p">,</span> <span class="n">viz</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">IDX</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Display center of mass positions for each link.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        model: Pinocchio robot model</span>
-<span class="sd">        data: Pinocchio robot data</span>
-<span class="sd">        viz: Robot visualizer</span>
-<span class="sd">        q: Joint configuration vector</span>
-<span class="sd">        IDX: List of frame indices in kinematic tree order</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">pin</span><span class="o">.</span><span class="n">forwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
-    <span class="n">pin</span><span class="o">.</span><span class="n">computeSubtreeMasses</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-    <span class="n">pin</span><span class="o">.</span><span class="n">centerOfMass</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-    <span class="n">rgbt</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>  <span class="c1"># red, green, blue, transparency</span>
-    <span class="n">ball_ids</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">IDX</span><span class="p">)):</span>
-        <span class="n">link_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">oMf</span><span class="p">[</span><span class="n">IDX</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">translation</span> <span class="o">-</span> <span class="n">data</span><span class="o">.</span><span class="n">oMf</span><span class="p">[</span><span class="n">IDX</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">translation</span>
-        <span class="p">)</span>
-        <span class="n">placement</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">oMf</span><span class="p">[</span><span class="n">IDX</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
-        <span class="n">ball_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;world/ball_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
-        <span class="n">radius</span> <span class="o">=</span> <span class="n">link_length</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">mass</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">data</span><span class="o">.</span><span class="n">mass</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># mass ratio</span>
-        <span class="n">placement</span><span class="o">.</span><span class="n">translation</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">com</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">IDX</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">parent</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-        <span class="n">viz</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">addSphere</span><span class="p">(</span><span class="n">ball_ids</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">radius</span><span class="p">,</span> <span class="n">rgbt</span><span class="p">)</span>
-        <span class="n">place</span><span class="p">(</span><span class="n">viz</span><span class="p">,</span> <span class="n">ball_ids</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">placement</span><span class="p">)</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Legacy COM display function.&quot;&quot;&quot;</span>
+    <span class="n">visualizer</span> <span class="o">=</span> <span class="n">RobotVisualizer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">viz</span><span class="p">)</span>
+    <span class="n">visualizer</span><span class="o">.</span><span class="n">display_com</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">IDX</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="display_axes">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotvisualization.display_axes">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">display_axes</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">pin</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">pin</span><span class="o">.</span><span class="n">Data</span><span class="p">,</span> <span class="n">viz</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Display coordinate axes for each joint.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        model: Pinocchio robot model</span>
-<span class="sd">        data: Pinocchio robot data </span>
-<span class="sd">        viz: Robot visualizer</span>
-<span class="sd">        q: Joint configuration vector</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">ids</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">matrices</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">names</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">names</span>
-    <span class="n">axes</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="c1"># Get the joints id and create the axes</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)):</span>
-        <span class="n">ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">getJointId</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
-        <span class="n">axes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;world/link_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
-        <span class="n">viz</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">addXYZaxis</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">)</span>
-
-    <span class="c1"># Compute the forward kinematics w.r.t the q</span>
-    <span class="n">pin</span><span class="o">.</span><span class="n">forwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
-    <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-
-    <span class="c1"># Get the homogeneous matrices for each frame and place the axes</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)):</span>
-        <span class="n">matrices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">oMi</span><span class="p">[</span><span class="n">ids</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
-        <span class="n">place</span><span class="p">(</span><span class="n">viz</span><span class="p">,</span> <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">matrices</span><span class="p">[</span><span class="n">i</span><span class="p">])</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Legacy axes display function.&quot;&quot;&quot;</span>
+    <span class="n">visualizer</span> <span class="o">=</span> <span class="n">RobotVisualizer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">viz</span><span class="p">)</span>
+    <span class="n">visualizer</span><span class="o">.</span><span class="n">display_axes</span><span class="p">(</span><span class="n">q</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="rotation_matrix_from_vectors">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotvisualization.rotation_matrix_from_vectors">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">rotation_matrix_from_vectors</span><span class="p">(</span>
-    <span class="n">vec1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="n">vec2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find rotation matrix aligning vec1 to vec2.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        vec1: Source 3D vector</span>
-<span class="sd">        vec2: Destination 3D vector</span>
-<span class="sd">        </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        ndarray: 3x3 rotation matrix that aligns vec1 with vec2</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Normalize vectors</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="n">vec1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vec1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-    <span class="n">b</span> <span class="o">=</span> <span class="p">(</span><span class="n">vec2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vec2</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-
-    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-
-    <span class="n">kmat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
-        <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
-        <span class="p">[</span><span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> 
-        <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">]</span>
-    <span class="p">])</span>
-
-    <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">kmat</span> <span class="o">+</span> <span class="n">kmat</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">kmat</span><span class="p">)</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">s</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span>
-    <span class="k">return</span> <span class="n">rotation_matrix</span></div>
+<span class="k">def</span><span class="w"> </span><span class="nf">rotation_matrix_from_vectors</span><span class="p">(</span><span class="n">vec1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">vec2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Legacy rotation function.&quot;&quot;&quot;</span>
+    <span class="n">visualizer</span> <span class="o">=</span> <span class="n">RobotVisualizer</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">visualizer</span><span class="o">.</span><span class="n">_rotation_from_vectors</span><span class="p">(</span><span class="n">vec1</span><span class="p">,</span> <span class="n">vec2</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="display_force">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotvisualization.display_force">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">display_force</span><span class="p">(</span><span class="n">viz</span><span class="p">,</span> <span class="n">phi</span><span class="p">:</span> <span class="n">pin</span><span class="o">.</span><span class="n">Force</span><span class="p">,</span> <span class="n">M_se3</span><span class="p">:</span> <span class="n">pin</span><span class="o">.</span><span class="n">SE3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Display force vector in visualization.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        viz: Robot visualizer</span>
-<span class="sd">        phi: 6D force vector in M_se3 frame</span>
-<span class="sd">        M_se3: SE3 transformation for force display</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">M_se3_temp</span> <span class="o">=</span> <span class="n">M_se3</span>
-    <span class="n">color</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-    <span class="n">radius</span> <span class="o">=</span> <span class="mf">0.01</span>
-    
-    <span class="n">phi</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">se3Action</span><span class="p">(</span><span class="n">M_se3</span><span class="p">)</span>
-    <span class="n">force</span> <span class="o">=</span> <span class="p">[</span><span class="n">phi</span><span class="o">.</span><span class="n">linear</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">phi</span><span class="o">.</span><span class="n">linear</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">phi</span><span class="o">.</span><span class="n">linear</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
-    <span class="n">length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">force</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-3</span>
-    
-    <span class="c1"># Project x-axis onto force direction for display</span>
-    <span class="n">Rot</span> <span class="o">=</span> <span class="n">rotation_matrix_from_vectors</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">phi</span><span class="o">.</span><span class="n">linear</span><span class="p">)</span>
-    <span class="n">M_se3_temp</span><span class="o">.</span><span class="n">rotation</span> <span class="o">=</span> <span class="n">Rot</span>
-    
-    <span class="n">viz</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">addArrow</span><span class="p">(</span><span class="s2">&quot;world/arrow&quot;</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">color</span><span class="p">)</span>
-    <span class="n">place</span><span class="p">(</span><span class="n">viz</span><span class="p">,</span> <span class="s2">&quot;world/arrow&quot;</span><span class="p">,</span> <span class="n">M_se3_temp</span><span class="p">)</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Legacy force display function.&quot;&quot;&quot;</span>
+    <span class="n">visualizer</span> <span class="o">=</span> <span class="n">RobotVisualizer</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">viz</span><span class="p">)</span>
+    <span class="n">visualizer</span><span class="o">.</span><span class="n">display_force</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">M_se3</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="display_bounding_boxes">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotvisualization.display_bounding_boxes">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">display_bounding_boxes</span><span class="p">(</span>
-    <span class="n">viz</span><span class="p">,</span> 
-    <span class="n">model</span><span class="p">:</span> <span class="n">pin</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> 
-    <span class="n">data</span><span class="p">:</span> <span class="n">pin</span><span class="o">.</span><span class="n">Data</span><span class="p">,</span> 
-    <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="n">COM_min</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> 
-    <span class="n">COM_max</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> 
-    <span class="n">IDX</span><span class="p">:</span> <span class="nb">list</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Display COM bounding boxes for optimization.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        viz: Robot visualizer</span>
-<span class="sd">        model: Pinocchio robot model</span>
-<span class="sd">        data: Pinocchio robot data </span>
-<span class="sd">        q: Joint configuration vector</span>
-<span class="sd">        COM_min: Min COM boundaries per segment (3*num_segments)</span>
-<span class="sd">        COM_max: Max COM boundaries per segment (3*num_segments) </span>
-<span class="sd">        IDX: List of frame indices</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">pin</span><span class="o">.</span><span class="n">forwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
-    <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-    <span class="n">pin</span><span class="o">.</span><span class="n">centerOfMass</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-    
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">IDX</span><span class="p">)):</span>
-        <span class="n">M</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">oMf</span><span class="p">[</span><span class="n">IDX</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
-        <span class="n">M</span><span class="o">.</span><span class="n">translation</span> <span class="o">+=</span> <span class="n">data</span><span class="o">.</span><span class="n">com</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">IDX</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">parent</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-        
-        <span class="n">size_x</span> <span class="o">=</span> <span class="n">COM_max</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">COM_min</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">i</span><span class="p">]</span>
-        <span class="n">size_y</span> <span class="o">=</span> <span class="n">COM_max</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">COM_min</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
-        <span class="n">size_z</span> <span class="o">=</span> <span class="n">COM_max</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">COM_min</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
-        
-        <span class="n">box_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;world/box</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="n">viz</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">addBox</span><span class="p">(</span>
-            <span class="n">box_name</span><span class="p">,</span>
-            <span class="n">size_x</span><span class="p">,</span>
-            <span class="n">size_y</span><span class="p">,</span> 
-            <span class="n">size_z</span><span class="p">,</span>
-            <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]</span>
-        <span class="p">)</span>
-        <span class="n">place</span><span class="p">(</span><span class="n">viz</span><span class="p">,</span> <span class="n">box_name</span><span class="p">,</span> <span class="n">M</span><span class="p">)</span></div>
+<span class="k">def</span><span class="w"> </span><span class="nf">display_bounding_boxes</span><span class="p">(</span><span class="n">viz</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">pin</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">pin</span><span class="o">.</span><span class="n">Data</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                          <span class="n">COM_min</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">COM_max</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">IDX</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Legacy bounding box display function.&quot;&quot;&quot;</span>
+    <span class="n">visualizer</span> <span class="o">=</span> <span class="n">RobotVisualizer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">viz</span><span class="p">)</span>
+    <span class="n">visualizer</span><span class="o">.</span><span class="n">display_bounding_boxes</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">COM_min</span><span class="p">,</span> <span class="n">COM_max</span><span class="p">,</span> <span class="n">IDX</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="display_joints">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotvisualization.display_joints">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">display_joints</span><span class="p">(</span><span class="n">viz</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">pin</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">pin</span><span class="o">.</span><span class="n">Data</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Display joint frames in visualization.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        viz: Robot visualizer</span>
-<span class="sd">        model: Pinocchio robot model</span>
-<span class="sd">        data: Pinocchio robot data</span>
-<span class="sd">        q: Joint configuration vector</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">pin</span><span class="o">.</span><span class="n">forwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
-    <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">nv</span><span class="p">):</span>
-        <span class="n">joint_pos</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">oMi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">translation</span>
-        <span class="n">joint_ori</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">Quaternion</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">oMi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">rotation</span><span class="p">)</span>
-        <span class="n">joint_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;world/joint</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
-        
-        <span class="n">viz</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">addXYZaxis</span><span class="p">(</span>
-            <span class="n">joint_name</span><span class="p">,</span> 
-            <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
-            <span class="mf">0.01</span><span class="p">,</span>
-            <span class="mf">0.15</span>
-        <span class="p">)</span>
-        
-        <span class="n">config</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">joint_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">joint_pos</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">joint_pos</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-            <span class="n">joint_ori</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">joint_ori</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">joint_ori</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">joint_ori</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
-        <span class="p">]</span>
-        <span class="n">viz</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">applyConfiguration</span><span class="p">(</span><span class="n">joint_name</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
-        <span class="n">viz</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Legacy joint display function.&quot;&quot;&quot;</span>
+    <span class="n">visualizer</span> <span class="o">=</span> <span class="n">RobotVisualizer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">viz</span><span class="p">)</span>
+    <span class="n">visualizer</span><span class="o">.</span><span class="n">display_joints</span><span class="p">(</span><span class="n">q</span><span class="p">)</span></div>
 
 </pre></div>
 

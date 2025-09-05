@@ -1,0 +1,279 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Getting Started &mdash; figaroh 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="canonical" href="https://thanhndv212.github.io/figaroh/getting_started.html" />
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Calibration" href="modules/calibration.html" />
+    <link rel="prev" title="Welcome to FIGAROH’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            figaroh
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration-system">Configuration System</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#unified-configuration-format">Unified Configuration Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#legacy-format-support">Legacy Format Support</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#quick-start-examples">Quick Start Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#basic-calibration">Basic Calibration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#basic-identification">Basic Identification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#advanced-regressor-building">Advanced Regressor Building</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuration-management">Configuration Management</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#next-steps">Next Steps</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Modules:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules/calibration.html">Calibration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/identification.html">Identification</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tools and Utilities:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules/tools.html">Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/measurements.html">Measurements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/visualisation.html">Visualisation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Advanced Features:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules/optimal.html">figaroh.optimal package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">figaroh</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Getting Started</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/getting_started.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="getting-started">
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h1>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<p>Install FIGAROH from PyPI:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>figaroh
+</pre></div>
+</div>
+<p>For development with all dependencies:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yml
+conda<span class="w"> </span>activate<span class="w"> </span>figaroh-dev
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="configuration-system">
+<h2>Configuration System<a class="headerlink" href="#configuration-system" title="Link to this heading"></a></h2>
+<p>FIGAROH uses a flexible YAML-based configuration system that supports both modern unified format and legacy format.</p>
+<section id="unified-configuration-format">
+<h3>Unified Configuration Format<a class="headerlink" href="#unified-configuration-format" title="Link to this heading"></a></h3>
+<p>The modern unified format provides better organization and template inheritance:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># modern_config.yaml</span>
+<span class="nt">inherit_from</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;templates/base_robot.yaml&quot;</span>
+
+<span class="nt">robot</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;tiago&quot;</span>
+<span class="w">  </span><span class="nt">urdf_path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;urdf/tiago.urdf&quot;</span>
+
+<span class="nt">calibration</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;full_params&quot;</span>
+<span class="w">  </span><span class="nt">sensor_type</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;camera&quot;</span>
+
+<span class="w">  </span><span class="nt">markers</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ref_joint</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;wrist_3_joint&quot;</span>
+<span class="w">      </span><span class="nt">position</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.05</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">measure</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">true</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">]</span>
+
+<span class="nt">identification</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mechanics</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">friction_coefficients</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">viscous</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.01</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.02</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.015</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">static</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.001</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.002</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.0015</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">actuator_inertias</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.15</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.12</span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="nt">signal_processing</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sampling_frequency</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5000.0</span>
+<span class="w">    </span><span class="nt">cutoff_frequency</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100.0</span>
+</pre></div>
+</div>
+</section>
+<section id="legacy-format-support">
+<h3>Legacy Format Support<a class="headerlink" href="#legacy-format-support" title="Link to this heading"></a></h3>
+<p>Existing configurations continue to work without modification:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># legacy_config.yaml</span>
+<span class="nt">calibration</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">calib_level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">full_params</span>
+<span class="w">  </span><span class="nt">markers</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ref_joint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wrist_3_joint</span>
+<span class="w">      </span><span class="nt">measure</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">True</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">True</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">True</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">True</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">True</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">True</span><span class="p p-Indicator">]</span>
+
+<span class="nt">identification</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">robot_params</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fv</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.01</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.02</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.015</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">fs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.001</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.002</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.0015</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">processing_params</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0002</span>
+<span class="w">      </span><span class="nt">cut_off_frequency_butterworth</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100.0</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="quick-start-examples">
+<h2>Quick Start Examples<a class="headerlink" href="#quick-start-examples" title="Link to this heading"></a></h2>
+<section id="basic-calibration">
+<h3>Basic Calibration<a class="headerlink" href="#basic-calibration" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseCalibration</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.robot</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_robot</span>
+
+<span class="c1"># Load robot and run calibration</span>
+<span class="n">robot</span> <span class="o">=</span> <span class="n">load_robot</span><span class="p">(</span><span class="s2">&quot;path/to/robot.urdf&quot;</span><span class="p">)</span>
+<span class="n">calibration</span> <span class="o">=</span> <span class="n">BaseCalibration</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s2">&quot;config/calibration_config.yaml&quot;</span><span class="p">)</span>
+<span class="n">calibration</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="s2">&quot;data/calibration_data.csv&quot;</span><span class="p">)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">calibration</span><span class="o">.</span><span class="n">run_calibration</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="basic-identification">
+<h3>Basic Identification<a class="headerlink" href="#basic-identification" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.identification</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseIdentification</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.robot</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_robot</span>
+
+<span class="c1"># Load robot and run identification</span>
+<span class="n">robot</span> <span class="o">=</span> <span class="n">load_robot</span><span class="p">(</span><span class="s2">&quot;path/to/robot.urdf&quot;</span><span class="p">)</span>
+<span class="n">identification</span> <span class="o">=</span> <span class="n">BaseIdentification</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s2">&quot;config/identification_config.yaml&quot;</span><span class="p">)</span>
+<span class="n">identification</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="s2">&quot;data/identification_data.csv&quot;</span><span class="p">)</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">identification</span><span class="o">.</span><span class="n">run_identification</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="advanced-regressor-building">
+<h3>Advanced Regressor Building<a class="headerlink" href="#advanced-regressor-building" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.regressor</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegressorBuilder</span><span class="p">,</span> <span class="n">RegressorConfig</span>
+
+<span class="c1"># Configure regressor</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">RegressorConfig</span><span class="p">(</span>
+    <span class="n">has_friction</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">has_actuator_inertia</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">is_joint_torques</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="c1"># Build regressor matrix</span>
+<span class="n">builder</span> <span class="o">=</span> <span class="n">RegressorBuilder</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+<span class="n">W</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">build_basic_regressor</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dq</span><span class="p">,</span> <span class="n">ddq</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="configuration-management">
+<h3>Configuration Management<a class="headerlink" href="#configuration-management" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.utils.config_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">UnifiedConfigParser</span>
+
+<span class="c1"># Parse any configuration format</span>
+<span class="n">parser</span> <span class="o">=</span> <span class="n">UnifiedConfigParser</span><span class="p">(</span><span class="s2">&quot;config/robot_config.yaml&quot;</span><span class="p">)</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">()</span>
+
+<span class="c1"># Create task-specific configuration</span>
+<span class="n">calib_config</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">create_task_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;calibration&quot;</span><span class="p">)</span>
+<span class="n">identif_config</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">create_task_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;identification&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Explore the <a class="reference external" href="https://github.com/thanhndv212/figaroh-examples">Examples Repository</a> for complete workflows</p></li>
+<li><p>Check out the API documentation for detailed module information</p></li>
+<li><p>Review the configuration templates for your specific robot type</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to FIGAROH’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="modules/calibration.html" class="btn btn-neutral float-right" title="Calibration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2025, Thanh Nguyen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

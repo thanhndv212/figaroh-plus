@@ -20,7 +20,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="Utilities" href="utils.html" /> 
+    <link rel="next" title="figaroh.optimal package" href="optimal.html" />
+    <link rel="prev" title="Measurements" href="measurements.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,28 +43,28 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="identification.html">Identification</a></li>
+              <p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Modules:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="calibration.html">Calibration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="measurements.html">Measurements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="identification.html">Identification</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tools and Utilities:</span></p>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="measurements.html">Measurements</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Visualisation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#visualizer">Visualizer</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#figaroh.visualisation.visualizer.MeshcatVisualizer"><code class="docutils literal notranslate"><span class="pre">MeshcatVisualizer</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.visualisation.visualizer.MeshcatVisualizer.addBox"><code class="docutils literal notranslate"><span class="pre">MeshcatVisualizer.addBox()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.visualisation.visualizer.MeshcatVisualizer.addCylinder"><code class="docutils literal notranslate"><span class="pre">MeshcatVisualizer.addCylinder()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.visualisation.visualizer.MeshcatVisualizer.addSphere"><code class="docutils literal notranslate"><span class="pre">MeshcatVisualizer.addSphere()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.visualisation.visualizer.MeshcatVisualizer.applyConfiguration"><code class="docutils literal notranslate"><span class="pre">MeshcatVisualizer.applyConfiguration()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.visualisation.visualizer.MeshcatVisualizer.delete"><code class="docutils literal notranslate"><span class="pre">MeshcatVisualizer.delete()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#figaroh.visualisation.visualizer.materialFromColor"><code class="docutils literal notranslate"><span class="pre">materialFromColor()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#visualizer">Visualizer</a></li>
 </ul>
 </li>
 </ul>
-</li>
+<p class="caption" role="heading"><span class="caption-text">Advanced Features:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="optimal.html">figaroh.optimal package</a></li>
 </ul>
 
         </div>
@@ -94,55 +95,6 @@
 <h1>Visualisation<a class="headerlink" href="#visualisation" title="Link to this heading"></a></h1>
 <section id="visualizer">
 <h2>Visualizer<a class="headerlink" href="#visualizer" title="Link to this heading"></a></h2>
-<dl class="py class" id="module-figaroh.visualisation.visualizer">
-<dt class="sig sig-object py" id="figaroh.visualisation.visualizer.MeshcatVisualizer">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.visualisation.visualizer.</span></span><span class="sig-name descname"><span class="pre">MeshcatVisualizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collision_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visual_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/visualisation/visualizer.html#MeshcatVisualizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.visualisation.visualizer.MeshcatVisualizer" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">MeshcatVisualizer</span></code></p>
-<p>Extension of Pinocchio MeshcatVisualizer with additional features.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.visualisation.visualizer.MeshcatVisualizer.addBox">
-<span class="sig-name descname"><span class="pre">addBox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/visualisation/visualizer.html#MeshcatVisualizer.addBox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.visualisation.visualizer.MeshcatVisualizer.addBox" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.visualisation.visualizer.MeshcatVisualizer.addCylinder">
-<span class="sig-name descname"><span class="pre">addCylinder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/visualisation/visualizer.html#MeshcatVisualizer.addCylinder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.visualisation.visualizer.MeshcatVisualizer.addCylinder" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.visualisation.visualizer.MeshcatVisualizer.addSphere">
-<span class="sig-name descname"><span class="pre">addSphere</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/visualisation/visualizer.html#MeshcatVisualizer.addSphere"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.visualisation.visualizer.MeshcatVisualizer.addSphere" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.visualisation.visualizer.MeshcatVisualizer.applyConfiguration">
-<span class="sig-name descname"><span class="pre">applyConfiguration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/visualisation/visualizer.html#MeshcatVisualizer.applyConfiguration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.visualisation.visualizer.MeshcatVisualizer.applyConfiguration" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.visualisation.visualizer.MeshcatVisualizer.delete">
-<span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/visualisation/visualizer.html#MeshcatVisualizer.delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.visualisation.visualizer.MeshcatVisualizer.delete" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="figaroh.visualisation.visualizer.materialFromColor">
-<span class="sig-prename descclassname"><span class="pre">figaroh.visualisation.visualizer.</span></span><span class="sig-name descname"><span class="pre">materialFromColor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">color</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/visualisation/visualizer.html#materialFromColor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.visualisation.visualizer.materialFromColor" title="Link to this definition"></a></dt>
-<dd><p>Convert color to Material.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>color</strong> – Color specification (Material, string, list, or None)</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Material object</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>meshcat.geometry.Material</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 </section>
 
@@ -150,7 +102,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="utils.html" class="btn btn-neutral float-left" title="Utilities" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="measurements.html" class="btn btn-neutral float-left" title="Measurements" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="optimal.html" class="btn btn-neutral float-right" title="figaroh.optimal package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

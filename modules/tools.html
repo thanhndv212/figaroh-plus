@@ -21,7 +21,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Utilities" href="utils.html" />
-    <link rel="prev" title="Measurements" href="measurements.html" /> 
+    <link rel="prev" title="Identification" href="identification.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -43,40 +43,77 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="identification.html">Identification</a></li>
+              <p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Modules:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="calibration.html">Calibration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="measurements.html">Measurements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="identification.html">Identification</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tools and Utilities:</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tools</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#module-figaroh.tools.robot">Robot</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#robot-management">Robot Management</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robot.Robot"><code class="docutils literal notranslate"><span class="pre">Robot</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robot.Robot.DEFAULT_FREEFLYER_LIMITS"><code class="docutils literal notranslate"><span class="pre">Robot.DEFAULT_FREEFLYER_LIMITS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robot.Robot.actuated_joint_names"><code class="docutils literal notranslate"><span class="pre">Robot.actuated_joint_names</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robot.Robot.display_q0"><code class="docutils literal notranslate"><span class="pre">Robot.display_q0()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robot.Robot.get_standard_parameters"><code class="docutils literal notranslate"><span class="pre">Robot.get_standard_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robot.Robot.freeflyer_limits"><code class="docutils literal notranslate"><span class="pre">Robot.freeflyer_limits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robot.Robot.get_configuration_bounds"><code class="docutils literal notranslate"><span class="pre">Robot.get_configuration_bounds()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robot.Robot.num_joints"><code class="docutils literal notranslate"><span class="pre">Robot.num_joints</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robot.Robot.update_freeflyer_limits"><code class="docutils literal notranslate"><span class="pre">Robot.update_freeflyer_limits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robot.Robot.validate_configuration"><code class="docutils literal notranslate"><span class="pre">Robot.validate_configuration()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robot.create_robot"><code class="docutils literal notranslate"><span class="pre">create_robot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robot.get_available_loaders"><code class="docutils literal notranslate"><span class="pre">get_available_loaders()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robot.list_available_robots"><code class="docutils literal notranslate"><span class="pre">list_available_robots()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robot.load_robot"><code class="docutils literal notranslate"><span class="pre">load_robot()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#robot-collisions">Robot Collisions</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.add_collisions"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.add_collisions()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.check_collision"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.check_collision()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.computeCollisions"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.computeCollisions()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.createDisplayPatchs"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.createDisplayPatchs()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.displayCollisions"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.displayCollisions()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.displayContact"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.displayContact()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.getAllpairs"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.getAllpairs()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.getCollisionDistances"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.getCollisionDistances()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.getCollisionList"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.getCollisionList()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.getDistances"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.getDistances()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.initDisplay"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.initDisplay()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.remove_collisions"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.remove_collisions()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#enhanced-regressor-builder">Enhanced Regressor Builder</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.regressor.RegressorBuilder"><code class="docutils literal notranslate"><span class="pre">RegressorBuilder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.regressor.RegressorBuilder.build_basic_regressor"><code class="docutils literal notranslate"><span class="pre">RegressorBuilder.build_basic_regressor()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.regressor.RegressorConfig"><code class="docutils literal notranslate"><span class="pre">RegressorConfig</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.regressor.RegressorConfig.additional_columns"><code class="docutils literal notranslate"><span class="pre">RegressorConfig.additional_columns</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.regressor.RegressorConfig.force_torque"><code class="docutils literal notranslate"><span class="pre">RegressorConfig.force_torque</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.regressor.RegressorConfig.has_actuator_inertia"><code class="docutils literal notranslate"><span class="pre">RegressorConfig.has_actuator_inertia</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.regressor.RegressorConfig.has_friction"><code class="docutils literal notranslate"><span class="pre">RegressorConfig.has_friction</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.regressor.RegressorConfig.has_joint_offset"><code class="docutils literal notranslate"><span class="pre">RegressorConfig.has_joint_offset</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.regressor.RegressorConfig.is_external_wrench"><code class="docutils literal notranslate"><span class="pre">RegressorConfig.is_external_wrench</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.regressor.RegressorConfig.is_joint_torques"><code class="docutils literal notranslate"><span class="pre">RegressorConfig.is_joint_torques</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.regressor.build_regressor_basic"><code class="docutils literal notranslate"><span class="pre">build_regressor_basic()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.regressor.build_regressor_reduced"><code class="docutils literal notranslate"><span class="pre">build_regressor_reduced()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.regressor.build_total_regressor_current"><code class="docutils literal notranslate"><span class="pre">build_total_regressor_current()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.regressor.build_total_regressor_wrench"><code class="docutils literal notranslate"><span class="pre">build_total_regressor_wrench()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.regressor.eliminate_non_dynaffect"><code class="docutils literal notranslate"><span class="pre">eliminate_non_dynaffect()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.regressor.get_index_eliminate"><code class="docutils literal notranslate"><span class="pre">get_index_eliminate()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#robot-visualization">Robot Visualization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robotvisualization.RobotVisualizer"><code class="docutils literal notranslate"><span class="pre">RobotVisualizer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotvisualization.RobotVisualizer.display_axes"><code class="docutils literal notranslate"><span class="pre">RobotVisualizer.display_axes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotvisualization.RobotVisualizer.display_bounding_boxes"><code class="docutils literal notranslate"><span class="pre">RobotVisualizer.display_bounding_boxes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotvisualization.RobotVisualizer.display_com"><code class="docutils literal notranslate"><span class="pre">RobotVisualizer.display_com()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotvisualization.RobotVisualizer.display_force"><code class="docutils literal notranslate"><span class="pre">RobotVisualizer.display_force()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotvisualization.RobotVisualizer.display_joints"><code class="docutils literal notranslate"><span class="pre">RobotVisualizer.display_joints()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotvisualization.RobotVisualizer.update_kinematics"><code class="docutils literal notranslate"><span class="pre">RobotVisualizer.update_kinematics()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robotvisualization.VisualizationConfig"><code class="docutils literal notranslate"><span class="pre">VisualizationConfig</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotvisualization.VisualizationConfig.axes_color"><code class="docutils literal notranslate"><span class="pre">VisualizationConfig.axes_color</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotvisualization.VisualizationConfig.bbox_color"><code class="docutils literal notranslate"><span class="pre">VisualizationConfig.bbox_color</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotvisualization.VisualizationConfig.com_color"><code class="docutils literal notranslate"><span class="pre">VisualizationConfig.com_color</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotvisualization.VisualizationConfig.force_color"><code class="docutils literal notranslate"><span class="pre">VisualizationConfig.force_color</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotvisualization.VisualizationConfig.scale_factor"><code class="docutils literal notranslate"><span class="pre">VisualizationConfig.scale_factor</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robotvisualization.display_COM"><code class="docutils literal notranslate"><span class="pre">display_COM()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robotvisualization.display_axes"><code class="docutils literal notranslate"><span class="pre">display_axes()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robotvisualization.display_bounding_boxes"><code class="docutils literal notranslate"><span class="pre">display_bounding_boxes()</span></code></a></li>
@@ -86,17 +123,37 @@
 <li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robotvisualization.rotation_matrix_from_vectors"><code class="docutils literal notranslate"><span class="pre">rotation_matrix_from_vectors()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#regressor">Regressor</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.regressor.add_coupling_TX40"><code class="docutils literal notranslate"><span class="pre">add_coupling_TX40()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.regressor.build_regressor_basic"><code class="docutils literal notranslate"><span class="pre">build_regressor_basic()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.regressor.build_regressor_reduced"><code class="docutils literal notranslate"><span class="pre">build_regressor_reduced()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.regressor.build_total_regressor_current"><code class="docutils literal notranslate"><span class="pre">build_total_regressor_current()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.regressor.build_total_regressor_wrench"><code class="docutils literal notranslate"><span class="pre">build_total_regressor_wrench()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.regressor.eliminate_non_dynaffect"><code class="docutils literal notranslate"><span class="pre">eliminate_non_dynaffect()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.regressor.get_index_eliminate"><code class="docutils literal notranslate"><span class="pre">get_index_eliminate()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-figaroh.tools.robotcollisions">Robot Collisions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionManager"><code class="docutils literal notranslate"><span class="pre">CollisionManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionManager.check_collisions"><code class="docutils literal notranslate"><span class="pre">CollisionManager.check_collisions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionManager.get_all_distances"><code class="docutils literal notranslate"><span class="pre">CollisionManager.get_all_distances()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionManager.get_collision_details"><code class="docutils literal notranslate"><span class="pre">CollisionManager.get_collision_details()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionManager.get_collision_distances"><code class="docutils literal notranslate"><span class="pre">CollisionManager.get_collision_distances()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionManager.print_collision_pairs"><code class="docutils literal notranslate"><span class="pre">CollisionManager.print_collision_pairs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionManager.setup_collision_pairs"><code class="docutils literal notranslate"><span class="pre">CollisionManager.setup_collision_pairs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionManager.visualize_collisions"><code class="docutils literal notranslate"><span class="pre">CollisionManager.visualize_collisions()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.add_collisions"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.add_collisions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.check_collision"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.check_collision()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.computeCollisions"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.computeCollisions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.displayCollisions"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.displayCollisions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.getAllpairs"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.getAllpairs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.getCollisionDistances"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.getCollisionDistances()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.getCollisionList"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.getCollisionList()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.getDistances"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.getDistances()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionWrapper.remove_collisions"><code class="docutils literal notranslate"><span class="pre">CollisionWrapper.remove_collisions()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#qr-decomposition">QR Decomposition</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.qrdecomposition.QRDecomposer"><code class="docutils literal notranslate"><span class="pre">QRDecomposer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.qrdecomposition.QRDecomposer.decompose_with_pivoting"><code class="docutils literal notranslate"><span class="pre">QRDecomposer.decompose_with_pivoting()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.qrdecomposition.QRDecomposer.double_decomposition"><code class="docutils literal notranslate"><span class="pre">QRDecomposer.double_decomposition()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.qrdecomposition.QR_pivoting"><code class="docutils literal notranslate"><span class="pre">QR_pivoting()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.qrdecomposition.build_baseRegressor"><code class="docutils literal notranslate"><span class="pre">build_baseRegressor()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.qrdecomposition.cond_num"><code class="docutils literal notranslate"><span class="pre">cond_num()</span></code></a></li>
@@ -105,10 +162,22 @@
 <li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.qrdecomposition.get_baseParams"><code class="docutils literal notranslate"><span class="pre">get_baseParams()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#robot-ipopt">Robot IPOPT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#random-data-generation">Random Data Generation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.randomdata.generate_waypoints"><code class="docutils literal notranslate"><span class="pre">generate_waypoints()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.randomdata.generate_waypoints_fext"><code class="docutils literal notranslate"><span class="pre">generate_waypoints_fext()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.randomdata.get_torque_rand"><code class="docutils literal notranslate"><span class="pre">get_torque_rand()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="measurements.html">Measurements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Advanced Features:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="optimal.html">figaroh.optimal package</a></li>
 </ul>
 
         </div>
@@ -137,347 +206,228 @@
              
   <section id="tools">
 <h1>Tools<a class="headerlink" href="#tools" title="Link to this heading"></a></h1>
-<section id="module-figaroh.tools.robot">
-<span id="robot"></span><h2>Robot<a class="headerlink" href="#module-figaroh.tools.robot" title="Link to this heading"></a></h2>
-<dl class="py class">
+<section id="robot-management">
+<h2>Robot Management<a class="headerlink" href="#robot-management" title="Link to this heading"></a></h2>
+<dl class="py class" id="module-figaroh.tools.robot">
 <dt class="sig sig-object py" id="figaroh.tools.robot.Robot">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.tools.robot.</span></span><span class="sig-name descname"><span class="pre">Robot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_urdf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">package_dirs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isFext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freeflyer_ori</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robot.html#Robot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robot.Robot" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.tools.robot.</span></span><span class="sig-name descname"><span class="pre">Robot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_urdf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">package_dirs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isFext</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freeflyer_ori</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freeflyer_limits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robot.html#Robot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robot.Robot" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RobotWrapper</span></code></p>
-<p>Robot class extending Pinocchio’s RobotWrapper with additional features.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.tools.robot.Robot.display_q0">
-<span class="sig-name descname"><span class="pre">display_q0</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robot.html#Robot.display_q0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robot.Robot.display_q0" title="Link to this definition"></a></dt>
-<dd><p>Display robot in initial configuration.</p>
-<p>Uses either Gepetto (-g) or Meshcat (-m) visualizer based on
-command line argument.</p>
+<p>Enhanced Robot class with advanced free-flyer support and visualization utilities.</p>
+<p>This class extends RobotWrapper with:
+- Sophisticated free-flyer configuration and limits
+- Integrated visualization support
+- Convenient API for common robot operations
+- Enhanced error handling and validation</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robot.Robot.DEFAULT_FREEFLYER_LIMITS">
+<span class="sig-name descname"><span class="pre">DEFAULT_FREEFLYER_LIMITS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(-1.0,</span> <span class="pre">1.0)</span></em><a class="headerlink" href="#figaroh.tools.robot.Robot.DEFAULT_FREEFLYER_LIMITS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="figaroh.tools.robot.Robot.actuated_joint_names">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">actuated_joint_names</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#figaroh.tools.robot.Robot.actuated_joint_names" title="Link to this definition"></a></dt>
+<dd><p>Names of actuated joints only.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="figaroh.tools.robot.Robot.get_standard_parameters">
-<span class="sig-name descname"><span class="pre">get_standard_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robot.html#Robot.get_standard_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robot.Robot.get_standard_parameters" title="Link to this definition"></a></dt>
-<dd><p>Get standard inertial parameters from URDF model.</p>
+<dt class="sig sig-object py" id="figaroh.tools.robot.Robot.display_q0">
+<span class="sig-name descname"><span class="pre">display_q0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">visualizer_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robot.html#Robot.display_q0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robot.Robot.display_q0" title="Link to this definition"></a></dt>
+<dd><p>Enhanced visualization with configuration options.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="figaroh.tools.robot.Robot.freeflyer_limits">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">freeflyer_limits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#figaroh.tools.robot.Robot.freeflyer_limits" title="Link to this definition"></a></dt>
+<dd><p>Current free-flyer position limits.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robot.Robot.get_configuration_bounds">
+<span class="sig-name descname"><span class="pre">get_configuration_bounds</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robot.html#Robot.get_configuration_bounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robot.Robot.get_configuration_bounds" title="Link to this definition"></a></dt>
+<dd><p>Get configuration space bounds with proper handling of quaternions.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="figaroh.tools.robot.Robot.num_joints">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_joints</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#figaroh.tools.robot.Robot.num_joints" title="Link to this definition"></a></dt>
+<dd><p>Number of actuated joints (excluding universe and free-flyer).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robot.Robot.update_freeflyer_limits">
+<span class="sig-name descname"><span class="pre">update_freeflyer_limits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">limits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robot.html#Robot.update_freeflyer_limits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robot.Robot.update_freeflyer_limits" title="Link to this definition"></a></dt>
+<dd><p>Update free-flyer limits dynamically.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robot.Robot.validate_configuration">
+<span class="sig-name descname"><span class="pre">validate_configuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robot.html#Robot.validate_configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robot.Robot.validate_configuration" title="Link to this definition"></a></dt>
+<dd><p>Validate if configuration is within bounds and constraints.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.tools.robot.create_robot">
+<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robot.</span></span><span class="sig-name descname"><span class="pre">create_robot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_urdf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">package_dirs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'figaroh'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enhanced_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#figaroh.tools.robot.Robot" title="figaroh.tools.robot.Robot"><span class="pre">Robot</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">RobotWrapper</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robot.html#create_robot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robot.create_robot" title="Link to this definition"></a></dt>
+<dd><p>Factory function to create robots with optional enhanced features.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>param</strong> – Dictionary of parameter settings</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>robot_urdf</strong> – Robot identifier or URDF path</p></li>
+<li><p><strong>package_dirs</strong> – Package directories</p></li>
+<li><p><strong>loader</strong> – Loader type from load_robot.py</p></li>
+<li><p><strong>enhanced_features</strong> – If True, returns Robot class with enhanced features</p></li>
+<li><p><strong>**kwargs</strong> – Additional arguments for loaders</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Parameter names mapped to values</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict</p>
+<dd class="field-even"><p>Robot instance (if enhanced_features=True) or RobotWrapper</p>
 </dd>
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.tools.robot.get_available_loaders">
+<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robot.</span></span><span class="sig-name descname"><span class="pre">get_available_loaders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/load_robot.html#get_available_loaders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robot.get_available_loaders" title="Link to this definition"></a></dt>
+<dd><p>Get information about available robot loaders.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Information about each loader and its availability</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.tools.robot.list_available_robots">
+<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robot.</span></span><span class="sig-name descname"><span class="pre">list_available_robots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'robot_description'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/load_robot.html#list_available_robots"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robot.list_available_robots" title="Link to this definition"></a></dt>
+<dd><p>List available robot descriptions for a given loader.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>loader</strong> – Loader type to check for available robots</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Available robot names</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="figaroh.tools.robot.load_robot">
-<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robot.</span></span><span class="sig-name descname"><span class="pre">load_robot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_urdf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">package_dirs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isFext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_by_urdf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">robot_pkg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robot.html#load_robot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robot.load_robot" title="Link to this definition"></a></dt>
-<dd><blockquote>
-<div><p>Load the robot model from the URDF file.</p>
-</div></blockquote>
+<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robot.</span></span><span class="sig-name descname"><span class="pre">load_robot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_urdf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">package_dirs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isFext</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_by_urdf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">robot_pkg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'figaroh'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#figaroh.tools.robot.Robot" title="figaroh.tools.robot.Robot"><span class="pre">Robot</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">RobotWrapper</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Any</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/load_robot.html#load_robot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robot.load_robot" title="Link to this definition"></a></dt>
+<dd><p>Load robot model from various sources with multiple loader options.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>robot_urdf</strong> (<em>str</em>) – Path to the URDF file.</p></li>
-<li><p><strong>package_dirs</strong> (<em>str</em>) – Package directories for mesh files.</p></li>
-<li><p><strong>isFext</strong> (<em>bool</em>) – Whether to add floating base joint.</p></li>
-<li><p><strong>load_by_urdf</strong> (<em>bool</em>) – Whether to load the robot by URDF.</p></li>
-<li><p><strong>robot_pkg</strong> – Name of the robot package.</p></li>
+<li><p><strong>robot_urdf</strong> – Path to URDF file or robot name for robot_description</p></li>
+<li><p><strong>package_dirs</strong> – Package directories for mesh files</p></li>
+<li><p><strong>isFext</strong> – Whether to add floating base joint</p></li>
+<li><p><strong>load_by_urdf</strong> – Whether to load from URDF file (vs ROS param server)</p></li>
+<li><p><strong>robot_pkg</strong> – Name of robot package for path resolution</p></li>
+<li><p><strong>loader</strong> – Loader type - “figaroh”, “robot_description”, “yourdfpy”</p></li>
+<li><p><strong>**kwargs</strong> – Additional arguments passed to the specific loader</p></li>
 </ul>
-</dd>
-</dl>
-</dd></dl>
-
-</section>
-<section id="robot-collisions">
-<h2>Robot Collisions<a class="headerlink" href="#robot-collisions" title="Link to this heading"></a></h2>
-<dl class="py class" id="module-figaroh.tools.robotcollisions">
-<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotcollisions.</span></span><span class="sig-name descname"><span class="pre">CollisionWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geom_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geom_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Wrapper class for handling collision checking and visualization.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.add_collisions">
-<span class="sig-name descname"><span class="pre">add_collisions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.add_collisions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.add_collisions" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.check_collision">
-<span class="sig-name descname"><span class="pre">check_collision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.check_collision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.check_collision" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.computeCollisions">
-<span class="sig-name descname"><span class="pre">computeCollisions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geom_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.computeCollisions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.computeCollisions" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.createDisplayPatchs">
-<span class="sig-name descname"><span class="pre">createDisplayPatchs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ncollisions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.createDisplayPatchs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.createDisplayPatchs" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.displayCollisions">
-<span class="sig-name descname"><span class="pre">displayCollisions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collisions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.displayCollisions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.displayCollisions" title="Link to this definition"></a></dt>
-<dd><p>Display collision contacts in visualization.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>collisions</strong> – Optional list of collision triplets</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.displayContact">
-<span class="sig-name descname"><span class="pre">displayContact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ipatch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contact</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.displayContact"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.displayContact" title="Link to this definition"></a></dt>
-<dd><p>Display contact indicator in visualization.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>ipatch</strong> – Index for naming displayed contact</p></li>
-<li><p><strong>contact</strong> – Contact object from collision results</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.getAllpairs">
-<span class="sig-name descname"><span class="pre">getAllpairs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.getAllpairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.getAllpairs" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.getCollisionDistances">
-<span class="sig-name descname"><span class="pre">getCollisionDistances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collisions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.getCollisionDistances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.getCollisionDistances" title="Link to this definition"></a></dt>
-<dd><p>Get minimum distances for collision pairs.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>collisions</strong> – Optional list of collision triplets</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Array of minimum distances</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.getCollisionList">
-<span class="sig-name descname"><span class="pre">getCollisionList</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.getCollisionList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.getCollisionList" title="Link to this definition"></a></dt>
-<dd><p>Get list of collision triplets.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><dl class="simple">
-<dt>Triplets [index, collision, result] where:</dt><dd><ul class="simple">
-<li><p>index: Index of collision pair</p></li>
-<li><p>collision: gmodel.collisionPairs[index]</p></li>
-<li><p>result: gdata.collisionResults[index]</p></li>
+<dd class="field-even"><p><ul class="simple">
+<li><p>“figaroh”: Robot class instance (default, backward compatible)</p></li>
+<li><p>”robot_description”: RobotWrapper from pinocchio</p></li>
+<li><p>”yourdfpy”: URDF object from yourdfpy (suitable for viser)</p></li>
 </ul>
-</dd>
-</dl>
 </p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.getDistances">
-<span class="sig-name descname"><span class="pre">getDistances</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.getDistances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.getDistances" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.initDisplay">
-<span class="sig-name descname"><span class="pre">initDisplay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.initDisplay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.initDisplay" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.remove_collisions">
-<span class="sig-name descname"><span class="pre">remove_collisions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">srdf_model_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.remove_collisions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.remove_collisions" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="robot-visualization">
-<h2>Robot Visualization<a class="headerlink" href="#robot-visualization" title="Link to this heading"></a></h2>
-<dl class="py function" id="module-figaroh.tools.robotvisualization">
-<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.display_COM">
-<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotvisualization.</span></span><span class="sig-name descname"><span class="pre">display_COM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IDX</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#display_COM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.display_COM" title="Link to this definition"></a></dt>
-<dd><p>Display center of mass positions for each link.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>model</strong> – Pinocchio robot model</p></li>
-<li><p><strong>data</strong> – Pinocchio robot data</p></li>
-<li><p><strong>viz</strong> – Robot visualizer</p></li>
-<li><p><strong>q</strong> – Joint configuration vector</p></li>
-<li><p><strong>IDX</strong> – List of frame indices in kinematic tree order</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.display_axes">
-<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotvisualization.</span></span><span class="sig-name descname"><span class="pre">display_axes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#display_axes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.display_axes" title="Link to this definition"></a></dt>
-<dd><p>Display coordinate axes for each joint.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>model</strong> – Pinocchio robot model</p></li>
-<li><p><strong>data</strong> – Pinocchio robot data</p></li>
-<li><p><strong>viz</strong> – Robot visualizer</p></li>
-<li><p><strong>q</strong> – Joint configuration vector</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.display_bounding_boxes">
-<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotvisualization.</span></span><span class="sig-name descname"><span class="pre">display_bounding_boxes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">COM_min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">COM_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IDX</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#display_bounding_boxes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.display_bounding_boxes" title="Link to this definition"></a></dt>
-<dd><p>Display COM bounding boxes for optimization.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>viz</strong> – Robot visualizer</p></li>
-<li><p><strong>model</strong> – Pinocchio robot model</p></li>
-<li><p><strong>data</strong> – Pinocchio robot data</p></li>
-<li><p><strong>q</strong> – Joint configuration vector</p></li>
-<li><p><strong>COM_min</strong> – Min COM boundaries per segment (3*num_segments)</p></li>
-<li><p><strong>COM_max</strong> – Max COM boundaries per segment (3*num_segments)</p></li>
-<li><p><strong>IDX</strong> – List of frame indices</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.display_force">
-<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotvisualization.</span></span><span class="sig-name descname"><span class="pre">display_force</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Force</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M_se3</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SE3</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#display_force"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.display_force" title="Link to this definition"></a></dt>
-<dd><p>Display force vector in visualization.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>viz</strong> – Robot visualizer</p></li>
-<li><p><strong>phi</strong> – 6D force vector in M_se3 frame</p></li>
-<li><p><strong>M_se3</strong> – SE3 transformation for force display</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.display_joints">
-<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotvisualization.</span></span><span class="sig-name descname"><span class="pre">display_joints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#display_joints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.display_joints" title="Link to this definition"></a></dt>
-<dd><p>Display joint frames in visualization.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>viz</strong> – Robot visualizer</p></li>
-<li><p><strong>model</strong> – Pinocchio robot model</p></li>
-<li><p><strong>data</strong> – Pinocchio robot data</p></li>
-<li><p><strong>q</strong> – Joint configuration vector</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.place">
-<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotvisualization.</span></span><span class="sig-name descname"><span class="pre">place</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SE3</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#place"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.place" title="Link to this definition"></a></dt>
-<dd><p>Place coordinate system in GUI visualization.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>viz</strong> – Robot visualizer (e.g. gepetto-viewer)</p></li>
-<li><p><strong>name</strong> – Name of coordinate system object</p></li>
-<li><p><strong>M</strong> – Homogeneous transformation matrix</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.rotation_matrix_from_vectors">
-<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotvisualization.</span></span><span class="sig-name descname"><span class="pre">rotation_matrix_from_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vec1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vec2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#rotation_matrix_from_vectors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.rotation_matrix_from_vectors" title="Link to this definition"></a></dt>
-<dd><p>Find rotation matrix aligning vec1 to vec2.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>vec1</strong> – Source 3D vector</p></li>
-<li><p><strong>vec2</strong> – Destination 3D vector</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>3x3 rotation matrix that aligns vec1 with vec2</p>
-</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ndarray</p>
+<dd class="field-odd"><p>Robot object based on loader type</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> – If URDF file not found</p></li>
+<li><p><strong>ImportError</strong> – If required packages not available</p></li>
+<li><p><strong>ValueError</strong> – If the specified loader is not supported</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note: For loading by URDF, robot_urdf and package_dirs can be different.</dt><dd><p>1/ If package_dirs is not provided directly, robot_pkg is used to
+look up the package directory.
+2/ If no mesh files, package_dirs and robot_pkg are not used.
+3/ If load_by_urdf is False, the robot is loaded from the ROS
+parameter server.
+4/ For robot_description loader, robot_urdf should be the robot name.
+5/ For yourdfpy loader, returns URDF object suitable for viser visualization.</p>
 </dd>
 </dl>
 </dd></dl>
 
 </section>
-<section id="regressor">
-<h2>Regressor<a class="headerlink" href="#regressor" title="Link to this heading"></a></h2>
-<dl class="py function" id="module-figaroh.tools.regressor">
-<dt class="sig sig-object py" id="figaroh.tools.regressor.add_coupling_TX40">
-<span class="sig-prename descclassname"><span class="pre">figaroh.tools.regressor.</span></span><span class="sig-name descname"><span class="pre">add_coupling_TX40</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">W</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">njoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/regressor.html#add_coupling_TX40"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.regressor.add_coupling_TX40" title="Link to this definition"></a></dt>
-<dd><p>Dedicated function for Staubli TX40.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>W</strong> – Input regressor matrix</p></li>
-<li><p><strong>model</strong> – Robot model</p></li>
-<li><p><strong>data</strong> – Robot data</p></li>
-<li><p><strong>N</strong> – Number of samples</p></li>
-<li><p><strong>nq</strong> – Number of positions</p></li>
-<li><p><strong>nv</strong> – Number of velocities</p></li>
-<li><p><strong>njoints</strong> – Number of joints</p></li>
-<li><p><strong>q</strong> – Joint positions</p></li>
-<li><p><strong>v</strong> – Joint velocities</p></li>
-<li><p><strong>a</strong> – Joint accelerations</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Updated regressor matrix</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ndarray</p>
-</dd>
-</dl>
+<section id="enhanced-regressor-builder">
+<h2>Enhanced Regressor Builder<a class="headerlink" href="#enhanced-regressor-builder" title="Link to this heading"></a></h2>
+<p id="module-figaroh.tools.regressor">Regressor matrix computation utilities for robot dynamic identification.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.tools.regressor.RegressorBuilder">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.tools.regressor.</span></span><span class="sig-name descname"><span class="pre">RegressorBuilder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#figaroh.tools.regressor.RegressorConfig" title="figaroh.tools.regressor.RegressorConfig"><span class="pre">RegressorConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/regressor.html#RegressorBuilder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.regressor.RegressorBuilder" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Enhanced regressor builder with better organization.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.regressor.RegressorBuilder.build_basic_regressor">
+<span class="sig-name descname"><span class="pre">build_basic_regressor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/regressor.html#RegressorBuilder.build_basic_regressor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.regressor.RegressorBuilder.build_basic_regressor" title="Link to this definition"></a></dt>
+<dd><p>Build basic regressor matrix.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.tools.regressor.RegressorConfig">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.tools.regressor.</span></span><span class="sig-name descname"><span class="pre">RegressorConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">has_friction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_actuator_inertia</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_joint_offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_joint_torques</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_external_wrench</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_torque</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/regressor.html#RegressorConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.regressor.RegressorConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Configuration for regressor computation.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.regressor.RegressorConfig.additional_columns">
+<span class="sig-name descname"><span class="pre">additional_columns</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#figaroh.tools.regressor.RegressorConfig.additional_columns" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.regressor.RegressorConfig.force_torque">
+<span class="sig-name descname"><span class="pre">force_torque</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#figaroh.tools.regressor.RegressorConfig.force_torque" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.regressor.RegressorConfig.has_actuator_inertia">
+<span class="sig-name descname"><span class="pre">has_actuator_inertia</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#figaroh.tools.regressor.RegressorConfig.has_actuator_inertia" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.regressor.RegressorConfig.has_friction">
+<span class="sig-name descname"><span class="pre">has_friction</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#figaroh.tools.regressor.RegressorConfig.has_friction" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.regressor.RegressorConfig.has_joint_offset">
+<span class="sig-name descname"><span class="pre">has_joint_offset</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#figaroh.tools.regressor.RegressorConfig.has_joint_offset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.regressor.RegressorConfig.is_external_wrench">
+<span class="sig-name descname"><span class="pre">is_external_wrench</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#figaroh.tools.regressor.RegressorConfig.is_external_wrench" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.regressor.RegressorConfig.is_joint_torques">
+<span class="sig-name descname"><span class="pre">is_joint_torques</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#figaroh.tools.regressor.RegressorConfig.is_joint_torques" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="figaroh.tools.regressor.build_regressor_basic">
-<span class="sig-prename descclassname"><span class="pre">figaroh.tools.regressor.</span></span><span class="sig-name descname"><span class="pre">build_regressor_basic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/regressor.html#build_regressor_basic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.regressor.build_regressor_basic" title="Link to this definition"></a></dt>
-<dd><p>Build basic regressor for dynamic parameters.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>robot</strong> – Robot model object</p></li>
-<li><p><strong>q</strong> – Configuration position array</p></li>
-<li><p><strong>v</strong> – Configuration velocity array</p></li>
-<li><p><strong>a</strong> – Configuration acceleration array</p></li>
-<li><p><strong>param</strong> – Dictionary of options controlling which parameters to include</p></li>
-<li><p><strong>tau</strong> – Optional torque measurements array for torque offsets</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Basic regressor matrix for standard parameters</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ndarray</p>
-</dd>
-</dl>
+<span class="sig-prename descclassname"><span class="pre">figaroh.tools.regressor.</span></span><span class="sig-name descname"><span class="pre">build_regressor_basic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identif_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/regressor.html#build_regressor_basic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.regressor.build_regressor_basic" title="Link to this definition"></a></dt>
+<dd><p>Legacy function for backward compatibility.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -502,7 +452,7 @@ command line argument.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="figaroh.tools.regressor.build_total_regressor_current">
-<span class="sig-prename descclassname"><span class="pre">figaroh.tools.regressor.</span></span><span class="sig-name descname"><span class="pre">build_total_regressor_current</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">W_b_u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W_b_l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W_l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">I_u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">I_l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_standard_l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/regressor.html#build_total_regressor_current"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.regressor.build_total_regressor_current" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">figaroh.tools.regressor.</span></span><span class="sig-name descname"><span class="pre">build_total_regressor_current</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">W_b_u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W_b_l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W_l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">I_u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">I_l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_standard_l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identif_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/regressor.html#build_total_regressor_current"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.regressor.build_total_regressor_current" title="Link to this definition"></a></dt>
 <dd><p>Build regressor for total least squares with current measurements.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -513,13 +463,13 @@ command line argument.</p>
 <li><p><strong>I_u</strong> – Joint currents in unloaded case</p></li>
 <li><p><strong>I_l</strong> – Joint currents in loaded case</p></li>
 <li><p><strong>param_standard_l</strong> – Standard parameters in loaded case</p></li>
-<li><p><strong>param</strong> – Dictionary of settings</p></li>
+<li><p><strong>identif_config</strong> – Dictionary of settings</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p>Total regressor matrix</p></li>
-<li><p>Normalized parameter vector</p></li>
+<li><p>Normalized identif_configeter vector</p></li>
 <li><p>Residual vector</p></li>
 </ul>
 </p>
@@ -563,26 +513,7 @@ command line argument.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="figaroh.tools.regressor.eliminate_non_dynaffect">
 <span class="sig-prename descclassname"><span class="pre">figaroh.tools.regressor.</span></span><span class="sig-name descname"><span class="pre">eliminate_non_dynaffect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">W</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_std</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_e</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/regressor.html#eliminate_non_dynaffect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.regressor.eliminate_non_dynaffect" title="Link to this definition"></a></dt>
-<dd><p>Eliminate columns with L2 norm smaller than tolerance.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>W</strong> – Joint torque regressor matrix</p></li>
-<li><p><strong>params_std</strong> – Standard parameters dictionary</p></li>
-<li><p><strong>tol_e</strong> – Tolerance value</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p>Reduced regressor matrix</p></li>
-<li><p>List of parameters corresponding to reduced regressor columns</p></li>
-</ul>
-</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple</p>
-</dd>
-</dl>
+<dd><p>Eliminate columns with small L2 norm.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -611,124 +542,320 @@ command line argument.</p>
 </dd></dl>
 
 </section>
+<section id="robot-visualization">
+<h2>Robot Visualization<a class="headerlink" href="#robot-visualization" title="Link to this heading"></a></h2>
+<p id="module-figaroh.tools.robotvisualization">Enhanced robot visualization utilities with better performance.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.RobotVisualizer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotvisualization.</span></span><span class="sig-name descname"><span class="pre">RobotVisualizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#figaroh.tools.robotvisualization.VisualizationConfig" title="figaroh.tools.robotvisualization.VisualizationConfig"><span class="pre">VisualizationConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#RobotVisualizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.RobotVisualizer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Enhanced robot visualizer with better organization.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.RobotVisualizer.display_axes">
+<span class="sig-name descname"><span class="pre">display_axes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#RobotVisualizer.display_axes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.RobotVisualizer.display_axes" title="Link to this definition"></a></dt>
+<dd><p>Display coordinate axes for joints.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.RobotVisualizer.display_bounding_boxes">
+<span class="sig-name descname"><span class="pre">display_bounding_boxes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">com_min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">com_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_indices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#RobotVisualizer.display_bounding_boxes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.RobotVisualizer.display_bounding_boxes" title="Link to this definition"></a></dt>
+<dd><p>Display COM bounding boxes for optimization visualization.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.RobotVisualizer.display_com">
+<span class="sig-name descname"><span class="pre">display_com</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_indices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#RobotVisualizer.display_com"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.RobotVisualizer.display_com" title="Link to this definition"></a></dt>
+<dd><p>Display center of mass positions with better naming.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.RobotVisualizer.display_force">
+<span class="sig-name descname"><span class="pre">display_force</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Force</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SE3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'force_vector'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#RobotVisualizer.display_force"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.RobotVisualizer.display_force" title="Link to this definition"></a></dt>
+<dd><p>Display force vector with better scaling.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.RobotVisualizer.display_joints">
+<span class="sig-name descname"><span class="pre">display_joints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#RobotVisualizer.display_joints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.RobotVisualizer.display_joints" title="Link to this definition"></a></dt>
+<dd><p>Display joint frames efficiently.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.RobotVisualizer.update_kinematics">
+<span class="sig-name descname"><span class="pre">update_kinematics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#RobotVisualizer.update_kinematics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.RobotVisualizer.update_kinematics" title="Link to this definition"></a></dt>
+<dd><p>Update robot kinematics efficiently.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.VisualizationConfig">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotvisualization.</span></span><span class="sig-name descname"><span class="pre">VisualizationConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">com_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#VisualizationConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.VisualizationConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Configuration for robot visualization.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.VisualizationConfig.axes_color">
+<span class="sig-name descname"><span class="pre">axes_color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#figaroh.tools.robotvisualization.VisualizationConfig.axes_color" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.VisualizationConfig.bbox_color">
+<span class="sig-name descname"><span class="pre">bbox_color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#figaroh.tools.robotvisualization.VisualizationConfig.bbox_color" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.VisualizationConfig.com_color">
+<span class="sig-name descname"><span class="pre">com_color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#figaroh.tools.robotvisualization.VisualizationConfig.com_color" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.VisualizationConfig.force_color">
+<span class="sig-name descname"><span class="pre">force_color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#figaroh.tools.robotvisualization.VisualizationConfig.force_color" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.VisualizationConfig.scale_factor">
+<span class="sig-name descname"><span class="pre">scale_factor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em><a class="headerlink" href="#figaroh.tools.robotvisualization.VisualizationConfig.scale_factor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.display_COM">
+<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotvisualization.</span></span><span class="sig-name descname"><span class="pre">display_COM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IDX</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#display_COM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.display_COM" title="Link to this definition"></a></dt>
+<dd><p>Legacy COM display function.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.display_axes">
+<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotvisualization.</span></span><span class="sig-name descname"><span class="pre">display_axes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#display_axes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.display_axes" title="Link to this definition"></a></dt>
+<dd><p>Legacy axes display function.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.display_bounding_boxes">
+<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotvisualization.</span></span><span class="sig-name descname"><span class="pre">display_bounding_boxes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">COM_min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">COM_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IDX</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#display_bounding_boxes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.display_bounding_boxes" title="Link to this definition"></a></dt>
+<dd><p>Legacy bounding box display function.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.display_force">
+<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotvisualization.</span></span><span class="sig-name descname"><span class="pre">display_force</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Force</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M_se3</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SE3</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#display_force"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.display_force" title="Link to this definition"></a></dt>
+<dd><p>Legacy force display function.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.display_joints">
+<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotvisualization.</span></span><span class="sig-name descname"><span class="pre">display_joints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#display_joints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.display_joints" title="Link to this definition"></a></dt>
+<dd><p>Legacy joint display function.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.place">
+<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotvisualization.</span></span><span class="sig-name descname"><span class="pre">place</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SE3</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#place"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.place" title="Link to this definition"></a></dt>
+<dd><p>Legacy placement function.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.tools.robotvisualization.rotation_matrix_from_vectors">
+<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotvisualization.</span></span><span class="sig-name descname"><span class="pre">rotation_matrix_from_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vec1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vec2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotvisualization.html#rotation_matrix_from_vectors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotvisualization.rotation_matrix_from_vectors" title="Link to this definition"></a></dt>
+<dd><p>Legacy rotation function.</p>
+</dd></dl>
+
+</section>
+<section id="module-figaroh.tools.robotcollisions">
+<span id="robot-collisions"></span><h2>Robot Collisions<a class="headerlink" href="#module-figaroh.tools.robotcollisions" title="Link to this heading"></a></h2>
+<p>Enhanced collision detection and visualization utilities.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionManager">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotcollisions.</span></span><span class="sig-name descname"><span class="pre">CollisionManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geom_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geom_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionManager" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Enhanced collision detection with better performance and safety.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionManager.check_collisions">
+<span class="sig-name descname"><span class="pre">check_collisions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_geometry</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionManager.check_collisions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionManager.check_collisions" title="Link to this definition"></a></dt>
+<dd><p>Check for collisions at given configuration.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionManager.get_all_distances">
+<span class="sig-name descname"><span class="pre">get_all_distances</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionManager.get_all_distances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionManager.get_all_distances" title="Link to this definition"></a></dt>
+<dd><p>Get distances for all collision pairs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionManager.get_collision_details">
+<span class="sig-name descname"><span class="pre">get_collision_details</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionManager.get_collision_details"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionManager.get_collision_details" title="Link to this definition"></a></dt>
+<dd><p>Get detailed collision information.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionManager.get_collision_distances">
+<span class="sig-name descname"><span class="pre">get_collision_distances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collision_details</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionManager.get_collision_distances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionManager.get_collision_distances" title="Link to this definition"></a></dt>
+<dd><p>Get minimum distances for collision pairs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionManager.print_collision_pairs">
+<span class="sig-name descname"><span class="pre">print_collision_pairs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionManager.print_collision_pairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionManager.print_collision_pairs" title="Link to this definition"></a></dt>
+<dd><p>Print all collision pair information.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionManager.setup_collision_pairs">
+<span class="sig-name descname"><span class="pre">setup_collision_pairs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">srdf_model_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionManager.setup_collision_pairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionManager.setup_collision_pairs" title="Link to this definition"></a></dt>
+<dd><p>Setup collision pairs with optional SRDF filtering.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionManager.visualize_collisions">
+<span class="sig-name descname"><span class="pre">visualize_collisions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collision_details</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionManager.visualize_collisions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionManager.visualize_collisions" title="Link to this definition"></a></dt>
+<dd><p>Visualize collision contacts with enhanced display.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotcollisions.</span></span><span class="sig-name descname"><span class="pre">CollisionWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geom_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geom_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#figaroh.tools.robotcollisions.CollisionManager" title="figaroh.tools.robotcollisions.CollisionManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">CollisionManager</span></code></a></p>
+<p>Legacy wrapper for backward compatibility.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.add_collisions">
+<span class="sig-name descname"><span class="pre">add_collisions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.add_collisions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.add_collisions" title="Link to this definition"></a></dt>
+<dd><p>Legacy method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.check_collision">
+<span class="sig-name descname"><span class="pre">check_collision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.check_collision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.check_collision" title="Link to this definition"></a></dt>
+<dd><p>Legacy method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.computeCollisions">
+<span class="sig-name descname"><span class="pre">computeCollisions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geom_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.computeCollisions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.computeCollisions" title="Link to this definition"></a></dt>
+<dd><p>Legacy method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.displayCollisions">
+<span class="sig-name descname"><span class="pre">displayCollisions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collisions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.displayCollisions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.displayCollisions" title="Link to this definition"></a></dt>
+<dd><p>Legacy method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.getAllpairs">
+<span class="sig-name descname"><span class="pre">getAllpairs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.getAllpairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.getAllpairs" title="Link to this definition"></a></dt>
+<dd><p>Legacy method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.getCollisionDistances">
+<span class="sig-name descname"><span class="pre">getCollisionDistances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collisions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.getCollisionDistances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.getCollisionDistances" title="Link to this definition"></a></dt>
+<dd><p>Legacy method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.getCollisionList">
+<span class="sig-name descname"><span class="pre">getCollisionList</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.getCollisionList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.getCollisionList" title="Link to this definition"></a></dt>
+<dd><p>Legacy method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.getDistances">
+<span class="sig-name descname"><span class="pre">getDistances</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.getDistances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.getDistances" title="Link to this definition"></a></dt>
+<dd><p>Legacy method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotcollisions.CollisionWrapper.remove_collisions">
+<span class="sig-name descname"><span class="pre">remove_collisions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">srdf_model_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotcollisions.html#CollisionWrapper.remove_collisions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotcollisions.CollisionWrapper.remove_collisions" title="Link to this definition"></a></dt>
+<dd><p>Legacy method.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 <section id="qr-decomposition">
 <h2>QR Decomposition<a class="headerlink" href="#qr-decomposition" title="Link to this heading"></a></h2>
-<dl class="py function" id="module-figaroh.tools.qrdecomposition">
+<p id="module-figaroh.tools.qrdecomposition">QR decomposition utilities for robot parameter identification.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.tools.qrdecomposition.QRDecomposer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.tools.qrdecomposition.</span></span><span class="sig-name descname"><span class="pre">QRDecomposer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/qrdecomposition.html#QRDecomposer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.qrdecomposition.QRDecomposer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Enhanced QR decomposition handler for robot parameter identification.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.qrdecomposition.QRDecomposer.decompose_with_pivoting">
+<span class="sig-name descname"><span class="pre">decompose_with_pivoting</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W_e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/figaroh/tools/qrdecomposition.html#QRDecomposer.decompose_with_pivoting"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.qrdecomposition.QRDecomposer.decompose_with_pivoting" title="Link to this definition"></a></dt>
+<dd><p>QR decomposition with column pivoting.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.qrdecomposition.QRDecomposer.double_decomposition">
+<span class="sig-name descname"><span class="pre">double_decomposition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W_e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_std</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/figaroh/tools/qrdecomposition.html#QRDecomposer.double_decomposition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.qrdecomposition.QRDecomposer.double_decomposition" title="Link to this definition"></a></dt>
+<dd><p>Double QR decomposition for base parameter identification.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="figaroh.tools.qrdecomposition.QR_pivoting">
 <span class="sig-prename descclassname"><span class="pre">figaroh.tools.qrdecomposition.</span></span><span class="sig-name descname"><span class="pre">QR_pivoting</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W_e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_qr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-08</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/qrdecomposition.html#QR_pivoting"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.qrdecomposition.QR_pivoting" title="Link to this definition"></a></dt>
-<dd><p>Calculate QR decomposition with pivoting and find base parameters.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>tau</strong> – Measurement vector</p></li>
-<li><p><strong>W_e</strong> – Regressor matrix after eliminating zero columns</p></li>
-<li><p><strong>params_r</strong> – List of parameters corresponding to W_e</p></li>
-<li><p><strong>tol_qr</strong> – Tolerance for rank determination</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>(W_b, base_parameters) containing:</dt><dd><ul class="simple">
-<li><p>W_b: Base regressor matrix</p></li>
-<li><p>base_parameters: Dictionary mapping parameter names to values</p></li>
-</ul>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple</p>
-</dd>
-</dl>
+<dd><p>Legacy QR pivoting function for backward compatibility.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="figaroh.tools.qrdecomposition.build_baseRegressor">
 <span class="sig-prename descclassname"><span class="pre">figaroh.tools.qrdecomposition.</span></span><span class="sig-name descname"><span class="pre">build_baseRegressor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">W_e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx_base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/qrdecomposition.html#build_baseRegressor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.qrdecomposition.build_baseRegressor" title="Link to this definition"></a></dt>
-<dd><p>Create base regressor matrix.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>W_e</strong> – Original regressor matrix</p></li>
-<li><p><strong>idx_base</strong> – Indices of base parameters</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Base regressor matrix</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ndarray</p>
-</dd>
-</dl>
+<dd><p>Legacy function for building base regressor.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="figaroh.tools.qrdecomposition.cond_num">
 <span class="sig-prename descclassname"><span class="pre">figaroh.tools.qrdecomposition.</span></span><span class="sig-name descname"><span class="pre">cond_num</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">W_b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/qrdecomposition.html#cond_num"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.qrdecomposition.cond_num" title="Link to this definition"></a></dt>
-<dd><p>Calculate condition number of a matrix.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>W_b</strong> – Input matrix</p></li>
-<li><p><strong>norm_type</strong> – Type of norm to use (‘fro’ or ‘max_over_min_sigma’)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Condition number</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
+<dd><p>Calculate condition number with various norms.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="figaroh.tools.qrdecomposition.double_QR">
 <span class="sig-prename descclassname"><span class="pre">figaroh.tools.qrdecomposition.</span></span><span class="sig-name descname"><span class="pre">double_QR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W_e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_std</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_qr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-08</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/qrdecomposition.html#double_QR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.qrdecomposition.double_QR" title="Link to this definition"></a></dt>
-<dd><p>Perform double QR decomposition to find base parameters.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>tau</strong> – Measurement vector</p></li>
-<li><p><strong>W_e</strong> – Regressor matrix after eliminating zero columns</p></li>
-<li><p><strong>params_r</strong> – List of parameters corresponding to W_e</p></li>
-<li><p><strong>params_std</strong> – Standard parameters dictionary (optional)</p></li>
-<li><p><strong>tol_qr</strong> – Tolerance for rank determination</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>Contains combinations of:</dt><dd><ul class="simple">
-<li><p>W_b: Base regressor matrix</p></li>
-<li><p>base_parameters: Dictionary of base parameters</p></li>
-<li><p>params_base: List of base parameter names</p></li>
-<li><p>phi_b: Base parameter values</p></li>
-<li><p>phi_std: Standard parameter values (if params_std provided)</p></li>
-</ul>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple</p>
-</dd>
-</dl>
+<dd><p>Legacy double QR function for backward compatibility.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="figaroh.tools.qrdecomposition.get_baseIndex">
 <span class="sig-prename descclassname"><span class="pre">figaroh.tools.qrdecomposition.</span></span><span class="sig-name descname"><span class="pre">get_baseIndex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">W_e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_qr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-08</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/qrdecomposition.html#get_baseIndex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.qrdecomposition.get_baseIndex" title="Link to this definition"></a></dt>
-<dd><p>Find linearly independent parameters.</p>
+<dd><p>Legacy function for getting base indices.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.tools.qrdecomposition.get_baseParams">
+<span class="sig-prename descclassname"><span class="pre">figaroh.tools.qrdecomposition.</span></span><span class="sig-name descname"><span class="pre">get_baseParams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">W_e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_std</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_qr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-08</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/qrdecomposition.html#get_baseParams"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.qrdecomposition.get_baseParams" title="Link to this definition"></a></dt>
+<dd><p>Legacy function for getting base parameters.</p>
+</dd></dl>
+
+</section>
+<section id="robot-ipopt">
+<h2>Robot IPOPT<a class="headerlink" href="#robot-ipopt" title="Link to this heading"></a></h2>
+</section>
+<section id="random-data-generation">
+<h2>Random Data Generation<a class="headerlink" href="#random-data-generation" title="Link to this heading"></a></h2>
+<dl class="py function" id="module-figaroh.tools.randomdata">
+<dt class="sig sig-object py" id="figaroh.tools.randomdata.generate_waypoints">
+<span class="sig-prename descclassname"><span class="pre">figaroh.tools.randomdata.</span></span><span class="sig-name descname"><span class="pre">generate_waypoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mlow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mhigh</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/randomdata.html#generate_waypoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.randomdata.generate_waypoints" title="Link to this definition"></a></dt>
+<dd><p>Generate random values for joint positions, velocities, accelerations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>W_e</strong> – Regressor matrix</p></li>
-<li><p><strong>params_r</strong> – Parameter dictionary</p></li>
-<li><p><strong>tol_qr</strong> – Tolerance for rank determination</p></li>
+<li><p><strong>N</strong> – Number of samples</p></li>
+<li><p><strong>robot</strong> – Robot model object</p></li>
+<li><p><strong>mlow</strong> – Lower bound for random values</p></li>
+<li><p><strong>mhigh</strong> – Upper bound for random values</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Indices of independent parameters</p>
+<dd class="field-even"><p>(q, v, a) joint position, velocity, acceleration arrays</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple</p>
@@ -737,31 +864,47 @@ command line argument.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="figaroh.tools.qrdecomposition.get_baseParams">
-<span class="sig-prename descclassname"><span class="pre">figaroh.tools.qrdecomposition.</span></span><span class="sig-name descname"><span class="pre">get_baseParams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">W_e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_std</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_qr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-08</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/qrdecomposition.html#get_baseParams"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.qrdecomposition.get_baseParams" title="Link to this definition"></a></dt>
-<dd><p>Get base parameters and regressor matrix.</p>
+<dt class="sig sig-object py" id="figaroh.tools.randomdata.generate_waypoints_fext">
+<span class="sig-prename descclassname"><span class="pre">figaroh.tools.randomdata.</span></span><span class="sig-name descname"><span class="pre">generate_waypoints_fext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mlow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mhigh</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/randomdata.html#generate_waypoints_fext"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.randomdata.generate_waypoints_fext" title="Link to this definition"></a></dt>
+<dd><p>Generate random values for joints with external forces.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>W_e</strong> – Regressor matrix</p></li>
-<li><p><strong>params_r</strong> – List of parameters</p></li>
-<li><p><strong>params_std</strong> – Standard parameters (optional)</p></li>
-<li><p><strong>tol_qr</strong> – Tolerance for rank determination</p></li>
+<li><p><strong>N</strong> – Number of samples</p></li>
+<li><p><strong>robot</strong> – Robot model object</p></li>
+<li><p><strong>mlow</strong> – Lower bound for random values</p></li>
+<li><p><strong>mhigh</strong> – Upper bound for random values</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>(W_b, params_base, idx_base) containing:</dt><dd><ul class="simple">
-<li><p>W_b: Base regressor matrix</p></li>
-<li><p>params_base: List of base parameter expressions</p></li>
-<li><p>idx_base: Indices of independent parameters</p></li>
-</ul>
-</dd>
-</dl>
-</p>
+<dd class="field-even"><p>(q, v, a) joint position, velocity, acceleration arrays</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.tools.randomdata.get_torque_rand">
+<span class="sig-prename descclassname"><span class="pre">figaroh.tools.randomdata.</span></span><span class="sig-name descname"><span class="pre">get_torque_rand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identif_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/randomdata.html#get_torque_rand"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.randomdata.get_torque_rand" title="Link to this definition"></a></dt>
+<dd><p>Calculate random torque values including various dynamic effects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>N</strong> – Number of samples</p></li>
+<li><p><strong>robot</strong> – Robot model object</p></li>
+<li><p><strong>q</strong> – Joint positions array</p></li>
+<li><p><strong>v</strong> – Joint velocities array</p></li>
+<li><p><strong>a</strong> – Joint accelerations array</p></li>
+<li><p><strong>identif_config</strong> – Dictionary of dynamic parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Joint torques array</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -773,7 +916,7 @@ command line argument.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="measurements.html" class="btn btn-neutral float-left" title="Measurements" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="identification.html" class="btn btn-neutral float-left" title="Identification" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="utils.html" class="btn btn-neutral float-right" title="Utilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

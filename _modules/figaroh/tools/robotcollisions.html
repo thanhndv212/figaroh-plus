@@ -40,14 +40,25 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../modules/identification.html">Identification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Modules:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../modules/calibration.html">Calibration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../modules/measurements.html">Measurements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/identification.html">Identification</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tools and Utilities:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../modules/tools.html">Tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../modules/utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/measurements.html">Measurements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../modules/visualisation.html">Visualisation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Advanced Features:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/optimal.html">figaroh.optimal package</a></li>
 </ul>
 
         </div>
@@ -90,224 +101,277 @@
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">pinocchio</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pin</span>
+<span class="sd">&quot;&quot;&quot;Enhanced collision detection and visualization utilities.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pinocchio</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pin</span>
 
 
-<div class="viewcode-block" id="CollisionWrapper">
-<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">CollisionWrapper</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper class for handling collision checking and visualization.&quot;&quot;&quot;</span>
-
+<div class="viewcode-block" id="CollisionManager">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionManager">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CollisionManager</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enhanced collision detection with better performance and safety.&quot;&quot;&quot;</span>
+    
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">geom_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geom_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">viz</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize collision wrapper.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            robot: Robot model</span>
-<span class="sd">            geom_model: Optional geometry model</span>
-<span class="sd">            geom_data: Optional geometry data</span>
-<span class="sd">            viz: Optional visualizer instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">robot</span> <span class="o">=</span> <span class="n">robot</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">viz</span> <span class="o">=</span> <span class="n">viz</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rmodel</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmodel</span><span class="o">.</span><span class="n">createData</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">geom_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">geom_model</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span> <span class="o">=</span> <span class="n">geom_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">createData</span><span class="p">()</span>
+        
+        <span class="c1"># Initialize geometry models</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span> <span class="o">=</span> <span class="n">geom_model</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s1">&#39;geom_model&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geom_data</span> <span class="o">=</span> <span class="n">geom_data</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span><span class="o">.</span><span class="n">createData</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_data</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">geom_data</span><span class="o">.</span><span class="n">collisionRequests</span><span class="o">.</span><span class="n">enable_contact</span> <span class="o">=</span> <span class="kc">True</span>
+        
+        <span class="c1"># Visualization cache</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vis_cache</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_patches</span> <span class="o">=</span> <span class="mi">10</span>
+    
+<div class="viewcode-block" id="CollisionManager.setup_collision_pairs">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionManager.setup_collision_pairs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup_collision_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">srdf_model_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup collision pairs with optional SRDF filtering.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Geometry model not available for collision setup&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Add all collision pairs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span><span class="o">.</span><span class="n">addAllCollisionPairs</span><span class="p">()</span>
+        
+        <span class="c1"># Remove pairs specified in SRDF</span>
+        <span class="k">if</span> <span class="n">srdf_model_path</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_exists</span><span class="p">(</span><span class="n">srdf_model_path</span><span class="p">):</span>
+            <span class="n">pin</span><span class="o">.</span><span class="n">removeCollisionPairs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span><span class="p">,</span> <span class="n">srdf_model_path</span><span class="p">)</span></div>
 
-        <span class="k">if</span> <span class="n">geom_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">gdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span><span class="o">.</span><span class="n">createData</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">gdata</span> <span class="o">=</span> <span class="n">geom_data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gdata</span><span class="o">.</span><span class="n">collisionRequests</span><span class="o">.</span><span class="n">enable_contact</span> <span class="o">=</span> <span class="kc">True</span>
+    
+<div class="viewcode-block" id="CollisionManager.check_collisions">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionManager.check_collisions">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_collisions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">update_geometry</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check for collisions at given configuration.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_data</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        
+        <span class="k">if</span> <span class="n">update_geometry</span><span class="p">:</span>
+            <span class="n">pin</span><span class="o">.</span><span class="n">updateGeometryPlacements</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_data</span><span class="p">,</span> <span class="n">q</span>
+            <span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeCollisions</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="p">)</span></div>
 
+    
+<div class="viewcode-block" id="CollisionManager.get_collision_details">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionManager.get_collision_details">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_collision_details</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">any</span><span class="p">,</span> <span class="nb">any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get detailed collision information.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_data</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span><span class="o">.</span><span class="n">collisionPairs</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">result</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geom_data</span><span class="o">.</span><span class="n">collisionResults</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">isCollision</span><span class="p">()</span>
+        <span class="p">]</span></div>
+
+    
+<div class="viewcode-block" id="CollisionManager.get_collision_distances">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionManager.get_collision_distances">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_collision_distances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collision_details</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get minimum distances for collision pairs.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_data</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        
+        <span class="k">if</span> <span class="n">collision_details</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">collision_details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_collision_details</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">collision_details</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">geom_data</span><span class="o">.</span><span class="n">distanceResults</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">min_distance</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">collision_details</span>
+        <span class="p">])</span></div>
+
+    
+<div class="viewcode-block" id="CollisionManager.get_all_distances">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionManager.get_all_distances">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_all_distances</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get distances for all collision pairs.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_data</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+            <span class="n">pin</span><span class="o">.</span><span class="n">computeDistance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_data</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">min_distance</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span><span class="o">.</span><span class="n">collisionPairs</span><span class="p">))</span>
+        <span class="p">])</span></div>
+
+    
+<div class="viewcode-block" id="CollisionManager.print_collision_pairs">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionManager.print_collision_pairs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_collision_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print all collision pair information.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_data</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No geometry model available&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total collision pairs: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span><span class="o">.</span><span class="n">collisionPairs</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span><span class="o">.</span><span class="n">collisionPairs</span><span class="p">)):</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_data</span><span class="o">.</span><span class="n">collisionResults</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">pair</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span><span class="o">.</span><span class="n">collisionPairs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            
+            <span class="n">name1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span><span class="o">.</span><span class="n">geometryObjects</span><span class="p">[</span><span class="n">pair</span><span class="o">.</span><span class="n">first</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">name2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span><span class="o">.</span><span class="n">geometryObjects</span><span class="p">[</span><span class="n">pair</span><span class="o">.</span><span class="n">second</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;COLLISION&quot;</span> <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">isCollision</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;FREE&quot;</span>
+            
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pair </span><span class="si">{</span><span class="n">k</span><span class="si">:</span><span class="s2">3d</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">name1</span><span class="si">:</span><span class="s2">20s</span><span class="si">}</span><span class="s2"> &lt;-&gt; </span><span class="si">{</span><span class="n">name2</span><span class="si">:</span><span class="s2">20s</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="CollisionManager.visualize_collisions">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionManager.visualize_collisions">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">visualize_collisions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collision_details</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Visualize collision contacts with enhanced display.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="p">:</span>
+            <span class="k">return</span>
+        
+        <span class="k">if</span> <span class="n">collision_details</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">collision_details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_collision_details</span><span class="p">()</span>
+        
+        <span class="c1"># Clean up old visualizations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cleanup_old_contacts</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">collision_details</span><span class="p">))</span>
+        
+        <span class="c1"># Display new contacts</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">pair</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">collision_details</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_patches</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">getNbContacts</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">contact</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">getContact</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># First contact point</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_display_contact</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">contact</span><span class="p">,</span> <span class="n">pair</span><span class="p">)</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_display_contact</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">contact</span><span class="p">,</span> <span class="n">pair</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Display individual contact point.&quot;&quot;&quot;</span>
+        <span class="n">contact_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;world/collision_contact_</span><span class="si">{</span><span class="n">patch_idx</span><span class="si">}</span><span class="s2">&quot;</span>
+        
+        <span class="c1"># Create contact visualization</span>
+        <span class="k">if</span> <span class="n">contact_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vis_cache</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">addSphere</span><span class="p">(</span><span class="n">contact_name</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_vis_cache</span><span class="p">[</span><span class="n">contact_name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        
+        <span class="c1"># Position at contact point</span>
+        <span class="n">placement</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">SE3</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span>
+        <span class="n">placement</span><span class="o">.</span><span class="n">translation</span> <span class="o">=</span> <span class="n">contact</span><span class="o">.</span><span class="n">pos</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">applyConfiguration</span><span class="p">(</span>
+            <span class="n">contact_name</span><span class="p">,</span> <span class="n">pin</span><span class="o">.</span><span class="n">SE3ToXYZQUATtuple</span><span class="p">(</span><span class="n">placement</span><span class="p">)</span>
+        <span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cleanup_old_contacts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove old contact visualizations.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="p">:</span>
+            <span class="k">return</span>
+        
+        <span class="c1"># Remove excess contact visualizations</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">current_count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_patches</span><span class="p">):</span>
+            <span class="n">contact_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;world/collision_contact_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">contact_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vis_cache</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">deleteNode</span><span class="p">(</span><span class="n">contact_name</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+                    <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vis_cache</span><span class="p">[</span><span class="n">contact_name</span><span class="p">]</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">pass</span>  <span class="c1"># Ignore deletion errors</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_file_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if file exists safely.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+            <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<span class="c1"># Backward compatibility wrapper</span>
+<div class="viewcode-block" id="CollisionWrapper">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CollisionWrapper</span><span class="p">(</span><span class="n">CollisionManager</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Legacy wrapper for backward compatibility.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">geom_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geom_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">viz</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">geom_model</span><span class="p">,</span> <span class="n">geom_data</span><span class="p">,</span> <span class="n">viz</span><span class="p">)</span>
+        
+        <span class="c1"># Legacy aliases</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rmodel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_data</span>
+    
 <div class="viewcode-block" id="CollisionWrapper.add_collisions">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper.add_collisions">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_collisions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span><span class="o">.</span><span class="n">addAllCollisionPairs</span><span class="p">()</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Legacy method.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span><span class="o">.</span><span class="n">addAllCollisionPairs</span><span class="p">()</span></div>
 
-
+    
 <div class="viewcode-block" id="CollisionWrapper.remove_collisions">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper.remove_collisions">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">remove_collisions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">srdf_model_path</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">srdf_model_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">pass</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">pin</span><span class="o">.</span><span class="n">removeCollisionPairs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rmodel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span><span class="p">,</span> <span class="n">srdf_model_path</span><span class="p">)</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Legacy method.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">srdf_model_path</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span><span class="p">:</span>
+            <span class="n">pin</span><span class="o">.</span><span class="n">removeCollisionPairs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span><span class="p">,</span> <span class="n">srdf_model_path</span><span class="p">)</span></div>
 
-
+    
 <div class="viewcode-block" id="CollisionWrapper.computeCollisions">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper.computeCollisions">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">computeCollisions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">geom_data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">geom_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">gdata</span> <span class="o">=</span> <span class="n">geom_data</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Legacy method.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">geom_data</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">geom_data</span> <span class="o">=</span> <span class="n">geom_data</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_collisions</span><span class="p">(</span><span class="n">q</span><span class="p">)</span></div>
 
-        <span class="n">pin</span><span class="o">.</span><span class="n">updateGeometryPlacements</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">rmodel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rdata</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdata</span><span class="p">,</span> <span class="n">q</span>
-        <span class="p">)</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeCollisions</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">rmodel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rdata</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdata</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="kc">False</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">res</span></div>
-
-
+    
 <div class="viewcode-block" id="CollisionWrapper.getCollisionList">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper.getCollisionList">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">getCollisionList</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get list of collision triplets.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Legacy method.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_collision_details</span><span class="p">()</span></div>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            list: Triplets [index, collision, result] where:</span>
-<span class="sd">                - index: Index of collision pair</span>
-<span class="sd">                - collision: gmodel.collisionPairs[index]</span>
-<span class="sd">                - result: gdata.collisionResults[index]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">[</span>
-            <span class="p">[</span><span class="n">ir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span><span class="o">.</span><span class="n">collisionPairs</span><span class="p">[</span><span class="n">ir</span><span class="p">],</span> <span class="n">r</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">ir</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gdata</span><span class="o">.</span><span class="n">collisionResults</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">isCollision</span><span class="p">()</span>
-        <span class="p">]</span></div>
-
-
+    
 <div class="viewcode-block" id="CollisionWrapper.getCollisionDistances">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper.getCollisionDistances">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">getCollisionDistances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collisions</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get minimum distances for collision pairs.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Legacy method.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_collision_distances</span><span class="p">(</span><span class="n">collisions</span><span class="p">)</span></div>
 
-<span class="sd">        Args:</span>
-<span class="sd">            collisions: Optional list of collision triplets</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            ndarray: Array of minimum distances</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">collisions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">collisions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getCollisionList</span><span class="p">()</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">collisions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
-        <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-            <span class="p">[</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">gdata</span><span class="o">.</span><span class="n">distanceResults</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">min_distance</span>
-                <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="ow">in</span> <span class="n">collisions</span>
-            <span class="p">]</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">dist</span></div>
-
-
+    
 <div class="viewcode-block" id="CollisionWrapper.getDistances">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper.getDistances">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">getDistances</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">dist_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-            <span class="p">[</span>
-                <span class="n">pin</span><span class="o">.</span><span class="n">computeDistance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdata</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">min_distance</span>
-                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span><span class="o">.</span><span class="n">collisionPairs</span><span class="p">))</span>
-            <span class="p">]</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">dist_all</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Legacy method.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_all_distances</span><span class="p">()</span></div>
 
-
+    
 <div class="viewcode-block" id="CollisionWrapper.getAllpairs">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper.getAllpairs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">getAllpairs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span><span class="o">.</span><span class="n">collisionPairs</span><span class="p">)):</span>
-            <span class="n">cr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdata</span><span class="o">.</span><span class="n">collisionResults</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
-            <span class="n">cp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span><span class="o">.</span><span class="n">collisionPairs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
-            <span class="n">name1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span><span class="o">.</span><span class="n">geometryObjects</span><span class="p">[</span><span class="n">cp</span><span class="o">.</span><span class="n">first</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
-            <span class="n">name2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span><span class="o">.</span><span class="n">geometryObjects</span><span class="p">[</span><span class="n">cp</span><span class="o">.</span><span class="n">second</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
-            <span class="n">is_collision</span> <span class="o">=</span> <span class="s2">&quot;Yes&quot;</span> <span class="k">if</span> <span class="n">cr</span><span class="o">.</span><span class="n">isCollision</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;No&quot;</span>
-            <span class="nb">print</span><span class="p">(</span>
-                <span class="s2">&quot;collision pair:&quot;</span><span class="p">,</span>
-                <span class="n">k</span><span class="p">,</span>
-                <span class="s2">&quot; &quot;</span><span class="p">,</span>
-                <span class="n">name1</span><span class="p">,</span>
-                <span class="s2">&quot;,&quot;</span><span class="p">,</span>
-                <span class="n">name2</span><span class="p">,</span>
-                <span class="s2">&quot;- collision:&quot;</span><span class="p">,</span>
-                <span class="n">is_collision</span><span class="p">,</span>
-            <span class="p">)</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Legacy method.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_collision_pairs</span><span class="p">()</span></div>
 
-
+    
 <div class="viewcode-block" id="CollisionWrapper.check_collision">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper.check_collision">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">check_collision</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gmodel</span><span class="o">.</span><span class="n">collisionPairs</span><span class="p">)):</span>
-            <span class="n">cr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdata</span><span class="o">.</span><span class="n">collisionResults</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">cr</span><span class="o">.</span><span class="n">isCollision</span><span class="p">():</span>
-                <span class="k">return</span> <span class="kc">True</span>
-                <span class="k">break</span>
-        <span class="k">return</span> <span class="kc">False</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Legacy method.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_collisions</span><span class="p">(</span><span class="n">q</span><span class="p">)</span></div>
 
-
-    <span class="c1"># --- DISPLAY</span>
-
-<div class="viewcode-block" id="CollisionWrapper.initDisplay">
-<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper.initDisplay">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">initDisplay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">viz</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">viz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">viz</span> <span class="o">=</span> <span class="n">viz</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">viz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">patchName</span> <span class="o">=</span> <span class="s2">&quot;world/contact_</span><span class="si">%d</span><span class="s2">_</span><span class="si">%s</span><span class="s2">&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ncollisions</span> <span class="o">=</span> <span class="mi">3</span></div>
-
-
-<div class="viewcode-block" id="CollisionWrapper.createDisplayPatchs">
-<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper.createDisplayPatchs">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">createDisplayPatchs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ncollisions</span><span class="p">):</span>
-
-        <span class="k">if</span> <span class="n">ncollisions</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncollisions</span><span class="p">:</span>
-            <span class="k">return</span>
-        <span class="k">elif</span> <span class="n">ncollisions</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncollisions</span><span class="p">:</span>  <span class="c1"># Remove patches</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ncollisions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncollisions</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">patchName</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)]</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">patchName</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)]</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncollisions</span><span class="p">,</span> <span class="n">ncollisions</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="o">.</span><span class="n">addCylinder</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">patchName</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="mf">0.0005</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span>
-                <span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">ncollisions</span> <span class="o">=</span> <span class="n">ncollisions</span></div>
-
-
-<div class="viewcode-block" id="CollisionWrapper.displayContact">
-<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper.displayContact">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">displayContact</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ipatch</span><span class="p">,</span> <span class="n">contact</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Display contact indicator in visualization.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            ipatch: Index for naming displayed contact</span>
-<span class="sd">            contact: Contact object from collision results</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">patchName</span> <span class="o">%</span> <span class="p">(</span><span class="n">ipatch</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
-        <span class="n">R</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">Quaternion</span><span class="o">.</span><span class="n">FromTwoVectors</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">contact</span><span class="o">.</span><span class="n">normal</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">matrix</span><span class="p">()</span>
-        <span class="n">M</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">SE3</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">contact</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="o">.</span><span class="n">addCylinder</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">patchName</span> <span class="o">%</span> <span class="p">(</span><span class="n">ipatch</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="mf">0.0005</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span>
-        <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="o">.</span><span class="n">applyConfiguration</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">M</span><span class="p">)</span></div>
-
-
+    
 <div class="viewcode-block" id="CollisionWrapper.displayCollisions">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robotcollisions.CollisionWrapper.displayCollisions">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">displayCollisions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collisions</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Display collision contacts in visualization.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            collisions: Optional list of collision triplets</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">viz</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span>
-        <span class="k">if</span> <span class="n">collisions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">collisions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getCollisionList</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">collisions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">ic</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">r</span><span class="p">]</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">collisions</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">displayContact</span><span class="p">(</span><span class="n">ic</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">getContact</span><span class="p">(</span><span class="n">ic</span><span class="p">))</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Legacy method.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">visualize_collisions</span><span class="p">(</span><span class="n">collisions</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

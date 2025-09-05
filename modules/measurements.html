@@ -20,8 +20,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Tools" href="tools.html" />
-    <link rel="prev" title="Calibration" href="calibration.html" /> 
+    <link rel="next" title="Visualisation" href="visualisation.html" />
+    <link rel="prev" title="Utilities" href="utils.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -43,23 +43,28 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="identification.html">Identification</a></li>
+              <p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Modules:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="calibration.html">Calibration</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Measurements</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#measurement">measurement</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#figaroh.measurements.measurement.Measurement"><code class="docutils literal notranslate"><span class="pre">Measurement</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#figaroh.measurements.measurement.Measurement.add_SE3_measurement"><code class="docutils literal notranslate"><span class="pre">Measurement.add_SE3_measurement()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="identification.html">Identification</a></li>
 </ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
+<p class="caption" role="heading"><span class="caption-text">Tools and Utilities:</span></p>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">Utilities</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Measurements</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#measurement">measurement</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Advanced Features:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="optimal.html">figaroh.optimal package</a></li>
 </ul>
 
         </div>
@@ -90,30 +95,6 @@
 <h1>Measurements<a class="headerlink" href="#measurements" title="Link to this heading"></a></h1>
 <section id="measurement">
 <h2>measurement<a class="headerlink" href="#measurement" title="Link to this heading"></a></h2>
-<dl class="py class" id="module-figaroh.measurements.measurement">
-<dt class="sig sig-object py" id="figaroh.measurements.measurement.Measurement">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.measurements.measurement.</span></span><span class="sig-name descname"><span class="pre">Measurement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/measurements/measurement.html#Measurement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.measurements.measurement.Measurement" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Class for handling different types of measurements.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="figaroh.measurements.measurement.Measurement.add_SE3_measurement">
-<span class="sig-name descname"><span class="pre">add_SE3_measurement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/measurements/measurement.html#Measurement.add_SE3_measurement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.measurements.measurement.Measurement.add_SE3_measurement" title="Link to this definition"></a></dt>
-<dd><p>Add SE3 measurement to model.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>model</strong> – Pinocchio model to add measurement to</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Updated model and data</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
 </section>
 </section>
 
@@ -121,8 +102,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="calibration.html" class="btn btn-neutral float-left" title="Calibration" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="tools.html" class="btn btn-neutral float-right" title="Tools" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="utils.html" class="btn btn-neutral float-left" title="Utilities" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="visualisation.html" class="btn btn-neutral float-right" title="Visualisation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
