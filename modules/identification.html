@@ -51,8 +51,43 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="calibration.html">Calibration</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Identification</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#base-identification">base_identification</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#identification-tools">identification_tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#base-identification">base_identification</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.identification.base_identification.BaseIdentification"><code class="docutils literal notranslate"><span class="pre">BaseIdentification</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.identification.base_identification.BaseIdentification.add_additional_parameters"><code class="docutils literal notranslate"><span class="pre">BaseIdentification.add_additional_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.identification.base_identification.BaseIdentification.calculate_full_regressor"><code class="docutils literal notranslate"><span class="pre">BaseIdentification.calculate_full_regressor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.identification.base_identification.BaseIdentification.filter_kinematics_data"><code class="docutils literal notranslate"><span class="pre">BaseIdentification.filter_kinematics_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.identification.base_identification.BaseIdentification.initialize"><code class="docutils literal notranslate"><span class="pre">BaseIdentification.initialize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.identification.base_identification.BaseIdentification.load_param"><code class="docutils literal notranslate"><span class="pre">BaseIdentification.load_param()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.identification.base_identification.BaseIdentification.load_trajectory_data"><code class="docutils literal notranslate"><span class="pre">BaseIdentification.load_trajectory_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.identification.base_identification.BaseIdentification.plot_results"><code class="docutils literal notranslate"><span class="pre">BaseIdentification.plot_results()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.identification.base_identification.BaseIdentification.process_data"><code class="docutils literal notranslate"><span class="pre">BaseIdentification.process_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.identification.base_identification.BaseIdentification.process_kinematics_data"><code class="docutils literal notranslate"><span class="pre">BaseIdentification.process_kinematics_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.identification.base_identification.BaseIdentification.process_torque_data"><code class="docutils literal notranslate"><span class="pre">BaseIdentification.process_torque_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.identification.base_identification.BaseIdentification.save_results"><code class="docutils literal notranslate"><span class="pre">BaseIdentification.save_results()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.identification.base_identification.BaseIdentification.solve"><code class="docutils literal notranslate"><span class="pre">BaseIdentification.solve()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#identification-tools">identification_tools</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.identification.identification_tools.add_custom_parameters"><code class="docutils literal notranslate"><span class="pre">add_custom_parameters()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.identification.identification_tools.add_standard_additional_parameters"><code class="docutils literal notranslate"><span class="pre">add_standard_additional_parameters()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.identification.identification_tools.base_param_from_standard"><code class="docutils literal notranslate"><span class="pre">base_param_from_standard()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.identification.identification_tools.calculate_first_second_order_differentiation"><code class="docutils literal notranslate"><span class="pre">calculate_first_second_order_differentiation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.identification.identification_tools.get_param_from_yaml"><code class="docutils literal notranslate"><span class="pre">get_param_from_yaml()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.identification.identification_tools.get_param_from_yaml_legacy"><code class="docutils literal notranslate"><span class="pre">get_param_from_yaml_legacy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.identification.identification_tools.get_param_from_yaml_unified"><code class="docutils literal notranslate"><span class="pre">get_param_from_yaml_unified()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.identification.identification_tools.get_param_from_yaml_with_warning"><code class="docutils literal notranslate"><span class="pre">get_param_from_yaml_with_warning()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.identification.identification_tools.get_parameter_info"><code class="docutils literal notranslate"><span class="pre">get_parameter_info()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.identification.identification_tools.get_standard_parameters"><code class="docutils literal notranslate"><span class="pre">get_standard_parameters()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.identification.identification_tools.index_in_base_params"><code class="docutils literal notranslate"><span class="pre">index_in_base_params()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.identification.identification_tools.low_pass_filter_data"><code class="docutils literal notranslate"><span class="pre">low_pass_filter_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.identification.identification_tools.relative_stdev"><code class="docutils literal notranslate"><span class="pre">relative_stdev()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.identification.identification_tools.reorder_inertial_parameters"><code class="docutils literal notranslate"><span class="pre">reorder_inertial_parameters()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.identification.identification_tools.unified_to_legacy_identif_config"><code class="docutils literal notranslate"><span class="pre">unified_to_legacy_identif_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.identification.identification_tools.weigthed_least_squares"><code class="docutils literal notranslate"><span class="pre">weigthed_least_squares()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -96,9 +131,564 @@
 <h1>Identification<a class="headerlink" href="#identification" title="Link to this heading"></a></h1>
 <section id="base-identification">
 <h2>base_identification<a class="headerlink" href="#base-identification" title="Link to this heading"></a></h2>
+<p id="module-figaroh.identification.base_identification">Base class for robot dynamic parameter identification.
+This module provides a generalized framework for dynamic parameter identification
+that can be inherited by any robot type (TIAGo, UR10, MATE, etc.).</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.identification.base_identification.BaseIdentification">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.identification.base_identification.</span></span><span class="sig-name descname"><span class="pre">BaseIdentification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'config/robot_config.yaml'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/base_identification.html#BaseIdentification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.base_identification.BaseIdentification" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Base class for robot dynamic parameter identification.</p>
+<p>Provides common functionality for all robots while allowing
+robot-specific implementations of key methods.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.identification.base_identification.BaseIdentification.add_additional_parameters">
+<span class="sig-name descname"><span class="pre">add_additional_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/base_identification.html#BaseIdentification.add_additional_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.base_identification.BaseIdentification.add_additional_parameters" title="Link to this definition"></a></dt>
+<dd><p>Add additional parameters specific to the robot and recalculate dynamic regressor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.identification.base_identification.BaseIdentification.calculate_full_regressor">
+<span class="sig-name descname"><span class="pre">calculate_full_regressor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/base_identification.html#BaseIdentification.calculate_full_regressor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.base_identification.BaseIdentification.calculate_full_regressor" title="Link to this definition"></a></dt>
+<dd><p>Build regressor matrix, compute pre-identified values of standard
+parameters, compute joint torques based on pre-identified standard
+parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.identification.base_identification.BaseIdentification.filter_kinematics_data">
+<span class="sig-name descname"><span class="pre">filter_kinematics_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/base_identification.html#BaseIdentification.filter_kinematics_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.base_identification.BaseIdentification.filter_kinematics_data" title="Link to this definition"></a></dt>
+<dd><p>Apply filtering to data with configurable parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filter_config</strong> (<em>dict</em><em>, </em><em>optional</em>) – Filter configuration with keys:
+- differentiation_method: Method for derivative estimation
+- filter_params: Parameters for signal filtering</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If required data is missing</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.identification.base_identification.BaseIdentification.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">truncate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/base_identification.html#BaseIdentification.initialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.base_identification.BaseIdentification.initialize" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.identification.base_identification.BaseIdentification.load_param">
+<span class="sig-name descname"><span class="pre">load_param</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'identification'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/base_identification.html#BaseIdentification.load_param"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.base_identification.BaseIdentification.load_param" title="Link to this definition"></a></dt>
+<dd><p>Load the identification parameters from the yaml file.</p>
+<p>This method supports both legacy YAML format and the new unified
+configuration format. It automatically detects the format type
+and applies the appropriate parser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_file</strong> (<em>str</em>) – Path to configuration file (legacy or unified)</p></li>
+<li><p><strong>setting_type</strong> (<em>str</em>) – Configuration section to load</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.identification.base_identification.BaseIdentification.load_trajectory_data">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_trajectory_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/base_identification.html#BaseIdentification.load_trajectory_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.base_identification.BaseIdentification.load_trajectory_data" title="Link to this definition"></a></dt>
+<dd><p>Load and process CSV data.</p>
+<p>This method must be implemented by robot-specific subclasses
+to handle their specific data formats and file structures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(timestamps, positions, velocities, torques) as numpy arrays</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.identification.base_identification.BaseIdentification.plot_results">
+<span class="sig-name descname"><span class="pre">plot_results</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/base_identification.html#BaseIdentification.plot_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.base_identification.BaseIdentification.plot_results" title="Link to this definition"></a></dt>
+<dd><p>Plot identification results using unified results manager.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.identification.base_identification.BaseIdentification.process_data">
+<span class="sig-name descname"><span class="pre">process_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">truncate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/base_identification.html#BaseIdentification.process_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.base_identification.BaseIdentification.process_data" title="Link to this definition"></a></dt>
+<dd><p>Load and process data</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.identification.base_identification.BaseIdentification.process_kinematics_data">
+<span class="sig-name descname"><span class="pre">process_kinematics_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/base_identification.html#BaseIdentification.process_kinematics_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.base_identification.BaseIdentification.process_kinematics_data" title="Link to this definition"></a></dt>
+<dd><p>Process kinematics data (positions, velocities, accelerations) with filtering.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.identification.base_identification.BaseIdentification.process_torque_data">
+<span class="sig-name descname"><span class="pre">process_torque_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/base_identification.html#BaseIdentification.process_torque_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.base_identification.BaseIdentification.process_torque_data" title="Link to this definition"></a></dt>
+<dd><p>Process torque data (generic implementation, should be overridden for robot-specific processing).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.identification.base_identification.BaseIdentification.save_results">
+<span class="sig-name descname"><span class="pre">save_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'results'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/base_identification.html#BaseIdentification.save_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.base_identification.BaseIdentification.save_results" title="Link to this definition"></a></dt>
+<dd><p>Save identification results using unified results manager.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.identification.base_identification.BaseIdentification.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">decimate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decimation_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/base_identification.html#BaseIdentification.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.base_identification.BaseIdentification.solve" title="Link to this definition"></a></dt>
+<dd><p>Main solving method for dynamic parameter identification.</p>
+<p>This method implements the complete base parameter identification
+workflow including column elimination, optional decimation, QR
+decomposition, and quality metric computation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>decimate</strong> (<em>bool</em>) – Whether to apply decimation to reduce data size</p></li>
+<li><p><strong>decimation_factor</strong> (<em>int</em>) – Factor for signal decimation (default: 10)</p></li>
+<li><p><strong>zero_tolerance</strong> (<em>float</em>) – Tolerance for eliminating zero columns</p></li>
+<li><p><strong>plotting</strong> (<em>bool</em>) – Whether to generate plots</p></li>
+<li><p><strong>save_results</strong> (<em>bool</em>) – Whether to save parameters to file</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Base parameters phi_base</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>AssertionError</strong> – If prerequisites not met (dynamic_regressor, standard_parameter)</p></li>
+<li><p><strong>ValueError</strong> – If data shapes are incompatible</p></li>
+<li><p><strong>np.linalg.LinAlgError</strong> – If QR decomposition fails</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="identification-tools">
 <h2>identification_tools<a class="headerlink" href="#identification-tools" title="Link to this heading"></a></h2>
+<dl class="py function" id="module-figaroh.identification.identification_tools">
+<dt class="sig sig-object py" id="figaroh.identification.identification_tools.add_custom_parameters">
+<span class="sig-prename descclassname"><span class="pre">figaroh.identification.identification_tools.</span></span><span class="sig-name descname"><span class="pre">add_custom_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/identification_tools.html#add_custom_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.identification_tools.add_custom_parameters" title="Link to this definition"></a></dt>
+<dd><p>Add custom user-defined parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>phi</strong> – Current parameter values list</p></li>
+<li><p><strong>params</strong> – Current parameter names list</p></li>
+<li><p><strong>custom_params</strong> – Custom parameter definitions</p></li>
+<li><p><strong>model</strong> – Robot model</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Updated (phi, params) lists</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.identification.identification_tools.add_standard_additional_parameters">
+<span class="sig-prename descclassname"><span class="pre">figaroh.identification.identification_tools.</span></span><span class="sig-name descname"><span class="pre">add_standard_additional_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identif_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/identification_tools.html#add_standard_additional_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.identification_tools.add_standard_additional_parameters" title="Link to this definition"></a></dt>
+<dd><p>Add standard additional parameters (actuator inertia, friction,
+offsets).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>phi</strong> – Current parameter values list</p></li>
+<li><p><strong>params</strong> – Current parameter names list</p></li>
+<li><p><strong>identif_config</strong> – Configuration dictionary</p></li>
+<li><p><strong>model</strong> – Robot model</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Updated (phi, params) lists</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.identification.identification_tools.base_param_from_standard">
+<span class="sig-prename descclassname"><span class="pre">figaroh.identification.identification_tools.</span></span><span class="sig-name descname"><span class="pre">base_param_from_standard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phi_standard</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_base</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/identification_tools.html#base_param_from_standard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.identification_tools.base_param_from_standard" title="Link to this definition"></a></dt>
+<dd><p>Convert standard parameters to base parameters.</p>
+<p>Takes standard dynamic parameters and calculates the corresponding base
+parameters using analytical relationships between them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>phi_standard</strong> (<em>dict</em>) – Standard parameters from model/URDF</p></li>
+<li><p><strong>params_base</strong> (<em>list</em>) – Analytical parameter relationships</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Base parameter values calculated from standard parameters</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.identification.identification_tools.calculate_first_second_order_differentiation">
+<span class="sig-prename descclassname"><span class="pre">figaroh.identification.identification_tools.</span></span><span class="sig-name descname"><span class="pre">calculate_first_second_order_differentiation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identif_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/identification_tools.html#calculate_first_second_order_differentiation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.identification_tools.calculate_first_second_order_differentiation" title="Link to this definition"></a></dt>
+<dd><p>Calculate joint velocities and accelerations from positions.</p>
+<p>Computes first and second order derivatives of joint positions using central
+differences. Handles both constant and variable timesteps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>pin.Model</em>) – Robot model</p></li>
+<li><p><strong>q</strong> (<em>ndarray</em>) – Joint position matrix (n_samples, n_joints)</p></li>
+<li><p><strong>param</strong> (<em>dict</em>) – Parameters containing:
+- is_joint_torques: Whether using joint torques
+- is_external_wrench: Whether using external wrench
+- ts: Timestep if constant</p></li>
+<li><p><strong>dt</strong> (<em>ndarray</em><em>, </em><em>optional</em>) – Variable timesteps between samples.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>q (ndarray): Trimmed position matrix</p></li>
+<li><p>dq (ndarray): Joint velocity matrix</p></li>
+<li><p>ddq (ndarray): Joint acceleration matrix</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Two samples are removed from start/end due to central differences</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.identification.identification_tools.get_param_from_yaml">
+<span class="sig-prename descclassname"><span class="pre">figaroh.identification.identification_tools.</span></span><span class="sig-name descname"><span class="pre">get_param_from_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identif_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/identification_tools.html#get_param_from_yaml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.identification_tools.get_param_from_yaml" title="Link to this definition"></a></dt>
+<dd><p>Parse identification parameters from YAML configuration file.</p>
+<p>Extracts robot parameters, problem settings, signal processing options and total
+least squares parameters from a YAML config file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>robot</strong> (<em>pin.RobotWrapper</em>) – Robot instance containing model</p></li>
+<li><p><strong>identif_data</strong> (<em>dict</em>) – YAML configuration containing:
+- robot_params: Joint limits, friction, inertia settings
+- problem_params: External wrench, friction, actuator settings
+- processing_params: Sample rate, filter settings
+- tls_params: Load mass and location</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Parameter dictionary with unified settings</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">params</span> <span class="o">=</span> <span class="n">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;nb_samples&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.identification.identification_tools.get_param_from_yaml_legacy">
+<span class="sig-prename descclassname"><span class="pre">figaroh.identification.identification_tools.</span></span><span class="sig-name descname"><span class="pre">get_param_from_yaml_legacy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identif_data</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/figaroh/identification/identification_tools.html#get_param_from_yaml_legacy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.identification_tools.get_param_from_yaml_legacy" title="Link to this definition"></a></dt>
+<dd><p>Legacy identification parameter parser - kept for backward compatibility.</p>
+<p>This is the original implementation. New code should use the unified
+config parser from figaroh.utils.config_parser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>robot</strong> – Robot instance</p></li>
+<li><p><strong>identif_data</strong> – Identification data dictionary</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Identification configuration dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.identification.identification_tools.get_param_from_yaml_unified">
+<span class="sig-prename descclassname"><span class="pre">figaroh.identification.identification_tools.</span></span><span class="sig-name descname"><span class="pre">get_param_from_yaml_unified</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identif_data</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/figaroh/identification/identification_tools.html#get_param_from_yaml_unified"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.identification_tools.get_param_from_yaml_unified" title="Link to this definition"></a></dt>
+<dd><p>Enhanced parameter parser using unified configuration system.</p>
+<p>This function provides backward compatibility while using the new
+unified configuration parser when possible.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>robot</strong> – Robot instance</p></li>
+<li><p><strong>identif_data</strong> – Configuration data (dict or file path)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Identification configuration dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.identification.identification_tools.get_param_from_yaml_with_warning">
+<span class="sig-prename descclassname"><span class="pre">figaroh.identification.identification_tools.</span></span><span class="sig-name descname"><span class="pre">get_param_from_yaml_with_warning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identif_data</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/figaroh/identification/identification_tools.html#get_param_from_yaml_with_warning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.identification_tools.get_param_from_yaml_with_warning" title="Link to this definition"></a></dt>
+<dd><p>Original function with deprecation notice.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.identification.identification_tools.get_parameter_info">
+<span class="sig-prename descclassname"><span class="pre">figaroh.identification.identification_tools.</span></span><span class="sig-name descname"><span class="pre">get_parameter_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/identification_tools.html#get_parameter_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.identification_tools.get_parameter_info" title="Link to this definition"></a></dt>
+<dd><p>Get information about available parameter types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Information about standard and custom parameter types</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.identification.identification_tools.get_standard_parameters">
+<span class="sig-prename descclassname"><span class="pre">figaroh.identification.identification_tools.</span></span><span class="sig-name descname"><span class="pre">get_standard_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identif_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_additional</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/identification_tools.html#get_standard_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.identification_tools.get_standard_parameters" title="Link to this definition"></a></dt>
+<dd><p>Get standard inertial parameters from robot model with extensible
+parameter support.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – Robot model (Pinocchio model)</p></li>
+<li><p><strong>param</strong> (<em>dict</em><em>, </em><em>optional</em>) – Dictionary of parameter settings for
+additional parameters. Expected keys:
+- has_actuator_inertia (bool): Include actuator inertia parameters
+- has_friction (bool): Include friction parameters
+- has_joint_offset (bool): Include joint offset parameters
+- Ia (list): Actuator inertia values
+- fv (list): Viscous friction coefficients
+- fs (list): Static friction coefficients
+- off (list): Joint offset values</p></li>
+<li><p><strong>include_additional</strong> (<em>bool</em>) – Whether to include additional parameters
+beyond inertial</p></li>
+<li><p><strong>custom_params</strong> (<em>dict</em><em>, </em><em>optional</em>) – Custom parameter definitions
+Format: {param_name: {values: list, per_joint: bool,
+default: float}}</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Parameter names mapped to their values</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p># Basic usage - only inertial parameters
+params = get_standard_parameters(robot.model)</p>
+<p># Include standard additional parameters
+identif_config = {</p>
+<blockquote>
+<div><p>‘has_actuator_inertia’: True,
+‘has_friction’: True,
+‘Ia’: [0.1, 0.2, 0.3],
+‘fv’: [0.01, 0.02, 0.03],
+‘fs’: [0.001, 0.002, 0.003]</p>
+</div></blockquote>
+<p>}
+params = get_standard_parameters(robot.model, identif_config)</p>
+<p># Add custom parameters
+custom = {</p>
+<blockquote>
+<div><dl class="simple">
+<dt>‘gear_ratio’: {‘values’: [100, 50, 25], ‘per_joint’: True,</dt><dd><p>‘default’: 1.0},</p>
+</dd>
+<dt>‘temperature’: {‘values’: [20.0], ‘per_joint’: False,</dt><dd><p>‘default’: 25.0}</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>}
+params = get_standard_parameters(robot.model, identif_config,</p>
+<blockquote>
+<div><p>custom_params=custom)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.identification.identification_tools.index_in_base_params">
+<span class="sig-prename descclassname"><span class="pre">figaroh.identification.identification_tools.</span></span><span class="sig-name descname"><span class="pre">index_in_base_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_segments</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/identification_tools.html#index_in_base_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.identification_tools.index_in_base_params" title="Link to this definition"></a></dt>
+<dd><p>Map segment IDs to their base parameters.</p>
+<p>For each segment ID, finds which base parameters contain inertial
+parameters from that segment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>params</strong> (<em>list</em>) – Base parameter expressions</p></li>
+<li><p><strong>id_segments</strong> (<em>list</em>) – Segment IDs to map</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Maps segment IDs to lists of base parameter indices</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.identification.identification_tools.low_pass_filter_data">
+<span class="sig-prename descclassname"><span class="pre">figaroh.identification.identification_tools.</span></span><span class="sig-name descname"><span class="pre">low_pass_filter_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identif_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nbutter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/identification_tools.html#low_pass_filter_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.identification_tools.low_pass_filter_data" title="Link to this definition"></a></dt>
+<dd><p>Apply zero-phase Butterworth low-pass filter to measurement data.</p>
+<p>Uses scipy’s filtfilt for zero-phase digital filtering. Removes high
+frequency noise while preserving signal phase. Handles border effects by
+trimming filtered data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>ndarray</em>) – Raw measurement data to filter</p></li>
+<li><p><strong>param</strong> (<em>dict</em>) – Filter parameters containing:
+- ts: Sample time
+- cut_off_frequency_butterworth: Cutoff frequency in Hz</p></li>
+<li><p><strong>nbutter</strong> (<em>int</em><em>, </em><em>optional</em>) – Filter order. Higher order gives sharper
+frequency cutoff. Defaults to 5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Filtered data with border regions removed</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Border effects are handled by removing nborder = 5*nbutter samples
+from start and end of filtered signal.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.identification.identification_tools.relative_stdev">
+<span class="sig-prename descclassname"><span class="pre">figaroh.identification.identification_tools.</span></span><span class="sig-name descname"><span class="pre">relative_stdev</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">W_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/identification_tools.html#relative_stdev"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.identification_tools.relative_stdev" title="Link to this definition"></a></dt>
+<dd><p>Calculate relative standard deviation of identified parameters.</p>
+<p>Implements the residual error method from [Pressé &amp; Gautier 1991] to
+estimate parameter uncertainty.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>W_b</strong> (<em>ndarray</em>) – Base regressor matrix</p></li>
+<li><p><strong>phi_b</strong> (<em>list</em>) – Base parameter values</p></li>
+<li><p><strong>tau</strong> (<em>ndarray</em>) – Measured joint torques/forces</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Relative standard deviation (%) for each base parameter</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.identification.identification_tools.reorder_inertial_parameters">
+<span class="sig-prename descclassname"><span class="pre">figaroh.identification.identification_tools.</span></span><span class="sig-name descname"><span class="pre">reorder_inertial_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pinocchio_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/identification_tools.html#reorder_inertial_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.identification_tools.reorder_inertial_parameters" title="Link to this definition"></a></dt>
+<dd><p>Reorder inertial parameters from Pinocchio format to desired format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pinocchio_params</strong> – Parameters in Pinocchio order
+[m, mx, my, mz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Parameters in desired order</dt><dd><p>[Ixx, Ixy, Ixz, Iyy, Iyz, Izz, mx, my, mz, m]</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.identification.identification_tools.unified_to_legacy_identif_config">
+<span class="sig-prename descclassname"><span class="pre">figaroh.identification.identification_tools.</span></span><span class="sig-name descname"><span class="pre">unified_to_legacy_identif_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unified_identif_config</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/figaroh/identification/identification_tools.html#unified_to_legacy_identif_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.identification_tools.unified_to_legacy_identif_config" title="Link to this definition"></a></dt>
+<dd><p>Convert unified identification format to legacy identif_config format.</p>
+<p>Maps the new unified identification configuration structure to produce
+the exact same output as get_param_from_yaml. This ensures backward
+compatibility while using the new unified parser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>robot</strong> (<em>pin.RobotWrapper</em>) – Robot instance containing model and data</p></li>
+<li><p><strong>unified_identif_config</strong> (<em>dict</em>) – Configuration from create_task_config</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Identification configuration matching get_param_from_yaml output</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">unified_config</span> <span class="o">=</span> <span class="n">create_task_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">parsed_config</span><span class="p">,</span>
+<span class="gp">... </span>                                   <span class="s2">&quot;identification&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">legacy_config</span> <span class="o">=</span> <span class="n">unified_to_legacy_identif_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span>
+<span class="gp">... </span>                                                 <span class="n">unified_config</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># legacy_config has same keys as get_param_from_yaml output</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.identification.identification_tools.weigthed_least_squares">
+<span class="sig-prename descclassname"><span class="pre">figaroh.identification.identification_tools.</span></span><span class="sig-name descname"><span class="pre">weigthed_least_squares</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_meas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_est</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identif_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/identification_tools.html#weigthed_least_squares"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.identification_tools.weigthed_least_squares" title="Link to this definition"></a></dt>
+<dd><p>Compute weighted least squares solution for parameter identification.</p>
+<p>Implements iteratively reweighted least squares method from
+[Gautier, 1997]. Accounts for heteroscedastic noise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>robot</strong> (<em>pin.Robot</em>) – Robot model</p></li>
+<li><p><strong>phi_b</strong> (<em>ndarray</em>) – Initial base parameters</p></li>
+<li><p><strong>W_b</strong> (<em>ndarray</em>) – Base regressor matrix</p></li>
+<li><p><strong>tau_meas</strong> (<em>ndarray</em>) – Measured joint torques</p></li>
+<li><p><strong>tau_est</strong> (<em>ndarray</em>) – Estimated joint torques</p></li>
+<li><p><strong>param</strong> (<em>dict</em>) – Settings including idx_tau_stop</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Identified base parameters</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 

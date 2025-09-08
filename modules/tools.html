@@ -162,7 +162,73 @@
 <li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.qrdecomposition.get_baseParams"><code class="docutils literal notranslate"><span class="pre">get_baseParams()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#robot-ipopt">Robot IPOPT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#robot-ipopt">Robot IPOPT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robotipopt.BaseOptimizationProblem"><code class="docutils literal notranslate"><span class="pre">BaseOptimizationProblem</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.name"><code class="docutils literal notranslate"><span class="pre">BaseOptimizationProblem.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.logger"><code class="docutils literal notranslate"><span class="pre">BaseOptimizationProblem.logger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.iteration_data"><code class="docutils literal notranslate"><span class="pre">BaseOptimizationProblem.iteration_data</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.callback_data"><code class="docutils literal notranslate"><span class="pre">BaseOptimizationProblem.callback_data</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.constraints"><code class="docutils literal notranslate"><span class="pre">BaseOptimizationProblem.constraints()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.get_constraint_bounds"><code class="docutils literal notranslate"><span class="pre">BaseOptimizationProblem.get_constraint_bounds()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.get_initial_guess"><code class="docutils literal notranslate"><span class="pre">BaseOptimizationProblem.get_initial_guess()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.get_variable_bounds"><code class="docutils literal notranslate"><span class="pre">BaseOptimizationProblem.get_variable_bounds()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.gradient"><code class="docutils literal notranslate"><span class="pre">BaseOptimizationProblem.gradient()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.hessian"><code class="docutils literal notranslate"><span class="pre">BaseOptimizationProblem.hessian()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.intermediate"><code class="docutils literal notranslate"><span class="pre">BaseOptimizationProblem.intermediate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.jacobian"><code class="docutils literal notranslate"><span class="pre">BaseOptimizationProblem.jacobian()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.objective"><code class="docutils literal notranslate"><span class="pre">BaseOptimizationProblem.objective()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig.tolerance"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.tolerance</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig.acceptable_tolerance"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.acceptable_tolerance</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig.max_iterations"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.max_iterations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig.max_cpu_time"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.max_cpu_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig.print_level"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.print_level</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig.output_file"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.output_file</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig.hessian_approximation"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.hessian_approximation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig.warm_start"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.warm_start</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig.check_derivatives"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.check_derivatives</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig.linear_solver"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.linear_solver</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig.custom_options"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.custom_options</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.acceptable_tolerance</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id57"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.check_derivatives</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id58"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.custom_options</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig.for_parameter_identification"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.for_parameter_identification()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig.for_trajectory_optimization"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.for_trajectory_optimization()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id59"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.hessian_approximation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id60"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.linear_solver</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id61"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.max_cpu_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id62"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.max_iterations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id63"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.output_file</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id64"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.print_level</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig.to_ipopt_options"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.to_ipopt_options()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id65"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.tolerance</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id66"><code class="docutils literal notranslate"><span class="pre">IPOPTConfig.warm_start</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robotipopt.RobotIPOPTSolver"><code class="docutils literal notranslate"><span class="pre">RobotIPOPTSolver</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.RobotIPOPTSolver.problem"><code class="docutils literal notranslate"><span class="pre">RobotIPOPTSolver.problem</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.RobotIPOPTSolver.config"><code class="docutils literal notranslate"><span class="pre">RobotIPOPTSolver.config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.RobotIPOPTSolver.logger"><code class="docutils literal notranslate"><span class="pre">RobotIPOPTSolver.logger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.RobotIPOPTSolver.last_solution"><code class="docutils literal notranslate"><span class="pre">RobotIPOPTSolver.last_solution</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.RobotIPOPTSolver.last_info"><code class="docutils literal notranslate"><span class="pre">RobotIPOPTSolver.last_info</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.RobotIPOPTSolver.solve_history"><code class="docutils literal notranslate"><span class="pre">RobotIPOPTSolver.solve_history</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.RobotIPOPTSolver.get_solution_summary"><code class="docutils literal notranslate"><span class="pre">RobotIPOPTSolver.get_solution_summary()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.RobotIPOPTSolver.solve"><code class="docutils literal notranslate"><span class="pre">RobotIPOPTSolver.solve()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.RobotIPOPTSolver.validate_problem_setup"><code class="docutils literal notranslate"><span class="pre">RobotIPOPTSolver.validate_problem_setup()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robotipopt.TrajectoryOptimizationProblem"><code class="docutils literal notranslate"><span class="pre">TrajectoryOptimizationProblem</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.TrajectoryOptimizationProblem.constraints"><code class="docutils literal notranslate"><span class="pre">TrajectoryOptimizationProblem.constraints()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.TrajectoryOptimizationProblem.objective"><code class="docutils literal notranslate"><span class="pre">TrajectoryOptimizationProblem.objective()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.TrajectoryOptimizationProblem.set_constraint_function"><code class="docutils literal notranslate"><span class="pre">TrajectoryOptimizationProblem.set_constraint_function()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robotipopt.TrajectoryOptimizationProblem.set_objective_function"><code class="docutils literal notranslate"><span class="pre">TrajectoryOptimizationProblem.set_objective_function()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robotipopt.create_trajectory_solver"><code class="docutils literal notranslate"><span class="pre">create_trajectory_solver()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#random-data-generation">Random Data Generation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.randomdata.generate_waypoints"><code class="docutils literal notranslate"><span class="pre">generate_waypoints()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.randomdata.generate_waypoints_fext"><code class="docutils literal notranslate"><span class="pre">generate_waypoints_fext()</span></code></a></li>
@@ -838,6 +904,965 @@ parameter server.
 </section>
 <section id="robot-ipopt">
 <h2>Robot IPOPT<a class="headerlink" href="#robot-ipopt" title="Link to this heading"></a></h2>
+<p id="module-figaroh.tools.robotipopt">General IPOPT-based optimization framework for robotics applications.</p>
+<p>This module provides a comprehensive, flexible framework for setting up and
+solving nonlinear optimization problems using IPOPT (Interior Point OPTimizer),
+with specialized support for robotics applications including trajectory
+optimization, parameter identification, and general robot optimization
+problems.</p>
+<dl>
+<dt>Key Features:</dt><dd><ul class="simple">
+<li><p>Unified IPOPT interface with robotics-specific configurations</p></li>
+<li><p>Automatic differentiation support for gradients and Jacobians</p></li>
+<li><p>Built-in problem validation and result analysis</p></li>
+<li><p>Specialized classes for trajectory optimization problems</p></li>
+<li><p>Factory functions for rapid problem setup</p></li>
+<li><p>Comprehensive logging and iteration tracking</p></li>
+</ul>
+</dd>
+<dt>Main Classes:</dt><dd><ul class="simple">
+<li><p>IPOPTConfig: Configuration management for IPOPT solver settings</p></li>
+<li><p>BaseOptimizationProblem: Abstract base class for optimization problems</p></li>
+<li><p>RobotIPOPTSolver: High-level solver interface with result analysis</p></li>
+<li><p>TrajectoryOptimizationProblem: Specialized class for trajectory problems</p></li>
+</ul>
+</dd>
+<dt>Usage Examples:</dt><dd><dl>
+<dt>Basic trajectory optimization:</dt><dd><p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>python
+from figaroh.tools.robotipopt import IPOPTConfig, RobotIPOPTSolver</p>
+<p># Create custom problem class
+class MyProblem(BaseOptimizationProblem):</p>
+<blockquote>
+<div><dl class="simple">
+<dt>def objective(self, x):</dt><dd><p>return np.sum(x**2)  # Minimize sum of squares</p>
+</dd>
+<dt>def constraints(self, x):</dt><dd><p>return np.array([x[0] + x[1] - 1.0])  # x[0] + x[1] = 1</p>
+</dd>
+</dl>
+<p># … implement other required methods</p>
+</div></blockquote>
+<p># Solve the problem
+problem = MyProblem()
+config = IPOPTConfig.for_trajectory_optimization()
+solver = RobotIPOPTSolver(problem, config)
+success, results = solver.solve()
+<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+</dd>
+<dt>Using the factory function:</dt><dd><p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a>python
+from figaroh.tools.robotipopt import create_trajectory_solver</p>
+<dl class="simple">
+<dt>def my_objective(x):</dt><dd><p>return np.sum(x**2)</p>
+</dd>
+<dt>def my_constraints(x):</dt><dd><p>return np.array([x[0] + x[1] - 1.0])</p>
+</dd>
+<dt>def get_bounds():</dt><dd><p>var_bounds = ([-10, -10], [10, 10])
+cons_bounds = ([0], [0])
+return var_bounds, cons_bounds</p>
+</dd>
+<dt>def initial_guess():</dt><dd><p>return [0.5, 0.5]</p>
+</dd>
+<dt>solver = create_trajectory_solver(</dt><dd><p>my_objective, my_constraints, get_bounds, initial_guess</p>
+</dd>
+</dl>
+<p>)
+success, results = solver.solve()
+<a href="#id13"><span class="problematic" id="id14">``</span></a><a href="#id15"><span class="problematic" id="id16">`</span></a></p>
+</dd>
+<dt>Complete robotics example:</dt><dd><p><a href="#id17"><span class="problematic" id="id18">``</span></a><a href="#id19"><span class="problematic" id="id20">`</span></a>python
+import numpy as np
+from figaroh.tools.robotipopt import (</p>
+<blockquote>
+<div><p>BaseOptimizationProblem, RobotIPOPTSolver, IPOPTConfig</p>
+</div></blockquote>
+<p>)</p>
+<dl>
+<dt>class RobotTrajectoryProblem(BaseOptimizationProblem):</dt><dd><dl>
+<dt>def __init__(self, robot, waypoints, active_joints):</dt><dd><p>super().__init__(“RobotTrajectory”)
+self.robot = robot
+self.waypoints = waypoints
+self.active_joints = active_joints
+self.n_joints = len(active_joints)
+self.n_waypoints = len(waypoints)
+self.n_vars = self.n_joints * self.n_waypoints</p>
+</dd>
+<dt>def get_variable_bounds(self):</dt><dd><p># Joint limits for all waypoints
+lb = [-np.pi] * self.n_vars
+ub = [np.pi] * self.n_vars
+return lb, ub</p>
+</dd>
+<dt>def get_constraint_bounds(self):</dt><dd><p># Boundary conditions (start/end positions)
+n_constraints = 2 * self.n_joints
+return [0] * n_constraints, [0] * n_constraints</p>
+</dd>
+<dt>def get_initial_guess(self):</dt><dd><p># Linear interpolation between start and end
+return np.linspace(</p>
+<blockquote>
+<div><p>self.waypoints[0], self.waypoints[-1],
+self.n_waypoints * self.n_joints</p>
+</div></blockquote>
+<p>)</p>
+</dd>
+<dt>def objective(self, x):</dt><dd><p># Minimize trajectory smoothness (squared accelerations)
+q = x.reshape(self.n_waypoints, self.n_joints)
+acc = np.diff(q, n=2, axis=0)  # Second differences
+return np.sum(acc**2)</p>
+</dd>
+<dt>def constraints(self, x):</dt><dd><p># Enforce boundary conditions
+q = x.reshape(self.n_waypoints, self.n_joints)
+constraints = np.concatenate([</p>
+<blockquote>
+<div><p>q[0] - self.waypoints[0],   # Start position
+q[-1] - self.waypoints[-1]  # End position</p>
+</div></blockquote>
+<p>])
+return constraints</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p># Usage
+problem = RobotTrajectoryProblem(robot, waypoints, active_joints)
+config = IPOPTConfig.for_trajectory_optimization()
+solver = RobotIPOPTSolver(problem, config)</p>
+<dl>
+<dt>if solver.validate_problem_setup():</dt><dd><p>success, results = solver.solve()
+if success:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>optimal_trajectory = results[‘x_opt’].reshape(</dt><dd><p>problem.n_waypoints, problem.n_joints</p>
+</dd>
+</dl>
+<p>)
+print(“Optimization successful!”)
+print(f”Final objective: {results[‘obj_val’]:.6f}”)
+print(solver.get_solution_summary())</p>
+</div></blockquote>
+</dd>
+</dl>
+<p><a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a></p>
+</dd>
+</dl>
+</dd>
+<dt>Dependencies:</dt><dd><ul class="simple">
+<li><p>cyipopt: Python interface to IPOPT solver</p></li>
+<li><p>numpy: Numerical computations</p></li>
+<li><p>numdifftools: Automatic differentiation (fallback)</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<ul class="simple">
+<li><p>IPOPT documentation: <a class="reference external" href="https://coin-or.github.io/Ipopt/">https://coin-or.github.io/Ipopt/</a></p></li>
+<li><p>cyipopt: <a class="reference external" href="https://github.com/mechmotum/cyipopt">https://github.com/mechmotum/cyipopt</a></p></li>
+</ul>
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.BaseOptimizationProblem">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotipopt.</span></span><span class="sig-name descname"><span class="pre">BaseOptimizationProblem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'OptimizationProblem'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#BaseOptimizationProblem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.BaseOptimizationProblem" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Abstract base class for IPOPT optimization problems.</p>
+<p>This class defines the interface that all IPOPT problems must implement.
+Subclasses should implement the objective function, constraints, and their
+derivatives (or use automatic differentiation).</p>
+<p>The class provides default implementations for gradient and Jacobian
+computation using automatic differentiation via numdifftools. For better
+performance, subclasses can override these methods with analytical
+derivatives.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.BaseOptimizationProblem.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.name" title="Link to this definition"></a></dt>
+<dd><p>Human-readable name for the optimization problem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.BaseOptimizationProblem.logger">
+<span class="sig-name descname"><span class="pre">logger</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.logger" title="Link to this definition"></a></dt>
+<dd><p>Logger instance for this problem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>logging.Logger</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.BaseOptimizationProblem.iteration_data">
+<span class="sig-name descname"><span class="pre">iteration_data</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.iteration_data" title="Link to this definition"></a></dt>
+<dd><p>Storage for tracking optimization iterations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.BaseOptimizationProblem.callback_data">
+<span class="sig-name descname"><span class="pre">callback_data</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.callback_data" title="Link to this definition"></a></dt>
+<dd><p>Storage for passing data between methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="simple">
+<dt>Required Methods (must be implemented by subclasses):</dt><dd><ul class="simple">
+<li><p>get_variable_bounds(): Return variable bounds as (lower, upper)</p></li>
+<li><p>get_constraint_bounds(): Return constraint bounds as (lower, upper)</p></li>
+<li><p>get_initial_guess(): Return initial guess for optimization variables</p></li>
+<li><p>objective(x): Evaluate objective function at point x</p></li>
+<li><p>constraints(x): Evaluate constraint functions at point x</p></li>
+</ul>
+</dd>
+<dt>Optional Methods (have default implementations):</dt><dd><ul class="simple">
+<li><p>gradient(x): Compute objective gradient (uses auto-diff by default)</p></li>
+<li><p>jacobian(x): Compute constraint Jacobian (uses auto-diff by default)</p></li>
+<li><p>hessian(x, lagrange, obj_factor): Compute Hessian
+(IPOPT approx by default)</p></li>
+<li><p>intermediate(…): Callback for iteration tracking</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<dl>
+<dt>Basic implementation:</dt><dd><p><a href="#id25"><span class="problematic" id="id26">``</span></a><a href="#id27"><span class="problematic" id="id28">`</span></a>python
+class QuadraticProblem(BaseOptimizationProblem):</p>
+<blockquote>
+<div><dl class="simple">
+<dt>def get_variable_bounds(self):</dt><dd><p>return ([-10, -10], [10, 10])</p>
+</dd>
+<dt>def get_constraint_bounds(self):</dt><dd><p>return ([0], [0])  # Equality constraint</p>
+</dd>
+<dt>def get_initial_guess(self):</dt><dd><p>return [1.0, 1.0]</p>
+</dd>
+<dt>def objective(self, x):</dt><dd><p>return x[0]**2 + x[1]**2  # Minimize sum of squares</p>
+</dd>
+<dt>def constraints(self, x):</dt><dd><p>return np.array([x[0] + x[1] - 1.0])  # x[0] + x[1] = 1</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><a href="#id29"><span class="problematic" id="id30">``</span></a><a href="#id31"><span class="problematic" id="id32">`</span></a></p>
+</dd>
+<dt>With custom derivatives:</dt><dd><p><a href="#id33"><span class="problematic" id="id34">``</span></a><a href="#id35"><span class="problematic" id="id36">`</span></a>python
+class CustomProblem(BaseOptimizationProblem):</p>
+<blockquote>
+<div><p># … implement required methods …</p>
+<dl class="simple">
+<dt>def gradient(self, x):</dt><dd><p># Custom analytical gradient
+return np.array([2*x[0], 2*x[1]])</p>
+</dd>
+<dt>def jacobian(self, x):</dt><dd><p># Custom analytical Jacobian
+return np.array([[1.0, 1.0]])</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><a href="#id37"><span class="problematic" id="id38">``</span></a><a href="#id39"><span class="problematic" id="id40">`</span></a></p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.BaseOptimizationProblem.constraints">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#BaseOptimizationProblem.constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.constraints" title="Link to this definition"></a></dt>
+<dd><p>Evaluate constraint functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> – Optimization variables</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Constraint function values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.BaseOptimizationProblem.get_constraint_bounds">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_constraint_bounds</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#BaseOptimizationProblem.get_constraint_bounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.get_constraint_bounds" title="Link to this definition"></a></dt>
+<dd><p>Get bounds for constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple of (constraint_lower_bounds, constraint_upper_bounds)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.BaseOptimizationProblem.get_initial_guess">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_initial_guess</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#BaseOptimizationProblem.get_initial_guess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.get_initial_guess" title="Link to this definition"></a></dt>
+<dd><p>Get initial guess for optimization variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Initial guess as list of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.BaseOptimizationProblem.get_variable_bounds">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_variable_bounds</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#BaseOptimizationProblem.get_variable_bounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.get_variable_bounds" title="Link to this definition"></a></dt>
+<dd><p>Get bounds for optimization variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple of (lower_bounds, upper_bounds)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.BaseOptimizationProblem.gradient">
+<span class="sig-name descname"><span class="pre">gradient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#BaseOptimizationProblem.gradient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.gradient" title="Link to this definition"></a></dt>
+<dd><p>Compute gradient of objective function.</p>
+<p>Default implementation uses automatic differentiation.
+Override for custom implementations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> – Optimization variables</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Gradient vector</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.BaseOptimizationProblem.hessian">
+<span class="sig-name descname"><span class="pre">hessian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lagrange</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#BaseOptimizationProblem.hessian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.hessian" title="Link to this definition"></a></dt>
+<dd><p>Compute Hessian of Lagrangian.</p>
+<p>Default implementation returns False to use IPOPT’s approximation.
+Override for custom implementations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – Optimization variables</p></li>
+<li><p><strong>lagrange</strong> – Lagrange multipliers</p></li>
+<li><p><strong>obj_factor</strong> – Objective scaling factor</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Hessian matrix or False to use approximation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.BaseOptimizationProblem.intermediate">
+<span class="sig-name descname"><span class="pre">intermediate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alg_mod</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iter_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inf_pr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inf_du</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regularization_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_du</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_pr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_trials</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#BaseOptimizationProblem.intermediate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.intermediate" title="Link to this definition"></a></dt>
+<dd><p>Intermediate callback for iteration tracking.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alg_mod</strong> – Algorithm mode</p></li>
+<li><p><strong>iter_count</strong> – Iteration count</p></li>
+<li><p><strong>obj_value</strong> – Current objective value</p></li>
+<li><p><strong>inf_pr</strong> – Primal infeasibility</p></li>
+<li><p><strong>inf_du</strong> – Dual infeasibility</p></li>
+<li><p><strong>mu</strong> – Barrier parameter</p></li>
+<li><p><strong>d_norm</strong> – Step size</p></li>
+<li><p><strong>regularization_size</strong> – Regularization parameter</p></li>
+<li><p><strong>alpha_du</strong> – Dual step size</p></li>
+<li><p><strong>alpha_pr</strong> – Primal step size</p></li>
+<li><p><strong>ls_trials</strong> – Line search trials</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True to continue optimization, False to stop</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.BaseOptimizationProblem.jacobian">
+<span class="sig-name descname"><span class="pre">jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#BaseOptimizationProblem.jacobian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.jacobian" title="Link to this definition"></a></dt>
+<dd><p>Compute Jacobian of constraint functions.</p>
+<p>Default implementation uses automatic differentiation.
+Override for custom implementations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> – Optimization variables</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Jacobian matrix</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.BaseOptimizationProblem.objective">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#BaseOptimizationProblem.objective"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.BaseOptimizationProblem.objective" title="Link to this definition"></a></dt>
+<dd><p>Evaluate objective function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> – Optimization variables</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Objective function value</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.IPOPTConfig">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotipopt.</span></span><span class="sig-name descname"><span class="pre">IPOPTConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tolerance:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acceptable_tolerance:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">3000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_cpu_time:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_level:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hessian_approximation:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'limited-memory'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warm_start:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_derivatives:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_solver:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'mumps'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_options:</span> <span class="pre">~typing.Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#IPOPTConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.IPOPTConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Configuration parameters for IPOPT solver.</p>
+<p>This class provides a convenient way to set IPOPT solver options
+with sensible defaults for robotics applications. It includes
+predefined configurations for common robotics optimization scenarios.</p>
+<p>The configuration is designed to work well with:
+- Trajectory optimization problems (smooth, continuous trajectories)
+- Parameter identification (high-precision parameter estimation)
+- General robotics optimization (balanced performance/accuracy)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.IPOPTConfig.tolerance">
+<span class="sig-name descname"><span class="pre">tolerance</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.IPOPTConfig.tolerance" title="Link to this definition"></a></dt>
+<dd><p>Primary convergence tolerance for optimization.
+Default: 1e-6. Smaller values increase precision but runtime.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.IPOPTConfig.acceptable_tolerance">
+<span class="sig-name descname"><span class="pre">acceptable_tolerance</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.IPOPTConfig.acceptable_tolerance" title="Link to this definition"></a></dt>
+<dd><p>Fallback tolerance if primary fails.
+Default: 1e-4. Used when primary tolerance cannot be achieved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.IPOPTConfig.max_iterations">
+<span class="sig-name descname"><span class="pre">max_iterations</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.IPOPTConfig.max_iterations" title="Link to this definition"></a></dt>
+<dd><p>Maximum number of optimization iterations.
+Default: 3000. Increase for complex problems.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.IPOPTConfig.max_cpu_time">
+<span class="sig-name descname"><span class="pre">max_cpu_time</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.IPOPTConfig.max_cpu_time" title="Link to this definition"></a></dt>
+<dd><p>Maximum CPU time in seconds.
+Default: 1e6. Prevents infinite loops in difficult problems.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.IPOPTConfig.print_level">
+<span class="sig-name descname"><span class="pre">print_level</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.IPOPTConfig.print_level" title="Link to this definition"></a></dt>
+<dd><p>IPOPT output verbosity (0-12).
+Default: 5. Higher values provide more detailed output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.IPOPTConfig.output_file">
+<span class="sig-name descname"><span class="pre">output_file</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.IPOPTConfig.output_file" title="Link to this definition"></a></dt>
+<dd><p>File to save IPOPT output.
+Default: None. Useful for debugging and analysis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.IPOPTConfig.hessian_approximation">
+<span class="sig-name descname"><span class="pre">hessian_approximation</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.IPOPTConfig.hessian_approximation" title="Link to this definition"></a></dt>
+<dd><p>Hessian computation method.
+Default: “limited-memory”. Options: “exact”, “limited-memory”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.IPOPTConfig.warm_start">
+<span class="sig-name descname"><span class="pre">warm_start</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.IPOPTConfig.warm_start" title="Link to this definition"></a></dt>
+<dd><p>Use previous solution as starting point.
+Default: True. Speeds up subsequent optimizations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.IPOPTConfig.check_derivatives">
+<span class="sig-name descname"><span class="pre">check_derivatives</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.IPOPTConfig.check_derivatives" title="Link to this definition"></a></dt>
+<dd><p>Enable derivative checking.
+Default: True. Helps detect implementation errors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.IPOPTConfig.linear_solver">
+<span class="sig-name descname"><span class="pre">linear_solver</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.IPOPTConfig.linear_solver" title="Link to this definition"></a></dt>
+<dd><p>Linear algebra solver backend.
+Default: “mumps”. Options: “mumps”, “ma27”, “ma57”, “ma77”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.IPOPTConfig.custom_options">
+<span class="sig-name descname"><span class="pre">custom_options</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.IPOPTConfig.custom_options" title="Link to this definition"></a></dt>
+<dd><p>Additional IPOPT options.
+Default: {}. For advanced users to set specialized options.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Examples</p>
+<dl>
+<dt>Basic usage:</dt><dd><p><a href="#id41"><span class="problematic" id="id42">``</span></a><a href="#id43"><span class="problematic" id="id44">`</span></a>python
+# Use default configuration
+config = IPOPTConfig()</p>
+<p># Customize specific parameters
+config = IPOPTConfig(</p>
+<blockquote>
+<div><p>tolerance=1e-8,
+max_iterations=5000,
+print_level=3</p>
+</div></blockquote>
+</dd>
+<dt>Predefined configurations:</dt><dd><p><a href="#id45"><span class="problematic" id="id46">``</span></a><a href="#id47"><span class="problematic" id="id48">`</span></a>python
+# For trajectory optimization (speed-focused)
+config = IPOPTConfig.for_trajectory_optimization()</p>
+<p># For parameter identification (precision-focused)
+config = IPOPTConfig.for_parameter_identification()
+<a href="#id49"><span class="problematic" id="id50">``</span></a><a href="#id51"><span class="problematic" id="id52">`</span></a></p>
+</dd>
+<dt>Custom IPOPT options:</dt><dd><p><a href="#id53"><span class="problematic" id="id54">``</span></a><a href="#id55"><span class="problematic" id="id56">`</span></a>python
+config = IPOPTConfig(</p>
+<blockquote>
+<div><dl class="simple">
+<dt>custom_options={</dt><dd><p>“mu_strategy”: “adaptive”,
+“nlp_scaling_method”: “gradient-based”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All string options in custom_options should be provided as strings.
+They will be automatically encoded to bytes for IPOPT compatibility.</p>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">acceptable_tolerance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0001</span></em><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id57">
+<span class="sig-name descname"><span class="pre">check_derivatives</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#id57" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id58">
+<span class="sig-name descname"><span class="pre">custom_options</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#id58" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.IPOPTConfig.for_parameter_identification">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">for_parameter_identification</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig" title="figaroh.tools.robotipopt.IPOPTConfig"><span class="pre">IPOPTConfig</span></a></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#IPOPTConfig.for_parameter_identification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.IPOPTConfig.for_parameter_identification" title="Link to this definition"></a></dt>
+<dd><p>Create configuration optimized for parameter identification problems.</p>
+<p>This configuration prioritizes high precision over speed, making it
+suitable for accurate parameter estimation in robotics applications.
+Uses exact Hessian computation and monotone barrier strategy for
+numerical stability.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optimized configuration for parameter identification.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig" title="figaroh.tools.robotipopt.IPOPTConfig">IPOPTConfig</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.IPOPTConfig.for_trajectory_optimization">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">for_trajectory_optimization</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig" title="figaroh.tools.robotipopt.IPOPTConfig"><span class="pre">IPOPTConfig</span></a></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#IPOPTConfig.for_trajectory_optimization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.IPOPTConfig.for_trajectory_optimization" title="Link to this definition"></a></dt>
+<dd><p>Create configuration optimized for trajectory optimization problems.</p>
+<p>This configuration prioritizes convergence speed over extreme
+precision, making it suitable for real-time or interactive
+trajectory planning. Uses adaptive barrier parameter strategy
+for better convergence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optimized configuration for trajectory problems.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig" title="figaroh.tools.robotipopt.IPOPTConfig">IPOPTConfig</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id59">
+<span class="sig-name descname"><span class="pre">hessian_approximation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'limited-memory'</span></em><a class="headerlink" href="#id59" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id60">
+<span class="sig-name descname"><span class="pre">linear_solver</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'mumps'</span></em><a class="headerlink" href="#id60" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id61">
+<span class="sig-name descname"><span class="pre">max_cpu_time</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1000000.0</span></em><a class="headerlink" href="#id61" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id62">
+<span class="sig-name descname"><span class="pre">max_iterations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3000</span></em><a class="headerlink" href="#id62" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id63">
+<span class="sig-name descname"><span class="pre">output_file</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id63" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id64">
+<span class="sig-name descname"><span class="pre">print_level</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#id64" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.IPOPTConfig.to_ipopt_options">
+<span class="sig-name descname"><span class="pre">to_ipopt_options</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#IPOPTConfig.to_ipopt_options"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.IPOPTConfig.to_ipopt_options" title="Link to this definition"></a></dt>
+<dd><p>Convert configuration to IPOPT option dictionary.</p>
+<p>Transforms the configuration parameters into the format expected
+by IPOPT, including proper encoding of string options to bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dictionary of IPOPT options ready for use</dt><dd><p>with cyipopt.Problem.add_option()</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All string values are automatically encoded to bytes as required
+by the IPOPT C interface via cyipopt.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id65">
+<span class="sig-name descname"><span class="pre">tolerance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-06</span></em><a class="headerlink" href="#id65" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id66">
+<span class="sig-name descname"><span class="pre">warm_start</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#id66" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.RobotIPOPTSolver">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotipopt.</span></span><span class="sig-name descname"><span class="pre">RobotIPOPTSolver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#figaroh.tools.robotipopt.BaseOptimizationProblem" title="figaroh.tools.robotipopt.BaseOptimizationProblem"><span class="pre">BaseOptimizationProblem</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig" title="figaroh.tools.robotipopt.IPOPTConfig"><span class="pre">IPOPTConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#RobotIPOPTSolver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.RobotIPOPTSolver" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>General IPOPT solver for robotics optimization problems.</p>
+<p>This class provides a high-level interface for solving optimization
+problems using IPOPT, with built-in support for result analysis,
+error handling, and problem validation specifically designed for
+robotics applications.</p>
+<dl class="simple">
+<dt>Features:</dt><dd><ul class="simple">
+<li><p>Automatic problem setup and configuration</p></li>
+<li><p>Built-in problem validation before solving</p></li>
+<li><p>Comprehensive result analysis and logging</p></li>
+<li><p>Solution history tracking for multiple solves</p></li>
+<li><p>Robotics-specific error handling and diagnostics</p></li>
+<li><p>Support for iterative solving and warm starts</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.RobotIPOPTSolver.problem">
+<span class="sig-name descname"><span class="pre">problem</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.RobotIPOPTSolver.problem" title="Link to this definition"></a></dt>
+<dd><p>The optimization problem to solve.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#figaroh.tools.robotipopt.BaseOptimizationProblem" title="figaroh.tools.robotipopt.BaseOptimizationProblem">BaseOptimizationProblem</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.RobotIPOPTSolver.config">
+<span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.RobotIPOPTSolver.config" title="Link to this definition"></a></dt>
+<dd><p>IPOPT solver configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#figaroh.tools.robotipopt.IPOPTConfig" title="figaroh.tools.robotipopt.IPOPTConfig">IPOPTConfig</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.RobotIPOPTSolver.logger">
+<span class="sig-name descname"><span class="pre">logger</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.RobotIPOPTSolver.logger" title="Link to this definition"></a></dt>
+<dd><p>Logger for solver operations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>logging.Logger</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.RobotIPOPTSolver.last_solution">
+<span class="sig-name descname"><span class="pre">last_solution</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.RobotIPOPTSolver.last_solution" title="Link to this definition"></a></dt>
+<dd><p>Most recent optimization solution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.RobotIPOPTSolver.last_info">
+<span class="sig-name descname"><span class="pre">last_info</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.RobotIPOPTSolver.last_info" title="Link to this definition"></a></dt>
+<dd><p>Most recent IPOPT solver information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.RobotIPOPTSolver.solve_history">
+<span class="sig-name descname"><span class="pre">solve_history</span></span><a class="headerlink" href="#figaroh.tools.robotipopt.RobotIPOPTSolver.solve_history" title="Link to this definition"></a></dt>
+<dd><p>History of all solve attempts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[Dict]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Examples</p>
+<dl>
+<dt>Basic usage:</dt><dd><p><a href="#id67"><span class="problematic" id="id68">``</span></a><a href="#id69"><span class="problematic" id="id70">`</span></a>python
+# Create problem and solver
+problem = MyOptimizationProblem()
+solver = RobotIPOPTSolver(problem)</p>
+<p># Solve the problem
+success, results = solver.solve()</p>
+<dl class="simple">
+<dt>if success:</dt><dd><p>print(f”Optimal solution: {results[‘x_opt’]}”)
+print(f”Objective value: {results[‘obj_val’]}”)</p>
+</dd>
+</dl>
+<p><a href="#id71"><span class="problematic" id="id72">``</span></a><a href="#id73"><span class="problematic" id="id74">`</span></a></p>
+</dd>
+<dt>With custom configuration:</dt><dd><p><a href="#id75"><span class="problematic" id="id76">``</span></a><a href="#id77"><span class="problematic" id="id78">`</span></a>python
+# Create custom configuration
+config = IPOPTConfig(</p>
+<blockquote>
+<div><p>tolerance=1e-8,
+max_iterations=5000,
+print_level=3</p>
+</div></blockquote>
+<p>)</p>
+<p># Create solver with custom config
+solver = RobotIPOPTSolver(problem, config)</p>
+<p># Validate problem before solving
+if solver.validate_problem_setup():</p>
+<blockquote>
+<div><p>success, results = solver.solve()</p>
+</div></blockquote>
+<p><a href="#id79"><span class="problematic" id="id80">``</span></a><a href="#id81"><span class="problematic" id="id82">`</span></a></p>
+</dd>
+<dt>Multiple solves with warm start:</dt><dd><p><a href="#id83"><span class="problematic" id="id84">``</span></a><a href="#id85"><span class="problematic" id="id86">`</span></a>python
+solver = RobotIPOPTSolver(problem)</p>
+<p># First solve
+success1, results1 = solver.solve()</p>
+<p># Modify problem parameters…
+problem.update_parameters(new_params)</p>
+<p># Second solve (uses warm start automatically)
+success2, results2 = solver.solve()</p>
+<p># Access solve history
+print(f”Solved {len(solver.solve_history)} problems”)
+<a href="#id87"><span class="problematic" id="id88">``</span></a><a href="#id89"><span class="problematic" id="id90">`</span></a></p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.RobotIPOPTSolver.get_solution_summary">
+<span class="sig-name descname"><span class="pre">get_solution_summary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#RobotIPOPTSolver.get_solution_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.RobotIPOPTSolver.get_solution_summary" title="Link to this definition"></a></dt>
+<dd><p>Get a summary of the last solution.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.RobotIPOPTSolver.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#RobotIPOPTSolver.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.RobotIPOPTSolver.solve" title="Link to this definition"></a></dt>
+<dd><p>Solve the optimization problem.</p>
+<p>Performs the complete optimization process including problem setup,
+IPOPT configuration, solving, and result analysis. The method
+handles all IPOPT interactions and provides comprehensive error
+handling and logging.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>success (bool): True if optimization succeeded,
+False otherwise</p></li>
+<li><dl class="simple">
+<dt>results (Dict[str, Any]): Dictionary containing:</dt><dd><ul>
+<li><p>’x_opt’: Optimal solution vector</p></li>
+<li><p>’obj_val’: Final objective function value</p></li>
+<li><p>’status’: IPOPT exit status code</p></li>
+<li><p>’status_msg’: Human-readable status message</p></li>
+<li><p>’solve_time’: Total optimization time in seconds</p></li>
+<li><p>’iterations’: Number of iterations performed</p></li>
+<li><p>’iteration_data’: Detailed iteration history</p></li>
+<li><p>’callback_data’: Custom data from problem callbacks</p></li>
+<li><p>’ipopt_info’: Complete IPOPT solver information</p></li>
+<li><p>’success’: Copy of success flag for convenience</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple[bool, Dict[str, Any]]</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Exception</strong> – If critical errors occur during problem setup
+    or solving. Non-critical errors are caught and
+    returned in results.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>IPOPT status codes for success: -1 (solved to acceptable level),
+0 (solved), 1 (solved to acceptable level). All other codes
+indicate various types of failures or early termination.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.RobotIPOPTSolver.validate_problem_setup">
+<span class="sig-name descname"><span class="pre">validate_problem_setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#RobotIPOPTSolver.validate_problem_setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.RobotIPOPTSolver.validate_problem_setup" title="Link to this definition"></a></dt>
+<dd><p>Validate that the optimization problem is properly set up.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if problem appears valid, False otherwise</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.TrajectoryOptimizationProblem">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotipopt.</span></span><span class="sig-name descname"><span class="pre">TrajectoryOptimizationProblem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'TrajectoryOptimization'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#TrajectoryOptimizationProblem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.TrajectoryOptimizationProblem" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#figaroh.tools.robotipopt.BaseOptimizationProblem" title="figaroh.tools.robotipopt.BaseOptimizationProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseOptimizationProblem</span></code></a></p>
+<p>Specialized optimization problem for trajectory optimization.</p>
+<p>This class provides a framework for trajectory optimization problems
+with common patterns like waypoint parameterization and constraint
+handling.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.TrajectoryOptimizationProblem.constraints">
+<span class="sig-name descname"><span class="pre">constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#TrajectoryOptimizationProblem.constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.TrajectoryOptimizationProblem.constraints" title="Link to this definition"></a></dt>
+<dd><p>Evaluate constraint functions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.TrajectoryOptimizationProblem.objective">
+<span class="sig-name descname"><span class="pre">objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#TrajectoryOptimizationProblem.objective"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.TrajectoryOptimizationProblem.objective" title="Link to this definition"></a></dt>
+<dd><p>Evaluate objective function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.TrajectoryOptimizationProblem.set_constraint_function">
+<span class="sig-name descname"><span class="pre">set_constraint_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cons_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#TrajectoryOptimizationProblem.set_constraint_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.TrajectoryOptimizationProblem.set_constraint_function" title="Link to this definition"></a></dt>
+<dd><p>Set custom constraint function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.TrajectoryOptimizationProblem.set_objective_function">
+<span class="sig-name descname"><span class="pre">set_objective_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#TrajectoryOptimizationProblem.set_objective_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.TrajectoryOptimizationProblem.set_objective_function" title="Link to this definition"></a></dt>
+<dd><p>Set custom objective function.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.tools.robotipopt.create_trajectory_solver">
+<span class="sig-prename descclassname"><span class="pre">figaroh.tools.robotipopt.</span></span><span class="sig-name descname"><span class="pre">create_trajectory_solver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">objective_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_bounds_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_guess_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'CustomTrajectory'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#figaroh.tools.robotipopt.RobotIPOPTSolver" title="figaroh.tools.robotipopt.RobotIPOPTSolver"><span class="pre">RobotIPOPTSolver</span></a></span></span><a class="reference internal" href="../_modules/figaroh/tools/robotipopt.html#create_trajectory_solver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.robotipopt.create_trajectory_solver" title="Link to this definition"></a></dt>
+<dd><p>Factory function to create a trajectory optimization solver.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>objective_func</strong> – Function to evaluate objective</p></li>
+<li><p><strong>constraint_func</strong> – Function to evaluate constraints</p></li>
+<li><p><strong>get_bounds_func</strong> – Function that returns ((var_lb, var_ub),
+(cons_lb, cons_ub))</p></li>
+<li><p><strong>initial_guess_func</strong> – Function that returns initial guess</p></li>
+<li><p><strong>name</strong> – Problem name</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Configured IPOPT solver</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="random-data-generation">
 <h2>Random Data Generation<a class="headerlink" href="#random-data-generation" title="Link to this heading"></a></h2>

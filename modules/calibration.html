@@ -50,8 +50,67 @@
 <p class="caption" role="heading"><span class="caption-text">Core Modules:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Calibration</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#base-calibration">base_calibration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#calibration-tools">calibration_tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#base-calibration">base_calibration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration"><code class="docutils literal notranslate"><span class="pre">BaseCalibration</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.STATUS"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.STATUS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.LM_result"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.LM_result</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.var_"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.var_</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.evaluation_metrics"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.evaluation_metrics</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.std_dev"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.std_dev</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.std_pctg"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.std_pctg</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.PEE_measured"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.PEE_measured</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.q_measured"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.q_measured</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.calib_config"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.calib_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.model"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.model</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.data"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.data</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.apply_measurement_weighting"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.apply_measurement_weighting()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.calc_stddev"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.calc_stddev()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.cost_function"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.cost_function()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.create_param_list"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.create_param_list()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.get_pose_from_measure"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.get_pose_from_measure()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.initialize"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.initialize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.load_data_set"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.load_data_set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.load_param"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.load_param()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.plot_3d_poses"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.plot_3d_poses()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.plot_errors_distribution"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.plot_errors_distribution()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.plot_joint_configurations"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.plot_joint_configurations()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.plot_results"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.plot_results()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.save_results"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.save_results()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.solve"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.solve()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.solve_optimisation"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.solve_optimisation()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#calibration-tools">calibration_tools</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.add_base_name"><code class="docutils literal notranslate"><span class="pre">add_base_name()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.add_eemarker_frame"><code class="docutils literal notranslate"><span class="pre">add_eemarker_frame()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.add_pee_name"><code class="docutils literal notranslate"><span class="pre">add_pee_name()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.calc_updated_fkm"><code class="docutils literal notranslate"><span class="pre">calc_updated_fkm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.calculate_base_kinematics_regressor"><code class="docutils literal notranslate"><span class="pre">calculate_base_kinematics_regressor()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.calculate_identifiable_kinematics_model"><code class="docutils literal notranslate"><span class="pre">calculate_identifiable_kinematics_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.calculate_kinematics_model"><code class="docutils literal notranslate"><span class="pre">calculate_kinematics_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.cartesian_to_SE3"><code class="docutils literal notranslate"><span class="pre">cartesian_to_SE3()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.get_fullparam_offset"><code class="docutils literal notranslate"><span class="pre">get_fullparam_offset()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.get_idxq_from_jname"><code class="docutils literal notranslate"><span class="pre">get_idxq_from_jname()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.get_joint_offset"><code class="docutils literal notranslate"><span class="pre">get_joint_offset()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.get_param_from_yaml"><code class="docutils literal notranslate"><span class="pre">get_param_from_yaml()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.get_param_from_yaml_legacy"><code class="docutils literal notranslate"><span class="pre">get_param_from_yaml_legacy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.get_param_from_yaml_unified"><code class="docutils literal notranslate"><span class="pre">get_param_from_yaml_unified()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.get_param_from_yaml_with_warning"><code class="docutils literal notranslate"><span class="pre">get_param_from_yaml_with_warning()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.get_rel_jac"><code class="docutils literal notranslate"><span class="pre">get_rel_jac()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.get_rel_kinreg"><code class="docutils literal notranslate"><span class="pre">get_rel_kinreg()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.get_rel_transform"><code class="docutils literal notranslate"><span class="pre">get_rel_transform()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.get_sup_joints"><code class="docutils literal notranslate"><span class="pre">get_sup_joints()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.initialize_variables"><code class="docutils literal notranslate"><span class="pre">initialize_variables()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.load_data"><code class="docutils literal notranslate"><span class="pre">load_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.read_config_data"><code class="docutils literal notranslate"><span class="pre">read_config_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.unified_to_legacy_config"><code class="docutils literal notranslate"><span class="pre">unified_to_legacy_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.update_forward_kinematics"><code class="docutils literal notranslate"><span class="pre">update_forward_kinematics()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.update_joint_placement"><code class="docutils literal notranslate"><span class="pre">update_joint_placement()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.calibration.calibration_tools.xyzquat_to_SE3"><code class="docutils literal notranslate"><span class="pre">xyzquat_to_SE3()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="identification.html">Identification</a></li>
@@ -96,9 +155,1454 @@
 <h1>Calibration<a class="headerlink" href="#calibration" title="Link to this heading"></a></h1>
 <section id="base-calibration">
 <h2>base_calibration<a class="headerlink" href="#base-calibration" title="Link to this heading"></a></h2>
+<p id="module-figaroh.calibration.base_calibration">Base calibration class for FIGAROH examples.</p>
+<p>This module provides the BaseCalibration abstract class extracted from the
+FIGAROH library for use in the examples. It implements a comprehensive
+framework for robot kinematic calibration.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">figaroh.calibration.base_calibration.</span></span><span class="sig-name descname"><span class="pre">BaseCalibration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">del_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Abstract base class for robot kinematic calibration.</p>
+<p>This class provides a comprehensive framework for calibrating robot
+kinematic parameters using measurement data. It implements the Template
+Method pattern, providing common functionality while allowing
+robot-specific implementations of the cost function.</p>
+<p>The calibration process follows these main steps:
+1. Parameter initialization from configuration files
+2. Data loading and validation
+3. Parameter identification using base regressor analysis
+4. Robust optimization with outlier detection and removal
+5. Solution evaluation and validation
+6. Results visualization and export</p>
+<p>Key Features:
+- Automatic parameter identification using QR decomposition
+- Robust optimization with iterative outlier removal
+- Unit-aware measurement weighting for position/orientation data
+- Comprehensive solution evaluation and quality metrics
+- Extensible framework for different robot types</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.STATUS">
+<span class="sig-name descname"><span class="pre">STATUS</span></span><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.STATUS" title="Link to this definition"></a></dt>
+<dd><p>Current calibration status (“NOT CALIBRATED” or
+“CALIBRATED”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.LM_result">
+<span class="sig-name descname"><span class="pre">LM_result</span></span><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.LM_result" title="Link to this definition"></a></dt>
+<dd><p>Optimization result from scipy.optimize.least_squares</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.var_">
+<span class="sig-name descname"><span class="pre">var_</span></span><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.var_" title="Link to this definition"></a></dt>
+<dd><p>Calibrated parameter values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.evaluation_metrics">
+<span class="sig-name descname"><span class="pre">evaluation_metrics</span></span><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.evaluation_metrics" title="Link to this definition"></a></dt>
+<dd><p>Solution quality metrics</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.std_dev">
+<span class="sig-name descname"><span class="pre">std_dev</span></span><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.std_dev" title="Link to this definition"></a></dt>
+<dd><p>Standard deviations of calibrated parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.std_pctg">
+<span class="sig-name descname"><span class="pre">std_pctg</span></span><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.std_pctg" title="Link to this definition"></a></dt>
+<dd><p>Standard deviation percentages</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.PEE_measured">
+<span class="sig-name descname"><span class="pre">PEE_measured</span></span><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.PEE_measured" title="Link to this definition"></a></dt>
+<dd><p>Measured end-effector poses/positions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.q_measured">
+<span class="sig-name descname"><span class="pre">q_measured</span></span><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.q_measured" title="Link to this definition"></a></dt>
+<dd><p>Measured joint configurations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.calib_config">
+<span class="sig-name descname"><span class="pre">calib_config</span></span><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.calib_config" title="Link to this definition"></a></dt>
+<dd><p>Calibration parameters and configuration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.model" title="Link to this definition"></a></dt>
+<dd><p>Robot kinematic model (Pinocchio)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.data">
+<span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.data" title="Link to this definition"></a></dt>
+<dd><p>Robot data structure (Pinocchio)</p>
+</dd></dl>
+
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create robot-specific calibration</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyRobotCalibration</span><span class="p">(</span><span class="n">BaseCalibration</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">cost_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="n">PEEe</span> <span class="o">=</span> <span class="n">calc_updated_fkm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span>
+<span class="gp">... </span>                               <span class="bp">self</span><span class="o">.</span><span class="n">q_measured</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="n">residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span> <span class="o">-</span> <span class="n">PEEe</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_measurement_weighting</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Run calibration</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">calibrator</span> <span class="o">=</span> <span class="n">MyRobotCalibration</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s2">&quot;config.yaml&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">calibrator</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">calibrator</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RMSE: </span><span class="si">{</span><span class="n">calibrator</span><span class="o">.</span><span class="n">evaluation_metrics</span><span class="p">[</span><span class="s1">&#39;rmse&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Derived classes should implement robot-specific cost_function()</p></li>
+<li><p>Default cost_function is provided but issues performance warning</p></li>
+<li><p>Configuration files must follow FIGAROH parameter structure</p></li>
+<li><p>Supports both “full_params” and “joint_offset” calibration models</p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p>TiagoCalibration: TIAGo robot implementation</p></li>
+<li><p>UR10Calibration: Universal Robots UR10 implementation</p></li>
+<li><p>calc_updated_fkm: Forward kinematics computation function</p></li>
+<li><p>apply_measurement_weighting: Unit-aware weighting utility</p></li>
+</ul>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.apply_measurement_weighting">
+<span class="sig-name descname"><span class="pre">apply_measurement_weighting</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">residuals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orient_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.apply_measurement_weighting"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.apply_measurement_weighting" title="Link to this definition"></a></dt>
+<dd><p>Apply measurement weighting to handle position/orientation units.</p>
+<p>This utility method can be used by derived classes to properly weight
+position (meter) and orientation (radian) measurements for equivalent
+influence in the cost function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>residuals</strong> (<em>ndarray</em>) – Raw residual vector</p></li>
+<li><p><strong>pos_weight</strong> (<em>float</em><em>, </em><em>optional</em>) – Weight for position residuals.
+If None, uses 1/position_std</p></li>
+<li><p><strong>orient_weight</strong> (<em>float</em><em>, </em><em>optional</em>) – Weight for orientation residuals.
+If None, uses 1/orientation_std</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Weighted residual vector</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># In derived class cost_function:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">raw_residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span> <span class="o">-</span> <span class="n">PEEe</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">weighted_residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_measurement_weighting</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">raw_residuals</span><span class="p">,</span> <span class="n">pos_weight</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">,</span> <span class="n">orient_weight</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.calc_stddev">
+<span class="sig-name descname"><span class="pre">calc_stddev</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.calc_stddev"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.calc_stddev" title="Link to this definition"></a></dt>
+<dd><p>Calculate parameter uncertainty statistics from optimization results.</p>
+<p>Computes standard deviation and percentage uncertainty for each
+calibrated parameter using the covariance matrix derived from the
+Jacobian at the optimal solution. This provides confidence intervals
+and parameter reliability metrics.</p>
+<p>The calculation uses the linearized uncertainty propagation:
+σ²(θ) = σ²(residuals) * (J^T J)^-1</p>
+<p>Where J is the Jacobian matrix and σ²(residuals) is the residual
+variance estimate.</p>
+<dl class="simple">
+<dt>Prerequisites:</dt><dd><ul class="simple">
+<li><p>Calibration optimization must be completed</p></li>
+<li><p>Jacobian matrix must be available from optimization</p></li>
+</ul>
+</dd>
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Sets self.std_dev with parameter standard deviations</p></li>
+<li><p>Sets self.std_pctg with percentage uncertainties</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="utils.html#figaroh.utils.error_handling.CalibrationError" title="figaroh.utils.error_handling.CalibrationError"><strong>CalibrationError</strong></a> – If calibration has not been performed</p></li>
+<li><p><strong>np.linalg.LinAlgError</strong> – If Jacobian matrix is singular or ill-conditioned</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">calibrator</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">calibrator</span><span class="o">.</span><span class="n">calc_stddev</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parameter uncertainties: </span><span class="si">{</span><span class="n">calibrator</span><span class="o">.</span><span class="n">std_dev</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Percentage errors: </span><span class="si">{</span><span class="n">calibrator</span><span class="o">.</span><span class="n">std_pctg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.cost_function">
+<span class="sig-name descname"><span class="pre">cost_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.cost_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.cost_function" title="Link to this definition"></a></dt>
+<dd><p>Calculate cost function for optimization.</p>
+<p>This method provides a default implementation but should be overridden
+by derived classes to define robot-specific cost computation with
+appropriate weighting and regularization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>var</strong> (<em>ndarray</em>) – Parameter vector to evaluate</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Residual vector</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Using default cost function. Consider implementing robot-specific
+cost function for optimal performance.</p>
+</div>
+<dl>
+<dt>Example implementation:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">cost_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">PEEe</span> <span class="o">=</span> <span class="n">calc_updated_fkm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span>
+<span class="gp">... </span>                           <span class="bp">self</span><span class="o">.</span><span class="n">q_measured</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">raw_residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span> <span class="o">-</span> <span class="n">PEEe</span>
+<span class="gp">... </span>    <span class="n">weighted_residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_measurement_weighting</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">raw_residuals</span><span class="p">,</span> <span class="n">pos_weight</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">,</span> <span class="n">orient_weight</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="c1"># Add regularization if needed</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">weighted_residuals</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.create_param_list">
+<span class="sig-name descname"><span class="pre">create_param_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.create_param_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.create_param_list" title="Link to this definition"></a></dt>
+<dd><p>Initialize calibration parameter structure and validate setup.</p>
+<p>This method sets up the fundamental parameter structure for calibration
+by computing kinematic regressors and ensuring proper frame naming
+conventions. It serves as a critical initialization step that must be
+called before optimization begins.</p>
+<p>The method performs several key operations:
+1. Computes base kinematic regressors for parameter identification
+2. Adds default names for unknown base and tip frames
+3. Validates the parameter structure for calibration readiness</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>q</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Joint configuration for regressor
+computation. If None, uses empty list
+which may limit regressor accuracy</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Always returns True to indicate successful completion</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Updates self.calib_config with frame names if not known</p></li>
+<li><p>Computes and caches kinematic regressors</p></li>
+<li><p>May modify parameter structure for calibration compatibility</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If robot model is not properly initialized</p></li>
+<li><p><strong>AttributeError</strong> – If required calibration parameters are missing</p></li>
+<li><p><a class="reference internal" href="utils.html#figaroh.utils.error_handling.CalibrationError" title="figaroh.utils.error_handling.CalibrationError"><strong>CalibrationError</strong></a> – If parameter creation fails</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">calibrator</span> <span class="o">=</span> <span class="n">BaseCalibration</span><span class="p">(</span><span class="n">robot</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">calibrator</span><span class="o">.</span><span class="n">load_param</span><span class="p">(</span><span class="s2">&quot;config.yaml&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">calibrator</span><span class="o">.</span><span class="n">create_param_list</span><span class="p">()</span>  <span class="c1"># Basic setup</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Or with specific joint configuration</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q_nominal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">nq</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">calibrator</span><span class="o">.</span><span class="n">create_param_list</span><span class="p">(</span><span class="n">q_nominal</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>calculate_base_kinematics_regressor: Core regressor computation
+add_base_name: Base frame naming utilities
+add_pee_name: End-effector frame naming utilities</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.get_pose_from_measure">
+<span class="sig-name descname"><span class="pre">get_pose_from_measure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.get_pose_from_measure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.get_pose_from_measure" title="Link to this definition"></a></dt>
+<dd><p>Calculate forward kinematics with calibrated parameters.</p>
+<p>Computes robot end-effector poses using the updated kinematic model
+with calibrated parameters. This method applies the calibration
+results to predict poses for the measured joint configurations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>res</strong> (<em>ndarray</em>) – Calibrated parameter vector containing kinematic
+corrections (geometric parameters, base transform,
+tool transform, etc.)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Predicted end-effector poses corresponding to the</dt><dd><p>measured joint configurations. Shape depends on the
+number of measurements and pose representation format.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Prerequisites:</dt><dd><ul class="simple">
+<li><p>Joint configurations must be loaded (q_measured available)</p></li>
+<li><p>Calibration parameters must be initialized</p></li>
+<li><p>Robot model must be properly configured</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># After calibration</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">calibrated_params</span> <span class="o">=</span> <span class="n">calibrator</span><span class="o">.</span><span class="n">LM_result</span><span class="o">.</span><span class="n">x</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">predicted_poses</span> <span class="o">=</span> <span class="n">calibrator</span><span class="o">.</span><span class="n">get_pose_from_measure</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">calibrated_params</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Compare with measured poses</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">errors</span> <span class="o">=</span> <span class="n">predicted_poses</span> <span class="o">-</span> <span class="n">calibrator</span><span class="o">.</span><span class="n">PEE_measured</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>calc_updated_fkm: Core forward kinematics computation function</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.initialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.initialize" title="Link to this definition"></a></dt>
+<dd><p>Initialize calibration data and parameters.</p>
+<p>Performs the initialization phase of calibration by:
+1. Loading measurement data from files
+2. Creating parameter list through base regressor analysis
+3. Identifying calibratable parameters using QR decomposition</p>
+<p>This method must be called before solve() to prepare the calibration
+problem. It handles data validation, parameter identification, and
+sets up the optimization problem structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> – If measurement data file not found</p></li>
+<li><p><strong>ValueError</strong> – If data format is invalid or incompatible</p></li>
+<li><p><strong>AssertionError</strong> – If required data dimensions don’t match</p></li>
+<li><p><a class="reference internal" href="utils.html#figaroh.utils.error_handling.CalibrationError" title="figaroh.utils.error_handling.CalibrationError"><strong>CalibrationError</strong></a> – If initialization fails</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Populates self.PEE_measured with measurement data</p></li>
+<li><p>Populates self.q_measured with joint configuration data</p></li>
+<li><p>Updates self.calib_config[“param_name”] with identified
+parameters</p></li>
+<li><p>Validates data consistency and dimensions</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">calibrator</span> <span class="o">=</span> <span class="n">TiagoCalibration</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s2">&quot;config.yaml&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">calibrator</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded </span><span class="si">{</span><span class="n">calibrator</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s1">&#39;NbSample&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> samples&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Calibrating </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">calibrator</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s1">&#39;param_name&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> &quot;</span>
+<span class="gp">... </span>      <span class="sa">f</span><span class="s2">&quot;parameters&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.load_data_set">
+<span class="sig-name descname"><span class="pre">load_data_set</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.load_data_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.load_data_set" title="Link to this definition"></a></dt>
+<dd><p>Load experimental measurement data for calibration.</p>
+<p>Reads measurement data from the specified data path and processes it
+for calibration use. This includes both pose measurements and
+corresponding joint configurations, with optional data filtering
+based on the deletion list.</p>
+<p>The method handles data preprocessing, validation, and formatting
+to ensure compatibility with the calibration algorithms. It serves
+as the primary data ingestion point for the calibration process.</p>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Sets self.PEE_measured with processed pose measurements</p></li>
+<li><p>Sets self.q_measured with corresponding joint configurations</p></li>
+<li><p>Applies data filtering if <a href="#id1"><span class="problematic" id="id2">self.del_list_</span></a> is specified</p></li>
+</ul>
+</dd>
+<dt>Prerequisites:</dt><dd><ul class="simple">
+<li><p>self._data_path must be set to valid measurement data location</p></li>
+<li><p>Robot model must be initialized</p></li>
+<li><p>Calibration parameters must be loaded</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> – If data files are not found at _data_path</p></li>
+<li><p><strong>ValueError</strong> – If data format is incompatible or corrupted</p></li>
+<li><p><strong>AttributeError</strong> – If required attributes are not initialized</p></li>
+<li><p><a class="reference internal" href="utils.html#figaroh.utils.error_handling.CalibrationError" title="figaroh.utils.error_handling.CalibrationError"><strong>CalibrationError</strong></a> – If data loading fails</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>load_data: Core data loading and processing function</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.load_param">
+<span class="sig-name descname"><span class="pre">load_param</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'calibration'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.load_param"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.load_param" title="Link to this definition"></a></dt>
+<dd><p>Load calibration parameters from YAML configuration file.</p>
+<p>This method supports both legacy YAML format and the new unified
+configuration format. It automatically detects the format type
+and applies the appropriate parser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_file</strong> (<em>str</em>) – Path to configuration file (legacy or unified)</p></li>
+<li><p><strong>setting_type</strong> (<em>str</em>) – Configuration section to load</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.plot_3d_poses">
+<span class="sig-name descname"><span class="pre">plot_3d_poses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">INCLUDE_UNCALIB</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.plot_3d_poses"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.plot_3d_poses" title="Link to this definition"></a></dt>
+<dd><p>Plot 3D poses comparing measured vs estimated poses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>INCLUDE_UNCALIB</strong> (<em>bool</em>) – Whether to include uncalibrated poses</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.plot_errors_distribution">
+<span class="sig-name descname"><span class="pre">plot_errors_distribution</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.plot_errors_distribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.plot_errors_distribution" title="Link to this definition"></a></dt>
+<dd><p>Plot error distribution analysis for calibration assessment.</p>
+<p>Creates bar plots showing pose error magnitudes across all samples
+and markers. This visualization helps identify problematic
+measurements, assess calibration quality, and detect outliers in
+the dataset.</p>
+<p>The plots display error magnitudes (in meters) for each sample,
+with separate subplots for each marker when multiple markers are used.</p>
+<dl class="simple">
+<dt>Prerequisites:</dt><dd><ul class="simple">
+<li><p>Calibration must be completed (STATUS == “CALIBRATED”)</p></li>
+<li><p>Error analysis must be computed (self._PEE_dist available)</p></li>
+</ul>
+</dd>
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Creates matplotlib figure with error distribution plots</p></li>
+<li><p>Figure remains open until explicitly closed or plt.show() called</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="utils.html#figaroh.utils.error_handling.CalibrationError" title="figaroh.utils.error_handling.CalibrationError"><strong>CalibrationError</strong></a> – If calibration has not been performed</p></li>
+<li><p><strong>AttributeError</strong> – If error analysis data is not available</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>plot_3d_poses: 3D visualization of pose comparisons
+calc_stddev: Error statistics computation</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.plot_joint_configurations">
+<span class="sig-name descname"><span class="pre">plot_joint_configurations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.plot_joint_configurations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.plot_joint_configurations" title="Link to this definition"></a></dt>
+<dd><p>Plot joint configurations within range bounds.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.plot_results">
+<span class="sig-name descname"><span class="pre">plot_results</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.plot_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.plot_results" title="Link to this definition"></a></dt>
+<dd><p>Generate comprehensive visualization plots for calibration results.</p>
+<p>Creates multiple visualization plots to analyze calibration quality:
+1. Error distribution plots showing residual patterns
+2. 3D pose visualizations comparing measured vs predicted poses
+3. Joint configuration analysis (currently commented)</p>
+<p>This method provides essential visual feedback for calibration
+assessment, helping users understand solution quality and identify
+potential issues with the calibration process.</p>
+<dl class="simple">
+<dt>Prerequisites:</dt><dd><ul class="simple">
+<li><p>Calibration must be completed (solve() called)</p></li>
+<li><p>Measurement data must be loaded</p></li>
+<li><p>Matplotlib backend must be configured</p></li>
+</ul>
+</dd>
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Displays plots using plt.show()</p></li>
+<li><p>May block execution until plots are closed</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>plot_errors_distribution: Individual error analysis plots
+plot_3d_poses: 3D pose comparison visualization</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.save_results">
+<span class="sig-name descname"><span class="pre">save_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'results'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.save_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.save_results" title="Link to this definition"></a></dt>
+<dd><p>Save calibration results using unified results manager.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outlier_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_logging</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.solve" title="Link to this definition"></a></dt>
+<dd><p>Execute the complete calibration process.</p>
+<p>This is the main entry point for calibration that:
+1. Runs the optimization algorithm via solve_optimisation()
+2. Optionally generates visualization plots if enabled
+3. Optionally saves results to files if enabled</p>
+<p>The method serves as a high-level orchestrator for the calibration
+workflow, delegating the actual optimization to solve_optimisation()
+and handling visualization based on user preferences.</p>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Updates calibration parameters through optimization</p></li>
+<li><p>Sets self.STATUS to “CALIBRATED” on successful completion</p></li>
+<li><p>May display plots if self.calib_config[“PLOT”] is True</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>solve_optimisation: Core optimization implementation
+plot: Visualization and analysis plotting</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.solve_optimisation">
+<span class="sig-name descname"><span class="pre">solve_optimisation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'lm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outlier_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_logging</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.solve_optimisation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.solve_optimisation" title="Link to this definition"></a></dt>
+<dd><p>Solve calibration optimization with robust outlier handling.</p>
+<p>This method implements a comprehensive optimization strategy:
+1. Sets up logging for progress tracking
+2. Iteratively removes outliers and re-optimizes
+3. Evaluates solution quality with detailed metrics
+4. Stores results for further analysis</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>var_init</strong> (<em>ndarray</em><em>, </em><em>optional</em>) – Initial parameter guess. If None,
+uses zero initialization.</p></li>
+<li><p><strong>max_iterations</strong> (<em>int</em>) – Maximum outlier removal iterations</p></li>
+<li><p><strong>outlier_threshold</strong> (<em>float</em>) – Outlier detection threshold (std devs)</p></li>
+<li><p><strong>enable_logging</strong> (<em>bool</em>) – Whether to enable terminal logging</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If optimization fails completely</p></li>
+<li><p><strong>AssertionError</strong> – If required data is not loaded</p></li>
+<li><p><a class="reference internal" href="utils.html#figaroh.utils.error_handling.CalibrationError" title="figaroh.utils.error_handling.CalibrationError"><strong>CalibrationError</strong></a> – If optimization fails</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Updates self.LM_result with optimization results</p></li>
+<li><p>Updates self.STATUS to “CALIBRATED” on success</p></li>
+<li><p>Creates self.evaluation_metrics with quality metrics</p></li>
+<li><p>Sets up logging if enabled</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="calibration-tools">
 <h2>calibration_tools<a class="headerlink" href="#calibration-tools" title="Link to this heading"></a></h2>
+<dl class="py function" id="module-figaroh.calibration.calibration_tools">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.add_base_name">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">add_base_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#add_base_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.add_base_name" title="Link to this definition"></a></dt>
+<dd><p>Add base frame parameters to parameter list.</p>
+<p>Updates calib_config[“param_name”] with base frame parameters depending on
+calibration model type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>calib_config</strong> – Parameter dictionary containing:
+- calib_model: “full_params” or “joint_offset”
+- param_name: List of parameter names to update</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><p>Modifies calib_config[“param_name”] in place by:
+- For full_params: Replaces first 6 entries with base parameters
+- For joint_offset: Prepends base parameters to list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.add_eemarker_frame">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">add_eemarker_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rpy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#add_eemarker_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.add_eemarker_frame" title="Link to this definition"></a></dt>
+<dd><p>Add a new frame attached to the end-effector.</p>
+<p>Creates and adds a fixed frame to the robot model at the end-effector location,
+typically used for marker or tool frames.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame_name</strong> (<em>str</em>) – Name for the new frame</p></li>
+<li><p><strong>p</strong> (<em>ndarray</em>) – 3D position offset from parent frame</p></li>
+<li><p><strong>rpy</strong> (<em>ndarray</em>) – Roll-pitch-yaw angles for frame orientation</p></li>
+<li><p><strong>model</strong> (<em>pin.Model</em>) – Robot model to add frame to</p></li>
+<li><p><strong>data</strong> (<em>pin.Data</em>) – Robot data structure</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ID of newly created frame</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Currently hardcoded to attach to “arm_7_joint”. This should be made
+configurable in future versions.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.add_pee_name">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">add_pee_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#add_pee_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.add_pee_name" title="Link to this definition"></a></dt>
+<dd><p>Add end-effector marker parameters to parameter list.</p>
+<p>Adds parameters for each active measurement DOF of each marker.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>calib_config</strong> – Parameter dictionary containing:
+- NbMarkers: Number of markers
+- measurability: List of booleans for active DOFs
+- param_name: List of parameter names to update</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><p>Modifies calib_config[“param_name”] in place by appending marker parameters
+in format: “{param_type}_{marker_num}”</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.calc_updated_fkm">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">calc_updated_fkm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#calc_updated_fkm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.calc_updated_fkm" title="Link to this definition"></a></dt>
+<dd><p>Update forward kinematics with world frame transformations.</p>
+<p>Specialized version that explicitly handles transformations between:
+1. World frame to start frame (wMo)
+2. Start frame to end frame (oMee)
+3. End frame to marker frame (eeMf)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>pin.Model</em>) – Robot model to update</p></li>
+<li><p><strong>data</strong> (<em>pin.Data</em>) – Robot data</p></li>
+<li><p><strong>var</strong> (<em>ndarray</em>) – Parameter vector matching calib_config[“param_name”]</p></li>
+<li><p><strong>q</strong> (<em>ndarray</em>) – Joint configurations matrix (n_samples, n_joints)</p></li>
+<li><p><strong>calib_config</strong> (<em>dict</em>) – Calibration parameters containing:
+- Frames and parameters from update_forward_kinematics()
+- NbMarkers=1 (only supports single marker)</p></li>
+<li><p><strong>verbose</strong> (<em>int</em><em>, </em><em>optional</em>) – Print update info. Defaults to 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Flattened marker measurements in world frame</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Excludes joint elasticity effects</p></li>
+<li><p>Requires base or end-effector parameters in param_name</p></li>
+<li><p>Validates all parameters are properly updated</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.calculate_base_kinematics_regressor">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">calculate_base_kinematics_regressor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_qr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#calculate_base_kinematics_regressor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.calculate_base_kinematics_regressor" title="Link to this definition"></a></dt>
+<dd><p>Calculate base regressor matrix for calibration parameters.</p>
+<p>Identifies base (identifiable) parameters by:
+1. Computing regressors with random/given configurations
+2. Eliminating unidentifiable parameters
+3. Finding independent regressor columns</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>q</strong> (<em>ndarray</em>) – Joint configurations matrix</p></li>
+<li><p><strong>model</strong> (<em>pin.Model</em>) – Robot model</p></li>
+<li><p><strong>data</strong> (<em>pin.Data</em>) – Robot data</p></li>
+<li><p><strong>calib_config</strong> (<em>dict</em>) – Contains calibration settings:
+- free_flyer: Whether base is floating
+- calib_model: Either “joint_offset” or “full_params”</p></li>
+<li><p><strong>tol_qr</strong> (<em>float</em><em>, </em><em>optional</em>) – QR decomposition tolerance. Defaults to TOL_QR.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Rrand_b (ndarray): Base regressor from random configs</p></li>
+<li><p>R_b (ndarray): Base regressor from given configs</p></li>
+<li><p>R_e (ndarray): Full regressor after eliminating unidentifiable params</p></li>
+<li><p>paramsrand_base (list): Names of base parameters from random configs</p></li>
+<li><p>paramsrand_e (list): Names of identifiable parameters</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Updates calib_config[“param_name”] with identified base parameters</p></li>
+<li><p>Prints regressor matrix shapes</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.calculate_identifiable_kinematics_model">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">calculate_identifiable_kinematics_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#calculate_identifiable_kinematics_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.calculate_identifiable_kinematics_model" title="Link to this definition"></a></dt>
+<dd><p>Calculate identifiable Jacobian and regressor matrices.</p>
+<p>Builds aggregated Jacobian and regressor matrices from either:
+1. Given set of configurations, or
+2. Random configurations if none provided</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>q</strong> (<em>ndarray</em><em>, </em><em>optional</em>) – Joint configurations matrix. If empty, uses random configs.</p></li>
+<li><p><strong>model</strong> (<em>pin.Model</em>) – Robot model</p></li>
+<li><p><strong>data</strong> (<em>pin.Data</em>) – Robot data</p></li>
+<li><p><strong>calib_config</strong> (<em>dict</em>) – Parameters containing:
+- NbSample: Number of configurations
+- calibration_index: Number of active DOFs
+- start_frame, end_frame: Frame names
+- calib_model: Model type</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Either:</dt><dd><ul class="simple">
+<li><p>Joint offset case: Frame Jacobian matrix</p></li>
+<li><p>Full params case: Kinematic regressor matrix</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Removes rows corresponding to inactive DOFs and zero elements</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.calculate_kinematics_model">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">calculate_kinematics_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#calculate_kinematics_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.calculate_kinematics_model" title="Link to this definition"></a></dt>
+<dd><p>Calculate Jacobian and kinematic regressor for single configuration.</p>
+<p>Computes frame Jacobian and kinematic regressor matrices for tool frame
+at given joint configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>q_i</strong> (<em>ndarray</em>) – Joint configuration vector</p></li>
+<li><p><strong>model</strong> (<em>pin.Model</em>) – Robot model</p></li>
+<li><p><strong>data</strong> (<em>pin.Data</em>) – Robot data</p></li>
+<li><p><strong>calib_config</strong> (<em>dict</em>) – Parameters containing “IDX_TOOL” frame index</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>model (pin.Model): Updated model</p></li>
+<li><p>data (pin.Data): Updated data</p></li>
+<li><p>R (ndarray): (6,6n) Kinematic regressor matrix</p></li>
+<li><p>J (ndarray): (6,n) Frame Jacobian matrix</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.cartesian_to_SE3">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">cartesian_to_SE3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#cartesian_to_SE3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.cartesian_to_SE3" title="Link to this definition"></a></dt>
+<dd><p>Convert cartesian coordinates to SE3 transformation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>ndarray</em>) – (6,) array with [x,y,z,rx,ry,rz] coordinates</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>SE3 transformation with:</dt><dd><ul class="simple">
+<li><p>translation from X[0:3]</p></li>
+<li><p>rotation matrix from RPY angles X[3:6]</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pin.SE3</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.get_fullparam_offset">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">get_fullparam_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">joint_names</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#get_fullparam_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.get_fullparam_offset" title="Link to this definition"></a></dt>
+<dd><p>Get dictionary of geometric parameter variations.</p>
+<p>Creates mapping of geometric offset parameters for each joint’s
+position and orientation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>joint_names</strong> – List of joint names from robot model</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Mapping of geometric parameter names to initial zero values.</dt><dd><p>Keys have format: “d_{param}_{joint_name}” where param is:
+- px, py, pz: Position offsets
+- phix, phiy, phiz: Orientation offsets</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">geo_params</span> <span class="o">=</span> <span class="n">get_fullparam_offset</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">geo_params</span><span class="p">[</span><span class="s2">&quot;d_px_joint1&quot;</span><span class="p">])</span>
+<span class="go">0.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.get_idxq_from_jname">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">get_idxq_from_jname</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#get_idxq_from_jname"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.get_idxq_from_jname" title="Link to this definition"></a></dt>
+<dd><p>Get index of joint in configuration vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>pin.Model</em>) – Robot model</p></li>
+<li><p><strong>joint_name</strong> (<em>str</em>) – Name of joint to find index for</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Index of joint in configuration vector q</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – If joint name does not exist in model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.get_joint_offset">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">get_joint_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_names</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#get_joint_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.get_joint_offset" title="Link to this definition"></a></dt>
+<dd><p>Get dictionary of joint offset parameters.</p>
+<p>Maps joint names to their offset parameters, handling special cases for
+different joint types and multiple DOF joints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – Pinocchio robot model</p></li>
+<li><p><strong>joint_names</strong> – List of joint names from model.names</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Mapping of joint offset parameter names to initial zero values.</dt><dd><p>Keys have format: “{offset_type}_{joint_name}”</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">offsets</span> <span class="o">=</span> <span class="n">get_joint_offset</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">offsets</span><span class="p">[</span><span class="s2">&quot;offsetRZ_joint1&quot;</span><span class="p">])</span>
+<span class="go">0.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.get_param_from_yaml">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">get_param_from_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_data</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#get_param_from_yaml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.get_param_from_yaml" title="Link to this definition"></a></dt>
+<dd><p>Parse calibration parameters from YAML configuration file.</p>
+<p>Processes robot and calibration data to build a parameter dictionary containing
+all necessary settings for robot calibration. Handles configuration of:
+- Frame identifiers and relationships
+- Marker/measurement settings
+- Joint indices and configurations
+- Non-geometric parameters
+- Eye-hand calibration setup</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>robot</strong> (<em>pin.RobotWrapper</em>) – Robot instance containing model and data</p></li>
+<li><p><strong>calib_data</strong> (<em>dict</em>) – Calibration parameters parsed from YAML file containing:
+- markers: List of marker configurations
+- calib_level: Calibration model type
+- base_frame: Starting frame name
+- tool_frame: End frame name
+- free_flyer: Whether base is floating
+- non_geom: Whether to include non-geometric params</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Parameter dictionary containing:</dt><dd><ul class="simple">
+<li><p>robot_name: Name of robot model</p></li>
+<li><p>NbMarkers: Number of markers</p></li>
+<li><p>measurability: Measurement DOFs per marker</p></li>
+<li><p>start_frame, end_frame: Frame names</p></li>
+<li><p>base_to_ref_frame: Optional camera frame</p></li>
+<li><p>IDX_TOOL: Tool frame index</p></li>
+<li><p>actJoint_idx: Active joint indices</p></li>
+<li><p>param_name: List of parameter names</p></li>
+<li><p>Additional settings from YAML</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><p>Prints warning messages if optional frames undefined
+Prints final parameter dictionary</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">calib_data</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">params</span> <span class="o">=</span> <span class="n">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;NbMarkers&#39;</span><span class="p">])</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.get_param_from_yaml_legacy">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">get_param_from_yaml_legacy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_data</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#get_param_from_yaml_legacy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.get_param_from_yaml_legacy" title="Link to this definition"></a></dt>
+<dd><p>Legacy calibration parameter parser - kept for backward compatibility.</p>
+<p>This is the original implementation. New code should use the unified
+config parser from figaroh.utils.config_parser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>robot</strong> – Robot instance</p></li>
+<li><p><strong>calib_data</strong> – Calibration data dictionary</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Calibration configuration dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.get_param_from_yaml_unified">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">get_param_from_yaml_unified</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_data</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#get_param_from_yaml_unified"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.get_param_from_yaml_unified" title="Link to this definition"></a></dt>
+<dd><p>Enhanced parameter parser using unified configuration system.</p>
+<p>This function provides backward compatibility while using the new
+unified configuration parser when possible.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>robot</strong> – Robot instance</p></li>
+<li><p><strong>calib_data</strong> – Configuration data (dict or file path)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Calibration configuration dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.get_param_from_yaml_with_warning">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">get_param_from_yaml_with_warning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_data</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#get_param_from_yaml_with_warning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.get_param_from_yaml_with_warning" title="Link to this definition"></a></dt>
+<dd><p>Original function with deprecation notice.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.get_rel_jac">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">get_rel_jac</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#get_rel_jac"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.get_rel_jac" title="Link to this definition"></a></dt>
+<dd><p>Calculate relative Jacobian matrix between two frames.</p>
+<p>Computes the difference between Jacobians of end_frame and start_frame,
+giving the differential mapping from joint velocities to relative spatial velocity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>pin.Model</em>) – Robot model</p></li>
+<li><p><strong>data</strong> (<em>pin.Data</em>) – Robot data</p></li>
+<li><p><strong>start_frame</strong> (<em>str</em>) – Starting frame name</p></li>
+<li><p><strong>end_frame</strong> (<em>str</em>) – Target frame name</p></li>
+<li><p><strong>q</strong> (<em>ndarray</em>) – Joint configuration vector</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>(6, n) relative Jacobian matrix where:</dt><dd><ul class="simple">
+<li><p>Rows represent [dx,dy,dz,wx,wy,wz] spatial velocities</p></li>
+<li><p>Columns represent joint velocities</p></li>
+<li><p>n is number of joints</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Updates forward kinematics before computing Jacobians</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.get_rel_kinreg">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">get_rel_kinreg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#get_rel_kinreg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.get_rel_kinreg" title="Link to this definition"></a></dt>
+<dd><p>Calculate relative kinematic regressor between frames.</p>
+<p>Computes frame Jacobian-based regressor matrix mapping small joint displacements
+to spatial velocities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>pin.Model</em>) – Robot model</p></li>
+<li><p><strong>data</strong> (<em>pin.Data</em>) – Robot data</p></li>
+<li><p><strong>start_frame</strong> (<em>str</em>) – Starting frame name</p></li>
+<li><p><strong>end_frame</strong> (<em>str</em>) – Target frame name</p></li>
+<li><p><strong>q</strong> (<em>ndarray</em>) – Joint configuration vector</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(6, 6n) regressor matrix for n joints</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.get_rel_transform">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">get_rel_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_frame</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#get_rel_transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.get_rel_transform" title="Link to this definition"></a></dt>
+<dd><p>Get relative transformation between two frames.</p>
+<p>Calculates the transform from start_frame to end_frame in the kinematic chain.
+Assumes forward kinematics has been updated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>pin.Model</em>) – Robot model</p></li>
+<li><p><strong>data</strong> (<em>pin.Data</em>) – Robot data</p></li>
+<li><p><strong>start_frame</strong> (<em>str</em>) – Starting frame name</p></li>
+<li><p><strong>end_frame</strong> (<em>str</em>) – Target frame name</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Relative transformation sMt from start to target frame</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pin.SE3</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – If frame names don’t exist in model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.get_sup_joints">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">get_sup_joints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_frame</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#get_sup_joints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.get_sup_joints" title="Link to this definition"></a></dt>
+<dd><p>Get list of supporting joints between two frames in kinematic chain.</p>
+<p>Finds all joints that contribute to relative motion between start_frame and
+end_frame by analyzing their support branches in the kinematic tree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>pin.Model</em>) – Robot model</p></li>
+<li><p><strong>start_frame</strong> (<em>str</em>) – Name of starting frame</p></li>
+<li><p><strong>end_frame</strong> (<em>str</em>) – Name of ending frame</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Joint IDs ordered from start to end frame, handling cases:</dt><dd><ol class="arabic simple">
+<li><p>Branch entirely contained in another branch</p></li>
+<li><p>Disjoint branches with fixed root</p></li>
+<li><p>Partially overlapping branches</p></li>
+</ol>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[int]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – If end frame appears before start frame in chain</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Excludes “universe” joints from returned list since they don’t
+contribute to relative motion.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.initialize_variables">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">initialize_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#initialize_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.initialize_variables" title="Link to this definition"></a></dt>
+<dd><p>Initialize variables for Levenberg-Marquardt optimization.</p>
+<p>Creates initial parameter vector either as zeros or random values within bounds.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>calib_config</strong> (<em>dict</em>) – Parameter dictionary containing:
+- param_name: List of parameter names to initialize</p></li>
+<li><p><strong>mode</strong> (<em>int</em><em>, </em><em>optional</em>) – Initialization mode:
+- 0: Zero initialization
+- 1: Random uniform initialization. Defaults to 0.</p></li>
+<li><p><strong>seed</strong> (<em>float</em><em>, </em><em>optional</em>) – Range [-seed,seed] for random init. Defaults to 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>var (ndarray): Initial parameter vector</p></li>
+<li><p>nvar (int): Number of parameters</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">var</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">initialize_variables</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(42,)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.load_data">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">del_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.load_data" title="Link to this definition"></a></dt>
+<dd><p>Load joint configuration and marker data from CSV file.</p>
+<p>Reads marker positions/orientations and joint configurations from a CSV file.
+Handles data validation, bad sample removal, and conversion to numpy arrays.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_to_file</strong> (<em>str</em>) – Path to CSV file containing recorded data</p></li>
+<li><p><strong>model</strong> (<em>pin.Model</em>) – Robot model containing joint information</p></li>
+<li><p><strong>calib_config</strong> (<em>dict</em>) – Parameter dictionary containing:
+- NbMarkers: Number of markers to load
+- measurability: List indicating which DOFs are measured
+- actJoint_idx: List of active joint indices
+- config_idx: Configuration vector indices
+- q0: Default configuration vector</p></li>
+<li><p><strong>del_list</strong> (<em>list</em><em>, </em><em>optional</em>) – Indices of bad samples to remove. Defaults to [].</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>PEEm_exp (ndarray): Flattened marker measurements of shape (n_active_dofs,)</p></li>
+<li><p>q_exp (ndarray): Joint configurations of shape (n_samples, n_joints)</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>CSV file must contain columns:
+- For each marker i: [xi, yi, zi, phixi, phiyi, phizi]
+- Joint names matching model.names for active joints</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>KeyError</strong> – If required columns are missing from CSV</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Prints joint headers</p></li>
+<li><p>Updates calib_config[“NbSample”] with number of valid samples</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.read_config_data">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">read_config_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#read_config_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.read_config_data" title="Link to this definition"></a></dt>
+<dd><p>Read joint configurations from CSV file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>pin.Model</em>) – Robot model containing joint information</p></li>
+<li><p><strong>path_to_file</strong> (<em>str</em>) – Path to CSV file containing joint configurations</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Matrix of shape (n_samples, n_joints-1) containing joint positions</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.unified_to_legacy_config">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">unified_to_legacy_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unified_calib_config</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#unified_to_legacy_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.unified_to_legacy_config" title="Link to this definition"></a></dt>
+<dd><p>Convert unified configuration format to legacy calib_config format.</p>
+<p>Maps the new unified configuration structure to the exact format expected
+by get_param_from_yaml. This ensures backward compatibility while using
+the new unified parser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>robot</strong> (<em>pin.RobotWrapper</em>) – Robot instance containing model and data</p></li>
+<li><p><strong>unified_calib_config</strong> (<em>dict</em>) – Configuration from create_task_config</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Legacy format calibration configuration matching</dt><dd><p>get_param_from_yaml output</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>KeyError</strong> – If required fields are missing from unified config</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">unified_config</span> <span class="o">=</span> <span class="n">create_task_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">parsed_config</span><span class="p">,</span>
+<span class="gp">... </span>                                   <span class="s2">&quot;calibration&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">legacy_config</span> <span class="o">=</span> <span class="n">unified_to_legacy_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_config</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.update_forward_kinematics">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">update_forward_kinematics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#update_forward_kinematics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.update_forward_kinematics" title="Link to this definition"></a></dt>
+<dd><p>Update forward kinematics with calibration parameters.</p>
+<p>Applies geometric and kinematic error parameters to update joint placements
+and compute end-effector poses. Handles:
+1. Base/camera transformations
+2. Joint placement offsets
+3. End-effector marker frames
+4. Joint elasticity effects</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>pin.Model</em>) – Robot model to update</p></li>
+<li><p><strong>data</strong> (<em>pin.Data</em>) – Robot data</p></li>
+<li><p><strong>var</strong> (<em>ndarray</em>) – Parameter vector matching calib_config[“param_name”]</p></li>
+<li><p><strong>q</strong> (<em>ndarray</em>) – Joint configurations matrix (n_samples, n_joints)</p></li>
+<li><p><strong>calib_config</strong> (<em>dict</em>) – Calibration parameters containing:
+- calib_model: “full_params” or “joint_offset”
+- start_frame, end_frame: Frame names
+- actJoint_idx: Active joint indices
+- measurability: Active DOFs</p></li>
+<li><p><strong>verbose</strong> (<em>int</em><em>, </em><em>optional</em>) – Print update info. Defaults to 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Flattened end-effector measurements for all samples</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Modifies model joint placements temporarily</p></li>
+<li><p>Reverts model to original state before returning</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.update_joint_placement">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">update_joint_placement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xyz_rpy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#update_joint_placement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.update_joint_placement" title="Link to this definition"></a></dt>
+<dd><p>Update joint placement with offset parameters.</p>
+<p>Modifies a joint’s placement transform by adding position and orientation offsets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>pin.Model</em>) – Robot model to modify</p></li>
+<li><p><strong>joint_idx</strong> (<em>int</em>) – Index of joint to update</p></li>
+<li><p><strong>xyz_rpy</strong> (<em>ndarray</em>) – (6,) array of offsets:
+- xyz_rpy[0:3]: Translation offsets (x,y,z)
+- xyz_rpy[3:6]: Rotation offsets (roll,pitch,yaw)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Updated robot model</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pin.Model</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><p>Modifies model.jointPlacements[joint_idx] in place</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.xyzquat_to_SE3">
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">xyzquat_to_SE3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyzquat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#xyzquat_to_SE3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.xyzquat_to_SE3" title="Link to this definition"></a></dt>
+<dd><p>Convert XYZ position and quaternion orientation to SE3 transformation.</p>
+<p>Takes a 7D vector containing XYZ position and WXYZ quaternion and creates
+an SE3 transformation matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>xyzquat</strong> (<em>ndarray</em>) – (7,) array containing:
+- xyzquat[0:3]: XYZ position coordinates
+- xyzquat[3:7]: WXYZ quaternion orientation</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Rigid body transformation with:</dt><dd><ul class="simple">
+<li><p>Translation from XYZ position</p></li>
+<li><p>Rotation matrix from normalized quaternion</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pin.SE3</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pos_quat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">transform</span> <span class="o">=</span> <span class="n">xyzquat_to_SE3</span><span class="p">(</span><span class="n">pos_quat</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 </section>
 
