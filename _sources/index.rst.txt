@@ -7,10 +7,18 @@ is a comprehensive Python toolbox for robot calibration and identification.
 **Key Features:**
 - Dynamic parameter identification for rigid multi-body systems
 - Geometric calibration for serial and tree-structure robots  
+- **Advanced linear solver with 10 methods** (lstsq, QR, SVD, Ridge, Lasso, Elastic Net, Tikhonov, constrained, robust, weighted)
+- **Regularization and constraint optimization** (L1/L2 regularization, box constraints, linear equality/inequality)
 - Unified configuration system with template inheritance
 - Advanced regressor computation with object-oriented design
 - Support for URDF modeling convention
 - Extensive examples and tutorials
+
+**What's New in v0.3.0:**
+- Advanced linear solver for robot parameter identification
+- Module reorganization for better maintainability
+- Enhanced BaseIdentification with flexible solver methods
+- Comprehensive test coverage with 18 unit tests
 
 **Quick Links:**
 - `PyPI Package <https://pypi.org/project/figaroh/>`_

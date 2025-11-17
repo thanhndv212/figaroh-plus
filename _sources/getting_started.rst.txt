@@ -143,6 +143,50 @@ Configuration Management
     calib_config = parser.create_task_config(robot, config, "calibration")
     identif_config = parser.create_task_config(robot, config, "identification")
 
+Advanced Linear Solver (New in v0.3.0)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+    from figaroh.tools.solver import LinearSolver, solve_linear_system
+    
+    # Basic usage with convenience function
+    result = solve_linear_system(
+        A, b, 
+        method='ridge',
+        alpha=0.01
+    )
+    x = result['solution']
+    
+    # Advanced usage with constraints
+    solver = LinearSolver()
+    result = solver.solve(
+        A, b,
+        method='constrained',
+        bounds=(0, None),  # Positive constraints
+        A_eq=A_eq, b_eq=b_eq,  # Equality constraints
+        alpha=0.1  # Regularization
+    )
+    
+    # Access quality metrics
+    print(f"RMSE: {result['rmse']:.4f}")
+    print(f"R²: {result['r_squared']:.4f}")
+    print(f"Condition number: {result['condition_number']:.2e}")
+    
+    # Use in identification workflow
+    from figaroh.identification import BaseIdentification
+    
+    identification = BaseIdentification(robot, config)
+    identification.load_data("data/identification_data.csv")
+    
+    # Solve with custom solver and regularization
+    params = identification.solve_with_custom_solver(
+        method='elastic_net',
+        alpha=0.01,
+        l1_ratio=0.5,
+        bounds=(0, None)  # Physical constraints
+    )
+
 Next Steps
 ---------
 

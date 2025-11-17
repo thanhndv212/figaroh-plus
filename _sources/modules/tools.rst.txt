@@ -1,6 +1,21 @@
 Tools
 =====
 
+Advanced Linear Solver (New in v0.3.0)
+--------------------------------------
+.. automodule:: figaroh.tools.solver
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+The linear solver provides comprehensive solving methods for robot parameter identification:
+
+- **Basic methods**: lstsq, QR decomposition, SVD
+- **Regularized methods**: Ridge (L2), Lasso (L1), Elastic Net, Tikhonov
+- **Advanced methods**: Constrained optimization, robust regression, weighted least squares
+- **Constraint support**: Box constraints, linear equality/inequality constraints
+- **Quality metrics**: RMSE, R², condition number, residual analysis
+
 Robot Management
 ---------------
 .. automodule:: figaroh.tools.robot

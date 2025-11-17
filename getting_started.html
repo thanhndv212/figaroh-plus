@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Getting Started &mdash; figaroh 0.1.0 documentation</title>
+  <title>Getting Started &mdash; figaroh 0.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
@@ -14,7 +14,7 @@
     <link rel="canonical" href="https://thanhndv212.github.io/figaroh/getting_started.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/documentation_options.js?v=e259d695"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -57,6 +57,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#basic-identification">Basic Identification</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#advanced-regressor-building">Advanced Regressor Building</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#configuration-management">Configuration Management</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#advanced-linear-solver-new-in-v0-3-0">Advanced Linear Solver (New in v0.3.0)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next Steps</a></li>
@@ -231,6 +232,49 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
 <span class="c1"># Create task-specific configuration</span>
 <span class="n">calib_config</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">create_task_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;calibration&quot;</span><span class="p">)</span>
 <span class="n">identif_config</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">create_task_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;identification&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="advanced-linear-solver-new-in-v0-3-0">
+<h3>Advanced Linear Solver (New in v0.3.0)<a class="headerlink" href="#advanced-linear-solver-new-in-v0-3-0" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.solver</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearSolver</span><span class="p">,</span> <span class="n">solve_linear_system</span>
+
+<span class="c1"># Basic usage with convenience function</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">solve_linear_system</span><span class="p">(</span>
+    <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ridge&#39;</span><span class="p">,</span>
+    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span>
+<span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;solution&#39;</span><span class="p">]</span>
+
+<span class="c1"># Advanced usage with constraints</span>
+<span class="n">solver</span> <span class="o">=</span> <span class="n">LinearSolver</span><span class="p">()</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span>
+    <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;constrained&#39;</span><span class="p">,</span>
+    <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>  <span class="c1"># Positive constraints</span>
+    <span class="n">A_eq</span><span class="o">=</span><span class="n">A_eq</span><span class="p">,</span> <span class="n">b_eq</span><span class="o">=</span><span class="n">b_eq</span><span class="p">,</span>  <span class="c1"># Equality constraints</span>
+    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span>  <span class="c1"># Regularization</span>
+<span class="p">)</span>
+
+<span class="c1"># Access quality metrics</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RMSE: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;rmse&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;R²: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;r_squared&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Condition number: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;condition_number&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Use in identification workflow</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.identification</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseIdentification</span>
+
+<span class="n">identification</span> <span class="o">=</span> <span class="n">BaseIdentification</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+<span class="n">identification</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="s2">&quot;data/identification_data.csv&quot;</span><span class="p">)</span>
+
+<span class="c1"># Solve with custom solver and regularization</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">identification</span><span class="o">.</span><span class="n">solve_with_custom_solver</span><span class="p">(</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;elastic_net&#39;</span><span class="p">,</span>
+    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="n">l1_ratio</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># Physical constraints</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </section>

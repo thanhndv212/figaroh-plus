@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to FIGAROH’s documentation! &mdash; figaroh 0.1.0 documentation</title>
+  <title>Welcome to FIGAROH’s documentation! &mdash; figaroh 0.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
@@ -14,7 +14,7 @@
     <link rel="canonical" href="https://thanhndv212.github.io/figaroh/index.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/documentation_options.js?v=e259d695"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -94,10 +94,17 @@ is a comprehensive Python toolbox for robot calibration and identification.</p>
 <p><strong>Key Features:</strong>
 - Dynamic parameter identification for rigid multi-body systems
 - Geometric calibration for serial and tree-structure robots
+- <strong>Advanced linear solver with 10 methods</strong> (lstsq, QR, SVD, Ridge, Lasso, Elastic Net, Tikhonov, constrained, robust, weighted)
+- <strong>Regularization and constraint optimization</strong> (L1/L2 regularization, box constraints, linear equality/inequality)
 - Unified configuration system with template inheritance
 - Advanced regressor computation with object-oriented design
 - Support for URDF modeling convention
 - Extensive examples and tutorials</p>
+<p><strong>What’s New in v0.3.0:</strong>
+- Advanced linear solver for robot parameter identification
+- Module reorganization for better maintainability
+- Enhanced BaseIdentification with flexible solver methods
+- Comprehensive test coverage with 18 unit tests</p>
 <p><strong>Quick Links:</strong>
 - <a class="reference external" href="https://pypi.org/project/figaroh/">PyPI Package</a>
 - <a class="reference external" href="https://github.com/thanhndv212/figaroh-examples">Examples Repository</a>
@@ -120,11 +127,16 @@ is a comprehensive Python toolbox for robot calibration and identification.</p>
 <li class="toctree-l1"><a class="reference internal" href="modules/calibration.html">Calibration</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="modules/calibration.html#base-calibration">base_calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules/calibration.html#calibration-tools">calibration_tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/calibration.html#configuration-management-new-in-v0-3-0">Configuration Management (New in v0.3.0)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/calibration.html#parameter-management-new-in-v0-3-0">Parameter Management (New in v0.3.0)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/calibration.html#data-loading-new-in-v0-3-0">Data Loading (New in v0.3.0)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modules/identification.html">Identification</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="modules/identification.html#base-identification">base_identification</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules/identification.html#identification-tools">identification_tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/identification.html#configuration-management-new-in-v0-3-0">Configuration Management (New in v0.3.0)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/identification.html#parameter-management-new-in-v0-3-0">Parameter Management (New in v0.3.0)</a></li>
 </ul>
 </li>
 </ul>
@@ -133,10 +145,11 @@ is a comprehensive Python toolbox for robot calibration and identification.</p>
 <p class="caption" role="heading"><span class="caption-text">Tools and Utilities:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="modules/tools.html">Tools</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="modules/tools.html#advanced-linear-solver-new-in-v0-3-0">Advanced Linear Solver (New in v0.3.0)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules/tools.html#robot-management">Robot Management</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules/tools.html#enhanced-regressor-builder">Enhanced Regressor Builder</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules/tools.html#robot-visualization">Robot Visualization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="modules/tools.html#module-figaroh.tools.robotcollisions">Robot Collisions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/tools.html#robot-collisions">Robot Collisions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules/tools.html#qr-decomposition">QR Decomposition</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules/tools.html#robot-ipopt">Robot IPOPT</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules/tools.html#random-data-generation">Random Data Generation</a></li>
@@ -146,7 +159,7 @@ is a comprehensive Python toolbox for robot calibration and identification.</p>
 <li class="toctree-l2"><a class="reference internal" href="modules/utils.html#configuration-parser">Configuration Parser</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules/utils.html#cubic-spline">Cubic Spline</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules/utils.html#results-manager">Results Manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="modules/utils.html#module-figaroh.utils.error_handling">Error Handling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/utils.html#error-handling">Error Handling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modules/measurements.html">Measurements</a><ul>
@@ -163,11 +176,9 @@ is a comprehensive Python toolbox for robot calibration and identification.</p>
 <p class="caption" role="heading"><span class="caption-text">Advanced Features:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="modules/optimal.html">figaroh.optimal package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="modules/optimal.html#figaroh.optimal.BaseOptimalCalibration"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="modules/optimal.html#figaroh.optimal.BaseOptimalTrajectory"><code class="docutils literal notranslate"><span class="pre">BaseOptimalTrajectory</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules/optimal.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="modules/optimal.html#module-figaroh.optimal.base_optimal_calibration">figaroh.optimal.base_optimal_calibration module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="modules/optimal.html#module-figaroh.optimal.base_optimal_trajectory">figaroh.optimal.base_optimal_trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/optimal.html#figaroh-optimal-base-optimal-calibration-module">figaroh.optimal.base_optimal_calibration module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/optimal.html#figaroh-optimal-base-optimal-trajectory-module">figaroh.optimal.base_optimal_trajectory module</a></li>
 </ul>
 </li>
 </ul>
