@@ -92,6 +92,15 @@ def get_param_from_yaml(robot, identif_data):
         "mass_load": tls_params["mass_load"],
         "which_body_loaded": tls_params["which_body_loaded"],
     }
+
+    # Optional physical consistency configuration (v0.4.1, default-off)
+    physical_consistency = identif_data.get("physical_consistency")
+    if isinstance(physical_consistency, list):
+        physical_consistency = (
+            physical_consistency[0] if physical_consistency else None
+        )
+    if isinstance(physical_consistency, dict):
+        identif_config["physical_consistency"] = physical_consistency
     return identif_config
 
 
@@ -146,6 +155,13 @@ def unified_to_legacy_identif_config(robot, unified_identif_config) -> dict:
 
     # 7. Extract load parameters (defaults)
     _extract_load_params(identif_config)
+
+    # 8. Optional physical consistency configuration (v0.4.1, default-off)
+    physical_consistency = unified_identif_config.get(
+        "physical_consistency", {}
+    )
+    if isinstance(physical_consistency, dict) and physical_consistency:
+        identif_config["physical_consistency"] = physical_consistency
 
     return identif_config
 

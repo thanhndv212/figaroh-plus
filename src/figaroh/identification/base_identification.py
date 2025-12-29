@@ -23,6 +23,7 @@ import logging
 import yaml
 import numpy as np
 from abc import ABC, abstractmethod
+import dataclasses
 
 # Setup logger for this module
 logger = logging.getLogger(__name__)
@@ -902,6 +903,9 @@ class BaseIdentification(ABC):
             "task type": "identification"
         }
 
+        # Optional physical-consistency post-processing (default-off)
+        self._apply_physical_consistency_if_enabled(identif_results)
+
         # Initialize ResultsManager for identification task
         try:
             from figaroh.utils.results_manager import ResultsManager
@@ -920,6 +924,167 @@ class BaseIdentification(ABC):
         except ImportError as e:
             logger.warning(f"ResultsManager not available: {e}")
             self.results_manager = None
+
+    def _apply_physical_consistency_if_enabled(self, identif_results):
+        pc_cfg = {}
+        raw_cfg = getattr(self, "identif_config", {}).get(
+            "physical_consistency", {}
+        )
+        if isinstance(raw_cfg, dict):
+            pc_cfg.update(raw_cfg)
+
+        # Backward-compatible flat keys (if user sets them)
+        legacy_enabled = getattr(self, "identif_config", {}).get(
+            "physical_consistency_enabled", None
+        )
+        if legacy_enabled is not None:
+            pc_cfg["enabled"] = bool(legacy_enabled)
+
+        enabled = bool(pc_cfg.get("enabled", False))
+        if not enabled:
+            return
+
+        mass_min = float(pc_cfg.get("mass_min", 1e-6))
+        psd_eig_tol = float(pc_cfg.get("psd_eig_tol", -1e-10))
+        solver = str(pc_cfg.get("solver", "cvxopt"))
+        verbose = bool(pc_cfg.get("verbose", False))
+        max_seconds = pc_cfg.get("max_seconds", None)
+        if max_seconds is not None:
+            max_seconds = float(max_seconds)
+        skip_if_feasible = bool(pc_cfg.get("skip_if_feasible", True))
+
+        # Prefer explicitly provided parameter dicts from the solver output,
+        # otherwise fall back to the model's standard parameters.
+        source_label = "standard_parameter"
+        parameter_dict = getattr(self, "standard_parameter", None)
+        if isinstance(identif_results, dict):
+            if isinstance(identif_results.get("parameter_dict"), dict):
+                source_label = "identif_results.parameter_dict"
+                parameter_dict = identif_results["parameter_dict"]
+            elif isinstance(
+                identif_results.get("standard_parameter_dict"), dict
+            ):
+                source_label = "identif_results.standard_parameter_dict"
+                parameter_dict = identif_results["standard_parameter_dict"]
+
+        if not isinstance(parameter_dict, dict):
+            self.result["physical consistency"] = {
+                "enabled": True,
+                "status": "skipped",
+                "reason": "no parameter_dict available",
+            }
+            return
+
+        joint_names = pc_cfg.get("joints", None)
+        if joint_names is None:
+            joint_names = list(self.model.names[1:])
+
+        try:
+            from figaroh.identification.physical_consistency import (
+                check_p10_feasibility,
+                param_dict_with_p10_by_joint,
+                p10_by_joint_from_param_dict,
+                project_robot_p10_lmi,
+            )
+        except Exception as e:
+            self.result["physical consistency"] = {
+                "enabled": True,
+                "status": "unavailable",
+                "reason": f"import failed: {e}",
+            }
+            return
+
+        # Build per-joint p10 vectors
+        try:
+            p10_by_joint = p10_by_joint_from_param_dict(
+                parameter_dict=parameter_dict,
+                joint_names=joint_names,
+            )
+        except KeyError as e:
+            self.result["physical consistency"] = {
+                "enabled": True,
+                "status": "skipped",
+                "reason": f"missing inertial keys: {e}",
+                "source": source_label,
+            }
+            return
+
+        # Always compute feasibility diagnostics (cheap)
+        feasibility = {
+            joint: dataclasses.asdict(
+                check_p10_feasibility(
+                    p10,
+                    mass_min=mass_min,
+                    psd_eig_tol=psd_eig_tol,
+                )
+            )
+            for joint, p10 in p10_by_joint.items()
+        }
+
+        if skip_if_feasible and all(
+            rep.get("status") == "feasible" for rep in feasibility.values()
+        ):
+            self.result["physical consistency"] = {
+                "enabled": True,
+                "status": "already_feasible",
+                "source": source_label,
+                "solver": solver,
+                "mass_min": mass_min,
+                "psd_eig_tol": psd_eig_tol,
+                "feasibility": feasibility,
+                "projected parameters": dict(parameter_dict),
+            }
+            return
+
+        # Project using SDP (requires picos backend)
+        try:
+            projected_p10_by_joint, robot_report = project_robot_p10_lmi(
+                p10_by_link=p10_by_joint,
+                mass_min=mass_min,
+                psd_eig_tol=psd_eig_tol,
+                solver=solver,
+                verbose=verbose,
+                max_seconds=max_seconds,
+            )
+        except ImportError as e:
+            self.result["physical consistency"] = {
+                "enabled": True,
+                "status": "unavailable",
+                "source": source_label,
+                "reason": str(e),
+                "mass_min": mass_min,
+                "psd_eig_tol": psd_eig_tol,
+                "feasibility": feasibility,
+            }
+            return
+        except Exception as e:
+            self.result["physical consistency"] = {
+                "enabled": True,
+                "status": "error",
+                "source": source_label,
+                "reason": str(e),
+                "mass_min": mass_min,
+                "psd_eig_tol": psd_eig_tol,
+                "feasibility": feasibility,
+            }
+            return
+
+        projected_parameter_dict = param_dict_with_p10_by_joint(
+            parameter_dict=dict(parameter_dict),
+            p10_by_joint=projected_p10_by_joint,
+        )
+
+        self.result["physical consistency"] = {
+            "enabled": True,
+            "status": robot_report.status,
+            "source": source_label,
+            "solver": solver,
+            "mass_min": mass_min,
+            "psd_eig_tol": psd_eig_tol,
+            "feasibility": feasibility,
+            "projection": dataclasses.asdict(robot_report),
+            "projected parameters": projected_parameter_dict,
+        }
 
     def plot_results(self):
         """Plot identification results using unified results manager."""
