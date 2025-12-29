@@ -46,6 +46,69 @@ class QRDecomposer:
         self.tolerance = tolerance
         self.beta_tolerance = beta_tolerance
 
+        # Last computed base-mapping matrix and its labels.
+        # M maps the remaining parameter vector (ordered as params_r) to base.
+        self.M: Optional[np.ndarray] = None
+        self.M_params_r: Optional[List[str]] = None
+        self.M_base_params_expr: Optional[List[str]] = None
+        self.M_method: Optional[str] = None
+
+    def get_M(self) -> Optional[np.ndarray]:
+        """Return the last computed base mapping matrix ``M`` (or None)."""
+        return self.M
+
+    def get_M_labels(self) -> Tuple[Optional[List[str]], Optional[List[str]]]:
+        """Return (base_param_expr, params_r) labels for the last stored M."""
+        return self.M_base_params_expr, self.M_params_r
+
+    @staticmethod
+    def _build_M_from_partition(
+        *,
+        beta: np.ndarray,
+        base_indices: List[int],
+        regroup_indices: List[int],
+        n_params: int,
+    ) -> np.ndarray:
+        """Build M for a base/dependent column partition.
+
+        Produces an M such that ``phi_base = M @ theta_r`` where ``theta_r``
+        is ordered as ``params_r``.
+        """
+        rank = len(base_indices)
+        M = np.zeros((rank, n_params), dtype=float)
+
+        for row_idx, param_idx in enumerate(base_indices):
+            M[row_idx, param_idx] = 1.0
+
+        if beta.size:
+            for dep_col, param_idx in enumerate(regroup_indices):
+                M[:, param_idx] = beta[:, dep_col]
+
+        return M
+
+    @staticmethod
+    def _build_M_from_pivoting(
+        *,
+        beta: np.ndarray,
+        P: np.ndarray,
+        rank: int,
+        n_params: int,
+    ) -> np.ndarray:
+        """Build M from pivoted QR outputs.
+
+        In pivoted ordering, ``phi_base = [I, beta] @ theta_sorted``.
+        This method maps that back to the original ``params_r`` ordering.
+        """
+        M_sorted = np.zeros((rank, n_params), dtype=float)
+        M_sorted[:, :rank] = np.eye(rank)
+        if beta.size:
+            M_sorted[:, rank:] = beta
+
+        M = np.zeros_like(M_sorted)
+        for sorted_idx, original_idx in enumerate(P.tolist()):
+            M[:, original_idx] = M_sorted[:, sorted_idx]
+        return M
+
     def decompose_with_pivoting(
         self, tau: np.ndarray, W_e: np.ndarray, params_r: List[str]
     ) -> Tuple[np.ndarray, Dict[str, float]]:
@@ -86,6 +149,20 @@ class QRDecomposer:
             params_sorted[:rank], params_sorted[rank:], beta
         )
 
+        # Store mapping matrix M such that: phi_base = M @ theta_r
+        n_params = len(params_r)
+        M = self._build_M_from_pivoting(
+            beta=beta,
+            P=P,
+            rank=rank,
+            n_params=n_params,
+        )
+
+        self.M = M
+        self.M_params_r = list(params_r)
+        self.M_base_params_expr = list(base_params)
+        self.M_method = "pivoting"
+
         return W_b, dict(zip(base_params, phi_b))
 
     def double_decomposition(
@@ -100,10 +177,10 @@ class QRDecomposer:
     ]:
         """Perform the "double QR" workflow for base-parameter identification.
 
-                This follows a two-stage procedure:
-                    1) Identify an independent/base subset via QR on ``W_e``.
-                    2) Regroup columns and run a second QR to compute linear
-                         dependencies.
+        This follows a two-stage procedure:
+            1) Identify an independent/base subset via QR on ``W_e``.
+            2) Regroup columns and run a second QR to compute linear
+               dependencies.
 
         The output base parameters are returned as expression strings built
         from the original parameter names.
@@ -116,17 +193,18 @@ class QRDecomposer:
                 provided, also returns the standard-parameter values of
                 the base expressions.
 
-        Returns:
-            If params_std is None:
-              (W_b, base_parameters, params_base_expr, phi_b)
-            else:
-              (W_b, base_parameters, params_base_expr, phi_b, phi_std)
+                Returns:
+                        If params_std is None:
+                            (W_b, base_parameters, params_base_expr, phi_b)
+                        else:
+                            (W_b, base_parameters, params_base_expr, phi_b,
+                             phi_b_nom)
 
             Where:
               - W_b has shape (m, r)
               - params_base_expr is a list[str] of length r
               - phi_b is a vector of length r
-              - phi_std is a vector of length r
+                            - phi_b_nom is length r if params_std is provided
         """
 
         # First QR to identify base parameters
@@ -168,15 +246,28 @@ class QRDecomposer:
         )
         base_parameters = dict(zip(params_base_expr, phi_b))
 
+        # Store mapping matrix M such that: phi_base = M @ theta_r
+        n_params = len(params_r)
+        M = self._build_M_from_partition(
+            beta=beta,
+            base_indices=base_indices,
+            regroup_indices=regroup_indices,
+            n_params=n_params,
+        )
+
+        self.M = M
+        self.M_params_r = list(params_r)
+        self.M_base_params_expr = list(params_base_expr)
+        self.M_method = "double"
+
         if params_std is not None:
             phi_b_nom = self.compute_nominal_base_parameters(
                 params_base, params_regroup, beta, params_std
             )
+
             return W_b, base_parameters, params_base_expr, phi_b, phi_b_nom
 
-        else:
-            print("No standard parameters provided; skipping nominal base parameters computation.")
-            return W_b, base_parameters, params_base_expr, phi_b, None
+        return W_b, base_parameters, params_base_expr, phi_b
 
     def _find_rank(self, R: np.ndarray) -> int:
         """Find effective numerical rank from an upper-triangular R.
@@ -288,7 +379,7 @@ class QRDecomposer:
         beta: np.ndarray,
         params_std: Dict[str, float],
     ) -> np.ndarray:
-        """Compute numerical values of base parameters from prior values of standard params.
+        """Compute numerical values of base parameters from priors.
 
         This computes the numerical value of each base expression using:
 
@@ -303,6 +394,183 @@ class QRDecomposer:
                     phi_std[i] += beta[i, j] * params_std[regroup_param]
 
         return np.around(phi_std, 5)
+
+    def get_base_mapping_matrix_pivoting(
+        self, W_e: np.ndarray, params_r: List[str]
+    ) -> Tuple[np.ndarray, List[str]]:
+        r"""Return the base-parameter mapping matrix M for pivoting-QR.
+
+        The matrix ``M`` satisfies ``phi_base = M @ theta_r`` where
+        ``theta_r`` is ordered as ``params_r`` (the remaining parameters).
+
+        Row order matches the returned base-parameter expression strings.
+
+        Args:
+            W_e: Full regressor matrix, shape (m, n).
+            params_r: Remaining parameter names (columns of W_e), length n.
+
+        Returns:
+            (M, base_params_expr)
+              - M has shape (r, n) where r is the identified rank
+              - base_params_expr is a list[str] of length r
+        """
+        _, R, P = linalg.qr(W_e, pivoting=True)
+        rank = self._find_rank(R)
+
+        # Dependency coefficients in the pivoted ordering
+        R1 = R[:rank, :rank]
+        R2 = (
+            R[:rank, rank:]
+            if rank < R.shape[1]
+            else np.array([]).reshape(rank, 0)
+        )
+        beta = np.around(np.linalg.solve(R1, R2), 6)
+        n_params = len(params_r)
+        M = self._build_M_from_pivoting(
+            beta=beta,
+            P=P,
+            rank=rank,
+            n_params=n_params,
+        )
+
+        params_sorted = [params_r[P[i]] for i in range(P.shape[0])]
+        base_params_expr = self._build_parameter_expressions(
+            params_sorted[:rank], params_sorted[rank:], beta
+        )
+        return M, base_params_expr
+
+    def get_base_mapping_matrix_double(
+        self, W_e: np.ndarray, params_r: List[str]
+    ) -> Tuple[np.ndarray, List[str], List[int], List[int]]:
+        """Return the base-parameter mapping matrix M for the double-QR
+        workflow.
+
+        The returned ``M`` satisfies ``phi_base = M @ theta_r`` with columns
+        ordered as ``params_r`` (the remaining parameters).
+
+        Args:
+            W_e: Full regressor matrix, shape (m, n).
+            params_r: Remaining parameter names (columns of W_e), length n.
+
+        Returns:
+            (M, base_params_expr, base_indices, regroup_indices)
+              - M has shape (r, n)
+              - base_params_expr is a list[str] of length r
+              - base_indices and regroup_indices index into params_r
+        """
+        base_indices, regroup_indices = self._identify_base_parameters(
+            W_e, params_r
+        )
+        (
+            W_base,
+            W_regroup,
+            params_base,
+            params_regroup,
+        ) = self._regroup_parameters(
+            W_e,
+            params_r,
+            base_indices,
+            regroup_indices,
+        )
+
+        W_regrouped = np.c_[W_base, W_regroup]
+        _, R_r = np.linalg.qr(W_regrouped)
+        rank = len(base_indices)
+
+        R1 = R_r[:rank, :rank]
+        R2 = (
+            R_r[:rank, rank:]
+            if rank < R_r.shape[1]
+            else np.array([]).reshape(rank, 0)
+        )
+        beta = np.around(np.linalg.solve(R1, R2), 6)
+
+        n_params = len(params_r)
+        M = self._build_M_from_partition(
+            beta=beta,
+            base_indices=base_indices,
+            regroup_indices=regroup_indices,
+            n_params=n_params,
+        )
+
+        base_params_expr = self._build_parameter_expressions(
+            params_base, params_regroup, beta
+        )
+        return M, base_params_expr, base_indices, regroup_indices
+
+    def get_base_mapping_matrix(
+        self, W_e: np.ndarray, params_r: List[str], method: str = "double"
+    ) -> Tuple[np.ndarray, List[str]]:
+        """Convenience wrapper to retrieve the base mapping matrix.
+
+        Args:
+            W_e: Full regressor matrix, shape (m, n).
+            params_r: Remaining parameter names (columns of W_e), length n.
+            method: "double" (default) or "pivoting".
+
+        Returns:
+            (M, base_params_expr)
+
+        Raises:
+            ValueError: if method is not recognized.
+        """
+        method_norm = method.strip().lower()
+        if method_norm in {"double", "double_qr", "double-qr"}:
+            M, base_params_expr, _, _ = self.get_base_mapping_matrix_double(
+                W_e, params_r
+            )
+            return M, base_params_expr
+        if method_norm in {"pivoting", "pivot", "qr_pivoting", "qr-pivoting"}:
+            return self.get_base_mapping_matrix_pivoting(W_e, params_r)
+        raise ValueError(
+            f"Unknown method={method!r}. Expected 'double' or 'pivoting'."
+        )
+
+    @staticmethod
+    def expand_mapping_matrix_to_full(
+        M: np.ndarray,
+        params_r: List[str],
+        full_param_names: List[str],
+    ) -> np.ndarray:
+        """Expand an M defined on ``params_r`` into a full parameter ordering.
+
+        This is useful when the QR routines operate on a reduced set of
+        parameters (after removing all-zero columns), but you want a mapping
+        matrix defined over the complete standard-parameter list.
+
+        Args:
+            M: Base mapping matrix for remaining parameters, shape (r, n_r).
+            params_r: Remaining parameter names (columns of ``M``), length n_r.
+            full_param_names: Full/canonical parameter ordering to expand into.
+
+        Returns:
+            M_full of shape (r, n_full) where columns not present in
+            ``params_r`` are set to 0.
+
+        Raises:
+            ValueError: if M has incompatible shape or if a name in params_r is
+                missing from full_param_names.
+        """
+        if M.ndim != 2:
+            raise ValueError("M must be a 2D array")
+        if M.shape[1] != len(params_r):
+            raise ValueError(
+                "M has incompatible column count: "
+                f"M.shape[1]={M.shape[1]} but len(params_r)={len(params_r)}"
+            )
+
+        full_index = {name: idx for idx, name in enumerate(full_param_names)}
+        missing = [name for name in params_r if name not in full_index]
+        if missing:
+            raise ValueError(
+                "params_r contains names not present in full_param_names: "
+                f"{', '.join(missing)}"
+            )
+
+        M_full = np.zeros((M.shape[0], len(full_param_names)), dtype=M.dtype)
+        for j_r, name in enumerate(params_r):
+            M_full[:, full_index[name]] = M[:, j_r]
+        return M_full
 
 
 # Backward compatibility functions
