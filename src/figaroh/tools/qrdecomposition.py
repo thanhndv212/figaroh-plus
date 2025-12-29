@@ -169,12 +169,14 @@ class QRDecomposer:
         base_parameters = dict(zip(params_base_expr, phi_b))
 
         if params_std is not None:
-            phi_std = self._compute_standard_parameters(
+            phi_b_nom = self.compute_nominal_base_parameters(
                 params_base, params_regroup, beta, params_std
             )
-            return W_b, base_parameters, params_base_expr, phi_b, phi_std
+            return W_b, base_parameters, params_base_expr, phi_b, phi_b_nom
 
-        return W_b, base_parameters, params_base_expr, phi_b
+        else:
+            print("No standard parameters provided; skipping nominal base parameters computation.")
+            return W_b, base_parameters, params_base_expr, phi_b, None
 
     def _find_rank(self, R: np.ndarray) -> int:
         """Find effective numerical rank from an upper-triangular R.
@@ -279,14 +281,14 @@ class QRDecomposer:
 
         return expressions
 
-    def _compute_standard_parameters(
+    def compute_nominal_base_parameters(
         self,
         base_params: List[str],
         regroup_params: List[str],
         beta: np.ndarray,
         params_std: Dict[str, float],
     ) -> np.ndarray:
-        """Evaluate base expressions from a full parameter dictionary.
+        """Compute numerical values of base parameters from prior values of standard params.
 
         This computes the numerical value of each base expression using:
 
