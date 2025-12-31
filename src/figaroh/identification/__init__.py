@@ -15,6 +15,15 @@
 
 from .base_identification import BaseIdentification
 
+from .reconstruction import (  # noqa: F401
+    ReconstructionResult,
+    prior_vector_from_dict,
+    reconstruct_from_base,
+    reconstruct_theta_r,
+    run_reconstruction,
+    run_option_a_reconstruction,
+)
+
 # Optional (default-off) physical consistency helpers
 from .physical_consistency import (  # noqa: F401
     ProjectionReport,
@@ -27,4 +36,12 @@ from .physical_consistency import (  # noqa: F401
     pseudo_inertia_matrix_from_p10,
 )
 
-__all__ = ['BaseIdentification']
+__all__ = [
+    "BaseIdentification",
+    "ReconstructionResult",
+    "prior_vector_from_dict",
+    "reconstruct_from_base",
+    "reconstruct_theta_r",
+    "run_reconstruction",
+    "run_option_a_reconstruction",
+]
