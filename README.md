@@ -114,6 +114,14 @@ figaroh/
 - **Decimation and filtering** for signal processing
 - **Quality metrics**: RMSE, correlation, condition number
 
+#### Physical Consistency (optional, default-off)
+
+FIGAROH can optionally project per-joint inertial parameters onto a physically
+consistent set using a convex SDP/LMI based on Pinocchio pseudo-inertia.
+
+- Enable it in config via `identification.physical_consistency.enabled: true`.
+- Requires optional dependencies: `picos` and an SDP solver backend (e.g. `cvxopt`).
+
 ### `figaroh.optimal` — Trajectory & Configuration Optimization
 
 **BaseOptimalTrajectory** generates exciting trajectories for dynamic identification:
@@ -197,6 +205,13 @@ identification:
   has_friction: true
   has_actuator_inertia: true
   active_joints: ["joint1", "joint2", "joint3"]
+
+  physical_consistency:
+    enabled: false
+    solver: "cvxopt"
+    mass_min: 1e-6
+    psd_eig_tol: -1e-10
+    skip_if_feasible: true
 ```
 
 ### Step 2: Optimal Experiment Design
