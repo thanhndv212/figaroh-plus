@@ -323,3 +323,7 @@ def run_reconstruction(
     }
 
     return payload, full_param_dict, pc_already_applied
+
+
+# Backward-compat alias: run_reconstruction already implements mode-A only
+run_option_a_reconstruction = run_reconstruction
