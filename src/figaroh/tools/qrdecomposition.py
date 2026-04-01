@@ -366,20 +366,16 @@ class QRDecomposer:
     ) -> Tuple[List[int], List[int]]:
         """Identify base and dependent (regrouped) parameter indices.
 
-        This uses a non-pivoted QR and a diagonal threshold on R to select
-        columns. The returned indices are positions in ``params_r`` / columns
-        of ``W_e``.
+        Uses column-pivoted QR (scipy) for permutation-stable basis selection.
+        The first ``rank`` pivots become the base columns; the rest become
+        dependent.  Both lists are returned sorted in ascending column order so
+        the result does not depend on arbitrary column ordering.
         """
-        Q, R = np.linalg.qr(W_e)
-        diag_R = np.abs(np.diag(R))
-
-        base_indices = [
-            i for i, val in enumerate(diag_R) if val > self.tolerance
-        ]
-        regroup_indices = [
-            i for i, val in enumerate(diag_R) if val <= self.tolerance
-        ]
-
+        _, R, P = linalg.qr(W_e, pivoting=True)
+        rank = self._find_rank(R)
+        # Sort so the selected columns are deterministic regardless of input ordering
+        base_indices = sorted(P[:rank].tolist())
+        regroup_indices = sorted(P[rank:].tolist())
         return base_indices, regroup_indices
 
     def _regroup_parameters(
