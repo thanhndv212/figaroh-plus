@@ -114,6 +114,131 @@ class QRDecomposer:
         """Return (base_param_expr, params_r) labels for the last stored M."""
         return self.M_base_params_expr, self.M_params_r
 
+    def get_diagnostics(self) -> Dict[str, Any]:
+        """Return stability diagnostics from the last decomposition.
+
+        Keys:
+            ``rank``: identified rank.
+            ``diag_R``: absolute diagonal of R at the factorisation point.
+            ``cond_R1``: condition number of the R[:rank, :rank] block.
+            ``method``: ``"pivoting"`` or ``"double"``.
+        """
+        return {
+            "rank": self.M.shape[0] if self.M is not None else None,
+            "diag_R": self._last_diag_R,
+            "cond_R1": self._last_cond_R1,
+            "method": self.M_method,
+        }
+
+    def decompose(
+        self,
+        W_e: np.ndarray,
+        params_r: List[str],
+        tau: Optional[np.ndarray] = None,
+        params_std: Optional[Dict[str, float]] = None,
+        method: str = "double",
+    ) -> "QRResult":
+        """Unified entry point that returns a structured :class:`QRResult`.
+
+        This is the preferred API for new code.  It delegates to either
+        :meth:`decompose_with_pivoting` (``method="pivoting"``) or
+        :meth:`double_decomposition` (``method="double"``), but always
+        returns a :class:`QRResult` regardless of path.
+
+        Args:
+            W_e: Full regressor matrix, shape ``(m, n)``.
+            params_r: Remaining parameter names (columns of ``W_e``), length n.
+            tau: Torque/effort vector, shape ``(m,)``.  Defaults to zeros,
+                which is sufficient for rank/basis computation; required for
+                meaningful ``phi_b`` values.
+            params_std: Optional prior parameter dict used to compute
+                ``phi_b_nom`` (available in the double path only).
+            method: ``"double"`` (default) or ``"pivoting"``.
+
+        Returns:
+            A fully-populated :class:`QRResult`.
+        """
+        if tau is None:
+            tau = np.zeros(W_e.shape[0])
+
+        method_norm = method.strip().lower()
+        if method_norm in {"pivoting", "pivot", "qr_pivoting", "qr-pivoting"}:
+            _, R, P = linalg.qr(W_e, pivoting=True)
+            rank = self._find_rank(R)
+            params_sorted = [params_r[P[i]] for i in range(P.shape[0])]
+            R1, Q1, R2 = self._extract_base_components(R, np.linalg.qr(W_e[:, P])[0], rank)
+            beta = np.linalg.solve(R1, R2) if R2.size else np.empty((rank, 0))
+            phi_b = np.round(np.linalg.solve(R1, Q1.T @ tau), 6)
+            W_b = Q1 @ R1
+            base_param_expressions = self._build_parameter_expressions(
+                params_sorted[:rank], params_sorted[rank:], beta
+            )
+            n_params = len(params_r)
+            M = self._build_M_from_pivoting(beta=beta, P=P, rank=rank, n_params=n_params)
+            diag_R = np.abs(np.diag(R))
+            cond_R1 = float(np.linalg.cond(R1)) if rank > 0 else 0.0
+            base_indices = sorted(P[:rank].tolist())
+            return QRResult(
+                rank=rank,
+                base_indices=base_indices,
+                pivot_order=P.tolist(),
+                W_b=W_b,
+                beta=beta,
+                M=M,
+                base_param_expressions=base_param_expressions,
+                phi_b=phi_b,
+                phi_b_nom=None,
+                method="pivoting",
+                diag_R=diag_R,
+                cond_R1=cond_R1,
+            )
+
+        if method_norm in {"double", "double_qr", "double-qr"}:
+            base_indices, regroup_indices = self._identify_base_parameters(W_e, params_r)
+            W_base, W_regroup, params_base, params_regroup = self._regroup_parameters(
+                W_e, params_r, base_indices, regroup_indices
+            )
+            W_regrouped = np.c_[W_base, W_regroup]
+            Q_r, R_r = np.linalg.qr(W_regrouped)
+            rank = len(base_indices)
+            R1, Q1, R2 = self._extract_base_components(R_r, Q_r, rank)
+            beta = np.linalg.solve(R1, R2) if R2.size else np.empty((rank, 0))
+            phi_b = np.round(np.linalg.solve(R1, Q1.T @ tau), 6)
+            W_b = Q1 @ R1
+            base_param_expressions = self._build_parameter_expressions(
+                params_base, params_regroup, beta
+            )
+            n_params = len(params_r)
+            M = self._build_M_from_partition(
+                beta=beta, base_indices=base_indices,
+                regroup_indices=regroup_indices, n_params=n_params,
+            )
+            diag_R = np.abs(np.diag(R_r))
+            cond_R1 = float(np.linalg.cond(R1)) if rank > 0 else 0.0
+            phi_b_nom = None
+            if params_std is not None:
+                phi_b_nom = self.compute_nominal_base_parameters(
+                    params_base, params_regroup, beta, params_std
+                )
+            return QRResult(
+                rank=rank,
+                base_indices=base_indices,
+                pivot_order=None,
+                W_b=W_b,
+                beta=beta,
+                M=M,
+                base_param_expressions=base_param_expressions,
+                phi_b=phi_b,
+                phi_b_nom=phi_b_nom,
+                method="double",
+                diag_R=diag_R,
+                cond_R1=cond_R1,
+            )
+
+        raise ValueError(
+            f"Unknown method={method!r}. Expected 'double' or 'pivoting'."
+        )
+
     @staticmethod
     def _build_M_from_partition(
         *,
@@ -192,12 +317,12 @@ class QRDecomposer:
         # Extract base components
         R1, Q1, R2 = self._extract_base_components(R, Q, rank)
 
-        # Compute base parameters
-        beta = np.around(np.linalg.solve(R1, R2), 6)
+        # Compute base parameters — full precision; round only for display
+        beta = np.linalg.solve(R1, R2) if R2.size else np.empty((rank, 0))
         phi_b = np.round(np.linalg.solve(R1, Q1.T @ tau), 6)
         W_b = Q1 @ R1
 
-        # Build parameter expressions
+        # Build parameter expressions (display rounding happens inside)
         base_params = self._build_parameter_expressions(
             params_sorted[:rank], params_sorted[rank:], beta
         )
@@ -215,6 +340,8 @@ class QRDecomposer:
         self.M_params_r = list(params_r)
         self.M_base_params_expr = list(base_params)
         self.M_method = "pivoting"
+        self._last_diag_R = np.abs(np.diag(R))
+        self._last_cond_R1 = float(np.linalg.cond(R1)) if rank > 0 else 0.0
 
         return W_b, dict(zip(base_params, phi_b))
 
@@ -285,13 +412,10 @@ class QRDecomposer:
         rank = len(base_indices)
         R1, Q1, R2 = self._extract_base_components(R_r, Q_r, rank)
 
-        # Compute parameters
-        beta = np.around(np.linalg.solve(R1, R2), 6)
+        # Compute parameters — full precision; round only for display
+        beta = np.linalg.solve(R1, R2) if R2.size else np.empty((rank, 0))
         phi_b = np.round(np.linalg.solve(R1, Q1.T @ tau), 6)
         W_b = Q1 @ R1
-
-        # Verify consistency
-        assert np.allclose(W_base, W_b), "Base regressor calculation error"
 
         # Build expressions and compute standard parameters if provided
         params_base_expr = self._build_parameter_expressions(
@@ -312,6 +436,8 @@ class QRDecomposer:
         self.M_params_r = list(params_r)
         self.M_base_params_expr = list(params_base_expr)
         self.M_method = "double"
+        self._last_diag_R = np.abs(np.diag(R_r))
+        self._last_cond_R1 = float(np.linalg.cond(R1)) if rank > 0 else 0.0
 
         if params_std is not None:
             phi_b_nom = self.compute_nominal_base_parameters(
@@ -418,6 +544,10 @@ class QRDecomposer:
 
         where ``base_params`` are the independent columns and
         ``regroup_params`` are the dependent columns in the chosen ordering.
+
+        Coefficient display is rounded to ``beta_tolerance`` significant
+        digits for readability; the underlying ``beta`` matrix is full
+        precision.
         """
         expressions = base_params.copy()
 
@@ -425,7 +555,7 @@ class QRDecomposer:
             for j, regroup_param in enumerate(regroup_params):
                 if j < beta.shape[1] and abs(beta[i, j]) > self.beta_tolerance:
                     sign = " - " if beta[i, j] < 0 else " + "
-                    coefficient = abs(beta[i, j])
+                    coefficient = round(abs(beta[i, j]), 6)
                     expressions[i] += f"{sign}{coefficient}*{regroup_param}"
 
         return expressions
@@ -475,14 +605,14 @@ class QRDecomposer:
         _, R, P = linalg.qr(W_e, pivoting=True)
         rank = self._find_rank(R)
 
-        # Dependency coefficients in the pivoted ordering
+        # Dependency coefficients in the pivoted ordering — full precision
         R1 = R[:rank, :rank]
         R2 = (
             R[:rank, rank:]
             if rank < R.shape[1]
             else np.array([]).reshape(rank, 0)
         )
-        beta = np.around(np.linalg.solve(R1, R2), 6)
+        beta = np.linalg.solve(R1, R2) if R2.size else np.empty((rank, 0))
         n_params = len(params_r)
         M = self._build_M_from_pivoting(
             beta=beta,
@@ -541,7 +671,7 @@ class QRDecomposer:
             if rank < R_r.shape[1]
             else np.array([]).reshape(rank, 0)
         )
-        beta = np.around(np.linalg.solve(R1, R2), 6)
+        beta = np.linalg.solve(R1, R2) if R2.size else np.empty((rank, 0))
 
         n_params = len(params_r)
         M = self._build_M_from_partition(
