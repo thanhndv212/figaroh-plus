@@ -43,7 +43,7 @@ class TestQRDecomposer:
         
         # Edge case: all zeros
         R_zeros = np.zeros((3, 3))
-        assert decomposer._find_rank(R_zeros) == 3  # Should return matrix size when all small
+        assert decomposer._find_rank(R_zeros) == 0  # Zero matrix has rank 0
     
     def test_extract_base_components(self):
         """Test base component extraction."""

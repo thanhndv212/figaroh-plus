@@ -277,7 +277,7 @@ class QRDecomposer:
         """
         diag_R = np.abs(np.diag(R))
         rank_indices = np.where(diag_R > self.tolerance)[0]
-        return len(rank_indices) if len(rank_indices) > 0 else R.shape[0]
+        return len(rank_indices)
 
     def _extract_base_components(
         self, R: np.ndarray, Q: np.ndarray, rank: int
