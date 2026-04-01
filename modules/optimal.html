@@ -8,15 +8,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>figaroh.optimal package &mdash; figaroh 0.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
     <link rel="canonical" href="https://thanhndv212.github.io/figaroh/modules/optimal.html" />
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=e259d695"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -61,9 +61,116 @@
 <p class="caption" role="heading"><span class="caption-text">Advanced Features:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">figaroh.optimal package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.robot"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.robot</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.model"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.model</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.data"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.data</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.calib_config"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.calib_config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.optimal_configurations"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.optimal_configurations</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.optimal_weights"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.optimal_weights</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.minNbChosen"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.minNbChosen</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.R_rearr"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.R_rearr</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.detroot_whole"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.detroot_whole</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.w_list"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.w_list</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.w_dict_sort"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.w_dict_sort</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.calculate_detroot_whole"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.calculate_detroot_whole()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.calculate_optimal_configurations"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.calculate_optimal_configurations()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.calculate_regressor"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.calculate_regressor()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.initialize"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.initialize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.load_candidate_configurations"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.load_candidate_configurations()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.load_param"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.load_param()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.plot"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.plot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.plot_results"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.plot_results()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.rearrange_rb"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.rearrange_rb()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.save_results"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.save_results()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.solve"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.solve()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalCalibration.sub_info_matrix"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.sub_info_matrix()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#figaroh.optimal.BaseOptimalTrajectory"><code class="docutils literal notranslate"><span class="pre">BaseOptimalTrajectory</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalTrajectory.create_ipopt_problem"><code class="docutils literal notranslate"><span class="pre">BaseOptimalTrajectory.create_ipopt_problem()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalTrajectory.initialize"><code class="docutils literal notranslate"><span class="pre">BaseOptimalTrajectory.initialize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalTrajectory.objective_function"><code class="docutils literal notranslate"><span class="pre">BaseOptimalTrajectory.objective_function()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalTrajectory.plot_results"><code class="docutils literal notranslate"><span class="pre">BaseOptimalTrajectory.plot_results()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalTrajectory.save_results"><code class="docutils literal notranslate"><span class="pre">BaseOptimalTrajectory.save_results()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.BaseOptimalTrajectory.solve"><code class="docutils literal notranslate"><span class="pre">BaseOptimalTrajectory.solve()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#figaroh-optimal-base-optimal-calibration-module">figaroh.optimal.base_optimal_calibration module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#figaroh-optimal-base-optimal-trajectory-module">figaroh.optimal.base_optimal_trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-figaroh.optimal.base_optimal_calibration">figaroh.optimal.base_optimal_calibration module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.robot"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.robot</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.model"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.model</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.data"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.data</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.calib_config"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.calib_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.optimal_configurations"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.optimal_configurations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.optimal_weights"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.optimal_weights</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.minNbChosen"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.minNbChosen</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.R_rearr"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.R_rearr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.detroot_whole"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.detroot_whole</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.w_list"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.w_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.w_dict_sort"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.w_dict_sort</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.calculate_detroot_whole"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.calculate_detroot_whole()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.calculate_optimal_configurations"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.calculate_optimal_configurations()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.calculate_regressor"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.calculate_regressor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.initialize"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.initialize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.load_candidate_configurations"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.load_candidate_configurations()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.load_param"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.load_param()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.plot"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.plot_results"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.plot_results()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.rearrange_rb"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.rearrange_rb()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.save_results"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.save_results()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.solve"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.solve()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.sub_info_matrix"><code class="docutils literal notranslate"><span class="pre">BaseOptimalCalibration.sub_info_matrix()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.Detmax"><code class="docutils literal notranslate"><span class="pre">Detmax</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.Detmax.pool"><code class="docutils literal notranslate"><span class="pre">Detmax.pool</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.Detmax.nd"><code class="docutils literal notranslate"><span class="pre">Detmax.nd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.Detmax.cur_set"><code class="docutils literal notranslate"><span class="pre">Detmax.cur_set</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.Detmax.fail_set"><code class="docutils literal notranslate"><span class="pre">Detmax.fail_set</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.Detmax.opt_set"><code class="docutils literal notranslate"><span class="pre">Detmax.opt_set</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.Detmax.opt_critD"><code class="docutils literal notranslate"><span class="pre">Detmax.opt_critD</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.Detmax.get_critD"><code class="docutils literal notranslate"><span class="pre">Detmax.get_critD()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.Detmax.main_algo"><code class="docutils literal notranslate"><span class="pre">Detmax.main_algo()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer"><code class="docutils literal notranslate"><span class="pre">SOCPOptimizer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer.pool"><code class="docutils literal notranslate"><span class="pre">SOCPOptimizer.pool</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer.calib_config"><code class="docutils literal notranslate"><span class="pre">SOCPOptimizer.calib_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer.problem"><code class="docutils literal notranslate"><span class="pre">SOCPOptimizer.problem</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer.w"><code class="docutils literal notranslate"><span class="pre">SOCPOptimizer.w</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer.t"><code class="docutils literal notranslate"><span class="pre">SOCPOptimizer.t</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer.solution"><code class="docutils literal notranslate"><span class="pre">SOCPOptimizer.solution</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer.add_constraints"><code class="docutils literal notranslate"><span class="pre">SOCPOptimizer.add_constraints()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer.set_objective"><code class="docutils literal notranslate"><span class="pre">SOCPOptimizer.set_objective()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer.solve"><code class="docutils literal notranslate"><span class="pre">SOCPOptimizer.solve()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-figaroh.optimal.base_optimal_trajectory">figaroh.optimal.base_optimal_trajectory module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory"><code class="docutils literal notranslate"><span class="pre">BaseOptimalTrajectory</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory.create_ipopt_problem"><code class="docutils literal notranslate"><span class="pre">BaseOptimalTrajectory.create_ipopt_problem()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory.initialize"><code class="docutils literal notranslate"><span class="pre">BaseOptimalTrajectory.initialize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory.objective_function"><code class="docutils literal notranslate"><span class="pre">BaseOptimalTrajectory.objective_function()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory.plot_results"><code class="docutils literal notranslate"><span class="pre">BaseOptimalTrajectory.plot_results()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory.save_results"><code class="docutils literal notranslate"><span class="pre">BaseOptimalTrajectory.save_results()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory.solve"><code class="docutils literal notranslate"><span class="pre">BaseOptimalTrajectory.solve()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem"><code class="docutils literal notranslate"><span class="pre">BaseTrajectoryIPOPTProblem</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.constraints"><code class="docutils literal notranslate"><span class="pre">BaseTrajectoryIPOPTProblem.constraints()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.get_constraint_bounds"><code class="docutils literal notranslate"><span class="pre">BaseTrajectoryIPOPTProblem.get_constraint_bounds()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.get_initial_guess"><code class="docutils literal notranslate"><span class="pre">BaseTrajectoryIPOPTProblem.get_initial_guess()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.get_variable_bounds"><code class="docutils literal notranslate"><span class="pre">BaseTrajectoryIPOPTProblem.get_variable_bounds()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.jacobian"><code class="docutils literal notranslate"><span class="pre">BaseTrajectoryIPOPTProblem.jacobian()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.objective"><code class="docutils literal notranslate"><span class="pre">BaseTrajectoryIPOPTProblem.objective()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.solve_with_waypoints"><code class="docutils literal notranslate"><span class="pre">BaseTrajectoryIPOPTProblem.solve_with_waypoints()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -92,16 +199,1730 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="figaroh-optimal-package">
-<h1>figaroh.optimal package<a class="headerlink" href="#figaroh-optimal-package" title="Link to this heading"></a></h1>
+  <section id="module-figaroh.optimal">
+<span id="figaroh-optimal-package"></span><h1>figaroh.optimal package<a class="headerlink" href="#module-figaroh.optimal" title="Link to this heading"></a></h1>
+<p>Optimal calibration and trajectory optimization module.</p>
+<p>This module provides base classes for optimal calibration and trajectory
+optimization for robotic systems.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">figaroh.optimal.</span></span><span class="sig-name descname"><span class="pre">BaseOptimalCalibration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'config/robot_config.yaml'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Base class for robot optimal configuration generation for calibration.</p>
+<p>This class implements the framework for generating optimal robot
+configurations that maximize the observability of kinematic parameters
+during calibration. It uses Second-Order Cone Programming (SOCP) to
+solve the D-optimal design problem for parameter estimation.</p>
+<p>The class provides a Template Method pattern where the main workflow
+is defined, but specific optimization strategies can be customized
+by derived classes for different robot types.</p>
+<dl>
+<dt>Workflow:</dt><dd><ol class="arabic simple">
+<li><p>Load candidate configurations from file (CSV or YAML)</p></li>
+<li><p>Calculate kinematic regressors for all candidates</p></li>
+<li><p>Compute information matrices for each configuration</p></li>
+<li><p>Solve SOCP optimization to find optimal subset</p></li>
+<li><p>Select configurations with significant weights</p></li>
+<li><p>Visualize and save results</p></li>
+</ol>
+</dd>
+<dt>Key Features:</dt><dd><ul class="simple">
+<li><p>D-optimal experimental design for calibration</p></li>
+<li><p>Support for multiple calibration models (full_params, joint_offset)</p></li>
+<li><p>Automatic minimum configuration calculation</p></li>
+<li><p>SOCP-based optimization with convex relaxation</p></li>
+<li><p>Comprehensive visualization and analysis tools</p></li>
+<li><p>File I/O for configuration management</p></li>
+</ul>
+</dd>
+<dt>Mathematical Background:</dt><dd><p>The method maximizes the determinant of the Fisher Information Matrix:
+max det(Σᵢ wᵢ Rᵢᵀ Rᵢ) subject to Σᵢ wᵢ ≤ 1, wᵢ ≥ 0</p>
+<p>Where:
+- Rᵢ is the kinematic regressor for configuration i
+- wᵢ is the weight assigned to configuration i
+- The objective maximizes parameter estimation precision</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.robot">
+<span class="sig-name descname"><span class="pre">robot</span></span><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.robot" title="Link to this definition"></a></dt>
+<dd><p>Robot model instance loaded with FIGAROH</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.model" title="Link to this definition"></a></dt>
+<dd><p>Pinocchio robot model</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.data">
+<span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.data" title="Link to this definition"></a></dt>
+<dd><p>Pinocchio robot data</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.calib_config">
+<span class="sig-name descname"><span class="pre">calib_config</span></span><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.calib_config" title="Link to this definition"></a></dt>
+<dd><p>Calibration parameters from configuration file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.optimal_configurations">
+<span class="sig-name descname"><span class="pre">optimal_configurations</span></span><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.optimal_configurations" title="Link to this definition"></a></dt>
+<dd><p>Selected optimal configurations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.optimal_weights">
+<span class="sig-name descname"><span class="pre">optimal_weights</span></span><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.optimal_weights" title="Link to this definition"></a></dt>
+<dd><p>Weights assigned to configurations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.minNbChosen">
+<span class="sig-name descname"><span class="pre">minNbChosen</span></span><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.minNbChosen" title="Link to this definition"></a></dt>
+<dd><p>Minimum number of configurations required</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">#</span> <span class="pre">Internal</span> <span class="pre">computation</span> <span class="pre">attributes</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.R_rearr">
+<span class="sig-name descname"><span class="pre">R_rearr</span></span><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.R_rearr" title="Link to this definition"></a></dt>
+<dd><p>Rearranged kinematic regressor matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.detroot_whole">
+<span class="sig-name descname"><span class="pre">detroot_whole</span></span><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.detroot_whole" title="Link to this definition"></a></dt>
+<dd><p>Determinant root of full information matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.w_list">
+<span class="sig-name descname"><span class="pre">w_list</span></span><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.w_list" title="Link to this definition"></a></dt>
+<dd><p>Solution weights from SOCP optimization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.w_dict_sort">
+<span class="sig-name descname"><span class="pre">w_dict_sort</span></span><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.w_dict_sort" title="Link to this definition"></a></dt>
+<dd><p>Sorted weights by configuration index</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Basic usage for TIAGo robot</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.robots</span><span class="w"> </span><span class="kn">import</span> <span class="n">TiagoRobot</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">robot</span> <span class="o">=</span> <span class="n">TiagoRobot</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create optimal calibration instance</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt_calib</span> <span class="o">=</span> <span class="n">TiagoOptimalCalibration</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s2">&quot;config/tiago.yaml&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Generate optimal configurations</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt_calib</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">save_file</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Access results</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Selected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">opt_calib</span><span class="o">.</span><span class="n">optimal_configurations</span><span class="p">)</span><span class="si">}</span><span class="s2"> configs&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Minimum required: </span><span class="si">{</span><span class="n">opt_calib</span><span class="o">.</span><span class="n">minNbChosen</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>BaseCalibration: Main calibration framework
+SOCPOptimizer: Second-order cone programming solver
+TiagoOptimalCalibration: TIAGo-specific implementation
+UR10OptimalCalibration: UR10-specific implementation</p>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.calculate_detroot_whole">
+<span class="sig-name descname"><span class="pre">calculate_detroot_whole</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.calculate_detroot_whole"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.calculate_detroot_whole" title="Link to this definition"></a></dt>
+<dd><p>Calculate determinant root of complete information matrix.</p>
+<p>Computes the determinant root of the full Fisher Information Matrix
+formed by all candidate configurations. This serves as the theoretical
+upper bound for the D-optimality criterion and is used for
+performance comparison.</p>
+<dl>
+<dt>Mathematical Background:</dt><dd><p>M_full = R^T R  (full regressor)
+detroot_whole = det(M_full)^(1/n) / sqrt(n)</p>
+<p>This represents the geometric mean of eigenvalues, normalized
+by matrix dimension for scale independence.</p>
+</dd>
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Sets self.detroot_whole with computed determinant root</p></li>
+<li><p>Prints the computed value for verification</p></li>
+</ul>
+</dd>
+<dt>Prerequisites:</dt><dd><ul class="simple">
+<li><p>Kinematic regressor must be calculated (self.R_rearr)</p></li>
+<li><p>Requires picos library for determinant computation</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>AssertionError</strong> – If regressor calculation not performed first</p></li>
+<li><p><strong>ImportError</strong> – If picos library not available</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>calculate_regressor: Prerequisites for this computation
+plot: Uses this value for performance comparison</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.calculate_optimal_configurations">
+<span class="sig-name descname"><span class="pre">calculate_optimal_configurations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.calculate_optimal_configurations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.calculate_optimal_configurations" title="Link to this definition"></a></dt>
+<dd><p>Solve SOCP optimization to find optimal configuration subset.</p>
+<p>This is the core optimization method that solves the D-optimal
+experimental design problem using Second-Order Cone Programming.
+The method finds weights for each candidate configuration that
+maximize the determinant of the Fisher Information Matrix.</p>
+<dl>
+<dt>Optimization Problem:</dt><dd><p>maximize det(Σᵢ wᵢ Xᵢ)^(1/n)
+subject to: Σᵢ wᵢ ≤ 1, wᵢ ≥ 0</p>
+<p>Where Xᵢ are information matrices and wᵢ are configuration weights.</p>
+</dd>
+<dt>Selection Process:</dt><dd><ol class="arabic simple">
+<li><p>Solve SOCP optimization for optimal weights</p></li>
+<li><p>Select configurations with weights &gt; eps_opt (1e-5)</p></li>
+<li><p>Verify minimum configuration requirement is met</p></li>
+<li><p>Store selected configurations and weights</p></li>
+</ol>
+</dd>
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Sets self.w_list with optimization solution weights</p></li>
+<li><p>Sets self.w_dict_sort with sorted weight dictionary</p></li>
+<li><p>Sets self.optimal_configurations with selected configs</p></li>
+<li><p>Sets self.optimal_weights with final weight values</p></li>
+<li><p>Sets self.nb_chosen with number of selected configurations</p></li>
+<li><p>Prints timing information and selection results</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if optimization successful and feasible</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>AssertionError</strong> – If regressor not calculated or if insufficient
+    configurations selected (infeasible design)</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">opt_calib</span><span class="o">.</span><span class="n">calculate_optimal_configurations</span><span class="p">()</span>
+<span class="go">solve time of socp: 2.35 seconds</span>
+<span class="go">12 configs are chosen: [0, 5, 12, 18, 23, ...]</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>SOCPOptimizer: The optimization solver implementation
+calculate_regressor: Required prerequisite computation</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.calculate_regressor">
+<span class="sig-name descname"><span class="pre">calculate_regressor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.calculate_regressor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.calculate_regressor" title="Link to this definition"></a></dt>
+<dd><p>Calculate kinematic regressors and information matrices.</p>
+<p>Computes the kinematic regressor matrices that relate kinematic
+parameter variations to end-effector pose changes. This is the
+mathematical foundation for the optimization problem.</p>
+<p>The method performs several key computations:
+1. Calculate base kinematic regressors for all configurations
+2. Rearrange regressor matrix by sample order for efficiency
+3. Compute individual information matrices for each configuration
+4. Store results for optimization access</p>
+<dl>
+<dt>Mathematical Background:</dt><dd><p>For each configuration i, the regressor Rᵢ satisfies:
+δx = Rᵢ δθ
+where δx is pose variation and δθ is parameter variation.</p>
+<p>The information matrix is: Xᵢ = RᵢᵀRᵢ</p>
+</dd>
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Sets self.R_rearr with rearranged kinematic regressor</p></li>
+<li><p>Sets self._subX_list with list of information matrices</p></li>
+<li><p>Sets self._subX_dict with indexed information matrices</p></li>
+<li><p>Prints parameter names for verification</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if calculation successful</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Prerequisites:</dt><dd><ul class="simple">
+<li><p>Joint configurations must be loaded (self.q_measured)</p></li>
+<li><p>Robot model and parameters must be initialized</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>calculate_base_kinematics_regressor: Core regressor computation
+rearrange_rb: Matrix rearrangement for optimization
+sub_info_matrix: Information matrix decomposition</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.initialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.initialize" title="Link to this definition"></a></dt>
+<dd><p>Initialize the optimization process by preparing all required data.</p>
+<p>This method orchestrates the initialization sequence required before
+optimization can begin. It ensures all mathematical components are
+properly computed and cached for efficient optimization.</p>
+<p>The initialization sequence:
+1. Load candidate configurations from external files
+2. Calculate kinematic regressors for all configurations
+3. Compute determinant root of the full information matrix</p>
+<dl class="simple">
+<dt>Prerequisites:</dt><dd><ul class="simple">
+<li><p>Robot model and parameters must be loaded</p></li>
+<li><p>Configuration file must specify valid sample data paths</p></li>
+</ul>
+</dd>
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Sets self.q_measured with candidate joint configurations</p></li>
+<li><p>Sets self.R_rearr with rearranged kinematic regressor</p></li>
+<li><p>Sets self._subX_dict and self._subX_list with info matrices</p></li>
+<li><p>Sets self.detroot_whole with full matrix determinant root</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If sample configuration file is invalid or missing</p></li>
+<li><p><strong>AssertionError</strong> – If regressor calculation fails</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>load_candidate_configurations: Configuration data loading
+calculate_regressor: Kinematic regressor computation
+calculate_detroot_whole: Information matrix analysis</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.load_candidate_configurations">
+<span class="sig-name descname"><span class="pre">load_candidate_configurations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.load_candidate_configurations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.load_candidate_configurations" title="Link to this definition"></a></dt>
+<dd><p>Load candidate joint configurations from external data files.</p>
+<p>Reads robot joint configurations from CSV or YAML files that serve
+as the candidate pool for optimization. The method supports multiple
+file formats and automatically updates the sample count parameter.</p>
+<p>Supported formats:
+- CSV: Standard measurement data format with joint configurations
+- YAML: Structured format with named joints and configurations</p>
+<p>The YAML format expects:
+<code class="docutils literal notranslate"><span class="pre">`yaml</span>
+<span class="pre">calibration_joint_names:</span> <span class="pre">[joint1,</span> <span class="pre">joint2,</span> <span class="pre">...]</span>
+<span class="pre">calibration_joint_configurations:</span> <span class="pre">[[q1_1,</span> <span class="pre">q1_2,</span> <span class="pre">...],</span> <span class="pre">[q2_1,</span> <span class="pre">...]]</span>
+<span class="pre">`</span></code></p>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Sets self.q_measured with loaded joint configurations</p></li>
+<li><p>Updates self.calib_config[“NbSample”] with actual sample count</p></li>
+<li><p>May load self._configs for YAML format data</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If sample_configs_file not specified in configuration
+    or if file format is not supported</p></li>
+<li><p><strong>FileNotFoundError</strong> – If specified data file does not exist</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Assuming config specifies &quot;data/candidate_configs.yaml&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt_calib</span><span class="o">.</span><span class="n">load_candidate_configurations</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">opt_calib</span><span class="o">.</span><span class="n">q_measured</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c1"># (1000, 7) for TIAGo</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.load_param">
+<span class="sig-name descname"><span class="pre">load_param</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'calibration'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.load_param"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.load_param" title="Link to this definition"></a></dt>
+<dd><p>Load calibration parameters from YAML configuration file.</p>
+<p>This method supports both legacy YAML format and the new unified
+configuration format. It automatically detects the format type
+and applies the appropriate parser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_file</strong> (<em>str</em>) – Path to configuration file (legacy or unified)</p></li>
+<li><p><strong>setting_type</strong> (<em>str</em>) – Configuration section to load</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.plot" title="Link to this definition"></a></dt>
+<dd><p>Generate comprehensive visualization of optimization results.</p>
+<p>Creates dual-panel plots that provide insight into the optimization
+quality and configuration selection process. The visualizations help
+assess the efficiency of the selected configuration subset.</p>
+<p>Plot Components:
+1. D-optimality criterion vs. number of configurations</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Shows how information matrix determinant improves with
+additional configurations</p></li>
+<li><p>Normalized against theoretical maximum (all configurations)</p></li>
+<li><p>Helps identify diminishing returns point</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p>Configuration weights in logarithmic scale
+- Displays weight assigned to each candidate configuration
+- Configurations above threshold (eps_opt) are selected
+- Shows selection boundary and weight distribution</p></li>
+</ol>
+<dl class="simple">
+<dt>Prerequisites:</dt><dd><ul class="simple">
+<li><p>Optimization must be completed (optimal_configurations available)</p></li>
+<li><p>Information matrices must be computed</p></li>
+</ul>
+</dd>
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Creates matplotlib figure with two subplots</p></li>
+<li><p>Displays plots using plt.show()</p></li>
+<li><p>May block execution until plots are closed</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if plotting successful</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Mathematical Details:</dt><dd><p>D-optimality ratio = detroot_whole / det(selected_subset)
+This ratio approaches 1.0 as selected subset approaches optimality.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">opt_calib</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Plot is automatically generated, or call manually:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt_calib</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>calculate_optimal_configurations: Generates data for plotting
+calculate_detroot_whole: Provides normalization reference</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.plot_results">
+<span class="sig-name descname"><span class="pre">plot_results</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.plot_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.plot_results" title="Link to this definition"></a></dt>
+<dd><p>Plot optimal calibration results using unified results manager.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.rearrange_rb">
+<span class="sig-name descname"><span class="pre">rearrange_rb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">R_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.rearrange_rb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.rearrange_rb" title="Link to this definition"></a></dt>
+<dd><p>rearrange the kinematic regressor by sample numbered order</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.save_results">
+<span class="sig-name descname"><span class="pre">save_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'results'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.save_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.save_results" title="Link to this definition"></a></dt>
+<dd><p>Save optimal configuration results using unified results manager.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.solve" title="Link to this definition"></a></dt>
+<dd><p>Solve the optimal configuration selection problem.</p>
+<p>This is the main entry point that orchestrates the complete optimal
+configuration generation workflow. It automatically handles
+initialization if not already performed, solves the SOCP optimization,
+and provides comprehensive results analysis.</p>
+<p>The method implements the complete D-optimal design workflow:
+1. Initialize data and regressors (if needed)
+2. Solve SOCP optimization for optimal weights
+3. Select configurations with significant weights
+4. Optionally save results to files
+5. Generate visualization plots</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>save_file</strong> (<em>bool</em>) – Whether to save optimal configurations to YAML
+file in results directory. Default False.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Updates self.optimal_configurations with selected configs</p></li>
+<li><p>Updates self.optimal_weights with optimization weights</p></li>
+<li><p>Creates visualization plots</p></li>
+<li><p>May create output files if save_file=True</p></li>
+<li><p>Prints progress and results to console</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>AssertionError</strong> – If minimum configuration requirement not met</p></li>
+<li><p><strong>ValueError</strong> – If optimization problem is infeasible</p></li>
+<li><p><strong>IOError</strong> – If file saving fails (logged as warning)</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">opt_calib</span> <span class="o">=</span> <span class="n">TiagoOptimalCalibration</span><span class="p">(</span><span class="n">robot</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt_calib</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">save_file</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">12 configs are chosen: [0, 5, 12, 18, ...]</span>
+<span class="go">Optimal configurations written to file successfully</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>initialize: Data preparation workflow
+calculate_optimal_configurations: Core optimization solver
+plot: Results visualization
+save_results: File output management</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalCalibration.sub_info_matrix">
+<span class="sig-name descname"><span class="pre">sub_info_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.sub_info_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalCalibration.sub_info_matrix" title="Link to this definition"></a></dt>
+<dd><p>Decompose regressor into individual configuration info matrices.</p>
+<p>Creates separate information matrices for each configuration by
+extracting the corresponding rows from the full regressor matrix.
+This decomposition enables individual configuration evaluation
+in the optimization process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>R</strong> (<em>ndarray</em>) – Full rearranged kinematic regressor matrix</p></li>
+<li><p><strong>calib_config</strong> (<em>dict</em>) – Calibration parameters including sample count
+and calibration index</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>(subX_list, subX_dict) where:</dt><dd><ul class="simple">
+<li><p>subX_list: List of information matrices (RᵢᵀRᵢ)</p></li>
+<li><p>subX_dict: Dictionary mapping config index to matrix</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Mathematical Details:</dt><dd><p>For configuration i:
+Rᵢ = R[i*idx:(i+1)*idx, :]  (extract rows)
+Xᵢ = RᵢᵀRᵢ  (information matrix)</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">R_full</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">6000</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>  <span class="c1"># 1000 configs, 6 DOF</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">subX_list</span><span class="p">,</span> <span class="n">subX_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_info_matrix</span><span class="p">(</span><span class="n">R_full</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subX_list</span><span class="p">))</span>  <span class="c1"># 1000</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">subX_dict</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c1"># (42, 42)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalTrajectory">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">figaroh.optimal.</span></span><span class="sig-name descname"><span class="pre">BaseOptimalTrajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active_joints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'config/robot_config.yaml'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseOptimalTrajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalTrajectory" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for IPOPT-based optimal trajectory generation.</p>
+<p>Features:
+- Modular design with separated concerns
+- Better error handling and logging
+- Configuration validation
+- Cleaner interfaces</p>
+<p>This base class can be extended for specific robots by implementing
+robot-specific configuration loading and constraint handling.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalTrajectory.create_ipopt_problem">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">create_ipopt_problem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_joints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_wps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_wps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acc_wps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wp_init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_wp_init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acc_wp_init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W_stack</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseOptimalTrajectory.create_ipopt_problem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalTrajectory.create_ipopt_problem" title="Link to this definition"></a></dt>
+<dd><p>Create IPOPT problem instance. Should be implemented by subclasses.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalTrajectory.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseOptimalTrajectory.initialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalTrajectory.initialize" title="Link to this definition"></a></dt>
+<dd><p>Initialize trajectory generation components.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalTrajectory.objective_function">
+<span class="sig-name descname"><span class="pre">objective_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_cb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_wps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acc_wps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wp_init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W_stack</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseOptimalTrajectory.objective_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalTrajectory.objective_function" title="Link to this definition"></a></dt>
+<dd><p>Objective function: condition number of base regressor matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalTrajectory.plot_results">
+<span class="sig-name descname"><span class="pre">plot_results</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseOptimalTrajectory.plot_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalTrajectory.plot_results" title="Link to this definition"></a></dt>
+<dd><p>Plot optimal trajectory results using unified results manager.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalTrajectory.save_results">
+<span class="sig-name descname"><span class="pre">save_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'results'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseOptimalTrajectory.save_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalTrajectory.save_results" title="Link to this definition"></a></dt>
+<dd><p>Save optimal trajectory results using unified results manager.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.BaseOptimalTrajectory.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack_reps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseOptimalTrajectory.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.BaseOptimalTrajectory.solve" title="Link to this definition"></a></dt>
+<dd><p>Solve the optimal trajectory generation problem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stack_reps</strong> – Number of trajectory segments to stack</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict containing trajectories and optimization info</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
 </section>
-<section id="figaroh-optimal-base-optimal-calibration-module">
-<h2>figaroh.optimal.base_optimal_calibration module<a class="headerlink" href="#figaroh-optimal-base-optimal-calibration-module" title="Link to this heading"></a></h2>
+<section id="module-figaroh.optimal.base_optimal_calibration">
+<span id="figaroh-optimal-base-optimal-calibration-module"></span><h2>figaroh.optimal.base_optimal_calibration module<a class="headerlink" href="#module-figaroh.optimal.base_optimal_calibration" title="Link to this heading"></a></h2>
+<p>Base class for robot optimal configuration generation for calibration.
+This module provides a generalized framework for optimal configuration
+generation that can be inherited by any robot type (TIAGo, UR10, MATE, etc.).</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">figaroh.optimal.base_optimal_calibration.</span></span><span class="sig-name descname"><span class="pre">BaseOptimalCalibration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'config/robot_config.yaml'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Base class for robot optimal configuration generation for calibration.</p>
+<p>This class implements the framework for generating optimal robot
+configurations that maximize the observability of kinematic parameters
+during calibration. It uses Second-Order Cone Programming (SOCP) to
+solve the D-optimal design problem for parameter estimation.</p>
+<p>The class provides a Template Method pattern where the main workflow
+is defined, but specific optimization strategies can be customized
+by derived classes for different robot types.</p>
+<dl>
+<dt>Workflow:</dt><dd><ol class="arabic simple">
+<li><p>Load candidate configurations from file (CSV or YAML)</p></li>
+<li><p>Calculate kinematic regressors for all candidates</p></li>
+<li><p>Compute information matrices for each configuration</p></li>
+<li><p>Solve SOCP optimization to find optimal subset</p></li>
+<li><p>Select configurations with significant weights</p></li>
+<li><p>Visualize and save results</p></li>
+</ol>
+</dd>
+<dt>Key Features:</dt><dd><ul class="simple">
+<li><p>D-optimal experimental design for calibration</p></li>
+<li><p>Support for multiple calibration models (full_params, joint_offset)</p></li>
+<li><p>Automatic minimum configuration calculation</p></li>
+<li><p>SOCP-based optimization with convex relaxation</p></li>
+<li><p>Comprehensive visualization and analysis tools</p></li>
+<li><p>File I/O for configuration management</p></li>
+</ul>
+</dd>
+<dt>Mathematical Background:</dt><dd><p>The method maximizes the determinant of the Fisher Information Matrix:
+max det(Σᵢ wᵢ Rᵢᵀ Rᵢ) subject to Σᵢ wᵢ ≤ 1, wᵢ ≥ 0</p>
+<p>Where:
+- Rᵢ is the kinematic regressor for configuration i
+- wᵢ is the weight assigned to configuration i
+- The objective maximizes parameter estimation precision</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.robot">
+<span class="sig-name descname"><span class="pre">robot</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.robot" title="Link to this definition"></a></dt>
+<dd><p>Robot model instance loaded with FIGAROH</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.model" title="Link to this definition"></a></dt>
+<dd><p>Pinocchio robot model</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.data">
+<span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.data" title="Link to this definition"></a></dt>
+<dd><p>Pinocchio robot data</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.calib_config">
+<span class="sig-name descname"><span class="pre">calib_config</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.calib_config" title="Link to this definition"></a></dt>
+<dd><p>Calibration parameters from configuration file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.optimal_configurations">
+<span class="sig-name descname"><span class="pre">optimal_configurations</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.optimal_configurations" title="Link to this definition"></a></dt>
+<dd><p>Selected optimal configurations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.optimal_weights">
+<span class="sig-name descname"><span class="pre">optimal_weights</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.optimal_weights" title="Link to this definition"></a></dt>
+<dd><p>Weights assigned to configurations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.minNbChosen">
+<span class="sig-name descname"><span class="pre">minNbChosen</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.minNbChosen" title="Link to this definition"></a></dt>
+<dd><p>Minimum number of configurations required</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">#</span> <span class="pre">Internal</span> <span class="pre">computation</span> <span class="pre">attributes</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.R_rearr">
+<span class="sig-name descname"><span class="pre">R_rearr</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.R_rearr" title="Link to this definition"></a></dt>
+<dd><p>Rearranged kinematic regressor matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.detroot_whole">
+<span class="sig-name descname"><span class="pre">detroot_whole</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.detroot_whole" title="Link to this definition"></a></dt>
+<dd><p>Determinant root of full information matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.w_list">
+<span class="sig-name descname"><span class="pre">w_list</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.w_list" title="Link to this definition"></a></dt>
+<dd><p>Solution weights from SOCP optimization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.w_dict_sort">
+<span class="sig-name descname"><span class="pre">w_dict_sort</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.w_dict_sort" title="Link to this definition"></a></dt>
+<dd><p>Sorted weights by configuration index</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Basic usage for TIAGo robot</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.robots</span><span class="w"> </span><span class="kn">import</span> <span class="n">TiagoRobot</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">robot</span> <span class="o">=</span> <span class="n">TiagoRobot</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create optimal calibration instance</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt_calib</span> <span class="o">=</span> <span class="n">TiagoOptimalCalibration</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s2">&quot;config/tiago.yaml&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Generate optimal configurations</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt_calib</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">save_file</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Access results</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Selected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">opt_calib</span><span class="o">.</span><span class="n">optimal_configurations</span><span class="p">)</span><span class="si">}</span><span class="s2"> configs&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Minimum required: </span><span class="si">{</span><span class="n">opt_calib</span><span class="o">.</span><span class="n">minNbChosen</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>BaseCalibration: Main calibration framework
+SOCPOptimizer: Second-order cone programming solver
+TiagoOptimalCalibration: TIAGo-specific implementation
+UR10OptimalCalibration: UR10-specific implementation</p>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.calculate_detroot_whole">
+<span class="sig-name descname"><span class="pre">calculate_detroot_whole</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.calculate_detroot_whole"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.calculate_detroot_whole" title="Link to this definition"></a></dt>
+<dd><p>Calculate determinant root of complete information matrix.</p>
+<p>Computes the determinant root of the full Fisher Information Matrix
+formed by all candidate configurations. This serves as the theoretical
+upper bound for the D-optimality criterion and is used for
+performance comparison.</p>
+<dl>
+<dt>Mathematical Background:</dt><dd><p>M_full = R^T R  (full regressor)
+detroot_whole = det(M_full)^(1/n) / sqrt(n)</p>
+<p>This represents the geometric mean of eigenvalues, normalized
+by matrix dimension for scale independence.</p>
+</dd>
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Sets self.detroot_whole with computed determinant root</p></li>
+<li><p>Prints the computed value for verification</p></li>
+</ul>
+</dd>
+<dt>Prerequisites:</dt><dd><ul class="simple">
+<li><p>Kinematic regressor must be calculated (self.R_rearr)</p></li>
+<li><p>Requires picos library for determinant computation</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>AssertionError</strong> – If regressor calculation not performed first</p></li>
+<li><p><strong>ImportError</strong> – If picos library not available</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>calculate_regressor: Prerequisites for this computation
+plot: Uses this value for performance comparison</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.calculate_optimal_configurations">
+<span class="sig-name descname"><span class="pre">calculate_optimal_configurations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.calculate_optimal_configurations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.calculate_optimal_configurations" title="Link to this definition"></a></dt>
+<dd><p>Solve SOCP optimization to find optimal configuration subset.</p>
+<p>This is the core optimization method that solves the D-optimal
+experimental design problem using Second-Order Cone Programming.
+The method finds weights for each candidate configuration that
+maximize the determinant of the Fisher Information Matrix.</p>
+<dl>
+<dt>Optimization Problem:</dt><dd><p>maximize det(Σᵢ wᵢ Xᵢ)^(1/n)
+subject to: Σᵢ wᵢ ≤ 1, wᵢ ≥ 0</p>
+<p>Where Xᵢ are information matrices and wᵢ are configuration weights.</p>
+</dd>
+<dt>Selection Process:</dt><dd><ol class="arabic simple">
+<li><p>Solve SOCP optimization for optimal weights</p></li>
+<li><p>Select configurations with weights &gt; eps_opt (1e-5)</p></li>
+<li><p>Verify minimum configuration requirement is met</p></li>
+<li><p>Store selected configurations and weights</p></li>
+</ol>
+</dd>
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Sets self.w_list with optimization solution weights</p></li>
+<li><p>Sets self.w_dict_sort with sorted weight dictionary</p></li>
+<li><p>Sets self.optimal_configurations with selected configs</p></li>
+<li><p>Sets self.optimal_weights with final weight values</p></li>
+<li><p>Sets self.nb_chosen with number of selected configurations</p></li>
+<li><p>Prints timing information and selection results</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if optimization successful and feasible</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>AssertionError</strong> – If regressor not calculated or if insufficient
+    configurations selected (infeasible design)</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">opt_calib</span><span class="o">.</span><span class="n">calculate_optimal_configurations</span><span class="p">()</span>
+<span class="go">solve time of socp: 2.35 seconds</span>
+<span class="go">12 configs are chosen: [0, 5, 12, 18, 23, ...]</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>SOCPOptimizer: The optimization solver implementation
+calculate_regressor: Required prerequisite computation</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.calculate_regressor">
+<span class="sig-name descname"><span class="pre">calculate_regressor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.calculate_regressor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.calculate_regressor" title="Link to this definition"></a></dt>
+<dd><p>Calculate kinematic regressors and information matrices.</p>
+<p>Computes the kinematic regressor matrices that relate kinematic
+parameter variations to end-effector pose changes. This is the
+mathematical foundation for the optimization problem.</p>
+<p>The method performs several key computations:
+1. Calculate base kinematic regressors for all configurations
+2. Rearrange regressor matrix by sample order for efficiency
+3. Compute individual information matrices for each configuration
+4. Store results for optimization access</p>
+<dl>
+<dt>Mathematical Background:</dt><dd><p>For each configuration i, the regressor Rᵢ satisfies:
+δx = Rᵢ δθ
+where δx is pose variation and δθ is parameter variation.</p>
+<p>The information matrix is: Xᵢ = RᵢᵀRᵢ</p>
+</dd>
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Sets self.R_rearr with rearranged kinematic regressor</p></li>
+<li><p>Sets self._subX_list with list of information matrices</p></li>
+<li><p>Sets self._subX_dict with indexed information matrices</p></li>
+<li><p>Prints parameter names for verification</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if calculation successful</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Prerequisites:</dt><dd><ul class="simple">
+<li><p>Joint configurations must be loaded (self.q_measured)</p></li>
+<li><p>Robot model and parameters must be initialized</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>calculate_base_kinematics_regressor: Core regressor computation
+rearrange_rb: Matrix rearrangement for optimization
+sub_info_matrix: Information matrix decomposition</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.initialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.initialize" title="Link to this definition"></a></dt>
+<dd><p>Initialize the optimization process by preparing all required data.</p>
+<p>This method orchestrates the initialization sequence required before
+optimization can begin. It ensures all mathematical components are
+properly computed and cached for efficient optimization.</p>
+<p>The initialization sequence:
+1. Load candidate configurations from external files
+2. Calculate kinematic regressors for all configurations
+3. Compute determinant root of the full information matrix</p>
+<dl class="simple">
+<dt>Prerequisites:</dt><dd><ul class="simple">
+<li><p>Robot model and parameters must be loaded</p></li>
+<li><p>Configuration file must specify valid sample data paths</p></li>
+</ul>
+</dd>
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Sets self.q_measured with candidate joint configurations</p></li>
+<li><p>Sets self.R_rearr with rearranged kinematic regressor</p></li>
+<li><p>Sets self._subX_dict and self._subX_list with info matrices</p></li>
+<li><p>Sets self.detroot_whole with full matrix determinant root</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If sample configuration file is invalid or missing</p></li>
+<li><p><strong>AssertionError</strong> – If regressor calculation fails</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>load_candidate_configurations: Configuration data loading
+calculate_regressor: Kinematic regressor computation
+calculate_detroot_whole: Information matrix analysis</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.load_candidate_configurations">
+<span class="sig-name descname"><span class="pre">load_candidate_configurations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.load_candidate_configurations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.load_candidate_configurations" title="Link to this definition"></a></dt>
+<dd><p>Load candidate joint configurations from external data files.</p>
+<p>Reads robot joint configurations from CSV or YAML files that serve
+as the candidate pool for optimization. The method supports multiple
+file formats and automatically updates the sample count parameter.</p>
+<p>Supported formats:
+- CSV: Standard measurement data format with joint configurations
+- YAML: Structured format with named joints and configurations</p>
+<p>The YAML format expects:
+<code class="docutils literal notranslate"><span class="pre">`yaml</span>
+<span class="pre">calibration_joint_names:</span> <span class="pre">[joint1,</span> <span class="pre">joint2,</span> <span class="pre">...]</span>
+<span class="pre">calibration_joint_configurations:</span> <span class="pre">[[q1_1,</span> <span class="pre">q1_2,</span> <span class="pre">...],</span> <span class="pre">[q2_1,</span> <span class="pre">...]]</span>
+<span class="pre">`</span></code></p>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Sets self.q_measured with loaded joint configurations</p></li>
+<li><p>Updates self.calib_config[“NbSample”] with actual sample count</p></li>
+<li><p>May load self._configs for YAML format data</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If sample_configs_file not specified in configuration
+    or if file format is not supported</p></li>
+<li><p><strong>FileNotFoundError</strong> – If specified data file does not exist</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Assuming config specifies &quot;data/candidate_configs.yaml&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt_calib</span><span class="o">.</span><span class="n">load_candidate_configurations</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">opt_calib</span><span class="o">.</span><span class="n">q_measured</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c1"># (1000, 7) for TIAGo</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.load_param">
+<span class="sig-name descname"><span class="pre">load_param</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'calibration'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.load_param"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.load_param" title="Link to this definition"></a></dt>
+<dd><p>Load calibration parameters from YAML configuration file.</p>
+<p>This method supports both legacy YAML format and the new unified
+configuration format. It automatically detects the format type
+and applies the appropriate parser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_file</strong> (<em>str</em>) – Path to configuration file (legacy or unified)</p></li>
+<li><p><strong>setting_type</strong> (<em>str</em>) – Configuration section to load</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.plot" title="Link to this definition"></a></dt>
+<dd><p>Generate comprehensive visualization of optimization results.</p>
+<p>Creates dual-panel plots that provide insight into the optimization
+quality and configuration selection process. The visualizations help
+assess the efficiency of the selected configuration subset.</p>
+<p>Plot Components:
+1. D-optimality criterion vs. number of configurations</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Shows how information matrix determinant improves with
+additional configurations</p></li>
+<li><p>Normalized against theoretical maximum (all configurations)</p></li>
+<li><p>Helps identify diminishing returns point</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p>Configuration weights in logarithmic scale
+- Displays weight assigned to each candidate configuration
+- Configurations above threshold (eps_opt) are selected
+- Shows selection boundary and weight distribution</p></li>
+</ol>
+<dl class="simple">
+<dt>Prerequisites:</dt><dd><ul class="simple">
+<li><p>Optimization must be completed (optimal_configurations available)</p></li>
+<li><p>Information matrices must be computed</p></li>
+</ul>
+</dd>
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Creates matplotlib figure with two subplots</p></li>
+<li><p>Displays plots using plt.show()</p></li>
+<li><p>May block execution until plots are closed</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if plotting successful</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Mathematical Details:</dt><dd><p>D-optimality ratio = detroot_whole / det(selected_subset)
+This ratio approaches 1.0 as selected subset approaches optimality.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">opt_calib</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Plot is automatically generated, or call manually:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt_calib</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>calculate_optimal_configurations: Generates data for plotting
+calculate_detroot_whole: Provides normalization reference</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.plot_results">
+<span class="sig-name descname"><span class="pre">plot_results</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.plot_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.plot_results" title="Link to this definition"></a></dt>
+<dd><p>Plot optimal calibration results using unified results manager.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.rearrange_rb">
+<span class="sig-name descname"><span class="pre">rearrange_rb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">R_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.rearrange_rb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.rearrange_rb" title="Link to this definition"></a></dt>
+<dd><p>rearrange the kinematic regressor by sample numbered order</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.save_results">
+<span class="sig-name descname"><span class="pre">save_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'results'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.save_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.save_results" title="Link to this definition"></a></dt>
+<dd><p>Save optimal configuration results using unified results manager.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.solve" title="Link to this definition"></a></dt>
+<dd><p>Solve the optimal configuration selection problem.</p>
+<p>This is the main entry point that orchestrates the complete optimal
+configuration generation workflow. It automatically handles
+initialization if not already performed, solves the SOCP optimization,
+and provides comprehensive results analysis.</p>
+<p>The method implements the complete D-optimal design workflow:
+1. Initialize data and regressors (if needed)
+2. Solve SOCP optimization for optimal weights
+3. Select configurations with significant weights
+4. Optionally save results to files
+5. Generate visualization plots</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>save_file</strong> (<em>bool</em>) – Whether to save optimal configurations to YAML
+file in results directory. Default False.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Updates self.optimal_configurations with selected configs</p></li>
+<li><p>Updates self.optimal_weights with optimization weights</p></li>
+<li><p>Creates visualization plots</p></li>
+<li><p>May create output files if save_file=True</p></li>
+<li><p>Prints progress and results to console</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>AssertionError</strong> – If minimum configuration requirement not met</p></li>
+<li><p><strong>ValueError</strong> – If optimization problem is infeasible</p></li>
+<li><p><strong>IOError</strong> – If file saving fails (logged as warning)</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">opt_calib</span> <span class="o">=</span> <span class="n">TiagoOptimalCalibration</span><span class="p">(</span><span class="n">robot</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt_calib</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">save_file</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">12 configs are chosen: [0, 5, 12, 18, ...]</span>
+<span class="go">Optimal configurations written to file successfully</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>initialize: Data preparation workflow
+calculate_optimal_configurations: Core optimization solver
+plot: Results visualization
+save_results: File output management</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.sub_info_matrix">
+<span class="sig-name descname"><span class="pre">sub_info_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#BaseOptimalCalibration.sub_info_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.sub_info_matrix" title="Link to this definition"></a></dt>
+<dd><p>Decompose regressor into individual configuration info matrices.</p>
+<p>Creates separate information matrices for each configuration by
+extracting the corresponding rows from the full regressor matrix.
+This decomposition enables individual configuration evaluation
+in the optimization process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>R</strong> (<em>ndarray</em>) – Full rearranged kinematic regressor matrix</p></li>
+<li><p><strong>calib_config</strong> (<em>dict</em>) – Calibration parameters including sample count
+and calibration index</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>(subX_list, subX_dict) where:</dt><dd><ul class="simple">
+<li><p>subX_list: List of information matrices (RᵢᵀRᵢ)</p></li>
+<li><p>subX_dict: Dictionary mapping config index to matrix</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Mathematical Details:</dt><dd><p>For configuration i:
+Rᵢ = R[i*idx:(i+1)*idx, :]  (extract rows)
+Xᵢ = RᵢᵀRᵢ  (information matrix)</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">R_full</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">6000</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>  <span class="c1"># 1000 configs, 6 DOF</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">subX_list</span><span class="p">,</span> <span class="n">subX_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_info_matrix</span><span class="p">(</span><span class="n">R_full</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subX_list</span><span class="p">))</span>  <span class="c1"># 1000</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">subX_dict</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c1"># (42, 42)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.Detmax">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">figaroh.optimal.base_optimal_calibration.</span></span><span class="sig-name descname"><span class="pre">Detmax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">candidate_pool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NbChosen</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#Detmax"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.Detmax" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Determinant Maximization optimizer using greedy exchange algorithm.</p>
+<p>This class implements a heuristic optimization algorithm for D-optimal
+experimental design that uses a greedy exchange strategy to find
+near-optimal configuration subsets. Unlike the SOCP approach, this
+method provides a combinatorial solution that directly selects
+discrete configurations.</p>
+<dl>
+<dt>Algorithm Overview:</dt><dd><p>The DetMax algorithm uses an iterative exchange procedure:
+1. Initialize with a random subset of configurations
+2. Iteratively add the configuration that maximally improves</p>
+<blockquote>
+<div><p>the determinant criterion</p>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li><p>Remove the configuration whose absence minimally degrades
+the determinant criterion</p></li>
+<li><p>Repeat until convergence (no beneficial exchanges)</p></li>
+</ol>
+</dd>
+<dt>Mathematical Background:</dt><dd><p>The algorithm maximizes det(Σᵢ∈S Xᵢ)^(1/n) where:
+- S is the selected configuration subset
+- Xᵢ are information matrices for configurations
+- n is the matrix dimension</p>
+<p>This is a discrete optimization problem (vs continuous SOCP).</p>
+</dd>
+<dt>Advantages:</dt><dd><ul class="simple">
+<li><p>Provides exact discrete solution (no weight thresholding)</p></li>
+<li><p>Computationally efficient for small to medium problems</p></li>
+<li><p>Intuitive greedy strategy with good convergence properties</p></li>
+<li><p>No external optimization solvers required</p></li>
+</ul>
+</dd>
+<dt>Limitations:</dt><dd><ul class="simple">
+<li><p>May converge to local optima (not globally optimal)</p></li>
+<li><p>Performance depends on random initialization</p></li>
+<li><p>Computational complexity grows with candidate pool size</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.Detmax.pool">
+<span class="sig-name descname"><span class="pre">pool</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.Detmax.pool" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of information matrices indexed by config ID</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.Detmax.nd">
+<span class="sig-name descname"><span class="pre">nd</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.Detmax.nd" title="Link to this definition"></a></dt>
+<dd><p>Number of configurations to select</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.Detmax.cur_set">
+<span class="sig-name descname"><span class="pre">cur_set</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.Detmax.cur_set" title="Link to this definition"></a></dt>
+<dd><p>Current configuration subset being evaluated</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.Detmax.fail_set">
+<span class="sig-name descname"><span class="pre">fail_set</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.Detmax.fail_set" title="Link to this definition"></a></dt>
+<dd><p>Configurations that failed selection criteria</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.Detmax.opt_set">
+<span class="sig-name descname"><span class="pre">opt_set</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.Detmax.opt_set" title="Link to this definition"></a></dt>
+<dd><p>Final optimal configuration subset</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.Detmax.opt_critD">
+<span class="sig-name descname"><span class="pre">opt_critD</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.Detmax.opt_critD" title="Link to this definition"></a></dt>
+<dd><p>Evolution of determinant criterion during
+optimization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create DetMax optimizer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detmax</span> <span class="o">=</span> <span class="n">Detmax</span><span class="p">(</span><span class="n">subX_dict</span><span class="p">,</span> <span class="n">num_configs</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Run optimization</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion_history</span> <span class="o">=</span> <span class="n">detmax</span><span class="o">.</span><span class="n">main_algo</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get selected configurations</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">selected_configs</span> <span class="o">=</span> <span class="n">detmax</span><span class="o">.</span><span class="n">cur_set</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">final_criterion</span> <span class="o">=</span> <span class="n">criterion_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Selected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">selected_configs</span><span class="p">)</span><span class="si">}</span><span class="s2"> configurations&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final D-optimality: </span><span class="si">{</span><span class="n">final_criterion</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>SOCPOptimizer: Alternative SOCP-based optimization approach
+BaseOptimalCalibration: Main calibration framework</p>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.Detmax.get_critD">
+<span class="sig-name descname"><span class="pre">get_critD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">set</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#Detmax.get_critD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.Detmax.get_critD" title="Link to this definition"></a></dt>
+<dd><p>Calculate D-optimality criterion for configuration subset.</p>
+<p>Computes the determinant root of the Fisher Information Matrix
+formed by summing the information matrices of configurations
+in the specified subset. This serves as the objective function
+for the determinant maximization algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>set</strong> (<em>list</em>) – List of configuration indices from the candidate
+pool to include in the criterion calculation</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>D-optimality criterion value (determinant root)</dt><dd><p>Higher values indicate better parameter identifiability</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – If any configuration index not in candidate pool</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Mathematical Details:</dt><dd><p>For subset S, computes: det(Σᵢ∈S Xᵢ)^(1/n)
+where Xᵢ are information matrices and n is matrix dimension</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">subset</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">18</span><span class="p">]</span>  <span class="c1"># Configuration indices</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">get_critD</span><span class="p">(</span><span class="n">subset</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;D-optimality: </span><span class="si">{</span><span class="n">criterion</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.Detmax.main_algo">
+<span class="sig-name descname"><span class="pre">main_algo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#Detmax.main_algo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.Detmax.main_algo" title="Link to this definition"></a></dt>
+<dd><p>Execute the main determinant maximization algorithm.</p>
+<p>Implements the greedy exchange algorithm for D-optimal experimental
+design. The algorithm alternates between adding configurations that
+maximally improve the determinant and removing configurations whose
+absence minimally degrades the determinant.</p>
+<p>Algorithm Steps:
+1. Initialize random subset of target size from candidate pool
+2. Exchange Loop:</p>
+<blockquote>
+<div><ol class="loweralpha simple">
+<li><p>ADD PHASE: Find configuration that maximally improves criterion</p></li>
+<li><p>REMOVE PHASE: Find configuration whose removal minimally hurts</p></li>
+<li><p>Update current subset and criterion value</p></li>
+</ol>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li><p>Repeat until convergence (no beneficial exchanges)</p></li>
+<li><p>Return optimization history</p></li>
+</ol>
+<dl class="simple">
+<dt>Convergence Condition:</dt><dd><p>The algorithm stops when the optimal configuration to add
+equals the optimal configuration to remove, indicating no
+further improvement is possible.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>History of D-optimality criterion values throughout</dt><dd><p>the optimization process. Last value is final criterion.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Updates self.cur_set with final optimal configuration subset</p></li>
+<li><p>Updates self.opt_critD with complete optimization history</p></li>
+<li><p>Uses random initialization (results may vary between runs)</p></li>
+</ul>
+</dd>
+<dt>Complexity:</dt><dd><p>O(max_iterations × candidate_pool_size × target_subset_size)
+where max_iterations depends on problem structure and
+initialization</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">Detmax</span><span class="p">(</span><span class="n">info_matrices</span><span class="p">,</span> <span class="n">NbChosen</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">history</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">main_algo</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Converged after </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">history</span><span class="p">)</span><span class="si">}</span><span class="s2"> iterations&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final subset: </span><span class="si">{</span><span class="n">optimizer</span><span class="o">.</span><span class="n">cur_set</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final criterion: </span><span class="si">{</span><span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The algorithm may converge to different local optima depending
+on random initialization. For critical applications, consider
+running multiple times with different seeds.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.SOCPOptimizer">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">figaroh.optimal.base_optimal_calibration.</span></span><span class="sig-name descname"><span class="pre">SOCPOptimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subX_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#SOCPOptimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Second-Order Cone Programming optimizer for configuration selection.</p>
+<p>Implements the mathematical optimization for D-optimal experimental design
+using Second-Order Cone Programming (SOCP). This class formulates and
+solves the convex optimization problem that maximizes the determinant
+of the Fisher Information Matrix.</p>
+<dl>
+<dt>Mathematical Formulation:</dt><dd><p>maximize t
+subject to: t ≤ det(Σᵢ wᵢ Xᵢ)^(1/n)</p>
+<blockquote>
+<div><p>Σᵢ wᵢ ≤ 1
+wᵢ ≥ 0</p>
+</div></blockquote>
+<p>Where:
+- t is auxiliary variable for objective
+- wᵢ are configuration weights
+- Xᵢ are information matrices
+- n is matrix dimension</p>
+</dd>
+</dl>
+<p>The problem is solved using the CVXOPT solver with picos interface.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.SOCPOptimizer.pool">
+<span class="sig-name descname"><span class="pre">pool</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer.pool" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of information matrices indexed by config ID</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.SOCPOptimizer.calib_config">
+<span class="sig-name descname"><span class="pre">calib_config</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer.calib_config" title="Link to this definition"></a></dt>
+<dd><p>Calibration parameters including sample count</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.SOCPOptimizer.problem">
+<span class="sig-name descname"><span class="pre">problem</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer.problem" title="Link to this definition"></a></dt>
+<dd><p>Picos optimization problem instance</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.SOCPOptimizer.w">
+<span class="sig-name descname"><span class="pre">w</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer.w" title="Link to this definition"></a></dt>
+<dd><p>Decision variable for configuration weights</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.SOCPOptimizer.t">
+<span class="sig-name descname"><span class="pre">t</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer.t" title="Link to this definition"></a></dt>
+<dd><p>Auxiliary variable for determinant objective</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.SOCPOptimizer.solution">
+<span class="sig-name descname"><span class="pre">solution</span></span><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer.solution" title="Link to this definition"></a></dt>
+<dd><p>Optimization solution object</p>
+</dd></dl>
+
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">SOCPOptimizer</span><span class="p">(</span><span class="n">subX_dict</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">weights</span><span class="p">,</span> <span class="n">sorted_weights</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Optimization status: </span><span class="si">{</span><span class="n">optimizer</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.SOCPOptimizer.add_constraints">
+<span class="sig-name descname"><span class="pre">add_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#SOCPOptimizer.add_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer.add_constraints" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.SOCPOptimizer.set_objective">
+<span class="sig-name descname"><span class="pre">set_objective</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#SOCPOptimizer.set_objective"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer.set_objective" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_calibration.SOCPOptimizer.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_calibration.html#SOCPOptimizer.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_calibration.SOCPOptimizer.solve" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </section>
-<section id="figaroh-optimal-base-optimal-trajectory-module">
-<h2>figaroh.optimal.base_optimal_trajectory module<a class="headerlink" href="#figaroh-optimal-base-optimal-trajectory-module" title="Link to this heading"></a></h2>
+<section id="module-figaroh.optimal.base_optimal_trajectory">
+<span id="figaroh-optimal-base-optimal-trajectory-module"></span><h2>figaroh.optimal.base_optimal_trajectory module<a class="headerlink" href="#module-figaroh.optimal.base_optimal_trajectory" title="Link to this heading"></a></h2>
+<p>Base Optimal Trajectory Generation Framework</p>
+<p>This module provides base classes for optimal trajectory generation with
+configuration management, parameter computation, constraint handling, and
+IPOPT-based optimization. This framework can be extended for different robots.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">figaroh.optimal.base_optimal_trajectory.</span></span><span class="sig-name descname"><span class="pre">BaseOptimalTrajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active_joints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'config/robot_config.yaml'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseOptimalTrajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for IPOPT-based optimal trajectory generation.</p>
+<p>Features:
+- Modular design with separated concerns
+- Better error handling and logging
+- Configuration validation
+- Cleaner interfaces</p>
+<p>This base class can be extended for specific robots by implementing
+robot-specific configuration loading and constraint handling.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory.create_ipopt_problem">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">create_ipopt_problem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_joints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_wps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_wps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acc_wps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wp_init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_wp_init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acc_wp_init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W_stack</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseOptimalTrajectory.create_ipopt_problem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory.create_ipopt_problem" title="Link to this definition"></a></dt>
+<dd><p>Create IPOPT problem instance. Should be implemented by subclasses.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseOptimalTrajectory.initialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory.initialize" title="Link to this definition"></a></dt>
+<dd><p>Initialize trajectory generation components.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory.objective_function">
+<span class="sig-name descname"><span class="pre">objective_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_cb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_wps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acc_wps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wp_init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W_stack</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseOptimalTrajectory.objective_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory.objective_function" title="Link to this definition"></a></dt>
+<dd><p>Objective function: condition number of base regressor matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory.plot_results">
+<span class="sig-name descname"><span class="pre">plot_results</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseOptimalTrajectory.plot_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory.plot_results" title="Link to this definition"></a></dt>
+<dd><p>Plot optimal trajectory results using unified results manager.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory.save_results">
+<span class="sig-name descname"><span class="pre">save_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'results'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseOptimalTrajectory.save_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory.save_results" title="Link to this definition"></a></dt>
+<dd><p>Save optimal trajectory results using unified results manager.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack_reps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseOptimalTrajectory.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_trajectory.BaseOptimalTrajectory.solve" title="Link to this definition"></a></dt>
+<dd><p>Solve the optimal trajectory generation problem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stack_reps</strong> – Number of trajectory segments to stack</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict containing trajectories and optimization info</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">figaroh.optimal.base_optimal_trajectory.</span></span><span class="sig-name descname"><span class="pre">BaseTrajectoryIPOPTProblem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">opt_traj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_joints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_wps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_wps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acc_wps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wp_init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_wp_init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acc_wp_init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W_stack</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'TrajectoryOptimization'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseTrajectoryIPOPTProblem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="tools.html#figaroh.tools.robotipopt.BaseOptimizationProblem" title="figaroh.tools.robotipopt.BaseOptimizationProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseOptimizationProblem</span></code></a></p>
+<p>Base IPOPT problem formulation for trajectory optimization.</p>
+<p>This class provides a base implementation for trajectory optimization
+that can be extended for specific robots.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.constraints">
+<span class="sig-name descname"><span class="pre">constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseTrajectoryIPOPTProblem.constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.constraints" title="Link to this definition"></a></dt>
+<dd><p>Constraint function for IPOPT.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.get_constraint_bounds">
+<span class="sig-name descname"><span class="pre">get_constraint_bounds</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseTrajectoryIPOPTProblem.get_constraint_bounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.get_constraint_bounds" title="Link to this definition"></a></dt>
+<dd><p>Get constraint bounds for optimization.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.get_initial_guess">
+<span class="sig-name descname"><span class="pre">get_initial_guess</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseTrajectoryIPOPTProblem.get_initial_guess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.get_initial_guess" title="Link to this definition"></a></dt>
+<dd><p>Get initial guess from waypoints.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.get_variable_bounds">
+<span class="sig-name descname"><span class="pre">get_variable_bounds</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseTrajectoryIPOPTProblem.get_variable_bounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.get_variable_bounds" title="Link to this definition"></a></dt>
+<dd><p>Get variable bounds for optimization.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.jacobian">
+<span class="sig-name descname"><span class="pre">jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseTrajectoryIPOPTProblem.jacobian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.jacobian" title="Link to this definition"></a></dt>
+<dd><p>Jacobian of constraints - Custom implementation for better performance.</p>
+<p>For trajectory optimization, we can use sparse finite differences
+instead of full automatic differentiation which is too slow.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.objective">
+<span class="sig-name descname"><span class="pre">objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseTrajectoryIPOPTProblem.objective"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.objective" title="Link to this definition"></a></dt>
+<dd><p>Objective function: condition number of base regressor matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.solve_with_waypoints">
+<span class="sig-name descname"><span class="pre">solve_with_waypoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wps</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/figaroh/optimal/base_optimal_trajectory.html#BaseTrajectoryIPOPTProblem.solve_with_waypoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.optimal.base_optimal_trajectory.BaseTrajectoryIPOPTProblem.solve_with_waypoints" title="Link to this definition"></a></dt>
+<dd><p>Solve the optimization problem with given initial waypoints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>wps</strong> – Initial waypoints</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple of (success, results_dict)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 

@@ -1,0 +1,1356 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>figaroh.calibration.base_calibration &mdash; figaroh 0.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://thanhndv212.github.io/figaroh/_modules/figaroh/calibration/base_calibration.html" />
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=e259d695"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            figaroh
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Modules:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/calibration.html">Calibration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/identification.html">Identification</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tools and Utilities:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/tools.html">Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/measurements.html">Measurements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/visualisation.html">Visualisation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Advanced Features:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/optimal.html">figaroh.optimal package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">figaroh</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">figaroh.calibration.base_calibration</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for figaroh.calibration.base_calibration</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright [2021-2025] Thanh Nguyen</span>
+<span class="c1"># Copyright [2022-2023] [CNRS, Toward SAS]</span>
+
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Base calibration class for FIGAROH examples.</span>
+
+<span class="sd">This module provides the BaseCalibration abstract class extracted from the</span>
+<span class="sd">FIGAROH library for use in the examples. It implements a comprehensive</span>
+<span class="sd">framework for robot kinematic calibration.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">yaml.loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">SafeLoader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">os.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">abspath</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">least_squares</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="c1"># FIGAROH imports</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.calibration.calibration_tools</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_param_from_yaml</span><span class="p">,</span>
+    <span class="n">unified_to_legacy_config</span><span class="p">,</span>
+    <span class="n">calculate_base_kinematics_regressor</span><span class="p">,</span>
+    <span class="n">add_base_name</span><span class="p">,</span>
+    <span class="n">add_pee_name</span><span class="p">,</span>
+    <span class="n">load_data</span><span class="p">,</span>
+    <span class="n">calc_updated_fkm</span><span class="p">,</span>
+    <span class="n">initialize_variables</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.utils.config_parser</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">UnifiedConfigParser</span><span class="p">,</span>
+    <span class="n">create_task_config</span><span class="p">,</span>
+    <span class="n">is_unified_config</span>
+<span class="p">)</span>
+
+<span class="c1"># Import from shared modules</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.utils.error_handling</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CalibrationError</span><span class="p">,</span>
+    <span class="n">handle_calibration_errors</span>
+<span class="p">)</span>
+
+<span class="c1"># Setup logger for this module</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">NullHandler</span><span class="p">())</span>
+
+
+<div class="viewcode-block" id="BaseCalibration">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.base_calibration.BaseCalibration">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BaseCalibration</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract base class for robot kinematic calibration.</span>
+<span class="sd">    </span>
+<span class="sd">    This class provides a comprehensive framework for calibrating robot</span>
+<span class="sd">    kinematic parameters using measurement data. It implements the Template</span>
+<span class="sd">    Method pattern, providing common functionality while allowing</span>
+<span class="sd">    robot-specific implementations of the cost function.</span>
+<span class="sd">    </span>
+<span class="sd">    The calibration process follows these main steps:</span>
+<span class="sd">    1. Parameter initialization from configuration files</span>
+<span class="sd">    2. Data loading and validation</span>
+<span class="sd">    3. Parameter identification using base regressor analysis</span>
+<span class="sd">    4. Robust optimization with outlier detection and removal</span>
+<span class="sd">    5. Solution evaluation and validation</span>
+<span class="sd">    6. Results visualization and export</span>
+<span class="sd">    </span>
+<span class="sd">    Key Features:</span>
+<span class="sd">    - Automatic parameter identification using QR decomposition</span>
+<span class="sd">    - Robust optimization with iterative outlier removal</span>
+<span class="sd">    - Unit-aware measurement weighting for position/orientation data</span>
+<span class="sd">    - Comprehensive solution evaluation and quality metrics</span>
+<span class="sd">    - Extensible framework for different robot types</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        STATUS (str): Current calibration status (&quot;NOT CALIBRATED&quot; or</span>
+<span class="sd">                     &quot;CALIBRATED&quot;)</span>
+<span class="sd">        LM_result: Optimization result from scipy.optimize.least_squares</span>
+<span class="sd">        var_ (ndarray): Calibrated parameter values</span>
+<span class="sd">        evaluation_metrics (dict): Solution quality metrics</span>
+<span class="sd">        std_dev (list): Standard deviations of calibrated parameters</span>
+<span class="sd">        std_pctg (list): Standard deviation percentages</span>
+<span class="sd">        PEE_measured (ndarray): Measured end-effector poses/positions</span>
+<span class="sd">        q_measured (ndarray): Measured joint configurations</span>
+<span class="sd">        calib_config (dict): Calibration parameters and configuration</span>
+<span class="sd">        model: Robot kinematic model (Pinocchio)</span>
+<span class="sd">        data: Robot data structure (Pinocchio)</span>
+<span class="sd">    </span>
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; # Create robot-specific calibration</span>
+<span class="sd">        &gt;&gt;&gt; class MyRobotCalibration(BaseCalibration):</span>
+<span class="sd">        ...     def cost_function(self, var):</span>
+<span class="sd">        ...         PEEe = calc_updated_fkm(self.model, self.data, var,</span>
+<span class="sd">        ...                                self.q_measured, self.calib_config)</span>
+<span class="sd">        ...         residuals = self.PEE_measured - PEEe</span>
+<span class="sd">        ...         return self.apply_measurement_weighting(residuals)</span>
+<span class="sd">        ...</span>
+<span class="sd">        &gt;&gt;&gt; # Run calibration</span>
+<span class="sd">        &gt;&gt;&gt; calibrator = MyRobotCalibration(robot, &quot;config.yaml&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; calibrator.initialize()</span>
+<span class="sd">        &gt;&gt;&gt; calibrator.solve()</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;RMSE: {calibrator.evaluation_metrics[&#39;rmse&#39;]:.6f}&quot;)</span>
+<span class="sd">    </span>
+<span class="sd">    Notes:</span>
+<span class="sd">        - Derived classes should implement robot-specific cost_function()</span>
+<span class="sd">        - Default cost_function is provided but issues performance warning</span>
+<span class="sd">        - Configuration files must follow FIGAROH parameter structure</span>
+<span class="sd">        - Supports both &quot;full_params&quot; and &quot;joint_offset&quot; calibration models</span>
+<span class="sd">    </span>
+<span class="sd">    See Also:</span>
+<span class="sd">        - TiagoCalibration: TIAGo robot implementation</span>
+<span class="sd">        - UR10Calibration: Universal Robots UR10 implementation</span>
+<span class="sd">        - calc_updated_fkm: Forward kinematics computation function</span>
+<span class="sd">        - apply_measurement_weighting: Unit-aware weighting utility</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@handle_calibration_errors</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">del_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize robot calibration framework.</span>
+<span class="sd">        </span>
+<span class="sd">        Sets up the calibration environment by loading robot model,</span>
+<span class="sd">        configuration parameters, and preparing internal data structures</span>
+<span class="sd">        for optimization.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            robot: Robot object containing kinematic model and data structures.</span>
+<span class="sd">                  Must have &#39;model&#39; and &#39;data&#39; attributes compatible with</span>
+<span class="sd">                  Pinocchio library.</span>
+<span class="sd">            config_file (str): Path to YAML configuration file containing</span>
+<span class="sd">                             calibration parameters, data paths, and settings.</span>
+<span class="sd">            del_list (list, optional): Indices of bad/outlier samples to</span>
+<span class="sd">                                     exclude from calibration data.</span>
+<span class="sd">                                     Defaults to [].</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            FileNotFoundError: If config_file does not exist</span>
+<span class="sd">            KeyError: If required parameters missing from configuration</span>
+<span class="sd">            ValueError: If configuration parameters are invalid</span>
+<span class="sd">            CalibrationError: If robot or configuration is invalid</span>
+<span class="sd">            </span>
+<span class="sd">        Side Effects:</span>
+<span class="sd">            - Loads and validates configuration parameters</span>
+<span class="sd">            - Sets initial calibration status to &quot;NOT CALIBRATED&quot;</span>
+<span class="sd">            - Calculates number of calibration variables</span>
+<span class="sd">            - Resolves absolute path to measurement data file</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; robot = load_robot_model(&quot;tiago.urdf&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; calibrator = TiagoCalibration(robot, &quot;tiago_config.yaml&quot;,</span>
+<span class="sd">            ...                              del_list=[5, 12, 18])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">del_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">del_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Validate inputs</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s1">&#39;model&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">CalibrationError</span><span class="p">(</span>
+                <span class="s2">&quot;Robot must have &#39;model&#39; and &#39;data&#39; attributes&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span> <span class="o">=</span> <span class="n">robot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">del_list_</span> <span class="o">=</span> <span class="n">del_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_param</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nvars</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;param_name&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_path</span> <span class="o">=</span> <span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;data_file&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">STATUS</span> <span class="o">=</span> <span class="s2">&quot;NOT CALIBRATED&quot;</span>
+
+<div class="viewcode-block" id="BaseCalibration.initialize">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.base_calibration.BaseCalibration.initialize">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize calibration data and parameters.</span>
+<span class="sd">        </span>
+<span class="sd">        Performs the initialization phase of calibration by:</span>
+<span class="sd">        1. Loading measurement data from files</span>
+<span class="sd">        2. Creating parameter list through base regressor analysis</span>
+<span class="sd">        3. Identifying calibratable parameters using QR decomposition</span>
+<span class="sd">        </span>
+<span class="sd">        This method must be called before solve() to prepare the calibration</span>
+<span class="sd">        problem. It handles data validation, parameter identification, and</span>
+<span class="sd">        sets up the optimization problem structure.</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            FileNotFoundError: If measurement data file not found</span>
+<span class="sd">            ValueError: If data format is invalid or incompatible</span>
+<span class="sd">            AssertionError: If required data dimensions don&#39;t match</span>
+<span class="sd">            CalibrationError: If initialization fails</span>
+<span class="sd">            </span>
+<span class="sd">        Side Effects:</span>
+<span class="sd">            - Populates self.PEE_measured with measurement data</span>
+<span class="sd">            - Populates self.q_measured with joint configuration data</span>
+<span class="sd">            - Updates self.calib_config[&quot;param_name&quot;] with identified</span>
+<span class="sd">              parameters</span>
+<span class="sd">            - Validates data consistency and dimensions</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; calibrator = TiagoCalibration(robot, &quot;config.yaml&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; calibrator.initialize()</span>
+<span class="sd">            &gt;&gt;&gt; print(f&quot;Loaded {calibrator.calib_config[&#39;NbSample&#39;]} samples&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; print(f&quot;Calibrating {len(calibrator.calib_config[&#39;param_name&#39;])} &quot;</span>
+<span class="sd">            ...       f&quot;parameters&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_data_set</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_param_list</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CalibrationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Initialization failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.solve">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.base_calibration.BaseCalibration.solve">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;lm&quot;</span><span class="p">,</span> <span class="n">max_iterations</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">outlier_threshold</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
+              <span class="n">enable_logging</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">plotting</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">save_results</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute the complete calibration process.</span>
+<span class="sd">        </span>
+<span class="sd">        This is the main entry point for calibration that:</span>
+<span class="sd">        1. Runs the optimization algorithm via solve_optimisation()</span>
+<span class="sd">        2. Optionally generates visualization plots if enabled</span>
+<span class="sd">        3. Optionally saves results to files if enabled</span>
+
+<span class="sd">        The method serves as a high-level orchestrator for the calibration</span>
+<span class="sd">        workflow, delegating the actual optimization to solve_optimisation()</span>
+<span class="sd">        and handling visualization based on user preferences.</span>
+<span class="sd">        </span>
+<span class="sd">        Side Effects:</span>
+<span class="sd">            - Updates calibration parameters through optimization</span>
+<span class="sd">            - Sets self.STATUS to &quot;CALIBRATED&quot; on successful completion</span>
+<span class="sd">            - May display plots if self.calib_config[&quot;PLOT&quot;] is True</span>
+<span class="sd">            </span>
+<span class="sd">        See Also:</span>
+<span class="sd">            solve_optimisation: Core optimization implementation</span>
+<span class="sd">            plot: Visualization and analysis plotting</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span><span class="p">,</span> <span class="n">outlier_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solve_optimisation</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> 
+                                 <span class="n">max_iterations</span><span class="o">=</span><span class="n">max_iterations</span><span class="p">,</span>
+                                 <span class="n">outlier_threshold</span><span class="o">=</span><span class="n">outlier_threshold</span><span class="p">,</span>
+                                 <span class="n">enable_logging</span><span class="o">=</span><span class="n">enable_logging</span><span class="p">)</span>
+
+        <span class="c1"># Evaluate solution</span>
+        <span class="n">evaluation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_solution</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">outlier_indices</span><span class="p">)</span>
+
+        <span class="c1"># Log final results</span>
+        <span class="k">if</span> <span class="n">enable_logging</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">30</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;FINAL CALIBRATION RESULTS&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">30</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log_iteration_results</span><span class="p">(</span><span class="s2">&quot;FINAL&quot;</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">evaluation</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">outlier_indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Outlier samples: </span><span class="si">{</span><span class="n">outlier_indices</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Calibration completed successfully!&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Store results</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_store_optimization_results</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">evaluation</span><span class="p">,</span> <span class="n">outlier_indices</span><span class="p">)</span>
+
+        <span class="c1"># Generate plots if required</span>
+        <span class="k">if</span> <span class="n">plotting</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plot_results</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">save_results</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.plot_results">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.base_calibration.BaseCalibration.plot_results">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate comprehensive visualization plots for calibration results.</span>
+<span class="sd">        </span>
+<span class="sd">        Creates multiple visualization plots to analyze calibration quality:</span>
+<span class="sd">        1. Error distribution plots showing residual patterns</span>
+<span class="sd">        2. 3D pose visualizations comparing measured vs predicted poses</span>
+<span class="sd">        3. Joint configuration analysis (currently commented)</span>
+<span class="sd">        </span>
+<span class="sd">        This method provides essential visual feedback for calibration</span>
+<span class="sd">        assessment, helping users understand solution quality and identify</span>
+<span class="sd">        potential issues with the calibration process.</span>
+<span class="sd">        </span>
+<span class="sd">        Prerequisites:</span>
+<span class="sd">            - Calibration must be completed (solve() called)</span>
+<span class="sd">            - Measurement data must be loaded</span>
+<span class="sd">            - Matplotlib backend must be configured</span>
+<span class="sd">            </span>
+<span class="sd">        Side Effects:</span>
+<span class="sd">            - Displays plots using plt.show()</span>
+<span class="sd">            - May block execution until plots are closed</span>
+<span class="sd">            </span>
+<span class="sd">        See Also:</span>
+<span class="sd">            plot_errors_distribution: Individual error analysis plots</span>
+<span class="sd">            plot_3d_poses: 3D pose comparison visualization</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Use pre-initialized results manager if available</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;results_manager&#39;</span><span class="p">)</span> <span class="ow">and</span> \
+           <span class="bp">self</span><span class="o">.</span><span class="n">results_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Plot using unified manager with self.result data</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">results_manager</span><span class="o">.</span><span class="n">plot_calibration_results</span><span class="p">()</span>
+                <span class="k">return</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error plotting with ResultsManager: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Falling back to basic plotting...&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Fallback to basic plotting if ResultsManager not available</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plot_errors_distribution</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plot_3d_poses</span><span class="p">()</span>
+            <span class="c1"># self.plot_joint_configurations()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plotting failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.load_param">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.base_calibration.BaseCalibration.load_param">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">setting_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;calibration&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load calibration parameters from YAML configuration file.</span>
+<span class="sd">        </span>
+<span class="sd">        This method supports both legacy YAML format and the new unified</span>
+<span class="sd">        configuration format. It automatically detects the format type</span>
+<span class="sd">        and applies the appropriate parser.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            config_file (str): Path to configuration file (legacy or unified)</span>
+<span class="sd">            setting_type (str): Configuration section to load </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading config from </span><span class="si">{</span><span class="n">config_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Check if this is a unified configuration format</span>
+            <span class="k">if</span> <span class="n">is_unified_config</span><span class="p">(</span><span class="n">config_file</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detected unified configuration format&quot;</span><span class="p">)</span>
+                <span class="c1"># Use unified parser</span>
+                <span class="n">parser</span> <span class="o">=</span> <span class="n">UnifiedConfigParser</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+                <span class="n">unified_config</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">()</span>
+                <span class="n">unified_calib_config</span> <span class="o">=</span> <span class="n">create_task_config</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_config</span><span class="p">,</span> <span class="n">setting_type</span>
+                <span class="p">)</span>
+                <span class="c1"># Convert unified format to legacy calib_config format</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span> <span class="o">=</span> <span class="n">unified_to_legacy_config</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_calib_config</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detected legacy configuration format&quot;</span><span class="p">)</span>
+                <span class="c1"># Use legacy format parsing</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">SafeLoader</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">setting_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Setting type &#39;</span><span class="si">{</span><span class="n">setting_type</span><span class="si">}</span><span class="s2">&#39; not found in config&quot;</span>
+                    <span class="p">)</span>
+
+                <span class="n">calib_data</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">setting_type</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span> <span class="o">=</span> <span class="n">get_param_from_yaml</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CalibrationError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Configuration file not found: </span><span class="si">{</span><span class="n">config_file</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CalibrationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to load configuration: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.create_param_list">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.base_calibration.BaseCalibration.create_param_list">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_param_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize calibration parameter structure and validate setup.</span>
+<span class="sd">        </span>
+<span class="sd">        This method sets up the fundamental parameter structure for calibration</span>
+<span class="sd">        by computing kinematic regressors and ensuring proper frame naming</span>
+<span class="sd">        conventions. It serves as a critical initialization step that must be</span>
+<span class="sd">        called before optimization begins.</span>
+<span class="sd">        </span>
+<span class="sd">        The method performs several key operations:</span>
+<span class="sd">        1. Computes base kinematic regressors for parameter identification</span>
+<span class="sd">        2. Adds default names for unknown base and tip frames</span>
+<span class="sd">        3. Validates the parameter structure for calibration readiness</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            q (array_like, optional): Joint configuration for regressor</span>
+<span class="sd">                                    computation. If None, uses empty list</span>
+<span class="sd">                                    which may limit regressor accuracy</span>
+<span class="sd">                                    </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Always returns True to indicate successful completion</span>
+<span class="sd">            </span>
+<span class="sd">        Side Effects:</span>
+<span class="sd">            - Updates self.calib_config with frame names if not known</span>
+<span class="sd">            - Computes and caches kinematic regressors</span>
+<span class="sd">            - May modify parameter structure for calibration compatibility</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If robot model is not properly initialized</span>
+<span class="sd">            AttributeError: If required calibration parameters are missing</span>
+<span class="sd">            CalibrationError: If parameter creation fails</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; calibrator = BaseCalibration(robot)</span>
+<span class="sd">            &gt;&gt;&gt; calibrator.load_param(&quot;config.yaml&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; calibrator.create_param_list()  # Basic setup</span>
+<span class="sd">            &gt;&gt;&gt; # Or with specific joint configuration</span>
+<span class="sd">            &gt;&gt;&gt; q_nominal = np.zeros(robot.nq)</span>
+<span class="sd">            &gt;&gt;&gt; calibrator.create_param_list(q_nominal)</span>
+<span class="sd">            </span>
+<span class="sd">        See Also:</span>
+<span class="sd">            calculate_base_kinematics_regressor: Core regressor computation</span>
+<span class="sd">            add_base_name: Base frame naming utilities</span>
+<span class="sd">            add_pee_name: End-effector frame naming utilities</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">q</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">q_</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">q_</span> <span class="o">=</span> <span class="n">q</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="p">(</span>
+                <span class="n">Rrand_b</span><span class="p">,</span>
+                <span class="n">R_b</span><span class="p">,</span>
+                <span class="n">R_e</span><span class="p">,</span>
+                <span class="n">paramsrand_base</span><span class="p">,</span>
+                <span class="n">paramsrand_e</span><span class="p">,</span>
+            <span class="p">)</span> <span class="o">=</span> <span class="n">calculate_base_kinematics_regressor</span><span class="p">(</span>
+                <span class="n">q_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">tol_qr</span><span class="o">=</span><span class="mf">1e-6</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;known_baseframe&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">add_base_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;known_tipframe&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">add_pee_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CalibrationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parameter list creation failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.load_data_set">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.base_calibration.BaseCalibration.load_data_set">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_data_set</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load experimental measurement data for calibration.</span>
+<span class="sd">        </span>
+<span class="sd">        Reads measurement data from the specified data path and processes it</span>
+<span class="sd">        for calibration use. This includes both pose measurements and</span>
+<span class="sd">        corresponding joint configurations, with optional data filtering</span>
+<span class="sd">        based on the deletion list.</span>
+<span class="sd">        </span>
+<span class="sd">        The method handles data preprocessing, validation, and formatting</span>
+<span class="sd">        to ensure compatibility with the calibration algorithms. It serves</span>
+<span class="sd">        as the primary data ingestion point for the calibration process.</span>
+<span class="sd">        </span>
+<span class="sd">        Side Effects:</span>
+<span class="sd">            - Sets self.PEE_measured with processed pose measurements</span>
+<span class="sd">            - Sets self.q_measured with corresponding joint configurations</span>
+<span class="sd">            - Applies data filtering if self.del_list_ is specified</span>
+<span class="sd">            </span>
+<span class="sd">        Prerequisites:</span>
+<span class="sd">            - self._data_path must be set to valid measurement data location</span>
+<span class="sd">            - Robot model must be initialized</span>
+<span class="sd">            - Calibration parameters must be loaded</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            FileNotFoundError: If data files are not found at _data_path</span>
+<span class="sd">            ValueError: If data format is incompatible or corrupted</span>
+<span class="sd">            AttributeError: If required attributes are not initialized</span>
+<span class="sd">            CalibrationError: If data loading fails</span>
+<span class="sd">            </span>
+<span class="sd">        See Also:</span>
+<span class="sd">            load_data: Core data loading and processing function</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_measured</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">del_list_</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CalibrationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data loading failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.get_pose_from_measure">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.base_calibration.BaseCalibration.get_pose_from_measure">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_pose_from_measure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">res_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate forward kinematics with calibrated parameters.</span>
+<span class="sd">        </span>
+<span class="sd">        Computes robot end-effector poses using the updated kinematic model</span>
+<span class="sd">        with calibrated parameters. This method applies the calibration</span>
+<span class="sd">        results to predict poses for the measured joint configurations.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            res_ (ndarray): Calibrated parameter vector containing kinematic</span>
+<span class="sd">                          corrections (geometric parameters, base transform,</span>
+<span class="sd">                          tool transform, etc.)</span>
+<span class="sd">                          </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            ndarray: Predicted end-effector poses corresponding to the</span>
+<span class="sd">                    measured joint configurations. Shape depends on the</span>
+<span class="sd">                    number of measurements and pose representation format.</span>
+<span class="sd">                    </span>
+<span class="sd">        Prerequisites:</span>
+<span class="sd">            - Joint configurations must be loaded (q_measured available)</span>
+<span class="sd">            - Calibration parameters must be initialized</span>
+<span class="sd">            - Robot model must be properly configured</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; # After calibration</span>
+<span class="sd">            &gt;&gt;&gt; calibrated_params = calibrator.LM_result.x</span>
+<span class="sd">            &gt;&gt;&gt; predicted_poses = calibrator.get_pose_from_measure(</span>
+<span class="sd">            ...     calibrated_params)</span>
+<span class="sd">            &gt;&gt;&gt; # Compare with measured poses</span>
+<span class="sd">            &gt;&gt;&gt; errors = predicted_poses - calibrator.PEE_measured</span>
+<span class="sd">            </span>
+<span class="sd">        See Also:</span>
+<span class="sd">            calc_updated_fkm: Core forward kinematics computation function</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">calc_updated_fkm</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">res_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_measured</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.cost_function">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.base_calibration.BaseCalibration.cost_function">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cost_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate cost function for optimization.</span>
+<span class="sd">        </span>
+<span class="sd">        This method provides a default implementation but should be overridden</span>
+<span class="sd">        by derived classes to define robot-specific cost computation with</span>
+<span class="sd">        appropriate weighting and regularization.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            var (ndarray): Parameter vector to evaluate</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            ndarray: Residual vector</span>
+<span class="sd">            </span>
+<span class="sd">        Warning:</span>
+<span class="sd">            Using default cost function. Consider implementing robot-specific</span>
+<span class="sd">            cost function for optimal performance.</span>
+<span class="sd">            </span>
+<span class="sd">        Example implementation:</span>
+<span class="sd">            &gt;&gt;&gt; def cost_function(self, var):</span>
+<span class="sd">            ...     PEEe = calc_updated_fkm(self.model, self.data, var,</span>
+<span class="sd">            ...                            self.q_measured, self.calib_config)</span>
+<span class="sd">            ...     raw_residuals = self.PEE_measured - PEEe</span>
+<span class="sd">            ...     weighted_residuals = self.apply_measurement_weighting(</span>
+<span class="sd">            ...         raw_residuals, pos_weight=1000.0, orient_weight=100.0)</span>
+<span class="sd">            ...     # Add regularization if needed</span>
+<span class="sd">            ...     return weighted_residuals</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+        <span class="c1"># Issue warning about using default implementation</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Using default cost function for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">. &quot;</span>
+            <span class="s2">&quot;Consider implementing a robot-specific cost function with &quot;</span>
+            <span class="s2">&quot;appropriate weighting and regularization for optimal &quot;</span>
+            <span class="s2">&quot;performance.&quot;</span><span class="p">,</span>
+            <span class="ne">UserWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Default implementation: basic residual calculation</span>
+        <span class="n">PEEe</span> <span class="o">=</span> <span class="n">calc_updated_fkm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">q_measured</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">)</span>
+        <span class="n">raw_residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span> <span class="o">-</span> <span class="n">PEEe</span>
+
+        <span class="c1"># Apply basic measurement weighting if configuration is available</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">weighted_residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_measurement_weighting</span><span class="p">(</span>
+                <span class="n">raw_residuals</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">weighted_residuals</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+            <span class="c1"># Fallback to unweighted residuals if weighting config unavailable</span>
+            <span class="k">return</span> <span class="n">raw_residuals</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.apply_measurement_weighting">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.base_calibration.BaseCalibration.apply_measurement_weighting">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply_measurement_weighting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">residuals</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> 
+                                  <span class="n">pos_weight</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="n">orient_weight</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply measurement weighting to handle position/orientation units.</span>
+<span class="sd">        </span>
+<span class="sd">        This utility method can be used by derived classes to properly weight</span>
+<span class="sd">        position (meter) and orientation (radian) measurements for equivalent</span>
+<span class="sd">        influence in the cost function.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            residuals (ndarray): Raw residual vector</span>
+<span class="sd">            pos_weight (float, optional): Weight for position residuals.</span>
+<span class="sd">                                        If None, uses 1/position_std</span>
+<span class="sd">            orient_weight (float, optional): Weight for orientation residuals.</span>
+<span class="sd">                                           If None, uses 1/orientation_std</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            ndarray: Weighted residual vector</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; # In derived class cost_function:</span>
+<span class="sd">            &gt;&gt;&gt; raw_residuals = self.PEE_measured - PEEe</span>
+<span class="sd">            &gt;&gt;&gt; weighted_residuals = self.apply_measurement_weighting(</span>
+<span class="sd">            ...     raw_residuals, pos_weight=1000.0, orient_weight=100.0)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get weights from parameters or use provided values</span>
+        <span class="k">if</span> <span class="n">pos_weight</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pos_std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;measurement_std&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;position&quot;</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">)</span>
+            <span class="n">pos_weight</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">pos_std</span>
+
+        <span class="k">if</span> <span class="n">orient_weight</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">orient_std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;measurement_std&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;orientation&quot;</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>
+            <span class="n">orient_weight</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">orient_std</span>
+
+        <span class="n">weighted_residuals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">residual_idx</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Process each sample for each marker</span>
+        <span class="k">for</span> <span class="n">marker</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">dof</span><span class="p">,</span> <span class="n">is_measured</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;measurability&quot;</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">is_measured</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]):</span>
+                        <span class="n">res</span> <span class="o">=</span> <span class="n">residuals</span><span class="p">[</span><span class="n">residual_idx</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">dof</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># Position components (x,y,z)</span>
+                            <span class="n">weighted_residuals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span> <span class="o">*</span> <span class="n">pos_weight</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>  <span class="c1"># Orientation components (rx,ry,rz)</span>
+                            <span class="n">weighted_residuals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span> <span class="o">*</span> <span class="n">orient_weight</span><span class="p">)</span>
+                            <span class="c1"># print(f&quot;Residual index: {residual_idx}&quot;)</span>
+                        <span class="n">residual_idx</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">weighted_residuals</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_logging</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup logging configuration for terminal output.&quot;&quot;&quot;</span>
+        <span class="c1"># Create logger</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;calibration&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+        <span class="c1"># Clear existing handlers to avoid duplicates</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+        <span class="c1"># Create console handler</span>
+        <span class="n">console_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+        <span class="n">console_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+        <span class="c1"># Create formatter</span>
+        <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
+            <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(name)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span>
+        <span class="p">)</span>
+        <span class="n">console_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+
+        <span class="c1"># Add handler to logger</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">console_handler</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">logger</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_optimize_with_outlier_removal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_init</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                                     <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;lm&quot;</span><span class="p">,</span>
+                                     <span class="n">max_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+                                     <span class="n">outlier_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Optimize with iterative outlier removal.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            var_init (ndarray): Initial parameter guess</span>
+<span class="sd">            max_iterations (int): Maximum outlier removal iterations</span>
+<span class="sd">            outlier_threshold (float): Threshold for outlier detection in</span>
+<span class="sd">                                  standard deviations</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: (result, outlier_indices, final_residuals)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;calibration&#39;</span><span class="p">)</span>
+        <span class="n">current_var</span> <span class="o">=</span> <span class="n">var_init</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">outlier_indices</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iterations</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Outlier removal iteration </span><span class="si">{</span><span class="n">iteration</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Run optimization</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">least_squares</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cost_function</span><span class="p">,</span>
+                <span class="n">current_var</span><span class="p">,</span>
+                <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+                <span class="n">max_nfev</span><span class="o">=</span><span class="mi">1000</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Optimization failed at iteration </span><span class="si">{</span><span class="n">iteration</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">break</span>
+
+            <span class="c1"># Calculate residuals and detect outliers</span>
+            <span class="n">PEE_est</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pose_from_measure</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">residuals</span> <span class="o">=</span> <span class="n">PEE_est</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span>
+            <span class="n">new_outliers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_outliers</span><span class="p">(</span><span class="n">residuals</span><span class="p">,</span> <span class="n">outlier_threshold</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_outliers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No outliers detected, optimization converged&quot;</span><span class="p">)</span>
+                <span class="k">break</span>
+
+            <span class="n">outlier_indices</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_outliers</span><span class="p">)</span>
+            <span class="n">outlier_indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">outlier_indices</span><span class="p">))</span>  <span class="c1"># Remove duplicates</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">new_outliers</span><span class="p">)</span><span class="si">}</span><span class="s2"> new outliers, &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;total outliers: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">outlier_indices</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Update for next iteration</span>
+            <span class="n">current_var</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span>
+
+        <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">outlier_indices</span><span class="p">,</span> <span class="n">residuals</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_detect_outliers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">residuals</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Detect outliers using statistical threshold.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            residuals (ndarray): Residual vector</span>
+<span class="sd">            threshold (float): Threshold in standard deviations</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Indices of detected outliers</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Reshape residuals to per-sample format</span>
+        <span class="n">n_dofs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;calibration_index&quot;</span><span class="p">]</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n_dofs</span> <span class="o">*</span> <span class="n">n_samples</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">residuals_2d</span> <span class="o">=</span> <span class="n">residuals</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n_dofs</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">))</span>
+
+        <span class="c1"># Calculate RMS error per sample</span>
+        <span class="n">rms_errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residuals_2d</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="c1"># Detect outliers</span>
+        <span class="n">mean_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">rms_errors</span><span class="p">)</span>
+        <span class="n">std_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">rms_errors</span><span class="p">)</span>
+        <span class="n">threshold_value</span> <span class="o">=</span> <span class="n">mean_error</span> <span class="o">+</span> <span class="n">threshold</span> <span class="o">*</span> <span class="n">std_error</span>
+
+        <span class="n">outliers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">rms_errors</span> <span class="o">&gt;</span> <span class="n">threshold_value</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">outliers</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_evaluate_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">outlier_indices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate optimization solution quality.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            result: Optimization result from scipy.optimize.least_squares</span>
+<span class="sd">            outlier_indices (list): Indices of detected outliers</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Solution evaluation metrics</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">PEE_est</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pose_from_measure</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">residuals</span> <span class="o">=</span> <span class="n">PEE_est</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span>
+        <span class="n">n_dofs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;calibration_index&quot;</span><span class="p">]</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Calculate metrics</span>
+        <span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residuals</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">mae</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">residuals</span><span class="p">))</span>
+        <span class="n">max_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">residuals</span><span class="p">))</span>
+
+        <span class="c1"># Per-sample metrics</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_dofs</span> <span class="o">*</span> <span class="n">n_samples</span><span class="p">:</span>
+            <span class="n">residuals_2d</span> <span class="o">=</span> <span class="n">residuals</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n_dofs</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">))</span>
+            <span class="n">sample_rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residuals_2d</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+            <span class="n">mean_sample_rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">sample_rms</span><span class="p">)</span>
+            <span class="n">std_sample_rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">sample_rms</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mean_sample_rms</span> <span class="o">=</span> <span class="n">rmse</span>
+            <span class="n">std_sample_rms</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="c1"># Calculate standard deviation of estimated parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calc_stddev</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;rmse&#39;</span><span class="p">:</span> <span class="n">rmse</span><span class="p">,</span>
+            <span class="s1">&#39;mae&#39;</span><span class="p">:</span> <span class="n">mae</span><span class="p">,</span>
+            <span class="s1">&#39;max_error&#39;</span><span class="p">:</span> <span class="n">max_error</span><span class="p">,</span>
+            <span class="s1">&#39;mean_sample_rms&#39;</span><span class="p">:</span> <span class="n">mean_sample_rms</span><span class="p">,</span>
+            <span class="s1">&#39;std_sample_rms&#39;</span><span class="p">:</span> <span class="n">std_sample_rms</span><span class="p">,</span>
+            <span class="s2">&quot;param_stdev&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">std_dev</span><span class="p">,</span>
+            <span class="s2">&quot;param_stddev_percentage&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">std_pctg</span><span class="p">,</span>
+            <span class="s1">&#39;n_outliers&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">outlier_indices</span><span class="p">),</span>
+            <span class="s1">&#39;outlier_percentage&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">outlier_indices</span><span class="p">)</span> <span class="o">/</span> <span class="n">n_samples</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span>
+            <span class="s1">&#39;optimization_success&#39;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">,</span>
+            <span class="s1">&#39;cost&#39;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">cost</span><span class="p">,</span>
+            <span class="s1">&#39;n_iterations&#39;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">&#39;nit&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="s1">&#39;n_function_evals&#39;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">&#39;nfev&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_next_iteration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare for next optimization iteration.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            result: Current optimization result</span>
+<span class="sd">            iteration (int): Current iteration number</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            ndarray: Initial guess for next iteration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># If optimization failed, add small random perturbation</span>
+            <span class="n">perturbation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">perturbation</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log_iteration_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iteration</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">evaluation</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Log results for current iteration.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            iteration (int): Current iteration number</span>
+<span class="sd">            result: Optimization result</span>
+<span class="sd">            evaluation (dict): Solution evaluation metrics</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;calibration&#39;</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iteration </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s2"> Results:&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Success: </span><span class="si">{</span><span class="n">evaluation</span><span class="p">[</span><span class="s1">&#39;optimization_success&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  RMSE: </span><span class="si">{</span><span class="n">evaluation</span><span class="p">[</span><span class="s1">&#39;rmse&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  MAE: </span><span class="si">{</span><span class="n">evaluation</span><span class="p">[</span><span class="s1">&#39;mae&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Max Error: </span><span class="si">{</span><span class="n">evaluation</span><span class="p">[</span><span class="s1">&#39;max_error&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Cost: </span><span class="si">{</span><span class="n">evaluation</span><span class="p">[</span><span class="s1">&#39;cost&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Function Evaluations: </span><span class="si">{</span><span class="n">evaluation</span><span class="p">[</span><span class="s1">&#39;n_function_evals&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Outliers: </span><span class="si">{</span><span class="n">evaluation</span><span class="p">[</span><span class="s1">&#39;n_outliers&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                   <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">evaluation</span><span class="p">[</span><span class="s1">&#39;outlier_percentage&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%)&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_store_optimization_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">evaluation</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> 
+                                  <span class="n">outlier_indices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store optimization results in instance variables.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            result: Final optimization result</span>
+<span class="sd">            evaluation (dict): Solution evaluation metrics</span>
+<span class="sd">            outlier_indices (list): Detected outlier indices</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Store main results</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">LM_result</span> <span class="o">=</span> <span class="n">result</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uncalib_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># Store initial guess</span>
+
+        <span class="c1"># Store evaluation metrics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">evaluation_metrics</span> <span class="o">=</span> <span class="n">evaluation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outlier_indices</span> <span class="o">=</span> <span class="n">outlier_indices</span>
+
+        <span class="c1"># Calculate per-sample error distribution for plotting</span>
+        <span class="n">PEE_est</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pose_from_measure</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">residuals</span> <span class="o">=</span> <span class="n">PEE_est</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span>
+        <span class="n">n_dofs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;calibration_index&quot;</span><span class="p">]</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]</span>
+        <span class="n">n_markers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]</span>
+
+        <span class="c1"># if len(residuals) == n_dofs * n_samples * n_markers:</span>
+        <span class="c1">#     residuals_3d = residuals.reshape((n_markers, n_dofs, n_samples))</span>
+        <span class="c1">#     self._PEE_dist = np.sqrt(np.mean(residuals_3d**2, axis=1))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_dofs</span> <span class="o">*</span> <span class="n">n_samples</span><span class="p">:</span>
+            <span class="n">residuals_2d</span> <span class="o">=</span> <span class="n">residuals</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n_dofs</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">))</span>
+            <span class="n">sample_rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residuals_2d</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PEE_dist</span> <span class="o">=</span> <span class="n">sample_rms</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Fallback for unexpected residual shapes</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PEE_dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n_markers</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">))</span> <span class="o">*</span> <span class="n">evaluation</span><span class="p">[</span><span class="s1">&#39;rmse&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Reshape PEE measured for consistency</span>
+        <span class="n">PEEm_LM2d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">n_dofs</span><span class="p">,</span> <span class="n">n_samples</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">PEEe_LM2d</span> <span class="o">=</span> <span class="n">PEE_est</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">n_dofs</span><span class="p">,</span> <span class="n">n_samples</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># Store results</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;number of calibrated parameters&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;calibrated parameters names&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;param_name&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;calibrated parameters values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">evaluation</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;number of samples&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;rms residuals by samples&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PEE_dist</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;residuals&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">residuals_2d</span><span class="o">.</span><span class="n">T</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;PEE measured (2D array)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">PEEm_LM2d</span><span class="o">.</span><span class="n">T</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;PEE estimated (2D array)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">PEEe_LM2d</span><span class="o">.</span><span class="n">T</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;outlier indices&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">outlier_indices</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;calibration config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;task type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;calibration&quot;</span>
+
+        <span class="c1"># Initialize ResultsManager for calibration task</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.utils.results_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultsManager</span>
+
+            <span class="c1"># Get robot name from class or model</span>
+            <span class="n">robot_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;robot_name&#39;</span><span class="p">,</span>
+                <span class="nb">getattr</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                        <span class="s1">&#39;calibration&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)))</span>
+            <span class="c1"># Initialize results manager for calibration task</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results_manager</span> <span class="o">=</span> <span class="n">ResultsManager</span><span class="p">(</span><span class="s1">&#39;calibration&#39;</span><span class="p">,</span> <span class="n">robot_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_data</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ResultsManager not available: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results_manager</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Update status</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">STATUS</span> <span class="o">=</span> <span class="s2">&quot;CALIBRATED&quot;</span>
+
+<div class="viewcode-block" id="BaseCalibration.solve_optimisation">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.base_calibration.BaseCalibration.solve_optimisation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solve_optimisation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_init</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;lm&quot;</span><span class="p">,</span>
+                          <span class="n">max_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+                          <span class="n">outlier_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span> 
+                          <span class="n">enable_logging</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Solve calibration optimization with robust outlier handling.</span>
+<span class="sd">        </span>
+<span class="sd">        This method implements a comprehensive optimization strategy:</span>
+<span class="sd">        1. Sets up logging for progress tracking</span>
+<span class="sd">        2. Iteratively removes outliers and re-optimizes</span>
+<span class="sd">        3. Evaluates solution quality with detailed metrics</span>
+<span class="sd">        4. Stores results for further analysis</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            var_init (ndarray, optional): Initial parameter guess. If None,</span>
+<span class="sd">                                        uses zero initialization.</span>
+<span class="sd">            max_iterations (int): Maximum outlier removal iterations</span>
+<span class="sd">            outlier_threshold (float): Outlier detection threshold (std devs)</span>
+<span class="sd">            enable_logging (bool): Whether to enable terminal logging</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If optimization fails completely</span>
+<span class="sd">            AssertionError: If required data is not loaded</span>
+<span class="sd">            CalibrationError: If optimization fails</span>
+<span class="sd">            </span>
+<span class="sd">        Side Effects:</span>
+<span class="sd">            - Updates self.LM_result with optimization results</span>
+<span class="sd">            - Updates self.STATUS to &quot;CALIBRATED&quot; on success</span>
+<span class="sd">            - Creates self.evaluation_metrics with quality metrics</span>
+<span class="sd">            - Sets up logging if enabled</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Verify prerequisites</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;PEE_measured&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">CalibrationError</span><span class="p">(</span><span class="s2">&quot;Call load_data_set() first&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;q_measured&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">CalibrationError</span><span class="p">(</span><span class="s2">&quot;Call load_data_set() first&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Setup logging</span>
+        <span class="k">if</span> <span class="n">enable_logging</span><span class="p">:</span>
+            <span class="n">logger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_setup_logging</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting calibration optimization&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parameters: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s1">&#39;param_name&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parameter names: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s1">&#39;param_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Markers: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s1">&#39;NbMarkers&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Samples: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s1">&#39;NbSample&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DOFs: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s1">&#39;calibration_index&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Initialize parameters</span>
+        <span class="k">if</span> <span class="n">var_init</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">var_init</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">initialize_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Run optimization with outlier removal</span>
+            <span class="n">result</span><span class="p">,</span> <span class="n">outlier_indices</span><span class="p">,</span> <span class="n">final_residuals</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_optimize_with_outlier_removal</span><span class="p">(</span>
+                    <span class="n">var_init</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">max_iterations</span><span class="p">,</span> <span class="n">outlier_threshold</span>
+                <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">outlier_indices</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">enable_logging</span><span class="p">:</span>
+                <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;calibration&#39;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Calibration failed: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">CalibrationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Optimization failed: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.calc_stddev">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.base_calibration.BaseCalibration.calc_stddev">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calc_stddev</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate parameter uncertainty statistics from optimization results.</span>
+<span class="sd">        </span>
+<span class="sd">        Computes standard deviation and percentage uncertainty for each</span>
+<span class="sd">        calibrated parameter using the covariance matrix derived from the</span>
+<span class="sd">        Jacobian at the optimal solution. This provides confidence intervals</span>
+<span class="sd">        and parameter reliability metrics.</span>
+<span class="sd">        </span>
+<span class="sd">        The calculation uses the linearized uncertainty propagation:</span>
+<span class="sd">        σ²(θ) = σ²(residuals) * (J^T J)^-1</span>
+<span class="sd">        </span>
+<span class="sd">        Where J is the Jacobian matrix and σ²(residuals) is the residual</span>
+<span class="sd">        variance estimate.</span>
+<span class="sd">        </span>
+<span class="sd">        Prerequisites:</span>
+<span class="sd">            - Calibration optimization must be completed</span>
+<span class="sd">            - Jacobian matrix must be available from optimization</span>
+<span class="sd">            </span>
+<span class="sd">        Side Effects:</span>
+<span class="sd">            - Sets self.std_dev with parameter standard deviations</span>
+<span class="sd">            - Sets self.std_pctg with percentage uncertainties</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            CalibrationError: If calibration has not been performed</span>
+<span class="sd">            np.linalg.LinAlgError: If Jacobian matrix is singular or ill-conditioned</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; calibrator.solve()</span>
+<span class="sd">            &gt;&gt;&gt; calibrator.calc_stddev()</span>
+<span class="sd">            &gt;&gt;&gt; print(f&quot;Parameter uncertainties: {calibrator.std_dev}&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; print(f&quot;Percentage errors: {calibrator.std_pctg}&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sigma_ro_sq</span> <span class="o">=</span> <span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">cost</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;calibration_index&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">nvars</span>
+            <span class="p">)</span>
+            <span class="n">J</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">jac</span>
+            <span class="n">C_param</span> <span class="o">=</span> <span class="n">sigma_ro_sq</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">J</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">J</span><span class="p">))</span>
+            <span class="n">std_dev</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">std_pctg</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nvars</span><span class="p">):</span>
+                <span class="n">std_dev</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">C_param</span><span class="p">[</span><span class="n">i_</span><span class="p">,</span> <span class="n">i_</span><span class="p">]))</span>
+                <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">i_</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">std_pctg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">C_param</span><span class="p">[</span><span class="n">i_</span><span class="p">,</span> <span class="n">i_</span><span class="p">])</span> <span class="o">/</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">i_</span><span class="p">]))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">std_pctg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">std_dev</span> <span class="o">=</span> <span class="n">std_dev</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">std_pctg</span> <span class="o">=</span> <span class="n">std_pctg</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CalibrationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Standard deviation calculation failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.plot_errors_distribution">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.base_calibration.BaseCalibration.plot_errors_distribution">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_errors_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot error distribution analysis for calibration assessment.</span>
+<span class="sd">        </span>
+<span class="sd">        Creates bar plots showing pose error magnitudes across all samples</span>
+<span class="sd">        and markers. This visualization helps identify problematic</span>
+<span class="sd">        measurements, assess calibration quality, and detect outliers in</span>
+<span class="sd">        the dataset.</span>
+<span class="sd">        </span>
+<span class="sd">        The plots display error magnitudes (in meters) for each sample,</span>
+<span class="sd">        with separate subplots for each marker when multiple markers are used.</span>
+<span class="sd">        </span>
+<span class="sd">        Prerequisites:</span>
+<span class="sd">            - Calibration must be completed (STATUS == &quot;CALIBRATED&quot;)</span>
+<span class="sd">            - Error analysis must be computed (self._PEE_dist available)</span>
+<span class="sd">            </span>
+<span class="sd">        Side Effects:</span>
+<span class="sd">            - Creates matplotlib figure with error distribution plots</span>
+<span class="sd">            - Figure remains open until explicitly closed or plt.show() called</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            CalibrationError: If calibration has not been performed</span>
+<span class="sd">            AttributeError: If error analysis data is not available</span>
+<span class="sd">            </span>
+<span class="sd">        See Also:</span>
+<span class="sd">            plot_3d_poses: 3D visualization of pose comparisons</span>
+<span class="sd">            calc_stddev: Error statistics computation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">STATUS</span> <span class="o">!=</span> <span class="s2">&quot;CALIBRATED&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CalibrationError</span><span class="p">(</span><span class="s2">&quot;Calibration not performed yet&quot;</span><span class="p">)</span>
+
+        <span class="n">fig1</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;yellow&quot;</span><span class="p">,</span> <span class="s2">&quot;purple&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PEE_dist</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:])</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Sample&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Error (meter)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]):</span>
+                <span class="n">ax1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_PEE_dist</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="p">)</span>
+                <span class="n">ax1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Sample&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+                <span class="n">ax1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Error of marker </span><span class="si">%s</span><span class="s2"> (meter)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+                <span class="n">ax1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+                <span class="n">ax1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.plot_3d_poses">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.base_calibration.BaseCalibration.plot_3d_poses">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_3d_poses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">INCLUDE_UNCALIB</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot 3D poses comparing measured vs estimated poses.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            INCLUDE_UNCALIB (bool): Whether to include uncalibrated poses</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">STATUS</span> <span class="o">!=</span> <span class="s2">&quot;CALIBRATED&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CalibrationError</span><span class="p">(</span><span class="s2">&quot;Calibration not performed yet&quot;</span><span class="p">)</span>
+
+        <span class="n">fig2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">fig2</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Visualization of estimated poses and measured pose in Cartesian&quot;</span><span class="p">)</span>
+        <span class="n">ax2</span> <span class="o">=</span> <span class="n">fig2</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;3d&quot;</span><span class="p">)</span>
+        <span class="n">PEEm_LM2d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;calibration_index&quot;</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">PEEe_sol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pose_from_measure</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LM_result</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">PEEe_sol2d</span> <span class="o">=</span> <span class="n">PEEe_sol</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;calibration_index&quot;</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">PEEe_uncalib</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pose_from_measure</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uncalib_values</span><span class="p">)</span>
+        <span class="n">PEEe_uncalib2d</span> <span class="o">=</span> <span class="n">PEEe_uncalib</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;calibration_index&quot;</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]):</span>
+            <span class="n">ax2</span><span class="o">.</span><span class="n">scatter3D</span><span class="p">(</span>
+                <span class="n">PEEm_LM2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="p">:],</span>
+                <span class="n">PEEm_LM2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:],</span>
+                <span class="n">PEEm_LM2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="p">:],</span>
+                <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;^&quot;</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Measured&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">ax2</span><span class="o">.</span><span class="n">scatter3D</span><span class="p">(</span>
+                <span class="n">PEEe_sol2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="p">:],</span>
+                <span class="n">PEEe_sol2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:],</span>
+                <span class="n">PEEe_sol2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="p">:],</span>
+                <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Estimated&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">INCLUDE_UNCALIB</span><span class="p">:</span>
+                <span class="n">ax2</span><span class="o">.</span><span class="n">scatter3D</span><span class="p">(</span>
+                    <span class="n">PEEe_uncalib2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="p">:],</span>
+                    <span class="n">PEEe_uncalib2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:],</span>
+                    <span class="n">PEEe_uncalib2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="p">:],</span>
+                    <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Uncalibrated&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]):</span>
+                <span class="n">ax2</span><span class="o">.</span><span class="n">plot3D</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">PEEm_LM2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">PEEe_sol2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">j</span><span class="p">]],</span>
+                    <span class="p">[</span><span class="n">PEEm_LM2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">PEEe_sol2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">]],</span>
+                    <span class="p">[</span><span class="n">PEEm_LM2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">PEEe_sol2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">j</span><span class="p">]],</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">INCLUDE_UNCALIB</span><span class="p">:</span>
+                    <span class="n">ax2</span><span class="o">.</span><span class="n">plot3D</span><span class="p">(</span>
+                        <span class="p">[</span><span class="n">PEEm_LM2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">PEEe_uncalib2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">j</span><span class="p">]],</span>
+                        <span class="p">[</span>
+                            <span class="n">PEEm_LM2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span>
+                            <span class="n">PEEe_uncalib2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span>
+                        <span class="p">],</span>
+                        <span class="p">[</span>
+                            <span class="n">PEEm_LM2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span>
+                            <span class="n">PEEe_uncalib2d</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span>
+                        <span class="p">],</span>
+                        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;X - front (meter)&quot;</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Y - side (meter)&quot;</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s2">&quot;Z - height (meter)&quot;</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.plot_joint_configurations">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.base_calibration.BaseCalibration.plot_joint_configurations">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_joint_configurations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot joint configurations within range bounds.&quot;&quot;&quot;</span>
+        <span class="n">fig4</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">fig4</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Joint configurations with joint bounds&quot;</span><span class="p">)</span>
+        <span class="n">ax4</span> <span class="o">=</span> <span class="n">fig4</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;3d&quot;</span><span class="p">)</span>
+        <span class="n">lb</span> <span class="o">=</span> <span class="n">ub</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;config_idx&quot;</span><span class="p">]:</span>
+            <span class="n">lb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">lowerPositionLimit</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+            <span class="n">ub</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ub</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">upperPositionLimit</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+        <span class="n">q_actJoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_measured</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;config_idx&quot;</span><span class="p">]]</span>
+        <span class="n">sample_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">])):</span>
+            <span class="n">ax4</span><span class="o">.</span><span class="n">scatter3D</span><span class="p">(</span><span class="n">q_actJoint</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">sample_range</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">])):</span>
+            <span class="n">ax4</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">lb</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">ub</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="p">[</span><span class="n">sample_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sample_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">])</span>
+            <span class="n">ax4</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Angle (rad)&quot;</span><span class="p">)</span>
+            <span class="n">ax4</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Sample&quot;</span><span class="p">)</span>
+            <span class="n">ax4</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s2">&quot;Joint&quot;</span><span class="p">)</span>
+            <span class="n">ax4</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BaseCalibration.save_results">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.base_calibration.BaseCalibration.save_results">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;results&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save calibration results using unified results manager.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;result&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No calibration results to save. Run solve() first.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Use pre-initialized results manager if available</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;results_manager&#39;</span><span class="p">)</span> <span class="ow">and</span> \
+           <span class="bp">self</span><span class="o">.</span><span class="n">results_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Save using unified manager with self.result data</span>
+                <span class="n">saved_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_manager</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span>
+                    <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span>
+                    <span class="n">save_formats</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;yaml&#39;</span><span class="p">,</span> <span class="s1">&#39;csv&#39;</span><span class="p">,</span> <span class="s1">&#39;npz&#39;</span><span class="p">]</span>
+                <span class="p">)</span>
+
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Calibration results saved using ResultsManager&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">saved_files</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">fmt</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="k">return</span> <span class="n">saved_files</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error saving with ResultsManager: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Falling back to basic saving...&quot;</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2025, Thanh Nguyen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

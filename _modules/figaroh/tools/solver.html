@@ -1,0 +1,658 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>figaroh.tools.solver &mdash; figaroh 0.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://thanhndv212.github.io/figaroh/_modules/figaroh/tools/solver.html" />
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=e259d695"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            figaroh
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Modules:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/calibration.html">Calibration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/identification.html">Identification</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tools and Utilities:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/tools.html">Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/measurements.html">Measurements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/visualisation.html">Visualisation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Advanced Features:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/optimal.html">figaroh.optimal package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">figaroh</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">figaroh.tools.solver</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for figaroh.tools.solver</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright [2021-2025] Thanh Nguyen</span>
+<span class="c1"># Copyright [2022-2023] [CNRS, Toward SAS]</span>
+
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Multivariate linear solver for robot parameter identification.</span>
+
+<span class="sd">This module provides advanced linear regression solvers optimized for</span>
+<span class="sd">overdetermined systems (thin, tall matrices) with support for:</span>
+<span class="sd">- Multiple regularization methods (Ridge, Lasso, Elastic Net, Tikhonov)</span>
+<span class="sd">- Linear equality and inequality constraints</span>
+<span class="sd">- Robust regression methods</span>
+<span class="sd">- Physical parameter bounds</span>
+<span class="sd">- Iterative refinement for improved accuracy</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">linalg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">minimize</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="c1"># Setup logger for this module</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">NullHandler</span><span class="p">())</span>
+
+
+<div class="viewcode-block" id="LinearSolver">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.solver.LinearSolver">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LinearSolver</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Advanced linear solver for overdetermined systems: Ax = b</span>
+
+<span class="sd">    Optimized for robot identification where A is typically:</span>
+<span class="sd">    - Dense (not sparse)</span>
+<span class="sd">    - Large (many samples)</span>
+<span class="sd">    - Thin (more rows than columns, overdetermined)</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        method (str): Solving method to use</span>
+<span class="sd">        regularization (str): Type of regularization</span>
+<span class="sd">        alpha (float): Regularization strength</span>
+<span class="sd">        constraints (dict): Linear constraints on solution</span>
+<span class="sd">        bounds (tuple): Box constraints on variables</span>
+<span class="sd">        solver_info (dict): Information about the solution</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">METHODS</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;lstsq&quot;</span><span class="p">,</span>  <span class="c1"># Standard least squares (fastest)</span>
+        <span class="s2">&quot;qr&quot;</span><span class="p">,</span>  <span class="c1"># QR decomposition</span>
+        <span class="s2">&quot;svd&quot;</span><span class="p">,</span>  <span class="c1"># Singular value decomposition (most stable)</span>
+        <span class="s2">&quot;ridge&quot;</span><span class="p">,</span>  <span class="c1"># Ridge regression (L2 regularization)</span>
+        <span class="s2">&quot;lasso&quot;</span><span class="p">,</span>  <span class="c1"># Lasso regression (L1 regularization)</span>
+        <span class="s2">&quot;elastic_net&quot;</span><span class="p">,</span>  <span class="c1"># Elastic net (L1 + L2)</span>
+        <span class="s2">&quot;tikhonov&quot;</span><span class="p">,</span>  <span class="c1"># Tikhonov regularization (general L2)</span>
+        <span class="s2">&quot;constrained&quot;</span><span class="p">,</span>  <span class="c1"># Constrained least squares</span>
+        <span class="s2">&quot;robust&quot;</span><span class="p">,</span>  <span class="c1"># Robust regression (iterative reweighting)</span>
+        <span class="s2">&quot;weighted&quot;</span><span class="p">,</span>  <span class="c1"># Weighted least squares</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">method</span><span class="o">=</span><span class="s2">&quot;lstsq&quot;</span><span class="p">,</span>
+        <span class="n">regularization</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">l1_ratio</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+        <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize linear solver.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            method (str): Solving method (see METHODS)</span>
+<span class="sd">            regularization (str): &#39;l1&#39;, &#39;l2&#39;, &#39;elastic_net&#39;, or None</span>
+<span class="sd">            alpha (float): Regularization strength (&gt;=0)</span>
+<span class="sd">            l1_ratio (float): Elastic net mixing (0=Ridge, 1=Lasso)</span>
+<span class="sd">            weights (ndarray): Sample weights for weighted least squares</span>
+<span class="sd">            constraints (dict): Linear constraints:</span>
+<span class="sd">                - &#39;A_eq&#39;: Equality constraint matrix (A_eq @ x = b_eq)</span>
+<span class="sd">                - &#39;b_eq&#39;: Equality constraint vector</span>
+<span class="sd">                - &#39;A_ineq&#39;: Inequality constraint matrix (A_ineq @ x &lt;= b_ineq)</span>
+<span class="sd">                - &#39;b_ineq&#39;: Inequality constraint vector</span>
+<span class="sd">            bounds (tuple): Box constraints (lower, upper) for each variable</span>
+<span class="sd">            max_iter (int): Maximum iterations for iterative methods</span>
+<span class="sd">            tol (float): Convergence tolerance</span>
+<span class="sd">            verbose (bool): Print solver information</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">METHODS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Method must be one of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">METHODS</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regularization</span> <span class="o">=</span> <span class="n">regularization</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l1_ratio</span> <span class="o">=</span> <span class="n">l1_ratio</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="n">constraints</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">bounds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span> <span class="o">=</span> <span class="n">max_iter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="LinearSolver.solve">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.solver.LinearSolver.solve">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Solve the linear system Ax = b.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            A (ndarray): Design matrix (n_samples, n_features)</span>
+<span class="sd">            b (ndarray): Target vector (n_samples,)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ndarray: Solution vector x (n_features,)</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If inputs are incompatible</span>
+<span class="sd">            np.linalg.LinAlgError: If solution fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Validate inputs</span>
+        <span class="n">A</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_inputs</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+        <span class="c1"># Select and execute solving method</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;lstsq&quot;</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_lstsq</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;qr&quot;</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_qr</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;svd&quot;</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_svd</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;ridge&quot;</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_ridge</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;lasso&quot;</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_lasso</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;elastic_net&quot;</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_elastic_net</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;tikhonov&quot;</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_tikhonov</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;constrained&quot;</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_constrained</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;robust&quot;</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_robust</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;weighted&quot;</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_weighted</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Method </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2"> not implemented&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Compute solution quality metrics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_solution_quality</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_print_solution_info</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">x</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate and prepare inputs.&quot;&quot;&quot;</span>
+        <span class="c1"># Convert to numpy arrays</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+        <span class="c1"># Check dimensions</span>
+        <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A must be 2D, got shape </span><span class="si">{</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">b</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;b must be 1D or 2D, got shape </span><span class="si">{</span><span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check compatibility</span>
+        <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;A and b must have same number of rows. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Got A: </span><span class="si">{</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, b: </span><span class="si">{</span><span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Warn if underdetermined</span>
+        <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;System is underdetermined: </span><span class="si">{</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> equations, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> unknowns. Solution may not be unique.&quot;</span><span class="p">,</span>
+                <span class="ne">UserWarning</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_solve_lstsq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Standard least squares using numpy.&quot;&quot;&quot;</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">residuals</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;residuals&quot;</span><span class="p">:</span> <span class="n">residuals</span><span class="p">,</span> <span class="s2">&quot;rank&quot;</span><span class="p">:</span> <span class="n">rank</span><span class="p">,</span> <span class="s2">&quot;singular_values&quot;</span><span class="p">:</span> <span class="n">s</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_solve_qr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;QR decomposition least squares.&quot;&quot;&quot;</span>
+        <span class="n">Q</span><span class="p">,</span> <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">qr</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">linalg</span><span class="o">.</span><span class="n">solve_triangular</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">Q</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">b</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s2">&quot;rank&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_solve_svd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;SVD-based least squares (most numerically stable).&quot;&quot;&quot;</span>
+        <span class="n">U</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">Vt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">full_matrices</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># Compute effective rank with tolerance</span>
+        <span class="n">tol</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+        <span class="n">rank</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">s</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span>
+
+        <span class="c1"># Solve using pseudo-inverse</span>
+        <span class="n">s_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="n">s_inv</span><span class="p">[:</span><span class="n">rank</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">s</span><span class="p">[:</span><span class="n">rank</span><span class="p">]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">Vt</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="p">(</span><span class="n">s_inv</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">U</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">b</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;rank&quot;</span><span class="p">:</span> <span class="n">rank</span><span class="p">,</span>
+                <span class="s2">&quot;singular_values&quot;</span><span class="p">:</span> <span class="n">s</span><span class="p">,</span>
+                <span class="s2">&quot;condition_number&quot;</span><span class="p">:</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">s</span><span class="p">[</span><span class="n">rank</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">rank</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_solve_ridge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ridge regression (L2 regularization).&quot;&quot;&quot;</span>
+        <span class="n">n_features</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Ridge: (A^T A + alpha*I) x = A^T b</span>
+        <span class="n">AtA</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">A</span>
+        <span class="n">Atb</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">b</span>
+
+        <span class="c1"># Add regularization to diagonal</span>
+        <span class="n">AtA_reg</span> <span class="o">=</span> <span class="n">AtA</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n_features</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">AtA_reg</span><span class="p">,</span> <span class="n">Atb</span><span class="p">,</span> <span class="n">assume_a</span><span class="o">=</span><span class="s2">&quot;pos&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s2">&quot;regularization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;L2&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s2">&quot;alpha&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_solve_lasso</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lasso regression (L1 regularization) using coordinate descent.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lasso</span>
+
+            <span class="n">model</span> <span class="o">=</span> <span class="n">Lasso</span><span class="p">(</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
+                <span class="n">max_iter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span><span class="p">,</span>
+                <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">,</span>
+                <span class="n">fit_intercept</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s2">&quot;regularization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;L1&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s2">&quot;alpha&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s2">&quot;n_iter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">n_iter_</span>
+            <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">coef_</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;sklearn not available, falling back to ridge regression&quot;</span><span class="p">,</span>
+                <span class="ne">UserWarning</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_ridge</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_solve_elastic_net</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Elastic Net (L1 + L2 regularization).&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">ElasticNet</span>
+
+            <span class="n">model</span> <span class="o">=</span> <span class="n">ElasticNet</span><span class="p">(</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
+                <span class="n">l1_ratio</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">l1_ratio</span><span class="p">,</span>
+                <span class="n">max_iter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span><span class="p">,</span>
+                <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">,</span>
+                <span class="n">fit_intercept</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s2">&quot;regularization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Elastic Net&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s2">&quot;alpha&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s2">&quot;l1_ratio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">l1_ratio</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s2">&quot;n_iter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">n_iter_</span>
+            <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">coef_</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;sklearn not available, falling back to ridge regression&quot;</span><span class="p">,</span>
+                <span class="ne">UserWarning</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_ridge</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_solve_tikhonov</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Tikhonov regularization with custom regularization matrix.&quot;&quot;&quot;</span>
+        <span class="n">n_features</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Allow custom regularization matrix L</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;L&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n_features</span><span class="p">))</span>
+
+        <span class="c1"># Tikhonov: (A^T A + alpha*L^T L) x = A^T b</span>
+        <span class="n">AtA</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">A</span>
+        <span class="n">Atb</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">b</span>
+        <span class="n">LtL</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">L</span>
+
+        <span class="n">AtA_reg</span> <span class="o">=</span> <span class="n">AtA</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">LtL</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">AtA_reg</span><span class="p">,</span> <span class="n">Atb</span><span class="p">,</span> <span class="n">assume_a</span><span class="o">=</span><span class="s2">&quot;pos&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s2">&quot;regularization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Tikhonov&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s2">&quot;alpha&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_solve_constrained</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constrained least squares using scipy.&quot;&quot;&quot;</span>
+        <span class="n">n_features</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Objective: minimize ||Ax - b||^2</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">objective</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">residual</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">x</span> <span class="o">-</span> <span class="n">b</span>
+            <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">residual</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">jacobian</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="p">(</span><span class="n">A</span> <span class="o">@</span> <span class="n">x</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span>
+
+        <span class="c1"># Initial guess</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_features</span><span class="p">)</span>
+
+        <span class="c1"># Prepare constraints for scipy</span>
+        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Equality constraints: A_eq @ x = b_eq</span>
+        <span class="k">if</span> <span class="s2">&quot;A_eq&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="ow">and</span> <span class="s2">&quot;b_eq&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
+            <span class="n">A_eq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s2">&quot;A_eq&quot;</span><span class="p">]</span>
+            <span class="n">b_eq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s2">&quot;b_eq&quot;</span><span class="p">]</span>
+            <span class="n">constraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;eq&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;fun&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">A_eq</span> <span class="o">@</span> <span class="n">x</span> <span class="o">-</span> <span class="n">b_eq</span><span class="p">,</span>
+                    <span class="s2">&quot;jac&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">A_eq</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Inequality constraints: A_ineq @ x &lt;= b_ineq</span>
+        <span class="k">if</span> <span class="s2">&quot;A_ineq&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="ow">and</span> <span class="s2">&quot;b_ineq&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
+            <span class="n">A_ineq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s2">&quot;A_ineq&quot;</span><span class="p">]</span>
+            <span class="n">b_ineq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s2">&quot;b_ineq&quot;</span><span class="p">]</span>
+            <span class="n">constraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;ineq&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;fun&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">b_ineq</span> <span class="o">-</span> <span class="n">A_ineq</span> <span class="o">@</span> <span class="n">x</span><span class="p">,</span>
+                    <span class="s2">&quot;jac&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="n">A_ineq</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Solve with bounds and constraints</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span>
+            <span class="n">objective</span><span class="p">,</span>
+            <span class="n">x0</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="s2">&quot;SLSQP&quot;</span><span class="p">,</span>
+            <span class="n">jac</span><span class="o">=</span><span class="n">jacobian</span><span class="p">,</span>
+            <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
+            <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span>
+            <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;maxiter&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span><span class="p">,</span> <span class="s2">&quot;ftol&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">,</span>
+                <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">message</span><span class="p">,</span>
+                <span class="s2">&quot;n_iter&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">nit</span><span class="p">,</span>
+                <span class="s2">&quot;fun&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">fun</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_solve_robust</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Robust regression using iteratively reweighted least squares.&quot;&quot;&quot;</span>
+        <span class="n">n_samples</span><span class="p">,</span> <span class="n">n_features</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="c1"># Initialize with standard least squares</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_lstsq</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+        <span class="c1"># Iterative reweighting</span>
+        <span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span><span class="p">):</span>
+            <span class="c1"># Compute residuals</span>
+            <span class="n">residuals</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">x</span> <span class="o">-</span> <span class="n">b</span>
+
+            <span class="c1"># Compute robust weights using Huber function</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="mf">1.4826</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">residuals</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">scale</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="n">normalized_residuals</span> <span class="o">=</span> <span class="n">residuals</span> <span class="o">/</span> <span class="n">scale</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">normalized_residuals</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mf">1.345</span><span class="p">,</span>
+                <span class="mf">1.0</span><span class="p">,</span>
+                <span class="mf">1.345</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">normalized_residuals</span><span class="p">),</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Weighted least squares</span>
+            <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+            <span class="n">x_new</span> <span class="o">=</span> <span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">W</span> <span class="o">@</span> <span class="n">A</span><span class="p">,</span> <span class="n">W</span> <span class="o">@</span> <span class="n">b</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="c1"># Check convergence</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x_new</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">x_new</span>
+                <span class="k">break</span>
+
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x_new</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;n_iter&quot;</span><span class="p">:</span> <span class="n">iteration</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;weights&quot;</span><span class="p">:</span> <span class="n">weights</span><span class="p">})</span>
+
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_solve_weighted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Weighted least squares.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Weights must be provided for weighted least squares&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">W</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
+
+        <span class="c1"># Weighted problem: minimize ||W(Ax - b)||^2</span>
+        <span class="n">A_weighted</span> <span class="o">=</span> <span class="n">W</span> <span class="o">@</span> <span class="n">A</span>
+        <span class="n">b_weighted</span> <span class="o">=</span> <span class="n">W</span> <span class="o">@</span> <span class="n">b</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_lstsq</span><span class="p">(</span><span class="n">A_weighted</span><span class="p">,</span> <span class="n">b_weighted</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_solution_quality</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute quality metrics for the solution.&quot;&quot;&quot;</span>
+        <span class="c1"># Residuals</span>
+        <span class="n">residuals</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">x</span> <span class="o">-</span> <span class="n">b</span>
+
+        <span class="c1"># Residual sum of squares</span>
+        <span class="n">rss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">residuals</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># Root mean square error</span>
+        <span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">rss</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+
+        <span class="c1"># R-squared</span>
+        <span class="n">ss_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">b</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">b</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">r_squared</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">rss</span> <span class="o">/</span> <span class="n">ss_tot</span><span class="p">)</span> <span class="k">if</span> <span class="n">ss_tot</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+
+        <span class="c1"># Condition number (if not already computed)</span>
+        <span class="k">if</span> <span class="s2">&quot;condition_number&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s2">&quot;condition_number&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s2">&quot;condition_number&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;residual_norm&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">residuals</span><span class="p">),</span>
+                <span class="s2">&quot;rss&quot;</span><span class="p">:</span> <span class="n">rss</span><span class="p">,</span>
+                <span class="s2">&quot;rmse&quot;</span><span class="p">:</span> <span class="n">rmse</span><span class="p">,</span>
+                <span class="s2">&quot;r_squared&quot;</span><span class="p">:</span> <span class="n">r_squared</span><span class="p">,</span>
+                <span class="s2">&quot;n_samples&quot;</span><span class="p">:</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="s2">&quot;n_features&quot;</span><span class="p">:</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_print_solution_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print solution information.&quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Linear Solver: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;condition_number&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">:</span>
+            <span class="n">cond</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s2">&quot;condition_number&quot;</span><span class="p">]</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Condition number: </span><span class="si">{</span><span class="n">cond</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;rank&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matrix rank: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s1">&#39;rank&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RMSE: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s1">&#39;rmse&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;R²: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s1">&#39;r_squared&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;n_iter&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iterations: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s1">&#39;n_iter&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;regularization&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Regularization: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s1">&#39;regularization&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Alpha: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_info</span><span class="p">[</span><span class="s1">&#39;alpha&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="solve_linear_system">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.solver.solve_linear_system">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">solve_linear_system</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;lstsq&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convenience function to solve linear system Ax = b.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        A (ndarray): Design matrix (n_samples, n_features)</span>
+<span class="sd">        b (ndarray): Target vector (n_samples,)</span>
+<span class="sd">        method (str): Solving method</span>
+<span class="sd">        **kwargs: Additional arguments for LinearSolver</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: (solution x, solver_info dict)</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; A = np.random.randn(1000, 50)  # 1000 samples, 50 features</span>
+<span class="sd">        &gt;&gt;&gt; b = np.random.randn(1000)</span>
+<span class="sd">        &gt;&gt;&gt; x, info = solve_linear_system(A, b, method=&#39;ridge&#39;, alpha=0.1)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">solver</span> <span class="o">=</span> <span class="n">LinearSolver</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">solver_info</span></div>
+
+
+
+<span class="c1"># Export public API</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;LinearSolver&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;solve_linear_system&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2025, Thanh Nguyen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

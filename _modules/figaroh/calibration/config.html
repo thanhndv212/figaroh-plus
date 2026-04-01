@@ -1,0 +1,766 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>figaroh.calibration.config &mdash; figaroh 0.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://thanhndv212.github.io/figaroh/_modules/figaroh/calibration/config.html" />
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=e259d695"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            figaroh
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Modules:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/calibration.html">Calibration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/identification.html">Identification</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tools and Utilities:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/tools.html">Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/measurements.html">Measurements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/visualisation.html">Visualisation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Advanced Features:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/optimal.html">figaroh.optimal package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">figaroh</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">figaroh.calibration.config</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for figaroh.calibration.config</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright [2021-2025] Thanh Nguyen</span>
+<span class="c1"># Copyright [2022-2023] [CNRS, Toward SAS]</span>
+
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Configuration parsing and parameter management for robot calibration.</span>
+
+<span class="sd">This module handles all configuration-related functionality including:</span>
+<span class="sd">- YAML configuration file parsing</span>
+<span class="sd">- Unified to legacy config format conversion</span>
+<span class="sd">- Parameter extraction and validation</span>
+<span class="sd">- Frame and joint configuration management</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="c1"># Setup logger for this module</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">NullHandler</span><span class="p">())</span>
+
+
+<div class="viewcode-block" id="get_sup_joints">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.get_sup_joints">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_sup_joints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get list of supporting joints between two frames in kinematic chain.</span>
+
+<span class="sd">    Finds all joints that contribute to relative motion between start_frame and</span>
+<span class="sd">    end_frame by analyzing their support branches in the kinematic tree.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model (pin.Model): Robot model</span>
+<span class="sd">        start_frame (str): Name of starting frame</span>
+<span class="sd">        end_frame (str): Name of ending frame</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list[int]: Joint IDs ordered from start to end frame, handling cases:</span>
+<span class="sd">            1. Branch entirely contained in another branch</span>
+<span class="sd">            2. Disjoint branches with fixed root</span>
+<span class="sd">            3. Partially overlapping branches</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: If end frame appears before start frame in chain</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Excludes &quot;universe&quot; joints from returned list since they don&#39;t</span>
+<span class="sd">        contribute to relative motion.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">start_frameId</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getFrameId</span><span class="p">(</span><span class="n">start_frame</span><span class="p">)</span>
+    <span class="n">end_frameId</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getFrameId</span><span class="p">(</span><span class="n">end_frame</span><span class="p">)</span>
+    <span class="n">start_par</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">start_frameId</span><span class="p">]</span><span class="o">.</span><span class="n">parentJoint</span>
+    <span class="n">end_par</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">end_frameId</span><span class="p">]</span><span class="o">.</span><span class="n">parentJoint</span>
+    <span class="n">branch_s</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">supports</span><span class="p">[</span><span class="n">start_par</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">branch_e</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">supports</span><span class="p">[</span><span class="n">end_par</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="c1"># remove &#39;universe&#39; joint from branches</span>
+    <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">branch_s</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">==</span> <span class="s2">&quot;universe&quot;</span><span class="p">:</span>
+        <span class="n">branch_s</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">branch_s</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">branch_e</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">==</span> <span class="s2">&quot;universe&quot;</span><span class="p">:</span>
+        <span class="n">branch_e</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">branch_e</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># find over-lapping joints in two branches</span>
+    <span class="n">shared_joints</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">branch_s</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">branch_e</span><span class="p">))</span>
+    <span class="c1"># create a list of supporting joints between two frames</span>
+    <span class="n">list_1</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">branch_s</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">branch_e</span><span class="p">]</span>
+    <span class="n">list_1</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+    <span class="n">list_2</span> <span class="o">=</span> <span class="p">[</span><span class="n">y</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">branch_e</span> <span class="k">if</span> <span class="n">y</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">branch_s</span><span class="p">]</span>
+    <span class="c1"># case 2: root_joint is fixed; branch_s and branch_e are separate</span>
+    <span class="k">if</span> <span class="n">shared_joints</span> <span class="o">==</span> <span class="p">[]:</span>
+        <span class="n">sup_joints</span> <span class="o">=</span> <span class="n">list_1</span> <span class="o">+</span> <span class="n">list_2</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># case 1: branch_s is part of branch_e</span>
+        <span class="k">if</span> <span class="n">shared_joints</span> <span class="o">==</span> <span class="n">branch_s</span><span class="p">:</span>
+            <span class="n">sup_joints</span> <span class="o">=</span> <span class="p">[</span><span class="n">branch_s</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="n">list_2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="n">shared_joints</span> <span class="o">!=</span> <span class="n">branch_e</span>
+            <span class="p">),</span> <span class="s2">&quot;End frame should be before start frame.&quot;</span>
+            <span class="c1"># case 3: there are overlapping joints between two branches</span>
+            <span class="n">sup_joints</span> <span class="o">=</span> <span class="n">list_1</span> <span class="o">+</span> <span class="p">[</span><span class="n">shared_joints</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="n">list_2</span>
+    <span class="k">return</span> <span class="n">sup_joints</span></div>
+
+
+
+<div class="viewcode-block" id="get_param_from_yaml">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.get_param_from_yaml">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse calibration parameters from YAML configuration file.</span>
+
+<span class="sd">    Processes robot and calibration data to build a parameter dictionary containing</span>
+<span class="sd">    all necessary settings for robot calibration. Handles configuration of:</span>
+<span class="sd">    - Frame identifiers and relationships</span>
+<span class="sd">    - Marker/measurement settings</span>
+<span class="sd">    - Joint indices and configurations</span>
+<span class="sd">    - Non-geometric parameters</span>
+<span class="sd">    - Eye-hand calibration setup</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        robot (pin.RobotWrapper): Robot instance containing model and data</span>
+<span class="sd">        calib_data (dict): Calibration parameters parsed from YAML file containing:</span>
+<span class="sd">            - markers: List of marker configurations</span>
+<span class="sd">            - calib_level: Calibration model type</span>
+<span class="sd">            - base_frame: Starting frame name</span>
+<span class="sd">            - tool_frame: End frame name</span>
+<span class="sd">            - free_flyer: Whether base is floating</span>
+<span class="sd">            - non_geom: Whether to include non-geometric params</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Parameter dictionary containing:</span>
+<span class="sd">            - robot_name: Name of robot model</span>
+<span class="sd">            - NbMarkers: Number of markers</span>
+<span class="sd">            - measurability: Measurement DOFs per marker</span>
+<span class="sd">            - start_frame, end_frame: Frame names</span>
+<span class="sd">            - base_to_ref_frame: Optional camera frame</span>
+<span class="sd">            - IDX_TOOL: Tool frame index</span>
+<span class="sd">            - actJoint_idx: Active joint indices</span>
+<span class="sd">            - param_name: List of parameter names</span>
+<span class="sd">            - Additional settings from YAML</span>
+
+<span class="sd">    Side Effects:</span>
+<span class="sd">        Prints warning messages if optional frames undefined</span>
+<span class="sd">        Prints final parameter dictionary</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; calib_data = yaml.safe_load(config_file)</span>
+<span class="sd">        &gt;&gt;&gt; params = get_param_from_yaml(robot, calib_data)</span>
+<span class="sd">        &gt;&gt;&gt; print(params[&#39;NbMarkers&#39;])</span>
+<span class="sd">        2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># NOTE: since joint 0 is universe and it is trivial,</span>
+    <span class="c1"># indices of joints are different from indices of joint configuration,</span>
+    <span class="c1"># different from indices of joint velocities</span>
+    <span class="n">calib_config</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">robot_name</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">frames</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">]</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;robot_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">robot_name</span>
+
+    <span class="c1"># End-effector sensing measurability:</span>
+    <span class="n">NbMarkers</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;markers&quot;</span><span class="p">])</span>
+    <span class="n">measurability</span> <span class="o">=</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;markers&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;measure&quot;</span><span class="p">]</span>
+    <span class="n">calib_idx</span> <span class="o">=</span> <span class="n">measurability</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">NbMarkers</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;measurability&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">measurability</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;calibration_index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calib_idx</span>
+
+    <span class="c1"># Calibration model</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;calib_model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;calib_level&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Get start and end frames</span>
+    <span class="n">start_frame</span> <span class="o">=</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;base_frame&quot;</span><span class="p">]</span>
+    <span class="n">end_frame</span> <span class="o">=</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;tool_frame&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Validate frames exist</span>
+    <span class="n">err_msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_frame </span><span class="si">{}</span><span class="s2"> does not exist&quot;</span>
+    <span class="k">if</span> <span class="n">start_frame</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="n">err_msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;Start&quot;</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">end_frame</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="n">err_msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;End&quot;</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">))</span>
+
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">start_frame</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;end_frame&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">end_frame</span>
+
+    <span class="c1"># Handle eye-hand calibration frames</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">base_to_ref_frame</span> <span class="o">=</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;base_to_ref_frame&quot;</span><span class="p">]</span>
+        <span class="n">ref_frame</span> <span class="o">=</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;ref_frame&quot;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">base_to_ref_frame</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">ref_frame</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;base_to_ref_frame and ref_frame are not defined.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Validate base-to-ref frame if provided</span>
+    <span class="k">if</span> <span class="n">base_to_ref_frame</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">base_to_ref_frame</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
+            <span class="n">err_msg</span> <span class="o">=</span> <span class="s2">&quot;base_to_ref_frame </span><span class="si">{}</span><span class="s2"> does not exist&quot;</span>
+            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="n">err_msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_to_ref_frame</span><span class="p">))</span>
+
+    <span class="c1"># Validate ref frame if provided</span>
+    <span class="k">if</span> <span class="n">ref_frame</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ref_frame</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
+            <span class="n">err_msg</span> <span class="o">=</span> <span class="s2">&quot;ref_frame </span><span class="si">{}</span><span class="s2"> does not exist&quot;</span>
+            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="n">err_msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ref_frame</span><span class="p">))</span>
+
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;base_to_ref_frame&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">base_to_ref_frame</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;ref_frame&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref_frame</span>
+
+    <span class="c1"># Get initial poses</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">base_pose</span> <span class="o">=</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;base_pose&quot;</span><span class="p">]</span>
+        <span class="n">tip_pose</span> <span class="o">=</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;tip_pose&quot;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">base_pose</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">tip_pose</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;base_pose and tip_pose are not defined.&quot;</span><span class="p">)</span>
+
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;base_pose&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">base_pose</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;tip_pose&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tip_pose</span>
+
+    <span class="c1"># q0: default zero configuration</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;q0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">q0</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;nb_sample&quot;</span><span class="p">]</span>
+
+    <span class="c1"># IDX_TOOL: frame ID of the tool</span>
+    <span class="n">IDX_TOOL</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">getFrameId</span><span class="p">(</span><span class="n">end_frame</span><span class="p">)</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;IDX_TOOL&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">IDX_TOOL</span>
+
+    <span class="c1"># tool_joint: ID of the joint right before the tool&#39;s frame (parent)</span>
+    <span class="n">tool_joint</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">IDX_TOOL</span><span class="p">]</span><span class="o">.</span><span class="n">parentJoint</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;tool_joint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tool_joint</span>
+
+    <span class="c1"># indices of active joints: from base to tool_joint</span>
+    <span class="n">actJoint_idx</span> <span class="o">=</span> <span class="n">get_sup_joints</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">)</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">actJoint_idx</span>
+
+    <span class="c1"># indices of joint configuration corresponding to active joints</span>
+    <span class="n">config_idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">joints</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">idx_q</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">actJoint_idx</span><span class="p">]</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;config_idx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">config_idx</span>
+
+    <span class="c1"># number of active joints</span>
+    <span class="n">NbJoint</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">actJoint_idx</span><span class="p">)</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbJoint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">NbJoint</span>
+
+    <span class="c1"># initialize a list of calibrating parameters name</span>
+    <span class="n">param_name</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;non_geom&quot;</span><span class="p">]:</span>
+        <span class="c1"># list of elastic gain parameter names</span>
+        <span class="n">elastic_gain</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">joint_axes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PX&quot;</span><span class="p">,</span> <span class="s2">&quot;PY&quot;</span><span class="p">,</span> <span class="s2">&quot;PZ&quot;</span><span class="p">,</span> <span class="s2">&quot;RX&quot;</span><span class="p">,</span> <span class="s2">&quot;RY&quot;</span><span class="p">,</span> <span class="s2">&quot;RZ&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">j_id</span><span class="p">,</span> <span class="n">joint_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">tolist</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">joint_name</span> <span class="o">==</span> <span class="s2">&quot;universe&quot;</span><span class="p">:</span>
+                <span class="n">axis_motion</span> <span class="o">=</span> <span class="s2">&quot;null&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># for ii, ax in enumerate(AXIS_MOTION[j_id]):</span>
+                <span class="c1">#     if ax == 1:</span>
+                <span class="c1">#         axis_motion = axis[ii]</span>
+                <span class="n">shortname</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">joints</span><span class="p">[</span>
+                    <span class="n">j_id</span>
+                <span class="p">]</span><span class="o">.</span><span class="n">shortname</span><span class="p">()</span>  <span class="c1"># ONLY TAKE PRISMATIC AND REVOLUTE JOINT</span>
+                <span class="k">for</span> <span class="n">ja</span> <span class="ow">in</span> <span class="n">joint_axes</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">ja</span> <span class="ow">in</span> <span class="n">shortname</span><span class="p">:</span>
+                        <span class="n">axis_motion</span> <span class="o">=</span> <span class="n">ja</span>
+                    <span class="k">elif</span> <span class="s2">&quot;RevoluteUnaligned&quot;</span> <span class="ow">in</span> <span class="n">shortname</span><span class="p">:</span>
+                        <span class="n">axis_motion</span> <span class="o">=</span> <span class="s2">&quot;RZ&quot;</span>  <span class="c1"># hard coded fix for canopies</span>
+
+            <span class="n">elastic_gain</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;k_&quot;</span> <span class="o">+</span> <span class="n">axis_motion</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">joint_name</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">actJoint_idx</span><span class="p">:</span>
+            <span class="n">param_name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elastic_gain</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;param_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_name</span>
+
+    <span class="n">calib_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;free_flyer&quot;</span><span class="p">:</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;free_flyer&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;non_geom&quot;</span><span class="p">:</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;non_geom&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;eps&quot;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span>
+            <span class="s2">&quot;PLOT&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">calib_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;coeff_regularize&quot;</span><span class="p">:</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;coeff_regularize&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;data_file&quot;</span><span class="p">:</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;data_file&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;sample_configs_file&quot;</span><span class="p">:</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;sample_configs_file&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;outlier_eps&quot;</span><span class="p">:</span> <span class="n">calib_data</span><span class="p">[</span><span class="s2">&quot;outlier_eps&quot;</span><span class="p">],</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">calib_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;coeff_regularize&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;data_file&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;sample_configs_file&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;outlier_eps&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">calib_config</span></div>
+
+
+
+<div class="viewcode-block" id="unified_to_legacy_config">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.unified_to_legacy_config">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">unified_to_legacy_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_calib_config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert unified configuration format to legacy calib_config format.</span>
+
+<span class="sd">    Maps the new unified configuration structure to the exact format expected</span>
+<span class="sd">    by get_param_from_yaml. This ensures backward compatibility while using</span>
+<span class="sd">    the new unified parser.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        robot (pin.RobotWrapper): Robot instance containing model and data</span>
+<span class="sd">        unified_calib_config (dict): Configuration from create_task_config</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Legacy format calibration configuration matching</span>
+<span class="sd">              get_param_from_yaml output</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        KeyError: If required fields are missing from unified config</span>
+<span class="sd">        AssertionError: If frame validation fails</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; unified_config = create_task_config(robot, parsed_config,</span>
+<span class="sd">        ...                                    &quot;calibration&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; legacy_config = unified_to_legacy_config(robot, unified_config)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Initialize output configuration</span>
+    <span class="n">calib_config</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Extract unified config sections</span>
+    <span class="n">joints</span> <span class="o">=</span> <span class="n">unified_calib_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;joints&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">kinematics</span> <span class="o">=</span> <span class="n">unified_calib_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kinematics&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="n">unified_calib_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;parameters&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">measurements</span> <span class="o">=</span> <span class="n">unified_calib_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;measurements&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">unified_calib_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="p">{})</span>
+
+    <span class="c1"># 1. Extract basic robot information</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;robot_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;q0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">q0</span>
+
+    <span class="c1"># 2. Extract and validate markers/measurements</span>
+    <span class="n">_extract_marker_info</span><span class="p">(</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">measurements</span><span class="p">)</span>
+
+    <span class="c1"># 3. Extract and validate kinematic frames</span>
+    <span class="n">_extract_frame_info</span><span class="p">(</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">kinematics</span><span class="p">)</span>
+
+    <span class="c1"># 4. Extract tool frame information</span>
+    <span class="n">_extract_tool_info</span><span class="p">(</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;end_frame&quot;</span><span class="p">])</span>
+
+    <span class="c1"># 5. Determine active joints</span>
+    <span class="n">_determine_active_joints</span><span class="p">(</span>
+        <span class="n">calib_config</span><span class="p">,</span>
+        <span class="n">robot</span><span class="p">,</span>
+        <span class="n">joints</span><span class="p">,</span>
+        <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">],</span>
+        <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;end_frame&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+
+    <span class="c1"># 6. Extract poses</span>
+    <span class="n">_extract_poses</span><span class="p">(</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">measurements</span><span class="p">)</span>
+
+    <span class="c1"># 7. Extract calibration parameters</span>
+    <span class="n">_extract_calibration_params</span><span class="p">(</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+
+    <span class="c1"># 8. Extract data configuration</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;number_of_samples&quot;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;data_file&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;source_file&quot;</span><span class="p">)</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;sample_configs_file&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+        <span class="s2">&quot;sample_configurations_file&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">calib_config</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extract_marker_info</span><span class="p">(</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">measurements</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract marker and measurement information.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        calib_config (dict): Configuration dictionary to update</span>
+<span class="sd">        measurements (dict): Measurements section from unified config</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        KeyError: If markers are not defined</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">markers</span> <span class="o">=</span> <span class="n">measurements</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;markers&quot;</span><span class="p">,</span> <span class="p">[{}])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">markers</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;No markers defined in unified configuration&quot;</span><span class="p">)</span>
+
+    <span class="n">first_marker</span> <span class="o">=</span> <span class="n">markers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">measurability</span> <span class="o">=</span> <span class="n">first_marker</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+        <span class="s2">&quot;measurable_dof&quot;</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">markers</span><span class="p">)</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;measurability&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">measurability</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;calibration_index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">measurability</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extract_frame_info</span><span class="p">(</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">kinematics</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract and validate kinematic frame information.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        calib_config (dict): Configuration dictionary to update</span>
+<span class="sd">        robot: Robot instance</span>
+<span class="sd">        kinematics (dict): Kinematics section from unified config</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        KeyError: If tool_frame not specified</span>
+<span class="sd">        AssertionError: If frames don&#39;t exist in robot model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">frames</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">]</span>
+    <span class="n">start_frame</span> <span class="o">=</span> <span class="n">kinematics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;base_frame&quot;</span><span class="p">,</span> <span class="s2">&quot;universe&quot;</span><span class="p">)</span>
+    <span class="n">end_frame</span> <span class="o">=</span> <span class="n">kinematics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tool_frame&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">end_frame</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;tool_frame not specified in unified configuration&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Validate frames exist</span>
+    <span class="k">if</span> <span class="n">start_frame</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Start_frame </span><span class="si">{</span><span class="n">start_frame</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">end_frame</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;End_frame </span><span class="si">{</span><span class="n">end_frame</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
+
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">start_frame</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;end_frame&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">end_frame</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extract_tool_info</span><span class="p">(</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract tool frame information.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        calib_config (dict): Configuration dictionary to update</span>
+<span class="sd">        robot: Robot instance</span>
+<span class="sd">        end_frame (str): End effector frame name</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">IDX_TOOL</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">getFrameId</span><span class="p">(</span><span class="n">end_frame</span><span class="p">)</span>
+    <span class="n">tool_joint</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">IDX_TOOL</span><span class="p">]</span><span class="o">.</span><span class="n">parentJoint</span>
+
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;IDX_TOOL&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">IDX_TOOL</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;tool_joint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tool_joint</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_determine_active_joints</span><span class="p">(</span>
+    <span class="n">calib_config</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">joints</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine active joints from configuration or kinematic chain.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        calib_config (dict): Configuration dictionary to update</span>
+<span class="sd">        robot: Robot instance</span>
+<span class="sd">        joints (dict): Joints section from unified config</span>
+<span class="sd">        start_frame (str): Starting frame name</span>
+<span class="sd">        end_frame (str): Ending frame name</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">active_joint_names</span> <span class="o">=</span> <span class="n">joints</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;active_joints&quot;</span><span class="p">,</span> <span class="p">[])</span>
+
+    <span class="k">if</span> <span class="n">active_joint_names</span><span class="p">:</span>
+        <span class="c1"># Map joint names to indices</span>
+        <span class="n">actJoint_idx</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">joint_name</span> <span class="ow">in</span> <span class="n">active_joint_names</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">joint_name</span> <span class="ow">in</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+                <span class="n">joint_id</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">getJointId</span><span class="p">(</span><span class="n">joint_name</span><span class="p">)</span>
+                <span class="n">actJoint_idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">joint_id</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Compute from kinematic chain</span>
+        <span class="n">actJoint_idx</span> <span class="o">=</span> <span class="n">get_sup_joints</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">)</span>
+
+    <span class="c1"># Store joint information</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">actJoint_idx</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;config_idx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">joints</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">idx_q</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">actJoint_idx</span>
+    <span class="p">]</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbJoint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">actJoint_idx</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extract_poses</span><span class="p">(</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">measurements</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract base and tip pose information.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        calib_config (dict): Configuration dictionary to update</span>
+<span class="sd">        measurements (dict): Measurements section from unified config</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">poses</span> <span class="o">=</span> <span class="n">measurements</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;poses&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">base_pose</span> <span class="o">=</span> <span class="n">poses</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;base_pose&quot;</span><span class="p">)</span>
+    <span class="n">tip_pose</span> <span class="o">=</span> <span class="n">poses</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tool_pose&quot;</span><span class="p">)</span>
+
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;base_pose&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">base_pose</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;tip_pose&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tip_pose</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">base_pose</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">tip_pose</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;base_pose and tip_pose are not defined.&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extract_calibration_params</span><span class="p">(</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract calibration parameters including non-geometric terms.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        calib_config (dict): Configuration dictionary to update</span>
+<span class="sd">        robot: Robot instance</span>
+<span class="sd">        parameters (dict): Parameters section from unified config</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Extract calibration model and settings</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;calib_model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+        <span class="s2">&quot;calibration_level&quot;</span><span class="p">,</span> <span class="s2">&quot;full_params&quot;</span>
+    <span class="p">)</span>
+    <span class="n">non_geom</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;include_non_geometric&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Build parameter names for non-geometric parameters</span>
+    <span class="n">param_name</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">non_geom</span><span class="p">:</span>
+        <span class="n">param_name</span> <span class="o">=</span> <span class="n">_build_elastic_param_names</span><span class="p">(</span>
+            <span class="n">robot</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;param_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_name</span>
+
+    <span class="c1"># Store calibration settings</span>
+    <span class="n">calib_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;free_flyer&quot;</span><span class="p">:</span> <span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;free_flyer&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+            <span class="s2">&quot;non_geom&quot;</span><span class="p">:</span> <span class="n">non_geom</span><span class="p">,</span>
+            <span class="s2">&quot;eps&quot;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span>
+            <span class="s2">&quot;PLOT&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;coeff_regularize&quot;</span><span class="p">:</span> <span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;regularization_coefficient&quot;</span><span class="p">,</span> <span class="mf">0.01</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;outlier_eps&quot;</span><span class="p">:</span> <span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;outlier_threshold&quot;</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_elastic_param_names</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">actJoint_idx</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build elastic gain parameter names for active joints.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        robot: Robot instance</span>
+<span class="sd">        actJoint_idx (list): List of active joint indices</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: List of elastic parameter names</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">elastic_gain</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">joint_axes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PX&quot;</span><span class="p">,</span> <span class="s2">&quot;PY&quot;</span><span class="p">,</span> <span class="s2">&quot;PZ&quot;</span><span class="p">,</span> <span class="s2">&quot;RX&quot;</span><span class="p">,</span> <span class="s2">&quot;RY&quot;</span><span class="p">,</span> <span class="s2">&quot;RZ&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Build elastic gain names for all joints</span>
+    <span class="k">for</span> <span class="n">j_id</span><span class="p">,</span> <span class="n">joint_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">tolist</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="n">joint_name</span> <span class="o">==</span> <span class="s2">&quot;universe&quot;</span><span class="p">:</span>
+            <span class="n">axis_motion</span> <span class="o">=</span> <span class="s2">&quot;null&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">shortname</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">joints</span><span class="p">[</span><span class="n">j_id</span><span class="p">]</span><span class="o">.</span><span class="n">shortname</span><span class="p">()</span>
+            <span class="n">axis_motion</span> <span class="o">=</span> <span class="n">_determine_axis_motion</span><span class="p">(</span><span class="n">shortname</span><span class="p">,</span> <span class="n">joint_axes</span><span class="p">)</span>
+
+        <span class="n">elastic_gain</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;k_</span><span class="si">{</span><span class="n">axis_motion</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">joint_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Select only active joints</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">elastic_gain</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">actJoint_idx</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_determine_axis_motion</span><span class="p">(</span><span class="n">shortname</span><span class="p">,</span> <span class="n">joint_axes</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine axis of motion from joint short name.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        shortname (str): Joint short name from Pinocchio</span>
+<span class="sd">        joint_axes (list): List of possible joint axes</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Axis of motion identifier</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check for standard joint axes</span>
+    <span class="k">for</span> <span class="n">ja</span> <span class="ow">in</span> <span class="n">joint_axes</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ja</span> <span class="ow">in</span> <span class="n">shortname</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ja</span>
+
+    <span class="c1"># Handle special cases</span>
+    <span class="k">if</span> <span class="s2">&quot;RevoluteUnaligned&quot;</span> <span class="ow">in</span> <span class="n">shortname</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;RZ&quot;</span>  <span class="c1"># Hard-coded fix for canopies and similar robots</span>
+
+    <span class="k">return</span> <span class="s2">&quot;RZ&quot;</span>  <span class="c1"># Default fallback</span>
+
+
+<span class="c1"># Backward compatibility wrapper for get_param_from_yaml</span>
+<div class="viewcode-block" id="get_param_from_yaml_legacy">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.get_param_from_yaml_legacy">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml_legacy</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Legacy calibration parameter parser - kept for backward compatibility.</span>
+
+<span class="sd">    This is the original implementation. New code should use the unified</span>
+<span class="sd">    config parser from figaroh.utils.config_parser.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        robot: Robot instance</span>
+<span class="sd">        calib_data: Calibration data dictionary</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Calibration configuration dictionary</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Keep the original implementation here for compatibility</span>
+    <span class="k">return</span> <span class="n">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># Import the new unified parser as the default</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">..utils.config_parser</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">get_param_from_yaml</span> <span class="k">as</span> <span class="n">unified_get_param_from_yaml</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Replace the function with unified version while maintaining signature</span>
+<div class="viewcode-block" id="get_param_from_yaml_unified">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.get_param_from_yaml_unified">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml_unified</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enhanced parameter parser using unified configuration system.</span>
+
+<span class="sd">        This function provides backward compatibility while using the new</span>
+<span class="sd">        unified configuration parser when possible.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            robot: Robot instance</span>
+<span class="sd">            calib_data: Configuration data (dict or file path)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Calibration configuration dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">unified_get_param_from_yaml</span><span class="p">(</span>
+                <span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">,</span> <span class="s2">&quot;calibration&quot;</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># Fall back to legacy parser if unified parser fails</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unified parser failed (</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">), falling back to legacy &quot;</span>
+                <span class="s2">&quot;parser. Consider updating your configuration format.&quot;</span><span class="p">,</span>
+                <span class="ne">UserWarning</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">get_param_from_yaml_legacy</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span></div>
+
+
+    <span class="c1"># Keep the old function available but with warning</span>
+<div class="viewcode-block" id="get_param_from_yaml_with_warning">
+<a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.get_param_from_yaml_with_warning">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml_with_warning</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Original function with deprecation notice.&quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;Direct use of get_param_from_yaml is deprecated. &quot;</span>
+            <span class="s2">&quot;Consider using the unified config parser from &quot;</span>
+            <span class="s2">&quot;figaroh.utils.config_parser&quot;</span><span class="p">,</span>
+            <span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">get_param_from_yaml_unified</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span></div>
+
+
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="c1"># If unified parser is not available, keep using original function</span>
+    <span class="k">pass</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2025, Thanh Nguyen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
