@@ -28,7 +28,8 @@ Note:
 The resulting row ordering matches the returned base-parameter expressions.
 """
 
-from typing import Dict, List, Optional, Tuple, Union
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 from scipy import linalg
 
@@ -37,14 +38,63 @@ TOL_QR = 1e-8
 TOL_BETA = 1e-6
 
 
+@dataclass
+class QRResult:
+    """Structured output of a QR base-parameter decomposition.
+
+    All numerical fields are stored at full float64 precision.  Rounding for
+    display is done only at the expression-building stage.
+
+    Attributes:
+        rank: Identified numerical rank of the regressor.
+        base_indices: Column indices into ``params_r`` that form the
+            independent (base) set.
+        pivot_order: Full pivot permutation used by the pivoting path
+            (``P`` from ``scipy.linalg.qr``); ``None`` for the double path.
+        W_b: Base regressor matrix, shape ``(m, rank)``.
+        beta: Dependency coefficient matrix, shape ``(rank, n - rank)``.
+            Full precision — not rounded.
+        M: Base mapping matrix satisfying ``phi_base = M @ theta_r``,
+            shape ``(rank, n)``.
+        base_param_expressions: Human-readable expression strings, length
+            ``rank``.
+        phi_b: Identified base-parameter values, shape ``(rank,)``; ``None``
+            when computed without a ``tau`` vector.
+        phi_b_nom: Nominal base-parameter values from ``params_std`` prior,
+            shape ``(rank,)``; ``None`` when ``params_std`` was not provided.
+        method: ``"pivoting"`` or ``"double"``.
+        diag_R: Absolute diagonal of ``R`` at the factorisation point,
+            shape ``(min(m, n),)``.  Useful for stability diagnostics.
+        cond_R1: Condition number of the ``R[:rank, :rank]`` block.  Measures
+            how well-conditioned the base part of the factorisation is.
+    """
+
+    rank: int
+    base_indices: List[int]
+    pivot_order: Optional[List[int]]
+    W_b: np.ndarray
+    beta: np.ndarray
+    M: np.ndarray
+    base_param_expressions: List[str]
+    phi_b: Optional[np.ndarray]
+    phi_b_nom: Optional[np.ndarray]
+    method: str
+    diag_R: np.ndarray
+    cond_R1: float
+
+
 class QRDecomposer:
     """Enhanced QR decomposition handler for robot parameter identification."""
 
     def __init__(
-        self, tolerance: float = TOL_QR, beta_tolerance: float = TOL_BETA
+        self,
+        tolerance: float = TOL_QR,
+        beta_tolerance: float = TOL_BETA,
+        relative_tolerance: Optional[float] = None,
     ):
         self.tolerance = tolerance
         self.beta_tolerance = beta_tolerance
+        self.relative_tolerance = relative_tolerance
 
         # Last computed base-mapping matrix and its labels.
         # M maps the remaining parameter vector (ordered as params_r) to base.
@@ -52,6 +102,9 @@ class QRDecomposer:
         self.M_params_r: Optional[List[str]] = None
         self.M_base_params_expr: Optional[List[str]] = None
         self.M_method: Optional[str] = None
+        # Diagnostics from the last decomposition (available via get_diagnostics)
+        self._last_diag_R: Optional[np.ndarray] = None
+        self._last_cond_R1: Optional[float] = None
 
     def get_M(self) -> Optional[np.ndarray]:
         """Return the last computed base mapping matrix ``M`` (or None)."""
@@ -273,11 +326,20 @@ class QRDecomposer:
         """Find effective numerical rank from an upper-triangular R.
 
         A diagonal entry with absolute value <= ``self.tolerance`` is treated
-        as zero.
+        as zero.  Returns 0 for an all-zero (or empty) matrix.
+
+        When ``self.relative_tolerance`` is set, the threshold is
+        ``relative_tolerance * |R[0, 0]|`` (largest pivot), which is more
+        robust across different regressor scalings.  The absolute
+        ``self.tolerance`` is used as a floor so that a near-zero leading
+        diagonal still yields rank 0.
         """
         diag_R = np.abs(np.diag(R))
-        rank_indices = np.where(diag_R > self.tolerance)[0]
-        return len(rank_indices)
+        if self.relative_tolerance is not None and diag_R.size > 0:
+            thr = max(self.relative_tolerance * diag_R[0], self.tolerance)
+        else:
+            thr = self.tolerance
+        return int(np.sum(diag_R > thr))
 
     def _extract_base_components(
         self, R: np.ndarray, Q: np.ndarray, rank: int
