@@ -5,7 +5,59 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.3.0] - Unreleased
+## [0.3.1] - 2026-04-01
+
+### Added
+- `feat(physical-consistency)`: optional projection of inertial parameters onto
+  a physically consistent set (`identification/physical_consistency.py`)
+- `feat(reconstruction)`: reconstruction utilities — `run_reconstruction` and
+  `run_option_a_reconstruction` entry points (`identification/reconstruction.py`)
+- `feat(qrdecomposition)`: `get_M` / `get_M_labels` methods for retrieving the
+  stored base mapping matrix after decomposition
+- `feat(qrdecomposition)`: `QRResult` dataclass for structured, full-precision
+  decomposition output (rank, base_indices, W_b, beta, M, phi_b, diag_R,
+  cond_R1, method, …)
+- `feat(qrdecomposition)`: `relative_tolerance` constructor parameter for
+  scale-invariant rank detection (threshold relative to largest pivot)
+- `feat(qrdecomposition)`: `get_diagnostics()` method returning rank, diag_R,
+  cond_R1, and method after every decomposition
+- `feat(qrdecomposition)`: `decompose()` unified entry point returning a
+  `QRResult`; delegates to pivoting or double path based on `method` argument
+- `feat(identification)`: enhanced parameter management with standard and
+  custom parameter support in `BaseIdentification`
+
+### Fixed
+- `fix(qrdecomposition)`: `_find_rank` now correctly returns 0 for zero/empty
+  matrices (previously returned row count, causing phantom base parameters)
+- `fix(reconstruction)`: add missing `run_option_a_reconstruction` alias that
+  blocked package-level import
+
+### Changed
+- `refactor(qrdecomposition)`: replace non-pivoted `numpy.linalg.qr` with
+  `scipy.linalg.qr(..., pivoting=True)` in `_identify_base_parameters` —
+  permutation-stable, deterministic basis selection
+- `refactor(qrdecomposition)`: remove premature `np.around` from `beta` in all
+  code paths; rounding deferred to display-only `_build_parameter_expressions`
+- `refactor(qrdecomposition)`: remove fragile `assert np.allclose(W_base, W_b)`
+- `refactor(qrdecomposition)`: enhanced docstrings and nominal-parameter handling
+- `refactor(identification)`: patch filter configuration management in
+  `BaseIdentification`
+- `refactor(calibration)`: update deprecated `Frame.parent` →
+  `Frame.parentJoint` for Pinocchio 3.x compatibility
+- `refactor(logging)`: replace print statements with `logging` calls across
+  calibration and identification modules
+- `refactor(config)`: rename `load_from_yaml` → `load_param` for clarity
+
+### Tests
+- `test(qrdecomposition)`: `TestNumericalImprovements` suite — 14 new tests,
+  23/23 total pass (rank-zero, relative tolerance, permutation stability ×20,
+  mapping matrix property, column space, diagnostics, QRResult structure,
+  full-precision beta)
+- `test(reconstruction)`: unit tests for reconstruction utilities
+
+---
+
+## [0.3.0] - 2025-12-09
 
 ### Added
 - **Advanced Linear Solver (`figaroh.tools.solver`)**: Comprehensive multivariate linear solver for robot parameter identification
