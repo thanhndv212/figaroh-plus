@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - Unreleased
+
+### Added
+
+- `feat(physical-consistency)`: `is_feasible_link()` — public alias for
+  `check_p10_feasibility()` matching roadmap spec naming
+- `feat(physical-consistency)`: `project_link()` — public alias for
+  `project_p10_lmi()` matching roadmap spec naming
+- `feat(physical-consistency)`: `ProjectionReport.runtime` — per-link solve
+  time (seconds) recorded via `time.perf_counter()` around `problem.solve()`
+- `feat(physical-consistency)`: `weights` keyword argument to
+  `project_robot_p10_lmi()` for passing a 10-element weight vector to all
+  per-link projection calls
+- `feat(config)`: `weights.mode: "auto" | "manual"` parsed from the
+  `physical_consistency` YAML block in `_apply_physical_consistency_if_enabled`
+- `feat(config)`: `weights.manual.{m, h, Sigma}` per-group manual weights built
+  into a 10-element array and forwarded to `project_robot_p10_lmi`
+- `feat(identification)`: `physical consistency` result dict now stores both
+  `raw_parameters` (pre-projection) and `projected_parameters` (post-projection)
+  as separate keys, preserving the original identified values for comparison
+- `tests`: 28 unit tests in `tests/unit/test_physical_consistency.py` covering
+  TC-1 through TC-12 (projection correctness, aliases, runtime, robot aggregation)
+  plus 3 config-wiring tests for weights and raw/projected separation
+
+### Fixed
+
+- `fix(physical-consistency)`: SDP formulation in `project_p10_lmi` no longer
+  uses the picos 2.x-incompatible `pc.vstack`, `pc.multiply`, or `pc.sum_squares`
+  functions; replaced with element-wise objective using `pc.SquaredNorm` and
+  explicit sigma-entry loop
+- `fix(physical-consistency)`: solver keyword `verbose=` replaced with
+  `verbosity=` (picos 2.x API); eliminates `DeprecationWarning` on every call
+- `fix(physical-consistency)`: feasibility check after projection uses a
+  relaxed `psd_eig_tol=-1e-8` tolerance to absorb inevitable SDP solver
+  numerical noise, preventing valid projections from being reported as
+  `"infeasible"` due to tiny eigenvalue violations (~1e-9)
+
 ## [0.3.1] - 2026-04-01
 
 ### Added
