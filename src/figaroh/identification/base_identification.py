@@ -953,6 +953,25 @@ class BaseIdentification(ABC):
             max_seconds = float(max_seconds)
         skip_if_feasible = bool(pc_cfg.get("skip_if_feasible", True))
 
+        # Parse weights config (YAML: weights.mode / weights.manual)
+        weights_cfg = pc_cfg.get("weights", {})
+        if not isinstance(weights_cfg, dict):
+            weights_cfg = {}
+        weights_mode = str(weights_cfg.get("mode", "auto")).strip().lower()
+        proj_weights: Optional[np.ndarray] = None
+        if weights_mode == "manual":
+            manual = weights_cfg.get("manual", {})
+            if not isinstance(manual, dict):
+                manual = {}
+            w_m = float(manual.get("m", 1.0))
+            w_h = float(manual.get("h", 1.0))
+            w_sigma = float(manual.get("Sigma", 1.0))
+            proj_weights = np.array(
+                [w_m, w_h, w_h, w_h,
+                 w_sigma, w_sigma, w_sigma, w_sigma, w_sigma, w_sigma],
+                dtype=float,
+            )
+
         # Prefer explicitly provided parameter dicts from the solver output,
         # otherwise fall back to the model's standard parameters.
         source_label = "standard_parameter"
@@ -1032,6 +1051,7 @@ class BaseIdentification(ABC):
                 "mass_min": mass_min,
                 "psd_eig_tol": psd_eig_tol,
                 "feasibility": feasibility,
+                "raw_parameters": dict(parameter_dict),
                 "projected parameters": dict(parameter_dict),
             }
             return
@@ -1042,6 +1062,7 @@ class BaseIdentification(ABC):
                 p10_by_link=p10_by_joint,
                 mass_min=mass_min,
                 psd_eig_tol=psd_eig_tol,
+                weights=proj_weights,
                 solver=solver,
                 verbose=verbose,
                 max_seconds=max_seconds,
@@ -1083,6 +1104,7 @@ class BaseIdentification(ABC):
             "psd_eig_tol": psd_eig_tol,
             "feasibility": feasibility,
             "projection": dataclasses.asdict(robot_report),
+            "raw_parameters": dict(parameter_dict),
             "projected parameters": projected_parameter_dict,
         }
 
