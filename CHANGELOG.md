@@ -5,6 +5,58 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] - Unreleased
+
+### Added
+
+- `feat(reconstruction)`: `ReconstructionResult.status` — outcome code (`"ok"`,
+  `"solver_missing"`, `"error"`) on every result
+- `feat(reconstruction)`: `ReconstructionResult.base_residual_norm` — L2 norm
+  of the base constraint residual `M θ − φ_base` (scalar, always set)
+- `feat(reconstruction)`: `ReconstructionResult.objective` — SDP objective value
+  for Option B (`None` for nullspace)
+- `feat(reconstruction)`: `BaseResult` frozen dataclass — structured container
+  for `(M, phi_base, params_r)` as input to `reconstruct_full_parameters()`
+- `feat(reconstruction)`: `reconstruct_full_parameters()` — unified entry point
+  with `method="nullspace" | "sdp" | "auto"` dispatch
+- `feat(reconstruction)`: Option B SDP (`method="sdp"`) — minimises
+  `‖diag(w)(θ−θ₀)‖²` subject to `M θ = φ_base` and per-joint pseudo-inertia
+  LMI `P_j ≽ 0` via Schur-complement epigraph (requires picos + cvxopt/mosek)
+- `feat(reconstruction)`: `method="auto"` — silently falls back to nullspace
+  when picos is not installed; `status="solver_missing"` when picos unavailable
+  and `method="sdp"` was requested explicitly
+- `feat(reconstruction)`: `_load_prior_from_urdf()` — builds flat prior dict
+  from Pinocchio model inertias (`prior_source="urdf"`)
+- `feat(reconstruction)`: `_load_prior_from_yaml()` — loads prior from a flat
+  YAML file (`prior_source="yaml"`)
+- `feat(identification)`: `_apply_reconstruction_if_enabled()` hook in
+  `BaseIdentification._store_results()` — called after physical consistency;
+  stores result under `self.result["reconstruction"]`
+- `feat(identification)`: `_calculate_base_parameters()` now uses
+  `QRDecomposer` directly to expose `self._M_matrix` / `self._params_r_for_recon`
+  for downstream reconstruction; result dict includes `"M"` and `"params_r"` keys
+- `feat(config)`: `reconstruction` block parsed from both legacy YAML
+  (`get_param_from_yaml`) and unified config (`unified_to_legacy_identif_config`)
+- `feat(identification/__init__)`: `BaseResult` and `reconstruct_full_parameters`
+  added to public exports and `__all__`
+- `tests`: 13 new unit tests in `tests/unit/test_reconstruction.py` covering
+  new fields, BaseResult, prior helpers, `_p10_indices_for_joints`, nullspace
+  end-to-end, auto fallback, YAML prior, and unsupported method error
+
+### Fixed
+
+- `fix(reconstruction)`: alternation loop in `run_reconstruction` now correctly
+  unpacks `project_robot_p10_lmi()` as `(projected_p10_dict, robot_report)`;
+  removes `AttributeError: tuple has no attribute 'p10_by_joint'`
+- `fix(identification)`: `"projected parameters"` key (space) renamed to
+  `"projected_parameters"` (underscore) in `_apply_physical_consistency_if_enabled`
+  result dict for consistency with `"raw_parameters"` and Python conventions
+- `fix(tools/robotcollisions)`: `print_collision_pairs()` uses `print()` instead
+  of `logger.info()` so output is visible in interactive use and captured by tests
+- `fix(tools/solver)`: `LinearSolver._print_solution_info()` uses `print()`
+  instead of `logger.info()` so verbose output is visible in interactive use
+  and captured by tests
+
 ## [0.4.1] - Unreleased
 
 ### Added
