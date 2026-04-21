@@ -16,9 +16,11 @@
 from .base_identification import BaseIdentification
 
 from .reconstruction import (  # noqa: F401
+    BaseResult,
     ReconstructionResult,
     prior_vector_from_dict,
     reconstruct_from_base,
+    reconstruct_full_parameters,
     reconstruct_theta_r,
     run_reconstruction,
     run_option_a_reconstruction,
@@ -40,9 +42,11 @@ from .physical_consistency import (  # noqa: F401
 
 __all__ = [
     "BaseIdentification",
+    "BaseResult",
     "ReconstructionResult",
     "prior_vector_from_dict",
     "reconstruct_from_base",
+    "reconstruct_full_parameters",
     "reconstruct_theta_r",
     "run_reconstruction",
     "run_option_a_reconstruction",
