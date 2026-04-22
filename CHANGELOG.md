@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] - Unreleased
+
+### Added
+
+- `feat(cad_constraints)`: New module `figaroh.identification.cad_constraints`
+  with convex CAD-informed constraints for inertial parameter identification.
+- `CADConstraints` dataclass — container for per-link mass bounds, first-moment
+  (CoM) bounds, and symmetry equality constraints.
+- `add_mass_bounds(cad, joint, *, m_min, m_max)` — add box constraint
+  `m_min ≤ m_j ≤ m_max` for a link.
+- `add_com_bounds(cad, joint, *, axis, h_min, h_max)` — add first-moment
+  (linear) box constraint `h_min ≤ h_k ≤ h_max` for axis `k ∈ {x,y,z}`.
+- `add_symmetry_constraints(cad, joint_a, joint_b, *, keys)` — add equality
+  constraints between inertial parameters of two symmetric links.
+- `bounds_from_urdf(model, ...)` — derive mass and CoM bounds automatically
+  from Pinocchio model URDF inertials (CAD data source strategy).
+- `build_cad_constraints_from_config(cfg, *, model)` — build `CADConstraints`
+  from a YAML config sub-dict; returns `None` when empty (safe default-off).
+- `apply_cad_constraints_to_problem(problem, theta, params_r, cad)` — inject
+  CAD constraints into a picos `Problem` for the full-robot SDP.
+- `feat(physical_consistency)`: `project_p10_lmi` gains optional `mass_bounds`
+  and `com_bounds` kwargs — per-link box constraints on the SDP.
+- `feat(physical_consistency)`: `project_robot_p10_lmi` gains optional
+  `cad_constraints` kwarg — passes per-link bounds to `project_p10_lmi`.
+- `feat(reconstruction)`: `_reconstruct_sdp` and `reconstruct_full_parameters`
+  gain optional `cad_constraints` kwarg — injects CAD constraints after the
+  per-joint LMI loop in the full-robot SDP.
+- `feat(base_identification)`: Both `_apply_physical_consistency_if_enabled`
+  and `_apply_reconstruction_if_enabled` hooks parse `cad_constraints` from
+  config and pass the result to the underlying solvers.
+- Example YAML comment block for `cad_constraints` in
+  `figaroh-examples/examples/templates/manipulator_robot.yaml`.
+
+### Changed
+
+- All new parameters are optional with safe defaults — fully backward-compatible.
+
 ## [0.4.2] - Unreleased
 
 ### Added
