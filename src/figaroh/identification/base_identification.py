@@ -1072,6 +1072,20 @@ class BaseIdentification(ABC):
 
         # Project using SDP (requires picos backend)
         try:
+            from figaroh.identification.cad_constraints import (
+                build_cad_constraints_from_config,
+            )
+
+            pc_cad_cfg = pc_cfg.get("cad_constraints", {})
+            if not isinstance(pc_cad_cfg, dict):
+                pc_cad_cfg = {}
+            pc_cad_cst = build_cad_constraints_from_config(
+                pc_cad_cfg, model=getattr(self, "model", None)
+            )
+        except Exception:
+            pc_cad_cst = None
+
+        try:
             projected_p10_by_joint, robot_report = project_robot_p10_lmi(
                 p10_by_link=p10_by_joint,
                 mass_min=mass_min,
@@ -1080,6 +1094,7 @@ class BaseIdentification(ABC):
                 solver=solver,
                 verbose=verbose,
                 max_seconds=max_seconds,
+                cad_constraints=pc_cad_cst,
             )
         except ImportError as e:
             self.result["physical consistency"] = {
@@ -1189,6 +1204,18 @@ class BaseIdentification(ABC):
             params_r=list(params_r),
         )
 
+        # Parse optional CAD constraints from config
+        from figaroh.identification.cad_constraints import (
+            build_cad_constraints_from_config,
+        )
+
+        cad_cfg = recon_cfg.get("cad_constraints", {})
+        if not isinstance(cad_cfg, dict):
+            cad_cfg = {}
+        cad_cst = build_cad_constraints_from_config(
+            cad_cfg, model=getattr(self, "model", None)
+        )
+
         result = reconstruct_full_parameters(
             base_res,
             method=method,
@@ -1202,6 +1229,7 @@ class BaseIdentification(ABC):
             psd_eig_tol=psd_eig_tol,
             solver=solver,
             max_seconds=max_seconds,
+            cad_constraints=cad_cst,
         )
 
         self.result["reconstruction"] = {

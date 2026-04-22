@@ -40,6 +40,16 @@ from .physical_consistency import (  # noqa: F401
     pseudo_inertia_matrix_from_p10,
 )
 
+# CAD-informed convex constraints (v0.4.3, default-off)
+from .cad_constraints import (  # noqa: F401
+    CADConstraints,
+    add_mass_bounds,
+    add_com_bounds,
+    add_symmetry_constraints,
+    bounds_from_urdf,
+    build_cad_constraints_from_config,
+)
+
 __all__ = [
     "BaseIdentification",
     "BaseResult",
@@ -60,4 +70,10 @@ __all__ = [
     "project_p10_lmi",
     "project_robot_p10_lmi",
     "pseudo_inertia_matrix_from_p10",
+    "CADConstraints",
+    "add_mass_bounds",
+    "add_com_bounds",
+    "add_symmetry_constraints",
+    "bounds_from_urdf",
+    "build_cad_constraints_from_config",
 ]

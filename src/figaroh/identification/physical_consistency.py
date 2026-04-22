@@ -134,6 +134,8 @@ def project_p10_lmi(
     solver: str = "cvxopt",
     verbose: bool = False,
     max_seconds: Optional[float] = None,
+    mass_bounds: Optional[Tuple[float, float]] = None,
+    com_bounds: Optional[Dict[str, Tuple[float, float]]] = None,
 ) -> Tuple[np.ndarray, ProjectionReport]:
     """Project a 10D inertial parameter vector.
 
@@ -173,6 +175,18 @@ def project_p10_lmi(
     # Constraints
     problem.add_constraint(m >= mass_min)
     problem.add_constraint(P >> 0)
+
+    # Optional CAD-informed per-link box constraints
+    if mass_bounds is not None:
+        problem.add_constraint(m >= mass_bounds[0])
+        problem.add_constraint(m <= mass_bounds[1])
+    if com_bounds:
+        _axis_idx = {"x": 0, "y": 1, "z": 2}
+        for _axis, (_h_lo, _h_hi) in com_bounds.items():
+            _k = _axis_idx.get(_axis)
+            if _k is not None:
+                problem.add_constraint(h[_k] >= _h_lo)
+                problem.add_constraint(h[_k] <= _h_hi)
 
     # Objective: minimize ||W(p - p_hat)||^2  (element-wise, picos 2.x API)
     # Mass term (1-element)
@@ -249,12 +263,19 @@ def project_robot_p10_lmi(
     solver: str = "cvxopt",
     verbose: bool = False,
     max_seconds: Optional[float] = None,
+    cad_constraints: Optional[Any] = None,
 ) -> Tuple[Dict[str, np.ndarray], RobotProjectionReport]:
     projected: Dict[str, np.ndarray] = {}
     reports: Dict[str, ProjectionReport] = {}
 
     failed = 0
     for link, p10 in p10_by_link.items():
+        _mb = (
+            cad_constraints.mass_bounds.get(link) if cad_constraints else None
+        )
+        _cb = (
+            cad_constraints.com_bounds.get(link, {}) if cad_constraints else {}
+        )
         p_proj, rep = project_p10_lmi(
             p10,
             mass_min=mass_min,
@@ -263,6 +284,8 @@ def project_robot_p10_lmi(
             solver=solver,
             verbose=verbose,
             max_seconds=max_seconds,
+            mass_bounds=_mb,
+            com_bounds=_cb or None,
         )
         projected[link] = p_proj
         reports[link] = rep

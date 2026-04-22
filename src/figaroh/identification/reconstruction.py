@@ -381,6 +381,7 @@ def _reconstruct_sdp(
     psd_eig_tol: float = -1e-10,
     solver: str = "cvxopt",
     max_seconds: Optional[float] = None,
+    cad_constraints: Optional[Any] = None,
 ) -> Tuple[np.ndarray, float]:
     """Project theta onto {M theta = phi_base} with per-joint LMI constraints.
 
@@ -442,6 +443,16 @@ def _reconstruct_sdp(
         ])
         problem.add_constraint(P_j >> 0)
 
+    # Optional CAD-informed additional constraints (mass/CoM bounds, symmetry)
+    if cad_constraints is not None and not cad_constraints.is_empty():
+        from figaroh.identification.cad_constraints import (
+            apply_cad_constraints_to_problem,
+        )
+
+        apply_cad_constraints_to_problem(
+            problem, theta, params_r, cad_constraints
+        )
+
     # Quadratic objective via Schur complement:
     # minimise t s.t. [[t, diff^T], [diff, I_n]] >> 0
     # where diff = diag(w) (theta - theta0)
@@ -487,6 +498,7 @@ def reconstruct_full_parameters(
     psd_eig_tol: float = -1e-10,
     solver: str = "cvxopt",
     max_seconds: Optional[float] = None,
+    cad_constraints: Optional[Any] = None,
 ) -> ReconstructionResult:
     """Unified entry point for base → full parameter reconstruction.
 
@@ -564,11 +576,17 @@ def reconstruct_full_parameters(
             raise ValueError("joint_names must be provided when method='sdp'")
         try:
             theta_r, objective = _reconstruct_sdp(
-                M_in, phi_in, params_r,
-                theta0=prior_vec, w=w,
+                M_in,
+                phi_in,
+                params_r,
+                theta0=prior_vec,
+                w=w,
                 joint_names=joint_names,
-                mass_min=mass_min, psd_eig_tol=psd_eig_tol,
-                solver=solver, max_seconds=max_seconds,
+                mass_min=mass_min,
+                psd_eig_tol=psd_eig_tol,
+                solver=solver,
+                max_seconds=max_seconds,
+                cad_constraints=cad_constraints,
             )
         except ImportError:
             status = "solver_missing"
