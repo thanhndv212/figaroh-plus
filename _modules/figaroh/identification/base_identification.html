@@ -956,12 +956,21 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: Results from QR decomposition</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.qrdecomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">double_QR</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.qrdecomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">QRDecomposer</span>
 
-        <span class="c1"># Perform QR decomposition</span>
+        <span class="c1"># Perform QR decomposition using explicit decomposer to access M matrix</span>
+        <span class="n">decomposer</span> <span class="o">=</span> <span class="n">QRDecomposer</span><span class="p">(</span><span class="n">tolerance</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;tol_qr&quot;</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">))</span>
         <span class="n">W_base</span><span class="p">,</span> <span class="n">base_param_dict</span><span class="p">,</span> <span class="n">base_parameters</span><span class="p">,</span> <span class="n">phi_base</span><span class="p">,</span> <span class="n">phi_std</span> <span class="o">=</span> \
-            <span class="n">double_QR</span><span class="p">(</span><span class="n">tau_processed</span><span class="p">,</span> <span class="n">regressor_processed</span><span class="p">,</span> <span class="n">active_parameters</span><span class="p">,</span>
-                      <span class="bp">self</span><span class="o">.</span><span class="n">standard_parameter</span><span class="p">)</span>
+            <span class="n">decomposer</span><span class="o">.</span><span class="n">double_decomposition</span><span class="p">(</span>
+                <span class="n">tau_processed</span><span class="p">,</span> <span class="n">regressor_processed</span><span class="p">,</span> <span class="n">active_parameters</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">standard_parameter</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Store M matrix and params_r for optional reconstruction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_M_matrix</span> <span class="o">=</span> <span class="n">decomposer</span><span class="o">.</span><span class="n">get_M</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_params_r_for_recon</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">decomposer</span><span class="o">.</span><span class="n">get_M_labels</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">or</span> <span class="n">active_parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="p">)</span>
 
         <span class="c1"># Calculate torque estimation (avoid redundant computation)</span>
         <span class="n">tau_estimated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">W_base</span><span class="p">,</span> <span class="n">phi_base</span><span class="p">)</span>
@@ -980,6 +989,8 @@
             <span class="s2">&quot;phi_base&quot;</span><span class="p">:</span> <span class="n">phi_base</span><span class="p">,</span>
             <span class="s2">&quot;tau_estimated&quot;</span><span class="p">:</span> <span class="n">tau_estimated</span><span class="p">,</span>
             <span class="s2">&quot;tau_processed&quot;</span><span class="p">:</span> <span class="n">tau_processed</span><span class="p">,</span>
+            <span class="s2">&quot;M&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_M_matrix</span><span class="p">,</span>
+            <span class="s2">&quot;params_r&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params_r_for_recon</span><span class="p">,</span>
         <span class="p">}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_compute_quality_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1032,6 +1043,9 @@
         <span class="c1"># Optional physical-consistency post-processing (default-off)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_apply_physical_consistency_if_enabled</span><span class="p">(</span><span class="n">identif_results</span><span class="p">)</span>
 
+        <span class="c1"># Optional full-parameter reconstruction (default-off, v0.4.2)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_apply_reconstruction_if_enabled</span><span class="p">(</span><span class="n">identif_results</span><span class="p">)</span>
+
         <span class="c1"># Initialize ResultsManager for identification task</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.utils.results_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultsManager</span>
@@ -1078,6 +1092,25 @@
         <span class="k">if</span> <span class="n">max_seconds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">max_seconds</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_seconds</span><span class="p">)</span>
         <span class="n">skip_if_feasible</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">pc_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;skip_if_feasible&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>
+
+        <span class="c1"># Parse weights config (YAML: weights.mode / weights.manual)</span>
+        <span class="n">weights_cfg</span> <span class="o">=</span> <span class="n">pc_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;weights&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weights_cfg</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">weights_cfg</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">weights_mode</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">weights_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mode&quot;</span><span class="p">,</span> <span class="s2">&quot;auto&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">proj_weights</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">weights_mode</span> <span class="o">==</span> <span class="s2">&quot;manual&quot;</span><span class="p">:</span>
+            <span class="n">manual</span> <span class="o">=</span> <span class="n">weights_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;manual&quot;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">manual</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">manual</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">w_m</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">manual</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;m&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+            <span class="n">w_h</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">manual</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+            <span class="n">w_sigma</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">manual</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Sigma&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+            <span class="n">proj_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">w_m</span><span class="p">,</span> <span class="n">w_h</span><span class="p">,</span> <span class="n">w_h</span><span class="p">,</span> <span class="n">w_h</span><span class="p">,</span>
+                 <span class="n">w_sigma</span><span class="p">,</span> <span class="n">w_sigma</span><span class="p">,</span> <span class="n">w_sigma</span><span class="p">,</span> <span class="n">w_sigma</span><span class="p">,</span> <span class="n">w_sigma</span><span class="p">,</span> <span class="n">w_sigma</span><span class="p">],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+            <span class="p">)</span>
 
         <span class="c1"># Prefer explicitly provided parameter dicts from the solver output,</span>
         <span class="c1"># otherwise fall back to the model&#39;s standard parameters.</span>
@@ -1158,19 +1191,36 @@
                 <span class="s2">&quot;mass_min&quot;</span><span class="p">:</span> <span class="n">mass_min</span><span class="p">,</span>
                 <span class="s2">&quot;psd_eig_tol&quot;</span><span class="p">:</span> <span class="n">psd_eig_tol</span><span class="p">,</span>
                 <span class="s2">&quot;feasibility&quot;</span><span class="p">:</span> <span class="n">feasibility</span><span class="p">,</span>
-                <span class="s2">&quot;projected parameters&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">parameter_dict</span><span class="p">),</span>
+                <span class="s2">&quot;raw_parameters&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">parameter_dict</span><span class="p">),</span>
+                <span class="s2">&quot;projected_parameters&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">parameter_dict</span><span class="p">),</span>
             <span class="p">}</span>
             <span class="k">return</span>
 
         <span class="c1"># Project using SDP (requires picos backend)</span>
         <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.identification.cad_constraints</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+                <span class="n">build_cad_constraints_from_config</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">pc_cad_cfg</span> <span class="o">=</span> <span class="n">pc_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cad_constraints&quot;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pc_cad_cfg</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">pc_cad_cfg</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">pc_cad_cst</span> <span class="o">=</span> <span class="n">build_cad_constraints_from_config</span><span class="p">(</span>
+                <span class="n">pc_cad_cfg</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">pc_cad_cst</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">try</span><span class="p">:</span>
             <span class="n">projected_p10_by_joint</span><span class="p">,</span> <span class="n">robot_report</span> <span class="o">=</span> <span class="n">project_robot_p10_lmi</span><span class="p">(</span>
                 <span class="n">p10_by_link</span><span class="o">=</span><span class="n">p10_by_joint</span><span class="p">,</span>
                 <span class="n">mass_min</span><span class="o">=</span><span class="n">mass_min</span><span class="p">,</span>
                 <span class="n">psd_eig_tol</span><span class="o">=</span><span class="n">psd_eig_tol</span><span class="p">,</span>
+                <span class="n">weights</span><span class="o">=</span><span class="n">proj_weights</span><span class="p">,</span>
                 <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span>
                 <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
                 <span class="n">max_seconds</span><span class="o">=</span><span class="n">max_seconds</span><span class="p">,</span>
+                <span class="n">cad_constraints</span><span class="o">=</span><span class="n">pc_cad_cst</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;physical consistency&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
@@ -1209,7 +1259,113 @@
             <span class="s2">&quot;psd_eig_tol&quot;</span><span class="p">:</span> <span class="n">psd_eig_tol</span><span class="p">,</span>
             <span class="s2">&quot;feasibility&quot;</span><span class="p">:</span> <span class="n">feasibility</span><span class="p">,</span>
             <span class="s2">&quot;projection&quot;</span><span class="p">:</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">asdict</span><span class="p">(</span><span class="n">robot_report</span><span class="p">),</span>
-            <span class="s2">&quot;projected parameters&quot;</span><span class="p">:</span> <span class="n">projected_parameter_dict</span><span class="p">,</span>
+            <span class="s2">&quot;raw_parameters&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">parameter_dict</span><span class="p">),</span>
+            <span class="s2">&quot;projected_parameters&quot;</span><span class="p">:</span> <span class="n">projected_parameter_dict</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_apply_reconstruction_if_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identif_results</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reconstruct full parameter vector from base parameters (v0.4.2).</span>
+
+<span class="sd">        Reads ``identif_config[&quot;reconstruction&quot;]`` and, if ``enabled`` is</span>
+<span class="sd">        truthy, runs :func:`~figaroh.identification.reconstruction.reconstruct_full_parameters`.</span>
+<span class="sd">        Results are stored under ``self.result[&quot;reconstruction&quot;]``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            identif_results (dict): Results dict from _calculate_base_parameters;</span>
+<span class="sd">                expected to contain ``&quot;M&quot;``, ``&quot;phi_base&quot;``, and ``&quot;params_r&quot;``</span>
+<span class="sd">                keys populated by the QRDecomposer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">recon_cfg</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;identif_config&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;reconstruction&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">recon_cfg</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">recon_cfg</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">bool</span><span class="p">(</span><span class="n">recon_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enabled&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)):</span>
+            <span class="k">return</span>
+
+        <span class="n">M</span> <span class="o">=</span> <span class="n">identif_results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;M&quot;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_M_matrix&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+        <span class="n">phi_base</span> <span class="o">=</span> <span class="n">identif_results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;phi_base&quot;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;phi_base&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+        <span class="n">params_r</span> <span class="o">=</span> <span class="n">identif_results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;params_r&quot;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_params_r_for_recon&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">M</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">phi_base</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">params_r</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;reconstruction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;skipped&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="s2">&quot;M matrix not available; run solve() first&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="k">return</span>
+
+        <span class="n">method</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">recon_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;method&quot;</span><span class="p">,</span> <span class="s2">&quot;nullspace&quot;</span><span class="p">))</span>
+        <span class="n">prior_cfg</span> <span class="o">=</span> <span class="n">recon_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prior&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prior_cfg</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">prior_cfg</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">prior_source</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">prior_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="s2">&quot;dict&quot;</span><span class="p">))</span>
+        <span class="n">prior_yaml_path</span> <span class="o">=</span> <span class="n">prior_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;yaml_path&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">recon_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;weights&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">joint_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+        <span class="n">mass_min</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">recon_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mass_min&quot;</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">))</span>
+        <span class="n">psd_eig_tol</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">recon_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;psd_eig_tol&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">1e-10</span><span class="p">))</span>
+        <span class="n">sdp_cfg</span> <span class="o">=</span> <span class="n">recon_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sdp&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sdp_cfg</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">sdp_cfg</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">solver</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sdp_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;solver&quot;</span><span class="p">,</span> <span class="s2">&quot;cvxopt&quot;</span><span class="p">))</span>
+        <span class="n">max_seconds</span> <span class="o">=</span> <span class="n">sdp_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max_seconds&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.identification.reconstruction</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+                <span class="n">BaseResult</span><span class="p">,</span>
+                <span class="n">reconstruct_full_parameters</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;reconstruction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;unavailable&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">),</span>
+            <span class="p">}</span>
+            <span class="k">return</span>
+
+        <span class="n">base_res</span> <span class="o">=</span> <span class="n">BaseResult</span><span class="p">(</span>
+            <span class="n">M</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+            <span class="n">phi_base</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">phi_base</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">params_r</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">params_r</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Parse optional CAD constraints from config</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.identification.cad_constraints</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+            <span class="n">build_cad_constraints_from_config</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">cad_cfg</span> <span class="o">=</span> <span class="n">recon_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cad_constraints&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cad_cfg</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">cad_cfg</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">cad_cst</span> <span class="o">=</span> <span class="n">build_cad_constraints_from_config</span><span class="p">(</span>
+            <span class="n">cad_cfg</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">reconstruct_full_parameters</span><span class="p">(</span>
+            <span class="n">base_res</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+            <span class="n">params_std_prior</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;standard_parameter&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">prior_source</span><span class="o">=</span><span class="n">prior_source</span><span class="p">,</span>
+            <span class="n">prior_yaml_path</span><span class="o">=</span><span class="n">prior_yaml_path</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
+            <span class="n">joint_names</span><span class="o">=</span><span class="n">joint_names</span><span class="p">,</span>
+            <span class="n">mass_min</span><span class="o">=</span><span class="n">mass_min</span><span class="p">,</span>
+            <span class="n">psd_eig_tol</span><span class="o">=</span><span class="n">psd_eig_tol</span><span class="p">,</span>
+            <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span>
+            <span class="n">max_seconds</span><span class="o">=</span><span class="n">max_seconds</span><span class="p">,</span>
+            <span class="n">cad_constraints</span><span class="o">=</span><span class="n">cad_cst</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;reconstruction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
+            <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="n">method</span><span class="p">,</span>
+            <span class="s2">&quot;base_residual_norm&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">base_residual_norm</span><span class="p">,</span>
+            <span class="s2">&quot;objective&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">objective</span><span class="p">,</span>
+            <span class="s2">&quot;theta_r_dict&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">as_dict</span><span class="p">(),</span>
+            <span class="s2">&quot;params_r&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">params_r</span><span class="p">,</span>
         <span class="p">}</span>
 
 <div class="viewcode-block" id="BaseIdentification.plot_results">
