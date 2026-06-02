@@ -111,21 +111,21 @@ class CollisionManager:
     def print_collision_pairs(self) -> None:
         """Print all collision pair information."""
         if not self.geom_model or not self.geom_data:
-            logger.warning("No geometry model available")
+            print("No geometry model available")
             return
-        
-        logger.info(f"Total collision pairs: {len(self.geom_model.collisionPairs)}")
-        logger.info("-" * 60)
-        
+
+        print(f"Total collision pairs: {len(self.geom_model.collisionPairs)}")
+        print("-" * 60)
+
         for k in range(len(self.geom_model.collisionPairs)):
             result = self.geom_data.collisionResults[k]
             pair = self.geom_model.collisionPairs[k]
-            
+
             name1 = self.geom_model.geometryObjects[pair.first].name
             name2 = self.geom_model.geometryObjects[pair.second].name
             status = "COLLISION" if result.isCollision() else "FREE"
-            
-            logger.info(f"Pair {k:3d}: {name1:20s} <-> {name2:20s} [{status}]")
+
+            print(f"Pair {k:3d}: {name1:20s} <-> {name2:20s} [{status}]")
     
     def visualize_collisions(self, collision_details: Optional[List] = None) -> None:
         """Visualize collision contacts with enhanced display."""

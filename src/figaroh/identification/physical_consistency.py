@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import dataclasses
 import logging
+import time
 from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
 
 import numpy as np
@@ -29,6 +30,7 @@ class ProjectionReport:
     objective: Optional[float] = None
     solver: Optional[str] = None
     message: Optional[str] = None
+    runtime: Optional[float] = None
 
 
 @dataclasses.dataclass(frozen=True)
@@ -132,6 +134,8 @@ def project_p10_lmi(
     solver: str = "cvxopt",
     verbose: bool = False,
     max_seconds: Optional[float] = None,
+    mass_bounds: Optional[Tuple[float, float]] = None,
+    com_bounds: Optional[Dict[str, Tuple[float, float]]] = None,
 ) -> Tuple[np.ndarray, ProjectionReport]:
     """Project a 10D inertial parameter vector.
 
@@ -165,36 +169,46 @@ def project_p10_lmi(
     h = pc.RealVariable("h", 3)  # column vector (3x1)
     sigma = pc.SymmetricVariable("sigma", 3)
 
-    # Assemble p10 variable vector in Pinocchio order
-    # [m, hx, hy, hz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz]
-    Ixx = sigma[0, 0]
-    Ixy = sigma[0, 1]
-    Iyy = sigma[1, 1]
-    Ixz = sigma[0, 2]
-    Iyz = sigma[1, 2]
-    Izz = sigma[2, 2]
-
-    p = pc.vstack([m, h, Ixx, Ixy, Iyy, Ixz, Iyz, Izz])
-
     # 4x4 pseudo-inertia matrix P = [[sigma, h], [h^T, m]]
-    # Ensure dimensions: h is 3x1, m is 1x1
     P = pc.block([[sigma, h], [h.T, m]])
 
     # Constraints
     problem.add_constraint(m >= mass_min)
     problem.add_constraint(P >> 0)
 
-    # Objective
-    p_hat = pc.Constant(p10_hat.reshape(-1, 1))
-    w_col = pc.Constant(w.reshape(-1, 1))
-    residual = pc.multiply(w_col, (p - p_hat))
-    problem.minimize = pc.sum_squares(residual)
+    # Optional CAD-informed per-link box constraints
+    if mass_bounds is not None:
+        problem.add_constraint(m >= mass_bounds[0])
+        problem.add_constraint(m <= mass_bounds[1])
+    if com_bounds:
+        _axis_idx = {"x": 0, "y": 1, "z": 2}
+        for _axis, (_h_lo, _h_hi) in com_bounds.items():
+            _k = _axis_idx.get(_axis)
+            if _k is not None:
+                problem.add_constraint(h[_k] >= _h_lo)
+                problem.add_constraint(h[_k] <= _h_hi)
 
-    # Solve
-    solve_kwargs: Dict[str, Any] = {"solver": solver, "verbose": verbose}
+    # Objective: minimize ||W(p - p_hat)||^2  (element-wise, picos 2.x API)
+    # Mass term (1-element)
+    h_hat_c = pc.Constant("h_hat", p10_hat[1:4].reshape(3, 1))
+    dm = float(w[0]) * (m - float(p10_hat[0]))
+    dh = w[1:4].reshape(3, 1) * (h - h_hat_c)
+    obj = pc.SquaredNorm(dm) + pc.SquaredNorm(dh)
+    # Sigma terms: iterate over 6 unique upper-triangle entries to avoid
+    # Frobenius double-counting.  p10 order: Ixx=4, Ixy=5, Iyy=6, Ixz=7, Iyz=8, Izz=9
+    for _r, _c, _idx in [(0, 0, 4), (0, 1, 5), (1, 1, 6), (0, 2, 7), (1, 2, 8), (2, 2, 9)]:
+        obj = obj + (float(w[_idx]) * (sigma[_r, _c] - float(p10_hat[_idx]))) ** 2
+    problem.minimize = obj
+
+    # Solve — use verbosity (picos 2.x) instead of the deprecated verbose kwarg
+    solve_kwargs: Dict[str, Any] = {
+        "solver": solver,
+        "verbosity": int(verbose),
+    }
     if max_seconds is not None:
         solve_kwargs["max_seconds"] = float(max_seconds)
 
+    t_start = time.perf_counter()
     try:
         problem.solve(**solve_kwargs)
     except Exception as e:
@@ -204,8 +218,10 @@ def project_p10_lmi(
             min_eig=float("nan"),
             solver=solver,
             message=str(e),
+            runtime=time.perf_counter() - t_start,
         )
         return p10_hat.copy(), report
+    t_elapsed = time.perf_counter() - t_start
 
     # Extract solution
     m_val = float(m.value)
@@ -222,14 +238,18 @@ def project_p10_lmi(
     p10_proj[8] = sigma_val[1, 2]
     p10_proj[9] = sigma_val[2, 2]
 
+    # Verify with a relaxed tolerance to absorb solver numerical noise
+    # (SDP solvers satisfy P >> 0 up to ~1e-8 relative error).
+    _verify_tol = min(psd_eig_tol, -1e-8)
     feas = check_p10_feasibility(
-        p10_proj, mass_min=mass_min, psd_eig_tol=psd_eig_tol
+        p10_proj, mass_min=mass_min, psd_eig_tol=_verify_tol
     )
     report = dataclasses.replace(
         feas,
         status="projected" if feas.status == "feasible" else "infeasible",
         solver=solver,
         objective=float(problem.value) if problem.value is not None else None,
+        runtime=t_elapsed,
     )
     return p10_proj, report
 
@@ -239,22 +259,33 @@ def project_robot_p10_lmi(
     *,
     mass_min: float = 1e-6,
     psd_eig_tol: float = -1e-10,
+    weights: Optional[np.ndarray] = None,
     solver: str = "cvxopt",
     verbose: bool = False,
     max_seconds: Optional[float] = None,
+    cad_constraints: Optional[Any] = None,
 ) -> Tuple[Dict[str, np.ndarray], RobotProjectionReport]:
     projected: Dict[str, np.ndarray] = {}
     reports: Dict[str, ProjectionReport] = {}
 
     failed = 0
     for link, p10 in p10_by_link.items():
+        _mb = (
+            cad_constraints.mass_bounds.get(link) if cad_constraints else None
+        )
+        _cb = (
+            cad_constraints.com_bounds.get(link, {}) if cad_constraints else {}
+        )
         p_proj, rep = project_p10_lmi(
             p10,
             mass_min=mass_min,
             psd_eig_tol=psd_eig_tol,
+            weights=weights,
             solver=solver,
             verbose=verbose,
             max_seconds=max_seconds,
+            mass_bounds=_mb,
+            com_bounds=_cb or None,
         )
         projected[link] = p_proj
         reports[link] = rep
@@ -336,3 +367,45 @@ def param_dict_with_p10_by_joint(
             updated[f"{key}_{joint}"] = float(p10[idx])
 
     return updated
+
+
+# ---------------------------------------------------------------------------
+# Public API aliases (roadmap spec names)
+# ---------------------------------------------------------------------------
+
+def is_feasible_link(
+    p10: np.ndarray,
+    *,
+    mass_min: float = 0.0,
+    psd_eig_tol: float = -1e-10,
+) -> ProjectionReport:
+    """Check physical feasibility of a single link's inertial parameters.
+
+    Alias for :func:`check_p10_feasibility` using the roadmap-specified name.
+    """
+    return check_p10_feasibility(p10, mass_min=mass_min, psd_eig_tol=psd_eig_tol)
+
+
+def project_link(
+    p10: np.ndarray,
+    *,
+    mass_min: float = 1e-6,
+    psd_eig_tol: float = -1e-10,
+    weights: Optional[np.ndarray] = None,
+    solver: str = "cvxopt",
+    verbose: bool = False,
+    max_seconds: Optional[float] = None,
+) -> Tuple[np.ndarray, ProjectionReport]:
+    """Project a single link's inertial parameters onto the feasible set.
+
+    Alias for :func:`project_p10_lmi` using the roadmap-specified name.
+    """
+    return project_p10_lmi(
+        p10,
+        mass_min=mass_min,
+        psd_eig_tol=psd_eig_tol,
+        weights=weights,
+        solver=solver,
+        verbose=verbose,
+        max_seconds=max_seconds,
+    )

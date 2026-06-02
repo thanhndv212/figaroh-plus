@@ -16,9 +16,11 @@
 from .base_identification import BaseIdentification
 
 from .reconstruction import (  # noqa: F401
+    BaseResult,
     ReconstructionResult,
     prior_vector_from_dict,
     reconstruct_from_base,
+    reconstruct_full_parameters,
     reconstruct_theta_r,
     run_reconstruction,
     run_option_a_reconstruction,
@@ -29,19 +31,49 @@ from .physical_consistency import (  # noqa: F401
     ProjectionReport,
     RobotProjectionReport,
     check_p10_feasibility,
+    is_feasible_link,
     p10_by_joint_from_param_dict,
     param_dict_with_p10_by_joint,
+    project_link,
     project_p10_lmi,
     project_robot_p10_lmi,
     pseudo_inertia_matrix_from_p10,
 )
 
+# CAD-informed convex constraints (v0.4.3, default-off)
+from .cad_constraints import (  # noqa: F401
+    CADConstraints,
+    add_mass_bounds,
+    add_com_bounds,
+    add_symmetry_constraints,
+    bounds_from_urdf,
+    build_cad_constraints_from_config,
+)
+
 __all__ = [
     "BaseIdentification",
+    "BaseResult",
     "ReconstructionResult",
     "prior_vector_from_dict",
     "reconstruct_from_base",
+    "reconstruct_full_parameters",
     "reconstruct_theta_r",
     "run_reconstruction",
     "run_option_a_reconstruction",
+    "ProjectionReport",
+    "RobotProjectionReport",
+    "check_p10_feasibility",
+    "is_feasible_link",
+    "p10_by_joint_from_param_dict",
+    "param_dict_with_p10_by_joint",
+    "project_link",
+    "project_p10_lmi",
+    "project_robot_p10_lmi",
+    "pseudo_inertia_matrix_from_p10",
+    "CADConstraints",
+    "add_mass_bounds",
+    "add_com_bounds",
+    "add_symmetry_constraints",
+    "bounds_from_urdf",
+    "build_cad_constraints_from_config",
 ]

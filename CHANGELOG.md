@@ -5,6 +5,132 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] - 2026-06-02
+
+### Added
+
+- `feat(cad_constraints)`: New module `figaroh.identification.cad_constraints`
+  with convex CAD-informed constraints for inertial parameter identification.
+- `CADConstraints` dataclass — container for per-link mass bounds, first-moment
+  (CoM) bounds, and symmetry equality constraints.
+- `add_mass_bounds(cad, joint, *, m_min, m_max)` — add box constraint
+  `m_min ≤ m_j ≤ m_max` for a link.
+- `add_com_bounds(cad, joint, *, axis, h_min, h_max)` — add first-moment
+  (linear) box constraint `h_min ≤ h_k ≤ h_max` for axis `k ∈ {x,y,z}`.
+- `add_symmetry_constraints(cad, joint_a, joint_b, *, keys)` — add equality
+  constraints between inertial parameters of two symmetric links.
+- `bounds_from_urdf(model, ...)` — derive mass and CoM bounds automatically
+  from Pinocchio model URDF inertials (CAD data source strategy).
+- `build_cad_constraints_from_config(cfg, *, model)` — build `CADConstraints`
+  from a YAML config sub-dict; returns `None` when empty (safe default-off).
+- `apply_cad_constraints_to_problem(problem, theta, params_r, cad)` — inject
+  CAD constraints into a picos `Problem` for the full-robot SDP.
+- `feat(physical_consistency)`: `project_p10_lmi` gains optional `mass_bounds`
+  and `com_bounds` kwargs — per-link box constraints on the SDP.
+- `feat(physical_consistency)`: `project_robot_p10_lmi` gains optional
+  `cad_constraints` kwarg — passes per-link bounds to `project_p10_lmi`.
+- `feat(reconstruction)`: `_reconstruct_sdp` and `reconstruct_full_parameters`
+  gain optional `cad_constraints` kwarg — injects CAD constraints after the
+  per-joint LMI loop in the full-robot SDP.
+- `feat(base_identification)`: Both `_apply_physical_consistency_if_enabled`
+  and `_apply_reconstruction_if_enabled` hooks parse `cad_constraints` from
+  config and pass the result to the underlying solvers.
+- Example YAML comment block for `cad_constraints` in
+  `figaroh-examples/examples/templates/manipulator_robot.yaml`.
+
+### Changed
+
+- All new parameters are optional with safe defaults — fully backward-compatible.
+
+## [0.4.2] - Unreleased
+
+### Added
+
+- `feat(reconstruction)`: `ReconstructionResult.status` — outcome code (`"ok"`,
+  `"solver_missing"`, `"error"`) on every result
+- `feat(reconstruction)`: `ReconstructionResult.base_residual_norm` — L2 norm
+  of the base constraint residual `M θ − φ_base` (scalar, always set)
+- `feat(reconstruction)`: `ReconstructionResult.objective` — SDP objective value
+  for Option B (`None` for nullspace)
+- `feat(reconstruction)`: `BaseResult` frozen dataclass — structured container
+  for `(M, phi_base, params_r)` as input to `reconstruct_full_parameters()`
+- `feat(reconstruction)`: `reconstruct_full_parameters()` — unified entry point
+  with `method="nullspace" | "sdp" | "auto"` dispatch
+- `feat(reconstruction)`: Option B SDP (`method="sdp"`) — minimises
+  `‖diag(w)(θ−θ₀)‖²` subject to `M θ = φ_base` and per-joint pseudo-inertia
+  LMI `P_j ≽ 0` via Schur-complement epigraph (requires picos + cvxopt/mosek)
+- `feat(reconstruction)`: `method="auto"` — silently falls back to nullspace
+  when picos is not installed; `status="solver_missing"` when picos unavailable
+  and `method="sdp"` was requested explicitly
+- `feat(reconstruction)`: `_load_prior_from_urdf()` — builds flat prior dict
+  from Pinocchio model inertias (`prior_source="urdf"`)
+- `feat(reconstruction)`: `_load_prior_from_yaml()` — loads prior from a flat
+  YAML file (`prior_source="yaml"`)
+- `feat(identification)`: `_apply_reconstruction_if_enabled()` hook in
+  `BaseIdentification._store_results()` — called after physical consistency;
+  stores result under `self.result["reconstruction"]`
+- `feat(identification)`: `_calculate_base_parameters()` now uses
+  `QRDecomposer` directly to expose `self._M_matrix` / `self._params_r_for_recon`
+  for downstream reconstruction; result dict includes `"M"` and `"params_r"` keys
+- `feat(config)`: `reconstruction` block parsed from both legacy YAML
+  (`get_param_from_yaml`) and unified config (`unified_to_legacy_identif_config`)
+- `feat(identification/__init__)`: `BaseResult` and `reconstruct_full_parameters`
+  added to public exports and `__all__`
+- `tests`: 13 new unit tests in `tests/unit/test_reconstruction.py` covering
+  new fields, BaseResult, prior helpers, `_p10_indices_for_joints`, nullspace
+  end-to-end, auto fallback, YAML prior, and unsupported method error
+
+### Fixed
+
+- `fix(reconstruction)`: alternation loop in `run_reconstruction` now correctly
+  unpacks `project_robot_p10_lmi()` as `(projected_p10_dict, robot_report)`;
+  removes `AttributeError: tuple has no attribute 'p10_by_joint'`
+- `fix(identification)`: `"projected parameters"` key (space) renamed to
+  `"projected_parameters"` (underscore) in `_apply_physical_consistency_if_enabled`
+  result dict for consistency with `"raw_parameters"` and Python conventions
+- `fix(tools/robotcollisions)`: `print_collision_pairs()` uses `print()` instead
+  of `logger.info()` so output is visible in interactive use and captured by tests
+- `fix(tools/solver)`: `LinearSolver._print_solution_info()` uses `print()`
+  instead of `logger.info()` so verbose output is visible in interactive use
+  and captured by tests
+
+## [0.4.1] - Unreleased
+
+### Added
+
+- `feat(physical-consistency)`: `is_feasible_link()` — public alias for
+  `check_p10_feasibility()` matching roadmap spec naming
+- `feat(physical-consistency)`: `project_link()` — public alias for
+  `project_p10_lmi()` matching roadmap spec naming
+- `feat(physical-consistency)`: `ProjectionReport.runtime` — per-link solve
+  time (seconds) recorded via `time.perf_counter()` around `problem.solve()`
+- `feat(physical-consistency)`: `weights` keyword argument to
+  `project_robot_p10_lmi()` for passing a 10-element weight vector to all
+  per-link projection calls
+- `feat(config)`: `weights.mode: "auto" | "manual"` parsed from the
+  `physical_consistency` YAML block in `_apply_physical_consistency_if_enabled`
+- `feat(config)`: `weights.manual.{m, h, Sigma}` per-group manual weights built
+  into a 10-element array and forwarded to `project_robot_p10_lmi`
+- `feat(identification)`: `physical consistency` result dict now stores both
+  `raw_parameters` (pre-projection) and `projected_parameters` (post-projection)
+  as separate keys, preserving the original identified values for comparison
+- `tests`: 28 unit tests in `tests/unit/test_physical_consistency.py` covering
+  TC-1 through TC-12 (projection correctness, aliases, runtime, robot aggregation)
+  plus 3 config-wiring tests for weights and raw/projected separation
+
+### Fixed
+
+- `fix(physical-consistency)`: SDP formulation in `project_p10_lmi` no longer
+  uses the picos 2.x-incompatible `pc.vstack`, `pc.multiply`, or `pc.sum_squares`
+  functions; replaced with element-wise objective using `pc.SquaredNorm` and
+  explicit sigma-entry loop
+- `fix(physical-consistency)`: solver keyword `verbose=` replaced with
+  `verbosity=` (picos 2.x API); eliminates `DeprecationWarning` on every call
+- `fix(physical-consistency)`: feasibility check after projection uses a
+  relaxed `psd_eig_tol=-1e-8` tolerance to absorb inevitable SDP solver
+  numerical noise, preventing valid projections from being reported as
+  `"infeasible"` due to tiny eigenvalue violations (~1e-9)
+
 ## [0.3.1] - 2026-04-01
 
 ### Added
