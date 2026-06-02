@@ -476,29 +476,29 @@ class LinearSolver:
 
     def _print_solution_info(self):
         """Print solution information."""
-        logger.info("")
-        logger.info("=" * 60)
-        logger.info(f"Linear Solver: {self.method}")
-        logger.info("=" * 60)
+        print("")
+        print("=" * 60)
+        print(f"Linear Solver: {self.method}")
+        print("=" * 60)
 
         if "condition_number" in self.solver_info:
             cond = self.solver_info["condition_number"]
-            logger.info(f"Condition number: {cond:.2e}")
+            print(f"Condition number: {cond:.2e}")
 
         if "rank" in self.solver_info:
-            logger.info(f"Matrix rank: {self.solver_info['rank']}")
+            print(f"Matrix rank: {self.solver_info['rank']}")
 
-        logger.info(f"RMSE: {self.solver_info['rmse']:.6f}")
-        logger.info(f"R²: {self.solver_info['r_squared']:.6f}")
+        print(f"RMSE: {self.solver_info['rmse']:.6f}")
+        print(f"R²: {self.solver_info['r_squared']:.6f}")
 
         if "n_iter" in self.solver_info:
-            logger.info(f"Iterations: {self.solver_info['n_iter']}")
+            print(f"Iterations: {self.solver_info['n_iter']}")
 
         if "regularization" in self.solver_info:
-            logger.info(f"Regularization: {self.solver_info['regularization']}")
-            logger.info(f"Alpha: {self.solver_info['alpha']:.2e}")
+            print(f"Regularization: {self.solver_info['regularization']}")
+            print(f"Alpha: {self.solver_info['alpha']:.2e}")
 
-        logger.info("=" * 60)
+        print("=" * 60)
 
 
 def solve_linear_system(A, b, method="lstsq", **kwargs):

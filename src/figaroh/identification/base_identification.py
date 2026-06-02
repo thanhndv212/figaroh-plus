@@ -830,12 +830,21 @@ class BaseIdentification(ABC):
         Returns:
             dict: Results from QR decomposition
         """
-        from figaroh.tools.qrdecomposition import double_QR
+        from figaroh.tools.qrdecomposition import QRDecomposer
 
-        # Perform QR decomposition
+        # Perform QR decomposition using explicit decomposer to access M matrix
+        decomposer = QRDecomposer(tolerance=getattr(self, "tol_qr", 1e-6))
         W_base, base_param_dict, base_parameters, phi_base, phi_std = \
-            double_QR(tau_processed, regressor_processed, active_parameters,
-                      self.standard_parameter)
+            decomposer.double_decomposition(
+                tau_processed, regressor_processed, active_parameters,
+                self.standard_parameter,
+            )
+
+        # Store M matrix and params_r for optional reconstruction
+        self._M_matrix = decomposer.get_M()
+        self._params_r_for_recon = list(
+            decomposer.get_M_labels()[1] or active_parameters.keys()
+        )
 
         # Calculate torque estimation (avoid redundant computation)
         tau_estimated = np.dot(W_base, phi_base)
@@ -854,6 +863,8 @@ class BaseIdentification(ABC):
             "phi_base": phi_base,
             "tau_estimated": tau_estimated,
             "tau_processed": tau_processed,
+            "M": self._M_matrix,
+            "params_r": self._params_r_for_recon,
         }
 
     def _compute_quality_metrics(self):
@@ -906,6 +917,9 @@ class BaseIdentification(ABC):
         # Optional physical-consistency post-processing (default-off)
         self._apply_physical_consistency_if_enabled(identif_results)
 
+        # Optional full-parameter reconstruction (default-off, v0.4.2)
+        self._apply_reconstruction_if_enabled(identif_results)
+
         # Initialize ResultsManager for identification task
         try:
             from figaroh.utils.results_manager import ResultsManager
@@ -952,6 +966,25 @@ class BaseIdentification(ABC):
         if max_seconds is not None:
             max_seconds = float(max_seconds)
         skip_if_feasible = bool(pc_cfg.get("skip_if_feasible", True))
+
+        # Parse weights config (YAML: weights.mode / weights.manual)
+        weights_cfg = pc_cfg.get("weights", {})
+        if not isinstance(weights_cfg, dict):
+            weights_cfg = {}
+        weights_mode = str(weights_cfg.get("mode", "auto")).strip().lower()
+        proj_weights: Optional[np.ndarray] = None
+        if weights_mode == "manual":
+            manual = weights_cfg.get("manual", {})
+            if not isinstance(manual, dict):
+                manual = {}
+            w_m = float(manual.get("m", 1.0))
+            w_h = float(manual.get("h", 1.0))
+            w_sigma = float(manual.get("Sigma", 1.0))
+            proj_weights = np.array(
+                [w_m, w_h, w_h, w_h,
+                 w_sigma, w_sigma, w_sigma, w_sigma, w_sigma, w_sigma],
+                dtype=float,
+            )
 
         # Prefer explicitly provided parameter dicts from the solver output,
         # otherwise fall back to the model's standard parameters.
@@ -1032,19 +1065,36 @@ class BaseIdentification(ABC):
                 "mass_min": mass_min,
                 "psd_eig_tol": psd_eig_tol,
                 "feasibility": feasibility,
-                "projected parameters": dict(parameter_dict),
+                "raw_parameters": dict(parameter_dict),
+                "projected_parameters": dict(parameter_dict),
             }
             return
 
         # Project using SDP (requires picos backend)
         try:
+            from figaroh.identification.cad_constraints import (
+                build_cad_constraints_from_config,
+            )
+
+            pc_cad_cfg = pc_cfg.get("cad_constraints", {})
+            if not isinstance(pc_cad_cfg, dict):
+                pc_cad_cfg = {}
+            pc_cad_cst = build_cad_constraints_from_config(
+                pc_cad_cfg, model=getattr(self, "model", None)
+            )
+        except Exception:
+            pc_cad_cst = None
+
+        try:
             projected_p10_by_joint, robot_report = project_robot_p10_lmi(
                 p10_by_link=p10_by_joint,
                 mass_min=mass_min,
                 psd_eig_tol=psd_eig_tol,
+                weights=proj_weights,
                 solver=solver,
                 verbose=verbose,
                 max_seconds=max_seconds,
+                cad_constraints=pc_cad_cst,
             )
         except ImportError as e:
             self.result["physical consistency"] = {
@@ -1083,7 +1133,113 @@ class BaseIdentification(ABC):
             "psd_eig_tol": psd_eig_tol,
             "feasibility": feasibility,
             "projection": dataclasses.asdict(robot_report),
-            "projected parameters": projected_parameter_dict,
+            "raw_parameters": dict(parameter_dict),
+            "projected_parameters": projected_parameter_dict,
+        }
+
+    def _apply_reconstruction_if_enabled(self, identif_results):
+        """Reconstruct full parameter vector from base parameters (v0.4.2).
+
+        Reads ``identif_config["reconstruction"]`` and, if ``enabled`` is
+        truthy, runs :func:`~figaroh.identification.reconstruction.reconstruct_full_parameters`.
+        Results are stored under ``self.result["reconstruction"]``.
+
+        Args:
+            identif_results (dict): Results dict from _calculate_base_parameters;
+                expected to contain ``"M"``, ``"phi_base"``, and ``"params_r"``
+                keys populated by the QRDecomposer.
+        """
+        recon_cfg = getattr(self, "identif_config", {}).get("reconstruction", {})
+        if not isinstance(recon_cfg, dict):
+            recon_cfg = {}
+        if not bool(recon_cfg.get("enabled", False)):
+            return
+
+        M = identif_results.get("M", getattr(self, "_M_matrix", None))
+        phi_base = identif_results.get("phi_base", getattr(self, "phi_base", None))
+        params_r = identif_results.get(
+            "params_r", getattr(self, "_params_r_for_recon", None)
+        )
+
+        if M is None or phi_base is None or params_r is None:
+            self.result["reconstruction"] = {
+                "enabled": True,
+                "status": "skipped",
+                "reason": "M matrix not available; run solve() first",
+            }
+            return
+
+        method = str(recon_cfg.get("method", "nullspace"))
+        prior_cfg = recon_cfg.get("prior", {})
+        if not isinstance(prior_cfg, dict):
+            prior_cfg = {}
+        prior_source = str(prior_cfg.get("source", "dict"))
+        prior_yaml_path = prior_cfg.get("yaml_path", None)
+        weights = recon_cfg.get("weights", None)
+        joint_names = list(self.model.names[1:])
+        mass_min = float(recon_cfg.get("mass_min", 1e-6))
+        psd_eig_tol = float(recon_cfg.get("psd_eig_tol", -1e-10))
+        sdp_cfg = recon_cfg.get("sdp", {})
+        if not isinstance(sdp_cfg, dict):
+            sdp_cfg = {}
+        solver = str(sdp_cfg.get("solver", "cvxopt"))
+        max_seconds = sdp_cfg.get("max_seconds", None)
+
+        try:
+            from figaroh.identification.reconstruction import (
+                BaseResult,
+                reconstruct_full_parameters,
+            )
+        except Exception as exc:
+            self.result["reconstruction"] = {
+                "enabled": True,
+                "status": "unavailable",
+                "reason": str(exc),
+            }
+            return
+
+        base_res = BaseResult(
+            M=np.asarray(M, dtype=float),
+            phi_base=np.asarray(phi_base, dtype=float).reshape(-1),
+            params_r=list(params_r),
+        )
+
+        # Parse optional CAD constraints from config
+        from figaroh.identification.cad_constraints import (
+            build_cad_constraints_from_config,
+        )
+
+        cad_cfg = recon_cfg.get("cad_constraints", {})
+        if not isinstance(cad_cfg, dict):
+            cad_cfg = {}
+        cad_cst = build_cad_constraints_from_config(
+            cad_cfg, model=getattr(self, "model", None)
+        )
+
+        result = reconstruct_full_parameters(
+            base_res,
+            method=method,
+            params_std_prior=getattr(self, "standard_parameter", None),
+            prior_source=prior_source,
+            prior_yaml_path=prior_yaml_path,
+            model=getattr(self, "model", None),
+            weights=weights,
+            joint_names=joint_names,
+            mass_min=mass_min,
+            psd_eig_tol=psd_eig_tol,
+            solver=solver,
+            max_seconds=max_seconds,
+            cad_constraints=cad_cst,
+        )
+
+        self.result["reconstruction"] = {
+            "enabled": True,
+            "status": result.status,
+            "method": method,
+            "base_residual_norm": result.base_residual_norm,
+            "objective": result.objective,
+            "theta_r_dict": result.as_dict(),
+            "params_r": result.params_r,
         }
 
     def plot_results(self):

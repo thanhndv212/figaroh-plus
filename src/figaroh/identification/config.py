@@ -101,6 +101,14 @@ def get_param_from_yaml(robot, identif_data):
         )
     if isinstance(physical_consistency, dict):
         identif_config["physical_consistency"] = physical_consistency
+
+    # Optional reconstruction configuration (v0.4.2, default-off)
+    reconstruction = identif_data.get("reconstruction")
+    if isinstance(reconstruction, list):
+        reconstruction = reconstruction[0] if reconstruction else None
+    if isinstance(reconstruction, dict):
+        identif_config["reconstruction"] = reconstruction
+
     return identif_config
 
 
@@ -162,6 +170,11 @@ def unified_to_legacy_identif_config(robot, unified_identif_config) -> dict:
     )
     if isinstance(physical_consistency, dict) and physical_consistency:
         identif_config["physical_consistency"] = physical_consistency
+
+    # 9. Optional reconstruction configuration (v0.4.2, default-off)
+    reconstruction = unified_identif_config.get("reconstruction", {})
+    if isinstance(reconstruction, dict) and reconstruction:
+        identif_config["reconstruction"] = reconstruction
 
     return identif_config
 
