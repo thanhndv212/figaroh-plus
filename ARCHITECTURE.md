@@ -37,21 +37,73 @@ FIGAROH (Fast Identification of Geometric And Regressor-based Optimization for H
 
 ## System Overview
 
+> **📝 Note**: This document contains Mermaid diagrams. If they don't render:
+> 1. Install the "Markdown Preview Mermaid Support" extension in VS Code
+> 2. View the file on GitHub (renders Mermaid natively)
+> 3. Use the online viewer: https://mermaid.live
+> 
+> Or see the ASCII version below.
+
+### ASCII Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        FIGAROH ARCHITECTURE                      │
+└─────────────────────────────────────────────────────────────────┘
+
+                    User Scripts/Examples
+                    YAML Configuration
+                            │
+                            ▼
+        ┌───────────────────────────────────────────┐
+        │         WORKFLOW LAYER                    │
+        │  BaseCalibration   BaseIdentification     │
+        │  BaseOptimalTrajectory  BaseOptimalCalib  │
+        └───────────────────┬───────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────────────┐
+        │           TOOLS LAYER                     │
+        │  Robot  RegressorBuilder  LinearSolver    │
+        │  QRDecomposer  CollisionManager           │
+        └───────────────────┬───────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────────────┐
+        │         BACKEND LAYER                     │
+        │    DynamicsBackend (Abstract)             │
+        │      │       │        │         │         │
+        │  Pinocchio MuJoCo Genesis IsaacSim        │
+        └───────────────────┬───────────────────────┘
+                            │
+                            ▼
+                    URDF/MJCF/USD Files
+                    Measurement Data
+                    Parameter Files
+```
+
+**Key Relationships:**
+- Workflow → Tools: Use core algorithms
+- Tools → Backend: Delegate dynamics computation
+- Backend → Data: Load robot models and measurements
+
+### Detailed Mermaid Diagram
+
 ```mermaid
 graph TB
-    subgraph "User Interface"
+    subgraph UserInterface["User Interface"]
         UI[User Scripts/Examples]
         Config[YAML Configuration]
     end
     
-    subgraph "Workflow Layer"
+    subgraph WorkflowLayer["Workflow Layer"]
         BC[BaseCalibration]
         BI[BaseIdentification]
         BOT[BaseOptimalTrajectory]
         BOC[BaseOptimalCalibration]
     end
     
-    subgraph "Tools Layer"
+    subgraph ToolsLayer["Tools Layer"]
         Robot[Robot Model]
         Regressor[RegressorBuilder]
         Solver[LinearSolver/IPOPTSolver]
@@ -60,37 +112,60 @@ graph TB
         RM[ResultsManager]
     end
     
-    subgraph "Backend Layer"
-        Backend[DynamicsBackend<br/>Abstract Interface]
+    subgraph BackendLayer["Backend Layer"]
+        Backend[DynamicsBackend Abstract Interface]
         Pin[PinocchioBackend]
         Muj[MuJoCoBackend]
         Gen[GenesisBackend]
         Isaac[IsaacSimBackend]
     end
     
-    subgraph "Data Layer"
+    subgraph DataLayer["Data Layer"]
         URDF[URDF Files]
         Meas[Measurement Data]
         Params[Parameter Files]
     end
     
     UI -->|configure| Config
-    Config -->|parse| BC & BI & BOT & BOC
+    Config -->|parse| BC
+    Config -->|parse| BI
+    Config -->|parse| BOT
+    Config -->|parse| BOC
     
-    BC & BI & BOT & BOC -->|use| Robot & Regressor & Solver & QR
+    BC -->|use| Robot
+    BC -->|use| Regressor
+    BC -->|use| Solver
+    BI -->|use| Robot
+    BI -->|use| Regressor
+    BI -->|use| Solver
+    BI -->|use| QR
+    BOT -->|use| Robot
+    BOT -->|use| Solver
+    BOC -->|use| Robot
+    BOC -->|use| Solver
     
-    Robot -->|delegates dynamics to| Backend
-    Regressor -->|requests regressor from| Backend
+    Robot -->|delegates to| Backend
+    Regressor -->|requests from| Backend
     
-    Backend <|-- Pin
-    Backend <|-- Muj
-    Backend <|-- Gen
-    Backend <|-- Isaac
+    Backend -.->|implements| Pin
+    Backend -.->|implements| Muj
+    Backend -.->|implements| Gen
+    Backend -.->|implements| Isaac
     
-    Pin & Muj & Gen & Isaac -->|load| URDF
-    BC & BI -->|load| Meas & Params
+    Pin -->|load| URDF
+    Muj -->|load| URDF
+    Gen -->|load| URDF
+    Isaac -->|load| URDF
     
-    BC & BI & BOT & BOC -->|save| RM
+    BC -->|load| Meas
+    BI -->|load| Meas
+    BC -->|load| Params
+    BI -->|load| Params
+    
+    BC -->|save| RM
+    BI -->|save| RM
+    BOT -->|save| RM
+    BOC -->|save| RM
     
     style Backend fill:#ffeb3b,stroke:#333,stroke-width:3px
     style BC fill:#4caf50,stroke:#333,stroke-width:2px
@@ -168,7 +243,42 @@ class LinearSolver:
 - `parameter.py` - Parameter management and frame handling
 - `config.py` - Unified/legacy config parsing
 
-**Workflow:**
+**Workflow (ASCII):**
+```
+User
+  │
+  ├─► initialize(config) ──► BaseCalibration
+  │                              │
+  │                              ├─► load_data() ──► CalibrationTools
+  │                              │
+  │                              ├─► calculate_base_kinematics_regressor()
+  │                              │        │
+  │                              │        ├─► get frames ──► Robot ──► Backend
+  │                              │        │                              │
+  │                              │        ◄── frame poses ──────────────┘
+  │                              │        │
+  │                              │        ◄── Jacobian ──► Backend
+  │                              │        │
+  │                              │        └─► regressor W_base
+  │                              │
+  ├─► solve() ──────────────────► Optimization Loop
+  │                              │
+  │                              ├─► cost_function(var)
+  │                              │     │
+  │                              │     ├─► calc_updated_fkm()
+  │                              │     │     │
+  │                              │     │     └─► compute_forward_kinematics() ──► Backend
+  │                              │     │           │
+  │                              │     │           ◄── updated poses
+  │                              │     │
+  │                              │     └─► residuals = measured - predicted
+  │                              │
+  │                              └─► optimize(least_squares)
+  │                                    │
+  ◄────────────── calibrated parameters ┘
+```
+
+**Workflow (Mermaid Sequence Diagram):**
 ```mermaid
 sequenceDiagram
     participant User
@@ -210,12 +320,57 @@ sequenceDiagram
 - `cad_constraints.py` - CAD-based parameter bounds
 - `reconstruction.py` - Parameter reconstruction from base parameters
 
-**Workflow:**
+**Workflow (ASCII):**
+```
+User
+  │
+  ├─► initialize() ──────────────► BaseIdentification
+  │                                    │
+  │                                    ├─► process_data()
+  │                                    │    (filter, differentiate)
+  │                                    │
+  │                                    ├─► build_basic_regressor(q,v,a)
+  │                                    │        │
+  │                                    │        └─► compute_regressor() ──► Backend
+  │                                    │              │
+  │                                    │              ◄── W (N×10nv)
+  │                                    │
+  │                                    └─► initialize_standard_parameters()
+  │
+  ├─► solve() ───────────────────────► Main Solving Loop
+  │                                    │
+  │                                    ├─► eliminate_zero_columns()
+  │                                    │     │
+  │                                    │     └─► W_reduced
+  │                                    │
+  │                                    ├─► apply_decimation() [optional]
+  │                                    │     │
+  │                                    │     └─► tau_processed, W_processed
+  │                                    │
+  │                                    ├─► qr_decomposition(W)
+  │                                    │     │
+  │                                    │     └─► W_base, elimination_matrix
+  │                                    │
+  │                                    ├─► solve(W_base, tau) ──► LinearSolver
+  │                                    │     │
+  │                                    │     └─► phi_base
+  │                                    │
+  │                                    ├─► check_feasibility(phi) ──► PhysicalConsistency
+  │                                    │     │
+  │                                    │     └─► validation result
+  │                                    │
+  │                                    └─► compute_quality_metrics()
+  │                                          │
+  ◄──────── identified parameters + metrics ┘
+```
+
+**Workflow (Mermaid Sequence Diagram):**
 ```mermaid
 sequenceDiagram
     participant User
     participant BaseIdentification
     participant RegressorBuilder
+    participant Backend
     participant Solver
     participant QRDecomposer
     participant PhysicalConsistency
@@ -659,33 +814,33 @@ graph LR
 
 ```mermaid
 flowchart TD
-    A[Robot Model<br/>URDF] --> B[Load Robot]
-    C[Trajectory Data<br/>q, v, a, τ] --> D[Process Data<br/>Filter, Differentiate]
+    A[Robot Model URDF] --> B[Load Robot]
+    C[Trajectory Data q v a tau] --> D[Process Data Filter Differentiate]
     
     B --> E[RegressorBuilder]
     D --> E
     
-    E --> F[Full Regressor W<br/>N×10nv]
+    E --> F[Full Regressor W N×10nv]
     
-    F --> G[Eliminate Zero Columns<br/>W_reduced]
+    F --> G[Eliminate Zero Columns W_reduced]
     
     G --> H{Decimate?}
-    H -->|Yes| I[Decimation<br/>Reduce N by factor]
+    H -->|Yes| I[Decimation Reduce N]
     H -->|No| J[Skip]
-    I --> K[QR Decomposition<br/>W_base, rank]
+    I --> K[QR Decomposition W_base]
     J --> K
     
-    K --> L[Linear Solver<br/>Ax = b]
+    K --> L[Linear Solver Ax = b]
     
-    L --> M[Base Parameters<br/>φ_base]
+    L --> M[Base Parameters phi_base]
     
-    M --> N[Physical Consistency<br/>Check]
+    M --> N[Physical Consistency Check]
     
     N --> O{Feasible?}
-    O -->|Yes| P[Reconstruct Full<br/>Parameters]
+    O -->|Yes| P[Reconstruct Full Parameters]
     O -->|No| Q[Report Error]
     
-    P --> R[Quality Metrics<br/>RMS, Condition #]
+    P --> R[Quality Metrics RMS Condition]
     
     R --> S[Save Results]
     
@@ -699,33 +854,33 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[Robot Model<br/>URDF] --> B[Load Robot]
-    C[Measurement Data<br/>q_meas, poses_meas] --> D[Load Measurements]
+    A[Robot Model URDF] --> B[Load Robot]
+    C[Measurement Data q_meas poses_meas] --> D[Load Measurements]
     
-    B --> E[Calculate Base<br/>Kinematic Regressor]
+    B --> E[Calculate Base Kinematic Regressor]
     D --> E
     
-    E --> F[Base Regressor W_base<br/>Identifiable subset]
+    E --> F[Base Regressor W_base Identifiable subset]
     
-    F --> G[Initialize Variables<br/>var₀]
+    F --> G[Initialize Variables var0]
     
-    G --> H[Optimization Loop<br/>least_squares]
+    G --> H[Optimization Loop least_squares]
     
-    H --> I[Cost Function<br/>residuals]
+    H --> I[Cost Function residuals]
     
-    I --> J[Update FK<br/>with calibration params]
+    I --> J[Update FK with calibration params]
     
-    J --> K[Compute Predicted<br/>Poses]
+    J --> K[Compute Predicted Poses]
     
-    K --> L[Calculate Residuals<br/>measured - predicted]
+    K --> L[Calculate Residuals measured minus predicted]
     
     L --> M{Converged?}
     M -->|No| H
-    M -->|Yes| N[Calibrated<br/>Parameters]
+    M -->|Yes| N[Calibrated Parameters]
     
-    N --> O[Evaluate Solution<br/>RMSE, Std Dev]
+    N --> O[Evaluate Solution RMSE Std Dev]
     
-    O --> P[Save & Visualize]
+    O --> P[Save and Visualize]
     
     style E fill:#4caf50,stroke:#333,stroke-width:2px
     style H fill:#2196f3,stroke:#333,stroke-width:2px
