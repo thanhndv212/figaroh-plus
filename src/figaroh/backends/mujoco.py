@@ -23,6 +23,16 @@ except ImportError:
     MUJOCO_AVAILABLE = False
     mj = None
 
+# Pinocchio is always available — used for analytical regressor computation
+# (MuJoCo does not support runtime inertial parameter perturbation)
+try:
+    import pinocchio as pin
+
+    PINOCCHIO_AVAILABLE = True
+except ImportError:
+    PINOCCHIO_AVAILABLE = False
+    pin = None
+
 
 class MuJoCoBackend(DynamicsBackend):
     """
@@ -73,6 +83,11 @@ class MuJoCoBackend(DynamicsBackend):
         self._temp_vec = np.zeros(self.model.nv)
         self._verbose = kwargs.get("verbose", False)
 
+        # Lazy-loaded Pinocchio model for analytical regressor computation
+        # (MuJoCo does not support runtime inertial parameter perturbation)
+        self._pin_model = None
+        self._pin_data = None
+
         if self._verbose:
             print(
                 f"MuJoCo model loaded: {self.model.nq} positions, {self.model.nv} velocities"
@@ -91,6 +106,9 @@ class MuJoCoBackend(DynamicsBackend):
         # Set joint positions
         self.data.qpos[:] = q
 
+        # mj_forward must be called to initialize FK before mj_crb
+        mj.mj_forward(self.model, self.data)
+
         # Compute mass matrix using composite rigid body algorithm
         mj.mj_crb(self.model, self.data)
 
@@ -103,11 +121,11 @@ class MuJoCoBackend(DynamicsBackend):
         self, q: np.ndarray, v: np.ndarray
     ) -> np.ndarray:
         """
-        Compute Coriolis matrix using finite differences.
+        Compute Coriolis matrix C(q,v) via finite differences.
 
-        Note: MuJoCo doesn't directly compute C matrix, so we use finite differences
-        of inverse dynamics. For better performance, consider using
-        compute_inverse_dynamics directly.
+        Uses the property that Coriolis forces f(v) = C(q,v)*v are quadratic in v.
+        By Euler's theorem and Christoffel symbol symmetry, the Jacobian
+        df/dv = 2*C, so C = (1/2) * df/dv.
 
         Args:
             q: Joint positions [nq]
@@ -116,26 +134,49 @@ class MuJoCoBackend(DynamicsBackend):
         Returns:
             C: Coriolis matrix [nv x nv]
         """
-        # Set state
-        self.data.qpos[:] = q
-        self.data.qvel[:] = v
-        self.data.qacc[:] = 0  # Zero acceleration
+        nv = self.model.nv
 
-        # Compute inverse dynamics to get bias forces
+        # Handle zero velocity: C(q, 0) = 0
+        if np.allclose(v, 0):
+            return np.zeros((nv, nv))
+
+        # Compute gravity bias
+        self.data.qpos[:] = q
+        self.data.qvel[:] = 0
+        self.data.qacc[:] = 0
+        mj.mj_inverse(self.model, self.data)
+        gravity = self.data.qfrc_inverse.copy()
+
+        # Compute bias forces at velocity v
+        self.data.qvel[:] = v
         mj.mj_inverse(self.model, self.data)
         bias = self.data.qfrc_inverse.copy()
 
-        # Subtract gravity to get Coriolis forces
-        g = self.compute_gravity_vector(q)
-        coriolis_forces = bias - g
+        coriolis_forces = bias - gravity  # = C(q,v) * v
 
-        # Approximate C matrix using finite differences
-        # C * v = coriolis_forces, so C ≈ coriolis_forces ⊗ v / ||v||²
-        v_norm_sq = np.dot(v, v)
-        if v_norm_sq > 1e-10:
-            C = np.outer(coriolis_forces, v) / v_norm_sq
-        else:
-            C = np.zeros((self.model.nv, self.model.nv))
+        # Compute Jacobian of coriolis_forces w.r.t. v via finite differences
+        # df/dv[:,j] = (f(v + eps*e_j) - f(v)) / eps
+        # C = (1/2) * df/dv (because f is quadratic and Christoffel symbols are symmetric)
+        eps = 1e-6
+        C = np.zeros((nv, nv))
+        for j in range(nv):
+            v_perturbed = v.copy()
+            v_perturbed[j] += eps
+
+            self.data.qpos[:] = q
+            self.data.qvel[:] = v_perturbed
+            self.data.qacc[:] = 0
+            mj.mj_inverse(self.model, self.data)
+            bias_perturbed = self.data.qfrc_inverse.copy()
+
+            coriolis_perturbed = bias_perturbed - gravity
+            C[:, j] = (coriolis_perturbed - coriolis_forces) / (2.0 * eps)
+
+        # Restore state
+        self.data.qpos[:] = q
+        self.data.qvel[:] = v
+        self.data.qacc[:] = 0
+        mj.mj_inverse(self.model, self.data)
 
         return C
 
@@ -246,17 +287,38 @@ class MuJoCoBackend(DynamicsBackend):
 
         return J
 
+    def _get_pin_model(self):
+        """
+        Lazily create a Pinocchio model from the same URDF for analytical computations.
+
+        MuJoCo does not support runtime inertial parameter perturbation, so
+        the analytical regressor is computed via Pinocchio (always available
+        as a FIGAROH dependency).
+
+        Returns:
+            tuple: (pin.Model, pin.Data)
+        """
+        if self._pin_model is None:
+            if not PINOCCHIO_AVAILABLE:
+                raise ImportError(
+                    "Pinocchio is required for regressor computation."
+                )
+            self._pin_model = pin.buildModelFromUrdf(self._model_path)
+            self._pin_data = self._pin_model.createData()
+        return self._pin_model, self._pin_data
+
     def compute_regressor(
         self, q: np.ndarray, v: np.ndarray, a: np.ndarray
     ) -> np.ndarray:
         """
         Compute observation regressor matrix W(q, v, a).
 
-        This is a simplified implementation. Full regressor construction
-        requires symbolic differentiation of the dynamics equations.
+        The regressor satisfies: tau = W @ theta where theta is the 10D inertial
+        parameter vector per body in Pinocchio convention:
+        [m, mx, my, mz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz].
 
-        For now, returns identity matrix as placeholder.
-        TODO: Implement full regressor using finite differences.
+        Uses Pinocchio's analytical computeJointTorqueRegressor (MuJoCo does not
+        support runtime inertial parameter perturbation for finite differences).
 
         Args:
             q: Joint positions [nq]
@@ -264,18 +326,17 @@ class MuJoCoBackend(DynamicsBackend):
             a: Joint accelerations [nv]
 
         Returns:
-            W: Regressor matrix [nv x n_params]
+            W: Regressor matrix [nv, 10*(nbody-1)]
         """
-        # Placeholder: return identity for now
-        # Full implementation requires symbolic differentiation
-        n_params = self.model.nbody * 10  # 10 inertial params per body
-        W = np.eye(self.model.nv, n_params)
+        pin_model, pin_data = self._get_pin_model()
 
-        # TODO: Implement proper regressor construction
-        # This would involve finite differences of inverse dynamics
-        # w.r.t. inertial parameters
+        W = pin.computeJointTorqueRegressor(pin_model, pin_data, q, v, a)
 
-        return W
+        # Ensure 2D shape [nv, n_params] (Pinocchio may return 1D for nv=1)
+        if W.ndim == 1:
+            W = W.reshape(self.model.nv, -1)
+
+        return W.copy()
 
     def compute_inverse_dynamics(
         self, q: np.ndarray, v: np.ndarray, a: np.ndarray

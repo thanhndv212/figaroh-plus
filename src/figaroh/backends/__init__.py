@@ -44,17 +44,19 @@ _AVAILABLE_BACKENDS = {}
 
 # Always available: Pinocchio (FIGAROH dependency)
 try:
-    from .pinocchio import PinocchioBackend
+    from .pinocchio import PinocchioBackend, PINOCCHIO_AVAILABLE
 
-    _AVAILABLE_BACKENDS["pinocchio"] = PinocchioBackend
+    if PINOCCHIO_AVAILABLE:
+        _AVAILABLE_BACKENDS["pinocchio"] = PinocchioBackend
 except ImportError:
     pass
 
 # Optional: MuJoCo
 try:
-    from .mujoco import MuJoCoBackend
+    from .mujoco import MuJoCoBackend, MUJOCO_AVAILABLE
 
-    _AVAILABLE_BACKENDS["mujoco"] = MuJoCoBackend
+    if MUJOCO_AVAILABLE:
+        _AVAILABLE_BACKENDS["mujoco"] = MuJoCoBackend
 except ImportError:
     pass
 
