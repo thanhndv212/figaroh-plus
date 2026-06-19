@@ -15,7 +15,6 @@ from figaroh.backends.pinocchio import PinocchioBackend
 from figaroh.backends.mujoco import MuJoCoBackend
 from figaroh.backends import list_backends
 
-
 # ============================================================================
 # Shared fixtures
 # ============================================================================

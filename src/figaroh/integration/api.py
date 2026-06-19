@@ -31,6 +31,7 @@ class IdentificationResult:
         config: Configuration used
         raw: Raw result dict from BaseIdentification (for advanced access)
     """
+
     phi_base: Optional[np.ndarray] = None
     params_base: Optional[list] = None
     phi_standard: Optional[np.ndarray] = None
@@ -55,8 +56,7 @@ class _SimpleIdentification:
         For advanced use cases, subclass BaseIdentification directly.
     """
 
-    def __init__(self, robot, config_file="config/robot_config.yaml",
-                 data_dir=None):
+    def __init__(self, robot, config_file="config/robot_config.yaml", data_dir=None):
         # Import here to avoid circular imports at module level
         from ..identification.base_identification import BaseIdentification
 
@@ -79,7 +79,7 @@ class _SimpleIdentification:
 
     # Forward attribute access to the wrapped identification
     def __getattr__(self, name):
-        if name.startswith('_'):
+        if name.startswith("_"):
             raise AttributeError(name)
         return getattr(self._identification, name)
 
@@ -113,10 +113,10 @@ class _SimpleIdentification:
         if data_dir is not None:
             # Default file paths
             default_files = {
-                'q': os.path.join(data_dir, 'q.csv'),
-                'dq': os.path.join(data_dir, 'dq.csv'),
-                'ddq': os.path.join(data_dir, 'ddq.csv'),
-                'tau': os.path.join(data_dir, 'tau.csv'),
+                "q": os.path.join(data_dir, "q.csv"),
+                "dq": os.path.join(data_dir, "dq.csv"),
+                "ddq": os.path.join(data_dir, "ddq.csv"),
+                "tau": os.path.join(data_dir, "tau.csv"),
             }
         elif data_files:
             default_files = {}
@@ -131,27 +131,27 @@ class _SimpleIdentification:
         files = {**default_files, **data_files}
 
         data = {}
-        for key in ['q', 'dq', 'ddq', 'tau']:
+        for key in ["q", "dq", "ddq", "tau"]:
             path = files.get(key)
             if path is None or not os.path.exists(path):
                 raise FileNotFoundError(
                     f"Data file for '{key}' not found: {path}. "
                     f"Ensure the file exists or specify 'data_files' in config."
                 )
-            data[key] = np.loadtxt(path, delimiter=',')
+            data[key] = np.loadtxt(path, delimiter=",")
 
         # Ensure 2D arrays
         for key in data:
             if data[key].ndim == 1:
                 data[key] = data[key].reshape(-1, 1)
 
-        timestamps = np.arange(len(data['q']))
+        timestamps = np.arange(len(data["q"]))
         return (
             timestamps,
-            data['q'],
-            data['dq'],
-            data['ddq'],
-            data['tau'],
+            data["q"],
+            data["dq"],
+            data["ddq"],
+            data["tau"],
         )
 
 
@@ -195,8 +195,14 @@ class RobotIdentificationSystem:
         self._config = kwargs
 
     @classmethod
-    def from_urdf(cls, urdf_path, backend="pinocchio", package_dirs=None,
-                  free_flyer=False, **kwargs):
+    def from_urdf(
+        cls,
+        urdf_path,
+        backend="pinocchio",
+        package_dirs=None,
+        free_flyer=False,
+        **kwargs,
+    ):
         """Create identification system from URDF file.
 
         Args:
@@ -216,7 +222,7 @@ class RobotIdentificationSystem:
             package_dirs=package_dirs,
             isFext=free_flyer,
             loader="figaroh",
-            **kwargs
+            **kwargs,
         )
         return cls(robot, backend_name=backend, **kwargs)
 
@@ -245,10 +251,18 @@ class RobotIdentificationSystem:
             "accept a DynamicsBackend directly — planned for a future release."
         )
 
-    def identify_parameters(self, config, data_dir=None, truncate=None,
-                            decimate=True, decimation_factor=10,
-                            zero_tolerance=0.001, plotting=False,
-                            save_results=False, **kwargs):
+    def identify_parameters(
+        self,
+        config,
+        data_dir=None,
+        truncate=None,
+        decimate=True,
+        decimation_factor=10,
+        zero_tolerance=0.001,
+        plotting=False,
+        save_results=False,
+        **kwargs,
+    ):
         """Run parameter identification.
 
         This is the main entry point. It:
@@ -285,29 +299,27 @@ class RobotIdentificationSystem:
 
             # Read existing config and add/override data_dir
             if isinstance(config, str):
-                with open(config, 'r') as f:
+                with open(config, "r") as f:
                     cfg = yaml.safe_load(f)
             else:
                 cfg = config
 
             # Inject data_dir into the config
-            if 'identification' in cfg:
-                if isinstance(cfg['identification'], dict):
-                    cfg['identification']['data_dir'] = data_dir
-                elif isinstance(cfg['identification'], list):
-                    cfg['identification'][0]['data_dir'] = data_dir
-            elif 'calibration' in cfg:
-                if isinstance(cfg['calibration'], dict):
-                    cfg['calibration']['data_dir'] = data_dir
-                elif isinstance(cfg['calibration'], list):
-                    cfg['calibration'][0]['data_dir'] = data_dir
+            if "identification" in cfg:
+                if isinstance(cfg["identification"], dict):
+                    cfg["identification"]["data_dir"] = data_dir
+                elif isinstance(cfg["identification"], list):
+                    cfg["identification"][0]["data_dir"] = data_dir
+            elif "calibration" in cfg:
+                if isinstance(cfg["calibration"], dict):
+                    cfg["calibration"]["data_dir"] = data_dir
+                elif isinstance(cfg["calibration"], list):
+                    cfg["calibration"][0]["data_dir"] = data_dir
             else:
-                cfg['data_dir'] = data_dir
+                cfg["data_dir"] = data_dir
 
             # Write modified config to a temp file
-            tmp = tempfile.NamedTemporaryFile(
-                mode='w', suffix='.yaml', delete=False
-            )
+            tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False)
             yaml.dump(cfg, tmp)
             tmp.close()
             config_file = tmp.name
@@ -323,19 +335,20 @@ class RobotIdentificationSystem:
         # Extract data_dir from config if not passed explicitly
         if data_dir is None and isinstance(config, str):
             import yaml
+
             try:
-                with open(config_file, 'r') as f:
+                with open(config_file, "r") as f:
                     cfg = yaml.safe_load(f)
-                for section in ('identification', 'calibration'):
+                for section in ("identification", "calibration"):
                     if section in cfg and isinstance(cfg[section], dict):
-                        data_dir = cfg[section].get('data_dir', data_dir)
+                        data_dir = cfg[section].get("data_dir", data_dir)
             except Exception:
                 pass
         elif data_dir is None and not isinstance(config, str):
             if isinstance(config, dict):
-                for section in ('identification', 'calibration'):
+                for section in ("identification", "calibration"):
                     if section in config and isinstance(config[section], dict):
-                        data_dir = config[section].get('data_dir', data_dir)
+                        data_dir = config[section].get("data_dir", data_dir)
 
         # Create the concrete identification instance
         identification = _SimpleIdentification(
@@ -352,7 +365,7 @@ class RobotIdentificationSystem:
                 decimation_factor=decimation_factor,
                 zero_tolerance=zero_tolerance,
                 plotting=plotting,
-                save_results=save_results
+                save_results=save_results,
             )
 
             # Extract results
@@ -365,9 +378,9 @@ class RobotIdentificationSystem:
                 rms_error=identification.rms_error,
                 correlation=identification.correlation,
                 backend=self.backend_name,
-                model_path=getattr(self.robot, 'robot_urdf', ''),
+                model_path=getattr(self.robot, "robot_urdf", ""),
                 config=identification.identif_config,
-                raw=result_dict
+                raw=result_dict,
             )
         finally:
             # Clean up temp config file if we created one

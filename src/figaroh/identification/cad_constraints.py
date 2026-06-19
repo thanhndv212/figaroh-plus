@@ -23,7 +23,16 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 _INERTIAL_KEYS: List[str] = [
-    "m", "mx", "my", "mz", "Ixx", "Ixy", "Iyy", "Ixz", "Iyz", "Izz",
+    "m",
+    "mx",
+    "my",
+    "mz",
+    "Ixx",
+    "Ixy",
+    "Iyy",
+    "Ixz",
+    "Iyz",
+    "Izz",
 ]
 _AXIS_TO_KEY: Dict[str, str] = {"x": "mx", "y": "my", "z": "mz"}
 _H_KEY_TO_P10_IDX: Dict[str, int] = {"mx": 1, "my": 2, "mz": 3}
@@ -44,18 +53,12 @@ class CADConstraints:
     """
 
     mass_bounds: Dict[str, Tuple[float, float]] = field(default_factory=dict)
-    com_bounds: Dict[str, Dict[str, Tuple[float, float]]] = field(
-        default_factory=dict
-    )
+    com_bounds: Dict[str, Dict[str, Tuple[float, float]]] = field(default_factory=dict)
     symmetry_pairs: List[Tuple[str, str, List[str]]] = field(default_factory=list)
 
     def is_empty(self) -> bool:
         """Return ``True`` if no constraints have been added."""
-        return (
-            not self.mass_bounds
-            and not self.com_bounds
-            and not self.symmetry_pairs
-        )
+        return not self.mass_bounds and not self.com_bounds and not self.symmetry_pairs
 
 
 def add_mass_bounds(
@@ -177,7 +180,9 @@ def bounds_from_urdf(
                 float(com_margin_abs),
             )
             add_com_bounds(
-                cad, jname, axis=axis_name,
+                cad,
+                jname,
+                axis=axis_name,
                 h_min=h_k - margin,
                 h_max=h_k + margin,
             )
@@ -240,12 +245,11 @@ def build_cad_constraints_from_config(
 
     for joint, val in cfg.get("mass_bounds", {}).items():
         if isinstance(val, (list, tuple)) and len(val) >= 2:
-            add_mass_bounds(
-                cad, str(joint), m_min=float(val[0]), m_max=float(val[1])
-            )
+            add_mass_bounds(cad, str(joint), m_min=float(val[0]), m_max=float(val[1]))
         elif isinstance(val, dict):
             add_mass_bounds(
-                cad, str(joint),
+                cad,
+                str(joint),
                 m_min=float(val.get("min", 0.0)),
                 m_max=float(val.get("max", 1e9)),
             )
@@ -256,12 +260,17 @@ def build_cad_constraints_from_config(
         for axis, val in axes.items():
             if isinstance(val, (list, tuple)) and len(val) >= 2:
                 add_com_bounds(
-                    cad, str(joint), axis=str(axis),
-                    h_min=float(val[0]), h_max=float(val[1]),
+                    cad,
+                    str(joint),
+                    axis=str(axis),
+                    h_min=float(val[0]),
+                    h_max=float(val[1]),
                 )
             elif isinstance(val, dict):
                 add_com_bounds(
-                    cad, str(joint), axis=str(axis),
+                    cad,
+                    str(joint),
+                    axis=str(axis),
                     h_min=float(val.get("min", -1e9)),
                     h_max=float(val.get("max", 1e9)),
                 )

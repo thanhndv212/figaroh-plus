@@ -13,10 +13,10 @@ from figaroh.identification.cad_constraints import (
     apply_cad_constraints_to_problem,
 )
 
-
 # ---------------------------------------------------------------------------
 # CADConstraints data container
 # ---------------------------------------------------------------------------
+
 
 def test_cad_constraints_is_empty_default():
     cad = CADConstraints()
@@ -78,6 +78,7 @@ def test_add_symmetry_constraints_custom_keys():
 # build_cad_constraints_from_config
 # ---------------------------------------------------------------------------
 
+
 def test_build_from_config_empty():
     assert build_cad_constraints_from_config({}) is None
     assert build_cad_constraints_from_config(None) is None
@@ -111,6 +112,7 @@ def test_build_from_config_com_bounds():
 # ---------------------------------------------------------------------------
 # project_p10_lmi with mass_bounds (requires picos)
 # ---------------------------------------------------------------------------
+
 
 def test_project_p10_lmi_mass_bounds_enforced():
     """Tight upper mass bound must clamp the projected mass."""

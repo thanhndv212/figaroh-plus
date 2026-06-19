@@ -113,9 +113,7 @@ def get_joint_offset(model, joint_names):
                     + name
                 )
             else:
-                offset_param = (
-                    shortname.replace("JointModel", "offset") + "_" + name
-                )
+                offset_param = shortname.replace("JointModel", "offset") + "_" + name
             joint_off.append(offset_param)
 
     phi_jo = [0] * len(joint_off)  # default zero values

@@ -1,12 +1,12 @@
 Welcome to FIGAROH's documentation!
 ===================================
 
-FIGAROH (Free dynamics Identification and Geometrical cAlibration of RObot and Human) 
+FIGAROH (Free dynamics Identification and Geometrical cAlibration of RObot and Human)
 is a comprehensive Python toolbox for robot calibration and identification.
 
 **Key Features:**
 - Dynamic parameter identification for rigid multi-body systems
-- Geometric calibration for serial and tree-structure robots  
+- Geometric calibration for serial and tree-structure robots
 - **Advanced linear solver with 10 methods** (lstsq, QR, SVD, Ridge, Lasso, Elastic Net, Tikhonov, constrained, robust, weighted)
 - **Regularization and constraint optimization** (L1/L2 regularization, box constraints, linear equality/inequality)
 - Unified configuration system with template inheritance
@@ -36,12 +36,12 @@ is a comprehensive Python toolbox for robot calibration and identification.
    :caption: Core Modules:
 
    modules/calibration
-   modules/identification 
+   modules/identification
 
 .. toctree::
    :maxdepth: 2
    :caption: Tools and Utilities:
-   
+
    modules/tools
    modules/utils
    modules/measurements
@@ -50,7 +50,7 @@ is a comprehensive Python toolbox for robot calibration and identification.
 .. toctree::
    :maxdepth: 2
    :caption: Advanced Features:
-   
+
    modules/optimal
 
 Indices and tables

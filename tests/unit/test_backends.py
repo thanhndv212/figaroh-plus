@@ -13,7 +13,6 @@ from figaroh.backends.base import DynamicsBackend
 from figaroh.backends.pinocchio import PinocchioBackend, PINOCCHIO_AVAILABLE
 from figaroh.backends.mujoco import MuJoCoBackend, MUJOCO_AVAILABLE
 
-
 # ============================================================================
 # Tests for the factory interface
 # ============================================================================
@@ -139,9 +138,7 @@ class TestPinocchioBackendDynamics:
     def test_gravity_vector(self):
         """Gravity vector matches direct pin.computeGeneralizedGravity call."""
         actual = self.backend.compute_gravity_vector(self.q)
-        expected = pin.computeGeneralizedGravity(
-            self.ref_model, self.ref_data, self.q
-        )
+        expected = pin.computeGeneralizedGravity(self.ref_model, self.ref_data, self.q)
         np.testing.assert_allclose(actual, expected, atol=1e-10)
 
     def test_inverse_dynamics(self):
@@ -466,7 +463,9 @@ class TestMuJoCoCoriolis:
     def test_coriolis_consistency(self):
         """Coriolis matrix satisfies C @ v ≈ coriolis_forces."""
         # Compute coriolis forces: f(v) = rnea(q,v,0) - rnea(q,0,0)
-        tau_bias = self.backend.compute_inverse_dynamics(self.q, self.v, np.zeros(self.backend.nv))
+        tau_bias = self.backend.compute_inverse_dynamics(
+            self.q, self.v, np.zeros(self.backend.nv)
+        )
         tau_gravity = self.backend.compute_inverse_dynamics(
             self.q, np.zeros(self.backend.nv), np.zeros(self.backend.nv)
         )

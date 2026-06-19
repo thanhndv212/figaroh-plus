@@ -8,7 +8,6 @@ import os
 from figaroh.integration import RobotIdentificationSystem, IdentificationResult
 from figaroh.integration.api import _SimpleIdentification
 
-
 # ============================================================================
 # Tests for RobotIdentificationSystem
 # ============================================================================
@@ -26,9 +25,7 @@ class TestRobotIdentificationSystem:
 
     def test_from_urdf_with_backend(self, temp_urdf):
         """from_urdf with explicit backend works."""
-        system = RobotIdentificationSystem.from_urdf(
-            temp_urdf, backend="pinocchio"
-        )
+        system = RobotIdentificationSystem.from_urdf(temp_urdf, backend="pinocchio")
         assert system.backend_name == "pinocchio"
 
     def test_from_urdf_invalid_path(self):
@@ -48,6 +45,7 @@ class TestRobotIdentificationSystem:
         system = RobotIdentificationSystem.from_urdf(temp_urdf)
         backend = system.backend
         from figaroh.backends.base import DynamicsBackend
+
         assert isinstance(backend, DynamicsBackend)
 
     def test_nq_nv(self, temp_urdf):
@@ -64,6 +62,7 @@ class TestRobotIdentificationSystem:
     def test_init_with_robot(self, temp_urdf):
         """Direct init with a robot object works."""
         from figaroh.tools.robot import Robot
+
         robot = Robot(temp_urdf, package_dirs=os.path.dirname(temp_urdf))
         system = RobotIdentificationSystem(robot)
         assert system.backend_name == "pinocchio"
@@ -142,37 +141,45 @@ class TestIdentifyParameters:
     def _make_identif_config(self, tmpdir_path):
         """Create a minimal identification config dict with proper structure."""
         return {
-            "robot_params": [{
-                "q_lim_def": [],
-                "dq_lim_def": [],
-                "fv": [],
-                "fs": [],
-                "Ia": [],
-                "offset": [],
-                "Iam6": 0.0,
-                "fvm6": 0.0,
-                "fsm6": 0.0,
-                "reduction_ratio": [],
-                "ratio_essential": [],
-            }],
-            "problem_params": [{
-                "is_external_wrench": False,
-                "is_joint_torques": True,
-                "force_torque": [],
-                "external_wrench_offsets": [],
-                "has_friction": False,
-                "has_actuator_inertia": False,
-                "has_joint_offset": False,
-                "has_coupled_wrist": False,
-            }],
-            "processing_params": [{
-                "ts": 0.01,
-                "cut_off_frequency_butterworth": 10.0,
-            }],
-            "tls_params": [{
-                "mass_load": 0.0,
-                "which_body_loaded": 0,
-            }],
+            "robot_params": [
+                {
+                    "q_lim_def": [],
+                    "dq_lim_def": [],
+                    "fv": [],
+                    "fs": [],
+                    "Ia": [],
+                    "offset": [],
+                    "Iam6": 0.0,
+                    "fvm6": 0.0,
+                    "fsm6": 0.0,
+                    "reduction_ratio": [],
+                    "ratio_essential": [],
+                }
+            ],
+            "problem_params": [
+                {
+                    "is_external_wrench": False,
+                    "is_joint_torques": True,
+                    "force_torque": [],
+                    "external_wrench_offsets": [],
+                    "has_friction": False,
+                    "has_actuator_inertia": False,
+                    "has_joint_offset": False,
+                    "has_coupled_wrist": False,
+                }
+            ],
+            "processing_params": [
+                {
+                    "ts": 0.01,
+                    "cut_off_frequency_butterworth": 10.0,
+                }
+            ],
+            "tls_params": [
+                {
+                    "mass_load": 0.0,
+                    "which_body_loaded": 0,
+                }
+            ],
             "data_dir": tmpdir_path,
         }
 
@@ -186,9 +193,10 @@ class TestIdentifyParameters:
 
             # Write config to temp file
             with tempfile.NamedTemporaryFile(
-                mode='w', suffix='.yaml', delete=False
+                mode="w", suffix=".yaml", delete=False
             ) as f:
                 import yaml
+
                 yaml.dump(config_data, f)
                 config_path = f.name
 
@@ -206,10 +214,9 @@ class TestIdentifyParameters:
         del base_cfg["data_dir"]
         config_data = {"identification": base_cfg}
 
-        with tempfile.NamedTemporaryFile(
-            mode='w', suffix='.yaml', delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             import yaml
+
             yaml.dump(config_data, f)
             config_path = f.name
 
@@ -238,5 +245,6 @@ class TestImports:
         """All expected symbols are exported from integration package."""
         from figaroh.integration import RobotIdentificationSystem
         from figaroh.integration import IdentificationResult
+
         assert RobotIdentificationSystem is not None
         assert IdentificationResult is not None

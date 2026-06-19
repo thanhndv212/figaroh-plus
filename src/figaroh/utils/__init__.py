@@ -24,16 +24,16 @@ from .error_handling import (
     handle_calibration_errors,
     handle_identification_errors,
     validate_input_data,
-    setup_example_logging
+    setup_example_logging,
 )
 
 __all__ = [
-    'ResultsManager',
-    'FigarohExampleError',
-    'CalibrationError', 
-    'IdentificationError',
-    'handle_calibration_errors',
-    'handle_identification_errors',
-    'validate_input_data',
-    'setup_example_logging'
+    "ResultsManager",
+    "FigarohExampleError",
+    "CalibrationError",
+    "IdentificationError",
+    "handle_calibration_errors",
+    "handle_identification_errors",
+    "validate_input_data",
+    "setup_example_logging",
 ]

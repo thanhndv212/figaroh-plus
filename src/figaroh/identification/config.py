@@ -23,7 +23,6 @@ This module handles all configuration-related functionality including:
 - Signal processing and mechanical parameter management
 """
 
-
 # Export public API
 __all__ = [
     "get_param_from_yaml",
@@ -96,9 +95,7 @@ def get_param_from_yaml(robot, identif_data):
     # Optional physical consistency configuration (v0.4.1, default-off)
     physical_consistency = identif_data.get("physical_consistency")
     if isinstance(physical_consistency, list):
-        physical_consistency = (
-            physical_consistency[0] if physical_consistency else None
-        )
+        physical_consistency = physical_consistency[0] if physical_consistency else None
     if isinstance(physical_consistency, dict):
         identif_config["physical_consistency"] = physical_consistency
 
@@ -165,9 +162,7 @@ def unified_to_legacy_identif_config(robot, unified_identif_config) -> dict:
     _extract_load_params(identif_config)
 
     # 8. Optional physical consistency configuration (v0.4.1, default-off)
-    physical_consistency = unified_identif_config.get(
-        "physical_consistency", {}
-    )
+    physical_consistency = unified_identif_config.get("physical_consistency", {})
     if isinstance(physical_consistency, dict) and physical_consistency:
         identif_config["physical_consistency"] = physical_consistency
 
@@ -198,15 +193,14 @@ def _extract_signal_processing_params(identif_config, signal_processing):
     filter_config_ = {}
     filter_config_["cutoff_frequency"] = cutoff_freq
     filter_config_["sampling_frequency"] = sampling_freq
-    filter_config_["filter_type"] = signal_processing.get(
-        "filter_type", "butterworth"
-    )
+    filter_config_["filter_type"] = signal_processing.get("filter_type", "butterworth")
     filter_config_["differentiation_method"] = signal_processing.get(
         "differentiation_method", "gradient"
     )
     filter_config_["filter_params"] = signal_processing.get("filter_params", {})
 
     identif_config["filter_config"] = filter_config_
+
 
 def _extract_joint_limits(identif_config, joints):
     """Extract joint limit parameters.
@@ -235,9 +229,7 @@ def _extract_problem_config(identif_config, problem):
     model_components = problem.get("model_components", {})
 
     # External forces and torques
-    identif_config["is_external_wrench"] = problem.get(
-        "include_external_forces", False
-    )
+    identif_config["is_external_wrench"] = problem.get("include_external_forces", False)
     identif_config["is_joint_torques"] = problem.get("use_joint_torques", True)
     identif_config["external_wrench_offsets"] = problem.get(
         "external_wrench_offsets", False
@@ -252,9 +244,7 @@ def _extract_problem_config(identif_config, problem):
     identif_config["has_actuator_inertia"] = model_components.get(
         "actuator_inertia", True
     )
-    identif_config["has_joint_offset"] = model_components.get(
-        "joint_offset", True
-    )
+    identif_config["has_joint_offset"] = model_components.get("joint_offset", True)
 
 
 def _extract_mechanical_params(identif_config, mechanics):
@@ -286,9 +276,7 @@ def _extract_coupling_params(identif_config, coupling):
         identif_config (dict): Configuration dictionary to update
         coupling (dict): Coupling section from unified config
     """
-    identif_config["has_coupled_wrist"] = coupling.get(
-        "has_coupled_wrist", True
-    )
+    identif_config["has_coupled_wrist"] = coupling.get("has_coupled_wrist", True)
     identif_config["Iam6"] = coupling.get("Iam6", 0)
     identif_config["fvm6"] = coupling.get("fvm6", 0)
     identif_config["fsm6"] = coupling.get("fsm6", 0)
@@ -343,9 +331,7 @@ try:
             Identification configuration dictionary
         """
         try:
-            return unified_get_param_from_yaml(
-                robot, identif_data, "identification"
-            )
+            return unified_get_param_from_yaml(robot, identif_data, "identification")
         except Exception as e:
             # Fall back to legacy parser if unified parser fails
             import warnings

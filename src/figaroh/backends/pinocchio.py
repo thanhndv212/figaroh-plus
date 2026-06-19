@@ -128,9 +128,7 @@ class PinocchioBackend(DynamicsBackend):
         """
         return pin.crba(self.model, self.data, q).copy()
 
-    def compute_coriolis_matrix(
-        self, q: np.ndarray, v: np.ndarray
-    ) -> np.ndarray:
+    def compute_coriolis_matrix(self, q: np.ndarray, v: np.ndarray) -> np.ndarray:
         """
         Compute Coriolis and centrifugal effects matrix C(q, qd).
 
@@ -222,9 +220,7 @@ class PinocchioBackend(DynamicsBackend):
             )
 
         # Compute frame Jacobian (ensure [6, nv] shape)
-        J = pin.computeFrameJacobian(
-            self.model, self.data, q, frame_id, pin.LOCAL
-        )
+        J = pin.computeFrameJacobian(self.model, self.data, q, frame_id, pin.LOCAL)
 
         return J.reshape(6, self.model.nv).copy()
 
@@ -248,9 +244,7 @@ class PinocchioBackend(DynamicsBackend):
         Returns:
             W: Regressor matrix [nv x (10 * nbody)]
         """
-        W = pin.computeJointTorqueRegressor(
-            self.model, self.data, q, v, a
-        )
+        W = pin.computeJointTorqueRegressor(self.model, self.data, q, v, a)
         # Ensure 2D shape [nv, n_params] (Pinocchio may return 1D for nv=1)
         if W.ndim == 1:
             W = W.reshape(self.model.nv, -1)

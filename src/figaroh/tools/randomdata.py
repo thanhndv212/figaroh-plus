@@ -29,25 +29,16 @@ def generate_waypoints(N, robot, mlow, mhigh):
     Returns:
         tuple: (q, v, a) joint position, velocity, acceleration arrays
     """
-    has_backend = hasattr(robot, 'backend')
+    has_backend = hasattr(robot, "backend")
     nq = robot.backend.nq if has_backend else robot.model.nq
     nv = robot.backend.nv if has_backend else robot.model.nv
     q = np.empty((1, nq))
     v = np.empty((1, nv))
     a = np.empty((1, nv))
     for i in range(N):
-        q = np.vstack((
-            q,
-            np.random.uniform(low=mlow, high=mhigh, size=(nq,))
-        ))
-        v = np.vstack((
-            v,
-            np.random.uniform(low=mlow, high=mhigh, size=(nv,))
-        ))
-        a = np.vstack((
-            a,
-            np.random.uniform(low=mlow, high=mhigh, size=(nv,))
-        ))
+        q = np.vstack((q, np.random.uniform(low=mlow, high=mhigh, size=(nq,))))
+        v = np.vstack((v, np.random.uniform(low=mlow, high=mhigh, size=(nv,))))
+        a = np.vstack((a, np.random.uniform(low=mlow, high=mhigh, size=(nv,))))
     return q, v, a
 
 
@@ -64,7 +55,7 @@ def generate_waypoints_fext(N, robot, mlow, mhigh):
     Returns:
         tuple: (q, v, a) joint position, velocity, acceleration arrays
     """
-    has_backend = hasattr(robot, 'backend')
+    has_backend = hasattr(robot, "backend")
     nq = robot.backend.nq if has_backend else robot.model.nq
     nv = robot.backend.nv if has_backend else robot.model.nv
     q0 = robot.q0[:7]
@@ -74,22 +65,13 @@ def generate_waypoints_fext(N, robot, mlow, mhigh):
     v = np.empty((1, nv))
     a = np.empty((1, nv))
     for i in range(N):
-        q_ = np.append(
-            q0,
-            np.random.uniform(low=mlow, high=mhigh, size=(nq - 7,))
-        )
+        q_ = np.append(q0, np.random.uniform(low=mlow, high=mhigh, size=(nq - 7,)))
         q = np.vstack((q, q_))
 
-        v_ = np.append(
-            v0,
-            np.random.uniform(low=mlow, high=mhigh, size=(nv - 6,))
-        )
+        v_ = np.append(v0, np.random.uniform(low=mlow, high=mhigh, size=(nv - 6,)))
         v = np.vstack((v, v_))
 
-        a_ = np.append(
-            a0,
-            np.random.uniform(low=mlow, high=mhigh, size=(nv - 6,))
-        )
+        a_ = np.append(a0, np.random.uniform(low=mlow, high=mhigh, size=(nv - 6,)))
         a = np.vstack((a, a_))
     return q, v, a
 
@@ -108,7 +90,7 @@ def get_torque_rand(N, robot, q, v, a, identif_config):
     Returns:
         array: Joint torques array
     """
-    has_backend = hasattr(robot, 'backend')
+    has_backend = hasattr(robot, "backend")
     nv = robot.backend.nv if has_backend else robot.model.nv
     tau = np.zeros(nv * N)
     for i in range(N):
@@ -139,19 +121,13 @@ def get_torque_rand(N, robot, q, v, a, identif_config):
                     tau[j * N + i] += (
                         identif_config["Iam6"] * v[i, nv - 1]
                         + identif_config["fvm6"] * v[i, nv - 1]
-                        + identif_config["fsm6"]
-                        * np.sign(
-                            v[i, nv - 2] + v[i, nv - 1]
-                        )
+                        + identif_config["fsm6"] * np.sign(v[i, nv - 2] + v[i, nv - 1])
                     )
                 if j == nv - 1:
                     tau[j * N + i] += (
                         identif_config["Iam6"] * v[i, nv - 2]
                         + identif_config["fvm6"] * v[i, nv - 2]
-                        + identif_config["fsm6"]
-                        * np.sign(
-                            v[i, nv - 2] + v[i, nv - 1]
-                        )
+                        + identif_config["fsm6"] * np.sign(v[i, nv - 2] + v[i, nv - 1])
                     )
     return tau
 

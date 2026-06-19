@@ -1,7 +1,7 @@
 # FIGAROH Architecture Documentation
 
-**Version:** 3.0  
-**Date:** June 19, 2026  
+**Version:** 3.0
+**Date:** June 19, 2026
 **Status:** Backend abstraction functional — identification fully portable, calibration partially portable (model manipulation blocker)
 
 ---
@@ -41,7 +41,7 @@ FIGAROH (Fast Identification of Geometric And Regressor-based Optimization for H
 > 1. Install the "Markdown Preview Mermaid Support" extension in VS Code
 > 2. View the file on GitHub (renders Mermaid natively)
 > 3. Use the online viewer: https://mermaid.live
-> 
+>
 > Or see the ASCII version below.
 
 ### ASCII Architecture Overview
@@ -95,14 +95,14 @@ graph TB
         UI[User Scripts/Examples]
         Config[YAML Configuration]
     end
-    
+
     subgraph WorkflowLayer["Workflow Layer"]
         BC[BaseCalibration]
         BI[BaseIdentification]
         BOT[BaseOptimalTrajectory]
         BOC[BaseOptimalCalibration]
     end
-    
+
     subgraph ToolsLayer["Tools Layer"]
         Robot[Robot Model]
         Regressor[RegressorBuilder]
@@ -111,7 +111,7 @@ graph TB
         CM[CollisionManager]
         RM[ResultsManager]
     end
-    
+
     subgraph BackendLayer["Backend Layer"]
         Backend[DynamicsBackend Abstract Interface]
         Pin[PinocchioBackend]
@@ -119,19 +119,19 @@ graph TB
         Gen[GenesisBackend]
         Isaac[IsaacSimBackend]
     end
-    
+
     subgraph DataLayer["Data Layer"]
         URDF[URDF Files]
         Meas[Measurement Data]
         Params[Parameter Files]
     end
-    
+
     UI -->|configure| Config
     Config -->|parse| BC
     Config -->|parse| BI
     Config -->|parse| BOT
     Config -->|parse| BOC
-    
+
     BC -->|use| Robot
     BC -->|use| Regressor
     BC -->|use| Solver
@@ -143,30 +143,30 @@ graph TB
     BOT -->|use| Solver
     BOC -->|use| Robot
     BOC -->|use| Solver
-    
+
     Robot -->|delegates to| Backend
     Regressor -->|requests from| Backend
-    
+
     Backend -.->|implements| Pin
     Backend -.->|implements| Muj
     Backend -.->|implements| Gen
     Backend -.->|implements| Isaac
-    
+
     Pin -->|load| URDF
     Muj -->|load| URDF
     Gen -->|load| URDF
     Isaac -->|load| URDF
-    
+
     BC -->|load| Meas
     BI -->|load| Meas
     BC -->|load| Params
     BI -->|load| Params
-    
+
     BC -->|save| RM
     BI -->|save| RM
     BOT -->|save| RM
     BOC -->|save| RM
-    
+
     style Backend fill:#ffeb3b,stroke:#333,stroke-width:3px
     style BC fill:#4caf50,stroke:#333,stroke-width:2px
     style BI fill:#4caf50,stroke:#333,stroke-width:2px
@@ -286,7 +286,7 @@ sequenceDiagram
     participant CalibrationTools
     participant Robot
     participant Backend
-    
+
     User->>BaseCalibration: initialize(config)
     BaseCalibration->>CalibrationTools: load_data()
     BaseCalibration->>CalibrationTools: calculate_base_kinematics_regressor()
@@ -297,7 +297,7 @@ sequenceDiagram
     CalibrationTools->>Backend: compute_jacobian()
     Backend-->>CalibrationTools: Jacobian matrix
     CalibrationTools-->>BaseCalibration: regressor W_base
-    
+
     User->>BaseCalibration: solve()
     BaseCalibration->>BaseCalibration: cost_function(var)
     BaseCalibration->>CalibrationTools: calc_updated_fkm()
@@ -374,26 +374,26 @@ sequenceDiagram
     participant Solver
     participant QRDecomposer
     participant PhysicalConsistency
-    
+
     User->>BaseIdentification: initialize()
     BaseIdentification->>BaseIdentification: process_data()
     BaseIdentification->>RegressorBuilder: build_basic_regressor(q,v,a)
     RegressorBuilder->>Backend: compute_regressor()
     Backend-->>RegressorBuilder: W (N×10nv)
     RegressorBuilder-->>BaseIdentification: full regressor
-    
+
     User->>BaseIdentification: solve()
     BaseIdentification->>BaseIdentification: eliminate_zero_columns()
     BaseIdentification->>BaseIdentification: apply_decimation() [optional]
     BaseIdentification->>QRDecomposer: qr_decomposition(W)
     QRDecomposer-->>BaseIdentification: W_base, elimination matrix
-    
+
     BaseIdentification->>Solver: solve(W_base, tau)
     Solver-->>BaseIdentification: phi_base
-    
+
     BaseIdentification->>PhysicalConsistency: check_feasibility(phi)
     PhysicalConsistency-->>BaseIdentification: validation result
-    
+
     BaseIdentification-->>User: identified parameters + metrics
 ```
 
@@ -509,7 +509,7 @@ W = backend.compute_regressor(q, v, a)
 
 **Methods:**
 ```python
-METHODS = ["lstsq", "qr", "svd", "ridge", "lasso", "elastic_net", 
+METHODS = ["lstsq", "qr", "svd", "ridge", "lasso", "elastic_net",
            "tikhonov", "constrained", "robust", "weighted"]
 
 def solve(A, b) -> x
@@ -622,23 +622,23 @@ def initialize(truncate=None):
 def solve(decimate=True, decimation_factor=10, zero_tolerance=0.001):
     # 1. Eliminate zero columns
     regressor_reduced, active_params = self._eliminate_zero_columns()
-    
+
     # 2. Apply decimation (optional)
     if decimate:
         tau_processed, W_processed = self._apply_decimation(regressor_reduced)
-    
+
     # 3. QR decomposition
     W_base, elimination_matrix = qr_decompose(W_processed)
-    
+
     # 4. Solve for base parameters
     phi_base = self.solver.solve(W_base, tau_processed)
-    
+
     # 5. Validate physical consistency
     validate_parameters(phi_base)
-    
+
     # 6. Compute quality metrics
     self._compute_quality_metrics()
-    
+
     return phi_base
 ```
 
@@ -667,7 +667,7 @@ def process_data(truncate=None):
 ```python
 def reorder_inertial_parameters(p10: ndarray) -> ndarray:
     """Reorder from Pinocchio format to standard format
-    
+
     Pinocchio: [m, mx, my, mz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz]
     Standard:  [Ixx, Ixy, Ixz, Iyy, Iyz, Izz, mx, my, mz, m]
     """
@@ -680,7 +680,7 @@ def reorder_inertial_parameters(p10: ndarray) -> ndarray:
 def add_standard_additional_parameters(phi_std, identif_config) -> phi_full:
     """Add friction, actuator inertia, joint offset"""
     # Append: fv (viscous friction)
-    # Append: fs (static friction) 
+    # Append: fs (static friction)
     # Append: ia (actuator inertia)
     # Append: offset (joint zero offset)
     return phi_full
@@ -694,7 +694,7 @@ def add_standard_additional_parameters(phi_std, identif_config) -> phi_full:
 ```python
 def check_p10_feasibility(p10: ndarray) -> bool:
     """Check if inertial parameters are physically feasible
-    
+
     Conditions:
     1. Mass m > 0
     2. Pseudo-inertia matrix P is positive semi-definite
@@ -781,28 +781,28 @@ graph LR
         Calib[Calibration]
         Identif[Identification]
     end
-    
+
     subgraph "Backend Abstraction"
         API[Backend API]
     end
-    
+
     subgraph "Implementations"
         Pin[Pinocchio]
         Muj[MuJoCo]
         Gen[Genesis]
     end
-    
+
     Tools -->|compute_regressor| API
     Tools -->|compute_mass_matrix| API
     Tools -->|compute_jacobian| API
     Calib -->|compute_forward_kinematics| API
     Calib -->|compute_jacobian| API
     Identif -->|compute_regressor| API
-    
+
     API -->|delegates| Pin
     API -->|delegates| Muj
     API -->|delegates| Gen
-    
+
     style API fill:#ffeb3b,stroke:#333,stroke-width:3px
 ```
 
@@ -816,34 +816,34 @@ graph LR
 flowchart TD
     A[Robot Model URDF] --> B[Load Robot]
     C[Trajectory Data q v a tau] --> D[Process Data Filter Differentiate]
-    
+
     B --> E[RegressorBuilder]
     D --> E
-    
+
     E --> F[Full Regressor W N×10nv]
-    
+
     F --> G[Eliminate Zero Columns W_reduced]
-    
+
     G --> H{Decimate?}
     H -->|Yes| I[Decimation Reduce N]
     H -->|No| J[Skip]
     I --> K[QR Decomposition W_base]
     J --> K
-    
+
     K --> L[Linear Solver Ax = b]
-    
+
     L --> M[Base Parameters phi_base]
-    
+
     M --> N[Physical Consistency Check]
-    
+
     N --> O{Feasible?}
     O -->|Yes| P[Reconstruct Full Parameters]
     O -->|No| Q[Report Error]
-    
+
     P --> R[Quality Metrics RMS Condition]
-    
+
     R --> S[Save Results]
-    
+
     style E fill:#4caf50,stroke:#333,stroke-width:2px
     style K fill:#2196f3,stroke:#333,stroke-width:2px
     style L fill:#ff9800,stroke:#333,stroke-width:2px
@@ -856,32 +856,32 @@ flowchart TD
 flowchart TD
     A[Robot Model URDF] --> B[Load Robot]
     C[Measurement Data q_meas poses_meas] --> D[Load Measurements]
-    
+
     B --> E[Calculate Base Kinematic Regressor]
     D --> E
-    
+
     E --> F[Base Regressor W_base Identifiable subset]
-    
+
     F --> G[Initialize Variables var0]
-    
+
     G --> H[Optimization Loop least_squares]
-    
+
     H --> I[Cost Function residuals]
-    
+
     I --> J[Update FK with calibration params]
-    
+
     J --> K[Compute Predicted Poses]
-    
+
     K --> L[Calculate Residuals measured minus predicted]
-    
+
     L --> M{Converged?}
     M -->|No| H
     M -->|Yes| N[Calibrated Parameters]
-    
+
     N --> O[Evaluate Solution RMSE Std Dev]
-    
+
     O --> P[Save and Visualize]
-    
+
     style E fill:#4caf50,stroke:#333,stroke-width:2px
     style H fill:#2196f3,stroke:#333,stroke-width:2px
     style J fill:#ff9800,stroke:#333,stroke-width:2px
@@ -904,7 +904,7 @@ backend = get_backend("mujoco", model_path="robot.urdf")  # Auto-converts to MJC
 backend = get_backend("mujoco", model_path="robot.xml", format="mjcf")
 
 # Option 3: With options
-backend = get_backend("pinocchio", model_path="robot.urdf", 
+backend = get_backend("pinocchio", model_path="robot.urdf",
                      package_dirs=["."], root_joint="free_flyer")
 ```
 
@@ -913,45 +913,45 @@ backend = get_backend("pinocchio", model_path="robot.urdf",
 ```python
 class DynamicsBackend(ABC):
     """Abstract interface for dynamics computation"""
-    
+
     # === Core Dynamics (abstract) ===
     @abstractmethod
     def compute_mass_matrix(self, q: np.ndarray) -> np.ndarray:
         """M(q) ∈ ℝ^(nv×nv)"""
-        
+
     @abstractmethod
     def compute_coriolis_matrix(self, q: np.ndarray, v: np.ndarray) -> np.ndarray:
         """C(q,v) ∈ ℝ^(nv×nv)"""
-        
+
     @abstractmethod
     def compute_gravity_vector(self, q: np.ndarray) -> np.ndarray:
         """g(q) ∈ ℝ^nv"""
-        
+
     @abstractmethod
-    def compute_inverse_dynamics(self, q: np.ndarray, v: np.ndarray, 
+    def compute_inverse_dynamics(self, q: np.ndarray, v: np.ndarray,
                                  a: np.ndarray) -> np.ndarray:
         """τ = RNEA(q,v,a) ∈ ℝ^nv"""
-    
+
     @abstractmethod
     def compute_forward_dynamics(self, q: np.ndarray, v: np.ndarray,
                                  tau: np.ndarray) -> np.ndarray:
         """qdd = ABA(q,v,τ) ∈ ℝ^nv"""
-        
+
     # === Kinematics (abstract) ===
     @abstractmethod
     def compute_forward_kinematics(self, q: np.ndarray) -> Dict[str, Any]:
         """Returns: {frame_name: {position, orientation, transformation}}"""
-        
+
     @abstractmethod
     def compute_jacobian(self, q: np.ndarray, frame: str) -> np.ndarray:
         """J(q, frame) ∈ ℝ^(6×nv)"""
-        
+
     # === Identification (abstract) ===
     @abstractmethod
-    def compute_regressor(self, q: np.ndarray, v: np.ndarray, 
+    def compute_regressor(self, q: np.ndarray, v: np.ndarray,
                          a: np.ndarray) -> np.ndarray:
         """W(q,v,a) ∈ ℝ^(nv × 10*nv)"""
-        
+
     # === Properties (abstract) ===
     @property
     @abstractmethod
@@ -962,7 +962,7 @@ class DynamicsBackend(ABC):
     @property
     @abstractmethod
     def model_format(self) -> str: ...
-    
+
     # === Optional methods (raise NotImplementedError by default) ===
     def get_joint_names(self) -> list: ...
     def get_frame_names(self) -> list: ...
@@ -1028,10 +1028,10 @@ class MyBackend(DynamicsBackend):
     def __init__(self, model_path: str, **kwargs):
         self.model = sim.load_model(model_path)
         self.data = sim.create_data(self.model)
-    
+
     def compute_mass_matrix(self, q):
         return sim.compute_M(self.model, self.data, q)
-    
+
     # Implement all abstract methods...
 ```
 
@@ -1274,6 +1274,6 @@ long-term paths to resolution.
 
 ---
 
-**Document Version:** 3.0  
-**Last Updated:** June 19, 2026  
+**Document Version:** 3.0
+**Last Updated:** June 19, 2026
 **Maintained by:** FIGAROH Core Team

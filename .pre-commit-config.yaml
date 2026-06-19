@@ -20,6 +20,11 @@ repos:
     -   id: check-yaml
     -   id: debug-statements
     -   id: trailing-whitespace
+-   repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+    -   id: black
+        language_version: python3
 -   repo: https://github.com/PyCQA/flake8
     rev: 6.1.0  # Updated to latest stable version
     hooks:

@@ -8,4 +8,4 @@ optimization for robotic systems.
 from .base_optimal_calibration import BaseOptimalCalibration
 from .base_optimal_trajectory import BaseOptimalTrajectory
 
-__all__ = ['BaseOptimalCalibration', 'BaseOptimalTrajectory']
+__all__ = ["BaseOptimalCalibration", "BaseOptimalTrajectory"]

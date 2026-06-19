@@ -117,9 +117,7 @@ class MuJoCoBackend(DynamicsBackend):
 
         return self._M.copy()
 
-    def compute_coriolis_matrix(
-        self, q: np.ndarray, v: np.ndarray
-    ) -> np.ndarray:
+    def compute_coriolis_matrix(self, q: np.ndarray, v: np.ndarray) -> np.ndarray:
         """
         Compute Coriolis matrix C(q,v) via finite differences.
 
@@ -300,9 +298,7 @@ class MuJoCoBackend(DynamicsBackend):
         """
         if self._pin_model is None:
             if not PINOCCHIO_AVAILABLE:
-                raise ImportError(
-                    "Pinocchio is required for regressor computation."
-                )
+                raise ImportError("Pinocchio is required for regressor computation.")
             self._pin_model = pin.buildModelFromUrdf(self._model_path)
             self._pin_data = self._pin_model.createData()
         return self._pin_model, self._pin_data

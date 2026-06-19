@@ -100,3 +100,23 @@ Examples = "https://github.com/thanhndv212/figaroh-examples"
 
 # [project.gui-scripts]
 # figaroh-gui = "figaroh.gui:main"
+
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | docs
+)/
+'''

@@ -247,12 +247,8 @@ def get_rel_jac(model, data, start_frame, end_frame, q, backend=None):
         pin.updateFramePlacements(model, data)
 
         # relative Jacobian
-        J_start = pin.computeFrameJacobian(
-            model, data, q, start_frameId, pin.LOCAL
-        )
-        J_end = pin.computeFrameJacobian(
-            model, data, q, end_frameId, pin.LOCAL
-        )
+        J_start = pin.computeFrameJacobian(model, data, q, start_frameId, pin.LOCAL)
+        J_end = pin.computeFrameJacobian(model, data, q, end_frameId, pin.LOCAL)
     J_rel = J_end - J_start
     return J_rel
 
@@ -292,7 +288,9 @@ def initialize_variables(calib_config, mode=0, seed=0):
     return var, nvar
 
 
-def update_forward_kinematics(model, data, var, q, calib_config, verbose=0, backend=None):
+def update_forward_kinematics(
+    model, data, var, q, calib_config, verbose=0, backend=None
+):
     """Update forward kinematics with calibration parameters.
 
     Applies geometric and kinematic error parameters to update joint placements
@@ -484,9 +482,7 @@ def update_forward_kinematics(model, data, var, q, calib_config, verbose=0, back
 
     PEE = PEE.flatten("C")
     # revert model back to original
-    assert (
-        origin_model.jointPlacements != model.jointPlacements
-    ), "before revert"
+    assert origin_model.jointPlacements != model.jointPlacements, "before revert"
     for j_id in calib_config["actJoint_idx"]:
         xyz_rpy = np.zeros(6)
         j_name = model.names[j_id]
@@ -498,9 +494,7 @@ def update_forward_kinematics(model, data, var, q, calib_config, verbose=0, back
                         xyz_rpy[axis_id] = param_dict[key]
         model = update_joint_placement(model, j_id, -xyz_rpy)
 
-    assert (
-        origin_model.jointPlacements != model.jointPlacements
-    ), "after revert"
+    assert origin_model.jointPlacements != model.jointPlacements, "after revert"
 
     return PEE
 
@@ -679,9 +673,7 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
     PEE = PEE.flatten("C")
 
     # revert model back to original
-    assert (
-        origin_model.jointPlacements != model.jointPlacements
-    ), "before revert"
+    assert origin_model.jointPlacements != model.jointPlacements, "before revert"
     for j_id in calib_config["actJoint_idx"]:
         xyz_rpy = np.zeros(6)
         j_name = model.names[j_id]
@@ -693,9 +685,7 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
                         xyz_rpy[axis_id] = param_dict[key]
         model = update_joint_placement(model, j_id, -xyz_rpy)
 
-    assert (
-        origin_model.jointPlacements != model.jointPlacements
-    ), "after revert"
+    assert origin_model.jointPlacements != model.jointPlacements, "after revert"
 
     return PEE
 
@@ -831,11 +821,21 @@ def calculate_identifiable_kinematics_model(q, model, data, calib_config, backen
             )
         else:
             Ri = get_rel_kinreg(
-                model, data, calib_config["start_frame"], calib_config["end_frame"], q_i, backend=backend
+                model,
+                data,
+                calib_config["start_frame"],
+                calib_config["end_frame"],
+                q_i,
+                backend=backend,
             )
             # Ji = np.zeros([6, model.njoints-1]) ## TODO: get_rel_jac
             Ji = get_rel_jac(
-                model, data, calib_config["start_frame"], calib_config["end_frame"], q_i, backend=backend
+                model,
+                data,
+                calib_config["start_frame"],
+                calib_config["end_frame"],
+                q_i,
+                backend=backend,
             )
         for j, state in enumerate(calib_config["measurability"]):
             if state:
@@ -852,7 +852,7 @@ def calculate_identifiable_kinematics_model(q, model, data, calib_config, backen
         if np.linalg.norm(J[r_idx, :]) < 1e-6:
             zero_rows.append(r_idx)
     J = np.delete(J, zero_rows, axis=0)
-    
+
     # select regressor matrix based on calibration model
     if calib_config["calib_model"] == "joint_offset":
         return J
@@ -860,7 +860,9 @@ def calculate_identifiable_kinematics_model(q, model, data, calib_config, backen
         return R
 
 
-def calculate_base_kinematics_regressor(q, model, data, calib_config, tol_qr=TOL_QR, backend=None):
+def calculate_base_kinematics_regressor(
+    q, model, data, calib_config, tol_qr=TOL_QR, backend=None
+):
     """Calculate base regressor matrix for calibration parameters.
 
     Identifies base (identifiable) parameters by:
@@ -898,12 +900,18 @@ def calculate_base_kinematics_regressor(q, model, data, calib_config, tol_qr=TOL
 
     # calculate kinematic regressor with random configs
     if not calib_config["free_flyer"]:
-        Rrand = calculate_identifiable_kinematics_model([], model, data, calib_config, backend=backend)
+        Rrand = calculate_identifiable_kinematics_model(
+            [], model, data, calib_config, backend=backend
+        )
     else:
-        Rrand = calculate_identifiable_kinematics_model(q, model, data, calib_config, backend=backend)
+        Rrand = calculate_identifiable_kinematics_model(
+            q, model, data, calib_config, backend=backend
+        )
     # calculate kinematic regressor with input configs
     if np.any(np.array(q)):
-        R = calculate_identifiable_kinematics_model(q, model, data, calib_config, backend=backend)
+        R = calculate_identifiable_kinematics_model(
+            q, model, data, calib_config, backend=backend
+        )
     else:
         R = Rrand
 
@@ -932,9 +940,7 @@ def calculate_base_kinematics_regressor(q, model, data, calib_config, tol_qr=TOL
     idx_base = get_baseIndex(Rrand_e, paramsrand_e, tol_qr=tol_qr)
 
     # get base regressor and base params from random data
-    Rrand_b, paramsrand_base, _ = get_baseParams(
-        Rrand_e, paramsrand_e, tol_qr=tol_qr
-    )
+    Rrand_b, paramsrand_base, _ = get_baseParams(Rrand_e, paramsrand_e, tol_qr=tol_qr)
 
     # remove non affect columns from GIVEN data
     R_e, params_e = eliminate_non_dynaffect(R_sel, geo_params_sel, tol_e=1e-6)

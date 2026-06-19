@@ -54,9 +54,7 @@ class DynamicsBackend(ABC):
         pass
 
     @abstractmethod
-    def compute_coriolis_matrix(
-        self, q: np.ndarray, v: np.ndarray
-    ) -> np.ndarray:
+    def compute_coriolis_matrix(self, q: np.ndarray, v: np.ndarray) -> np.ndarray:
         """
         Compute Coriolis and centrifugal effects matrix C(q, qd).
 

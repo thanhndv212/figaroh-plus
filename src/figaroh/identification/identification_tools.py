@@ -156,9 +156,7 @@ def index_in_base_params(params, id_segments):
     return dict(zip(id_segments_new, values))
 
 
-def weigthed_least_squares(
-    robot, phi_b, W_b, tau_meas, tau_est, identif_config
-):
+def weigthed_least_squares(robot, phi_b, W_b, tau_meas, tau_est, identif_config):
     """Compute weighted least squares solution for parameter identification.
 
     Implements iteratively reweighted least squares method from
@@ -191,16 +189,16 @@ def weigthed_least_squares(
             idx = jj + ii * nb_samples
             P[idx, idx] = 1 / sigma[ii]
 
-        phi_b = np.matmul(
-            np.linalg.pinv(np.matmul(P, W_b)), np.matmul(P, tau_meas)
-        )
+        phi_b = np.matmul(np.linalg.pinv(np.matmul(P, W_b)), np.matmul(P, tau_meas))
 
     phi_b = np.around(phi_b, 6)
 
     return phi_b
 
 
-def calculate_first_second_order_differentiation(model, q, identif_config, dt=None, backend=None):
+def calculate_first_second_order_differentiation(
+    model, q, identif_config, dt=None, backend=None
+):
     """Calculate joint velocities and accelerations from positions.
 
     Computes first and second order derivatives of joint positions using central
@@ -300,4 +298,3 @@ def low_pass_filter_data(data, identif_config, nbutter=5):
     data = np.delete(data, end_slice, axis=0)
 
     return data
-
