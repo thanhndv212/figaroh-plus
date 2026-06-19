@@ -29,21 +29,24 @@ def generate_waypoints(N, robot, mlow, mhigh):
     Returns:
         tuple: (q, v, a) joint position, velocity, acceleration arrays
     """
-    q = np.empty((1, robot.model.nq))
-    v = np.empty((1, robot.model.nv))
-    a = np.empty((1, robot.model.nv))
+    has_backend = hasattr(robot, 'backend')
+    nq = robot.backend.nq if has_backend else robot.model.nq
+    nv = robot.backend.nv if has_backend else robot.model.nv
+    q = np.empty((1, nq))
+    v = np.empty((1, nv))
+    a = np.empty((1, nv))
     for i in range(N):
         q = np.vstack((
             q,
-            np.random.uniform(low=mlow, high=mhigh, size=(robot.model.nq,))
+            np.random.uniform(low=mlow, high=mhigh, size=(nq,))
         ))
         v = np.vstack((
             v,
-            np.random.uniform(low=mlow, high=mhigh, size=(robot.model.nv,))
+            np.random.uniform(low=mlow, high=mhigh, size=(nv,))
         ))
         a = np.vstack((
             a,
-            np.random.uniform(low=mlow, high=mhigh, size=(robot.model.nv,))
+            np.random.uniform(low=mlow, high=mhigh, size=(nv,))
         ))
     return q, v, a
 
@@ -61,8 +64,9 @@ def generate_waypoints_fext(N, robot, mlow, mhigh):
     Returns:
         tuple: (q, v, a) joint position, velocity, acceleration arrays
     """
-    nq = robot.model.nq
-    nv = robot.model.nv
+    has_backend = hasattr(robot, 'backend')
+    nq = robot.backend.nq if has_backend else robot.model.nq
+    nv = robot.backend.nv if has_backend else robot.model.nv
     q0 = robot.q0[:7]
     v0 = np.zeros(6)
     a0 = np.zeros(6)
@@ -104,44 +108,49 @@ def get_torque_rand(N, robot, q, v, a, identif_config):
     Returns:
         array: Joint torques array
     """
-    tau = np.zeros(robot.model.nv * N)
+    has_backend = hasattr(robot, 'backend')
+    nv = robot.backend.nv if has_backend else robot.model.nv
+    tau = np.zeros(nv * N)
     for i in range(N):
-        for j in range(robot.model.nv):
-            tau[j * N + i] = pin.rnea(
-                robot.model, robot.data, q[i, :], v[i, :], a[i, :])[j]
+        if has_backend:
+            tau_vec = robot.backend.compute_inverse_dynamics(q[i, :], v[i, :], a[i, :])
+        else:
+            tau_vec = pin.rnea(robot.model, robot.data, q[i, :], v[i, :], a[i, :])
+        for j in range(nv):
+            tau[j * N + i] = tau_vec[j]
     if identif_config["has_friction"]:
         for i in range(N):
-            for j in range(robot.model.nv):
+            for j in range(nv):
                 fv_term = v[i, j] * identif_config["fv"][j]
                 fs_term = np.sign(v[i, j]) * identif_config["fs"][j]
                 tau[j * N + i] += fv_term + fs_term
     if identif_config["has_actuator_inertia"]:
         for i in range(N):
-            for j in range(robot.model.nv):
+            for j in range(nv):
                 tau[j * N + i] += identif_config["Ia"][j] * a[i, j]
     if identif_config["has_joint_offset"]:
         for i in range(N):
-            for j in range(robot.model.nv):
+            for j in range(nv):
                 tau[j * N + i] += identif_config["off"][j]
     if identif_config["has_coupled_wrist"]:
         for i in range(N):
-            for j in range(robot.model.nv):
-                if j == robot.model.nv - 2:
+            for j in range(nv):
+                if j == nv - 2:
                     tau[j * N + i] += (
-                        identif_config["Iam6"] * v[i, robot.model.nv - 1]
-                        + identif_config["fvm6"] * v[i, robot.model.nv - 1]
+                        identif_config["Iam6"] * v[i, nv - 1]
+                        + identif_config["fvm6"] * v[i, nv - 1]
                         + identif_config["fsm6"]
                         * np.sign(
-                            v[i, robot.model.nv - 2] + v[i, robot.model.nv - 1]
+                            v[i, nv - 2] + v[i, nv - 1]
                         )
                     )
-                if j == robot.model.nv - 1:
+                if j == nv - 1:
                     tau[j * N + i] += (
-                        identif_config["Iam6"] * v[i, robot.model.nv - 2]
-                        + identif_config["fvm6"] * v[i, robot.model.nv - 2]
+                        identif_config["Iam6"] * v[i, nv - 2]
+                        + identif_config["fvm6"] * v[i, nv - 2]
                         + identif_config["fsm6"]
                         * np.sign(
-                            v[i, robot.model.nv - 2] + v[i, robot.model.nv - 1]
+                            v[i, nv - 2] + v[i, nv - 1]
                         )
                     )
     return tau

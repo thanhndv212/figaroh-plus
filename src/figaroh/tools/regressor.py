@@ -24,7 +24,9 @@ class RegressorBuilder:
     def __init__(self, robot, config: Optional[RegressorConfig] = None):
         self.robot = robot
         self.config = config or RegressorConfig()
-        self.nv = robot.model.nv
+        # Use backend if available, fall back to direct model access
+        self._has_backend = hasattr(robot, 'backend')
+        self.nv = robot.backend.nv if self._has_backend else robot.model.nv
         self.nonzero_inertias = self._get_nonzero_inertias()
 
     def build_basic_regressor(self, q: np.ndarray, v: np.ndarray, a: np.ndarray, identif_config=None) -> np.ndarray:
@@ -41,7 +43,8 @@ class RegressorBuilder:
 
     def _normalize_inputs(self, q, v, a) -> Tuple[np.ndarray, np.ndarray, np.ndarray, int]:
         """Normalize and validate inputs."""
-        Q = self._ensure_2d(q, self.robot.model.nq, "q")
+        nq = self.robot.backend.nq if self._has_backend else self.robot.model.nq
+        Q = self._ensure_2d(q, nq, "q")
         V = self._ensure_2d(v, self.nv, "v") 
         A = self._ensure_2d(a, self.nv, "a")
 
@@ -62,32 +65,48 @@ class RegressorBuilder:
 
     def _get_nonzero_inertias(self) -> List[int]:
         """Get indices of bodies with non-zero mass."""
-        return [i for i, inertia in enumerate(self.robot.model.inertias.tolist()) 
-                if inertia.mass != 0]
+        if self._has_backend:
+            inertias = self.robot.backend.get_inertias()
+        else:
+            inertias = self.robot.model.inertias.tolist()
+        return [i for i, inertia in enumerate(inertias) if inertia.mass != 0]
 
     def _build_joint_torque_regressor(self, Q, V, A, N, identif_config=None) -> np.ndarray:
         """Build regressor for joint torque identification."""
         W_ = np.zeros([N * self.nv, (10 + self.config.additional_columns) * self.nv])
 
         for i in range(N):
-            W_temp = pin.computeJointTorqueRegressor(
-                self.robot.model, self.robot.data, Q[i], V[i], A[i]
-            )
+            if self._has_backend:
+                W_temp = self.robot.backend.compute_regressor(Q[i], V[i], A[i])
+                if W_temp.ndim == 1:
+                    W_temp = W_temp.reshape(self.nv, -1)
+            else:
+                W_temp = pin.computeJointTorqueRegressor(
+                    self.robot.model, self.robot.data, Q[i], V[i], A[i]
+                )
             self._fill_joint_regressor_sample(W_, W_temp, V, A, i, N, identif_config)
         return W_
         # return self._reorder_parameters(W_, self.nv)
 
     def _build_external_wrench_regressor(self, Q, V, A, N, identif_config=None) -> np.ndarray:
         """Build regressor for external wrench identification."""
-        nb_bodies = len(self.robot.model.inertias) - 1
+        if self._has_backend:
+            nb_bodies = len(self.robot.backend.get_inertias()) - 1
+        else:
+            nb_bodies = len(self.robot.model.inertias) - 1
         ft_components = self.config.force_torque or []
 
         W_ = np.zeros([N * 6, (10 + self.config.additional_columns) * nb_bodies])
 
         for i in range(N):
-            W_temp = pin.computeJointTorqueRegressor(
-                self.robot.model, self.robot.data, Q[i], V[i], A[i]
-            )
+            if self._has_backend:
+                W_temp = self.robot.backend.compute_regressor(Q[i], V[i], A[i])
+                if W_temp.ndim == 1:
+                    W_temp = W_temp.reshape(self.nv, -1)
+            else:
+                W_temp = pin.computeJointTorqueRegressor(
+                    self.robot.model, self.robot.data, Q[i], V[i], A[i]
+                )
             self._fill_wrench_regressor_sample(W_, W_temp, V, A, ft_components, i, N, nb_bodies, identif_config)
         return W_
         # return self._reorder_parameters(W, nb_bodies)

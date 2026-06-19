@@ -65,6 +65,9 @@ class Robot(RobotWrapper):
         # Set aliases for backward compatibility
         self.geom_model = self.collision_model
 
+        # Lazy backend for backend-aware computations
+        self._backend = None
+
     def _configure_freeflyer(self, freeflyer_ori: Optional[np.ndarray]) -> None:
         """Configure free-flyer with orientation and limits."""
         if freeflyer_ori is not None:
@@ -150,6 +153,23 @@ class Robot(RobotWrapper):
     def freeflyer_limits(self) -> Tuple[float, float]:
         """Current free-flyer position limits."""
         return self._freeflyer_limits
+
+    @property
+    def backend(self):
+        """Lazily-created DynamicsBackend wrapping this robot's model.
+
+        Returns a PinocchioBackend that shares the same pin.Model and pin.Data
+        as this Robot instance — no URDF re-loading, no model duplication.
+        Used by RegressorBuilder and other tools to route dynamics computation
+        through the backend abstraction.
+
+        Returns:
+            PinocchioBackend instance
+        """
+        if self._backend is None:
+            from ..backends.pinocchio import PinocchioBackend
+            self._backend = PinocchioBackend.from_model(self.model, self.data)
+        return self._backend
 
     def get_configuration_bounds(self) -> Tuple[np.ndarray, np.ndarray]:
         """Get configuration space bounds with proper handling of quaternions."""

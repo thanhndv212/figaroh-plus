@@ -262,6 +262,93 @@ class DynamicsBackend(ABC):
             f"{self.__class__.__name__} does not implement get_frame_names"
         )
 
+    def get_inertias(self) -> list:
+        """
+        Get per-body inertia objects.
+
+        Used for nonzero-inertia filtering in regressor computation.
+
+        Returns:
+            List of inertia objects (backend-specific type).
+        """
+        raise NotImplementedError(
+            f"{self.__class__.__name__} does not implement get_inertias"
+        )
+
+    def get_frame_id(self, frame: str) -> int:
+        """
+        Get frame ID by name.
+
+        Used for frame-based Jacobian/calibration computations.
+
+        Args:
+            frame: Frame name
+
+        Returns:
+            Frame ID (integer)
+        """
+        raise NotImplementedError(
+            f"{self.__class__.__name__} does not implement get_frame_id"
+        )
+
+    def compute_difference(self, q1: np.ndarray, q2: np.ndarray) -> np.ndarray:
+        """
+        Compute Lie group difference between two configurations (q2 ⊖ q1).
+
+        For revolute joints this is simple subtraction; for free-flyer it's SE3 log.
+
+        Args:
+            q1: First configuration [nq]
+            q2: Second configuration [nq]
+
+        Returns:
+            Difference vector [nv]
+        """
+        raise NotImplementedError(
+            f"{self.__class__.__name__} does not implement compute_difference"
+        )
+
+    def compute_integrate(self, q: np.ndarray, v: np.ndarray) -> np.ndarray:
+        """
+        Integrate configuration by velocity (q ⊕ v).
+
+        Args:
+            q: Configuration [nq]
+            v: Velocity [nv]
+
+        Returns:
+            New configuration [nq]
+        """
+        raise NotImplementedError(
+            f"{self.__class__.__name__} does not implement compute_integrate"
+        )
+
+    def random_configuration(self) -> np.ndarray:
+        """
+        Generate a random configuration within joint limits.
+
+        Returns:
+            Random configuration [nq]
+        """
+        raise NotImplementedError(
+            f"{self.__class__.__name__} does not implement random_configuration"
+        )
+
+    def get_model_object(self) -> Any:
+        """
+        Escape hatch: return the underlying simulator model object.
+
+        For Pinocchio this is the pin.Model; for MuJoCo it's mj.MjModel.
+        Used by advanced features (PseudoInertia, collision model, etc.) that need
+        backend-specific types not yet abstracted.
+
+        Returns:
+            Backend-specific model object
+        """
+        raise NotImplementedError(
+            f"{self.__class__.__name__} does not implement get_model_object"
+        )
+
     # Context manager support
 
     def __enter__(self):

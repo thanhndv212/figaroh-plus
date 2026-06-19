@@ -1,8 +1,8 @@
 # FIGAROH Architecture Documentation
 
-**Version:** 2.0  
-**Date:** June 3, 2026  
-**Status:** Phase 1 Complete (Multi-Simulator Backend Integration)
+**Version:** 3.0  
+**Date:** June 19, 2026  
+**Status:** Backend abstraction functional — identification fully portable, calibration partially portable (model manipulation blocker)
 
 ---
 
@@ -741,36 +741,36 @@ subject to:
 
 ## Pinocchio Integration Map
 
-### Critical Functions (Must be backend-abstracted)
+### Critical Functions (Backend-abstracted ✅)
 
-| Pinocchio Function | Purpose | Files Using | Backend Method |
-|--------------------|---------|-------------|----------------|
-| `computeJointTorqueRegressor()` | Compute regressor W | regressor.py | `compute_regressor()` |
-| `rnea()` | Compute joint torques | randomdata.py, cubic_spline.py | `compute_inverse_dynamics()` |
-| `crba()` | Mass matrix M(q) | (implicit in backend) | `compute_mass_matrix()` |
-| `framesForwardKinematics()` | Update all frames | calibration_tools.py (5 locations) | `compute_forward_kinematics()` |
-| `computeFrameJacobian()` | Frame Jacobian | calibration_tools.py | `compute_jacobian()` |
-| `computeFrameKinematicRegressor()` | Kinematic regressor | calibration_tools.py | (specialized, may stay Pinocchio) |
-| `difference()` | Manifold velocity | identification_tools.py | (Lie group, may stay Pinocchio) |
+| Pinocchio Function | Purpose | Files Using | Backend Method | Migration Status |
+|--------------------|---------|-------------|----------------|-----------------|
+| `computeJointTorqueRegressor()` | Compute regressor W | regressor.py | `compute_regressor()` | ✅ Routed through `robot.backend` |
+| `rnea()` | Compute joint torques | randomdata.py, cubic_spline.py | `compute_inverse_dynamics()` | ✅ randomdata.py migrated; cubic_spline.py deferred |
+| `crba()` | Mass matrix M(q) | (in PinocchioBackend) | `compute_mass_matrix()` | ✅ Implemented |
+| `aba()` | Forward dynamics | (in PinocchioBackend) | `compute_forward_dynamics()` | ✅ Implemented |
+| `computeCoriolisMatrix()` | Coriolis matrix C(q,v) | (in PinocchioBackend) | `compute_coriolis_matrix()` | ✅ Implemented |
+| `computeGeneralizedGravity()` | Gravity vector g(q) | calibration_tools.py | `compute_gravity_vector()` | ✅ Routed through backend |
+| `framesForwardKinematics()` | Update all frames | calibration_tools.py (5 locations) | `compute_forward_kinematics()` | ✅ Routed through backend |
+| `updateFramePlacements()` | Update frame placements | calibration_tools.py | `compute_forward_kinematics()` | ✅ Included in FK |
+| `computeFrameJacobian()` | Frame Jacobian | calibration_tools.py | `compute_jacobian()` | ✅ Routed through backend |
+| `difference()` | Manifold velocity | identification_tools.py | `compute_difference()` | ✅ Routed through backend |
+| `randomConfiguration()` | Random config sampling | calibration_tools.py | `random_configuration()` | ✅ Routed through backend |
 
-### Transformation Functions (Likely stay Pinocchio-specific)
+### Pinocchio-Specific Functions (Not abstracted ❌)
 
-| Function | Purpose | Can be Abstracted? |
+| Function | Purpose | Why Not Abstracted |
 |----------|---------|-------------------|
-| `SE3()` | Rigid body transform | ❌ (Pinocchio-specific type) |
-| `rpy.rpyToMatrix()` | RPY → rotation matrix | ✅ (can use scipy.spatial) |
-| `rpy.matrixToRpy()` | Rotation matrix → RPY | ✅ (can use scipy.spatial) |
-| `Quaternion()` | Quaternion operations | ✅ (can use scipy.spatial) |
-| `SE3.Identity()` | Identity transform | ❌ (Pinocchio-specific) |
-
-### Auxiliary Functions (Optional, visualization/utilities)
-
-| Function | Purpose | Priority |
-|----------|---------|----------|
-| `centerOfMass()` | COM computation | Low |
-| `computeSubtreeMasses()` | Subtree mass | Low |
-| `computeCollisions()` | Collision detection | Medium |
-| `randomConfiguration()` | Random config sampling | Low |
+| `computeFrameKinematicRegressor()` | Kinematic regressor for calibration | Pinocchio-only feature (no MuJoCo/Genesis equivalent); uses `get_model_object()` escape hatch |
+| `model.jointPlacements[idx]` mutation | Modify joint frame placement | **Critical blocker**: MuJoCo/Genesis models are immutable after compilation. Calibration requires runtime model mutation. |
+| `model.addFrame()` | Add custom frame at runtime | MuJoCo/Genesis don't support runtime frame addition |
+| `SE3()`, `SE3.Identity()`, `SE3.actInv()` | Rigid body transform type | Pinocchio-specific type system; could use `scipy.spatial.transform` (future) |
+| `Quaternion()` | Quaternion operations | Could use `scipy.spatial.transform.Rotation` (future) |
+| `rpy.rpyToMatrix()`, `rpy.matrixToRpy()` | RPY ↔ rotation matrix | Could use `scipy.spatial.transform.Rotation` (future) |
+| `Force()` | 6D wrench representation | Pinocchio-specific type |
+| `Frame()`, `FrameType`, `Inertia.Zero()` | Frame/inertia construction | Pinocchio-specific model types |
+| `computeCollisions()`, `computeDistance()` | Collision detection | Fundamentally simulator-specific (hppfcl vs MuJoCo vs PhysX) |
+| `centerOfMass()`, `computeSubtreeMasses()` | COM computation | Visualization-specific, low priority |
 
 ### Backend Mapping Strategy
 
@@ -914,7 +914,7 @@ backend = get_backend("pinocchio", model_path="robot.urdf",
 class DynamicsBackend(ABC):
     """Abstract interface for dynamics computation"""
     
-    # === Core Dynamics ===
+    # === Core Dynamics (abstract) ===
     @abstractmethod
     def compute_mass_matrix(self, q: np.ndarray) -> np.ndarray:
         """M(q) ∈ ℝ^(nv×nv)"""
@@ -931,32 +931,53 @@ class DynamicsBackend(ABC):
     def compute_inverse_dynamics(self, q: np.ndarray, v: np.ndarray, 
                                  a: np.ndarray) -> np.ndarray:
         """τ = RNEA(q,v,a) ∈ ℝ^nv"""
-        
-    # === Kinematics ===
+    
     @abstractmethod
-    def compute_forward_kinematics(self, q: np.ndarray) -> Dict[str, np.ndarray]:
-        """Returns: {frame_name: SE3_transform}"""
+    def compute_forward_dynamics(self, q: np.ndarray, v: np.ndarray,
+                                 tau: np.ndarray) -> np.ndarray:
+        """qdd = ABA(q,v,τ) ∈ ℝ^nv"""
+        
+    # === Kinematics (abstract) ===
+    @abstractmethod
+    def compute_forward_kinematics(self, q: np.ndarray) -> Dict[str, Any]:
+        """Returns: {frame_name: {position, orientation, transformation}}"""
         
     @abstractmethod
     def compute_jacobian(self, q: np.ndarray, frame: str) -> np.ndarray:
         """J(q, frame) ∈ ℝ^(6×nv)"""
         
-    # === Identification ===
+    # === Identification (abstract) ===
     @abstractmethod
     def compute_regressor(self, q: np.ndarray, v: np.ndarray, 
                          a: np.ndarray) -> np.ndarray:
         """W(q,v,a) ∈ ℝ^(nv × 10*nv)"""
         
-    # === Properties ===
+    # === Properties (abstract) ===
     @property
     @abstractmethod
-    def nq(self) -> int:
-        """Number of position variables"""
-        
+    def nq(self) -> int: ...
     @property
     @abstractmethod
-    def nv(self) -> int:
-        """Number of velocity variables"""
+    def nv(self) -> int: ...
+    @property
+    @abstractmethod
+    def model_format(self) -> str: ...
+    
+    # === Optional methods (raise NotImplementedError by default) ===
+    def get_joint_names(self) -> list: ...
+    def get_frame_names(self) -> list: ...
+    def get_inertias(self) -> list: ...
+        """Per-body inertia objects (for nonzero-inertia filtering)"""
+    def get_frame_id(self, frame: str) -> int: ...
+    def compute_difference(self, q1, q2) -> np.ndarray: ...
+        """Lie group difference (q2 ⊖ q1) → [nv]"""
+    def compute_integrate(self, q, v) -> np.ndarray: ...
+        """Lie group integration (q ⊕ v) → [nq]"""
+    def random_configuration(self) -> np.ndarray: ...
+    def get_model_object(self) -> Any: ...
+        """Escape hatch: return underlying simulator model (pin.Model, mj.MjModel, ...)
+        for advanced features not yet abstracted (PseudoInertia, collision model, etc.)"""
+    def compute_dynamics_derivatives(self, q, v) -> Dict[str, np.ndarray]: ...
 ```
 
 ### Implementation Comparison
@@ -968,8 +989,28 @@ class DynamicsBackend(ABC):
 | **Contact** | Limited | Excellent | Excellent | Excellent |
 | **Visualization** | MeshCat | MuJoCo Viewer | Native | Native |
 | **Maturity** | Mature | Mature | New | Mature |
-| **Use Case** | Research, identification | Simulation, control | Large-scale, parallel | Sim-to-real |
-| **Status** | ✅ Default | ✅ Implemented | 🔄 Planned | 🔄 Planned |
+| **Use Case** | Research, identification, calibration | Simulation, control | Large-scale, parallel | Sim-to-real |
+| **Status** | ✅ Implemented (default) | ⚠️ Partial (regressor is placeholder) | ❌ Not started | ❌ Not started |
+| **Model manipulation** | ✅ Runtime mutable | ❌ Immutable after compile | ❌ Immutable after build | ❌ Requires physics re-init |
+| **Kinematic regressor** | ✅ Native (`computeFrameKinematicRegressor`) | ❌ No equivalent | ❌ No equivalent | ❌ No equivalent |
+
+### Backend Migration Status
+
+**Fully portable (identification path):**
+- `RegressorBuilder` → `backend.compute_regressor()`
+- `randomdata.py` → `backend.compute_inverse_dynamics()`
+- `identification_tools.py` → `backend.compute_difference()`
+
+**Partially portable (calibration path):**
+- `calibration_tools.py` — 7 functions accept optional `backend` parameter for FK, Jacobian, gravity, random-configuration
+- `computeFrameKinematicRegressor` uses `get_model_object()` escape hatch (no backend equivalent)
+- Model manipulation (`model.jointPlacements[idx]` mutation + revert) remains Pinocchio-specific — see [Backend Migration Limitations](#backend-migration-limitations) below
+
+**Not portable (by design):**
+- `calibration/parameter.py` — `pin.SE3`, `pin.Frame`, `pin.Inertia.Zero()` data type construction
+- `measurements/measurement.py` — `pin.SE3`, `pin.Force`, `pin.Frame` data types
+- `tools/robotvisualization.py` — Meshcat/Gepetto visualization
+- `tools/robotcollisions.py` — hppfcl/coal collision detection
 
 ---
 
@@ -1040,6 +1081,113 @@ class MyRobotCalibration(BaseCalibration):
 
 ---
 
+## Backend Migration Limitations
+
+> **This section documents the fundamental barriers to fully migrating FIGAROH's
+> calibration algorithms from Pinocchio to other simulator backends (MuJoCo, Genesis,
+> IsaacSim). These are not implementation gaps — they are architectural constraints
+> imposed by the simulators themselves.**
+
+### The Core Problem: Model Manipulation
+
+FIGAROH's geometric calibration algorithms work by **modifying joint frame placements
+in-place, computing forward kinematics, then reverting the modifications** — repeated
+hundreds of times per optimization iteration. This is the fundamental mechanism for
+identifying kinematic parameters (joint offsets, link lengths, frame placements).
+
+```python
+# Current calibration pattern (calibration_tools.py):
+model.jointPlacements[joint_idx].translation = updated_translation
+model.jointPlacements[joint_idx].rotation = updated_rotation
+# ... compute forward kinematics with modified model ...
+pin.framesForwardKinematics(model, data, q)
+# ... measure end-effector pose ...
+# ... revert model to original ...
+model.jointPlacements[joint_idx].translation = original_translation
+model.jointPlacements[joint_idx].rotation = original_rotation
+```
+
+**Why this matters:** Calibration is not about finding a different configuration `q` —
+it's about finding the correct **kinematic structure** itself (where joints are placed,
+what their offsets are). The model *is* the parameter being optimized. This is
+fundamentally different from identification (where `q`, `v`, `a` are the inputs and
+inertial parameters are the outputs).
+
+### Simulator Capabilities Matrix
+
+| Capability | Pinocchio | MuJoCo | Genesis | IsaacSim |
+|---|---|---|---|---|
+| **Runtime model mutation** | ✅ `model.jointPlacements[idx]` directly mutable | ❌ Model immutable after `MjModel.from_xml_path()` | ❌ Model immutable after `scene.build()` | ❌ Requires physics re-initialization |
+| **Runtime frame addition** | ✅ `model.addFrame()` | ❌ Fixed kinematic tree after compile | ❌ Frames defined at load time only | ❌ Complex USD prim manipulation |
+| **Kinematic regressor** | ✅ `pin.computeFrameKinematicRegressor()` | ❌ No equivalent | ❌ No equivalent | ❌ No equivalent |
+| **SE3/transform types** | ✅ `pin.SE3`, `pin.Quaternion`, `pin.rpy` | ❌ Raw arrays (`pos[3]` + `quat[4]`) | ❌ Raw arrays | ❌ `torch.Tensor` / USD transforms |
+
+### Why MuJoCo/Genesis Can't Support This Pattern
+
+MuJoCo and Genesis **compile** their models into optimized internal representations
+(sparse matrices, JIT-compiled physics). After compilation, the kinematic tree is
+fixed — you cannot change where a joint is placed without rebuilding the model from
+XML/spec.
+
+The workaround (reload model per iteration) is **prohibitively expensive**: a typical
+calibration optimization runs hundreds of iterations with multiple samples per
+iteration. Reloading a model from XML takes 10-100ms, compared to microseconds for
+Pinocchio's in-place mutation.
+
+### What This Means for the Backend Track
+
+**Identification (dynamics) is fully portable.** The dynamics regressor, mass matrix,
+Coriolis, gravity, inverse/forward dynamics are all abstracted in `DynamicsBackend`
+and work across simulators. This is the high-value path for multi-simulator support.
+
+**Calibration (kinematics) is Pinocchio-bound** for the foreseeable future. The
+`calibration_tools.py` functions accept an optional `backend` parameter and route
+dynamics calls (FK, Jacobian, gravity) through it when available — but the model
+manipulation pattern (`update_joint_placement`) has no backend equivalent and remains
+Pinocchio-specific via the `get_model_object()` escape hatch.
+
+### Long-Term Paths to Full Portability
+
+1. **Propose upstream changes to MuJoCo/Genesis** — request runtime model mutation
+   support (modify body/joint transforms without full recompilation). This is the
+   cleanest solution but depends on simulator maintainers' priorities. A PR to
+   MuJoCo's `MjSpec` API enabling partial recompilation would be the most impactful.
+
+2. **Reformulate calibration to avoid model mutation** — some calibration formulations
+   can be rewritten to parameterize the kinematic error in configuration space rather
+   than model space. This is a significant algorithmic change but would eliminate the
+   model manipulation dependency entirely.
+
+3. **Mutable model wrapper** — implement a wrapper that caches model modifications and
+   reloads the simulator model only when needed (e.g., batch modifications, reload
+   once per iteration instead of per sample). Reduces overhead but doesn't eliminate it.
+
+4. **SE3/transform abstraction layer** — use `scipy.spatial.transform.Rotation` and
+   `RigidTransform` as a simulator-agnostic replacement for `pin.SE3`/`pin.Quaternion`/
+   `pin.rpy`. This would eliminate the data type coupling but not the model manipulation
+   coupling. Feasible and low-risk, but only solves part of the problem.
+
+5. **Finite-difference kinematic regressor** — implement `computeFrameKinematicRegressor`
+   generically via finite differences of forward kinematics w.r.t. joint placement
+   perturbations. Would work with any backend that supports FK, but requires model
+   mutation (back to problem #1).
+
+### Current Architecture Decision
+
+The backend abstraction covers **dynamics computation** (identification + calibration
+algorithm paths). It does **not** abstract:
+- **Model manipulation** — Pinocchio-specific (runtime mutable model)
+- **Data type construction** — `pin.SE3`, `pin.Quaternion`, `pin.Force`, `pin.Frame`
+- **Kinematic regressor** — Pinocchio-only feature (no simulator equivalent)
+- **Collision detection** — fundamentally simulator-specific (hppfcl vs MuJoCo vs PhysX)
+- **Visualization** — already decoupled (figaroh-examples uses Viser, not Pinocchio viz)
+
+This is a **deliberate architectural boundary**, not a gap. The backend track focuses on
+making identification portable across simulators. Calibration remains Pinocchio-specific
+until simulator APIs evolve to support runtime model mutation.
+
+---
+
 ## Performance Considerations
 
 ### Computational Bottlenecks
@@ -1094,29 +1242,38 @@ class MyRobotCalibration(BaseCalibration):
 FIGAROH's architecture achieves simulator independence through a **three-layer design**:
 
 1. **Backend Layer** abstracts dynamics computation
-2. **Tools Layer** implements core algorithms
-3. **Workflow Layer** orchestrates high-level tasks
+2. **Tools Layer** implements core algorithms (regressor, solver, QR decomposition)
+3. **Workflow Layer** orchestrates high-level tasks (calibration, identification, optimal)
 
 **Key Strengths:**
 - Clean separation of concerns
-- Pluggable backends enable simulator flexibility
-- Mature Pinocchio integration as reference
-- Comprehensive error handling and validation
+- Pluggable backends enable simulator flexibility for identification
+- Mature Pinocchio integration as reference implementation
+- "Strangler fig" migration pattern — backward-compatible, opt-in backend routing
 
-**Phase 1 Complete:**
-- ✅ Backend abstraction defined
-- ✅ PinocchioBackend implemented
-- ✅ MuJoCoBackend implemented
-- ✅ Deprecation of redundant tools (robot_format_converter, figaroh-mujoco)
+**Current State (June 2026):**
+- ✅ `DynamicsBackend` interface defined (9 abstract + 9 optional methods)
+- ✅ `PinocchioBackend` implemented (default, 32 tests, numerical correctness verified)
+- ⚠️ `MuJoCoBackend` partially implemented (dynamics work, regressor is placeholder)
+- ✅ Core algorithm path migrated (identification + calibration route through backend)
+- ❌ Full calibration portability blocked by model manipulation requirement
+- ❌ Genesis / IsaacSim backends not started
 
-**Next Phases:**
-- Genesis backend (GPU acceleration)
-- Isaac Sim backend (sim-to-real)
-- Advanced OED objectives
-- Real-time identification
+**Key Limitation:**
+Calibration algorithms require **runtime model manipulation** (modifying joint frame
+placements in-place). MuJoCo, Genesis, and IsaacSim compile models to immutable internal
+representations. This is the fundamental barrier to full cross-simulator calibration.
+See [Backend Migration Limitations](#backend-migration-limitations) for details and
+long-term paths to resolution.
+
+**Next Steps:**
+- Fix MuJoCo regressor (finite-difference implementation)
+- Cross-backend validation suite (Pinocchio vs MuJoCo)
+- Genesis backend (GPU acceleration for identification)
+- Investigate MuJoCo/Genesis upstream PRs for runtime model mutation support
 
 ---
 
-**Document Version:** 2.0  
-**Last Updated:** June 3, 2026  
+**Document Version:** 3.0  
+**Last Updated:** June 19, 2026  
 **Maintained by:** FIGAROH Core Team

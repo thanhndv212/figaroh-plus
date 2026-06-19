@@ -200,20 +200,22 @@ def weigthed_least_squares(
     return phi_b
 
 
-def calculate_first_second_order_differentiation(model, q, identif_config, dt=None):
+def calculate_first_second_order_differentiation(model, q, identif_config, dt=None, backend=None):
     """Calculate joint velocities and accelerations from positions.
 
     Computes first and second order derivatives of joint positions using central
     differences. Handles both constant and variable timesteps.
 
     Args:
-        model (pin.Model): Robot model
+        model (pin.Model): Robot model (used when backend is None)
         q (ndarray): Joint position matrix (n_samples, n_joints)
         param (dict): Parameters containing:
             - is_joint_torques: Whether using joint torques
             - is_external_wrench: Whether using external wrench
             - ts: Timestep if constant
         dt (ndarray, optional): Variable timesteps between samples.
+        backend (DynamicsBackend, optional): If provided, uses backend.compute_difference
+            instead of pin.difference for Lie group operations.
 
     Returns:
         tuple:
@@ -224,6 +226,7 @@ def calculate_first_second_order_differentiation(model, q, identif_config, dt=No
     Note:
         Two samples are removed from start/end due to central differences
     """
+    nq = backend.nq if backend is not None else model.nq
 
     if identif_config["is_joint_torques"]:
         dq = np.zeros([q.shape[0] - 1, q.shape[1]])
@@ -236,15 +239,21 @@ def calculate_first_second_order_differentiation(model, q, identif_config, dt=No
     if dt is None:
         dt = identif_config["ts"]
         for ii in range(q.shape[0] - 1):
-            dq[ii, :] = pin.difference(model, q[ii, :], q[ii + 1, :]) / dt
+            if backend is not None:
+                dq[ii, :] = backend.compute_difference(q[ii, :], q[ii + 1, :]) / dt
+            else:
+                dq[ii, :] = pin.difference(model, q[ii, :], q[ii + 1, :]) / dt
 
-        for jj in range(model.nq - 1):
+        for jj in range(nq - 1):
             ddq[:, jj] = np.gradient(dq[:, jj], edge_order=1) / dt
     else:
         for ii in range(q.shape[0] - 1):
-            dq[ii, :] = pin.difference(model, q[ii, :], q[ii + 1, :]) / dt[ii]
+            if backend is not None:
+                dq[ii, :] = backend.compute_difference(q[ii, :], q[ii + 1, :]) / dt[ii]
+            else:
+                dq[ii, :] = pin.difference(model, q[ii, :], q[ii + 1, :]) / dt[ii]
 
-        for jj in range(model.nq - 1):
+        for jj in range(nq - 1):
             ddq[:, jj] = np.gradient(dq[:, jj], edge_order=1) / dt
 
     q = np.delete(q, len(q) - 1, 0)
