@@ -366,6 +366,9 @@ class MuJoCoBackend(DynamicsBackend):
         """
         Compute forward dynamics (ABA) using mj_forward.
 
+        Applies joint torques via qfrc_applied (applied forces) rather than
+        ctrl (which goes through actuators, which may not exist in URDF models).
+
         Args:
             q: Joint positions [nq]
             v: Joint velocities [nv]
@@ -376,7 +379,9 @@ class MuJoCoBackend(DynamicsBackend):
         """
         self.data.qpos[:] = q
         self.data.qvel[:] = v
-        self.data.ctrl[: len(tau)] = tau
+        # Zero out any previous applied forces
+        self.data.qfrc_applied[:] = 0.0
+        self.data.qfrc_applied[: len(tau)] = tau
 
         mj.mj_forward(self.model, self.data)
 
