@@ -21,7 +21,7 @@
 
 ## Executive Summary
 
-FIGAROH (Fast Identification of Geometric And Regressor-based Optimization for Humanoids) is a modular framework for robot calibration and parameter identification. The architecture follows a **three-layer design**:
+FIGAROH (**F**ree dynamics **I**dentification and **G**eometrical c**A**libration of **RO**bot and **H**uman) is a modular framework for robot calibration and parameter identification. The architecture follows a **three-layer design**:
 
 1. **Backend Layer** - Pluggable dynamics computation (Pinocchio, MuJoCo, Genesis, Isaac Sim)
 2. **Tools Layer** - Core algorithms (regressor computation, solvers, parameter handling)
