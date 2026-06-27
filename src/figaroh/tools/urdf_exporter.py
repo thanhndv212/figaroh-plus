@@ -9,16 +9,68 @@ This is used after identification or calibration to materialize results
 into a tangible URDF file for downstream use (simulation, visualization,
 model-based control).
 
+**Two parameter categories**
+
+Joint-level parameters (auto-applied to the URDF):
+    These directly modify the URDF's joint origins, link inertias, and
+    dynamics attributes. They come from figaroh's identification or
+    calibration solvers and can be applied automatically:
+
+    - Joint placement (additive): ``d_px_{joint}``, ``d_py_{joint}``,
+      ``d_pz_{joint}``, ``d_phix_{joint}``, ``d_phiy_{joint}``,
+      ``d_phiz_{joint}``
+    - Joint offset / calibration (additive): ``offsetPX_{joint}``,
+      ``offsetPY_{joint}``, ``offsetPZ_{joint}``, ``offsetRX_{joint}``,
+      ``offsetRY_{joint}``, ``offsetRZ_{joint}``
+    - Legacy offset (absolute): ``off_{joint}``
+    - Mass (absolute): ``m_{link}``
+    - First moments (absolute): ``mx_{link}``, ``my_{link}``, ``mz_{link}``
+    - Inertia tensor (absolute): ``Ixx_{link}``, ``Ixy_{link}``, ...,
+      ``Izz_{link}``
+    - Viscous/static friction (absolute): ``fv_{joint}``, ``fs_{joint}``
+    - Armature (absolute): ``Ia_{joint}``
+    - Joint elasticity (additive): ``k_PX_{joint}``, ..., ``k_RZ_{joint}``
+
+Metrology frame parameters (user-defined, not auto-applied):
+    These define the transformation between the robot (URDF) and the
+    external measurement system (mocap, camera, chessboard, etc.).
+    They depend on the **calibration setup**, not on the URDF itself.
+    ``export_urdf()`` will **not** auto-apply them; instead it logs a
+    reminder and returns them as metadata for the user to configure::
+
+        base_px, base_py, base_pz, base_phix, base_phiy, base_phiz
+            Transform from the **metrology frame** (e.g. mocap world,
+            Vicon origin) to the robot's ``base_link``.
+            Default: identity (no offset from origin).
+
+        pEEx_{frame}, pEEy_{frame}, pEEz_{frame}
+        phiEEx_{frame}, phiEEy_{frame}, phiEEz_{frame}
+            Transform from the last robot joint (e.g. ``arm_7_joint``,
+            ``head_2_link``) to the **measurement frame** mounted on the
+            end-effector. What this frame is depends on calibration type:
+
+            - **Mocap calibration**: optical marker cluster frame
+              (markers attached to the end-effector).
+            - **Eye-hand calibration**: camera optical frame
+              (e.g. ``xtion_rgb_optical_frame``) or chessboard frame
+              (pattern on the gripper).
+            Default: identity (measurement frame coincides with the joint).
+
 Typical usage::
 
-    from figaroh.tools.urdf_exporter import export_urdf
+    from figaroh.tools.urdf_exporter import export_urdf, frame_settings_doc
 
+    # Joint-level params (auto-applied to URDF)
     params = {
-        "d_px_joint2": 0.05,   # additive joint placement offset
-        "m_link1": 2.5,         # absolute inertial override
-        "fv_joint1": 0.2,       # absolute dynamics override
+        "d_px_joint2": 0.05,
+        "m_link1": 2.5,
+        "fv_joint1": 0.2,
     }
-    modified_path = export_urdf("robot.urdf", params)
+    modified_path = export_urdf("robot.urdf", params, verbose=True)
+
+    # Metrology frames (user-defined — see frame_settings_doc())
+    defaults = frame_settings_doc()
+    # → prints descriptions + default values for base and EE frame params
 """
 
 import logging
@@ -31,23 +83,20 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 
-# ── Parameter-name registry ─────────────────────────────────────
-# (prefix, lookup_style) → (category, sub_idx, is_additive)
+# ── Parameter-name registries ────────────────────────────────────
 #
-# lookup_style:
-#   "exact"   — the param name IS the prefix (e.g. "base_px") — no joint/link suffix
-#   "prefix"  — the param name starts with f"{prefix}_" — rest is the joint/link name
-#   "prefix_nosep" — the param name starts with prefix (no trailing _ separator).
-#                   e.g. "m_link1" starts with "m_", link = "link1"
+# Two registries:
+#   1. _PARAM_REGISTRY     — joint-level params (auto-applied to URDF)
+#   2. _METROLOGY_REGISTRY — base/EE frame params (user-defined, see
+#      frame_settings_doc() — not auto-applied)
+#
+# Each entry: (prefix, lookup_style, category, sub_idx)
+#   lookup_style:
+#     "exact"       — param name IS the prefix (e.g. "base_px")
+#     "prefix"      — param starts with f"{prefix}_" — rest is joint/link name
+#     "prefix_nosep" — param starts with prefix directly (e.g. "m_" → "m_link1")
 
 _PARAM_REGISTRY: List[tuple] = [
-    # ── BASE PLACEMENT (additive, global, no joint suffix) ──
-    ("base_px",   "exact",       "joint_placement", 0),
-    ("base_py",   "exact",       "joint_placement", 1),
-    ("base_pz",   "exact",       "joint_placement", 2),
-    ("base_phix", "exact",       "joint_placement", 3),
-    ("base_phiy", "exact",       "joint_placement", 4),
-    ("base_phiz", "exact",       "joint_placement", 5),
     # ── JOINT PLACEMENT (additive, format: d_px_{joint}) ──
     ("d_px",   "prefix", "joint_placement", 0),
     ("d_py",   "prefix", "joint_placement", 1),
@@ -62,13 +111,6 @@ _PARAM_REGISTRY: List[tuple] = [
     ("offsetRX", "prefix", "joint_offset", 3),
     ("offsetRY", "prefix", "joint_offset", 4),
     ("offsetRZ", "prefix", "joint_offset", 5),
-    # ── EE MARKER (currently not fully implemented — recognized to avoid ValueError) ──
-    ("pEEx",   "prefix_nosep", "ee_marker", 0),
-    ("pEEy",   "prefix_nosep", "ee_marker", 1),
-    ("pEEz",   "prefix_nosep", "ee_marker", 2),
-    ("phiEEx", "prefix_nosep", "ee_marker", 3),
-    ("phiEEy", "prefix_nosep", "ee_marker", 4),
-    ("phiEEz", "prefix_nosep", "ee_marker", 5),
     # ── ELASTICITY (additive, format: k_PX_{joint}) ──
     ("k_PX", "prefix", "elasticity", 0),
     ("k_PY", "prefix", "elasticity", 1),
@@ -97,20 +139,47 @@ _PARAM_REGISTRY: List[tuple] = [
     ("off_", "prefix_nosep", "legacy_offset", None),
 ]
 
-# Build lookup maps for speed
+_METROLOGY_REGISTRY: List[tuple] = [
+    # ── BASE FRAME (metrology-frame → robot base) ──
+    # Transform from the external measurement origin (mocap world, Vicon,
+    # etc.) to the robot's base_link.  NOT intrinsic to the URDF — users
+    # must define these based on their calibration setup.
+    ("base_px",   "exact", "base_frame", 0),
+    ("base_py",   "exact", "base_frame", 1),
+    ("base_pz",   "exact", "base_frame", 2),
+    ("base_phix", "exact", "base_frame", 3),
+    ("base_phiy", "exact", "base_frame", 4),
+    ("base_phiz", "exact", "base_frame", 5),
+    # ── EE MEASUREMENT FRAME (last joint → sensor/marker/chessboard) ──
+    # Transform from the last robot joint (e.g. arm_7_joint, head_2_link)
+    # to the measurement frame mounted on the end-effector.
+    # For mocap: optical marker frame.  For eye-hand: camera optical frame
+    # or chessboard frame.
+    ("pEEx",   "prefix_nosep", "ee_measurement_frame", 0),
+    ("pEEy",   "prefix_nosep", "ee_measurement_frame", 1),
+    ("pEEz",   "prefix_nosep", "ee_measurement_frame", 2),
+    ("phiEEx", "prefix_nosep", "ee_measurement_frame", 3),
+    ("phiEEy", "prefix_nosep", "ee_measurement_frame", 4),
+    ("phiEEz", "prefix_nosep", "ee_measurement_frame", 5),
+]
+
+# ── Registry: is_additive flags ─────────────────────────────
+
+_ADDITIVE_PREFIXES = frozenset({
+    "d_px", "d_py", "d_pz", "d_phix", "d_phiy", "d_phiz",
+    "offsetPX", "offsetPY", "offsetPZ", "offsetRX", "offsetRY", "offsetRZ",
+    "k_PX", "k_PY", "k_PZ", "k_RX", "k_RY", "k_RZ",
+})
+
+
+# ── Joint-param lookup maps (auto-apply) ─────────────────────
+
 _EXACT_MAP: dict = {}
 _PREFIX_MAP: list = []
 _PREFIX_NOSEP_MAP: list = []
 
 for prefix, style, cat, idx in _PARAM_REGISTRY:
-    entry = (cat, idx, prefix in ("d_px", "d_py", "d_pz", "d_phix", "d_phiy",
-                                   "d_phiz", "offsetPX", "offsetPY", "offsetPZ",
-                                   "offsetRX", "offsetRY", "offsetRZ",
-                                   "base_px", "base_py", "base_pz",
-                                   "base_phix", "base_phiy", "base_phiz",
-                                   "k_PX", "k_PY", "k_PZ", "k_RX", "k_RY", "k_RZ",
-                                   "pEEx", "pEEy", "pEEz",
-                                   "phiEEx", "phiEEy", "phiEEz"))
+    entry = (cat, idx, prefix in _ADDITIVE_PREFIXES)
     if style == "exact":
         _EXACT_MAP[prefix] = entry
     elif style == "prefix":
@@ -119,36 +188,71 @@ for prefix, style, cat, idx in _PARAM_REGISTRY:
         _PREFIX_NOSEP_MAP.append((prefix, entry))
 
 
+# ── Frame-param lookup maps (user-defined, not auto-applied) ─
+
+_FRAME_PREFIX_MAP: list = []
+_FRAME_PREFIX_NOSEP_MAP: list = []
+_FRAME_EXACT_MAP: dict = {}
+
+for prefix, style, cat, idx in _METROLOGY_REGISTRY:
+    entry = (cat, idx)
+    if style == "exact":
+        _FRAME_EXACT_MAP[prefix] = entry
+    elif style == "prefix":
+        _FRAME_PREFIX_MAP.append((prefix, entry))
+    elif style == "prefix_nosep":
+        _FRAME_PREFIX_NOSEP_MAP.append((prefix, entry))
+
+
 def _parse_param_name(name: str) -> Optional[tuple]:
-    """Parse a parameter name into (category, target_name, sub_idx, is_additive).
+    """Parse a joint-level parameter name.
 
-    Args:
-        name: Parameter name, e.g. ``"d_px_joint2"``, ``"m_link1"``.
-
-    Returns:
-        Tuple ``(category, target, sub_idx, is_additive)``, or None if unknown.
+    Returns ``(category, target, sub_idx, is_additive)``, or ``None``
+    if the name is unknown (including metrology frame params).
     """
-    # 1. Check exact matches first (base_*, etc.)
+    # 1. Exact
     if name in _EXACT_MAP:
         cat, idx, is_add = _EXACT_MAP[name]
-        # Base params target the root joint — we use a sentinel
         return (cat, "_base_", idx, is_add)
-
-    # 2. Check prefix + "_" separator (d_px_{joint}, offsetRX_{joint})
+    # 2. Prefix + separator
     for prefix, (cat, idx, is_add) in _PREFIX_MAP:
         sep = prefix + "_"
         if name.startswith(sep):
             target = name[len(sep):]
-            if target:  # must have a target name
+            if target:
                 return (cat, target, idx, is_add)
-
-    # 3. Check prefix without separator (m_{link}, fv_{joint})
+    # 3. Prefix, no separator
     for prefix, (cat, idx, is_add) in _PREFIX_NOSEP_MAP:
         if name.startswith(prefix):
             target = name[len(prefix):]
-            if target:  # must have a target name
+            if target:
                 return (cat, target, idx, is_add)
+    return None
 
+
+def _parse_frame_param_name(name: str) -> Optional[tuple]:
+    """Parse a metrology frame parameter name.
+
+    Returns ``(category, target, sub_idx)``, or ``None`` if the name is
+    a joint-level param or unknown.
+    """
+    # 1. Exact (base_*)
+    if name in _FRAME_EXACT_MAP:
+        cat, idx = _FRAME_EXACT_MAP[name]
+        return (cat, "_base_", idx)
+    # 2. Prefix + separator
+    for prefix, (cat, idx) in _FRAME_PREFIX_MAP:
+        sep = prefix + "_"
+        if name.startswith(sep):
+            target = name[len(sep):]
+            if target:
+                return (cat, target, idx)
+    # 3. Prefix, no separator (pEEx{frame}, phiEEx{frame})
+    for prefix, (cat, idx) in _FRAME_PREFIX_NOSEP_MAP:
+        if name.startswith(prefix):
+            target = name[len(prefix):]
+            if target:
+                return (cat, target, idx)
     return None
 
 
@@ -356,9 +460,84 @@ _HANDLERS = {
         logger.debug("first_moment handler not implemented (target=%s)", target),
     "inertia": lambda doc, target, idx, val, add: \
         logger.debug("inertia handler not implemented (target=%s)", target),
-    "ee_marker": lambda doc, target, idx, val, add: \
-        logger.debug("ee_marker handler not implemented (target=%s)", target),
 }
+
+
+_FRAME_PARAM_DESCRIPTIONS = {
+    "base_frame": "Base frame: transform from metrology origin (e.g. mocap world, "
+                  "Vicon origin) to robot ``base_link``.",
+    "ee_measurement_frame": "EE measurement frame: transform from the last robot "
+                            "joint (e.g. ``arm_7_joint``, ``head_2_link``) to the "
+                            "measurement device frame (marker cluster, camera "
+                            "optical frame, or chessboard frame).",
+}
+
+
+def frame_settings_doc(*, calibration_type: Optional[str] = None,
+                       verbose: bool = True) -> dict:
+    """Return default metrology-frame parameter values with explanations.
+
+    These parameters define the transformation between the robot and the
+    external measurement system.  They are **not** intrinsic to the URDF
+    and must be configured by the user for each calibration setup.
+
+    Args:
+        calibration_type: Optional hint for context-specific defaults.
+            ``"mocap"``, ``"eye_hand"``, or ``None`` (generic).
+        verbose: If True (default), prints descriptions to stderr.
+
+    Returns:
+        dict with default values for all base-frame and EE-frame params::
+
+            {
+                "base_px": 0.0, ...
+                "pEEx_arm_7_link": 0.0, ...
+            }
+    """
+    defaults: dict = {}
+
+    # Base frame defaults — identity (metrology origin = robot base)
+    for name, _, _, _ in _METROLOGY_REGISTRY:
+        if name.startswith("base_"):
+            defaults[name] = 0.0
+
+    # EE frame defaults — identity (sensor/marker frame = last joint)
+    if verbose:
+        if calibration_type == "mocap":
+            target = "arm_7_link"
+            note = (
+                "Mocap calibration: EE measurement frame is the optical marker "
+                "cluster attached to the end-effector (e.g. arm_7_link)."
+            )
+        elif calibration_type == "eye_hand":
+            target = "head_2_link"
+            note = (
+                "Eye-hand calibration: EE measurement frame is the camera "
+                "optical frame (relative to head_2_link) or the chessboard "
+                "attached to the gripper."
+            )
+        else:
+            target = "<frame_name>"
+            note = (
+                "EE measurement frame: typically a marker cluster, camera "
+                "optical frame, or chessboard attached to the end-effector.  "
+                "Replace ``<frame_name>`` with the actual robot joint/link name."
+            )
+        logger.info(
+            "Metrology frame defaults (see frame_settings_doc()):\n"
+            "  Base frame : metrology origin → robot base_link\n"
+            "              default = identity (no offset)\n"
+            "  EE frame   : last joint → measurement frame\n"
+            "              default = identity\n"
+            "  %s\n"
+            "  To customize, pass e.g. %%s = {...} to export_urdf() "
+            "and configure your\n"
+            "  controller or calibration pipeline accordingly.",
+            note,
+            "frame_params",
+        )
+
+    return defaults
 
 
 # ── Public API ───────────────────────────────────────────────────
@@ -371,18 +550,29 @@ def export_urdf(
     output_path: Optional[Union[str, Path]] = None,
     verbose: bool = False,
 ) -> str:
-    """Apply identified/calibrated parameters to a nominal URDF and write the result.
+    """Apply identified/calibrated **joint-level** parameters to a nominal URDF.
+
+    This function **auto-applies** parameters that modify the URDF directly
+    (joint placements, mass, inertias, friction, etc. — see module docstring).
+    It does **not** apply metrology frame parameters (``base_*``, ``pEE*``,
+    ``phiEE*``); those depend on the calibration setup and must be
+    configured by the user — see :func:`frame_settings_doc`.
 
     Args:
         nominal_urdf_path: Path to the nominal (reference) URDF file.
-        params: Dictionary of ``{parameter_name: value}`` pairs as produced by
-            figaroh's identification or calibration routines.
-        output_path: Path for the modified URDF. If ``None`` (default), writes to
-            ``<stem>_modified.urdf`` beside the nominal URDF.
-        verbose: If True, log which params were applied additively vs. absolutely.
+        params: Dictionary of ``{parameter_name: value}`` pairs.
+            **Joint-level params** are applied automatically.
+            **Metrology frame params** (``base_*``, ``pEE*``, ``phiEE*``)
+            are logged and collected for the caller but **not** auto-applied
+            to the URDF — see :func:`frame_settings_doc`.
+        output_path: Path for the modified URDF. If ``None`` (default),
+            writes to ``<stem>_modified.urdf`` beside the nominal URDF.
+        verbose: If True, log which params were applied.
 
     Returns:
-        Absolute path to the modified URDF file.
+        Absolute path to the modified URDF file (joint params applied).  Use
+        :func:`frame_settings_doc` to configure metrology frame params
+        separately.
 
     Raises:
         FileNotFoundError: If *nominal_urdf_path* does not exist.
@@ -401,35 +591,56 @@ def export_urdf(
     tree = ET.parse(str(nominal_path))
     doc = tree.getroot()
 
-    # Apply each parameter
+    # Separate joint params (auto-apply) from frame params (user-defined)
+    frame_params: dict = {}
+
     for name, value in params.items():
         parsed = _parse_param_name(name)
-        if parsed is None:
-            raise ValueError(
-                f"Unknown parameter '{name}'. "
-                f"Recognized categories: joint_placement (d_px_*), "
-                f"joint_offset (offsetRX_*), base_placement (base_*), "
-                f"mass (m_*), friction (fv_*, fs_*), armature (Ia_*), "
-                f"elasticity (k_*), ee_marker (pEE*, phiEE*), "
-                f"inertia (Ixx_*, Iyy_*, Izz_*)."
-            )
-        category, target, idx, is_additive = parsed
-
-        handler = _HANDLERS.get(category)
-        if handler is None:
-            logger.warning("No handler for category '%s' (param='%s')",
-                           category, name)
+        if parsed is not None:
+            category, target, idx, is_additive = parsed
+            handler = _HANDLERS.get(category)
+            if handler is None:
+                logger.warning("No handler for category '%s' (param='%s')",
+                               category, name)
+                continue
+            if verbose:
+                action = "additive" if is_additive else "absolute"
+                logger.info("%s → %s.%s %s (%.4f)", name, category, target,
+                            action, value)
+            handler(doc, target, idx, value, is_additive)
             continue
 
-        if verbose:
-            action = "additive" if is_additive else "absolute"
-            logger.info("%s → %s.%s %s (%.4f)", name, category, target,
-                        action, value)
+        # Check if it's a metrology frame param (base_*, pEE*, phiEE*)
+        frame_parsed = _parse_frame_param_name(name)
+        if frame_parsed is not None:
+            cat, f_target, idx = frame_parsed
+            frame_params[name] = value
+            desc = _FRAME_PARAM_DESCRIPTIONS.get(cat, cat)
+            logger.info(
+                "Metrology frame param '%s' = %.4f — not auto-applied to URDF.  "
+                "This defines: %s  See frame_settings_doc() for defaults and "
+                "explanations.",
+                name, value, desc,
+            )
+            continue
 
-        handler(doc, target, idx, value, is_additive)
+        raise ValueError(
+            f"Unknown parameter '{name}'. "
+            f"Recognized joint-level categories: joint placement (d_px_*), "
+            f"joint offset (offsetRX_*), mass (m_*), friction (fv_*, fs_*), "
+            f"armature (Ia_*), elasticity (k_*), inertia (Ixx_*).  "
+            f"Metrology frame params: base_*, pEE*, phiEE*."
+        )
 
     # Write output
     output_path.parent.mkdir(parents=True, exist_ok=True)
     tree.write(str(output_path), xml_declaration=True, encoding="utf-8")
+
+    if frame_params and verbose:
+        logger.info(
+            "The following metrology frame parameters were **not** applied "
+            "to the URDF:\n  %s\nUse frame_settings_doc() to review defaults.",
+            "  ".join(f"{k}={v}" for k, v in frame_params.items()),
+        )
 
     return str(output_path.resolve())

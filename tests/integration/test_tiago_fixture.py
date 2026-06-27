@@ -151,12 +151,17 @@ class TestTiagoUrdfExporter:
     def output_path(self, tmp_path):
         return tmp_path / "tiago_modified.urdf"
 
-    def test_export_with_base_params(self, tiago_urdf_path, output_path):
-        """Apply base placement offset to TIAGo and export modified URDF."""
+    def test_export_with_base_params_metrology_only(self, tiago_urdf_path, output_path):
+        """Base_* params are accepted but not auto-applied (metrology-only)."""
         params = {"base_px": 0.01, "base_py": 0.0, "base_pz": 0.0, "base_phiz": 0.0}
         modified = export_urdf(str(tiago_urdf_path), params, output_path=str(output_path))
+        # URDF is exported without auto-applying base params
         assert os.path.exists(modified)
-        assert os.path.getsize(modified) > 50000
+        # FK should match original since base params are metrology-only
+        from figaroh.tools.export_validation import URDFComparison
+        comp = URDFComparison(str(tiago_urdf_path), modified)
+        err = comp.trajectory_errors(n_samples=10)
+        assert err.rmse_position < 1e-10, f"Base params leaked into URDF: {err.rmse_position}"
 
     def test_export_with_joint_offset(self, tiago_urdf_path, output_path):
         """Apply a legacy joint offset to TIAGo arm joint."""
@@ -184,14 +189,13 @@ class TestTiagoUrdfExporter:
         params = {
             "d_px_arm_3_joint": 0.02,
             "d_py_arm_3_joint": 0.01,
-            "base_pz": 0.05,
         }
         modified = export_urdf(str(tiago_urdf_path), params, output_path=str(output_path))
 
         comp = URDFComparison(str(tiago_urdf_path), modified)
         err = comp.trajectory_errors(n_samples=50)
 
-        # Should detect position change from base_pz + d_px/d_py
+        # Should detect position change from d_px/d_py on arm_3_joint
         assert err.rmse_position > 0.001, "Exporter should produce FK difference"
         assert err.rmse_position < 0.5, f"Position error too large: {err.rmse_position}"
 
@@ -273,7 +277,6 @@ class TestTiagoVisualComparison:
         params = {
             "d_px_arm_3_joint": 0.02,
             "d_py_arm_3_joint": 0.01,
-            "base_pz": 0.03,
             "off_arm_3_joint": 0.05,
         }
         modified = export_urdf(str(tiago_urdf_path), params, output_path=str(output))

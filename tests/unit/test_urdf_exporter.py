@@ -99,7 +99,6 @@ class TestURDFExporterNumerical:
             "offsetRX_joint1": 0.25,
             "m_link1": 2.5,
             "fv_joint1": 0.2,
-            "base_pz": 0.1,
         }
 
     def teardown_method(self):
@@ -113,7 +112,7 @@ class TestURDFExporterNumerical:
         modified = export_urdf(self.nominal, self.params, output_path=self.output)
         comp = URDFComparison(self.nominal, modified)
         err = comp.trajectory_errors(n_samples=100)
-        # d_px=0.05 + base_pz=0.1 → combined rmse ≈ sqrt(0.05²+0.1²) ≈ 0.112
+        # d_px=0.05 → rmse ≈ 0.05
         assert err.rmse_position < 0.15, f"RMSE pos too high: {err.rmse_position}"
         assert err.rmse_position > 0.001, "Changes not reflected in FK"
 
@@ -130,7 +129,7 @@ class TestURDFExporterNumerical:
         modified = export_urdf(self.nominal, self.params, output_path=self.output)
         comp = URDFComparison(self.nominal, modified)
         err = comp.trajectory_errors(n_samples=100)
-        # Combined base_pz + d_px + d_phiz: shouldn't exceed ~2× combined
+        # d_px=0.05 + d_phiz=0.1 → shouldn't exceed ~2× combined
         assert err.max_position < 0.3, f"Max pos err excessive: {err.max_position}"
         assert err.max_orientation < 0.3, f"Max orient err excessive: {err.max_orientation}"
 
@@ -272,7 +271,6 @@ class TestURDFExporterVisual:
             "offsetRX_joint1": 0.25,
             "m_link1": 2.5,
             "fv_joint1": 0.2,
-            "base_pz": 0.1,
         }
 
     def teardown_method(self):
