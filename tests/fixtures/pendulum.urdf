@@ -1,0 +1,62 @@
+<?xml version="1.0" ?>
+<!--
+  Inline 2-link planar pendulum URDF for urdf_exporter tests.
+  No mesh files — purely geometric/inertial primitives.
+  Joint1: revolute about Z (shoulder)
+  Joint2: revolute about Z (elbow), offset by 1m along Z from joint1
+-->
+<robot name="pendulum">
+  <link name="world"/>
+
+  <!-- ============================================================ -->
+  <!-- Joint 1: shoulder, attached to world                         -->
+  <!-- ============================================================ -->
+  <joint name="joint1" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="world"/>
+    <child link="link1"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14159" upper="3.14159" effort="100" velocity="10"/>
+    <dynamics damping="0.1" friction="0.01"/>
+  </joint>
+
+  <link name="link1">
+    <inertial>
+      <mass value="1.0"/>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.01"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder length="1.0" radius="0.05"/>
+      </geometry>
+      <origin xyz="0 0 0.5" rpy="1.5708 0 0"/>
+    </visual>
+  </link>
+
+  <!-- ============================================================ -->
+  <!-- Joint 2: elbow, attached to link1                            -->
+  <!-- ============================================================ -->
+  <joint name="joint2" type="revolute">
+    <origin xyz="0 0 1.0" rpy="0 0 0"/>
+    <parent link="link1"/>
+    <child link="link2"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14159" upper="3.14159" effort="50" velocity="10"/>
+    <dynamics damping="0.05"/>
+  </joint>
+
+  <link name="link2">
+    <inertial>
+      <mass value="1.0"/>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.01"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder length="1.0" radius="0.05"/>
+      </geometry>
+      <origin xyz="0 0 0.5" rpy="1.5708 0 0"/>
+    </visual>
+  </link>
+</robot>

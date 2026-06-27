@@ -20,5 +20,7 @@ from . import qrdecomposition
 from . import robotvisualization
 from . import robotcollisions
 from . import robotipopt
+from . import urdf_exporter
+from . import export_validation
 
 __all__ = []
