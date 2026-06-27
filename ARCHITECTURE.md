@@ -1,8 +1,8 @@
 # FIGAROH Architecture Documentation
 
-**Version:** 3.0
-**Date:** June 19, 2026
-**Status:** Backend abstraction functional — identification fully portable, calibration partially portable (model manipulation blocker)
+**Version:** 3.1
+**Date:** June 27, 2026
+**Status:** v0.4.4 released — calibration validation, quality report, URDF export, interactive visualization
 
 ---
 
@@ -66,6 +66,8 @@ FIGAROH (Fast Identification of Geometric And Regressor-based Optimization for H
         │           TOOLS LAYER                     │
         │  Robot  RegressorBuilder  LinearSolver    │
         │  QRDecomposer  CollisionManager           │
+        │  URDFExporter  URDFComparison             │
+        │  ExportValidation  RobotVisualization     │
         └───────────────────┬───────────────────────┘
                             │
                             ▼
@@ -217,6 +219,8 @@ class DynamicsBackend(ABC):
 - `qr_decomposer.py` - QR decomposition for base parameters
 - `robotcollisions.py` - Collision detection and management
 - `load_robot.py` - Multi-backend robot loading
+- `urdf_exporter.py` - Apply calibrated parameters to URDF files
+- `export_validation.py` - FK comparison and interactive viser visualization
 
 **Key Classes:**
 ```python
@@ -251,6 +255,8 @@ User
   │                              │
   │                              ├─► load_data() ──► CalibrationTools
   │                              │
+  │                              ├─► [_load_validation_data(path)]  ← optional
+  │                              │
   │                              ├─► calculate_base_kinematics_regressor()
   │                              │        │
   │                              │        ├─► get frames ──► Robot ──► Backend
@@ -271,11 +277,23 @@ User
   │                              │     │           │
   │                              │     │           ◄── updated poses
   │                              │     │
-  │                              │     └─► residuals = measured - predicted
+  │                              │     └─► residuals via _compute_logmap_residuals()
+  │                              │           (SE3 log-map, geometrically correct)
   │                              │
   │                              └─► optimize(least_squares)
   │                                    │
-  ◄────────────── calibrated parameters ┘
+  ├─► _evaluate_solution() ──────► per-DOF stats, condition number, correlation
+  │                                    │
+  ├─► _compute_validation_metrics()  ← if validation data loaded
+  │     │                              │
+  │     ├─► nominal FK (zeros) ───► calc_updated_fkm() ──► Backend
+  │     ├─► calibrated FK ────────► calc_updated_fkm() ──► Backend
+  │     └─► compare vs ground truth → improvement %
+  │
+  └─► print_quality_report() ────► formatted terminal output
+                                     (convergence, per-DOF residuals,
+                                      condition number, validation,
+                                      param uncertainty, correlations)
 ```
 
 **Workflow (Mermaid Sequence Diagram):**
@@ -538,20 +556,56 @@ def _solve_constrained(A, b) -> x  # with linear constraints
 ```python
 def __init__(robot, config_file, del_list)
 def initialize() -> None
-def solve() -> None  # Main optimization
-def evaluate_solution() -> dict
+def solve() -> None                    # Main optimization + quality report
+def _evaluate_solution(result, ...)    # → dict with per-DOF stats, condition number
+def _compute_per_dof_stats(...)        # → mean, std, RMSE, max, R² per DOF
+def _compute_condition_number(...)     # → cond(J) with well/moderate/ill label
+def _compute_parameter_correlation()   # → pairs with |ρ| > 0.8
+def _load_validation_data(path)        # → load separate held-out measurements
+def _compute_validation_metrics()      # → nominal vs calibrated FK vs ground truth
+def print_quality_report()             # → formatted terminal output
 def plot_results() -> None
-def export_parameters(filename) -> None
 ```
 
-**Cost Function Template:**
+**Cost Function (uses SE3 log-map, geometrically correct):**
 ```python
 @abstractmethod
 def cost_function(var) -> residuals:
     """Robot-specific implementation"""
     PEEe = calc_updated_fkm(model, data, var, q_measured, calib_config)
-    residuals = PEE_measured - PEEe
+    residuals = _compute_logmap_residuals(PEE_measured, PEEe,
+                                          position_frame="body"|"world")
     return apply_measurement_weighting(residuals)
+```
+
+**Validation Data Support:**
+Separate validation measurements can be provided via config (`validation_data_file`)
+or CLI (`--validation-data`). After calibration, FK is computed with both nominal
+(zero params) and calibrated parameters on the validation set, and errors are
+compared against ground truth to measure improvement.
+
+**Quality Report (printed automatically after solve()):**
+```
+  CALIBRATION QUALITY REPORT
+  Convergence: ✓ converged    Iterations: 47    Cost: 0.02345
+  Outliers:     3 / 500 (0.6%)
+  Condition:    42.1 (well-conditioned)
+  Per-DOF Residuals (training set, n=500)
+    DOF        Mean      Std       RMSE      Max       R²
+    X (mm)      0.12     0.85      0.86      3.21     0.9876
+    Y (mm)     -0.34     0.62      0.71      2.45     0.9765
+    Z (mm)      0.08     0.45      0.46      1.89     0.9934
+    rx (deg)    0.002    0.015     0.015     0.034    0.9991
+    ry (deg)   -0.001    0.012     0.012     0.028    0.9987
+    rz (deg)    0.003    0.018     0.018     0.031    0.9989
+  Overall
+    Position RMSE: 0.68 mm    Orientation RMSE: 0.015 deg
+  Validation (separate set, n=100)
+    Metric               Nominal     Calibrated    Improvement
+    Position RMSE        12.34 mm     0.71 mm        94.2% ↓
+    Orientation RMSE      2.15 deg     0.016 deg      99.3% ↓
+  Parameter Uncertainty (top 5)
+  Correlated pairs (|ρ| > 0.8): base_x ↔ pEE_x  ρ = +0.93
 ```
 
 **Calibration Models:**
@@ -563,6 +617,67 @@ def cost_function(var) -> residuals:
 - `calib_params`: List of parameter names to calibrate
 - `base_frame`, `end_frame`: Kinematic chain definition
 - `measurement_file`: Path to calibration data
+- `validation_data_file`: Path to separate validation data (optional)
+- `position_frame`: "body" or "world" — position error reference frame
+
+#### URDF Exporter (`tools/urdf_exporter.py`)
+
+**Key Function:**
+```python
+def export_urdf(
+    urdf_path: str,
+    params: Dict[str, float],
+    output_path: str,
+    verbose: bool = False,
+) -> str:
+    """Apply calibrated joint parameters to a URDF file.
+
+    Handles 12 joint-level categories: xyz offsets, rpy orientations,
+    and joint-axis corrections. Automatically separates metrology
+    frame parameters (base/pEE/phiEE) which are NOT applied to URDF.
+
+    Returns path to the modified URDF.
+    """
+```
+
+**Parameter categories auto-detected via registry:**
+- Joint: `{joint}_x`, `{joint}_y`, `{joint}_z`, `{joint}_rx`, `{joint}_ry`, `{joint}_rz`
+- Axis: `{joint}_ax`, `{joint}_ay`, `{joint}_az`, `{joint}_phix`, `{joint}_phiy`, `{joint}_phiz`
+- Metrology (not applied): `base_`, `pEE`, `phiEE`
+
+#### Export Validation (`tools/export_validation.py`)
+
+**Key Classes:**
+
+```python
+class URDFComparison(nominal_urdf, modified_urdf):
+    """Compare two URDF models via FK + viser visualization."""
+    def fk_consistency_check(n_samples=100, seed=42) -> FkConsistencyResult
+    def static_poses(poses=None) -> List[PoseError]
+    def show_interactive_validation(n_trajectory=50, port=8080)
+    def show_trajectory_animation(n_configs=50, ...)
+    def show_static_grid(poses=None, ...)
+    def show_overlay(server=None, port=8080, ...)
+
+class FkConsistencyResult:
+    """Aggregated FK consistency check."""
+    rmse_position: float         # meters
+    rmse_orientation: float      # radians
+    max_position: float
+    max_orientation: float
+    per_sample: List[PoseDelta]
+```
+
+`show_interactive_validation()` renders a combined viser scene with:
+- Trajectory animation (line-segment path traces, replay button, speed slider)
+- Static pose comparison grid (opacity slider for modified model)
+- Error plots (uplot) — position (mm) and orientation (deg) over the trajectory
+- Pose selector to inspect individual configuration errors
+
+The comparison loads URDFs via `yourdfpy` with a custom filename handler that
+resolves `package://` mesh URIs by searching `ROS_PACKAGE_PATH` and auto-discovered
+`models/` directories. Pre-loaded `yourdfpy.URDF` objects are passed directly to
+`ViserUrdf` to avoid double-loading with the wrong handler.
 
 #### CalibrationTools (`calibration/calibration_tools.py`)
 
@@ -856,6 +971,7 @@ flowchart TD
 flowchart TD
     A[Robot Model URDF] --> B[Load Robot]
     C[Measurement Data q_meas poses_meas] --> D[Load Measurements]
+    V[Validation Data CSV] -.->|optional| VAL[_load_validation_data]
 
     B --> E[Calculate Base Kinematic Regressor]
     D --> E
@@ -866,25 +982,32 @@ flowchart TD
 
     G --> H[Optimization Loop least_squares]
 
-    H --> I[Cost Function residuals]
+    H --> I[Cost Function residuals via SE3 log-map]
 
     I --> J[Update FK with calibration params]
 
     J --> K[Compute Predicted Poses]
 
-    K --> L[Calculate Residuals measured minus predicted]
+    K --> L[Calculate Residuals measured vs predicted geometrically correct log-map]
 
     L --> M{Converged?}
     M -->|No| H
     M -->|Yes| N[Calibrated Parameters]
 
-    N --> O[Evaluate Solution RMSE Std Dev]
+    N --> O[Evaluate Solution per-DOF stats condition number parameter correlation R2]
 
-    O --> P[Save and Visualize]
+    VAL --> Q[Compute Validation Metrics nominal FK vs calibrated FK vs ground truth]
+
+    O --> R[print_quality_report terminal output]
+    Q -->|if validation data| R
+
+    R --> S[Save and Visualize]
 
     style E fill:#4caf50,stroke:#333,stroke-width:2px
     style H fill:#2196f3,stroke:#333,stroke-width:2px
     style J fill:#ff9800,stroke:#333,stroke-width:2px
+    style O fill:#9c27b0,stroke:#333,stroke-width:2px
+    style R fill:#e91e63,stroke:#333,stroke-width:2px
 ```
 
 ---
@@ -1251,12 +1374,16 @@ FIGAROH's architecture achieves simulator independence through a **three-layer d
 - Mature Pinocchio integration as reference implementation
 - "Strangler fig" migration pattern — backward-compatible, opt-in backend routing
 
-**Current State (June 2026):**
+**Current State (v0.4.4, June 2026):**
 - ✅ `DynamicsBackend` interface defined (9 abstract + 9 optional methods)
-- ✅ `PinocchioBackend` implemented (default, 32 tests, numerical correctness verified)
-- ⚠️ `MuJoCoBackend` partially implemented (dynamics work, regressor is placeholder)
+- ✅ `PinocchioBackend` implemented (default, 293 tests, numerical correctness verified)
+- ✅ `MuJoCoBackend` implemented (dynamics, FK, Jacobian; regressor delegates to Pinocchio)
 - ✅ Core algorithm path migrated (identification + calibration route through backend)
-- ❌ Full calibration portability blocked by model manipulation requirement
+- ✅ URDF exporter with 12 joint-level categories + metrology registry
+- ✅ Export validation with interactive viser visualization (trajectory + static + error plots)
+- ✅ Validation data support — ground-truth FK comparison against held-out measurements
+- ✅ Statistical quality report — per-DOF residuals (R²), condition number, parameter correlation
+- ✅ SE3 log-map pose error replaces element-wise RPY subtraction
 - ❌ Genesis / IsaacSim backends not started
 
 **Key Limitation:**
@@ -1267,9 +1394,10 @@ See [Backend Migration Limitations](#backend-migration-limitations) for details 
 long-term paths to resolution.
 
 **Next Steps:**
-- Fix MuJoCo regressor (finite-difference implementation)
-- Cross-backend validation suite (Pinocchio vs MuJoCo)
+- Cross-backend validation suite (Pinocchio vs MuJoCo dynamics consistency)
 - Genesis backend (GPU acceleration for identification)
+- End-to-end example: identification → physical consistency projection → URDF export
+- Inertia ellipsoid / CoM overlay visualization (v0.5)
 - Investigate MuJoCo/Genesis upstream PRs for runtime model mutation support
 
 ---
