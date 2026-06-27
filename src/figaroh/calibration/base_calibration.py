@@ -101,7 +101,9 @@ class BaseCalibration(ABC):
         ...     def cost_function(self, var):
         ...         PEEe = calc_updated_fkm(self.model, self.data, var,
         ...                                self.q_measured, self.calib_config)
-        ...         residuals = self._compute_logmap_residuals(self.PEE_measured, PEEe)
+        ...         # Use body-frame position (or position_frame="world" for world frame)
+        ...         residuals = self._compute_logmap_residuals(
+        ...             self.PEE_measured, PEEe, position_frame="body")
         ...         return self.apply_measurement_weighting(residuals)
         ...
         >>> # Run calibration
@@ -512,19 +514,41 @@ class BaseCalibration(ABC):
         self,
         measured_flat: np.ndarray,
         estimated_flat: np.ndarray,
+        *,
+        position_frame: str = "body",
     ) -> np.ndarray:
         """Compute pose residuals using the SE3 log map for geometric correctness.
 
         Replaces the element-wise ``measured - estimated`` subtraction (which
         treats roll-pitch-yaw angles as a vector space — incorrect) with the
-        proper SE3 error ``log(M_meas⁻¹ · M_est)``.  The result is a 6D twist::
+        proper SE3 error ``log(M_meas⁻¹ · M_est)`` for orientation, and either
+        body-frame or world-frame position error.
 
-            twist = [v, ω]   where
-            v = body-frame position error (m),   ω = angle-axis orientation error (rad)
+        The orientation error is always the **angle-axis vector** from
+        ``log(R_meas^T · R_est)`` — the geodesic on SO(3).  Unlike element-wise
+        RPY subtraction, it has no singularity issues and is a proper metric.
 
-        The angle-axis vector :math:`\\omega` is the geodesic on SO(3) — unlike
-        element-wise RPY subtraction, it has no singularity issues and is a
-        proper metric.
+        The position error can be expressed in two frames:
+
+        ``position_frame="body"`` (default)
+            Position error in the **end-effector body frame**::
+
+                v_body = R_meas^T · (p_est − p_meas)
+
+            This is the right-invariant SE3 error from the log map.  It has the
+            advantage that the same geometric defect produces the same residual
+            regardless of the robot's orientation in the world.  Suitable for
+            full 6D calibration.
+
+        ``position_frame="world"``
+            Position error in the **world (inertial) frame**::
+
+                v_world = p_est − p_meas
+
+            More interpretable ("the EE is 5 mm too far in world X").  The
+            orientation error remains the correct angle-axis metric (not RPY),
+            so the main deficiency of the original RPY subtraction is still
+            fixed.  Suitable when world-frame residuals are preferred.
 
         For **unmeasured DOFs** (e.g., orientation in position-only calibration),
         the estimate's values are used to reconstruct the full SE3 transform.
@@ -536,12 +560,20 @@ class BaseCalibration(ABC):
             measured_flat: Measured PEE array, flat DOF-major order
                 ``(n_meas * n_samples,)``.
             estimated_flat: Estimated PEE array, same format.
+            position_frame: ``"body"`` (default) for body-frame position error
+                from the SE3 log map, or ``"world"`` for world-frame position
+                error.
 
         Returns:
             Flat residual array in the same DOF-major order as the input,
             with geometrically correct SE3 errors.  Can be passed directly
             to :meth:`apply_measurement_weighting`.
         """
+        if position_frame not in ("body", "world"):
+            raise ValueError(
+                f"position_frame must be 'body' or 'world', got '{position_frame}'"
+            )
+
         measurability = np.array(self.calib_config["measurability"], dtype=bool)
         measured_dofs = np.where(measurability)[0]
         unmeasured_dofs = np.where(~measurability)[0]
@@ -577,11 +609,16 @@ class BaseCalibration(ABC):
                     pin.rpy.rpyToMatrix(est_6d[3:6]), est_6d[0:3]
                 )
 
-                # Log map error: body-frame position + angle-axis orientation
+                # Orientation error — always angle-axis from log map
                 delta = M_meas.inverse() * M_est
                 motion = pin.log(delta)
-                se3_errors[marker, :3, s] = motion.linear   # v: body-frame position
                 se3_errors[marker, 3:, s] = motion.angular  # ω: angle-axis orientation
+
+                # Position error — body-frame or world-frame
+                if position_frame == "body":
+                    se3_errors[marker, :3, s] = motion.linear   # v: body-frame
+                else:
+                    se3_errors[marker, :3, s] = est_6d[:3] - meas_6d[:3]  # world-frame
 
         # Select only measured DOF rows, flatten to DOF-major → same shape as input
         return se3_errors[:, measured_dofs, :].flatten("C")
@@ -603,16 +640,19 @@ class BaseCalibration(ABC):
             Using default cost function. Consider implementing robot-specific
             cost function for optimal performance.
 
-        Example implementation:
-            >>> def cost_function(self, var):
-            ...     PEEe = calc_updated_fkm(self.model, self.data, var,
-            ...                            self.q_measured, self.calib_config)
-            ...     raw_residuals = self._compute_logmap_residuals(
-            ...         self.PEE_measured, PEEe)
-            ...     weighted_residuals = self.apply_measurement_weighting(
-            ...         raw_residuals, pos_weight=1000.0, orient_weight=100.0)
-            ...     # Add regularization if needed
-            ...     return weighted_residuals
+        Example implementations:
+
+            Body-frame position (default, geometrically correct):
+                >>> raw_residuals = self._compute_logmap_residuals(
+                ...     self.PEE_measured, PEEe, position_frame="body")
+
+            World-frame position (more interpretable):
+                >>> raw_residuals = self._compute_logmap_residuals(
+                ...     self.PEE_measured, PEEe, position_frame="world")
+
+            Then apply weighting and regularization:
+                >>> weighted_residuals = self.apply_measurement_weighting(
+                ...     raw_residuals, pos_weight=1000.0, orient_weight=100.0)
         """
         import warnings
 
@@ -665,7 +705,8 @@ class BaseCalibration(ABC):
         Example:
             >>> # In derived class cost_function:
             >>> raw_residuals = self._compute_logmap_residuals(
-            ...     self.PEE_measured, PEEe)
+            ...     self.PEE_measured, PEEe,
+            ...     position_frame="body")  # or "world" for world-frame position
             >>> weighted_residuals = self.apply_measurement_weighting(
             ...     raw_residuals, pos_weight=1000.0, orient_weight=100.0)
         """
