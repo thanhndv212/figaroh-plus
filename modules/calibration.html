@@ -75,6 +75,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.plot_errors_distribution"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.plot_errors_distribution()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.plot_joint_configurations"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.plot_joint_configurations()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.plot_results"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.plot_results()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.print_quality_report"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.print_quality_report()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.save_results"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.save_results()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.solve"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.solve()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.solve_optimisation"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.solve_optimisation()</span></code></a></li>
@@ -319,7 +320,9 @@ robot-specific implementations of the cost function.</p>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">cost_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="n">PEEe</span> <span class="o">=</span> <span class="n">calc_updated_fkm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span>
 <span class="gp">... </span>                               <span class="bp">self</span><span class="o">.</span><span class="n">q_measured</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">)</span>
-<span class="gp">... </span>        <span class="n">residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span> <span class="o">-</span> <span class="n">PEEe</span>
+<span class="gp">... </span>        <span class="c1"># Use body-frame position (or position_frame=&quot;world&quot; for world frame)</span>
+<span class="gp">... </span>        <span class="n">residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_logmap_residuals</span><span class="p">(</span>
+<span class="gp">... </span>            <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span><span class="p">,</span> <span class="n">PEEe</span><span class="p">,</span> <span class="n">position_frame</span><span class="o">=</span><span class="s2">&quot;body&quot;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_measurement_weighting</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Run calibration</span>
@@ -371,7 +374,9 @@ If None, uses 1/orientation_std</p></li>
 </dl>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># In derived class cost_function:</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">raw_residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span> <span class="o">-</span> <span class="n">PEEe</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">raw_residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_logmap_residuals</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span><span class="p">,</span> <span class="n">PEEe</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">position_frame</span><span class="o">=</span><span class="s2">&quot;body&quot;</span><span class="p">)</span>  <span class="c1"># or &quot;world&quot; for world-frame position</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">weighted_residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_measurement_weighting</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">raw_residuals</span><span class="p">,</span> <span class="n">pos_weight</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">,</span> <span class="n">orient_weight</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
 </pre></div>
@@ -442,19 +447,26 @@ appropriate weighting and regularization.</p>
 <p>Using default cost function. Consider implementing robot-specific
 cost function for optimal performance.</p>
 </div>
-<dl>
-<dt>Example implementation:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">cost_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">PEEe</span> <span class="o">=</span> <span class="n">calc_updated_fkm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span>
-<span class="gp">... </span>                           <span class="bp">self</span><span class="o">.</span><span class="n">q_measured</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="n">raw_residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span> <span class="o">-</span> <span class="n">PEEe</span>
-<span class="gp">... </span>    <span class="n">weighted_residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_measurement_weighting</span><span class="p">(</span>
-<span class="gp">... </span>        <span class="n">raw_residuals</span><span class="p">,</span> <span class="n">pos_weight</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">,</span> <span class="n">orient_weight</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="c1"># Add regularization if needed</span>
-<span class="gp">... </span>    <span class="k">return</span> <span class="n">weighted_residuals</span>
+<p>Example implementations:</p>
+<blockquote>
+<div><dl>
+<dt>Body-frame position (default, geometrically correct):</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">raw_residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_logmap_residuals</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span><span class="p">,</span> <span class="n">PEEe</span><span class="p">,</span> <span class="n">position_frame</span><span class="o">=</span><span class="s2">&quot;body&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>World-frame position (more interpretable):</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">raw_residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_logmap_residuals</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="bp">self</span><span class="o">.</span><span class="n">PEE_measured</span><span class="p">,</span> <span class="n">PEEe</span><span class="p">,</span> <span class="n">position_frame</span><span class="o">=</span><span class="s2">&quot;world&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>Then apply weighting and regularization:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">weighted_residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_measurement_weighting</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">raw_residuals</span><span class="p">,</span> <span class="n">pos_weight</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">,</span> <span class="n">orient_weight</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd>
 </dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py method">
@@ -749,6 +761,14 @@ plot_3d_poses: 3D pose comparison visualization</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.print_quality_report">
+<span class="sig-name descname"><span class="pre">print_quality_report</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.print_quality_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.print_quality_report" title="Link to this definition"></a></dt>
+<dd><p>Print a formatted calibration quality report to the terminal.</p>
+<p>Reports convergence, per-DOF residual statistics, validation
+metrics (if available), parameter uncertainty, and correlations.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.save_results">
 <span class="sig-name descname"><span class="pre">save_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'results'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.save_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.save_results" title="Link to this definition"></a></dt>
 <dd><p>Save calibration results using unified results manager.</p>
@@ -902,7 +922,7 @@ parameters in format: “{param_type}_{marker_num}”</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.calc_updated_fkm">
-<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">calc_updated_fkm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#calc_updated_fkm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.calc_updated_fkm" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">calc_updated_fkm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#calc_updated_fkm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.calc_updated_fkm" title="Link to this definition"></a></dt>
 <dd><p>Update forward kinematics with world frame transformations.</p>
 <p>Specialized version that explicitly handles transformations between:
 1. World frame to start frame (wMo)
@@ -919,6 +939,8 @@ parameters in format: “{param_type}_{marker_num}”</p>
 - Frames and parameters from update_forward_kinematics()
 - NbMarkers=1 (only supports single marker)</p></li>
 <li><p><strong>verbose</strong> (<em>int</em><em>, </em><em>optional</em>) – Print update info. Defaults to 0.</p></li>
+<li><p><strong>backend</strong> (<em>DynamicsBackend</em><em>, </em><em>optional</em>) – If provided, routes forward kinematics
+calls through the backend abstraction.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -938,7 +960,7 @@ parameters in format: “{param_type}_{marker_num}”</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.calculate_base_kinematics_regressor">
-<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">calculate_base_kinematics_regressor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_qr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#calculate_base_kinematics_regressor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.calculate_base_kinematics_regressor" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">calculate_base_kinematics_regressor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_qr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#calculate_base_kinematics_regressor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.calculate_base_kinematics_regressor" title="Link to this definition"></a></dt>
 <dd><p>Calculate base regressor matrix for calibration parameters.</p>
 <p>Identifies base (identifiable) parameters by:
 1. Computing regressors with random/given configurations
@@ -954,6 +976,8 @@ parameters in format: “{param_type}_{marker_num}”</p>
 - free_flyer: Whether base is floating
 - calib_model: Either “joint_offset” or “full_params”</p></li>
 <li><p><strong>tol_qr</strong> (<em>float</em><em>, </em><em>optional</em>) – QR decomposition tolerance. Defaults to TOL_QR.</p></li>
+<li><p><strong>backend</strong> (<em>DynamicsBackend</em><em>, </em><em>optional</em>) – If provided, forwards backend to
+called functions for backend-aware computation.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -981,7 +1005,7 @@ parameters in format: “{param_type}_{marker_num}”</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.calculate_identifiable_kinematics_model">
-<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">calculate_identifiable_kinematics_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#calculate_identifiable_kinematics_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.calculate_identifiable_kinematics_model" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">calculate_identifiable_kinematics_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#calculate_identifiable_kinematics_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.calculate_identifiable_kinematics_model" title="Link to this definition"></a></dt>
 <dd><p>Calculate identifiable Jacobian and regressor matrices.</p>
 <p>Builds aggregated Jacobian and regressor matrices from either:
 1. Given set of configurations, or
@@ -997,6 +1021,8 @@ parameters in format: “{param_type}_{marker_num}”</p>
 - calibration_index: Number of active DOFs
 - start_frame, end_frame: Frame names
 - calib_model: Model type</p></li>
+<li><p><strong>backend</strong> (<em>DynamicsBackend</em><em>, </em><em>optional</em>) – If provided, routes random configuration
+and forwards backend to called functions.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1021,7 +1047,7 @@ parameters in format: “{param_type}_{marker_num}”</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.calculate_kinematics_model">
-<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">calculate_kinematics_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#calculate_kinematics_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.calculate_kinematics_model" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">calculate_kinematics_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#calculate_kinematics_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.calculate_kinematics_model" title="Link to this definition"></a></dt>
 <dd><p>Calculate Jacobian and kinematic regressor for single configuration.</p>
 <p>Computes frame Jacobian and kinematic regressor matrices for tool frame
 at given joint configuration.</p>
@@ -1032,6 +1058,8 @@ at given joint configuration.</p>
 <li><p><strong>model</strong> (<em>pin.Model</em>) – Robot model</p></li>
 <li><p><strong>data</strong> (<em>pin.Data</em>) – Robot data</p></li>
 <li><p><strong>calib_config</strong> (<em>dict</em>) – Parameters containing “IDX_TOOL” frame index</p></li>
+<li><p><strong>backend</strong> (<em>DynamicsBackend</em><em>, </em><em>optional</em>) – If provided, routes forward kinematics
+and Jacobian calls through the backend abstraction.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1220,7 +1248,7 @@ Prints final parameter dictionary</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.get_rel_jac">
-<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">get_rel_jac</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#get_rel_jac"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.get_rel_jac" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">get_rel_jac</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#get_rel_jac"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.get_rel_jac" title="Link to this definition"></a></dt>
 <dd><p>Calculate relative Jacobian matrix between two frames.</p>
 <p>Computes the difference between Jacobians of end_frame and start_frame,
 giving the differential mapping from joint velocities to relative spatial velocity.</p>
@@ -1232,6 +1260,8 @@ giving the differential mapping from joint velocities to relative spatial veloci
 <li><p><strong>start_frame</strong> (<em>str</em>) – Starting frame name</p></li>
 <li><p><strong>end_frame</strong> (<em>str</em>) – Target frame name</p></li>
 <li><p><strong>q</strong> (<em>ndarray</em>) – Joint configuration vector</p></li>
+<li><p><strong>backend</strong> (<em>DynamicsBackend</em><em>, </em><em>optional</em>) – If provided, routes forward kinematics
+and Jacobian calls through the backend abstraction.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1257,7 +1287,7 @@ giving the differential mapping from joint velocities to relative spatial veloci
 
 <dl class="py function">
 <dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.get_rel_kinreg">
-<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">get_rel_kinreg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#get_rel_kinreg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.get_rel_kinreg" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">get_rel_kinreg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#get_rel_kinreg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.get_rel_kinreg" title="Link to this definition"></a></dt>
 <dd><p>Calculate relative kinematic regressor between frames.</p>
 <p>Computes frame Jacobian-based regressor matrix mapping small joint displacements
 to spatial velocities.</p>
@@ -1269,6 +1299,8 @@ to spatial velocities.</p>
 <li><p><strong>start_frame</strong> (<em>str</em>) – Starting frame name</p></li>
 <li><p><strong>end_frame</strong> (<em>str</em>) – Target frame name</p></li>
 <li><p><strong>q</strong> (<em>ndarray</em>) – Joint configuration vector</p></li>
+<li><p><strong>backend</strong> (<em>DynamicsBackend</em><em>, </em><em>optional</em>) – If provided, routes forward kinematics
+calls through the backend abstraction.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1507,7 +1539,7 @@ the new unified parser.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="figaroh.calibration.calibration_tools.update_forward_kinematics">
-<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">update_forward_kinematics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#update_forward_kinematics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.update_forward_kinematics" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">figaroh.calibration.calibration_tools.</span></span><span class="sig-name descname"><span class="pre">update_forward_kinematics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/calibration_tools.html#update_forward_kinematics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.calibration_tools.update_forward_kinematics" title="Link to this definition"></a></dt>
 <dd><p>Update forward kinematics with calibration parameters.</p>
 <p>Applies geometric and kinematic error parameters to update joint placements
 and compute end-effector poses. Handles:
@@ -1528,6 +1560,8 @@ and compute end-effector poses. Handles:
 - actJoint_idx: Active joint indices
 - measurability: Active DOFs</p></li>
 <li><p><strong>verbose</strong> (<em>int</em><em>, </em><em>optional</em>) – Print update info. Defaults to 0.</p></li>
+<li><p><strong>backend</strong> (<em>DynamicsBackend</em><em>, </em><em>optional</em>) – If provided, routes forward kinematics
+and gravity calls through the backend abstraction.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

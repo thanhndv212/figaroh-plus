@@ -111,7 +111,6 @@
 <span class="sd">- Signal processing and mechanical parameter management</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-
 <span class="c1"># Export public API</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;get_param_from_yaml&quot;</span><span class="p">,</span>
@@ -186,9 +185,7 @@
     <span class="c1"># Optional physical consistency configuration (v0.4.1, default-off)</span>
     <span class="n">physical_consistency</span> <span class="o">=</span> <span class="n">identif_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;physical_consistency&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">physical_consistency</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-        <span class="n">physical_consistency</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">physical_consistency</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">physical_consistency</span> <span class="k">else</span> <span class="kc">None</span>
-        <span class="p">)</span>
+        <span class="n">physical_consistency</span> <span class="o">=</span> <span class="n">physical_consistency</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">physical_consistency</span> <span class="k">else</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">physical_consistency</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;physical_consistency&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">physical_consistency</span>
 
@@ -258,9 +255,7 @@
     <span class="n">_extract_load_params</span><span class="p">(</span><span class="n">identif_config</span><span class="p">)</span>
 
     <span class="c1"># 8. Optional physical consistency configuration (v0.4.1, default-off)</span>
-    <span class="n">physical_consistency</span> <span class="o">=</span> <span class="n">unified_identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;physical_consistency&quot;</span><span class="p">,</span> <span class="p">{}</span>
-    <span class="p">)</span>
+    <span class="n">physical_consistency</span> <span class="o">=</span> <span class="n">unified_identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;physical_consistency&quot;</span><span class="p">,</span> <span class="p">{})</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">physical_consistency</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">physical_consistency</span><span class="p">:</span>
         <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;physical_consistency&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">physical_consistency</span>
 
@@ -292,15 +287,14 @@
     <span class="n">filter_config_</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">filter_config_</span><span class="p">[</span><span class="s2">&quot;cutoff_frequency&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cutoff_freq</span>
     <span class="n">filter_config_</span><span class="p">[</span><span class="s2">&quot;sampling_frequency&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sampling_freq</span>
-    <span class="n">filter_config_</span><span class="p">[</span><span class="s2">&quot;filter_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">signal_processing</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;filter_type&quot;</span><span class="p">,</span> <span class="s2">&quot;butterworth&quot;</span>
-    <span class="p">)</span>
+    <span class="n">filter_config_</span><span class="p">[</span><span class="s2">&quot;filter_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">signal_processing</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;filter_type&quot;</span><span class="p">,</span> <span class="s2">&quot;butterworth&quot;</span><span class="p">)</span>
     <span class="n">filter_config_</span><span class="p">[</span><span class="s2">&quot;differentiation_method&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">signal_processing</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
         <span class="s2">&quot;differentiation_method&quot;</span><span class="p">,</span> <span class="s2">&quot;gradient&quot;</span>
     <span class="p">)</span>
     <span class="n">filter_config_</span><span class="p">[</span><span class="s2">&quot;filter_params&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">signal_processing</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;filter_params&quot;</span><span class="p">,</span> <span class="p">{})</span>
 
     <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;filter_config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filter_config_</span>
+
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_extract_joint_limits</span><span class="p">(</span><span class="n">identif_config</span><span class="p">,</span> <span class="n">joints</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract joint limit parameters.</span>
@@ -329,9 +323,7 @@
     <span class="n">model_components</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model_components&quot;</span><span class="p">,</span> <span class="p">{})</span>
 
     <span class="c1"># External forces and torques</span>
-    <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;is_external_wrench&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;include_external_forces&quot;</span><span class="p">,</span> <span class="kc">False</span>
-    <span class="p">)</span>
+    <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;is_external_wrench&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;include_external_forces&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;is_joint_torques&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;use_joint_torques&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
     <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;external_wrench_offsets&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
         <span class="s2">&quot;external_wrench_offsets&quot;</span><span class="p">,</span> <span class="kc">False</span>
@@ -346,9 +338,7 @@
     <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;has_actuator_inertia&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_components</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
         <span class="s2">&quot;actuator_inertia&quot;</span><span class="p">,</span> <span class="kc">True</span>
     <span class="p">)</span>
-    <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;has_joint_offset&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_components</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;joint_offset&quot;</span><span class="p">,</span> <span class="kc">True</span>
-    <span class="p">)</span>
+    <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;has_joint_offset&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_components</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;joint_offset&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_extract_mechanical_params</span><span class="p">(</span><span class="n">identif_config</span><span class="p">,</span> <span class="n">mechanics</span><span class="p">):</span>
@@ -380,9 +370,7 @@
 <span class="sd">        identif_config (dict): Configuration dictionary to update</span>
 <span class="sd">        coupling (dict): Coupling section from unified config</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;has_coupled_wrist&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coupling</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;has_coupled_wrist&quot;</span><span class="p">,</span> <span class="kc">True</span>
-    <span class="p">)</span>
+    <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;has_coupled_wrist&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coupling</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;has_coupled_wrist&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
     <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;Iam6&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coupling</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Iam6&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;fvm6&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coupling</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fvm6&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;fsm6&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coupling</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fsm6&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -440,9 +428,7 @@
 <span class="sd">            Identification configuration dictionary</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">unified_get_param_from_yaml</span><span class="p">(</span>
-                <span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">,</span> <span class="s2">&quot;identification&quot;</span>
-            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">unified_get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">,</span> <span class="s2">&quot;identification&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="c1"># Fall back to legacy parser if unified parser fails</span>
             <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>

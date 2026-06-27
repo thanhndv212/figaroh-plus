@@ -113,7 +113,7 @@
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robot.Robot">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Robot</span><span class="p">(</span><span class="n">RobotWrapper</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Enhanced Robot class with advanced free-flyer support and visualization utilities.</span>
-<span class="sd">    </span>
+
 <span class="sd">    This class extends RobotWrapper with:</span>
 <span class="sd">    - Sophisticated free-flyer configuration and limits</span>
 <span class="sd">    - Integrated visualization support</span>
@@ -132,7 +132,7 @@
         <span class="n">freeflyer_limits</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize enhanced robot model from URDF.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            robot_urdf: Path to URDF file</span>
 <span class="sd">            package_dirs: Package directories for mesh files</span>
@@ -155,6 +155,9 @@
         <span class="c1"># Set aliases for backward compatibility</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">geom_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">collision_model</span>
 
+        <span class="c1"># Lazy backend for backend-aware computations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="kc">None</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_configure_freeflyer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">freeflyer_ori</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure free-flyer with orientation and limits.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">freeflyer_ori</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -165,22 +168,22 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set free-flyer orientation with validation.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">orientation</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Orientation must be a 3x3 rotation matrix&quot;</span><span class="p">)</span>
-        
+
         <span class="n">joint_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">getJointId</span><span class="p">(</span><span class="s2">&quot;root_joint&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span><span class="p">[</span><span class="n">joint_id</span><span class="p">]</span><span class="o">.</span><span class="n">rotation</span> <span class="o">=</span> <span class="n">orientation</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_freeflyer_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set sophisticated free-flyer limits.&quot;&quot;&quot;</span>
         <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_freeflyer_limits</span>
-        
+
         <span class="c1"># Set position limits (first 3 DOFs)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">lowerPositionLimit</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">lb</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">upperPositionLimit</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">ub</span>
-        
+
         <span class="c1"># Set quaternion limits (next 4 DOFs) - normalized quaternion bounds</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">lowerPositionLimit</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">upperPositionLimit</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
-        
+
         <span class="c1"># Recreate data structure</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">createData</span><span class="p">()</span>
 
@@ -190,22 +193,24 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update free-flyer limits dynamically.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isFext</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Robot does not have a free-flyer joint&quot;</span><span class="p">)</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_freeflyer_limits</span> <span class="o">=</span> <span class="n">limits</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_freeflyer_limits</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="Robot.display_q0">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robot.Robot.display_q0">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">display_q0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visualizer_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">display_q0</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">visualizer_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Enhanced visualization with configuration options.&quot;&quot;&quot;</span>
         <span class="n">visualizer_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_visualizer_class</span><span class="p">(</span><span class="n">visualizer_type</span><span class="p">)</span>
-        
+
         <span class="k">if</span> <span class="n">visualizer_class</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">setVisualizer</span><span class="p">(</span><span class="n">visualizer_class</span><span class="p">())</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">initViewer</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">loadViewerModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot_urdf</span><span class="p">)</span>
-            
+
             <span class="c1"># Display specified configuration or initial configuration</span>
             <span class="n">config</span> <span class="o">=</span> <span class="n">q</span> <span class="k">if</span> <span class="n">q</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">q0</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">config</span><span class="p">)</span></div>
@@ -214,26 +219,26 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_visualizer_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visualizer_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Smart visualizer selection with fallbacks.&quot;&quot;&quot;</span>
         <span class="n">visualizer_map</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s1">&#39;gepetto&#39;</span><span class="p">:</span> <span class="n">GepettoVisualizer</span><span class="p">,</span>
-            <span class="s1">&#39;meshcat&#39;</span><span class="p">:</span> <span class="n">MeshcatVisualizer</span><span class="p">,</span>
-            <span class="s1">&#39;g&#39;</span><span class="p">:</span> <span class="n">GepettoVisualizer</span><span class="p">,</span>
-            <span class="s1">&#39;m&#39;</span><span class="p">:</span> <span class="n">MeshcatVisualizer</span>
+            <span class="s2">&quot;gepetto&quot;</span><span class="p">:</span> <span class="n">GepettoVisualizer</span><span class="p">,</span>
+            <span class="s2">&quot;meshcat&quot;</span><span class="p">:</span> <span class="n">MeshcatVisualizer</span><span class="p">,</span>
+            <span class="s2">&quot;g&quot;</span><span class="p">:</span> <span class="n">GepettoVisualizer</span><span class="p">,</span>
+            <span class="s2">&quot;m&quot;</span><span class="p">:</span> <span class="n">MeshcatVisualizer</span><span class="p">,</span>
         <span class="p">}</span>
-        
+
         <span class="k">if</span> <span class="n">visualizer_type</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">visualizer_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">visualizer_type</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
-        
+
         <span class="c1"># Auto-detect from command line</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">visualizer_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        
+
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="c1"># Enhanced properties with better documentation</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">num_joints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of actuated joints (excluding universe and free-flyer).&quot;&quot;&quot;</span>
-        <span class="n">base_joints</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isFext</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span> <span class="c1"># universe + optional free-flyer</span>
+        <span class="n">base_joints</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isFext</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># universe + optional free-flyer</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">njoints</span> <span class="o">-</span> <span class="n">base_joints</span>
 
     <span class="nd">@property</span>
@@ -247,17 +252,38 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Current free-flyer position limits.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_freeflyer_limits</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backend</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lazily-created DynamicsBackend wrapping this robot&#39;s model.</span>
+
+<span class="sd">        Returns a PinocchioBackend that shares the same pin.Model and pin.Data</span>
+<span class="sd">        as this Robot instance — no URDF re-loading, no model duplication.</span>
+<span class="sd">        Used by RegressorBuilder and other tools to route dynamics computation</span>
+<span class="sd">        through the backend abstraction.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            PinocchioBackend instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">..backends.pinocchio</span><span class="w"> </span><span class="kn">import</span> <span class="n">PinocchioBackend</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="n">PinocchioBackend</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span>
+
 <div class="viewcode-block" id="Robot.get_configuration_bounds">
 <a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.robot.Robot.get_configuration_bounds">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_configuration_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get configuration space bounds with proper handling of quaternions.&quot;&quot;&quot;</span>
-        <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">lowerPositionLimit</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">upperPositionLimit</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        
+        <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">lowerPositionLimit</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">upperPositionLimit</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+        <span class="p">)</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isFext</span><span class="p">:</span>
             <span class="c1"># Ensure quaternion bounds are properly set</span>
             <span class="n">lb</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
             <span class="n">ub</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
-            
+
         <span class="k">return</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span></div>
 
 
@@ -267,28 +293,30 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate if configuration is within bounds and constraints.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nq</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
-            
+
         <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_configuration_bounds</span><span class="p">()</span>
-        
+
         <span class="c1"># Check bounds</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="n">q</span> <span class="o">&gt;=</span> <span class="n">lb</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">q</span> <span class="o">&lt;=</span> <span class="n">ub</span><span class="p">)):</span>
             <span class="k">return</span> <span class="kc">False</span>
-            
+
         <span class="c1"># Check quaternion normalization for free-flyer</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isFext</span><span class="p">:</span>
             <span class="n">quat</span> <span class="o">=</span> <span class="n">q</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">quat</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
                 <span class="k">return</span> <span class="kc">False</span>
-                
+
         <span class="k">return</span> <span class="kc">True</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Enhanced string representation.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Robot(urdf=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">robot_urdf</span><span class="si">}</span><span class="s2">&#39;, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;actuated_joints=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_joints</span><span class="si">}</span><span class="s2">, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;total_dofs=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nv</span><span class="si">}</span><span class="s2">, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;free_flyer=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">isFext</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Robot(urdf=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">robot_urdf</span><span class="si">}</span><span class="s2">&#39;, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;actuated_joints=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_joints</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;total_dofs=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nv</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;free_flyer=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">isFext</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span></div>
 
 
 
@@ -300,52 +328,55 @@
     <span class="n">package_dirs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">loader</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;figaroh&quot;</span><span class="p">,</span>
     <span class="n">enhanced_features</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Robot</span><span class="p">,</span> <span class="n">RobotWrapper</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Factory function to create robots with optional enhanced features.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        robot_urdf: Robot identifier or URDF path</span>
 <span class="sd">        package_dirs: Package directories</span>
 <span class="sd">        loader: Loader type from load_robot.py</span>
 <span class="sd">        enhanced_features: If True, returns Robot class with enhanced features</span>
 <span class="sd">        **kwargs: Additional arguments for loaders</span>
-<span class="sd">        </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        Robot instance (if enhanced_features=True) or RobotWrapper</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">enhanced_features</span> <span class="ow">and</span> <span class="n">loader</span> <span class="o">==</span> <span class="s2">&quot;figaroh&quot;</span><span class="p">:</span>
         <span class="c1"># Use enhanced Robot class</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">.load_robot</span><span class="w"> </span><span class="kn">import</span> <span class="n">_prepare_package_dirs</span><span class="p">,</span> <span class="n">_validate_urdf_exists</span>
-        
-        <span class="n">isFext</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;isFext&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-        <span class="n">robot_pkg</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;robot_pkg&#39;</span><span class="p">)</span>
-        
+
+        <span class="n">isFext</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;isFext&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">robot_pkg</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;robot_pkg&quot;</span><span class="p">)</span>
+
         <span class="n">package_dirs</span> <span class="o">=</span> <span class="n">_prepare_package_dirs</span><span class="p">(</span><span class="n">robot_urdf</span><span class="p">,</span> <span class="n">package_dirs</span><span class="p">,</span> <span class="n">robot_pkg</span><span class="p">)</span>
         <span class="n">_validate_urdf_exists</span><span class="p">(</span><span class="n">robot_urdf</span><span class="p">)</span>
-        
+
         <span class="k">return</span> <span class="n">Robot</span><span class="p">(</span>
-            <span class="n">robot_urdf</span><span class="p">,</span> 
-            <span class="n">package_dirs</span><span class="o">=</span><span class="n">package_dirs</span><span class="p">,</span> 
+            <span class="n">robot_urdf</span><span class="p">,</span>
+            <span class="n">package_dirs</span><span class="o">=</span><span class="n">package_dirs</span><span class="p">,</span>
             <span class="n">isFext</span><span class="o">=</span><span class="n">isFext</span><span class="p">,</span>
-            <span class="n">freeflyer_ori</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;freeflyer_ori&#39;</span><span class="p">),</span>
-            <span class="n">freeflyer_limits</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;freeflyer_limits&#39;</span><span class="p">)</span>
+            <span class="n">freeflyer_ori</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;freeflyer_ori&quot;</span><span class="p">),</span>
+            <span class="n">freeflyer_limits</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;freeflyer_limits&quot;</span><span class="p">),</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># Use load_robot.py for other loaders</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">.load_robot</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_robot</span>
+
         <span class="k">return</span> <span class="n">load_robot</span><span class="p">(</span><span class="n">robot_urdf</span><span class="p">,</span> <span class="n">package_dirs</span><span class="p">,</span> <span class="n">loader</span><span class="o">=</span><span class="n">loader</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
 <span class="c1"># Import utilities from load_robot</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.load_robot</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">load_robot</span><span class="p">,</span>
-    <span class="n">get_available_loaders</span><span class="p">,</span>
-    <span class="n">list_available_robots</span>
-<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.load_robot</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_robot</span><span class="p">,</span> <span class="n">get_available_loaders</span><span class="p">,</span> <span class="n">list_available_robots</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Robot&#39;</span><span class="p">,</span> <span class="s1">&#39;create_robot&#39;</span><span class="p">,</span> <span class="s1">&#39;load_robot&#39;</span><span class="p">,</span> <span class="s1">&#39;get_available_loaders&#39;</span><span class="p">,</span> <span class="s1">&#39;list_available_robots&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;Robot&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;create_robot&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;load_robot&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_available_loaders&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_available_robots&quot;</span><span class="p">,</span>
+<span class="p">]</span>
 </pre></div>
 
            </div>

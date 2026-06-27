@@ -125,7 +125,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.utils.config_parser</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">UnifiedConfigParser</span><span class="p">,</span>
     <span class="n">create_task_config</span><span class="p">,</span>
-    <span class="n">is_unified_config</span>
+    <span class="n">is_unified_config</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.regressor</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">build_regressor_basic</span><span class="p">,</span>
@@ -145,14 +145,14 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">BaseIdentification</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base class for robot dynamic parameter identification.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Provides common functionality for all robots while allowing</span>
 <span class="sd">    robot-specific implementations of key methods.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">config_file</span><span class="o">=</span><span class="s2">&quot;config/robot_config.yaml&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize base identification with robot model and configuration.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            robot: Robot model loaded with FIGAROH</span>
 <span class="sd">            config_file: Path to robot configuration YAML file</span>
@@ -182,15 +182,18 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">tau_noised</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Set default filter configuration, can be overridden in subclasses</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">filter_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;filter_config&quot;</span><span class="p">,</span> <span class="p">{</span>
-            <span class="s2">&quot;differentiation_method&quot;</span><span class="p">:</span> <span class="s2">&quot;gradient&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;filter_params&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;nbutter&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
-                <span class="s2">&quot;f_butter&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-                <span class="s2">&quot;med_fil&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
-                <span class="s2">&quot;f_sample&quot;</span><span class="p">:</span> <span class="mi">100</span>
-            <span class="p">}</span>
-        <span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;filter_config&quot;</span><span class="p">,</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;differentiation_method&quot;</span><span class="p">:</span> <span class="s2">&quot;gradient&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;filter_params&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;nbutter&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+                    <span class="s2">&quot;f_butter&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                    <span class="s2">&quot;med_fil&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+                    <span class="s2">&quot;f_sample&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> initialized&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="BaseIdentification.initialize">
@@ -204,50 +207,59 @@
 
 <div class="viewcode-block" id="BaseIdentification.solve">
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.base_identification.BaseIdentification.solve">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decimate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">decimation_factor</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">zero_tolerance</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
-              <span class="n">plotting</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save_results</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">decimate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">decimation_factor</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">zero_tolerance</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+        <span class="n">plotting</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">save_results</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Main solving method for dynamic parameter identification.</span>
-<span class="sd">        </span>
+
 <span class="sd">        This method implements the complete base parameter identification</span>
 <span class="sd">        workflow including column elimination, optional decimation, QR</span>
 <span class="sd">        decomposition, and quality metric computation.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            decimate (bool): Whether to apply decimation to reduce data size</span>
 <span class="sd">            decimation_factor (int): Factor for signal decimation (default: 10)</span>
 <span class="sd">            zero_tolerance (float): Tolerance for eliminating zero columns</span>
 <span class="sd">            plotting (bool): Whether to generate plots</span>
 <span class="sd">            save_results (bool): Whether to save parameters to file</span>
-<span class="sd">            </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            ndarray: Base parameters phi_base</span>
-<span class="sd">            </span>
+
 <span class="sd">        Raises:</span>
 <span class="sd">            AssertionError: If prerequisites not met (dynamic_regressor, standard_parameter)</span>
 <span class="sd">            ValueError: If data shapes are incompatible</span>
 <span class="sd">            np.linalg.LinAlgError: If QR decomposition fails</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Starting </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> dynamic parameter identification...&quot;</span><span class="p">)</span>
+            <span class="sa">f</span><span class="s2">&quot;Starting </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> dynamic parameter identification...&quot;</span>
+        <span class="p">)</span>
 
         <span class="c1"># Validate prerequisites</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_validate_prerequisites</span><span class="p">()</span>
 
         <span class="c1"># Step 1: Eliminate zero columns</span>
-        <span class="n">regressor_reduced</span><span class="p">,</span> <span class="n">active_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eliminate_zero_columns</span><span class="p">(</span>
-            <span class="n">zero_tolerance</span><span class="p">)</span>
+        <span class="n">regressor_reduced</span><span class="p">,</span> <span class="n">active_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eliminate_zero_columns</span><span class="p">(</span><span class="n">zero_tolerance</span><span class="p">)</span>
 
         <span class="c1"># Step 2: Apply decimation if requested</span>
         <span class="k">if</span> <span class="n">decimate</span><span class="p">:</span>
             <span class="n">tau_processed</span><span class="p">,</span> <span class="n">W_processed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_decimation</span><span class="p">(</span>
-                <span class="n">regressor_reduced</span><span class="p">,</span> <span class="n">decimation_factor</span><span class="p">)</span>
+                <span class="n">regressor_reduced</span><span class="p">,</span> <span class="n">decimation_factor</span>
+            <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">tau_processed</span><span class="p">,</span> <span class="n">W_processed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_undecimated_data</span><span class="p">(</span>
-                <span class="n">regressor_reduced</span><span class="p">)</span>
+                <span class="n">regressor_reduced</span>
+            <span class="p">)</span>
 
         <span class="c1"># Step 3: Calculate base parameters</span>
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_base_parameters</span><span class="p">(</span>
-            <span class="n">tau_processed</span><span class="p">,</span> <span class="n">W_processed</span><span class="p">,</span> <span class="n">active_params</span><span class="p">)</span>
+            <span class="n">tau_processed</span><span class="p">,</span> <span class="n">W_processed</span><span class="p">,</span> <span class="n">active_params</span>
+        <span class="p">)</span>
 
         <span class="c1"># Step 4: Store results and compute quality metrics</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_compute_quality_metrics</span><span class="p">()</span>
@@ -267,10 +279,18 @@
 <div class="viewcode-block" id="BaseIdentification.solve_with_custom_solver">
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.base_identification.BaseIdentification.solve_with_custom_solver">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">solve_with_custom_solver</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;lstsq&#39;</span><span class="p">,</span> <span class="n">regularization</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-        <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">decimate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">decimation_factor</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">zero_tolerance</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
-        <span class="n">plotting</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">save_results</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">solver_kwargs</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">method</span><span class="o">=</span><span class="s2">&quot;lstsq&quot;</span><span class="p">,</span>
+        <span class="n">regularization</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">decimate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">decimation_factor</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">zero_tolerance</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+        <span class="n">plotting</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">save_results</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">solver_kwargs</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Alternative solving method using advanced linear solver.</span>
@@ -309,15 +329,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Starting </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> identification &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;with custom solver...&quot;</span><span class="p">)</span>
+            <span class="sa">f</span><span class="s2">&quot;with custom solver...&quot;</span>
+        <span class="p">)</span>
 
         <span class="c1"># Validate prerequisites</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_validate_prerequisites</span><span class="p">()</span>
 
         <span class="c1"># Step 1: Eliminate zero columns</span>
-        <span class="n">regressor_reduced</span><span class="p">,</span> <span class="n">active_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eliminate_zero_columns</span><span class="p">(</span>
-            <span class="n">zero_tolerance</span>
-        <span class="p">)</span>
+        <span class="n">regressor_reduced</span><span class="p">,</span> <span class="n">active_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eliminate_zero_columns</span><span class="p">(</span><span class="n">zero_tolerance</span><span class="p">)</span>
 
         <span class="c1"># Step 2: Apply decimation if requested</span>
         <span class="k">if</span> <span class="n">decimate</span><span class="p">:</span>
@@ -337,7 +356,7 @@
             <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span>
             <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
             <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">solver_kwargs</span>
+            <span class="o">**</span><span class="n">solver_kwargs</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># # Solve for reduced parameters</span>
@@ -353,13 +372,13 @@
         <span class="c1"># Step 4: Compute base parameters using QR decomposition</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.qrdecomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">double_QR</span>
 
-        <span class="n">W_base</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">base_parameters</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">phi_std</span> <span class="o">=</span> \
-            <span class="n">double_QR</span><span class="p">(</span>
-                <span class="n">tau_processed</span><span class="p">,</span> <span class="n">W_processed</span><span class="p">,</span> <span class="n">active_params</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">standard_parameter</span>
-            <span class="p">)</span>
+        <span class="n">W_base</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">base_parameters</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">phi_std</span> <span class="o">=</span> <span class="n">double_QR</span><span class="p">(</span>
+            <span class="n">tau_processed</span><span class="p">,</span> <span class="n">W_processed</span><span class="p">,</span> <span class="n">active_params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">standard_parameter</span>
+        <span class="p">)</span>
         <span class="n">phi_base</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">W_base</span><span class="p">,</span> <span class="n">tau_processed</span><span class="p">)</span>
-        <span class="n">base_param_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">param</span><span class="p">:</span> <span class="n">phi_base</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">base_parameters</span><span class="p">)}</span>
+        <span class="n">base_param_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">param</span><span class="p">:</span> <span class="n">phi_base</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">base_parameters</span><span class="p">)</span>
+        <span class="p">}</span>
 
         <span class="c1"># Store results</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_regressor_base</span> <span class="o">=</span> <span class="n">W_base</span>
@@ -381,7 +400,7 @@
             <span class="s2">&quot;solver_info&quot;</span><span class="p">:</span> <span class="n">solver</span><span class="o">.</span><span class="n">solver_info</span><span class="p">,</span>
             <span class="s2">&quot;solver_method&quot;</span><span class="p">:</span> <span class="n">method</span><span class="p">,</span>
             <span class="s2">&quot;regularization&quot;</span><span class="p">:</span> <span class="n">regularization</span><span class="p">,</span>
-            <span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="n">alpha</span>
+            <span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="n">alpha</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_store_results</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
@@ -404,14 +423,14 @@
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.base_identification.BaseIdentification.load_param">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_file</span><span class="p">,</span> <span class="n">setting_type</span><span class="o">=</span><span class="s2">&quot;identification&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the identification parameters from the yaml file.</span>
-<span class="sd">        </span>
+
 <span class="sd">        This method supports both legacy YAML format and the new unified</span>
 <span class="sd">        configuration format. It automatically detects the format type</span>
 <span class="sd">        and applies the appropriate parser.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            config_file (str): Path to configuration file (legacy or unified)</span>
-<span class="sd">            setting_type (str): Configuration section to load </span>
+<span class="sd">            setting_type (str): Configuration section to load</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading config from </span><span class="si">{</span><span class="n">config_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -447,10 +466,10 @@
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_trajectory_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load and process CSV data.</span>
-<span class="sd">        </span>
+
 <span class="sd">        This method must be implemented by robot-specific subclasses</span>
 <span class="sd">        to handle their specific data formats and file structures.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple: (timestamps, positions, velocities, torques) as numpy arrays</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -486,8 +505,8 @@
 <div class="viewcode-block" id="BaseIdentification.calculate_full_regressor">
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.base_identification.BaseIdentification.calculate_full_regressor">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">calculate_full_regressor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build regressor matrix, compute pre-identified values of standard </span>
-<span class="sd">        parameters, compute joint torques based on pre-identified standard </span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build regressor matrix, compute pre-identified values of standard</span>
+<span class="sd">        parameters, compute joint torques based on pre-identified standard</span>
 <span class="sd">        parameters.&quot;&quot;&quot;</span>
         <span class="c1"># Build full regressor matrix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_regressor</span> <span class="o">=</span> <span class="n">build_regressor_basic</span><span class="p">(</span>
@@ -545,19 +564,21 @@
         <span class="n">tau_ref</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dynamic_regressor</span><span class="p">,</span> <span class="n">phi_ref</span><span class="p">)</span>
 
         <span class="c1"># filter only active joints</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tau_ref</span> <span class="o">=</span> <span class="n">tau_ref</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;act_idxv&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span><span class="p">)]</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau_ref</span> <span class="o">=</span> <span class="n">tau_ref</span><span class="p">[</span>
+            <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;act_idxv&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span><span class="p">)</span>
+        <span class="p">]</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_apply_filters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">signals</span><span class="p">,</span> <span class="n">nbutter</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">f_butter</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">med_fil</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">f_sample</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply median and lowpass filters to any number of signals.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            *signals: Variable number of signal arrays to filter</span>
 <span class="sd">            nbutter (int): Butterworth filter order (default: 4)</span>
 <span class="sd">            f_butter (float): Cutoff frequency in Hz (default: 2)</span>
 <span class="sd">            med_fil (int): Median filter window size (default: 5)</span>
 <span class="sd">            f_sample (float): Sampling frequency in Hz (default: 100)</span>
-<span class="sd">            </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple: Filtered signals in the same order as input</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -586,8 +607,11 @@
 
                 <span class="c1"># Apply Butterworth lowpass filter</span>
                 <span class="n">sig_filtered</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">filtfilt</span><span class="p">(</span>
-                    <span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">sig_med</span><span class="p">,</span> <span class="n">padtype</span><span class="o">=</span><span class="s2">&quot;odd&quot;</span><span class="p">,</span> 
-                    <span class="n">padlen</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">b1</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">b2</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="n">b1</span><span class="p">,</span>
+                    <span class="n">b2</span><span class="p">,</span>
+                    <span class="n">sig_med</span><span class="p">,</span>
+                    <span class="n">padtype</span><span class="o">=</span><span class="s2">&quot;odd&quot;</span><span class="p">,</span>
+                    <span class="n">padlen</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">b1</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">b2</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span>
                 <span class="p">)</span>
 
             <span class="n">filtered_signals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sig_filtered</span><span class="p">)</span>
@@ -597,25 +621,27 @@
             <span class="k">return</span> <span class="n">filtered_signals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">filtered_signals</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_differentiate_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_vector</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;gradient&#39;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_differentiate_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_vector</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;gradient&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute first derivative of a time series signal.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            time_vector (ndarray): Time stamps corresponding to signal samples</span>
 <span class="sd">            signal (ndarray): Signal to differentiate (1D or 2D array)</span>
 <span class="sd">            method (str): Differentiation method (&#39;gradient&#39;, &#39;forward&#39;, &#39;backward&#39;, &#39;central&#39;)</span>
-<span class="sd">            </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            ndarray: First derivative of the signal with same shape as input</span>
-<span class="sd">            </span>
+
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If time_vector and signal have incompatible shapes</span>
 <span class="sd">            ValueError: If method is not supported</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Validate inputs</span>
         <span class="k">if</span> <span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">time_vector</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time vector length </span><span class="si">{</span><span class="n">time_vector</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
-                           <span class="sa">f</span><span class="s2">&quot;doesn&#39;t match signal length </span><span class="si">{</span><span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Time vector length </span><span class="si">{</span><span class="n">time_vector</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;doesn&#39;t match signal length </span><span class="si">{</span><span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
 
         <span class="c1"># Ensure signal is 2D</span>
         <span class="k">if</span> <span class="n">signal</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -637,23 +663,23 @@
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
             <span class="n">sig_col</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span>
 
-            <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;gradient&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;gradient&quot;</span><span class="p">:</span>
                 <span class="c1"># Use numpy gradient (handles edge cases automatically)</span>
                 <span class="n">derivative</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">sig_col</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
 
-            <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;forward&#39;</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;forward&quot;</span><span class="p">:</span>
                 <span class="c1"># Forward difference: df/dt ≈ (f[i+1] - f[i]) / (t[i+1] - t[i])</span>
                 <span class="n">derivative</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">sig_col</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
                 <span class="c1"># Extrapolate last point</span>
                 <span class="n">derivative</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">derivative</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
 
-            <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;backward&#39;</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;backward&quot;</span><span class="p">:</span>
                 <span class="c1"># Backward difference: df/dt ≈ (f[i] - f[i-1]) / (t[i] - t[i-1])</span>
                 <span class="n">derivative</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">sig_col</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
                 <span class="c1"># Extrapolate first point</span>
                 <span class="n">derivative</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">derivative</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
 
-            <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;central&#39;</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;central&quot;</span><span class="p">:</span>
                 <span class="c1"># Central difference: df/dt ≈ (f[i+1] - f[i-1]) / (t[i+1] - t[i-1])</span>
                 <span class="n">derivative</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">sig_col</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">-</span> <span class="n">sig_col</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
                 <span class="c1"># Handle boundary conditions</span>
@@ -661,8 +687,10 @@
                 <span class="n">derivative</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">sig_col</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">sig_col</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported differentiation method: </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">. &quot;</span>
-                               <span class="sa">f</span><span class="s2">&quot;Use &#39;gradient&#39;, &#39;forward&#39;, &#39;backward&#39;, or &#39;central&#39;&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Unsupported differentiation method: </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Use &#39;gradient&#39;, &#39;forward&#39;, &#39;backward&#39;, or &#39;central&#39;&quot;</span>
+                <span class="p">)</span>
 
         <span class="c1"># Return with original dimensionality</span>
         <span class="k">if</span> <span class="n">squeeze_output</span><span class="p">:</span>
@@ -671,7 +699,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_build_full_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Build full configuration arrays for position, velocity, acceleration.</span>
-<span class="sd">        </span>
+
 <span class="sd">        This method expands the active joint data to full robot configuration</span>
 <span class="sd">        by filling in default values for inactive joints. Uses vectorized</span>
 <span class="sd">        operations for optimal performance.</span>
@@ -691,7 +719,7 @@
         <span class="n">config_data</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">(</span><span class="n">q_active</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">q0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;act_idxq&quot;</span><span class="p">]),</span>
             <span class="p">(</span><span class="n">dq_active</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">v0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;act_idxv&quot;</span><span class="p">]),</span>
-            <span class="p">(</span><span class="n">ddq_active</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">v0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;act_idxv&quot;</span><span class="p">])</span>
+            <span class="p">(</span><span class="n">ddq_active</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">v0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;act_idxv&quot;</span><span class="p">]),</span>
         <span class="p">]</span>
 
         <span class="n">full_configs</span> <span class="o">=</span> <span class="p">[]</span>
@@ -708,11 +736,11 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_truncate_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dict</span><span class="p">,</span> <span class="n">truncate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Truncate data arrays based on provided indices.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            data_dict (dict): Dictionary containing data arrays to truncate</span>
 <span class="sd">            truncate (tuple/list): Truncation indices (start, end) or None for no truncation</span>
-<span class="sd">            </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: Dictionary with truncated data arrays</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -720,7 +748,9 @@
             <span class="k">return</span> <span class="n">data_dict</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">truncate</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">truncate</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Truncate parameter must be a tuple/list of length 2 (start, end)&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Truncate parameter must be a tuple/list of length 2 (start, end)&quot;</span>
+            <span class="p">)</span>
 
         <span class="n">n_i</span><span class="p">,</span> <span class="n">n_f</span> <span class="o">=</span> <span class="n">truncate</span>
         <span class="n">truncated_data</span> <span class="o">=</span> <span class="p">{}</span>
@@ -744,15 +774,15 @@
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.base_identification.BaseIdentification.filter_kinematics_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">filter_kinematics_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply filtering to data with configurable parameters.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            filter_config (dict, optional): Filter configuration with keys:</span>
 <span class="sd">                - differentiation_method: Method for derivative estimation</span>
 <span class="sd">                - filter_params: Parameters for signal filtering</span>
-<span class="sd">                </span>
+
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If required data is missing</span>
-<span class="sd">        &quot;&quot;&quot;</span> 
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Validate required data</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;timestamps&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Timestamps are required for data processing&quot;</span><span class="p">)</span>
@@ -769,7 +799,7 @@
         <span class="n">signal_pipeline</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">(</span><span class="s2">&quot;positions&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">],</span> <span class="kc">None</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;velocities&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;velocities&quot;</span><span class="p">),</span> <span class="s2">&quot;positions&quot;</span><span class="p">),</span>
-            <span class="p">(</span><span class="s2">&quot;accelerations&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;accelerations&quot;</span><span class="p">),</span> <span class="s2">&quot;velocities&quot;</span><span class="p">)</span>
+            <span class="p">(</span><span class="s2">&quot;accelerations&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;accelerations&quot;</span><span class="p">),</span> <span class="s2">&quot;velocities&quot;</span><span class="p">),</span>
         <span class="p">]</span>
 
         <span class="c1"># Process signals through pipeline</span>
@@ -777,19 +807,21 @@
             <span class="k">if</span> <span class="n">signal_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="c1"># Apply filtering to existing data</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span><span class="p">[</span><span class="n">signal_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_filters</span><span class="p">(</span>
-                    <span class="n">signal_data</span><span class="p">,</span> <span class="o">**</span><span class="n">filter_config</span><span class="p">[</span><span class="s1">&#39;filter_params&#39;</span><span class="p">])</span>
+                    <span class="n">signal_data</span><span class="p">,</span> <span class="o">**</span><span class="n">filter_config</span><span class="p">[</span><span class="s2">&quot;filter_params&quot;</span><span class="p">]</span>
+                <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># Estimate missing signal from dependency</span>
                 <span class="k">if</span> <span class="n">dependency</span><span class="p">:</span>
                     <span class="n">dependency_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span><span class="p">[</span><span class="n">dependency</span><span class="p">]</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span><span class="p">[</span><span class="n">signal_name</span><span class="p">]</span> <span class="o">=</span> \
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_differentiate_signal</span><span class="p">(</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span><span class="p">[</span><span class="s2">&quot;timestamps&quot;</span><span class="p">],</span>
-                            <span class="n">dependency_data</span><span class="p">,</span>
-                            <span class="n">method</span><span class="o">=</span><span class="n">filter_config</span><span class="p">[</span><span class="s1">&#39;differentiation_method&#39;</span><span class="p">])</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span><span class="p">[</span><span class="n">signal_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_differentiate_signal</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span><span class="p">[</span><span class="s2">&quot;timestamps&quot;</span><span class="p">],</span>
+                        <span class="n">dependency_data</span><span class="p">,</span>
+                        <span class="n">method</span><span class="o">=</span><span class="n">filter_config</span><span class="p">[</span><span class="s2">&quot;differentiation_method&quot;</span><span class="p">],</span>
+                    <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Cannot process </span><span class="si">{</span><span class="n">signal_name</span><span class="si">}</span><span class="s2">: no data or dependency&quot;</span><span class="p">)</span></div>
+                        <span class="sa">f</span><span class="s2">&quot;Cannot process </span><span class="si">{</span><span class="n">signal_name</span><span class="si">}</span><span class="s2">: no data or dependency&quot;</span>
+                    <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="BaseIdentification.process_torque_data">
@@ -806,45 +838,48 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_prerequisites</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate that required data is available for calculation.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Raises:</span>
 <span class="sd">            AssertionError: If required attributes are not set</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;dynamic_regressor&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_regressor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> \
-               <span class="s2">&quot;Regressor matrix not calculated. &quot;</span> \
-               <span class="s2">&quot;Call calculate_full_regressor() first.&quot;</span>
-        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;standard_parameter&#39;</span><span class="p">)</span> <span class="ow">and</span> \
-               <span class="bp">self</span><span class="o">.</span><span class="n">standard_parameter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> \
-               <span class="s2">&quot;Standard parameters not loaded. &quot;</span> \
-               <span class="s2">&quot;Call calculate_full_regressor() first.&quot;</span>
-        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;processed_data&#39;</span><span class="p">)</span> <span class="ow">and</span> \
-               <span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> \
-               <span class="s2">&quot;Data not processed. Call process_data() first.&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;dynamic_regressor&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_regressor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">),</span> <span class="p">(</span>
+            <span class="s2">&quot;Regressor matrix not calculated. &quot;</span> <span class="s2">&quot;Call calculate_full_regressor() first.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;standard_parameter&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">standard_parameter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">),</span> <span class="p">(</span><span class="s2">&quot;Standard parameters not loaded. &quot;</span> <span class="s2">&quot;Call calculate_full_regressor() first.&quot;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;processed_data&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">),</span> <span class="s2">&quot;Data not processed. Call process_data() first.&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_eliminate_zero_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zero_tolerance</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Eliminate columns with near-zero values from regressor matrix.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            zero_tolerance (float): Tolerance for considering columns as zero</span>
-<span class="sd">            </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple: (regressor_reduced, active_parameters)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">idx_eliminated</span><span class="p">,</span> <span class="n">active_parameters</span> <span class="o">=</span> <span class="n">get_index_eliminate</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_regressor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">standard_parameter</span><span class="p">,</span> <span class="n">tol_e</span><span class="o">=</span><span class="n">zero_tolerance</span>
         <span class="p">)</span>
-        <span class="n">regressor_reduced</span> <span class="o">=</span> <span class="n">build_regressor_reduced</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dynamic_regressor</span><span class="p">,</span> <span class="n">idx_eliminated</span><span class="p">)</span>
+        <span class="n">regressor_reduced</span> <span class="o">=</span> <span class="n">build_regressor_reduced</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_regressor</span><span class="p">,</span> <span class="n">idx_eliminated</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">regressor_reduced</span> <span class="o">=</span> <span class="n">regressor_reduced</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">active_parameters</span> <span class="o">=</span> <span class="n">active_parameters</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">regressor_reduced</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_parameters</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_apply_decimation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">regressor_reduced</span><span class="p">,</span> <span class="n">decimation_factor</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply signal decimation to reduce data size.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            regressor_reduced (ndarray): Reduced regressor matrix</span>
 <span class="sd">            decimation_factor (int): Factor for decimation</span>
-<span class="sd">            </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple: (tau_decimated, regressor_decimated)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -856,8 +891,7 @@
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_joints</span><span class="p">):</span>
             <span class="n">tau_joint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span><span class="p">[</span><span class="s2">&quot;torques&quot;</span><span class="p">][:,</span> <span class="n">i</span><span class="p">]</span>
-            <span class="n">tau_dec</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">decimate</span><span class="p">(</span><span class="n">tau_joint</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">decimation_factor</span><span class="p">,</span>
-                                      <span class="n">zero_phase</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">tau_dec</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">decimate</span><span class="p">(</span><span class="n">tau_joint</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">decimation_factor</span><span class="p">,</span> <span class="n">zero_phase</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">tau_decimated_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tau_dec</span><span class="p">)</span>
 
         <span class="c1"># Concatenate decimated torque data</span>
@@ -867,7 +901,8 @@
 
         <span class="c1"># Decimate regressor matrix</span>
         <span class="n">regressor_decimated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_decimate_regressor_matrix</span><span class="p">(</span>
-            <span class="n">regressor_reduced</span><span class="p">,</span> <span class="n">decimation_factor</span><span class="p">)</span>
+            <span class="n">regressor_reduced</span><span class="p">,</span> <span class="n">decimation_factor</span>
+        <span class="p">)</span>
 
         <span class="c1"># Validate that decimated data is properly aligned</span>
         <span class="k">if</span> <span class="n">tau_decimated</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">regressor_decimated</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
@@ -883,11 +918,11 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_decimate_regressor_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">regressor_reduced</span><span class="p">,</span> <span class="n">decimation_factor</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Decimate the regressor matrix by joints.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            regressor_reduced (ndarray): Reduced regressor matrix</span>
 <span class="sd">            decimation_factor (int): Decimation factor</span>
-<span class="sd">            </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            ndarray: Decimated regressor matrix</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -905,20 +940,21 @@
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">regressor_reduced</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
                 <span class="n">column_data</span> <span class="o">=</span> <span class="n">regressor_reduced</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
                 <span class="n">decimated_column</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">decimate</span><span class="p">(</span>
-                    <span class="n">column_data</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">decimation_factor</span><span class="p">,</span> <span class="n">zero_phase</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">column_data</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">decimation_factor</span><span class="p">,</span> <span class="n">zero_phase</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">)</span>
                 <span class="n">joint_regressor_decimated</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">decimated_column</span><span class="p">)</span>
 
             <span class="c1"># Reconstruct matrix for this joint</span>
-            <span class="n">joint_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">joint_regressor_decimated</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
-                                     <span class="nb">len</span><span class="p">(</span><span class="n">joint_regressor_decimated</span><span class="p">)))</span>
+            <span class="n">joint_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">joint_regressor_decimated</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">len</span><span class="p">(</span><span class="n">joint_regressor_decimated</span><span class="p">))</span>
+            <span class="p">)</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">column</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">joint_regressor_decimated</span><span class="p">):</span>
                 <span class="n">joint_matrix</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">column</span>
             <span class="n">regressor_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">joint_matrix</span><span class="p">)</span>
 
         <span class="c1"># Concatenate all joint matrices</span>
         <span class="n">total_rows</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">matrix</span> <span class="ow">in</span> <span class="n">regressor_list</span><span class="p">)</span>
-        <span class="n">regressor_decimated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">total_rows</span><span class="p">,</span>
-                                        <span class="n">regressor_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">regressor_decimated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">total_rows</span><span class="p">,</span> <span class="n">regressor_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
 
         <span class="n">current_row</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">matrix</span> <span class="ow">in</span> <span class="n">regressor_list</span><span class="p">:</span>
@@ -930,29 +966,30 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_undecimated_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">regressor_reduced</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare data without decimation.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            regressor_reduced (ndarray): Reduced regressor matrix</span>
-<span class="sd">            </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple: (tau_flattened, regressor_reduced)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">tau_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span><span class="p">[</span><span class="s2">&quot;torques&quot;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">tau_data</span><span class="p">,</span> <span class="s1">&#39;flatten&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">tau_data</span><span class="p">,</span> <span class="s2">&quot;flatten&quot;</span><span class="p">):</span>
             <span class="n">tau_flattened</span> <span class="o">=</span> <span class="n">tau_data</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">tau_flattened</span> <span class="o">=</span> <span class="n">tau_data</span>
         <span class="k">return</span> <span class="n">tau_flattened</span><span class="p">,</span> <span class="n">regressor_reduced</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_base_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tau_processed</span><span class="p">,</span> <span class="n">regressor_processed</span><span class="p">,</span>
-                                   <span class="n">active_parameters</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_base_parameters</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">tau_processed</span><span class="p">,</span> <span class="n">regressor_processed</span><span class="p">,</span> <span class="n">active_parameters</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate base parameters using QR decomposition.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            tau_processed (ndarray): Processed torque data</span>
 <span class="sd">            regressor_processed (ndarray): Processed regressor matrix</span>
 <span class="sd">            active_parameters (dict): Active parameter dictionary</span>
-<span class="sd">            </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: Results from QR decomposition</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -960,11 +997,14 @@
 
         <span class="c1"># Perform QR decomposition using explicit decomposer to access M matrix</span>
         <span class="n">decomposer</span> <span class="o">=</span> <span class="n">QRDecomposer</span><span class="p">(</span><span class="n">tolerance</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;tol_qr&quot;</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">))</span>
-        <span class="n">W_base</span><span class="p">,</span> <span class="n">base_param_dict</span><span class="p">,</span> <span class="n">base_parameters</span><span class="p">,</span> <span class="n">phi_base</span><span class="p">,</span> <span class="n">phi_std</span> <span class="o">=</span> \
+        <span class="n">W_base</span><span class="p">,</span> <span class="n">base_param_dict</span><span class="p">,</span> <span class="n">base_parameters</span><span class="p">,</span> <span class="n">phi_base</span><span class="p">,</span> <span class="n">phi_std</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">decomposer</span><span class="o">.</span><span class="n">double_decomposition</span><span class="p">(</span>
-                <span class="n">tau_processed</span><span class="p">,</span> <span class="n">regressor_processed</span><span class="p">,</span> <span class="n">active_parameters</span><span class="p">,</span>
+                <span class="n">tau_processed</span><span class="p">,</span>
+                <span class="n">regressor_processed</span><span class="p">,</span>
+                <span class="n">active_parameters</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">standard_parameter</span><span class="p">,</span>
             <span class="p">)</span>
+        <span class="p">)</span>
 
         <span class="c1"># Store M matrix and params_r for optional reconstruction</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_M_matrix</span> <span class="o">=</span> <span class="n">decomposer</span><span class="o">.</span><span class="n">get_M</span><span class="p">()</span>
@@ -995,7 +1035,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_compute_quality_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute quality metrics for the identification.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Side Effects:</span>
 <span class="sd">            - Updates self.rms_error</span>
 <span class="sd">            - Updates self.correlation</span>
@@ -1003,14 +1043,15 @@
         <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.identification.identification_tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">relative_stdev</span>
 
         <span class="c1"># Calculate quality metrics</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">std_relative</span> <span class="o">=</span> <span class="n">relative_stdev</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dynamic_regressor_base</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi_base</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_noised</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std_relative</span> <span class="o">=</span> <span class="n">relative_stdev</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_regressor_base</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi_base</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_noised</span>
+        <span class="p">)</span>
         <span class="n">residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_noised</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_identif</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rms_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residuals</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tau_noised</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tau_identif</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">correlation_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tau_noised</span><span class="p">,</span>
-                                                 <span class="bp">self</span><span class="o">.</span><span class="n">tau_identif</span><span class="p">)</span>
+                <span class="n">correlation_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tau_noised</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_identif</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">correlation</span> <span class="o">=</span> <span class="n">correlation_matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
             <span class="k">except</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">correlation</span> <span class="o">=</span> <span class="mf">1.0</span>
@@ -1019,7 +1060,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_store_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identif_results</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Store calculation results in instance attributes.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            identif_results (dict): Results from base parameter calculation</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1036,8 +1077,8 @@
             <span class="s2">&quot;std dev of estimated param&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">std_relative</span><span class="p">,</span>
             <span class="s2">&quot;rmse norm (N/m)&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">rms_error</span><span class="p">,</span>
             <span class="s2">&quot;num samples&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span><span class="p">,</span>
-            <span class="s2">&quot;identification config&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;identif_config&#39;</span><span class="p">,</span> <span class="p">{}),</span>
-            <span class="s2">&quot;task type&quot;</span><span class="p">:</span> <span class="s2">&quot;identification&quot;</span>
+            <span class="s2">&quot;identification config&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;identif_config&quot;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="s2">&quot;task type&quot;</span><span class="p">:</span> <span class="s2">&quot;identification&quot;</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="c1"># Optional physical-consistency post-processing (default-off)</span>
@@ -1052,14 +1093,19 @@
 
             <span class="c1"># Get robot name from class or model</span>
             <span class="n">robot_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
-                <span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;robot_name&#39;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="s2">&quot;robot_name&quot;</span><span class="p">,</span>
                 <span class="nb">getattr</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
-                        <span class="s1">&#39;identification&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;identification&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
 
             <span class="c1"># Initialize results manager for identification task</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">results_manager</span> <span class="o">=</span> <span class="n">ResultsManager</span><span class="p">(</span><span class="s1">&#39;identification&#39;</span><span class="p">,</span> <span class="n">robot_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results_manager</span> <span class="o">=</span> <span class="n">ResultsManager</span><span class="p">(</span>
+                <span class="s2">&quot;identification&quot;</span><span class="p">,</span> <span class="n">robot_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span>
+            <span class="p">)</span>
 
         <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ResultsManager not available: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1067,9 +1113,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_apply_physical_consistency_if_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identif_results</span><span class="p">):</span>
         <span class="n">pc_cfg</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">raw_cfg</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;identif_config&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-            <span class="s2">&quot;physical_consistency&quot;</span><span class="p">,</span> <span class="p">{}</span>
-        <span class="p">)</span>
+        <span class="n">raw_cfg</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;identif_config&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;physical_consistency&quot;</span><span class="p">,</span> <span class="p">{})</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raw_cfg</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="n">pc_cfg</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">raw_cfg</span><span class="p">)</span>
 
@@ -1107,8 +1151,18 @@
             <span class="n">w_h</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">manual</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
             <span class="n">w_sigma</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">manual</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Sigma&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
             <span class="n">proj_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-                <span class="p">[</span><span class="n">w_m</span><span class="p">,</span> <span class="n">w_h</span><span class="p">,</span> <span class="n">w_h</span><span class="p">,</span> <span class="n">w_h</span><span class="p">,</span>
-                 <span class="n">w_sigma</span><span class="p">,</span> <span class="n">w_sigma</span><span class="p">,</span> <span class="n">w_sigma</span><span class="p">,</span> <span class="n">w_sigma</span><span class="p">,</span> <span class="n">w_sigma</span><span class="p">,</span> <span class="n">w_sigma</span><span class="p">],</span>
+                <span class="p">[</span>
+                    <span class="n">w_m</span><span class="p">,</span>
+                    <span class="n">w_h</span><span class="p">,</span>
+                    <span class="n">w_h</span><span class="p">,</span>
+                    <span class="n">w_h</span><span class="p">,</span>
+                    <span class="n">w_sigma</span><span class="p">,</span>
+                    <span class="n">w_sigma</span><span class="p">,</span>
+                    <span class="n">w_sigma</span><span class="p">,</span>
+                    <span class="n">w_sigma</span><span class="p">,</span>
+                    <span class="n">w_sigma</span><span class="p">,</span>
+                    <span class="n">w_sigma</span><span class="p">,</span>
+                <span class="p">],</span>
                 <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
             <span class="p">)</span>
 
@@ -1120,9 +1174,7 @@
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">identif_results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;parameter_dict&quot;</span><span class="p">),</span> <span class="nb">dict</span><span class="p">):</span>
                 <span class="n">source_label</span> <span class="o">=</span> <span class="s2">&quot;identif_results.parameter_dict&quot;</span>
                 <span class="n">parameter_dict</span> <span class="o">=</span> <span class="n">identif_results</span><span class="p">[</span><span class="s2">&quot;parameter_dict&quot;</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span>
-                <span class="n">identif_results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;standard_parameter_dict&quot;</span><span class="p">),</span> <span class="nb">dict</span>
-            <span class="p">):</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">identif_results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;standard_parameter_dict&quot;</span><span class="p">),</span> <span class="nb">dict</span><span class="p">):</span>
                 <span class="n">source_label</span> <span class="o">=</span> <span class="s2">&quot;identif_results.standard_parameter_dict&quot;</span>
                 <span class="n">parameter_dict</span> <span class="o">=</span> <span class="n">identif_results</span><span class="p">[</span><span class="s2">&quot;standard_parameter_dict&quot;</span><span class="p">]</span>
 
@@ -1372,13 +1424,12 @@
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.base_identification.BaseIdentification.plot_results">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot identification results using unified results manager.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;result&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;result&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No identification results to plot. Run solve() first.&quot;</span><span class="p">)</span>
             <span class="k">return</span>
 
         <span class="c1"># Use pre-initialized results manager if available</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;results_manager&#39;</span><span class="p">)</span> <span class="ow">and</span> \
-           <span class="bp">self</span><span class="o">.</span><span class="n">results_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;results_manager&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="c1"># Plot using unified manager with self.result data</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">results_manager</span><span class="o">.</span><span class="n">plot_identification_results</span><span class="p">()</span>
@@ -1395,8 +1446,7 @@
             <span class="c1"># Extract data from self.result dictionary</span>
             <span class="n">tau_measured</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;torque processed&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]))</span>
             <span class="n">tau_identified</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;torque estimated&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]))</span>
-            <span class="n">parameter_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;base parameters values&quot;</span><span class="p">,</span>
-                                               <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]))</span>
+            <span class="n">parameter_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;base parameters values&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]))</span>
 
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau_measured</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau_identified</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No torque data available for plotting&quot;</span><span class="p">)</span>
@@ -1407,19 +1457,23 @@
             <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tau_measured</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Measured (with noise)&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tau_identified</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Identified&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Sample&#39;</span><span class="p">)</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Torque (Nm)&#39;</span><span class="p">)</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1"> Torque Comparison&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Sample&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Torque (Nm)&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> Torque Comparison&quot;</span><span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
 
             <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameter_values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">parameter_values</span><span class="p">)),</span> <span class="n">parameter_values</span><span class="p">,</span>
-                        <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Base Parameters&quot;</span><span class="p">)</span>
-                <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Parameter Index&#39;</span><span class="p">)</span>
-                <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Parameter Value&#39;</span><span class="p">)</span>
-                <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Identified Base Parameters&#39;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span>
+                    <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">parameter_values</span><span class="p">)),</span>
+                    <span class="n">parameter_values</span><span class="p">,</span>
+                    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Base Parameters&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Parameter Index&quot;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Parameter Value&quot;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Identified Base Parameters&quot;</span><span class="p">)</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
 
@@ -1436,18 +1490,16 @@
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.base_identification.BaseIdentification.save_results">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;results&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save identification results using unified results manager.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;result&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;result&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No identification results to save. Run solve() first.&quot;</span><span class="p">)</span>
             <span class="k">return</span>
 
         <span class="c1"># Use pre-initialized results manager if available</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;results_manager&#39;</span><span class="p">)</span> <span class="ow">and</span> \
-           <span class="bp">self</span><span class="o">.</span><span class="n">results_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;results_manager&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="c1"># Save using unified manager with self.result data</span>
                 <span class="n">saved_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_manager</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span>
-                    <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span>
-                    <span class="n">save_formats</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;yaml&#39;</span><span class="p">,</span> <span class="s1">&#39;csv&#39;</span><span class="p">,</span> <span class="s1">&#39;npz&#39;</span><span class="p">]</span>
+                    <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">save_formats</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;yaml&quot;</span><span class="p">,</span> <span class="s2">&quot;csv&quot;</span><span class="p">,</span> <span class="s2">&quot;npz&quot;</span><span class="p">]</span>
                 <span class="p">)</span>
 
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Identification results saved using ResultsManager&quot;</span><span class="p">)</span>
@@ -1469,31 +1521,29 @@
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
             <span class="c1"># Extract data from self.result dictionary</span>
-            <span class="n">parameter_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;base parameters values&quot;</span><span class="p">,</span>
-                                               <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]))</span>
+            <span class="n">parameter_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;base parameters values&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]))</span>
             <span class="n">parameter_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;base parameters names&quot;</span><span class="p">,</span> <span class="p">[])</span>
             <span class="n">condition_number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;condition number&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
             <span class="n">rmse_norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rmse norm (N/m)&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="n">std_dev_param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;std dev of estimated param&quot;</span><span class="p">,</span>
-                                            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]))</span>
+            <span class="n">std_dev_param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;std dev of estimated param&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]))</span>
 
             <span class="n">results_dict</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s1">&#39;base_parameters&#39;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">&quot;base_parameters&quot;</span><span class="p">:</span> <span class="p">(</span>
                     <span class="n">parameter_values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">parameter_values</span><span class="p">,</span> <span class="s1">&#39;tolist&#39;</span><span class="p">)</span>
-                    <span class="k">else</span> <span class="n">parameter_values</span><span class="p">),</span>
-                <span class="s1">&#39;parameter_names&#39;</span><span class="p">:</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parameter_names</span><span class="p">],</span>
-                <span class="s1">&#39;condition_number&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">condition_number</span><span class="p">),</span>
-                <span class="s1">&#39;rmse_norm&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">rmse_norm</span><span class="p">),</span>
-                <span class="s1">&#39;standard_deviation&#39;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">parameter_values</span><span class="p">,</span> <span class="s2">&quot;tolist&quot;</span><span class="p">)</span>
+                    <span class="k">else</span> <span class="n">parameter_values</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;parameter_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parameter_names</span><span class="p">],</span>
+                <span class="s2">&quot;condition_number&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">condition_number</span><span class="p">),</span>
+                <span class="s2">&quot;rmse_norm&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">rmse_norm</span><span class="p">),</span>
+                <span class="s2">&quot;standard_deviation&quot;</span><span class="p">:</span> <span class="p">(</span>
                     <span class="n">std_dev_param</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">std_dev_param</span><span class="p">,</span> <span class="s1">&#39;tolist&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">std_dev_param</span><span class="p">,</span> <span class="s2">&quot;tolist&quot;</span><span class="p">)</span>
                     <span class="k">else</span> <span class="n">std_dev_param</span>
-                <span class="p">)</span>
+                <span class="p">),</span>
             <span class="p">}</span>
 
-            <span class="n">robot_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
-                <span class="s1">&#39;identification&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">robot_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;identification&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
             <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">)</span>
             <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">robot_name</span><span class="si">}</span><span class="s2">_identification_results_</span><span class="si">{</span><span class="n">timestamp</span><span class="si">}</span><span class="s2">.yaml&quot;</span>
 

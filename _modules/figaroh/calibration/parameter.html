@@ -203,9 +203,7 @@
                     <span class="o">+</span> <span class="n">name</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">offset_param</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">shortname</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;JointModel&quot;</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">name</span>
-                <span class="p">)</span>
+                <span class="n">offset_param</span> <span class="o">=</span> <span class="n">shortname</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;JointModel&quot;</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">name</span>
             <span class="n">joint_off</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">offset_param</span><span class="p">)</span>
 
     <span class="n">phi_jo</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">joint_off</span><span class="p">)</span>  <span class="c1"># default zero values</span>

@@ -365,20 +365,22 @@ parameters using analytical relationships between them.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="figaroh.identification.identification_tools.calculate_first_second_order_differentiation">
-<span class="sig-prename descclassname"><span class="pre">figaroh.identification.identification_tools.</span></span><span class="sig-name descname"><span class="pre">calculate_first_second_order_differentiation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identif_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/identification_tools.html#calculate_first_second_order_differentiation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.identification_tools.calculate_first_second_order_differentiation" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">figaroh.identification.identification_tools.</span></span><span class="sig-name descname"><span class="pre">calculate_first_second_order_differentiation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identif_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/identification/identification_tools.html#calculate_first_second_order_differentiation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.identification.identification_tools.calculate_first_second_order_differentiation" title="Link to this definition"></a></dt>
 <dd><p>Calculate joint velocities and accelerations from positions.</p>
 <p>Computes first and second order derivatives of joint positions using central
 differences. Handles both constant and variable timesteps.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model</strong> (<em>pin.Model</em>) – Robot model</p></li>
+<li><p><strong>model</strong> (<em>pin.Model</em>) – Robot model (used when backend is None)</p></li>
 <li><p><strong>q</strong> (<em>ndarray</em>) – Joint position matrix (n_samples, n_joints)</p></li>
 <li><p><strong>param</strong> (<em>dict</em>) – Parameters containing:
 - is_joint_torques: Whether using joint torques
 - is_external_wrench: Whether using external wrench
 - ts: Timestep if constant</p></li>
 <li><p><strong>dt</strong> (<em>ndarray</em><em>, </em><em>optional</em>) – Variable timesteps between samples.</p></li>
+<li><p><strong>backend</strong> (<em>DynamicsBackend</em><em>, </em><em>optional</em>) – If provided, uses backend.compute_difference
+instead of pin.difference for Lie group operations.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

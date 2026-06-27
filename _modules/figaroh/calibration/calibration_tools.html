@@ -274,7 +274,7 @@
 
 <div class="viewcode-block" id="get_rel_kinreg">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.get_rel_kinreg">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_rel_kinreg</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_rel_kinreg</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate relative kinematic regressor between frames.</span>
 
 <span class="sd">    Computes frame Jacobian-based regressor matrix mapping small joint displacements</span>
@@ -286,13 +286,18 @@
 <span class="sd">        start_frame (str): Starting frame name</span>
 <span class="sd">        end_frame (str): Target frame name</span>
 <span class="sd">        q (ndarray): Joint configuration vector</span>
+<span class="sd">        backend (DynamicsBackend, optional): If provided, routes forward kinematics</span>
+<span class="sd">            calls through the backend abstraction.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        ndarray: (6, 6n) regressor matrix for n joints</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">sup_joints</span> <span class="o">=</span> <span class="n">get_sup_joints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">)</span>
-    <span class="n">pin</span><span class="o">.</span><span class="n">framesForwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
-    <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">compute_forward_kinematics</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pin</span><span class="o">.</span><span class="n">framesForwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+        <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
     <span class="n">kinreg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span> <span class="o">*</span> <span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">njoints</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)))</span>
     <span class="n">frame</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">getFrameId</span><span class="p">(</span><span class="n">end_frame</span><span class="p">)]</span>
     <span class="n">oMf</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">oMi</span><span class="p">[</span><span class="n">frame</span><span class="o">.</span><span class="n">parent</span><span class="p">]</span> <span class="o">*</span> <span class="n">frame</span><span class="o">.</span><span class="n">placement</span>
@@ -307,7 +312,7 @@
 
 <div class="viewcode-block" id="get_rel_jac">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.get_rel_jac">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_rel_jac</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_rel_jac</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate relative Jacobian matrix between two frames.</span>
 
 <span class="sd">    Computes the difference between Jacobians of end_frame and start_frame,</span>
@@ -319,6 +324,8 @@
 <span class="sd">        start_frame (str): Starting frame name</span>
 <span class="sd">        end_frame (str): Target frame name</span>
 <span class="sd">        q (ndarray): Joint configuration vector</span>
+<span class="sd">        backend (DynamicsBackend, optional): If provided, routes forward kinematics</span>
+<span class="sd">            and Jacobian calls through the backend abstraction.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        ndarray: (6, n) relative Jacobian matrix where:</span>
@@ -329,18 +336,21 @@
 <span class="sd">    Note:</span>
 <span class="sd">        Updates forward kinematics before computing Jacobians</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">start_frameId</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getFrameId</span><span class="p">(</span><span class="n">start_frame</span><span class="p">)</span>
-    <span class="n">end_frameId</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getFrameId</span><span class="p">(</span><span class="n">end_frame</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># compute_jacobian updates FK internally</span>
+        <span class="n">J_start</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">compute_jacobian</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">)</span>
+        <span class="n">J_end</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">compute_jacobian</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">start_frameId</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getFrameId</span><span class="p">(</span><span class="n">start_frame</span><span class="p">)</span>
+        <span class="n">end_frameId</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getFrameId</span><span class="p">(</span><span class="n">end_frame</span><span class="p">)</span>
 
-    <span class="c1"># update frameForwardKinematics and updateFramePlacements</span>
-    <span class="n">pin</span><span class="o">.</span><span class="n">framesForwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
-    <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="c1"># update frameForwardKinematics and updateFramePlacements</span>
+        <span class="n">pin</span><span class="o">.</span><span class="n">framesForwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+        <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 
-    <span class="c1"># relative Jacobian</span>
-    <span class="n">J_start</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeFrameJacobian</span><span class="p">(</span>
-        <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">start_frameId</span><span class="p">,</span> <span class="n">pin</span><span class="o">.</span><span class="n">LOCAL</span>
-    <span class="p">)</span>
-    <span class="n">J_end</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeFrameJacobian</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">end_frameId</span><span class="p">,</span> <span class="n">pin</span><span class="o">.</span><span class="n">LOCAL</span><span class="p">)</span>
+        <span class="c1"># relative Jacobian</span>
+        <span class="n">J_start</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeFrameJacobian</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">start_frameId</span><span class="p">,</span> <span class="n">pin</span><span class="o">.</span><span class="n">LOCAL</span><span class="p">)</span>
+        <span class="n">J_end</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeFrameJacobian</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">end_frameId</span><span class="p">,</span> <span class="n">pin</span><span class="o">.</span><span class="n">LOCAL</span><span class="p">)</span>
     <span class="n">J_rel</span> <span class="o">=</span> <span class="n">J_end</span> <span class="o">-</span> <span class="n">J_start</span>
     <span class="k">return</span> <span class="n">J_rel</span></div>
 
@@ -386,7 +396,9 @@
 
 <div class="viewcode-block" id="update_forward_kinematics">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.update_forward_kinematics">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">update_forward_kinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">update_forward_kinematics</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update forward kinematics with calibration parameters.</span>
 
 <span class="sd">    Applies geometric and kinematic error parameters to update joint placements</span>
@@ -407,6 +419,8 @@
 <span class="sd">            - actJoint_idx: Active joint indices</span>
 <span class="sd">            - measurability: Active DOFs</span>
 <span class="sd">        verbose (int, optional): Print update info. Defaults to 0.</span>
+<span class="sd">        backend (DynamicsBackend, optional): If provided, routes forward kinematics</span>
+<span class="sd">            and gravity calls through the backend abstraction.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        ndarray: Flattened end-effector measurements for all samples</span>
@@ -507,13 +521,19 @@
     <span class="c1"># get transform</span>
     <span class="n">q_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]):</span>
-        <span class="n">pin</span><span class="o">.</span><span class="n">framesForwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
-        <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">compute_forward_kinematics</span><span class="p">(</span><span class="n">q_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pin</span><span class="o">.</span><span class="n">framesForwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
+            <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
         <span class="c1"># update model.jointPlacements with joint elastic error</span>
         <span class="k">if</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;non_geom&quot;</span><span class="p">]:</span>
-            <span class="n">tau</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeGeneralizedGravity</span><span class="p">(</span>
-                <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
-            <span class="p">)</span>  <span class="c1"># vector size of 32 = nq &lt; njoints</span>
+            <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">tau</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">compute_gravity_vector</span><span class="p">(</span><span class="n">q_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tau</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeGeneralizedGravity</span><span class="p">(</span>
+                    <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
+                <span class="p">)</span>  <span class="c1"># vector size of 32 = nq &lt; njoints</span>
             <span class="c1"># update xyz_rpy with joint elastic error</span>
             <span class="k">for</span> <span class="n">j_id</span> <span class="ow">in</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">]:</span>
                 <span class="n">xyz_rpy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
@@ -570,9 +590,7 @@
 
     <span class="n">PEE</span> <span class="o">=</span> <span class="n">PEE</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">)</span>
     <span class="c1"># revert model back to original</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span>
-    <span class="p">),</span> <span class="s2">&quot;before revert&quot;</span>
+    <span class="k">assert</span> <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span><span class="p">,</span> <span class="s2">&quot;before revert&quot;</span>
     <span class="k">for</span> <span class="n">j_id</span> <span class="ow">in</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">]:</span>
         <span class="n">xyz_rpy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
         <span class="n">j_name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">j_id</span><span class="p">]</span>
@@ -584,9 +602,7 @@
                         <span class="n">xyz_rpy</span><span class="p">[</span><span class="n">axis_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">j_id</span><span class="p">,</span> <span class="o">-</span><span class="n">xyz_rpy</span><span class="p">)</span>
 
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span>
-    <span class="p">),</span> <span class="s2">&quot;after revert&quot;</span>
+    <span class="k">assert</span> <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span><span class="p">,</span> <span class="s2">&quot;after revert&quot;</span>
 
     <span class="k">return</span> <span class="n">PEE</span></div>
 
@@ -594,7 +610,7 @@
 
 <div class="viewcode-block" id="calc_updated_fkm">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.calc_updated_fkm">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">calc_updated_fkm</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calc_updated_fkm</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update forward kinematics with world frame transformations.</span>
 
 <span class="sd">    Specialized version that explicitly handles transformations between:</span>
@@ -611,6 +627,8 @@
 <span class="sd">            - Frames and parameters from update_forward_kinematics()</span>
 <span class="sd">            - NbMarkers=1 (only supports single marker)</span>
 <span class="sd">        verbose (int, optional): Print update info. Defaults to 0.</span>
+<span class="sd">        backend (DynamicsBackend, optional): If provided, routes forward kinematics</span>
+<span class="sd">            calls through the backend abstraction.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        ndarray: Flattened marker measurements in world frame</span>
@@ -738,8 +756,11 @@
     <span class="n">q_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]):</span>
 
-        <span class="n">pin</span><span class="o">.</span><span class="n">framesForwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
-        <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">compute_forward_kinematics</span><span class="p">(</span><span class="n">q_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pin</span><span class="o">.</span><span class="n">framesForwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
+            <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 
         <span class="c1"># NOTE: joint elastic error is not considered in this version</span>
 
@@ -763,9 +784,7 @@
     <span class="n">PEE</span> <span class="o">=</span> <span class="n">PEE</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">)</span>
 
     <span class="c1"># revert model back to original</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span>
-    <span class="p">),</span> <span class="s2">&quot;before revert&quot;</span>
+    <span class="k">assert</span> <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span><span class="p">,</span> <span class="s2">&quot;before revert&quot;</span>
     <span class="k">for</span> <span class="n">j_id</span> <span class="ow">in</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">]:</span>
         <span class="n">xyz_rpy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
         <span class="n">j_name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">j_id</span><span class="p">]</span>
@@ -777,9 +796,7 @@
                         <span class="n">xyz_rpy</span><span class="p">[</span><span class="n">axis_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">j_id</span><span class="p">,</span> <span class="o">-</span><span class="n">xyz_rpy</span><span class="p">)</span>
 
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span>
-    <span class="p">),</span> <span class="s2">&quot;after revert&quot;</span>
+    <span class="k">assert</span> <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span><span class="p">,</span> <span class="s2">&quot;after revert&quot;</span>
 
     <span class="k">return</span> <span class="n">PEE</span></div>
 
@@ -824,7 +841,7 @@
 
 <div class="viewcode-block" id="calculate_kinematics_model">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.calculate_kinematics_model">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">calculate_kinematics_model</span><span class="p">(</span><span class="n">q_i</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_kinematics_model</span><span class="p">(</span><span class="n">q_i</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate Jacobian and kinematic regressor for single configuration.</span>
 
 <span class="sd">    Computes frame Jacobian and kinematic regressor matrices for tool frame</span>
@@ -835,6 +852,8 @@
 <span class="sd">        model (pin.Model): Robot model</span>
 <span class="sd">        data (pin.Data): Robot data</span>
 <span class="sd">        calib_config (dict): Parameters containing &quot;IDX_TOOL&quot; frame index</span>
+<span class="sd">        backend (DynamicsBackend, optional): If provided, routes forward kinematics</span>
+<span class="sd">            and Jacobian calls through the backend abstraction.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        tuple:</span>
@@ -843,12 +862,21 @@
 <span class="sd">            - R (ndarray): (6,6n) Kinematic regressor matrix</span>
 <span class="sd">            - J (ndarray): (6,n) Frame Jacobian matrix</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">pin</span><span class="o">.</span><span class="n">forwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_i</span><span class="p">)</span>
-    <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># compute_forward_kinematics updates FK internally</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">compute_forward_kinematics</span><span class="p">(</span><span class="n">q_i</span><span class="p">)</span>
+        <span class="c1"># Convert frame ID to name for backend Jacobian</span>
+        <span class="n">frame_id</span> <span class="o">=</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;IDX_TOOL&quot;</span><span class="p">]</span>
+        <span class="n">frame_name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">frame_id</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">J</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">compute_jacobian</span><span class="p">(</span><span class="n">q_i</span><span class="p">,</span> <span class="n">frame_name</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pin</span><span class="o">.</span><span class="n">forwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_i</span><span class="p">)</span>
+        <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="n">J</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeFrameJacobian</span><span class="p">(</span>
+            <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_i</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;IDX_TOOL&quot;</span><span class="p">],</span> <span class="n">pin</span><span class="o">.</span><span class="n">LOCAL</span>
+        <span class="p">)</span>
 
-    <span class="n">J</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeFrameJacobian</span><span class="p">(</span>
-        <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_i</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;IDX_TOOL&quot;</span><span class="p">],</span> <span class="n">pin</span><span class="o">.</span><span class="n">LOCAL</span>
-    <span class="p">)</span>
+    <span class="c1"># computeFrameKinematicRegressor has no backend equivalent — use escape hatch</span>
     <span class="n">R</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeFrameKinematicRegressor</span><span class="p">(</span>
         <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;IDX_TOOL&quot;</span><span class="p">],</span> <span class="n">pin</span><span class="o">.</span><span class="n">LOCAL</span>
     <span class="p">)</span>
@@ -858,7 +886,7 @@
 
 <div class="viewcode-block" id="calculate_identifiable_kinematics_model">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.calculate_identifiable_kinematics_model">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">calculate_identifiable_kinematics_model</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_identifiable_kinematics_model</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate identifiable Jacobian and regressor matrices.</span>
 
 <span class="sd">    Builds aggregated Jacobian and regressor matrices from either:</span>
@@ -874,6 +902,8 @@
 <span class="sd">            - calibration_index: Number of active DOFs</span>
 <span class="sd">            - start_frame, end_frame: Frame names</span>
 <span class="sd">            - calib_model: Model type</span>
+<span class="sd">        backend (DynamicsBackend, optional): If provided, routes random configuration</span>
+<span class="sd">            and forwards backend to called functions.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        ndarray: Either:</span>
@@ -897,22 +927,35 @@
     <span class="n">J</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="mi">6</span> <span class="o">*</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">],</span> <span class="n">model</span><span class="o">.</span><span class="n">njoints</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]):</span>
         <span class="k">if</span> <span class="n">MIN_MODEL</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">q_rand</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">randomConfiguration</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">q_rand</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">random_configuration</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">q_rand</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">randomConfiguration</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
             <span class="n">q_i</span> <span class="o">=</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;q0&quot;</span><span class="p">]</span>
             <span class="n">q_i</span><span class="p">[</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;config_idx&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">q_rand</span><span class="p">[</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;config_idx&quot;</span><span class="p">]]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">q_i</span> <span class="o">=</span> <span class="n">q_temp</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
         <span class="k">if</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;universe&quot;</span><span class="p">:</span>
             <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">Ri</span><span class="p">,</span> <span class="n">Ji</span> <span class="o">=</span> <span class="n">calculate_kinematics_model</span><span class="p">(</span>
-                <span class="n">q_i</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span>
+                <span class="n">q_i</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">Ri</span> <span class="o">=</span> <span class="n">get_rel_kinreg</span><span class="p">(</span>
-                <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">],</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;end_frame&quot;</span><span class="p">],</span> <span class="n">q_i</span>
+                <span class="n">model</span><span class="p">,</span>
+                <span class="n">data</span><span class="p">,</span>
+                <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">],</span>
+                <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;end_frame&quot;</span><span class="p">],</span>
+                <span class="n">q_i</span><span class="p">,</span>
+                <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="c1"># Ji = np.zeros([6, model.njoints-1]) ## TODO: get_rel_jac</span>
             <span class="n">Ji</span> <span class="o">=</span> <span class="n">get_rel_jac</span><span class="p">(</span>
-                <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">],</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;end_frame&quot;</span><span class="p">],</span> <span class="n">q_i</span>
+                <span class="n">model</span><span class="p">,</span>
+                <span class="n">data</span><span class="p">,</span>
+                <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">],</span>
+                <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;end_frame&quot;</span><span class="p">],</span>
+                <span class="n">q_i</span><span class="p">,</span>
+                <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">state</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;measurability&quot;</span><span class="p">]):</span>
             <span class="k">if</span> <span class="n">state</span><span class="p">:</span>
@@ -929,7 +972,7 @@
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">J</span><span class="p">[</span><span class="n">r_idx</span><span class="p">,</span> <span class="p">:])</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
             <span class="n">zero_rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r_idx</span><span class="p">)</span>
     <span class="n">J</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">zero_rows</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    
+
     <span class="c1"># select regressor matrix based on calibration model</span>
     <span class="k">if</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;calib_model&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;joint_offset&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">J</span>
@@ -940,7 +983,9 @@
 
 <div class="viewcode-block" id="calculate_base_kinematics_regressor">
 <a class="viewcode-back" href="../../../modules/calibration.html#figaroh.calibration.calibration_tools.calculate_base_kinematics_regressor">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">calculate_base_kinematics_regressor</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">tol_qr</span><span class="o">=</span><span class="n">TOL_QR</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_base_kinematics_regressor</span><span class="p">(</span>
+    <span class="n">q</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">tol_qr</span><span class="o">=</span><span class="n">TOL_QR</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate base regressor matrix for calibration parameters.</span>
 
 <span class="sd">    Identifies base (identifiable) parameters by:</span>
@@ -956,6 +1001,8 @@
 <span class="sd">            - free_flyer: Whether base is floating</span>
 <span class="sd">            - calib_model: Either &quot;joint_offset&quot; or &quot;full_params&quot;</span>
 <span class="sd">        tol_qr (float, optional): QR decomposition tolerance. Defaults to TOL_QR.</span>
+<span class="sd">        backend (DynamicsBackend, optional): If provided, forwards backend to</span>
+<span class="sd">            called functions for backend-aware computation.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        tuple:</span>
@@ -976,12 +1023,18 @@
 
     <span class="c1"># calculate kinematic regressor with random configs</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;free_flyer&quot;</span><span class="p">]:</span>
-        <span class="n">Rrand</span> <span class="o">=</span> <span class="n">calculate_identifiable_kinematics_model</span><span class="p">([],</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">)</span>
+        <span class="n">Rrand</span> <span class="o">=</span> <span class="n">calculate_identifiable_kinematics_model</span><span class="p">(</span>
+            <span class="p">[],</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span>
+        <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">Rrand</span> <span class="o">=</span> <span class="n">calculate_identifiable_kinematics_model</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">)</span>
+        <span class="n">Rrand</span> <span class="o">=</span> <span class="n">calculate_identifiable_kinematics_model</span><span class="p">(</span>
+            <span class="n">q</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span>
+        <span class="p">)</span>
     <span class="c1"># calculate kinematic regressor with input configs</span>
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">q</span><span class="p">)):</span>
-        <span class="n">R</span> <span class="o">=</span> <span class="n">calculate_identifiable_kinematics_model</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">)</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">calculate_identifiable_kinematics_model</span><span class="p">(</span>
+            <span class="n">q</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span>
+        <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">R</span> <span class="o">=</span> <span class="n">Rrand</span>
 
@@ -1010,9 +1063,7 @@
     <span class="n">idx_base</span> <span class="o">=</span> <span class="n">get_baseIndex</span><span class="p">(</span><span class="n">Rrand_e</span><span class="p">,</span> <span class="n">paramsrand_e</span><span class="p">,</span> <span class="n">tol_qr</span><span class="o">=</span><span class="n">tol_qr</span><span class="p">)</span>
 
     <span class="c1"># get base regressor and base params from random data</span>
-    <span class="n">Rrand_b</span><span class="p">,</span> <span class="n">paramsrand_base</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_baseParams</span><span class="p">(</span>
-        <span class="n">Rrand_e</span><span class="p">,</span> <span class="n">paramsrand_e</span><span class="p">,</span> <span class="n">tol_qr</span><span class="o">=</span><span class="n">tol_qr</span>
-    <span class="p">)</span>
+    <span class="n">Rrand_b</span><span class="p">,</span> <span class="n">paramsrand_base</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_baseParams</span><span class="p">(</span><span class="n">Rrand_e</span><span class="p">,</span> <span class="n">paramsrand_e</span><span class="p">,</span> <span class="n">tol_qr</span><span class="o">=</span><span class="n">tol_qr</span><span class="p">)</span>
 
     <span class="c1"># remove non affect columns from GIVEN data</span>
     <span class="n">R_e</span><span class="p">,</span> <span class="n">params_e</span> <span class="o">=</span> <span class="n">eliminate_non_dynaffect</span><span class="p">(</span><span class="n">R_sel</span><span class="p">,</span> <span class="n">geo_params_sel</span><span class="p">,</span> <span class="n">tol_e</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>

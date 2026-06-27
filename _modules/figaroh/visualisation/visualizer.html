@@ -117,10 +117,10 @@
 <a class="viewcode-back" href="../../../modules/visualisation.html#figaroh.visualisation.visualizer.materialFromColor">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">materialFromColor</span><span class="p">(</span><span class="n">color</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert color to Material.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        color: Color specification (Material, string, list, or None)</span>
-<span class="sd">        </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        meshcat.geometry.Material: Material object</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -152,14 +152,9 @@
 <a class="viewcode-back" href="../../../modules/visualisation.html#figaroh.visualisation.visualizer.MeshcatVisualizer">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MeshcatVisualizer</span><span class="p">(</span><span class="n">PMV</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extension of Pinocchio MeshcatVisualizer with additional features.&quot;&quot;&quot;</span>
-    
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">robot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-        <span class="n">collision_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">visual_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">url</span><span class="o">=</span><span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">collision_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">visual_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize visualizer.</span>
 
@@ -167,16 +162,11 @@
 <span class="sd">            robot: Robot object</span>
 <span class="sd">            model: Pinocchio model</span>
 <span class="sd">            collision_model: Collision model</span>
-<span class="sd">            visual_model: Visual model  </span>
+<span class="sd">            visual_model: Visual model</span>
 <span class="sd">            url: Server URL for visualization</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">robot</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">PMV</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-                <span class="bp">self</span><span class="p">,</span>
-                <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
-                <span class="n">robot</span><span class="o">.</span><span class="n">collision_model</span><span class="p">,</span>
-                <span class="n">robot</span><span class="o">.</span><span class="n">visual_model</span>
-            <span class="p">)</span>
+            <span class="n">PMV</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">robot</span><span class="o">.</span><span class="n">collision_model</span><span class="p">,</span> <span class="n">robot</span><span class="o">.</span><span class="n">visual_model</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">PMV</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">collision_model</span><span class="p">,</span> <span class="n">visual_model</span><span class="p">)</span>
 

@@ -116,6 +116,7 @@
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ConfigMetadata</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration metadata container.&quot;&quot;&quot;</span>
+
     <span class="n">schema_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;2.0&quot;</span>
     <span class="n">config_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;robot_configuration&quot;</span>
     <span class="n">source_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -128,10 +129,10 @@
 <a class="viewcode-back" href="../../../modules/utils.html#figaroh.utils.config_parser.UnifiedConfigParser">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">UnifiedConfigParser</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Unified configuration parser supporting inheritance, templates, and validation.&quot;&quot;&quot;</span>
-    
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">variant</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize parser with configuration file path.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            config_path: Path to configuration file</span>
 <span class="sd">            variant: Optional variant name to use from configuration</span>
@@ -141,107 +142,113 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_template_cache</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_variable_cache</span> <span class="o">=</span> <span class="p">{}</span>
-        
+
         <span class="c1"># Validate config file exists</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Configuration file not found: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Configuration file not found: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
 <div class="viewcode-block" id="UnifiedConfigParser.parse">
 <a class="viewcode-back" href="../../../modules/utils.html#figaroh.utils.config_parser.UnifiedConfigParser.parse">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse configuration with inheritance and validation.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            Complete configuration dictionary with metadata</span>
-<span class="sd">            </span>
+
 <span class="sd">        Raises:</span>
 <span class="sd">            ConfigurationError: If parsing or validation fails</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parsing configuration: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            
+
             <span class="c1"># Load base configuration</span>
             <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_config_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="p">)</span>
-            
+
             <span class="c1"># Handle inheritance/extensions</span>
             <span class="k">if</span> <span class="s2">&quot;extends&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
                 <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_inheritance</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-            
+
             <span class="c1"># Apply variant if specified</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variant</span><span class="p">:</span>
                 <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_variant</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">variant</span><span class="p">)</span>
-            
+
             <span class="c1"># Resolve task inheritance</span>
             <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_task_inheritance</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-            
+
             <span class="c1"># Expand variables</span>
             <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expand_variables</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-            
+
             <span class="c1"># Validate configuration</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_validate_configuration</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-            
+
             <span class="c1"># Add metadata</span>
             <span class="n">config</span><span class="p">[</span><span class="s2">&quot;_metadata&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ConfigMetadata</span><span class="p">(</span>
                 <span class="n">source_file</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="p">),</span>
                 <span class="n">variant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">variant</span><span class="p">,</span>
-                <span class="n">resolved_at</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">())</span>
+                <span class="n">resolved_at</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()),</span>
             <span class="p">)</span><span class="o">.</span><span class="vm">__dict__</span>
-            
+
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Configuration parsing completed successfully&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">config</span>
-            
+
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to parse configuration: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to parse configuration </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Failed to parse configuration </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
 
-    
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_config_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load YAML configuration file with error handling.&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="n">content</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-                
+
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Configuration file must contain a YAML dictionary&quot;</span><span class="p">)</span>
-                
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Configuration file must contain a YAML dictionary&quot;</span>
+                <span class="p">)</span>
+
             <span class="k">return</span> <span class="n">content</span>
-            
+
         <span class="k">except</span> <span class="n">yaml</span><span class="o">.</span><span class="n">YAMLError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid YAML in file </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to load config file </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_inheritance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve extends/inheritance relationships recursively.&quot;&quot;&quot;</span>
         <span class="n">extends</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;extends&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">extends</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">config</span>
-        
+
         <span class="c1"># Resolve template path</span>
         <span class="n">template_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_template_path</span><span class="p">(</span><span class="n">extends</span><span class="p">)</span>
-        
+
         <span class="c1"># Load parent configuration (with caching)</span>
         <span class="k">if</span> <span class="n">template_path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_template_cache</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading template: </span><span class="si">{</span><span class="n">template_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">parent_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_config_file</span><span class="p">(</span><span class="n">template_path</span><span class="p">)</span>
-            
+
             <span class="c1"># Recursively resolve parent inheritance</span>
             <span class="k">if</span> <span class="s2">&quot;extends&quot;</span> <span class="ow">in</span> <span class="n">parent_config</span><span class="p">:</span>
                 <span class="n">parent_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_inheritance</span><span class="p">(</span><span class="n">parent_config</span><span class="p">)</span>
-                
+
             <span class="bp">self</span><span class="o">.</span><span class="n">_template_cache</span><span class="p">[</span><span class="n">template_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">parent_config</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">parent_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_template_cache</span><span class="p">[</span><span class="n">template_path</span><span class="p">]</span>
-        
+
         <span class="c1"># Deep merge configurations (child overrides parent)</span>
         <span class="n">merged_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deep_merge</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">parent_config</span><span class="p">),</span> <span class="n">config</span><span class="p">)</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Merged configuration with template: </span><span class="si">{</span><span class="n">extends</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">merged_config</span>
-    
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_template_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template_reference</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve template path from reference.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Supports multiple template path formats:</span>
 <span class="sd">        1. templates/filename.yaml - looks for templates dir relative to config</span>
 <span class="sd">        2. ../templates/filename.yaml - relative path from config directory</span>
@@ -249,15 +256,15 @@
 <span class="sd">        4. /absolute/path/filename.yaml - absolute path</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">template_path</span> <span class="o">=</span> <span class="kc">None</span>
-        
+
         <span class="c1"># Handle absolute paths</span>
         <span class="k">if</span> <span class="n">Path</span><span class="p">(</span><span class="n">template_reference</span><span class="p">)</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
             <span class="n">template_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">template_reference</span><span class="p">)</span>
-        
+
         <span class="c1"># Handle templates/ prefix - search in templates directories</span>
         <span class="k">elif</span> <span class="n">template_reference</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;templates/&quot;</span><span class="p">):</span>
             <span class="n">template_filename</span> <span class="o">=</span> <span class="n">template_reference</span><span class="p">[</span><span class="mi">10</span><span class="p">:]</span>  <span class="c1"># Remove &quot;templates/&quot;</span>
-            
+
             <span class="c1"># Search locations for templates directory</span>
             <span class="n">search_locations</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;templates&quot;</span><span class="p">,</span>  <span class="c1"># Same directory as config</span>
@@ -265,92 +272,104 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;templates&quot;</span><span class="p">,</span>  <span class="c1"># Grandparent</span>
                 <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;templates&quot;</span><span class="p">,</span>  <span class="c1"># Current working directory</span>
             <span class="p">]</span>
-            
+
             <span class="k">for</span> <span class="n">templates_dir</span> <span class="ow">in</span> <span class="n">search_locations</span><span class="p">:</span>
                 <span class="n">candidate_path</span> <span class="o">=</span> <span class="n">templates_dir</span> <span class="o">/</span> <span class="n">template_filename</span>
                 <span class="k">if</span> <span class="n">candidate_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
                     <span class="n">template_path</span> <span class="o">=</span> <span class="n">candidate_path</span>
                     <span class="k">break</span>
-                    
+
             <span class="k">if</span> <span class="n">template_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">searched_paths</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">loc</span><span class="p">)</span> <span class="k">for</span> <span class="n">loc</span> <span class="ow">in</span> <span class="n">search_locations</span><span class="p">]</span>
                 <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Template &#39;</span><span class="si">{</span><span class="n">template_reference</span><span class="si">}</span><span class="s2">&#39; not found. &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;Searched in: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">searched_paths</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
-        
+
         <span class="c1"># Handle relative paths</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">template_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="n">template_reference</span>
-        
+
         <span class="c1"># Validate final path exists</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">template_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Template file not found: </span><span class="si">{</span><span class="n">template_path</span><span class="si">}</span><span class="s2">. &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;Config directory: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="o">.</span><span class="n">parent</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
-            
+
         <span class="k">return</span> <span class="n">template_path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-    
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_task_inheritance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve inherits_from relationships within tasks.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="s2">&quot;tasks&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">config</span>
-        
+
         <span class="n">tasks</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;tasks&quot;</span><span class="p">]</span>
         <span class="n">resolved_tasks</span> <span class="o">=</span> <span class="p">{}</span>
-        
+
         <span class="c1"># Resolve dependencies using topological sort</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">resolve_task</span><span class="p">(</span><span class="n">task_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">visited</span><span class="p">:</span> <span class="nb">set</span><span class="p">,</span> <span class="n">temp_visited</span><span class="p">:</span> <span class="nb">set</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">task_name</span> <span class="ow">in</span> <span class="n">temp_visited</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Circular task inheritance detected involving: </span><span class="si">{</span><span class="n">task_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Circular task inheritance detected involving: </span><span class="si">{</span><span class="n">task_name</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
             <span class="k">if</span> <span class="n">task_name</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
                 <span class="k">return</span>
-                
+
             <span class="n">temp_visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">task_name</span><span class="p">)</span>
-            
+
             <span class="n">task_config</span> <span class="o">=</span> <span class="n">tasks</span><span class="p">[</span><span class="n">task_name</span><span class="p">]</span>
             <span class="k">if</span> <span class="s2">&quot;inherits_from&quot;</span> <span class="ow">in</span> <span class="n">task_config</span><span class="p">:</span>
                 <span class="n">parent_task</span> <span class="o">=</span> <span class="n">task_config</span><span class="p">[</span><span class="s2">&quot;inherits_from&quot;</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">parent_task</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parent task &#39;</span><span class="si">{</span><span class="n">parent_task</span><span class="si">}</span><span class="s2">&#39; not found for &#39;</span><span class="si">{</span><span class="n">task_name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
-                
+                    <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Parent task &#39;</span><span class="si">{</span><span class="n">parent_task</span><span class="si">}</span><span class="s2">&#39; not found for &#39;</span><span class="si">{</span><span class="n">task_name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+                    <span class="p">)</span>
+
                 <span class="c1"># Resolve parent first</span>
                 <span class="n">resolve_task</span><span class="p">(</span><span class="n">parent_task</span><span class="p">,</span> <span class="n">visited</span><span class="p">,</span> <span class="n">temp_visited</span><span class="p">)</span>
-                
+
                 <span class="c1"># Merge with parent</span>
-                <span class="n">parent_config</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">resolved_tasks</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">parent_task</span><span class="p">,</span> <span class="n">tasks</span><span class="p">[</span><span class="n">parent_task</span><span class="p">]))</span>
+                <span class="n">parent_config</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span>
+                    <span class="n">resolved_tasks</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">parent_task</span><span class="p">,</span> <span class="n">tasks</span><span class="p">[</span><span class="n">parent_task</span><span class="p">])</span>
+                <span class="p">)</span>
                 <span class="n">task_config_copy</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">task_config</span><span class="p">)</span>
                 <span class="n">task_config_copy</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;inherits_from&quot;</span><span class="p">)</span>
-                
-                <span class="n">resolved_tasks</span><span class="p">[</span><span class="n">task_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deep_merge</span><span class="p">(</span><span class="n">parent_config</span><span class="p">,</span> <span class="n">task_config_copy</span><span class="p">)</span>
+
+                <span class="n">resolved_tasks</span><span class="p">[</span><span class="n">task_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deep_merge</span><span class="p">(</span>
+                    <span class="n">parent_config</span><span class="p">,</span> <span class="n">task_config_copy</span>
+                <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">resolved_tasks</span><span class="p">[</span><span class="n">task_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">task_config</span><span class="p">)</span>
-            
+
             <span class="n">temp_visited</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">task_name</span><span class="p">)</span>
             <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">task_name</span><span class="p">)</span>
-        
+
         <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">task_name</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
             <span class="n">resolve_task</span><span class="p">(</span><span class="n">task_name</span><span class="p">,</span> <span class="n">visited</span><span class="p">,</span> <span class="nb">set</span><span class="p">())</span>
-        
+
         <span class="n">config</span><span class="p">[</span><span class="s2">&quot;tasks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">resolved_tasks</span>
         <span class="k">return</span> <span class="n">config</span>
-    
-    <span class="k">def</span><span class="w"> </span><span class="nf">_apply_variant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">variant_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_apply_variant</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">variant_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply a specific variant configuration.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="s2">&quot;variants&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No variants defined, cannot apply variant: </span><span class="si">{</span><span class="n">variant_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;No variants defined, cannot apply variant: </span><span class="si">{</span><span class="n">variant_name</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
         <span class="n">variants</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;variants&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">variant_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">variants</span><span class="p">:</span>
             <span class="n">available</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Variant &#39;</span><span class="si">{</span><span class="n">variant_name</span><span class="si">}</span><span class="s2">&#39; not found. Available variants: </span><span class="si">{</span><span class="n">available</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
-        
+
         <span class="n">variant_config</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">variants</span><span class="p">[</span><span class="n">variant_name</span><span class="p">])</span>
-        
+
         <span class="c1"># Handle variant inheritance from existing tasks/sections</span>
         <span class="k">if</span> <span class="s2">&quot;extends&quot;</span> <span class="ow">in</span> <span class="n">variant_config</span><span class="p">:</span>
             <span class="n">extends_path</span> <span class="o">=</span> <span class="n">variant_config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;extends&quot;</span><span class="p">)</span>
@@ -360,21 +379,23 @@
                     <span class="sa">f</span><span class="s2">&quot;Variant extension path not found: </span><span class="si">{</span><span class="n">extends_path</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
             <span class="n">variant_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deep_merge</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">base_config</span><span class="p">),</span> <span class="n">variant_config</span><span class="p">)</span>
-        
+
         <span class="c1"># Apply variant as override to the entire configuration</span>
         <span class="n">result_config</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
         <span class="n">result_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deep_merge</span><span class="p">(</span><span class="n">result_config</span><span class="p">,</span> <span class="n">variant_config</span><span class="p">)</span>
-        
+
         <span class="c1"># Remove variants section from final config</span>
         <span class="n">result_config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;variants&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Applied variant: </span><span class="si">{</span><span class="n">variant_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">result_config</span>
-    
-    <span class="k">def</span><span class="w"> </span><span class="nf">_deep_merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">override</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_deep_merge</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">base</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">override</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Deep merge two dictionaries with special handling for lists.&quot;&quot;&quot;</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
-        
+
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">override</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
@@ -398,79 +419,84 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># New key</span>
                 <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-        
+
         <span class="k">return</span> <span class="n">result</span>
-    
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_nested_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get nested value using dot notation (e.g., &#39;tasks.calibration.parameters&#39;).&quot;&quot;&quot;</span>
         <span class="n">keys</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
         <span class="n">current</span> <span class="o">=</span> <span class="n">data</span>
-        
+
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">current</span><span class="p">:</span>
                 <span class="n">current</span> <span class="o">=</span> <span class="n">current</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">None</span>
-        
+
         <span class="k">return</span> <span class="n">current</span>
-    
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_expand_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Expand ${VARIABLE} references in configuration.&quot;&quot;&quot;</span>
+
         <span class="k">def</span><span class="w"> </span><span class="nf">expand_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">context_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expand_string_variables</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">context_path</span><span class="p">)</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">expand_value</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">context_path</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">context_path</span> <span class="k">else</span> <span class="n">k</span><span class="p">)</span> 
-                       <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="n">k</span><span class="p">:</span> <span class="n">expand_value</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">context_path</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">context_path</span> <span class="k">else</span> <span class="n">k</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">}</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="k">return</span> <span class="p">[</span><span class="n">expand_value</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">context_path</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span> 
-                       <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">value</span><span class="p">)]</span>
+                <span class="k">return</span> <span class="p">[</span>
+                    <span class="n">expand_value</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">context_path</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">value</span>
-        
+
         <span class="k">return</span> <span class="n">expand_value</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-    
-    <span class="k">def</span><span class="w"> </span><span class="nf">_expand_string_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> 
-                               <span class="n">context_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_expand_string_variables</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">context_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Expand variables in a string value.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="s2">&quot;${&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">text</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">text</span>
-        
-        <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;\$\{([^}]+)\}&#39;</span>
-        
+
+        <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;\$\{([^}]+)\}&quot;</span>
+
         <span class="k">def</span><span class="w"> </span><span class="nf">replacer</span><span class="p">(</span><span class="n">match</span><span class="p">):</span>
             <span class="n">var_name</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-            
+
             <span class="c1"># Try different variable sources in order</span>
             <span class="n">value</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">var_name</span><span class="p">)</span> <span class="ow">or</span>  <span class="c1"># Environment variables</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_get_nested_value</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">var_name</span><span class="p">)</span> <span class="ow">or</span>  <span class="c1"># Config references</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_variable_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">var_name</span><span class="p">)</span> <span class="ow">or</span>  <span class="c1"># Cached variables</span>
-                <span class="k">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># Keep original if not found</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">var_name</span><span class="p">)</span>  <span class="c1"># Environment variables</span>
+                <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_nested_value</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">var_name</span><span class="p">)</span>  <span class="c1"># Config references</span>
+                <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variable_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">var_name</span><span class="p">)</span>  <span class="c1"># Cached variables</span>
+                <span class="ow">or</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># Keep original if not found</span>
             <span class="p">)</span>
-            
+
             <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Unresolved variable &#39;</span><span class="si">{</span><span class="n">var_name</span><span class="si">}</span><span class="s2">&#39; in </span><span class="si">{</span><span class="n">context_path</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
-            
+
             <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-        
+
         <span class="k">try</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">replacer</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">result</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variable expansion failed for &#39;</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">text</span>
-    
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate configuration structure and required fields.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Validating configuration structure&quot;</span><span class="p">)</span>
-        
+
         <span class="c1"># Basic validation</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Configuration must be a dictionary&quot;</span><span class="p">)</span>
-        
+
         <span class="c1"># Validate meta section if present</span>
         <span class="k">if</span> <span class="s2">&quot;meta&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
             <span class="n">meta</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;meta&quot;</span><span class="p">]</span>
@@ -479,15 +505,15 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Configuration schema version </span><span class="si">{</span><span class="n">schema_version</span><span class="si">}</span><span class="s2"> may not be compatible&quot;</span>
                 <span class="p">)</span>
-        
+
         <span class="c1"># Validate robot section</span>
         <span class="k">if</span> <span class="s2">&quot;robot&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_validate_robot_section</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;robot&quot;</span><span class="p">])</span>
-        
+
         <span class="c1"># Validate tasks if present</span>
         <span class="k">if</span> <span class="s2">&quot;tasks&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_validate_tasks_section</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;tasks&quot;</span><span class="p">])</span>
-    
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_is_compatible_version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if schema version is compatible.&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
@@ -495,34 +521,37 @@
             <span class="k">return</span> <span class="n">major</span> <span class="o">&lt;=</span> <span class="mi">2</span>  <span class="c1"># Accept versions 1.x and 2.x</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
-    
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_robot_section</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate robot configuration section.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="s2">&quot;name&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">robot_config</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Robot name is required&quot;</span><span class="p">)</span>
-        
+
         <span class="k">if</span> <span class="s2">&quot;properties&quot;</span> <span class="ow">in</span> <span class="n">robot_config</span><span class="p">:</span>
             <span class="n">properties</span> <span class="o">=</span> <span class="n">robot_config</span><span class="p">[</span><span class="s2">&quot;properties&quot;</span><span class="p">]</span>
-            
+
             <span class="c1"># Validate joint configuration if present</span>
             <span class="k">if</span> <span class="s2">&quot;joints&quot;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
                 <span class="n">joints</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="s2">&quot;joints&quot;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="s2">&quot;active_joints&quot;</span> <span class="ow">in</span> <span class="n">joints</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">joints</span><span class="p">[</span><span class="s2">&quot;active_joints&quot;</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">if</span> <span class="s2">&quot;active_joints&quot;</span> <span class="ow">in</span> <span class="n">joints</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+                    <span class="n">joints</span><span class="p">[</span><span class="s2">&quot;active_joints&quot;</span><span class="p">],</span> <span class="nb">list</span>
+                <span class="p">):</span>
                     <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;active_joints must be a list&quot;</span><span class="p">)</span>
-    
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_tasks_section</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tasks_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate tasks configuration section.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">task_name</span><span class="p">,</span> <span class="n">task_config</span> <span class="ow">in</span> <span class="n">tasks_config</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">task_config</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Task &#39;</span><span class="si">{</span><span class="n">task_name</span><span class="si">}</span><span class="s2">&#39; must be a dictionary&quot;</span><span class="p">)</span>
-            
+
             <span class="c1"># Validate task type if specified</span>
             <span class="n">task_type</span> <span class="o">=</span> <span class="n">task_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">task_type</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_validate_task_type</span><span class="p">(</span><span class="n">task_name</span><span class="p">,</span> <span class="n">task_type</span><span class="p">,</span> <span class="n">task_config</span><span class="p">)</span>
-    
-    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_task_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
-                           <span class="n">task_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_task_type</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">task_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate specific task type configuration.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">task_type</span> <span class="o">==</span> <span class="s2">&quot;kinematic_calibration&quot;</span><span class="p">:</span>
             <span class="n">required_sections</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;kinematics&quot;</span><span class="p">,</span> <span class="s2">&quot;measurements&quot;</span><span class="p">]</span>
@@ -531,7 +560,7 @@
                     <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;Task &#39;</span><span class="si">{</span><span class="n">task_name</span><span class="si">}</span><span class="s2">&#39; of type &#39;</span><span class="si">{</span><span class="n">task_type</span><span class="si">}</span><span class="s2">&#39; missing required section: </span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="p">)</span>
-        
+
         <span class="k">elif</span> <span class="n">task_type</span> <span class="o">==</span> <span class="s2">&quot;dynamic_identification&quot;</span><span class="p">:</span>
             <span class="n">required_sections</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;problem&quot;</span><span class="p">,</span> <span class="s2">&quot;signal_processing&quot;</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">required_sections</span><span class="p">:</span>
@@ -544,17 +573,19 @@
 
 <div class="viewcode-block" id="create_task_config">
 <a class="viewcode-back" href="../../../modules/utils.html#figaroh.utils.config_parser.create_task_config">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">create_task_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">task_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_task_config</span><span class="p">(</span>
+    <span class="n">robot</span><span class="p">,</span> <span class="n">unified_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">task_name</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create task-specific configuration from unified config.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        robot: Robot instance</span>
 <span class="sd">        unified_config: Parsed unified configuration</span>
 <span class="sd">        task_name: Name of task to extract configuration for</span>
-<span class="sd">        </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        Task-specific configuration dictionary</span>
-<span class="sd">        </span>
+
 <span class="sd">    Raises:</span>
 <span class="sd">        ConfigurationError: If task not found or invalid</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -563,55 +594,62 @@
         <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Task &#39;</span><span class="si">{</span><span class="n">task_name</span><span class="si">}</span><span class="s2">&#39; not found in configuration. Available tasks: </span><span class="si">{</span><span class="n">available_tasks</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
-    
+
     <span class="n">task_config</span> <span class="o">=</span> <span class="n">unified_config</span><span class="p">[</span><span class="s2">&quot;tasks&quot;</span><span class="p">][</span><span class="n">task_name</span><span class="p">]</span>
     <span class="n">robot_config</span> <span class="o">=</span> <span class="n">unified_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;robot&quot;</span><span class="p">,</span> <span class="p">{})</span>
-    
+
     <span class="c1"># Check if task is enabled</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">task_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enabled&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Task &#39;</span><span class="si">{</span><span class="n">task_name</span><span class="si">}</span><span class="s2">&#39; is disabled in configuration&quot;</span><span class="p">)</span>
-    
+
     <span class="c1"># Combine robot properties with task configuration</span>
     <span class="n">combined_config</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;robot_name&quot;</span><span class="p">:</span> <span class="n">robot_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
         <span class="s2">&quot;task_type&quot;</span><span class="p">:</span> <span class="n">task_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="n">task_name</span><span class="p">),</span>
     <span class="p">}</span>
-    
+
     <span class="c1"># Add robot properties</span>
     <span class="k">if</span> <span class="s2">&quot;properties&quot;</span> <span class="ow">in</span> <span class="n">robot_config</span><span class="p">:</span>
         <span class="n">combined_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">robot_config</span><span class="p">[</span><span class="s2">&quot;properties&quot;</span><span class="p">])</span>
-    
+
     <span class="c1"># Add task configuration (excluding metadata)</span>
-    <span class="n">task_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">task_config</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> 
-                 <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;enabled&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">]}</span>
+    <span class="n">task_data</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">task_config</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;enabled&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">]</span>
+    <span class="p">}</span>
     <span class="n">combined_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">task_data</span><span class="p">)</span>
-    
+
     <span class="c1"># Add custom parameters</span>
     <span class="k">if</span> <span class="s2">&quot;custom&quot;</span> <span class="ow">in</span> <span class="n">unified_config</span><span class="p">:</span>
         <span class="n">combined_config</span><span class="p">[</span><span class="s2">&quot;custom&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">unified_config</span><span class="p">[</span><span class="s2">&quot;custom&quot;</span><span class="p">]</span>
-    
+
     <span class="c1"># Add environment settings that might be relevant</span>
     <span class="k">if</span> <span class="s2">&quot;environment&quot;</span> <span class="ow">in</span> <span class="n">unified_config</span><span class="p">:</span>
         <span class="n">env</span> <span class="o">=</span> <span class="n">unified_config</span><span class="p">[</span><span class="s2">&quot;environment&quot;</span><span class="p">]</span>
-        <span class="n">combined_config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
-            <span class="s2">&quot;working_directory&quot;</span><span class="p">:</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;working_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;data_directory&quot;</span><span class="p">:</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;results_directory&quot;</span><span class="p">:</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;results_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;results&quot;</span><span class="p">)</span>
-        <span class="p">})</span>
-    
+        <span class="n">combined_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;working_directory&quot;</span><span class="p">:</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;working_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;data_directory&quot;</span><span class="p">:</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;results_directory&quot;</span><span class="p">:</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;results_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;results&quot;</span><span class="p">),</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
     <span class="k">return</span> <span class="n">combined_config</span></div>
 
 
 
 <div class="viewcode-block" id="parse_configuration">
 <a class="viewcode-back" href="../../../modules/utils.html#figaroh.utils.config_parser.parse_configuration">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">parse_configuration</span><span class="p">(</span><span class="n">config_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">variant</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_configuration</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">variant</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convenience function to parse a configuration file.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        config_path: Path to configuration file</span>
 <span class="sd">        variant: Optional variant name to apply</span>
-<span class="sd">        </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        Parsed configuration dictionary</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -622,74 +660,82 @@
 
 <div class="viewcode-block" id="get_param_from_yaml">
 <a class="viewcode-back" href="../../../modules/utils.html#figaroh.utils.config_parser.get_param_from_yaml">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">config_data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> 
-                       <span class="n">task_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="n">variant</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml</span><span class="p">(</span>
+    <span class="n">robot</span><span class="p">,</span>
+    <span class="n">config_data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="n">task_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">variant</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Unified parameter parser with backward compatibility.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        robot: Robot instance</span>
 <span class="sd">        config_data: Configuration data (dict), or path to config file</span>
 <span class="sd">        task_type: Type of task configuration to extract (&quot;calibration&quot;, &quot;identification&quot;, &quot;auto&quot;)</span>
 <span class="sd">        variant: Optional variant to apply</span>
-<span class="sd">        </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        Task-specific parameter dictionary</span>
-<span class="sd">        </span>
+
 <span class="sd">    Raises:</span>
 <span class="sd">        ConfigurationError: If parsing fails or task not found</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Handle file path input</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config_data</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">)):</span>
         <span class="n">unified_config</span> <span class="o">=</span> <span class="n">parse_configuration</span><span class="p">(</span><span class="n">config_data</span><span class="p">,</span> <span class="n">variant</span><span class="p">)</span>
-        
+
         <span class="c1"># Auto-detect task type if needed</span>
         <span class="k">if</span> <span class="n">task_type</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
             <span class="n">tasks</span> <span class="o">=</span> <span class="n">unified_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tasks&quot;</span><span class="p">,</span> <span class="p">{})</span>
-            <span class="n">enabled_tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">tasks</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> 
-                           <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enabled&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)]</span>
+            <span class="n">enabled_tasks</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">tasks</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enabled&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="p">]</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">enabled_tasks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">task_type</span> <span class="o">=</span> <span class="n">enabled_tasks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Cannot auto-detect task type. Available tasks: </span><span class="si">{</span><span class="n">enabled_tasks</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
-        
+
         <span class="k">return</span> <span class="n">create_task_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_config</span><span class="p">,</span> <span class="n">task_type</span><span class="p">)</span>
-    
+
     <span class="c1"># Handle dictionary input (could be legacy or unified)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config_data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;config_data must be a dictionary or file path&quot;</span><span class="p">)</span>
-    
+
     <span class="c1"># Check if it&#39;s already a unified configuration</span>
     <span class="k">if</span> <span class="s2">&quot;tasks&quot;</span> <span class="ow">in</span> <span class="n">config_data</span><span class="p">:</span>
         <span class="c1"># Unified format</span>
         <span class="k">if</span> <span class="n">task_type</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
             <span class="n">tasks</span> <span class="o">=</span> <span class="n">config_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tasks&quot;</span><span class="p">,</span> <span class="p">{})</span>
-            <span class="n">enabled_tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">tasks</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> 
-                           <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enabled&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)]</span>
+            <span class="n">enabled_tasks</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">tasks</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enabled&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="p">]</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">enabled_tasks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">task_type</span> <span class="o">=</span> <span class="n">enabled_tasks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Cannot auto-detect task type. Available tasks: </span><span class="si">{</span><span class="n">enabled_tasks</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
-        
+
         <span class="k">return</span> <span class="n">create_task_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">config_data</span><span class="p">,</span> <span class="n">task_type</span><span class="p">)</span>
-    
+
     <span class="c1"># Legacy format - use existing parsers</span>
     <span class="k">return</span> <span class="n">_parse_legacy_format</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">config_data</span><span class="p">,</span> <span class="n">task_type</span><span class="p">)</span></div>
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_parse_legacy_format</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">config_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">task_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_legacy_format</span><span class="p">(</span>
+    <span class="n">robot</span><span class="p">,</span> <span class="n">config_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">task_type</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse legacy configuration format using existing parsers.&quot;&quot;&quot;</span>
     <span class="c1"># Import existing parsers for backward compatibility</span>
     <span class="n">calibration_indicators</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;markers&quot;</span><span class="p">,</span> <span class="s2">&quot;calib_level&quot;</span><span class="p">,</span> <span class="s2">&quot;base_frame&quot;</span><span class="p">,</span> <span class="s2">&quot;tool_frame&quot;</span><span class="p">]</span>
     <span class="n">identification_indicators</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;robot_params&quot;</span><span class="p">,</span> <span class="s2">&quot;problem_params&quot;</span><span class="p">,</span> <span class="s2">&quot;processing_params&quot;</span><span class="p">]</span>
-    
+
     <span class="n">has_calibration</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="n">config_data</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">calibration_indicators</span><span class="p">)</span>
     <span class="n">has_identification</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="n">config_data</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">identification_indicators</span><span class="p">)</span>
-    
+
     <span class="c1"># Auto-detect if needed</span>
     <span class="k">if</span> <span class="n">task_type</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">has_calibration</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">has_identification</span><span class="p">:</span>
@@ -706,12 +752,18 @@
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
                 <span class="s2">&quot;Cannot determine task type from legacy configuration&quot;</span>
             <span class="p">)</span>
-    
+
     <span class="k">if</span> <span class="n">task_type</span> <span class="o">==</span> <span class="s2">&quot;calibration&quot;</span> <span class="ow">and</span> <span class="n">has_calibration</span><span class="p">:</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">..calibration.calibration_tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_param_from_yaml</span> <span class="k">as</span> <span class="n">legacy_cal_parser</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..calibration.calibration_tools</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+            <span class="n">get_param_from_yaml</span> <span class="k">as</span> <span class="n">legacy_cal_parser</span><span class="p">,</span>
+        <span class="p">)</span>
+
         <span class="k">return</span> <span class="n">legacy_cal_parser</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">config_data</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">task_type</span> <span class="o">==</span> <span class="s2">&quot;identification&quot;</span> <span class="ow">and</span> <span class="n">has_identification</span><span class="p">:</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">..identification.identification_tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_param_from_yaml</span> <span class="k">as</span> <span class="n">legacy_id_parser</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..identification.identification_tools</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+            <span class="n">get_param_from_yaml</span> <span class="k">as</span> <span class="n">legacy_id_parser</span><span class="p">,</span>
+        <span class="p">)</span>
+
         <span class="k">return</span> <span class="n">legacy_id_parser</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">config_data</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
@@ -724,10 +776,10 @@
 <a class="viewcode-back" href="../../../modules/utils.html#figaroh.utils.config_parser.is_unified_config">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">is_unified_config</span><span class="p">(</span><span class="n">config_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if a configuration file is using the unified format.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        config_file: Path to configuration file</span>
-<span class="sd">        </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        True if unified format, False if legacy format</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -735,40 +787,40 @@
         <span class="n">config_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">config_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="k">return</span> <span class="kc">False</span>
-            
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-            
+
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
-            
+
         <span class="c1"># Check for unified format indicators</span>
         <span class="n">unified_indicators</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="s1">&#39;_metadata&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;schema_version&#39;</span><span class="p">,</span> 
-            <span class="s1">&#39;extends&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;variants&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;tasks&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;common&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;variables&#39;</span>
+            <span class="s2">&quot;_metadata&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;schema_version&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;extends&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;variants&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tasks&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;common&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;variables&quot;</span><span class="p">,</span>
         <span class="p">]</span>
-        
+
         <span class="c1"># If any unified indicators are present, consider it unified</span>
         <span class="k">for</span> <span class="n">indicator</span> <span class="ow">in</span> <span class="n">unified_indicators</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">indicator</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected unified config indicator: </span><span class="si">{</span><span class="n">indicator</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="k">return</span> <span class="kc">True</span>
-        
+
         <span class="c1"># Check if the file has task inheritance patterns</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;inherits_from&quot;</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected task inheritance in </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="k">return</span> <span class="kc">True</span>
-                
+
         <span class="c1"># Default to legacy format</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No unified format indicators found, treating as legacy&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">False</span>
-        
+
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error checking config format for </span><span class="si">{</span><span class="n">config_file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">False</span></div>
@@ -778,13 +830,17 @@
 <span class="c1"># Legacy compatibility functions with deprecation warnings</span>
 <div class="viewcode-block" id="get_calibration_param_from_yaml">
 <a class="viewcode-back" href="../../../modules/utils.html#figaroh.utils.config_parser.get_calibration_param_from_yaml">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_calibration_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_calibration_param_from_yaml</span><span class="p">(</span>
+    <span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Legacy function for calibration parameter parsing - DEPRECATED.&quot;&quot;&quot;</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
         <span class="s2">&quot;get_calibration_param_from_yaml is deprecated. &quot;</span>
         <span class="s2">&quot;Use get_param_from_yaml with task_type=&#39;calibration&#39;&quot;</span><span class="p">,</span>
-        <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span>
+        <span class="ne">DeprecationWarning</span><span class="p">,</span>
+        <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">,</span> <span class="s2">&quot;calibration&quot;</span><span class="p">)</span></div>
 
@@ -792,13 +848,17 @@
 
 <div class="viewcode-block" id="get_identification_param_from_yaml">
 <a class="viewcode-back" href="../../../modules/utils.html#figaroh.utils.config_parser.get_identification_param_from_yaml">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_identification_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_identification_param_from_yaml</span><span class="p">(</span>
+    <span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Legacy function for identification parameter parsing - DEPRECATED.&quot;&quot;&quot;</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
         <span class="s2">&quot;get_identification_param_from_yaml is deprecated. &quot;</span>
         <span class="s2">&quot;Use get_param_from_yaml with task_type=&#39;identification&#39;&quot;</span><span class="p">,</span>
-        <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span>
+        <span class="ne">DeprecationWarning</span><span class="p">,</span>
+        <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">,</span> <span class="s2">&quot;identification&quot;</span><span class="p">)</span></div>
 

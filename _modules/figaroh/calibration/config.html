@@ -170,9 +170,7 @@
         <span class="k">if</span> <span class="n">shared_joints</span> <span class="o">==</span> <span class="n">branch_s</span><span class="p">:</span>
             <span class="n">sup_joints</span> <span class="o">=</span> <span class="p">[</span><span class="n">branch_s</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="n">list_2</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="p">(</span>
-                <span class="n">shared_joints</span> <span class="o">!=</span> <span class="n">branch_e</span>
-            <span class="p">),</span> <span class="s2">&quot;End frame should be before start frame.&quot;</span>
+            <span class="k">assert</span> <span class="n">shared_joints</span> <span class="o">!=</span> <span class="n">branch_e</span><span class="p">,</span> <span class="s2">&quot;End frame should be before start frame.&quot;</span>
             <span class="c1"># case 3: there are overlapping joints between two branches</span>
             <span class="n">sup_joints</span> <span class="o">=</span> <span class="n">list_1</span> <span class="o">+</span> <span class="p">[</span><span class="n">shared_joints</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="n">list_2</span>
     <span class="k">return</span> <span class="n">sup_joints</span></div>
@@ -441,9 +439,7 @@
     <span class="c1"># 8. Extract data configuration</span>
     <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;number_of_samples&quot;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
     <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;data_file&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;source_file&quot;</span><span class="p">)</span>
-    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;sample_configs_file&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;sample_configurations_file&quot;</span>
-    <span class="p">)</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;sample_configs_file&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sample_configurations_file&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">calib_config</span></div>
 
@@ -517,9 +513,7 @@
     <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;tool_joint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tool_joint</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_determine_active_joints</span><span class="p">(</span>
-    <span class="n">calib_config</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">joints</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span>
-<span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_determine_active_joints</span><span class="p">(</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">joints</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine active joints from configuration or kinematic chain.</span>
 
 <span class="sd">    Args:</span>
@@ -544,9 +538,7 @@
 
     <span class="c1"># Store joint information</span>
     <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">actJoint_idx</span>
-    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;config_idx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">joints</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">idx_q</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">actJoint_idx</span>
-    <span class="p">]</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;config_idx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">joints</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">idx_q</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">actJoint_idx</span><span class="p">]</span>
     <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbJoint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">actJoint_idx</span><span class="p">)</span>
 
 
@@ -577,17 +569,13 @@
 <span class="sd">        parameters (dict): Parameters section from unified config</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Extract calibration model and settings</span>
-    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;calib_model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;calibration_level&quot;</span><span class="p">,</span> <span class="s2">&quot;full_params&quot;</span>
-    <span class="p">)</span>
+    <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;calib_model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;calibration_level&quot;</span><span class="p">,</span> <span class="s2">&quot;full_params&quot;</span><span class="p">)</span>
     <span class="n">non_geom</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;include_non_geometric&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
     <span class="c1"># Build parameter names for non-geometric parameters</span>
     <span class="n">param_name</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">if</span> <span class="n">non_geom</span><span class="p">:</span>
-        <span class="n">param_name</span> <span class="o">=</span> <span class="n">_build_elastic_param_names</span><span class="p">(</span>
-            <span class="n">robot</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">]</span>
-        <span class="p">)</span>
+        <span class="n">param_name</span> <span class="o">=</span> <span class="n">_build_elastic_param_names</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">])</span>
 
     <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;param_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_name</span>
 
@@ -598,9 +586,7 @@
             <span class="s2">&quot;non_geom&quot;</span><span class="p">:</span> <span class="n">non_geom</span><span class="p">,</span>
             <span class="s2">&quot;eps&quot;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span>
             <span class="s2">&quot;PLOT&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="s2">&quot;coeff_regularize&quot;</span><span class="p">:</span> <span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                <span class="s2">&quot;regularization_coefficient&quot;</span><span class="p">,</span> <span class="mf">0.01</span>
-            <span class="p">),</span>
+            <span class="s2">&quot;coeff_regularize&quot;</span><span class="p">:</span> <span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;regularization_coefficient&quot;</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">),</span>
             <span class="s2">&quot;outlier_eps&quot;</span><span class="p">:</span> <span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;outlier_threshold&quot;</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span>
         <span class="p">}</span>
     <span class="p">)</span>
@@ -699,9 +685,7 @@
 <span class="sd">            Calibration configuration dictionary</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">unified_get_param_from_yaml</span><span class="p">(</span>
-                <span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">,</span> <span class="s2">&quot;calibration&quot;</span>
-            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">unified_get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">,</span> <span class="s2">&quot;calibration&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="c1"># Fall back to legacy parser if unified parser fails</span>
             <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>

@@ -74,6 +74,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#figaroh.tools.robot.Robot"><code class="docutils literal notranslate"><span class="pre">Robot</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robot.Robot.DEFAULT_FREEFLYER_LIMITS"><code class="docutils literal notranslate"><span class="pre">Robot.DEFAULT_FREEFLYER_LIMITS</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robot.Robot.actuated_joint_names"><code class="docutils literal notranslate"><span class="pre">Robot.actuated_joint_names</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robot.Robot.backend"><code class="docutils literal notranslate"><span class="pre">Robot.backend</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robot.Robot.display_q0"><code class="docutils literal notranslate"><span class="pre">Robot.display_q0()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robot.Robot.freeflyer_limits"><code class="docutils literal notranslate"><span class="pre">Robot.freeflyer_limits</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.robot.Robot.get_configuration_bounds"><code class="docutils literal notranslate"><span class="pre">Robot.get_configuration_bounds()</span></code></a></li>
@@ -499,6 +500,21 @@ overdetermined systems (thin, tall matrices) with support for:
 <dt class="sig sig-object py" id="figaroh.tools.robot.Robot.actuated_joint_names">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">actuated_joint_names</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#figaroh.tools.robot.Robot.actuated_joint_names" title="Link to this definition"></a></dt>
 <dd><p>Names of actuated joints only.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="figaroh.tools.robot.Robot.backend">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">backend</span></span><a class="headerlink" href="#figaroh.tools.robot.Robot.backend" title="Link to this definition"></a></dt>
+<dd><p>Lazily-created DynamicsBackend wrapping this robot’s model.</p>
+<p>Returns a PinocchioBackend that shares the same pin.Model and pin.Data
+as this Robot instance — no URDF re-loading, no model duplication.
+Used by RegressorBuilder and other tools to route dynamics computation
+through the backend abstraction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>PinocchioBackend instance</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
