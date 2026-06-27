@@ -5,6 +5,68 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.4] - 2026-06-27
+
+### Added
+
+- `feat(calibration)`: Add validation data support for ground-truth FK testing.
+  - `_load_validation_data(path)` — load a separate validation measurement CSV.
+  - `_compute_validation_metrics()` — compare nominal vs calibrated FK against
+    held-out measurements; reports position/orientation RMSE, max error, and
+    improvement percentage.
+  - Validation data path configurable via YAML (`validation_data_file`) or CLI
+    (`--validation-data`) in example scripts.
+- `feat(calibration)`: Add comprehensive statistical quality report.
+  - `print_quality_report()` — formatted terminal table with convergence status,
+    per-DOF residuals (X/Y/Z/rx/ry/rz with R²), overall RMSE, validation metrics,
+    parameter uncertainty (top 5), and strongly correlated pairs (|ρ| > 0.8).
+  - `_compute_per_dof_stats()` — mean, std, RMSE, max, R² per kinematic DOF.
+  - `_compute_condition_number()` — condition number of Jacobian with
+    well/moderate/ill-conditioned label.
+  - `_compute_parameter_correlation()` — flags parameter pairs with |ρ| > 0.8
+    from the covariance matrix.
+  - Report printed automatically after `solve()` completes.
+- `feat(calibration)`: Add `position_frame='body'|'world'` option to
+  `_compute_logmap_residuals()` — choose body-frame or world-frame position error.
+- `feat(urdf_exporter)`: New module `figaroh.tools.urdf_exporter` for applying
+  calibrated joint parameters to URDF files with 12 joint-level categories.
+- `feat(export_validation)`: New module `figaroh.tools.export_validation` with
+  `URDFComparison` class — FK consistency checks, interactive viser visualization
+  (trajectory animation, static overlay, error plots, replay controls).
+- `feat(backends)`: Multi-simulator backend architecture.
+  - `PinocchioBackend` — 371 lines wrapping all Pinocchio dynamics/kinematics calls.
+  - `MuJoCoBackend` — 441 lines with URDF→MJCF auto-conversion.
+  - `DynamicsBackend` abstract interface with 9 abstract + 6 optional methods.
+  - `RobotIdentificationSystem` high-level integration API.
+- `feat(tests)`: Cross-backend validation suite, backend unit tests (32 Pinocchio
+  + 13 MuJoCo), TIAGo integration test fixture, URDF exporter tests.
+- `docs`: Combined ROADMAP.md (Track A + Track B), comprehensive architecture
+  docs, ADR for calibration validation plan.
+
+### Fixed
+
+- `fix(calibration)`: Replace element-wise RPY subtraction with proper SE3
+  log-map pose error in `_compute_logmap_residuals()` — geometrically correct
+  orientation residuals without singularity issues.
+- `fix(backends)`: MuJoCoBackend regressor (delegates to Pinocchio analytical),
+  Coriolis matrix (finite-difference Jacobian/2), mass matrix (adds missing
+  `mj_forward` call).
+
+### Changed
+
+- `breaking(export_validation)`: Rename `trajectory_errors()` → `fk_consistency_check()`
+  and `TrajectoryErrors` → `FkConsistencyResult` — clarifies this is a file-integrity
+  check, NOT ground-truth FK validation.
+- `chore`: Add black formatter to pre-commit hooks.
+- `chore`: Modernize pyproject.toml with dev dependencies and tool configs.
+
+### Tests
+
+- 293 passed, 20 skipped, 0 failed (from 208 passed with 4 pre-existing failures).
+- New: `test_backends.py` (45 tests), `test_cross_backend.py` (integration),
+  `test_tiago_fixture.py` (287 lines), `test_urdf_exporter.py` (296 lines),
+  `test_integration.py` (250 lines).
+
 ## [0.4.3] - 2026-06-02
 
 ### Added
