@@ -8,6 +8,7 @@ build/*
 cmake/*
 .vscode/*
 .github/skills
+.codegraph/
 
 # Python packaging
 dist/

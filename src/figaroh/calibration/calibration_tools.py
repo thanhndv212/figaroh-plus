@@ -175,7 +175,7 @@ def get_rel_transform(model, data, start_frame, end_frame):
     return sMef
 
 
-def get_rel_kinreg(model, data, start_frame, end_frame, q):
+def get_rel_kinreg(model, data, start_frame, end_frame, q, backend=None):
     """Calculate relative kinematic regressor between frames.
 
     Computes frame Jacobian-based regressor matrix mapping small joint displacements
@@ -187,13 +187,18 @@ def get_rel_kinreg(model, data, start_frame, end_frame, q):
         start_frame (str): Starting frame name
         end_frame (str): Target frame name
         q (ndarray): Joint configuration vector
+        backend (DynamicsBackend, optional): If provided, routes forward kinematics
+            calls through the backend abstraction.
 
     Returns:
         ndarray: (6, 6n) regressor matrix for n joints
     """
     sup_joints = get_sup_joints(model, start_frame, end_frame)
-    pin.framesForwardKinematics(model, data, q)
-    pin.updateFramePlacements(model, data)
+    if backend is not None:
+        backend.compute_forward_kinematics(q)
+    else:
+        pin.framesForwardKinematics(model, data, q)
+        pin.updateFramePlacements(model, data)
     kinreg = np.zeros((6, 6 * (model.njoints - 1)))
     frame = model.frames[model.getFrameId(end_frame)]
     oMf = data.oMi[frame.parent] * frame.placement
@@ -205,7 +210,7 @@ def get_rel_kinreg(model, data, start_frame, end_frame, q):
     return kinreg
 
 
-def get_rel_jac(model, data, start_frame, end_frame, q):
+def get_rel_jac(model, data, start_frame, end_frame, q, backend=None):
     """Calculate relative Jacobian matrix between two frames.
 
     Computes the difference between Jacobians of end_frame and start_frame,
@@ -217,6 +222,8 @@ def get_rel_jac(model, data, start_frame, end_frame, q):
         start_frame (str): Starting frame name
         end_frame (str): Target frame name
         q (ndarray): Joint configuration vector
+        backend (DynamicsBackend, optional): If provided, routes forward kinematics
+            and Jacobian calls through the backend abstraction.
 
     Returns:
         ndarray: (6, n) relative Jacobian matrix where:
@@ -227,18 +234,21 @@ def get_rel_jac(model, data, start_frame, end_frame, q):
     Note:
         Updates forward kinematics before computing Jacobians
     """
-    start_frameId = model.getFrameId(start_frame)
-    end_frameId = model.getFrameId(end_frame)
+    if backend is not None:
+        # compute_jacobian updates FK internally
+        J_start = backend.compute_jacobian(q, start_frame)
+        J_end = backend.compute_jacobian(q, end_frame)
+    else:
+        start_frameId = model.getFrameId(start_frame)
+        end_frameId = model.getFrameId(end_frame)
 
-    # update frameForwardKinematics and updateFramePlacements
-    pin.framesForwardKinematics(model, data, q)
-    pin.updateFramePlacements(model, data)
+        # update frameForwardKinematics and updateFramePlacements
+        pin.framesForwardKinematics(model, data, q)
+        pin.updateFramePlacements(model, data)
 
-    # relative Jacobian
-    J_start = pin.computeFrameJacobian(
-        model, data, q, start_frameId, pin.LOCAL
-    )
-    J_end = pin.computeFrameJacobian(model, data, q, end_frameId, pin.LOCAL)
+        # relative Jacobian
+        J_start = pin.computeFrameJacobian(model, data, q, start_frameId, pin.LOCAL)
+        J_end = pin.computeFrameJacobian(model, data, q, end_frameId, pin.LOCAL)
     J_rel = J_end - J_start
     return J_rel
 
@@ -278,7 +288,9 @@ def initialize_variables(calib_config, mode=0, seed=0):
     return var, nvar
 
 
-def update_forward_kinematics(model, data, var, q, calib_config, verbose=0):
+def update_forward_kinematics(
+    model, data, var, q, calib_config, verbose=0, backend=None
+):
     """Update forward kinematics with calibration parameters.
 
     Applies geometric and kinematic error parameters to update joint placements
@@ -299,6 +311,8 @@ def update_forward_kinematics(model, data, var, q, calib_config, verbose=0):
             - actJoint_idx: Active joint indices
             - measurability: Active DOFs
         verbose (int, optional): Print update info. Defaults to 0.
+        backend (DynamicsBackend, optional): If provided, routes forward kinematics
+            and gravity calls through the backend abstraction.
 
     Returns:
         ndarray: Flattened end-effector measurements for all samples
@@ -399,13 +413,19 @@ def update_forward_kinematics(model, data, var, q, calib_config, verbose=0):
     # get transform
     q_ = np.copy(q)
     for i in range(calib_config["NbSample"]):
-        pin.framesForwardKinematics(model, data, q_[i, :])
-        pin.updateFramePlacements(model, data)
+        if backend is not None:
+            backend.compute_forward_kinematics(q_[i, :])
+        else:
+            pin.framesForwardKinematics(model, data, q_[i, :])
+            pin.updateFramePlacements(model, data)
         # update model.jointPlacements with joint elastic error
         if calib_config["non_geom"]:
-            tau = pin.computeGeneralizedGravity(
-                model, data, q_[i, :]
-            )  # vector size of 32 = nq < njoints
+            if backend is not None:
+                tau = backend.compute_gravity_vector(q_[i, :])
+            else:
+                tau = pin.computeGeneralizedGravity(
+                    model, data, q_[i, :]
+                )  # vector size of 32 = nq < njoints
             # update xyz_rpy with joint elastic error
             for j_id in calib_config["actJoint_idx"]:
                 xyz_rpy = np.zeros(6)
@@ -462,9 +482,7 @@ def update_forward_kinematics(model, data, var, q, calib_config, verbose=0):
 
     PEE = PEE.flatten("C")
     # revert model back to original
-    assert (
-        origin_model.jointPlacements != model.jointPlacements
-    ), "before revert"
+    assert origin_model.jointPlacements != model.jointPlacements, "before revert"
     for j_id in calib_config["actJoint_idx"]:
         xyz_rpy = np.zeros(6)
         j_name = model.names[j_id]
@@ -476,14 +494,12 @@ def update_forward_kinematics(model, data, var, q, calib_config, verbose=0):
                         xyz_rpy[axis_id] = param_dict[key]
         model = update_joint_placement(model, j_id, -xyz_rpy)
 
-    assert (
-        origin_model.jointPlacements != model.jointPlacements
-    ), "after revert"
+    assert origin_model.jointPlacements != model.jointPlacements, "after revert"
 
     return PEE
 
 
-def calc_updated_fkm(model, data, var, q, calib_config, verbose=0):
+def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None):
     """Update forward kinematics with world frame transformations.
 
     Specialized version that explicitly handles transformations between:
@@ -500,6 +516,8 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0):
             - Frames and parameters from update_forward_kinematics()
             - NbMarkers=1 (only supports single marker)
         verbose (int, optional): Print update info. Defaults to 0.
+        backend (DynamicsBackend, optional): If provided, routes forward kinematics
+            calls through the backend abstraction.
 
     Returns:
         ndarray: Flattened marker measurements in world frame
@@ -627,8 +645,11 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0):
     q_ = np.copy(q)
     for i in range(calib_config["NbSample"]):
 
-        pin.framesForwardKinematics(model, data, q_[i, :])
-        pin.updateFramePlacements(model, data)
+        if backend is not None:
+            backend.compute_forward_kinematics(q_[i, :])
+        else:
+            pin.framesForwardKinematics(model, data, q_[i, :])
+            pin.updateFramePlacements(model, data)
 
         # NOTE: joint elastic error is not considered in this version
 
@@ -652,9 +673,7 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0):
     PEE = PEE.flatten("C")
 
     # revert model back to original
-    assert (
-        origin_model.jointPlacements != model.jointPlacements
-    ), "before revert"
+    assert origin_model.jointPlacements != model.jointPlacements, "before revert"
     for j_id in calib_config["actJoint_idx"]:
         xyz_rpy = np.zeros(6)
         j_name = model.names[j_id]
@@ -666,9 +685,7 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0):
                         xyz_rpy[axis_id] = param_dict[key]
         model = update_joint_placement(model, j_id, -xyz_rpy)
 
-    assert (
-        origin_model.jointPlacements != model.jointPlacements
-    ), "after revert"
+    assert origin_model.jointPlacements != model.jointPlacements, "after revert"
 
     return PEE
 
@@ -707,7 +724,7 @@ def update_joint_placement(model, joint_idx, xyz_rpy):
 # BASE REGRESSOR TOOLS
 
 
-def calculate_kinematics_model(q_i, model, data, calib_config):
+def calculate_kinematics_model(q_i, model, data, calib_config, backend=None):
     """Calculate Jacobian and kinematic regressor for single configuration.
 
     Computes frame Jacobian and kinematic regressor matrices for tool frame
@@ -718,6 +735,8 @@ def calculate_kinematics_model(q_i, model, data, calib_config):
         model (pin.Model): Robot model
         data (pin.Data): Robot data
         calib_config (dict): Parameters containing "IDX_TOOL" frame index
+        backend (DynamicsBackend, optional): If provided, routes forward kinematics
+            and Jacobian calls through the backend abstraction.
 
     Returns:
         tuple:
@@ -726,19 +745,28 @@ def calculate_kinematics_model(q_i, model, data, calib_config):
             - R (ndarray): (6,6n) Kinematic regressor matrix
             - J (ndarray): (6,n) Frame Jacobian matrix
     """
-    pin.forwardKinematics(model, data, q_i)
-    pin.updateFramePlacements(model, data)
+    if backend is not None:
+        # compute_forward_kinematics updates FK internally
+        backend.compute_forward_kinematics(q_i)
+        # Convert frame ID to name for backend Jacobian
+        frame_id = calib_config["IDX_TOOL"]
+        frame_name = model.frames[frame_id].name
+        J = backend.compute_jacobian(q_i, frame_name)
+    else:
+        pin.forwardKinematics(model, data, q_i)
+        pin.updateFramePlacements(model, data)
+        J = pin.computeFrameJacobian(
+            model, data, q_i, calib_config["IDX_TOOL"], pin.LOCAL
+        )
 
-    J = pin.computeFrameJacobian(
-        model, data, q_i, calib_config["IDX_TOOL"], pin.LOCAL
-    )
+    # computeFrameKinematicRegressor has no backend equivalent — use escape hatch
     R = pin.computeFrameKinematicRegressor(
         model, data, calib_config["IDX_TOOL"], pin.LOCAL
     )
     return model, data, R, J
 
 
-def calculate_identifiable_kinematics_model(q, model, data, calib_config):
+def calculate_identifiable_kinematics_model(q, model, data, calib_config, backend=None):
     """Calculate identifiable Jacobian and regressor matrices.
 
     Builds aggregated Jacobian and regressor matrices from either:
@@ -754,6 +782,8 @@ def calculate_identifiable_kinematics_model(q, model, data, calib_config):
             - calibration_index: Number of active DOFs
             - start_frame, end_frame: Frame names
             - calib_model: Model type
+        backend (DynamicsBackend, optional): If provided, routes random configuration
+            and forwards backend to called functions.
 
     Returns:
         ndarray: Either:
@@ -777,22 +807,35 @@ def calculate_identifiable_kinematics_model(q, model, data, calib_config):
     J = np.zeros([6 * calib_config["NbSample"], model.njoints - 1])
     for i in range(calib_config["NbSample"]):
         if MIN_MODEL == 1:
-            q_rand = pin.randomConfiguration(model)
+            if backend is not None:
+                q_rand = backend.random_configuration()
+            else:
+                q_rand = pin.randomConfiguration(model)
             q_i = calib_config["q0"]
             q_i[calib_config["config_idx"]] = q_rand[calib_config["config_idx"]]
         else:
             q_i = q_temp[i, :]
         if calib_config["start_frame"] == "universe":
             model, data, Ri, Ji = calculate_kinematics_model(
-                q_i, model, data, calib_config
+                q_i, model, data, calib_config, backend=backend
             )
         else:
             Ri = get_rel_kinreg(
-                model, data, calib_config["start_frame"], calib_config["end_frame"], q_i
+                model,
+                data,
+                calib_config["start_frame"],
+                calib_config["end_frame"],
+                q_i,
+                backend=backend,
             )
             # Ji = np.zeros([6, model.njoints-1]) ## TODO: get_rel_jac
             Ji = get_rel_jac(
-                model, data, calib_config["start_frame"], calib_config["end_frame"], q_i
+                model,
+                data,
+                calib_config["start_frame"],
+                calib_config["end_frame"],
+                q_i,
+                backend=backend,
             )
         for j, state in enumerate(calib_config["measurability"]):
             if state:
@@ -809,7 +852,7 @@ def calculate_identifiable_kinematics_model(q, model, data, calib_config):
         if np.linalg.norm(J[r_idx, :]) < 1e-6:
             zero_rows.append(r_idx)
     J = np.delete(J, zero_rows, axis=0)
-    
+
     # select regressor matrix based on calibration model
     if calib_config["calib_model"] == "joint_offset":
         return J
@@ -817,7 +860,9 @@ def calculate_identifiable_kinematics_model(q, model, data, calib_config):
         return R
 
 
-def calculate_base_kinematics_regressor(q, model, data, calib_config, tol_qr=TOL_QR):
+def calculate_base_kinematics_regressor(
+    q, model, data, calib_config, tol_qr=TOL_QR, backend=None
+):
     """Calculate base regressor matrix for calibration parameters.
 
     Identifies base (identifiable) parameters by:
@@ -833,6 +878,8 @@ def calculate_base_kinematics_regressor(q, model, data, calib_config, tol_qr=TOL
             - free_flyer: Whether base is floating
             - calib_model: Either "joint_offset" or "full_params"
         tol_qr (float, optional): QR decomposition tolerance. Defaults to TOL_QR.
+        backend (DynamicsBackend, optional): If provided, forwards backend to
+            called functions for backend-aware computation.
 
     Returns:
         tuple:
@@ -853,12 +900,18 @@ def calculate_base_kinematics_regressor(q, model, data, calib_config, tol_qr=TOL
 
     # calculate kinematic regressor with random configs
     if not calib_config["free_flyer"]:
-        Rrand = calculate_identifiable_kinematics_model([], model, data, calib_config)
+        Rrand = calculate_identifiable_kinematics_model(
+            [], model, data, calib_config, backend=backend
+        )
     else:
-        Rrand = calculate_identifiable_kinematics_model(q, model, data, calib_config)
+        Rrand = calculate_identifiable_kinematics_model(
+            q, model, data, calib_config, backend=backend
+        )
     # calculate kinematic regressor with input configs
     if np.any(np.array(q)):
-        R = calculate_identifiable_kinematics_model(q, model, data, calib_config)
+        R = calculate_identifiable_kinematics_model(
+            q, model, data, calib_config, backend=backend
+        )
     else:
         R = Rrand
 
@@ -887,9 +940,7 @@ def calculate_base_kinematics_regressor(q, model, data, calib_config, tol_qr=TOL
     idx_base = get_baseIndex(Rrand_e, paramsrand_e, tol_qr=tol_qr)
 
     # get base regressor and base params from random data
-    Rrand_b, paramsrand_base, _ = get_baseParams(
-        Rrand_e, paramsrand_e, tol_qr=tol_qr
-    )
+    Rrand_b, paramsrand_base, _ = get_baseParams(Rrand_e, paramsrand_e, tol_qr=tol_qr)
 
     # remove non affect columns from GIVEN data
     R_e, params_e = eliminate_non_dynaffect(R_sel, geo_params_sel, tol_e=1e-6)

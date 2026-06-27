@@ -426,9 +426,7 @@ class LinearSolver:
     def _solve_weighted(self, A, b):
         """Weighted least squares."""
         if self.weights is None:
-            raise ValueError(
-                "Weights must be provided for weighted least squares"
-            )
+            raise ValueError("Weights must be provided for weighted least squares")
 
         W = np.sqrt(self.weights)
         if W.ndim == 1:

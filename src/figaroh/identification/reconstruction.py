@@ -72,10 +72,7 @@ class ReconstructionResult:
 
     def as_dict(self) -> Dict[str, float]:
         """Return {param_name: value} mapping aligned to ``params_r``."""
-        return {
-            name: float(self.theta_r[i])
-            for i, name in enumerate(self.params_r)
-        }
+        return {name: float(self.theta_r[i]) for i, name in enumerate(self.params_r)}
 
 
 @dataclass(frozen=True)
@@ -115,9 +112,7 @@ def prior_vector_from_dict(
     if params_std is None:
         return np.full(len(params_r), float(default))
 
-    return np.array(
-        [float(params_std.get(name, default)) for name in params_r]
-    )
+    return np.array([float(params_std.get(name, default)) for name in params_r])
 
 
 def reconstruct_theta_r(
@@ -153,18 +148,14 @@ def reconstruct_theta_r(
 
     r, n = M.shape
     if phi_base.shape != (r,):
-        raise ValueError(
-            f"phi_base must have shape ({r},), got {phi_base.shape}"
-        )
+        raise ValueError(f"phi_base must have shape ({r},), got {phi_base.shape}")
 
     if theta0 is None:
         theta0 = np.zeros(n, dtype=float)
     else:
         theta0 = np.asarray(theta0, dtype=float).reshape(-1)
         if theta0.shape != (n,):
-            raise ValueError(
-                f"theta0 must have shape ({n},), got {theta0.shape}"
-            )
+            raise ValueError(f"theta0 must have shape ({n},), got {theta0.shape}")
 
     if weights is None:
         w = np.ones(n, dtype=float)
@@ -278,11 +269,15 @@ def _load_prior_from_urdf(
         for key in _INERTIAL_KEYS:
             prefix = key + "_"
             if p_name.startswith(prefix):
-                joint_name = p_name[len(prefix):]
+                joint_name = p_name[len(prefix) :]
                 idx = name_to_idx.get(joint_name)
                 if idx is not None:
                     inertia = model.inertias[idx]
-                    cx, cy, cz = float(inertia.lever[0]), float(inertia.lever[1]), float(inertia.lever[2])
+                    cx, cy, cz = (
+                        float(inertia.lever[0]),
+                        float(inertia.lever[1]),
+                        float(inertia.lever[2]),
+                    )
                     m_val = float(inertia.mass)
                     I = inertia.inertia  # 3×3
                     flat = {
@@ -429,18 +424,26 @@ def _reconstruct_sdp(
     for j_name, idx in joint_map.items():
         problem.add_constraint(theta[idx["m"]] >= mass_min)
 
-        Ixx = theta[idx["Ixx"]]; Ixy = theta[idx["Ixy"]]; Ixz = theta[idx["Ixz"]]
-        Iyy = theta[idx["Iyy"]]; Iyz = theta[idx["Iyz"]]; Izz = theta[idx["Izz"]]
-        mx  = theta[idx["mx"]];  my  = theta[idx["my"]];  mz  = theta[idx["mz"]]
-        m   = theta[idx["m"]]
+        Ixx = theta[idx["Ixx"]]
+        Ixy = theta[idx["Ixy"]]
+        Ixz = theta[idx["Ixz"]]
+        Iyy = theta[idx["Iyy"]]
+        Iyz = theta[idx["Iyz"]]
+        Izz = theta[idx["Izz"]]
+        mx = theta[idx["mx"]]
+        my = theta[idx["my"]]
+        mz = theta[idx["mz"]]
+        m = theta[idx["m"]]
 
         # 4×4 pseudo-inertia P_j
-        P_j = pc.block([
-            [Ixx, Ixy, Ixz, mx],
-            [Ixy, Iyy, Iyz, my],
-            [Ixz, Iyz, Izz, mz],
-            [mx,  my,  mz,  m ],
-        ])
+        P_j = pc.block(
+            [
+                [Ixx, Ixy, Ixz, mx],
+                [Ixy, Iyy, Iyz, my],
+                [Ixz, Iyz, Izz, mz],
+                [mx, my, mz, m],
+            ]
+        )
         problem.add_constraint(P_j >> 0)
 
     # Optional CAD-informed additional constraints (mass/CoM bounds, symmetry)
@@ -449,17 +452,15 @@ def _reconstruct_sdp(
             apply_cad_constraints_to_problem,
         )
 
-        apply_cad_constraints_to_problem(
-            problem, theta, params_r, cad_constraints
-        )
+        apply_cad_constraints_to_problem(problem, theta, params_r, cad_constraints)
 
     # Quadratic objective via Schur complement:
     # minimise t s.t. [[t, diff^T], [diff, I_n]] >> 0
     # where diff = diag(w) (theta - theta0)
     theta0_c = pc.Constant("theta0", theta0.reshape(n, 1))
     W_c = pc.Constant("W", np.diag(w))
-    diff = W_c * (theta - theta0_c)       # (n, 1)
-    I_n  = pc.Constant("In", np.eye(n))
+    diff = W_c * (theta - theta0_c)  # (n, 1)
+    I_n = pc.Constant("In", np.eye(n))
     schur = pc.block([[t_var, diff.T], [diff, I_n]])
     problem.add_constraint(schur >> 0)
     problem.minimize = t_var
@@ -556,13 +557,18 @@ def reconstruct_full_parameters(
         prior_vec = prior_vector_from_dict(params_r, params_std_prior)
 
     # Resolve weights
-    w = np.ones(n, dtype=float) if weights is None else np.asarray(weights, dtype=float).reshape(n)
+    w = (
+        np.ones(n, dtype=float)
+        if weights is None
+        else np.asarray(weights, dtype=float).reshape(n)
+    )
 
     # Resolve effective method
     effective_method = method.lower().strip()
     if effective_method == "auto":
         try:
             import picos  # noqa: F401
+
             effective_method = "sdp"
         except Exception:
             effective_method = "nullspace"
@@ -594,8 +600,10 @@ def reconstruct_full_parameters(
                 M_in, phi_in, theta0=prior_vec, weights=weights
             )
             return ReconstructionResult(
-                theta_r=theta_r, params_r=params_r,
-                residual=residual_fall, status=status,
+                theta_r=theta_r,
+                params_r=params_r,
+                residual=residual_fall,
+                status=status,
                 base_residual_norm=float(np.linalg.norm(residual_fall)),
             )
         except Exception as exc:
@@ -605,8 +613,10 @@ def reconstruct_full_parameters(
                 M_in, phi_in, theta0=prior_vec, weights=weights
             )
             return ReconstructionResult(
-                theta_r=theta_r, params_r=params_r,
-                residual=residual_fall, status=status,
+                theta_r=theta_r,
+                params_r=params_r,
+                residual=residual_fall,
+                status=status,
                 base_residual_norm=float(np.linalg.norm(residual_fall)),
             )
     elif effective_method == "nullspace":
@@ -615,13 +625,14 @@ def reconstruct_full_parameters(
         )
     else:
         raise ValueError(
-            f"Unsupported method={method!r}. "
-            "Choose 'nullspace', 'sdp', or 'auto'."
+            f"Unsupported method={method!r}. " "Choose 'nullspace', 'sdp', or 'auto'."
         )
 
     residual = M_in @ theta_r - phi_in
     return ReconstructionResult(
-        theta_r=theta_r, params_r=params_r, residual=residual,
+        theta_r=theta_r,
+        params_r=params_r,
+        residual=residual,
         status=status,
         base_residual_norm=float(np.linalg.norm(residual)),
         objective=objective,
@@ -687,9 +698,7 @@ def run_reconstruction(
 
     if alt_enabled and max_iters > 1:
         if not joint_names:
-            raise ValueError(
-                "joint_names must be provided when alternation is enabled"
-            )
+            raise ValueError("joint_names must be provided when alternation is enabled")
 
         pc_cfg = cfg.get("physical_consistency", {})
         if not isinstance(pc_cfg, dict):

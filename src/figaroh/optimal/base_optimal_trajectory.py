@@ -42,7 +42,9 @@ from figaroh.utils.cubic_spline import (
     calc_torque,
 )
 from figaroh.tools.robotipopt import (
-    IPOPTConfig, BaseOptimizationProblem, RobotIPOPTSolver
+    IPOPTConfig,
+    BaseOptimizationProblem,
+    RobotIPOPTSolver,
 )
 from figaroh.optimal.config import load_param
 from figaroh.optimal.base_parameter import BaseParameterComputer
@@ -52,19 +54,23 @@ from figaroh.optimal.contraints import TrajectoryConstraintManager
 class BaseOptimalTrajectory:
     """
     Base class for IPOPT-based optimal trajectory generation.
-    
+
     Features:
     - Modular design with separated concerns
     - Better error handling and logging
     - Configuration validation
     - Cleaner interfaces
-    
+
     This base class can be extended for specific robots by implementing
     robot-specific configuration loading and constraint handling.
     """
 
-    def __init__(self, robot, active_joints: List[str], 
-                 config_file: str = "config/robot_config.yaml"):
+    def __init__(
+        self,
+        robot,
+        active_joints: List[str],
+        config_file: str = "config/robot_config.yaml",
+    ):
         """Initialize the optimal trajectory generator."""
         self.robot = robot
         self.model = self.robot.model
@@ -83,8 +89,12 @@ class BaseOptimalTrajectory:
 
         # Results storage
         self.results = {
-            'T_F': [], 'P_F': [], 'V_F': [], 'A_F': [],
-            'iteration_data': [], 'final_regressor_shape': None
+            "T_F": [],
+            "P_F": [],
+            "V_F": [],
+            "A_F": [],
+            "iteration_data": [],
+            "final_regressor_shape": None,
         }
 
     def initialize(self):
@@ -120,7 +130,9 @@ class BaseOptimalTrajectory:
         # Compute base parameters
         self.idx_e, self.idx_b = self.base_computer.compute_base_indices()
 
-        self.logger.info(f"BaseOptimalTrajectory initialized with {len(self.idx_b)} base parameters")
+        self.logger.info(
+            f"BaseOptimalTrajectory initialized with {len(self.idx_b)} base parameters"
+        )
 
     def solve(self, stack_reps: int = 2) -> Dict[str, Any]:
         """
@@ -150,9 +162,7 @@ class BaseOptimalTrajectory:
             W_stack = None
 
             for s_rep in range(stack_reps):
-                self.logger.info(
-                    f"Optimizing segment {s_rep + 1}/{stack_reps}"
-                )
+                self.logger.info(f"Optimizing segment {s_rep + 1}/{stack_reps}")
                 self.logger.info(f"Initial waypoint: {wp_init}")
 
                 success = self._solve_segment(
@@ -225,9 +235,7 @@ class BaseOptimalTrajectory:
         W_stack,
     ):
         """Create IPOPT problem instance. Should be implemented by subclasses."""
-        raise NotImplementedError(
-            "Subclasses must implement create_ipopt_problem"
-        )
+        raise NotImplementedError("Subclasses must implement create_ipopt_problem")
 
     def _stack_base_regressors(self, q, v, a, W_stack=None) -> np.ndarray:
         """Build base regressor matrix."""
@@ -251,17 +259,18 @@ class BaseOptimalTrajectory:
         count = 0
         is_constr_violated = True
 
-        while (
-            is_constr_violated
-            and count < self.trajectory_config["max_attempts"]
-        ):
+        while is_constr_violated and count < self.trajectory_config["max_attempts"]:
             count += 1
             if count % 100 == 0:
-                self.logger.info(f"Attempt {count} to find feasible initial trajectory...")
+                self.logger.info(
+                    f"Attempt {count} to find feasible initial trajectory..."
+                )
 
             try:
                 # Generate random waypoints
-                wps, vel_wps, acc_wps = self.WP.gen_rand_wp(wp_init, vel_wp_init, acc_wp_init)
+                wps, vel_wps, acc_wps = self.WP.gen_rand_wp(
+                    wp_init, vel_wp_init, acc_wp_init
+                )
 
                 # Generate time points
                 tps = np.matrix(
@@ -277,9 +286,7 @@ class BaseOptimalTrajectory:
                 )
 
                 # Compute torques and check constraints
-                tau_i = calc_torque(
-                    p_i.shape[0], self.robot, p_i, v_i, a_i
-                )
+                tau_i = calc_torque(p_i.shape[0], self.robot, p_i, v_i, a_i)
                 tau_i = np.reshape(tau_i, (v_i.shape[1], v_i.shape[0])).transpose()
                 is_constr_violated = self.CB.check_cfg_constraints(p_i, v_i, tau_i)
 
@@ -292,7 +299,9 @@ class BaseOptimalTrajectory:
                 f"Could not find feasible initial trajectory after {self.trajectory_config['max_attempts']} attempts"
             )
         else:
-            self.logger.info(f"Found feasible initial trajectory after {count} attempts")
+            self.logger.info(
+                f"Found feasible initial trajectory after {count} attempts"
+            )
 
         return wps, vel_wps, acc_wps, tps, t_i, p_i, v_i, a_i
 
@@ -300,8 +309,8 @@ class BaseOptimalTrajectory:
         """Solve a single trajectory segment."""
         try:
             # Generate feasible initial guess
-            wps, vel_wps, acc_wps, tps, t_i, p_i, v_i, a_i = self._generate_feasible_initial_guess(
-                wp_init, vel_wp_init, acc_wp_init
+            wps, vel_wps, acc_wps, tps, t_i, p_i, v_i, a_i = (
+                self._generate_feasible_initial_guess(wp_init, vel_wp_init, acc_wp_init)
             )
 
             # Adjust time points for stacking
@@ -324,11 +333,11 @@ class BaseOptimalTrajectory:
             success, result_data = problem.solve_with_waypoints(wps)
 
             if success:
-                self.results['T_F'].append(result_data['t_f'])
-                self.results['P_F'].append(result_data['p_f'])
-                self.results['V_F'].append(result_data['v_f'])
-                self.results['A_F'].append(result_data['a_f'])
-                self.results['iteration_data'].append(result_data['iter_data'])
+                self.results["T_F"].append(result_data["t_f"])
+                self.results["P_F"].append(result_data["p_f"])
+                self.results["V_F"].append(result_data["v_f"])
+                self.results["A_F"].append(result_data["a_f"])
+                self.results["iteration_data"].append(result_data["iter_data"])
                 self.logger.info(f"Segment {s_rep + 1} completed successfully!")
                 return True
             else:
@@ -341,13 +350,13 @@ class BaseOptimalTrajectory:
     def _prepare_next_segment(self) -> Tuple[np.ndarray, np.ndarray]:
         """Prepare initial conditions for next segment."""
         # Get last result
-        last_result = self.results['iteration_data'][-1]
-        wp_init = last_result['final_waypoint']
+        last_result = self.results["iteration_data"][-1]
+        wp_init = last_result["final_waypoint"]
 
         # Stack regressor
-        last_p_f = self.results['P_F'][-1]
-        last_v_f = self.results['V_F'][-1]
-        last_a_f = self.results['A_F'][-1]
+        last_p_f = self.results["P_F"][-1]
+        last_v_f = self.results["V_F"][-1]
+        last_a_f = self.results["A_F"][-1]
 
         # Convert back to full configuration for regressor building
         # This is a simplified version - in practice you'd need to handle this more carefully
@@ -357,7 +366,7 @@ class BaseOptimalTrajectory:
 
     def plot_results(self):
         """Plot optimal trajectory results using unified results manager."""
-        if not self.results['T_F']:
+        if not self.results["T_F"]:
             self.logger.warning("No trajectory data to plot")
             return
 
@@ -365,20 +374,28 @@ class BaseOptimalTrajectory:
             from .results_manager import ResultsManager
 
             # Initialize results manager
-            robot_name = getattr(self, 'robot_name', self.robot.model.name)
-            results_manager = ResultsManager('optimal_trajectory', robot_name)
+            robot_name = getattr(self, "robot_name", self.robot.model.name)
+            results_manager = ResultsManager("optimal_trajectory", robot_name)
 
             # Calculate overall condition number
-            condition_number = getattr(self, 'final_condition_number', 0.0)
-            if condition_number == 0.0 and hasattr(self, 'results') and 'condition_numbers' in self.results:
-                condition_number = self.results['condition_numbers'][-1] if self.results['condition_numbers'] else 0.0
+            condition_number = getattr(self, "final_condition_number", 0.0)
+            if (
+                condition_number == 0.0
+                and hasattr(self, "results")
+                and "condition_numbers" in self.results
+            ):
+                condition_number = (
+                    self.results["condition_numbers"][-1]
+                    if self.results["condition_numbers"]
+                    else 0.0
+                )
 
             # Plot using unified manager
             results_manager.plot_optimal_trajectory_results(
                 trajectories=self.results,
                 condition_number=condition_number,
                 joint_names=[f"Joint {i+1}" for i in range(len(self.CB.act_Jid))],
-                title="Optimal Trajectory Generation Results"
+                title="Optimal Trajectory Generation Results",
             )
 
         except ImportError:
@@ -386,32 +403,50 @@ class BaseOptimalTrajectory:
             try:
                 # Create subplots
                 n_joints = len(self.CB.act_Jid)
-                fig, axes = plt.subplots(n_joints, 3, sharex=True, figsize=(15, 2*n_joints))
+                fig, axes = plt.subplots(
+                    n_joints, 3, sharex=True, figsize=(15, 2 * n_joints)
+                )
                 if n_joints == 1:
                     axes = axes.reshape(1, -1)
 
-                fig.suptitle('Optimal Trajectory Results', fontsize=16)
+                fig.suptitle("Optimal Trajectory Results", fontsize=16)
 
                 # Plot each segment
-                colors = plt.cm.tab10(np.linspace(0, 1, len(self.results['T_F'])))
+                colors = plt.cm.tab10(np.linspace(0, 1, len(self.results["T_F"])))
 
-                for seg_idx, (T, P, V, A) in enumerate(zip(
-                    self.results['T_F'], self.results['P_F'], 
-                    self.results['V_F'], self.results['A_F']
-                )):
+                for seg_idx, (T, P, V, A) in enumerate(
+                    zip(
+                        self.results["T_F"],
+                        self.results["P_F"],
+                        self.results["V_F"],
+                        self.results["A_F"],
+                    )
+                ):
                     color = colors[seg_idx]
-                    label = f'Segment {seg_idx + 1}'
+                    label = f"Segment {seg_idx + 1}"
 
                     for joint_idx in range(n_joints):
-                        axes[joint_idx, 0].plot(T, P[:, joint_idx], color=color, label=label)
-                        axes[joint_idx, 1].plot(T, V[:, joint_idx], color=color, label=label)
-                        axes[joint_idx, 2].plot(T, A[:, joint_idx], color=color, label=label)
+                        axes[joint_idx, 0].plot(
+                            T, P[:, joint_idx], color=color, label=label
+                        )
+                        axes[joint_idx, 1].plot(
+                            T, V[:, joint_idx], color=color, label=label
+                        )
+                        axes[joint_idx, 2].plot(
+                            T, A[:, joint_idx], color=color, label=label
+                        )
 
                 # Set labels and formatting
                 for joint_idx in range(n_joints):
-                    axes[joint_idx, 0].set_ylabel(f'Joint {joint_idx+1}\nPosition (rad)')
-                    axes[joint_idx, 1].set_ylabel(f'Joint {joint_idx+1}\nVelocity (rad/s)')
-                    axes[joint_idx, 2].set_ylabel(f'Joint {joint_idx+1}\nAcceleration (rad/s²)')
+                    axes[joint_idx, 0].set_ylabel(
+                        f"Joint {joint_idx+1}\nPosition (rad)"
+                    )
+                    axes[joint_idx, 1].set_ylabel(
+                        f"Joint {joint_idx+1}\nVelocity (rad/s)"
+                    )
+                    axes[joint_idx, 2].set_ylabel(
+                        f"Joint {joint_idx+1}\nAcceleration (rad/s²)"
+                    )
 
                     if joint_idx == 0:
                         for col in range(3):
@@ -420,9 +455,9 @@ class BaseOptimalTrajectory:
                     for col in range(3):
                         axes[joint_idx, col].grid(True, alpha=0.3)
 
-                axes[-1, 0].set_xlabel('Time (s)')
-                axes[-1, 1].set_xlabel('Time (s)')
-                axes[-1, 2].set_xlabel('Time (s)')
+                axes[-1, 0].set_xlabel("Time (s)")
+                axes[-1, 1].set_xlabel("Time (s)")
+                axes[-1, 2].set_xlabel("Time (s)")
 
                 plt.tight_layout()
                 plt.show()
@@ -432,7 +467,7 @@ class BaseOptimalTrajectory:
 
     def save_results(self, output_dir="results"):
         """Save optimal trajectory results using unified results manager."""
-        if not self.results['T_F']:
+        if not self.results["T_F"]:
             self.logger.warning("No trajectory data to save")
             return
 
@@ -440,35 +475,43 @@ class BaseOptimalTrajectory:
             from .results_manager import ResultsManager
 
             # Initialize results manager
-            robot_name = getattr(self, 'robot_name', self.robot.model.name)
-            results_manager = ResultsManager('optimal_trajectory', robot_name)
+            robot_name = getattr(self, "robot_name", self.robot.model.name)
+            results_manager = ResultsManager("optimal_trajectory", robot_name)
 
             # Calculate overall condition number
-            condition_number = getattr(self, 'final_condition_number', 0.0)
-            if condition_number == 0.0 and hasattr(self, 'results') and 'condition_numbers' in self.results:
-                condition_number = self.results['condition_numbers'][-1] if self.results['condition_numbers'] else 0.0
+            condition_number = getattr(self, "final_condition_number", 0.0)
+            if (
+                condition_number == 0.0
+                and hasattr(self, "results")
+                and "condition_numbers" in self.results
+            ):
+                condition_number = (
+                    self.results["condition_numbers"][-1]
+                    if self.results["condition_numbers"]
+                    else 0.0
+                )
 
             # Prepare results dictionary
             results_dict = {
-                'trajectory_segments': len(self.results['T_F']),
-                'condition_number': float(condition_number),
-                'joint_names': [f"Joint {i+1}" for i in range(len(self.CB.act_Jid))],
-                'configuration': self.CB.identif_config,
-                'time_segments': [t.tolist() for t in self.results['T_F']],
-                'position_segments': [p.tolist() for p in self.results['P_F']],
-                'velocity_segments': [v.tolist() for v in self.results['V_F']],
-                'acceleration_segments': [a.tolist() for a in self.results['A_F']]
+                "trajectory_segments": len(self.results["T_F"]),
+                "condition_number": float(condition_number),
+                "joint_names": [f"Joint {i+1}" for i in range(len(self.CB.act_Jid))],
+                "configuration": self.CB.identif_config,
+                "time_segments": [t.tolist() for t in self.results["T_F"]],
+                "position_segments": [p.tolist() for p in self.results["P_F"]],
+                "velocity_segments": [v.tolist() for v in self.results["V_F"]],
+                "acceleration_segments": [a.tolist() for a in self.results["A_F"]],
             }
 
             # Add condition number history if available
-            if 'condition_numbers' in self.results:
-                results_dict['condition_number_history'] = [float(c) for c in self.results['condition_numbers']]
+            if "condition_numbers" in self.results:
+                results_dict["condition_number_history"] = [
+                    float(c) for c in self.results["condition_numbers"]
+                ]
 
             # Save using unified manager
             saved_files = results_manager.save_results(
-                results_dict,
-                output_dir,
-                save_formats=['yaml', 'npz']
+                results_dict, output_dir, save_formats=["yaml", "npz"]
             )
 
             self.logger.info(f"Trajectory results saved successfully")
@@ -482,35 +525,48 @@ class BaseOptimalTrajectory:
             os.makedirs(output_dir, exist_ok=True)
 
             # Basic results dictionary
-            robot_name = getattr(self, 'robot_name', self.robot.model.name)
+            robot_name = getattr(self, "robot_name", self.robot.model.name)
             filename = f"{robot_name}_optimal_trajectory.yaml"
 
-            condition_number = getattr(self, 'final_condition_number', 0.0)
+            condition_number = getattr(self, "final_condition_number", 0.0)
             results_dict = {
-                'trajectory_segments': len(self.results['T_F']),
-                'condition_number': float(condition_number),
-                'joint_count': len(self.CB.act_Jid)
+                "trajectory_segments": len(self.results["T_F"]),
+                "condition_number": float(condition_number),
+                "joint_count": len(self.CB.act_Jid),
             }
 
-            with open(os.path.join(output_dir, filename), 'w') as f:
+            with open(os.path.join(output_dir, filename), "w") as f:
                 yaml.dump(results_dict, f, default_flow_style=False)
 
             self.logger.info(f"Basic results saved to {output_dir}/{filename}")
-            return {'yaml': os.path.join(output_dir, filename)}
+            return {"yaml": os.path.join(output_dir, filename)}
 
 
 class BaseTrajectoryIPOPTProblem(BaseOptimizationProblem):
     """
     Base IPOPT problem formulation for trajectory optimization.
-    
+
     This class provides a base implementation for trajectory optimization
     that can be extended for specific robots.
     """
-    
-    def __init__(self, opt_traj, n_joints, n_wps, Ns, tps, vel_wps, acc_wps, 
-                 wp_init, vel_wp_init, acc_wp_init, W_stack, problem_name="TrajectoryOptimization"):
+
+    def __init__(
+        self,
+        opt_traj,
+        n_joints,
+        n_wps,
+        Ns,
+        tps,
+        vel_wps,
+        acc_wps,
+        wp_init,
+        vel_wp_init,
+        acc_wp_init,
+        W_stack,
+        problem_name="TrajectoryOptimization",
+    ):
         super().__init__(problem_name)
-        
+
         self.opt_traj = opt_traj
         self.n_joints = n_joints
         self.n_wps = n_wps
@@ -522,47 +578,50 @@ class BaseTrajectoryIPOPTProblem(BaseOptimizationProblem):
         self.vel_wp_init = vel_wp_init
         self.acc_wp_init = acc_wp_init
         self.W_stack = W_stack
-        
+
         # Storage for optimization callback (inherits callback_data from base)
         self.opt_cb = {"t_f": None, "p_f": None, "v_f": None, "a_f": None}
-    
+
     def get_variable_bounds(self) -> Tuple[List[float], List[float]]:
         """Get variable bounds for optimization."""
         return self.opt_traj.constraint_manager.get_variable_bounds()
-    
+
     def get_constraint_bounds(self) -> Tuple[List[float], List[float]]:
         """Get constraint bounds for optimization."""
         return self.opt_traj.constraint_manager.get_constraint_bounds(self.Ns)
-    
+
     def get_initial_guess(self) -> List[float]:
         """Get initial guess from waypoints."""
         # This will be set when solve() is called with waypoints
-        if not hasattr(self, '_initial_wps'):
+        if not hasattr(self, "_initial_wps"):
             # Return zeros as fallback
             return [0.0] * (self.n_joints * (self.n_wps - 1))
-        
+
         X0 = self._initial_wps[:, range(1, self.n_wps)]
-        return np.reshape(X0.transpose(), 
-                         (self.n_joints * (self.n_wps - 1),)).tolist()
-    
+        return np.reshape(X0.transpose(), (self.n_joints * (self.n_wps - 1),)).tolist()
+
     def objective(self, X: np.ndarray) -> float:
         """Objective function: condition number of base regressor matrix."""
         return self.opt_traj.objective_function(
-            X, self.opt_cb, self.tps, self.vel_wps, self.acc_wps, 
-            self.wp_init, self.W_stack
+            X,
+            self.opt_cb,
+            self.tps,
+            self.vel_wps,
+            self.acc_wps,
+            self.wp_init,
+            self.W_stack,
         )
-    
+
     def constraints(self, X: np.ndarray) -> np.ndarray:
         """Constraint function for IPOPT."""
         return self.opt_traj.constraint_manager.evaluate_constraints(
-            self.Ns, X, self.opt_cb, self.tps, self.vel_wps, 
-            self.acc_wps, self.wp_init
+            self.Ns, X, self.opt_cb, self.tps, self.vel_wps, self.acc_wps, self.wp_init
         )
-    
+
     def jacobian(self, X: np.ndarray) -> np.ndarray:
         """
         Jacobian of constraints - Custom implementation for better performance.
-        
+
         For trajectory optimization, we can use sparse finite differences
         instead of full automatic differentiation which is too slow.
         """
@@ -571,21 +630,21 @@ class BaseTrajectoryIPOPTProblem(BaseOptimizationProblem):
             c0 = self.constraints(X)
             n_constraints = len(c0)
             n_vars = len(X)
-            
+
             # Use finite differences with smaller step size for efficiency
             eps = 1e-6
             jac = np.zeros((n_constraints, n_vars))
-            
+
             # Compute Jacobian column by column (forward differences)
             for i in range(n_vars):
                 X_plus = X.copy()
                 X_plus[i] += eps
                 c_plus = self.constraints(X_plus)
                 jac[:, i] = (c_plus - c0) / eps
-            
+
             self.logger.debug(f"Constraint jacobian shape: {jac.shape}")
             return jac
-            
+
         except Exception as e:
             self.logger.warning(f"Error computing jacobian: {e}")
             # Return sparse identity matrix as fallback
@@ -596,21 +655,21 @@ class BaseTrajectoryIPOPTProblem(BaseOptimizationProblem):
             min_dim = min(n_constraints, n_vars)
             jac[:min_dim, :min_dim] = np.eye(min_dim)
             return jac
-    
+
     def solve_with_waypoints(self, wps) -> Tuple[bool, Dict[str, Any]]:
         """
         Solve the optimization problem with given initial waypoints.
-        
+
         Args:
             wps: Initial waypoints
-            
+
         Returns:
             Tuple of (success, results_dict)
         """
         try:
             # Store initial waypoints for get_initial_guess
             self._initial_wps = wps
-            
+
             # Create solver with trajectory optimization config
             config = IPOPTConfig.for_trajectory_optimization()
             # Adjust settings for this complex problem
@@ -622,36 +681,38 @@ class BaseTrajectoryIPOPTProblem(BaseOptimizationProblem):
                 b"mu_strategy": b"adaptive",
             }
             solver = RobotIPOPTSolver(self, config)
-            
+
             # Solve the problem
             success, results = solver.solve()
-            
+
             if success:
                 # Extract final waypoint for next segment
-                X_opt = results['x_opt']
+                X_opt = results["x_opt"]
                 wps_X = np.reshape(np.array(X_opt), (self.n_wps - 1, self.n_joints))
                 final_waypoint = wps_X[-1, :]
-                
+
                 # Update results with trajectory-specific data
-                results.update({
-                    't_f': self.opt_cb["t_f"],
-                    'p_f': self.opt_cb["p_f"],
-                    'v_f': self.opt_cb["v_f"],
-                    'a_f': self.opt_cb["a_f"],
-                    'iter_data': {
-                        'iterations': self.iteration_data['iterations'],
-                        'obj_values': self.iteration_data['obj_values'],
-                        'solve_time': results['solve_time'],
-                        'status': results['status'],
-                        'final_waypoint': final_waypoint
+                results.update(
+                    {
+                        "t_f": self.opt_cb["t_f"],
+                        "p_f": self.opt_cb["p_f"],
+                        "v_f": self.opt_cb["v_f"],
+                        "a_f": self.opt_cb["a_f"],
+                        "iter_data": {
+                            "iterations": self.iteration_data["iterations"],
+                            "obj_values": self.iteration_data["obj_values"],
+                            "solve_time": results["solve_time"],
+                            "status": results["status"],
+                            "final_waypoint": final_waypoint,
+                        },
                     }
-                })
-                
+                )
+
                 return True, results
             else:
                 self.logger.error("Optimization failed")
                 return False, results
-                
+
         except Exception as e:
             self.logger.error(f"Error in IPOPT solve: {e}")
-            return False, {'error': str(e)}
+            return False, {"error": str(e)}

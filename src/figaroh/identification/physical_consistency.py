@@ -46,9 +46,7 @@ def _sigma_from_p10(p10: np.ndarray) -> np.ndarray:
     # [m, mcx, mcy, mcz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz]
     Ixx, Ixy, Iyy = p10[4], p10[5], p10[6]
     Ixz, Iyz, Izz = p10[7], p10[8], p10[9]
-    return np.array(
-        [[Ixx, Ixy, Ixz], [Ixy, Iyy, Iyz], [Ixz, Iyz, Izz]], dtype=float
-    )
+    return np.array([[Ixx, Ixy, Ixz], [Ixy, Iyy, Iyz], [Ixz, Iyz, Izz]], dtype=float)
 
 
 def pseudo_inertia_matrix_from_p10(p10: np.ndarray) -> np.ndarray:
@@ -196,7 +194,14 @@ def project_p10_lmi(
     obj = pc.SquaredNorm(dm) + pc.SquaredNorm(dh)
     # Sigma terms: iterate over 6 unique upper-triangle entries to avoid
     # Frobenius double-counting.  p10 order: Ixx=4, Ixy=5, Iyy=6, Ixz=7, Iyz=8, Izz=9
-    for _r, _c, _idx in [(0, 0, 4), (0, 1, 5), (1, 1, 6), (0, 2, 7), (1, 2, 8), (2, 2, 9)]:
+    for _r, _c, _idx in [
+        (0, 0, 4),
+        (0, 1, 5),
+        (1, 1, 6),
+        (0, 2, 7),
+        (1, 2, 8),
+        (2, 2, 9),
+    ]:
         obj = obj + (float(w[_idx]) * (sigma[_r, _c] - float(p10_hat[_idx]))) ** 2
     problem.minimize = obj
 
@@ -241,9 +246,7 @@ def project_p10_lmi(
     # Verify with a relaxed tolerance to absorb solver numerical noise
     # (SDP solvers satisfy P >> 0 up to ~1e-8 relative error).
     _verify_tol = min(psd_eig_tol, -1e-8)
-    feas = check_p10_feasibility(
-        p10_proj, mass_min=mass_min, psd_eig_tol=_verify_tol
-    )
+    feas = check_p10_feasibility(p10_proj, mass_min=mass_min, psd_eig_tol=_verify_tol)
     report = dataclasses.replace(
         feas,
         status="projected" if feas.status == "feasible" else "infeasible",
@@ -270,12 +273,8 @@ def project_robot_p10_lmi(
 
     failed = 0
     for link, p10 in p10_by_link.items():
-        _mb = (
-            cad_constraints.mass_bounds.get(link) if cad_constraints else None
-        )
-        _cb = (
-            cad_constraints.com_bounds.get(link, {}) if cad_constraints else {}
-        )
+        _mb = cad_constraints.mass_bounds.get(link) if cad_constraints else None
+        _cb = cad_constraints.com_bounds.get(link, {}) if cad_constraints else {}
         p_proj, rep = project_p10_lmi(
             p10,
             mass_min=mass_min,
@@ -372,6 +371,7 @@ def param_dict_with_p10_by_joint(
 # ---------------------------------------------------------------------------
 # Public API aliases (roadmap spec names)
 # ---------------------------------------------------------------------------
+
 
 def is_feasible_link(
     p10: np.ndarray,

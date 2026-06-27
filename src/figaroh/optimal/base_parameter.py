@@ -34,7 +34,7 @@ from figaroh.tools.regressor import (
 )
 from figaroh.identification.parameter import (
     add_standard_additional_parameters,
-    add_custom_parameters
+    add_custom_parameters,
 )
 
 
@@ -51,9 +51,7 @@ class BaseParameterComputer:
 
     def compute_base_indices(self) -> Tuple[np.ndarray, np.ndarray]:
         """Compute base parameter indices from random trajectory."""
-        logging.info(
-            "Computing base parameter indices from random trajectory..."
-        )
+        logging.info("Computing base parameter indices from random trajectory...")
 
         try:
             # Generate random trajectory for base parameter computation

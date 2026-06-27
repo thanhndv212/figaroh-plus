@@ -40,9 +40,9 @@ The modern unified format provides better organization and template inheritance:
     calibration:
       method: "full_params"
       sensor_type: "camera"
-      
+
       markers:
-        - ref_joint: "wrist_3_joint"  
+        - ref_joint: "wrist_3_joint"
           position: [0.1, 0.0, 0.05]
           measure: [true, true, true, true, true, true]
 
@@ -52,7 +52,7 @@ The modern unified format provides better organization and template inheritance:
           viscous: [0.01, 0.02, 0.015]
           static: [0.001, 0.002, 0.0015]
         actuator_inertias: [0.1, 0.15, 0.12]
-        
+
       signal_processing:
         sampling_frequency: 5000.0
         cutoff_frequency: 100.0
@@ -64,7 +64,7 @@ Existing configurations continue to work without modification:
 
 .. code-block:: yaml
 
-    # legacy_config.yaml  
+    # legacy_config.yaml
     calibration:
       calib_level: full_params
       markers:
@@ -73,7 +73,7 @@ Existing configurations continue to work without modification:
 
     identification:
       robot_params:
-        - fv: [0.01, 0.02, 0.015] 
+        - fv: [0.01, 0.02, 0.015]
           fs: [0.001, 0.002, 0.0015]
       processing_params:
         - ts: 0.0002
@@ -96,7 +96,7 @@ Basic Calibration
     calibration.load_data("data/calibration_data.csv")
     results = calibration.run_calibration()
 
-Basic Identification  
+Basic Identification
 ^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
@@ -116,14 +116,14 @@ Advanced Regressor Building
 .. code-block:: python
 
     from figaroh.tools.regressor import RegressorBuilder, RegressorConfig
-    
+
     # Configure regressor
     config = RegressorConfig(
         has_friction=True,
         has_actuator_inertia=True,
         is_joint_torques=True
     )
-    
+
     # Build regressor matrix
     builder = RegressorBuilder(robot, config)
     W = builder.build_basic_regressor(q, dq, ddq)
@@ -134,11 +134,11 @@ Configuration Management
 .. code-block:: python
 
     from figaroh.utils.config_parser import UnifiedConfigParser
-    
+
     # Parse any configuration format
     parser = UnifiedConfigParser("config/robot_config.yaml")
     config = parser.parse()
-    
+
     # Create task-specific configuration
     calib_config = parser.create_task_config(robot, config, "calibration")
     identif_config = parser.create_task_config(robot, config, "identification")
@@ -149,15 +149,15 @@ Advanced Linear Solver (New in v0.3.0)
 .. code-block:: python
 
     from figaroh.tools.solver import LinearSolver, solve_linear_system
-    
+
     # Basic usage with convenience function
     result = solve_linear_system(
-        A, b, 
+        A, b,
         method='ridge',
         alpha=0.01
     )
     x = result['solution']
-    
+
     # Advanced usage with constraints
     solver = LinearSolver()
     result = solver.solve(
@@ -167,18 +167,18 @@ Advanced Linear Solver (New in v0.3.0)
         A_eq=A_eq, b_eq=b_eq,  # Equality constraints
         alpha=0.1  # Regularization
     )
-    
+
     # Access quality metrics
     print(f"RMSE: {result['rmse']:.4f}")
     print(f"R²: {result['r_squared']:.4f}")
     print(f"Condition number: {result['condition_number']:.2e}")
-    
+
     # Use in identification workflow
     from figaroh.identification import BaseIdentification
-    
+
     identification = BaseIdentification(robot, config)
     identification.load_data("data/identification_data.csv")
-    
+
     # Solve with custom solver and regularization
     params = identification.solve_with_custom_solver(
         method='elastic_net',

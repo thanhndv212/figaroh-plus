@@ -1,0 +1,16 @@
+<xacro:property name="camera_position_x" value="0.09380756415976221" / >
+<xacro:property name="camera_position_y" value="0.093368314873983" / >
+<xacro:property name="camera_position_z" value="-0.019138449706586232" / >
+<xacro:property name="camera_orientation_r" value="-1.5654226560500237" / >
+<xacro:property name="camera_orientation_p" value="0.005572146074506252" / >
+<xacro:property name="camera_orientation_y" value="0.029026381832303723" / >
+<xacro:property name="head_2_joint_joint_offset" value="-0.008779511254907994" / >
+<xacro:property name="head_1_joint_joint_offset" value="-0.008207350194701863" / >
+<xacro:property name="torso_lift_joint_joint_offset" value="1.807679577653555e-06" / >
+<xacro:property name="arm_1_joint_joint_offset" value="0.05969123689069201" / >
+<xacro:property name="arm_2_joint_joint_offset" value="-0.06558920780129555" / >
+<xacro:property name="arm_3_joint_joint_offset" value="0.011710458738809201" / >
+<xacro:property name="arm_4_joint_joint_offset" value="0.02078798580761422" / >
+<xacro:property name="arm_5_joint_joint_offset" value="0.025010532123348493" / >
+<xacro:property name="arm_6_joint_joint_offset" value="-0.0207571987494241" / >
+<xacro:property name="arm_7_joint_joint_offset" value="-0.0793427200503512" / >

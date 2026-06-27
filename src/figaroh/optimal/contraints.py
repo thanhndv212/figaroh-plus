@@ -100,9 +100,7 @@ class TrajectoryConstraintManager:
             q_constraints = self._evaluate_position_constraints(p_f, tps, t_f)
             v_constraints = self._evaluate_velocity_constraints(v_f)
             tau_constraints = self._evaluate_torque_constraints(tau, Ns)
-            collision_constraints = self._evaluate_collision_constraints(
-                p_f, tps, t_f
-            )
+            collision_constraints = self._evaluate_collision_constraints(p_f, tps, t_f)
 
             # Concatenate all constraints
             return np.concatenate(
@@ -144,9 +142,7 @@ class TrajectoryConstraintManager:
         dist_all = []
         for j in idx_waypoints:
             self.collision_wrapper.computeCollisions(p_f[j, :])
-            dist_all = np.append(
-                dist_all, self.collision_wrapper.getDistances()
-            )
+            dist_all = np.append(dist_all, self.collision_wrapper.getDistances())
         return np.asarray(dist_all)
 
     def _get_waypoint_indices(self, tps, t_f) -> List[int]:
@@ -156,9 +152,7 @@ class TrajectoryConstraintManager:
         time_points_flat = np.array(time_points).flatten()
 
         for i in range(t_f.shape[0]):
-            t_val = (
-                float(t_f[i, 0]) if hasattr(t_f[i, 0], "item") else t_f[i, 0]
-            )
+            t_val = float(t_f[i, 0]) if hasattr(t_f[i, 0], "item") else t_f[i, 0]
             if t_val in time_points_flat:
                 idx_waypoints.append(i)
 

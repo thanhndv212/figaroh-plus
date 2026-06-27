@@ -1,7 +1,7 @@
 Utilities
 ========
 
-Configuration Parser  
+Configuration Parser
 -------------------
 .. automodule:: figaroh.utils.config_parser
    :members:

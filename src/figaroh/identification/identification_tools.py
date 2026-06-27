@@ -156,9 +156,7 @@ def index_in_base_params(params, id_segments):
     return dict(zip(id_segments_new, values))
 
 
-def weigthed_least_squares(
-    robot, phi_b, W_b, tau_meas, tau_est, identif_config
-):
+def weigthed_least_squares(robot, phi_b, W_b, tau_meas, tau_est, identif_config):
     """Compute weighted least squares solution for parameter identification.
 
     Implements iteratively reweighted least squares method from
@@ -191,29 +189,31 @@ def weigthed_least_squares(
             idx = jj + ii * nb_samples
             P[idx, idx] = 1 / sigma[ii]
 
-        phi_b = np.matmul(
-            np.linalg.pinv(np.matmul(P, W_b)), np.matmul(P, tau_meas)
-        )
+        phi_b = np.matmul(np.linalg.pinv(np.matmul(P, W_b)), np.matmul(P, tau_meas))
 
     phi_b = np.around(phi_b, 6)
 
     return phi_b
 
 
-def calculate_first_second_order_differentiation(model, q, identif_config, dt=None):
+def calculate_first_second_order_differentiation(
+    model, q, identif_config, dt=None, backend=None
+):
     """Calculate joint velocities and accelerations from positions.
 
     Computes first and second order derivatives of joint positions using central
     differences. Handles both constant and variable timesteps.
 
     Args:
-        model (pin.Model): Robot model
+        model (pin.Model): Robot model (used when backend is None)
         q (ndarray): Joint position matrix (n_samples, n_joints)
         param (dict): Parameters containing:
             - is_joint_torques: Whether using joint torques
             - is_external_wrench: Whether using external wrench
             - ts: Timestep if constant
         dt (ndarray, optional): Variable timesteps between samples.
+        backend (DynamicsBackend, optional): If provided, uses backend.compute_difference
+            instead of pin.difference for Lie group operations.
 
     Returns:
         tuple:
@@ -224,6 +224,7 @@ def calculate_first_second_order_differentiation(model, q, identif_config, dt=No
     Note:
         Two samples are removed from start/end due to central differences
     """
+    nq = backend.nq if backend is not None else model.nq
 
     if identif_config["is_joint_torques"]:
         dq = np.zeros([q.shape[0] - 1, q.shape[1]])
@@ -236,15 +237,21 @@ def calculate_first_second_order_differentiation(model, q, identif_config, dt=No
     if dt is None:
         dt = identif_config["ts"]
         for ii in range(q.shape[0] - 1):
-            dq[ii, :] = pin.difference(model, q[ii, :], q[ii + 1, :]) / dt
+            if backend is not None:
+                dq[ii, :] = backend.compute_difference(q[ii, :], q[ii + 1, :]) / dt
+            else:
+                dq[ii, :] = pin.difference(model, q[ii, :], q[ii + 1, :]) / dt
 
-        for jj in range(model.nq - 1):
+        for jj in range(nq - 1):
             ddq[:, jj] = np.gradient(dq[:, jj], edge_order=1) / dt
     else:
         for ii in range(q.shape[0] - 1):
-            dq[ii, :] = pin.difference(model, q[ii, :], q[ii + 1, :]) / dt[ii]
+            if backend is not None:
+                dq[ii, :] = backend.compute_difference(q[ii, :], q[ii + 1, :]) / dt[ii]
+            else:
+                dq[ii, :] = pin.difference(model, q[ii, :], q[ii + 1, :]) / dt[ii]
 
-        for jj in range(model.nq - 1):
+        for jj in range(nq - 1):
             ddq[:, jj] = np.gradient(dq[:, jj], edge_order=1) / dt
 
     q = np.delete(q, len(q) - 1, 0)
@@ -291,4 +298,3 @@ def low_pass_filter_data(data, identif_config, nbutter=5):
     data = np.delete(data, end_slice, axis=0)
 
     return data
-

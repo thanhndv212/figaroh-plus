@@ -15,10 +15,10 @@ from figaroh.identification.reconstruction import (
     _p10_indices_for_joints,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_underdetermined(n: int = 5, r: int = 3):
     """Return (M, theta_true, phi) for an underdetermined system."""
@@ -90,10 +90,13 @@ def test_reconstruct_from_base_labels_and_dict():
 
 # --- ReconstructionResult new fields ---
 
+
 def test_reconstruction_result_new_fields_defaults():
     """ReconstructionResult defaults: status='ok', base_residual_norm=None, objective=None."""
     theta = np.zeros(3)
-    res = ReconstructionResult(theta_r=theta, params_r=["a", "b", "c"], residual=np.zeros(2))
+    res = ReconstructionResult(
+        theta_r=theta, params_r=["a", "b", "c"], residual=np.zeros(2)
+    )
     assert res.status == "ok"
     assert res.base_residual_norm is None
     assert res.objective is None
@@ -118,6 +121,7 @@ def test_reconstruction_result_fields_explicit():
 
 # --- BaseResult ---
 
+
 def test_base_result_construction():
     """BaseResult stores M, phi_base, params_r correctly."""
     M = np.eye(3)
@@ -132,6 +136,7 @@ def test_base_result_construction():
 
 # --- reconstruct_from_base sets base_residual_norm ---
 
+
 def test_reconstruct_from_base_sets_residual_norm():
     """reconstruct_from_base must set base_residual_norm."""
     M = np.array([[1.0, 1.0]])
@@ -142,6 +147,7 @@ def test_reconstruct_from_base_sets_residual_norm():
 
 
 # --- _load_prior_from_yaml ---
+
 
 def test_load_prior_from_yaml(tmp_path):
     """_load_prior_from_yaml reads correct values and defaults missing ones."""
@@ -169,6 +175,7 @@ def test_load_prior_from_yaml_bad_format(tmp_path):
 
 # --- _p10_indices_for_joints ---
 
+
 def test_p10_indices_for_joints_complete():
     """_p10_indices_for_joints returns all 10 indices when params_r is complete."""
     keys = ["m", "mx", "my", "mz", "Ixx", "Ixy", "Iyy", "Ixz", "Iyz", "Izz"]
@@ -187,6 +194,7 @@ def test_p10_indices_for_joints_incomplete_skipped():
 
 
 # --- reconstruct_full_parameters (nullspace) ---
+
 
 def test_reconstruct_full_parameters_nullspace_base_result():
     """reconstruct_full_parameters with a BaseResult returns constraint-satisfying theta."""
@@ -220,7 +228,8 @@ def test_reconstruct_full_parameters_auto_falls_back_to_nullspace():
     try:
         sys.modules["picos"] = None  # type: ignore[assignment]
         result = reconstruct_full_parameters(
-            (M, phi, params_r), method="auto",
+            (M, phi, params_r),
+            method="auto",
             joint_names=["j1"],  # joint_names not needed for nullspace
         )
         assert result.status == "ok"
@@ -261,4 +270,3 @@ def test_reconstruct_full_parameters_unsupported_method():
     M, _, phi = _make_underdetermined(n=3, r=2)
     with pytest.raises(ValueError, match="Unsupported method"):
         reconstruct_full_parameters((M, phi, ["a", "b", "c"]), method="garbage")
-

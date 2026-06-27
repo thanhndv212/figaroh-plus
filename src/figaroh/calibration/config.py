@@ -80,9 +80,7 @@ def get_sup_joints(model, start_frame, end_frame):
         if shared_joints == branch_s:
             sup_joints = [branch_s[-1]] + list_2
         else:
-            assert (
-                shared_joints != branch_e
-            ), "End frame should be before start frame."
+            assert shared_joints != branch_e, "End frame should be before start frame."
             # case 3: there are overlapping joints between two branches
             sup_joints = list_1 + [shared_joints[-1]] + list_2
     return sup_joints
@@ -345,9 +343,7 @@ def unified_to_legacy_config(robot, unified_calib_config) -> dict:
     # 8. Extract data configuration
     calib_config["NbSample"] = data.get("number_of_samples", 500)
     calib_config["data_file"] = data.get("source_file")
-    calib_config["sample_configs_file"] = data.get(
-        "sample_configurations_file"
-    )
+    calib_config["sample_configs_file"] = data.get("sample_configurations_file")
 
     return calib_config
 
@@ -420,9 +416,7 @@ def _extract_tool_info(calib_config, robot, end_frame):
     calib_config["tool_joint"] = tool_joint
 
 
-def _determine_active_joints(
-    calib_config, robot, joints, start_frame, end_frame
-):
+def _determine_active_joints(calib_config, robot, joints, start_frame, end_frame):
     """Determine active joints from configuration or kinematic chain.
 
     Args:
@@ -447,9 +441,7 @@ def _determine_active_joints(
 
     # Store joint information
     calib_config["actJoint_idx"] = actJoint_idx
-    calib_config["config_idx"] = [
-        robot.model.joints[i].idx_q for i in actJoint_idx
-    ]
+    calib_config["config_idx"] = [robot.model.joints[i].idx_q for i in actJoint_idx]
     calib_config["NbJoint"] = len(actJoint_idx)
 
 
@@ -480,17 +472,13 @@ def _extract_calibration_params(calib_config, robot, parameters):
         parameters (dict): Parameters section from unified config
     """
     # Extract calibration model and settings
-    calib_config["calib_model"] = parameters.get(
-        "calibration_level", "full_params"
-    )
+    calib_config["calib_model"] = parameters.get("calibration_level", "full_params")
     non_geom = parameters.get("include_non_geometric", False)
 
     # Build parameter names for non-geometric parameters
     param_name = []
     if non_geom:
-        param_name = _build_elastic_param_names(
-            robot, calib_config["actJoint_idx"]
-        )
+        param_name = _build_elastic_param_names(robot, calib_config["actJoint_idx"])
 
     calib_config["param_name"] = param_name
 
@@ -501,9 +489,7 @@ def _extract_calibration_params(calib_config, robot, parameters):
             "non_geom": non_geom,
             "eps": 1e-3,
             "PLOT": 0,
-            "coeff_regularize": parameters.get(
-                "regularization_coefficient", 0.01
-            ),
+            "coeff_regularize": parameters.get("regularization_coefficient", 0.01),
             "outlier_eps": parameters.get("outlier_threshold", 0.05),
         }
     )
@@ -597,9 +583,7 @@ try:
             Calibration configuration dictionary
         """
         try:
-            return unified_get_param_from_yaml(
-                robot, calib_data, "calibration"
-            )
+            return unified_get_param_from_yaml(robot, calib_data, "calibration")
         except Exception as e:
             # Fall back to legacy parser if unified parser fails
             import warnings

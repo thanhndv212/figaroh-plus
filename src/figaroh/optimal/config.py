@@ -83,9 +83,7 @@ def load_param(robot, config_file: str) -> Tuple[Dict[str, Any], Any]:
         return trajectory_config, identif_config
 
     except FileNotFoundError:
-        raise FileNotFoundError(
-            f"Configuration file {config_file} not found"
-        )
+        raise FileNotFoundError(f"Configuration file {config_file} not found")
     except KeyError as e:
         raise ValueError(f"Missing required configuration key: {e}")
     except Exception as e:

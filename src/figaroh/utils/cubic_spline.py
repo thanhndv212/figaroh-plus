@@ -42,37 +42,37 @@ Examples:
     Basic trajectory generation:
         ```python
         from figaroh.utils.cubic_spline import CubicSpline
-        
+
         # Initialize spline generator
         spline = CubicSpline(robot, num_waypoints=5,
                            active_joints=['joint1', 'joint2'])
-        
+
         # Generate trajectory
         time_points = np.array([[0], [1], [2], [3], [4]])
         waypoints = np.random.rand(2, 5)  # 2 joints, 5 waypoints
-        
+
         t, pos, vel, acc = spline.get_full_config(
             freq=100, time_points=time_points, waypoints=waypoints
         )
-        
+
         # Check constraints
         spline.check_cfg_constraints(pos, vel)
         ```
-    
+
     Automated waypoint generation:
         ```python
         from figaroh.utils.cubic_spline import WaypointsGeneration
-        
+
         # Initialize waypoint generator
         wp_gen = WaypointsGeneration(robot, num_waypoints=5,
                                    active_joints=['joint1', 'joint2'])
-        
+
         # Generate waypoint pool
         wp_gen.gen_rand_pool()
-        
+
         # Generate random waypoints
         pos_wp, vel_wp, acc_wp = wp_gen.gen_rand_wp()
-        
+
         # Generate trajectory from waypoints
         t, pos, vel, acc = wp_gen.get_full_config(
             freq=100, time_points=time_points, waypoints=pos_wp
@@ -105,14 +105,14 @@ k = 1.5  # take accel limits as k times of vel limits
 class CubicSpline:
     """
     Cubic spline trajectory generator for robotic systems.
-    
+
     This class generates smooth, C2-continuous trajectories using cubic splines
     for robotic systems. It supports both position-only and full kinematic
     constraint specification (position, velocity, acceleration) at waypoints.
-    
+
     The class handles active joint selection, joint limit constraints, and
     provides methods for trajectory validation and visualization.
-    
+
     Attributes:
         robot: Robot model instance
         rmodel: Robot kinematic model
@@ -128,55 +128,54 @@ class CubicSpline:
         upper_dq, lower_dq (np.ndarray): Velocity limits for active joints
         upper_effort, lower_effort (np.ndarray): Effort limits for active
             joints
-    
+
     Examples:
         Basic usage:
             ```python
             # Initialize for 2 joints, 5 waypoints
             spline = CubicSpline(robot, num_waypoints=5,
                                active_joints=['joint1', 'joint2'])
-            
+
             # Define waypoints and time stamps
             waypoints = np.array([[0, 1, 2, 1, 0],      # joint1 positions
                                 [0, 0.5, 1, 0.5, 0]])   # joint2 positions
             time_points = np.array([[0], [1], [2], [3], [4]])
-            
+
             # Generate trajectory at 100 Hz
             t, pos, vel, acc = spline.get_full_config(
                 freq=100, time_points=time_points, waypoints=waypoints
             )
-            
+
             # Validate constraints
             is_violated = spline.check_cfg_constraints(pos, vel)
             ```
-        
+
         With velocity and acceleration constraints:
             ```python
             # Define waypoint constraints
             vel_waypoints = np.zeros((2, 5))  # Zero velocity at waypoints
             acc_waypoints = np.zeros((2, 5))  # Zero acceleration at waypoints
-            
+
             # Generate constrained trajectory
             t, pos, vel, acc = spline.get_full_config(
                 freq=100, time_points=time_points, waypoints=waypoints,
                 vel_waypoints=vel_waypoints, acc_waypoints=acc_waypoints
             )
-            
+
             # Visualize results
             spline.plot_spline(t, pos, vel, acc)
             ```
-    
+
     Note:
         The class uses the ndcurves library for cubic spline generation.
         Joint limits are automatically extracted from the robot model
         and can be modified with soft limits for safety margins.
     """
 
-    def __init__(self, robot, num_waypoints: int, active_joints: list,
-                 soft_lim=0):
+    def __init__(self, robot, num_waypoints: int, active_joints: list, soft_lim=0):
         """
         Initialize the cubic spline trajectory generator.
-        
+
         Args:
             robot: Robot model instance containing kinematic information
             num_waypoints (int): Number of waypoints for the trajectory
@@ -184,15 +183,15 @@ class CubicSpline:
             soft_lim (float, optional): Soft limit reduction factor (0-1).
                 Reduces joint limits by this fraction for safety.
                 Defaults to 0.
-        
+
         Raises:
             AssertionError: If joint names are not found in robot model
-            
+
         Examples:
             ```python
             # Basic initialization
             spline = CubicSpline(robot, 5, ['joint1', 'joint2'])
-            
+
             # With 10% safety margin on joint limits
             spline = CubicSpline(robot, 5, ['joint1', 'joint2'],
                                soft_lim=0.1)
@@ -331,12 +330,12 @@ class CubicSpline:
     ):
         """
         Generate complete robot configuration trajectory with cubic splines.
-        
+
         This method creates smooth trajectories for all robot joints by:
         1. Generating cubic splines for active joints between waypoints
         2. Filling inactive joints with zero values
         3. Ensuring C2 continuity at waypoints
-        
+
         Args:
             freq (int): Sampling frequency for trajectory generation (Hz)
             time_points (np.ndarray): Time stamps for waypoints,
@@ -349,7 +348,7 @@ class CubicSpline:
             acc_waypoints (np.ndarray, optional): Acceleration constraints at
                 waypoints, same shape as waypoints. If provided, enforces
                 specific accelerations at waypoints.
-        
+
         Returns:
             tuple: Four-element tuple containing:
                 - t (np.ndarray): Time stamps, shape (N, 1)
@@ -359,35 +358,35 @@ class CubicSpline:
                   shape (N, robot_nv)
                 - ddq_full (np.ndarray): Acceleration trajectory for all
                   joints, shape (N, robot_nv)
-                  
+
                 Where N = int(total_time * freq) + 1
-        
+
         Raises:
             AssertionError: If waypoint dimensions don't match active joints
-            
+
         Examples:
             Position-only trajectory:
                 ```python
                 time_pts = np.array([[0], [1], [2], [3]])
                 waypts = np.array([[0, 1, 2, 1],     # joint1
                                   [0, 0.5, 1, 0.5]]) # joint2
-                
+
                 t, q, dq, ddq = spline.get_full_config(
                     freq=100, time_points=time_pts, waypoints=waypts
                 )
                 ```
-            
+
             With velocity/acceleration constraints:
                 ```python
                 vel_waypts = np.zeros((2, 4))  # Zero velocity at waypoints
                 acc_waypts = np.zeros((2, 4))  # Zero acceleration at waypoints
-                
+
                 t, q, dq, ddq = spline.get_full_config(
                     freq=100, time_points=time_pts, waypoints=waypts,
                     vel_waypoints=vel_waypts, acc_waypoints=acc_waypts
                 )
                 ```
-        
+
         Note:
             The trajectory uses piecewise cubic curves connected at waypoints.
             When velocity and acceleration constraints are provided, the
@@ -412,11 +411,11 @@ class CubicSpline:
     def check_cfg_constraints(self, q, v=None, tau=None, soft_lim=0):
         """
         Check joint constraints violation for trajectory configurations.
-        
+
         Validates whether the generated trajectory respects robot joint
         limits including position, velocity, and effort constraints.
         Provides detailed violation reporting for debugging.
-        
+
         Args:
             q (np.ndarray): Position trajectory to check,
                 shape (N, robot_nq)
@@ -427,11 +426,11 @@ class CubicSpline:
             soft_lim (float, optional): Additional safety margin factor
                 (0-1). Adds this fraction of joint range as safety buffer.
                 Defaults to 0.
-        
+
         Returns:
             bool: True if any constraint is violated, False if all
                 constraints are satisfied
-        
+
         Examples:
             Basic position check:
                 ```python
@@ -440,14 +439,14 @@ class CubicSpline:
                 if is_violated:
                     print("Trajectory violates position limits!")
                 ```
-            
+
             Full constraint check with safety margin:
                 ```python
                 is_violated = spline.check_cfg_constraints(
                     q, v=dq, tau=torques, soft_lim=0.1
                 )
                 ```
-        
+
         Note:
             Constraint violations are printed to console with specific
             joint indices and violation types for debugging purposes.
@@ -464,9 +463,7 @@ class CubicSpline:
                     __isViolated_pos = True
 
                 elif q[i, j] < self.rmodel.lowerPositionLimit[j] + delta_lim:
-                    logger.warning(
-                        "Joint position idx_q %d lower limit violated!", j
-                    )
+                    logger.warning("Joint position idx_q %d lower limit violated!", j)
                     __isViolated_pos = True
                 else:
                     __isViolated_pos = False
@@ -478,9 +475,7 @@ class CubicSpline:
                     if abs(v[i, j]) > (1 - soft_lim) * abs(
                         self.rmodel.velocityLimit[j]
                     ):
-                        logger.warning(
-                            "Joint vel idx_v %d limits violated!", j
-                        )
+                        logger.warning("Joint vel idx_v %d limits violated!", j)
                         __isViolated_vel = True
                     else:
                         __isViolated_vel = False
@@ -492,9 +487,7 @@ class CubicSpline:
                     if abs(tau[i, j]) > (1 - soft_lim) * abs(
                         self.rmodel.effortLimit[j]
                     ):
-                        logger.warning(
-                            "Joint effort idx_v %d limits violated!", j
-                        )
+                        logger.warning("Joint effort idx_v %d limits violated!", j)
                         __isViolated_eff = True
                     else:
                         __isViolated_eff = False
@@ -532,32 +525,32 @@ class CubicSpline:
 class WaypointsGeneration(CubicSpline):
     """
     Automated waypoint generation for cubic spline trajectories.
-    
+
     This class extends CubicSpline to provide automated generation of
     feasible waypoints that respect robot joint constraints. It creates
     pools of valid configurations and uses random sampling to generate
     diverse trajectory waypoints.
-    
+
     The class generates waypoints for position, velocity, and acceleration
     that can be used as initial guesses for trajectory optimization or
     as standalone feasible trajectories.
-    
+
     Attributes:
         n_set (int): Size of waypoint pools (default: 10)
         pool_q (np.ndarray): Pool of valid position configurations
         pool_dq (np.ndarray): Pool of valid velocity configurations
         pool_ddq (np.ndarray): Pool of valid acceleration configurations
         soft_limit_pool_default (np.ndarray): Default soft limit values
-        
+
     Examples:
         Basic waypoint generation:
             ```python
             wp_gen = WaypointsGeneration(robot, num_waypoints=5,
                                        active_joints=['joint1', 'joint2'])
-            
+
             # Generate random feasible waypoints
             pos_wp, vel_wp, acc_wp = wp_gen.random_feasible_waypoints()
-            
+
             # Use with cubic spline
             time_pts = np.linspace(0, 4, 5).reshape(-1, 1)
             t, q, dq, ddq = wp_gen.get_full_config(
@@ -565,7 +558,7 @@ class WaypointsGeneration(CubicSpline):
                 vel_waypoints=vel_wp.T, acc_waypoints=acc_wp.T
             )
             ```
-        
+
         With custom soft limits:
             ```python
             # Different safety margins for position/velocity/acceleration
@@ -574,33 +567,32 @@ class WaypointsGeneration(CubicSpline):
                 [0.2, 0.2],   # Velocity limits (20% for both joints)
                 [0.3, 0.25]   # Acceleration limits (30%, 25%)
             ])
-            
+
             wp_gen.set_soft_limit_pool(soft_lim_custom)
             pos_wp, vel_wp, acc_wp = wp_gen.random_feasible_waypoints()
             ```
-    
+
     Note:
         The class automatically ensures waypoints don't violate joint
         constraints and avoids repeated waypoint values that could
         cause numerical issues in spline generation.
     """
 
-    def __init__(self, robot, num_waypoints: int, active_joints: list,
-                 soft_lim=0):
+    def __init__(self, robot, num_waypoints: int, active_joints: list, soft_lim=0):
         """
         Initialize waypoint generation for cubic spline trajectories.
-        
+
         Sets up pools for generating random feasible waypoints that respect
         robot joint constraints. Initializes configuration pools for
         positions, velocities, and accelerations.
-        
+
         Args:
             robot: Robot model instance containing kinematic information
             num_waypoints (int): Number of waypoints for trajectory generation
             active_joints (list): List of joint names to include in trajectory
             soft_lim (float, optional): Soft limit reduction factor (0-1).
                 Defaults to 0.
-        
+
         Note:
             The soft_lim parameter affects the base CubicSpline initialization
             but does not set the waypoint generation pools. Use
@@ -721,9 +713,9 @@ class WaypointsGeneration(CubicSpline):
                 for i in range(len(self.act_idxv)):
                     repeat_ = True
                     while repeat_:
-                        vel_wps_rand[
-                            range(1, self.num_waypoints), i
-                        ] = np.random.choice(self.pool_dq[:, i], self.num_waypoints - 1)
+                        vel_wps_rand[range(1, self.num_waypoints), i] = (
+                            np.random.choice(self.pool_dq[:, i], self.num_waypoints - 1)
+                        )
                         repeat_ = self.check_repeat_wp(
                             list(vel_wps_rand[range(1, self.num_waypoints), i])
                         )
@@ -742,10 +734,10 @@ class WaypointsGeneration(CubicSpline):
                 for i in range(len(self.act_idxv)):
                     repeat_ = True
                     while repeat_:
-                        acc_wps_rand[
-                            range(1, self.num_waypoints), i
-                        ] = np.random.choice(
-                            self.pool_ddq[:, i], self.num_waypoints - 1
+                        acc_wps_rand[range(1, self.num_waypoints), i] = (
+                            np.random.choice(
+                                self.pool_ddq[:, i], self.num_waypoints - 1
+                            )
                         )
                         repeat_ = self.check_repeat_wp(
                             list(acc_wps_rand[range(1, self.num_waypoints), i])

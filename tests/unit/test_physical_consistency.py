@@ -52,6 +52,7 @@ from figaroh.identification.physical_consistency import (
 # Fixtures / helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_feasible_p10(
     mass: float = 2.0,
     scale: float = 1.0,
@@ -81,6 +82,7 @@ def _make_infeasible_p10_neg_inertia() -> np.ndarray:
 # TC-7  check_p10_feasibility: feasible input
 # ---------------------------------------------------------------------------
 
+
 def test_tc7_check_feasibility_feasible_input():
     """Feasible p10 reports status='feasible' and non-negative min_eig."""
     p10 = _make_feasible_p10()
@@ -93,6 +95,7 @@ def test_tc7_check_feasibility_feasible_input():
 # ---------------------------------------------------------------------------
 # TC-8  check_p10_feasibility: mass below threshold
 # ---------------------------------------------------------------------------
+
 
 def test_tc8_check_feasibility_mass_below_threshold():
     """p10 with mass below mass_min reports status='infeasible'."""
@@ -120,9 +123,9 @@ def test_tc2_pseudo_inertia_matrix_symmetry(p10):
     """pseudo_inertia_matrix_from_p10 always returns a symmetric 4x4 matrix."""
     P = pseudo_inertia_matrix_from_p10(p10)
     assert P.shape == (4, 4)
-    assert np.max(np.abs(P - P.T)) <= 1e-12, (
-        f"Pseudo-inertia matrix is not symmetric: max|P-P^T| = {np.max(np.abs(P - P.T))}"
-    )
+    assert (
+        np.max(np.abs(P - P.T)) <= 1e-12
+    ), f"Pseudo-inertia matrix is not symmetric: max|P-P^T| = {np.max(np.abs(P - P.T))}"
 
 
 @pytest.mark.parametrize("p10", _P10_VARIANTS)
@@ -132,14 +135,15 @@ def test_tc2_pinocchio_roundtrip(p10):
     PI = pin.PseudoInertia.FromDynamicParameters(p10)
     p_prime = np.asarray(PI.toDynamicParameters())
     assert p_prime.shape == (10,)
-    assert np.max(np.abs(p_prime - p10)) <= 1e-10, (
-        f"Round-trip error: max|p'-p| = {np.max(np.abs(p_prime - p10))}"
-    )
+    assert (
+        np.max(np.abs(p_prime - p10)) <= 1e-10
+    ), f"Round-trip error: max|p'-p| = {np.max(np.abs(p_prime - p10))}"
 
 
 # ---------------------------------------------------------------------------
 # TC-6  Missing picos -> clear ImportError  (no picos needed)
 # ---------------------------------------------------------------------------
+
 
 def test_tc6_missing_picos_raises_import_error():
     """project_p10_lmi raises ImportError mentioning 'picos' when picos absent."""
@@ -162,6 +166,7 @@ def test_tc6_missing_picos_raises_import_error():
 # TC-9  is_feasible_link alias (no picos)
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.parametrize("p10", _P10_VARIANTS)
 def test_tc9_is_feasible_link_alias(p10):
     """is_feasible_link returns the same result as check_p10_feasibility."""
@@ -181,6 +186,7 @@ picos = pytest.importorskip("picos", reason="picos not installed")
 # TC-1  Feasible input unchanged after projection
 # ---------------------------------------------------------------------------
 
+
 def test_tc1_feasible_input_unchanged():
     """Projecting an already-feasible p10 leaves it virtually unchanged."""
     p10 = _make_feasible_p10(mass=2.0, scale=1.0)
@@ -190,9 +196,10 @@ def test_tc1_feasible_input_unchanged():
 
     p10_proj, report = project_p10_lmi(p10)
 
-    assert report.status in {"projected", "feasible"}, (
-        f"Unexpected status: {report.status}, message: {report.message}"
-    )
+    assert report.status in {
+        "projected",
+        "feasible",
+    }, f"Unexpected status: {report.status}, message: {report.message}"
     assert check_p10_feasibility(p10_proj).status == "feasible"
     assert np.allclose(p10_proj, p10, atol=1e-4), (
         f"Feasible input was modified more than expected:\n"
@@ -205,6 +212,7 @@ def test_tc1_feasible_input_unchanged():
 # TC-3  Negative mass corrected
 # ---------------------------------------------------------------------------
 
+
 def test_tc3_negative_mass_corrected():
     """Projecting p10 with negative mass yields m >= mass_min and P PSD."""
     mass_min = 1e-6
@@ -213,9 +221,9 @@ def test_tc3_negative_mass_corrected():
     p10_proj, report = project_p10_lmi(p10, mass_min=mass_min)
 
     # Allow solver numerical noise (~1e-7 relative to constraint value)
-    assert p10_proj[0] >= mass_min - 1e-7, (
-        f"Projected mass {p10_proj[0]} is below mass_min={mass_min} (tol=1e-7)"
-    )
+    assert (
+        p10_proj[0] >= mass_min - 1e-7
+    ), f"Projected mass {p10_proj[0]} is below mass_min={mass_min} (tol=1e-7)"
     # Verify feasibility with a relaxed tolerance consistent with SDP solver precision
     feas = check_p10_feasibility(p10_proj, mass_min=mass_min - 1e-7, psd_eig_tol=-1e-8)
     assert feas.status == "feasible", (
@@ -228,6 +236,7 @@ def test_tc3_negative_mass_corrected():
 # TC-4  Indefinite inertia corrected
 # ---------------------------------------------------------------------------
 
+
 def test_tc4_indefinite_inertia_corrected():
     """Projecting p10 with indefinite sigma yields P PSD."""
     psd_eig_tol = -1e-10
@@ -235,9 +244,7 @@ def test_tc4_indefinite_inertia_corrected():
 
     # Confirm it is actually infeasible before projection
     pre = check_p10_feasibility(p10, psd_eig_tol=psd_eig_tol)
-    assert pre.status == "infeasible", (
-        "Test setup error: expected infeasible input"
-    )
+    assert pre.status == "infeasible", "Test setup error: expected infeasible input"
 
     p10_proj, report = project_p10_lmi(p10, psd_eig_tol=psd_eig_tol)
 
@@ -251,6 +258,7 @@ def test_tc4_indefinite_inertia_corrected():
 # ---------------------------------------------------------------------------
 # TC-5  Weighting sanity: auto vs manual weights
 # ---------------------------------------------------------------------------
+
 
 def test_tc5_weighting_sanity():
     """Both auto-weights and manual unit-weights produce feasible projections.
@@ -270,12 +278,12 @@ def test_tc5_weighting_sanity():
 
     # Both must be feasible with SDP-appropriate tolerance
     _tol = -1e-8
-    assert check_p10_feasibility(p10_auto, psd_eig_tol=_tol).status == "feasible", (
-        f"Auto-weighted result infeasible: {rep_auto}"
-    )
-    assert check_p10_feasibility(p10_heavy, psd_eig_tol=_tol).status == "feasible", (
-        f"Heavy-mass-weighted result infeasible: {rep_heavy}"
-    )
+    assert (
+        check_p10_feasibility(p10_auto, psd_eig_tol=_tol).status == "feasible"
+    ), f"Auto-weighted result infeasible: {rep_auto}"
+    assert (
+        check_p10_feasibility(p10_heavy, psd_eig_tol=_tol).status == "feasible"
+    ), f"Heavy-mass-weighted result infeasible: {rep_heavy}"
     # The mass correction should be smaller with heavy mass weight
     # (penalty × 50 on mass deviation → solver keeps mass closer to original)
     mass_corr_auto = abs(float(p10_auto[0]) - float(p10[0]))
@@ -289,6 +297,7 @@ def test_tc5_weighting_sanity():
 # ---------------------------------------------------------------------------
 # TC-10  project_link alias
 # ---------------------------------------------------------------------------
+
 
 def test_tc10_project_link_alias():
     """project_link returns the same result as project_p10_lmi."""
@@ -305,6 +314,7 @@ def test_tc10_project_link_alias():
 # TC-11  project_robot_p10_lmi aggregation
 # ---------------------------------------------------------------------------
 
+
 def test_tc11_robot_aggregation():
     """project_robot_p10_lmi aggregates per-link results correctly."""
     p10_ok = _make_feasible_p10()
@@ -320,9 +330,9 @@ def test_tc11_robot_aggregation():
     # Both projected results must be feasible
     for name, p in projected.items():
         feas = check_p10_feasibility(p)
-        assert feas.status == "feasible", (
-            f"link '{name}' still infeasible after robot projection: {feas}"
-        )
+        assert (
+            feas.status == "feasible"
+        ), f"link '{name}' still infeasible after robot projection: {feas}"
 
     # Aggregate status
     assert robot_report.failed_links == 0
@@ -333,6 +343,7 @@ def test_tc11_robot_aggregation():
 # TC-12  ProjectionReport.runtime is set
 # ---------------------------------------------------------------------------
 
+
 def test_tc12_runtime_field_set():
     """report.runtime is a non-negative float after projection."""
     p10 = _make_infeasible_p10_neg_inertia()
@@ -340,14 +351,15 @@ def test_tc12_runtime_field_set():
 
     assert report.runtime is not None, "ProjectionReport.runtime should not be None"
     assert isinstance(report.runtime, float)
-    assert report.runtime >= 0.0, (
-        f"runtime should be non-negative, got {report.runtime}"
-    )
+    assert (
+        report.runtime >= 0.0
+    ), f"runtime should be non-negative, got {report.runtime}"
 
 
 # ---------------------------------------------------------------------------
 # Config-wiring tests (use mocks; no picos required)
 # ---------------------------------------------------------------------------
+
 
 def _make_minimal_identif_config(pc_override: dict) -> dict:
     """Build a minimal identif_config dict for config-wiring tests."""
@@ -391,6 +403,7 @@ class _FakeIdentification:
     from figaroh.identification.base_identification import (
         BaseIdentification,
     )
+
     _apply_physical_consistency_if_enabled = (
         BaseIdentification._apply_physical_consistency_if_enabled
     )
@@ -442,7 +455,10 @@ def _run_apply(pc_cfg: dict, joint_names=("j1",), mock_project=None):
         # Retrieve the unbound function from BaseIdentification and call it
         # explicitly so `fake` is passed as `self` only once.
         from figaroh.identification.base_identification import BaseIdentification
-        BaseIdentification._apply_physical_consistency_if_enabled(fake, identif_results={})
+
+        BaseIdentification._apply_physical_consistency_if_enabled(
+            fake, identif_results={}
+        )
 
     return fake, mock_project
 
@@ -461,9 +477,9 @@ def test_tc_config1_auto_weights_passes_none():
     assert call_kwargs is not None, "project_robot_p10_lmi was not called"
     # weights keyword arg should be None (auto mode)
     passed_weights = call_kwargs.kwargs.get("weights", "MISSING")
-    assert passed_weights is None, (
-        f"Expected weights=None for auto mode, got {passed_weights!r}"
-    )
+    assert (
+        passed_weights is None
+    ), f"Expected weights=None for auto mode, got {passed_weights!r}"
 
 
 # TC-config-2: manual mode builds correct 10-element weight array
@@ -484,9 +500,9 @@ def test_tc_config2_manual_weights_correct_array():
     passed_weights = call_kwargs.kwargs.get("weights", None)
 
     assert passed_weights is not None, "Expected a weight array for manual mode"
-    assert passed_weights.shape == (10,), (
-        f"Expected shape (10,), got {passed_weights.shape}"
-    )
+    assert passed_weights.shape == (
+        10,
+    ), f"Expected shape (10,), got {passed_weights.shape}"
     # m -> index 0
     assert passed_weights[0] == pytest.approx(3.0)
     # h -> indices 1-3
@@ -505,11 +521,11 @@ def test_tc_config3_raw_and_projected_keys_in_result():
     fake, _ = _run_apply(pc_cfg)
 
     pc_result = fake.result.get("physical consistency", {})
-    assert "raw_parameters" in pc_result, (
-        f"'raw_parameters' key missing from result: {list(pc_result.keys())}"
-    )
-    assert "projected_parameters" in pc_result, (
-        f"'projected_parameters' key missing from result: {list(pc_result.keys())}"
-    )
+    assert (
+        "raw_parameters" in pc_result
+    ), f"'raw_parameters' key missing from result: {list(pc_result.keys())}"
+    assert (
+        "projected_parameters" in pc_result
+    ), f"'projected_parameters' key missing from result: {list(pc_result.keys())}"
     # raw and projected must be distinct objects (not aliased)
     assert pc_result["raw_parameters"] is not pc_result["projected_parameters"]

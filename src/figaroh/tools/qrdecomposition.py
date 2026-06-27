@@ -166,7 +166,9 @@ class QRDecomposer:
             _, R, P = linalg.qr(W_e, pivoting=True)
             rank = self._find_rank(R)
             params_sorted = [params_r[P[i]] for i in range(P.shape[0])]
-            R1, Q1, R2 = self._extract_base_components(R, np.linalg.qr(W_e[:, P])[0], rank)
+            R1, Q1, R2 = self._extract_base_components(
+                R, np.linalg.qr(W_e[:, P])[0], rank
+            )
             beta = np.linalg.solve(R1, R2) if R2.size else np.empty((rank, 0))
             phi_b = np.round(np.linalg.solve(R1, Q1.T @ tau), 6)
             W_b = Q1 @ R1
@@ -174,7 +176,9 @@ class QRDecomposer:
                 params_sorted[:rank], params_sorted[rank:], beta
             )
             n_params = len(params_r)
-            M = self._build_M_from_pivoting(beta=beta, P=P, rank=rank, n_params=n_params)
+            M = self._build_M_from_pivoting(
+                beta=beta, P=P, rank=rank, n_params=n_params
+            )
             diag_R = np.abs(np.diag(R))
             cond_R1 = float(np.linalg.cond(R1)) if rank > 0 else 0.0
             base_indices = sorted(P[:rank].tolist())
@@ -194,7 +198,9 @@ class QRDecomposer:
             )
 
         if method_norm in {"double", "double_qr", "double-qr"}:
-            base_indices, regroup_indices = self._identify_base_parameters(W_e, params_r)
+            base_indices, regroup_indices = self._identify_base_parameters(
+                W_e, params_r
+            )
             W_base, W_regroup, params_base, params_regroup = self._regroup_parameters(
                 W_e, params_r, base_indices, regroup_indices
             )
@@ -210,8 +216,10 @@ class QRDecomposer:
             )
             n_params = len(params_r)
             M = self._build_M_from_partition(
-                beta=beta, base_indices=base_indices,
-                regroup_indices=regroup_indices, n_params=n_params,
+                beta=beta,
+                base_indices=base_indices,
+                regroup_indices=regroup_indices,
+                n_params=n_params,
             )
             diag_R = np.abs(np.diag(R_r))
             cond_R1 = float(np.linalg.cond(R1)) if rank > 0 else 0.0
@@ -235,9 +243,7 @@ class QRDecomposer:
                 cond_R1=cond_R1,
             )
 
-        raise ValueError(
-            f"Unknown method={method!r}. Expected 'double' or 'pivoting'."
-        )
+        raise ValueError(f"Unknown method={method!r}. Expected 'double' or 'pivoting'.")
 
     @staticmethod
     def _build_M_from_partition(
@@ -388,9 +394,7 @@ class QRDecomposer:
         """
 
         # First QR to identify base parameters
-        base_indices, regroup_indices = self._identify_base_parameters(
-            W_e, params_r
-        )
+        base_indices, regroup_indices = self._identify_base_parameters(W_e, params_r)
 
         # Regroup and second QR
         (
@@ -480,11 +484,7 @@ class QRDecomposer:
         """
         R1 = R[:rank, :rank]
         Q1 = Q[:, :rank]
-        R2 = (
-            R[:rank, rank:]
-            if rank < R.shape[1]
-            else np.array([]).reshape(rank, 0)
-        )
+        R2 = R[:rank, rank:] if rank < R.shape[1] else np.array([]).reshape(rank, 0)
         return R1, Q1, R2
 
     def _identify_base_parameters(
@@ -607,11 +607,7 @@ class QRDecomposer:
 
         # Dependency coefficients in the pivoted ordering — full precision
         R1 = R[:rank, :rank]
-        R2 = (
-            R[:rank, rank:]
-            if rank < R.shape[1]
-            else np.array([]).reshape(rank, 0)
-        )
+        R2 = R[:rank, rank:] if rank < R.shape[1] else np.array([]).reshape(rank, 0)
         beta = np.linalg.solve(R1, R2) if R2.size else np.empty((rank, 0))
         n_params = len(params_r)
         M = self._build_M_from_pivoting(
@@ -646,9 +642,7 @@ class QRDecomposer:
               - base_params_expr is a list[str] of length r
               - base_indices and regroup_indices index into params_r
         """
-        base_indices, regroup_indices = self._identify_base_parameters(
-            W_e, params_r
-        )
+        base_indices, regroup_indices = self._identify_base_parameters(W_e, params_r)
         (
             W_base,
             W_regroup,
@@ -666,11 +660,7 @@ class QRDecomposer:
         rank = len(base_indices)
 
         R1 = R_r[:rank, :rank]
-        R2 = (
-            R_r[:rank, rank:]
-            if rank < R_r.shape[1]
-            else np.array([]).reshape(rank, 0)
-        )
+        R2 = R_r[:rank, rank:] if rank < R_r.shape[1] else np.array([]).reshape(rank, 0)
         beta = np.linalg.solve(R1, R2) if R2.size else np.empty((rank, 0))
 
         n_params = len(params_r)
@@ -710,9 +700,7 @@ class QRDecomposer:
             return M, base_params_expr
         if method_norm in {"pivoting", "pivot", "qr_pivoting", "qr-pivoting"}:
             return self.get_base_mapping_matrix_pivoting(W_e, params_r)
-        raise ValueError(
-            f"Unknown method={method!r}. Expected 'double' or 'pivoting'."
-        )
+        raise ValueError(f"Unknown method={method!r}. Expected 'double' or 'pivoting'.")
 
     @staticmethod
     def expand_mapping_matrix_to_full(
@@ -794,9 +782,7 @@ def get_baseParams(
     """Legacy function for getting base parameters."""
     decomposer = QRDecomposer(tolerance=tol_qr)
     dummy_tau = np.zeros(W_e.shape[0])  # Not used in this function
-    result = decomposer.double_decomposition(
-        dummy_tau, W_e, params_r, params_std
-    )
+    result = decomposer.double_decomposition(dummy_tau, W_e, params_r, params_std)
     base_indices, _ = decomposer._identify_base_parameters(W_e, params_r)
     return result[0], result[2], base_indices
 

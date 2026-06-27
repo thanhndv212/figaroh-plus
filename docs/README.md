@@ -23,7 +23,7 @@ python -m http.server 8000
 Then open http://localhost:8000 in your browser
 
 b. Using PHP's built-in server:
-```bash 
+```bash
 cd build/html
 php -S localhost:8000
 ```
@@ -42,7 +42,7 @@ sphinx-autobuild source build/html
 
 This will start a server at http://localhost:8000 and rebuild docs when source files change.
 
-## Deployment 
+## Deployment
 
 To deploy to GitHub Pages:
 
@@ -57,7 +57,7 @@ cp -r build/html/* /path/to/gh-pages/
 ```
 
 3. Push to GitHub:
-```bash 
+```bash
 cd /path/to/gh-pages
 git add .
 git commit -m "Update documentation"

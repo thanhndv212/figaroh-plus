@@ -214,7 +214,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Parameter Ordering**: Changed to Pinocchio dynamic parameter ordering for consistency
   - New order: [Ixx, Ixy, Ixz, Iyy, Iyz, Izz, mx, my, mz, m]
   - Previous order: [m, mx, my, mz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz]
-  
+
 - **Regressor Module**: Cleaned up build_basic_regressor methods
   - Removed unused `tau` parameter for better API clarity
   - Improved method signatures and documentation
@@ -286,13 +286,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Unified Configuration System**: Complete overhaul of configuration management
   - New `UnifiedConfigParser` with YAML template inheritance
-  - Automatic format detection for seamless legacy compatibility  
+  - Automatic format detection for seamless legacy compatibility
   - Advanced parameter mapping between configuration formats
   - Comprehensive configuration validation with helpful error messages
 
 - **Enhanced Base Classes**: Modern object-oriented workflow management
   - `BaseCalibration`: Standardized calibration workflow with unified config support
-  - `BaseIdentification`: Standardized identification workflow with unified config support  
+  - `BaseIdentification`: Standardized identification workflow with unified config support
   - Automatic configuration format detection and conversion
 
 - **Advanced Regressor Builder**: Complete redesign of regressor computation
@@ -306,7 +306,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `unified_to_legacy_identif_config`: Identification parameter mapping function
   - Perfect compatibility with existing legacy configurations
 
-### Improved  
+### Improved
 - **Parameter Processing**: Enhanced parameter handling with better defaults
 - **Error Messages**: More informative validation and error reporting
 - **Documentation**: Comprehensive updates to README and module documentation
@@ -315,7 +315,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Enhanced
 - **Cross-Platform Support**: Improved compatibility across operating systems
-- **Input Validation**: Robust parameter validation and type checking  
+- **Input Validation**: Robust parameter validation and type checking
 - **Template System**: Flexible configuration template inheritance
 - **Backward Compatibility**: Full support for existing legacy configurations
 
@@ -336,7 +336,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 - Updated README with modern API examples
-- Enhanced configuration system documentation  
+- Enhanced configuration system documentation
 - New API usage patterns and best practices
 - Comprehensive module documentation updates
 

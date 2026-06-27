@@ -125,27 +125,25 @@ def add_standard_additional_parameters(model, identif_config):
             params.append(param_name)
 
             # Get parameter value
-            if identif_config.get(param_def['enabled_key'], False):
+            if identif_config.get(param_def["enabled_key"], False):
                 try:
-                    values_list = identif_config.get(
-                        param_def['values_key'], []
-                    )
+                    values_list = identif_config.get(param_def["values_key"], [])
                     if len(values_list) >= link_idx + 1:
                         value = values_list[link_idx]
                     else:
-                        value = param_def['default']
+                        value = param_def["default"]
                         logger.warning(
                             f"Missing {param_def['description']} "
                             f"for joint {jname}, using default: {value}"
                         )
                 except (KeyError, IndexError, TypeError) as e:
-                    value = param_def['default']
+                    value = param_def["default"]
                     logger.warning(
                         f"Error getting {param_def['description']} "
                         f"for joint {jname}: {e}, using default: {value}"
                     )
             else:
-                value = param_def['default']
+                value = param_def["default"]
 
             phi.append(value)
 
@@ -170,14 +168,13 @@ def add_custom_parameters(model, custom_params):
     for param_name, param_def in custom_params.items():
         if not isinstance(param_def, dict):
             logger.warning(
-                f"Invalid custom parameter definition for "
-                f"'{param_name}', skipping"
+                f"Invalid custom parameter definition for " f"'{param_name}', skipping"
             )
             continue
 
-        values = param_def.get('values', [])
-        per_joint = param_def.get('per_joint', True)
-        default_value = param_def.get('default', 0.0)
+        values = param_def.get("values", [])
+        per_joint = param_def.get("per_joint", True)
+        default_value = param_def.get("default", 0.0)
 
         if per_joint:
             # Add parameter for each joint
@@ -223,9 +220,7 @@ def add_custom_parameters(model, custom_params):
     return dict(zip(params, phi))
 
 
-def get_standard_parameters(
-    model, identif_config=None
-):
+def get_standard_parameters(model, identif_config=None):
     """Get standard inertial parameters from robot model with extensible
     parameter support.
 
@@ -261,9 +256,7 @@ def get_standard_parameters(
     ]
 
     # Extract and rearrange inertial parameters for each link
-    assert (
-        len(model.inertias) == model.njoints
-    ), "Inertia count mismatch with joints"
+    assert len(model.inertias) == model.njoints, "Inertia count mismatch with joints"
     for link_idx, jname in enumerate(model.names[1:]):
         # Get dynamic parameters from Pinocchio (in Pinocchio order)
         # Returns the representation of the matrix as a vector of dynamic
@@ -284,7 +277,6 @@ def get_standard_parameters(
         for param_name in inertial_params:
             params.append(f"{param_name}_{jname}")
         phi.extend(reordered_params)
-
 
     return dict(zip(params, phi))
 
