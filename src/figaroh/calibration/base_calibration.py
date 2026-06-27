@@ -176,6 +176,7 @@ class BaseCalibration(ABC):
         self.nvars = len(self.calib_config["param_name"])
         self._data_path = abspath(self.calib_config["data_file"])
         self.STATUS = "NOT CALIBRATED"
+        self._val_available = False
 
     def initialize(self):
         """Initialize calibration data and parameters.
@@ -267,6 +268,9 @@ class BaseCalibration(ABC):
 
         # Store results
         self._store_optimization_results(result, evaluation, outlier_indices)
+
+        # Print quality report
+        self.print_quality_report()
 
         # Generate plots if required
         if plotting:
@@ -472,6 +476,125 @@ class BaseCalibration(ABC):
             )
         except Exception as e:
             raise CalibrationError(f"Data loading failed: {e}")
+
+        # If validation data path is specified in config, load it
+        val_data_path = self.calib_config.get("validation_data_file")
+        if val_data_path:
+            try:
+                self._load_validation_data(val_data_path)
+            except Exception:
+                pass  # Don't fail calibration if validation data unavailable
+
+    def _load_validation_data(self, path: str):
+        """Load separate validation measurement data.
+
+        Args:
+            path: Path to a CSV file with validation measurements,
+                  in the same format as calibration data.
+
+        Side Effects:
+            - Sets self._q_val with validation joint configurations
+            - Sets self._PEE_val with validation measured poses
+            - Sets self._val_available = True
+        """
+        try:
+            orig_path = self._data_path
+            self._data_path = abspath(path)
+            self._q_val, self._PEE_val = load_data(
+                self._data_path, self.model, self.calib_config, []
+            )
+            self._data_path = orig_path
+            self._val_available = True
+        except Exception as e:
+            raise CalibrationError(f"Validation data loading failed: {e}")
+
+    def _compute_validation_metrics(self) -> Optional[Dict[str, Any]]:
+        """Compute FK validation metrics on held-out data.
+
+        Computes FK with both nominal (zero params) and calibrated
+        parameters on the validation set, then compares each against
+        the ground-truth measured poses.
+
+        Returns:
+            Dict with validation metrics, or None if no validation data.
+        """
+        if not getattr(self, "_val_available", False):
+            return None
+
+        result = self.LM_result
+        zeros = np.zeros_like(result.x)
+
+        # FK for nominal and calibrated on validation set
+        PEE_nom = calc_updated_fkm(
+            self.model, self.data, zeros, self._q_val, self.calib_config
+        )
+        PEE_cal = calc_updated_fkm(
+            self.model, self.data, result.x, self._q_val, self.calib_config
+        )
+
+        # Log-map residuals
+        resid_nom = self._compute_logmap_residuals(self._PEE_val, PEE_nom)
+        resid_cal = self._compute_logmap_residuals(self._PEE_val, PEE_cal)
+
+        n_dofs = self.calib_config["calibration_index"]
+        n_val = len(self._q_val)
+
+        # Reshape to (n_dofs, n_val) — DOF-major
+        resid_nom_2d = resid_nom.reshape((n_dofs, n_val))
+        resid_cal_2d = resid_cal.reshape((n_dofs, n_val))
+
+        # Position DOFs (first 3), Orientation DOFs (last 3)
+        pos_nom = resid_nom_2d[:3, :]
+        pos_cal = resid_cal_2d[:3, :]
+        orient_nom = resid_nom_2d[3:6, :]
+        orient_cal = resid_cal_2d[3:6, :]
+
+        def _error_stats(arr_2d):
+            """arr_2d: (n_dof_group, n_samples) → per-sample norm → stats."""
+            per_sample = np.sqrt(np.sum(arr_2d ** 2, axis=0))
+            return {
+                "rmse": float(np.sqrt(np.mean(np.sum(arr_2d ** 2, axis=0)))),
+                "max": float(np.max(per_sample)),
+                "mean": float(np.mean(per_sample)),
+            }
+
+        pos_nom_stats = _error_stats(pos_nom)
+        pos_cal_stats = _error_stats(pos_cal)
+        orient_nom_stats = _error_stats(orient_nom)
+        orient_cal_stats = _error_stats(orient_cal)
+
+        def _improvement(before, after):
+            if before > 0:
+                return (before - after) / before * 100
+            return 0.0
+
+        return {
+            "n_val_samples": n_val,
+            "pos_rmse_nominal_mm": pos_nom_stats["rmse"] * 1000,
+            "pos_rmse_calibrated_mm": pos_cal_stats["rmse"] * 1000,
+            "pos_max_nominal_mm": pos_nom_stats["max"] * 1000,
+            "pos_max_calibrated_mm": pos_cal_stats["max"] * 1000,
+            "pos_improvement_pct": _improvement(
+                pos_nom_stats["rmse"], pos_cal_stats["rmse"]
+            ),
+            "orient_rmse_nominal_deg": (
+                orient_nom_stats["rmse"] * 180 / np.pi
+            ),
+            "orient_rmse_calibrated_deg": (
+                orient_cal_stats["rmse"] * 180 / np.pi
+            ),
+            "orient_max_nominal_deg": (
+                orient_nom_stats["max"] * 180 / np.pi
+            ),
+            "orient_max_calibrated_deg": (
+                orient_cal_stats["max"] * 180 / np.pi
+            ),
+            "orient_improvement_pct": _improvement(
+                orient_nom_stats["rmse"], orient_cal_stats["rmse"]
+            ),
+            "residuals_nominal": resid_nom,
+            "residuals_calibrated": resid_cal,
+        }
 
     def get_pose_from_measure(self, res_: np.ndarray) -> np.ndarray:
         """Calculate forward kinematics with calibrated parameters.
@@ -881,6 +1004,15 @@ class BaseCalibration(ABC):
             mean_sample_rms = rmse
             std_sample_rms = 0.0
 
+        # ── Per-DOF breakdown ──
+        per_dof_stats = self._compute_per_dof_stats(residuals, n_dofs, n_samples)
+
+        # ── Condition number ──
+        cond_num, cond_label = self._compute_condition_number(result)
+
+        # ── Parameter correlation ──
+        correlated_pairs = self._compute_parameter_correlation()
+
         # Calculate standard deviation of estimated parameters
         self.calc_stddev(result)
 
@@ -898,7 +1030,156 @@ class BaseCalibration(ABC):
             "cost": result.cost,
             "n_iterations": getattr(result, "nit", 0),
             "n_function_evals": getattr(result, "nfev", 0),
+            # ── New quality fields ──
+            "per_dof_stats": per_dof_stats,
+            "condition_number": cond_num,
+            "condition_label": cond_label,
+            "correlated_pairs": correlated_pairs,
         }
+
+    def _compute_per_dof_stats(
+        self, residuals: np.ndarray, n_dofs: int, n_samples: int
+    ) -> Dict[str, Any]:
+        """Compute per-DOF residual statistics.
+
+        Returns dict with keys: 'dof_names', 'mean', 'std', 'rmse',
+        'max_abs', 'r_squared' — each a list of length n_dofs.
+        Units: position DOFs=mm, orientation DOFs=deg.
+        """
+        dof_names = [
+            "X (mm)", "Y (mm)", "Z (mm)",
+            "rx (deg)", "ry (deg)", "rz (deg)",
+        ]
+        dof_names = dof_names[:n_dofs]
+
+        if len(residuals) != n_dofs * n_samples:
+            return {
+                "dof_names": dof_names, "mean": [], "std": [],
+                "rmse": [], "max_abs": [], "r_squared": [],
+            }
+
+        residuals_2d = residuals.reshape((n_dofs, n_samples))
+        PEE_meas_2d = self.PEE_measured.reshape((n_dofs, n_samples))
+
+        means, stds, rmses, max_abs, r_squareds = [], [], [], [], []
+
+        for i in range(n_dofs):
+            row = residuals_2d[i, :]
+            meas_row = PEE_meas_2d[i, :]
+
+            # Scale: position → mm, orientation → deg
+            scale = 1000.0 if i < 3 else 180.0 / np.pi
+            scaled = row * scale
+
+            means.append(float(np.mean(scaled)))
+            stds.append(float(np.std(scaled)))
+            rmses.append(float(np.sqrt(np.mean(scaled ** 2))))
+            max_abs.append(float(np.max(np.abs(scaled))))
+
+            # R² = 1 - SS_res / SS_tot
+            ss_res = np.sum(row ** 2)
+            ss_tot = np.sum((meas_row - np.mean(meas_row)) ** 2)
+            r2 = 1.0 - ss_res / ss_tot if ss_tot > 1e-15 else 1.0
+            r_squareds.append(float(r2))
+
+        # Overall position/orientation aggregates
+        pos_rows = (
+            residuals_2d[:3, :] if n_dofs >= 3 else residuals_2d
+        )
+        orient_rows = (
+            residuals_2d[3:6, :] if n_dofs >= 6
+            else np.zeros((3, n_samples))
+        )
+        pos_rmse = float(
+            np.sqrt(np.mean(np.sum(pos_rows ** 2, axis=0)))
+        ) * 1000
+        orient_rmse = float(
+            np.sqrt(np.mean(np.sum(orient_rows ** 2, axis=0)))
+        ) * 180 / np.pi
+        pos_max = float(
+            np.max(np.sqrt(np.sum(pos_rows ** 2, axis=0)))
+        ) * 1000
+        orient_max = float(
+            np.max(np.sqrt(np.sum(orient_rows ** 2, axis=0)))
+        ) * 180 / np.pi
+
+        return {
+            "dof_names": dof_names,
+            "mean": means,
+            "std": stds,
+            "rmse": rmses,
+            "max_abs": max_abs,
+            "r_squared": r_squareds,
+            "overall": {
+                "pos_rmse_mm": pos_rmse,
+                "orient_rmse_deg": orient_rmse,
+                "pos_max_mm": pos_max,
+                "orient_max_deg": orient_max,
+            },
+        }
+
+    def _compute_condition_number(self, result) -> Tuple[float, str]:
+        """Compute condition number of the Jacobian matrix.
+
+        Returns (cond_num, label) where label is one of:
+        'well-conditioned' (<100), 'moderately conditioned' (100-1000),
+        or 'ill-conditioned' (>1000).
+        """
+        try:
+            J = result.jac
+            if J is None:
+                return float("nan"), "unavailable (no Jacobian)"
+            cond_num = float(np.linalg.cond(J))
+            if cond_num < 100:
+                label = "well-conditioned"
+            elif cond_num < 1000:
+                label = "moderately conditioned"
+            else:
+                label = "ill-conditioned"
+            return cond_num, label
+        except Exception:
+            return float("nan"), "unavailable (computation failed)"
+
+    def _compute_parameter_correlation(self) -> List[Dict[str, Any]]:
+        """Compute parameter correlation matrix, flag strongly correlated pairs.
+
+        Returns:
+            List of dicts with keys 'param_i', 'param_j', 'correlation'
+            for pairs where |ρ| > 0.8.
+        """
+        try:
+            C_param = getattr(self, "_C_param", None)
+            if C_param is None:
+                return []
+            D = np.sqrt(np.diag(C_param))
+            with np.errstate(divide="ignore", invalid="ignore"):
+                corr = np.where(
+                    np.outer(D, D) > 1e-15,
+                    C_param / np.outer(D, D),
+                    0.0,
+                )
+            param_names = self.calib_config.get("param_name", [])
+            pairs = []
+            n = len(D)
+            for i in range(n):
+                for j in range(i + 1, n):
+                    if abs(corr[i, j]) > 0.8:
+                        pairs.append({
+                            "param_i": (
+                                param_names[i]
+                                if i < len(param_names)
+                                else f"param_{i}"
+                            ),
+                            "param_j": (
+                                param_names[j]
+                                if j < len(param_names)
+                                else f"param_{j}"
+                            ),
+                            "correlation": float(corr[i, j]),
+                        })
+            return pairs
+        except Exception:
+            return []
 
     def _prepare_next_iteration(self, result, iteration: int) -> np.ndarray:
         """Prepare for next optimization iteration.
@@ -995,6 +1276,17 @@ class BaseCalibration(ABC):
         self.results_data["outlier indices"] = outlier_indices
         self.results_data["calibration config"] = self.calib_config
         self.results_data["task type"] = "calibration"
+        self.results_data["condition_number"] = evaluation.get(
+            "condition_number", float("nan")
+        )
+        self.results_data["correlated_pairs"] = evaluation.get(
+            "correlated_pairs", []
+        )
+
+        # Compute validation metrics and store if available
+        val_metrics = self._compute_validation_metrics()
+        if val_metrics is not None:
+            self.results_data["validation_metrics"] = val_metrics
 
         # Initialize ResultsManager for calibration task
         try:
@@ -1131,6 +1423,7 @@ class BaseCalibration(ABC):
             )
             J = result.jac
             C_param = sigma_ro_sq * np.linalg.pinv(np.dot(J.T, J))
+            self._C_param = C_param
             std_dev = []
             std_pctg = []
             for i_ in range(self.nvars):
@@ -1322,3 +1615,180 @@ class BaseCalibration(ABC):
             except Exception as e:
                 logger.error(f"Error saving with ResultsManager: {e}")
                 logger.info("Falling back to basic saving...")
+
+    def print_quality_report(self):
+        """Print a formatted calibration quality report to the terminal.
+
+        Reports convergence, per-DOF residual statistics, validation
+        metrics (if available), parameter uncertainty, and correlations.
+        """
+        eval_ = self.evaluation_metrics
+        val = (
+            self._compute_validation_metrics()
+            if hasattr(self, "_compute_validation_metrics")
+            else None
+        )
+
+        print()
+        print("=" * 70)
+        print("  CALIBRATION QUALITY REPORT")
+        print("=" * 70)
+
+        # ── Convergence ──
+        status = (
+            "\u2713 converged"
+            if eval_["optimization_success"]
+            else "\u2717 failed"
+        )
+        print(
+            f"  Convergence:  {status}    "
+            f"Iterations: {eval_['n_iterations']}    "
+            f"Cost: {eval_['cost']:.6f}"
+        )
+        print(
+            f"  Outliers:     {eval_['n_outliers']} "
+            f"/ {self.calib_config['NbSample']} "
+            f"({eval_['outlier_percentage']:.1f}%)"
+        )
+
+        cond_label = eval_.get("condition_label", "unavailable")
+        cond_num = eval_.get("condition_number", float("nan"))
+        if not np.isnan(cond_num):
+            print(f"  Condition:    {cond_num:.1f} ({cond_label})")
+        else:
+            print(f"  Condition:    {cond_label}")
+
+        # ── Per-DOF residuals ──
+        per_dof = eval_.get("per_dof_stats", {})
+        if per_dof and per_dof.get("dof_names"):
+            print("-" * 70)
+            n = self.calib_config["NbSample"]
+            print(f"  Per-DOF Residuals (training set, n={n})")
+            names = per_dof["dof_names"]
+            means = per_dof.get("mean", [])
+            stds = per_dof.get("std", [])
+            rmses = per_dof.get("rmse", [])
+            maxes = per_dof.get("max_abs", [])
+            r2s = per_dof.get("r_squared", [])
+            print(
+                f"  {'DOF':<12s} {'Mean':>10s} {'Std':>10s} "
+                f"{'RMSE':>10s} {'Max':>10s} {'R²':>10s}"
+            )
+            print(
+                f"  {'-'*12} {'-'*10} {'-'*10} "
+                f"{'-'*10} {'-'*10} {'-'*10}"
+            )
+            for i in range(len(names)):
+                m = f"{means[i]:10.4f}" if i < len(means) else "         -"
+                s = f"{stds[i]:10.4f}" if i < len(stds) else "         -"
+                r = f"{rmses[i]:10.4f}" if i < len(rmses) else "         -"
+                x = f"{maxes[i]:10.4f}" if i < len(maxes) else "         -"
+                q = f"{r2s[i]:10.4f}" if i < len(r2s) else "         -"
+                print(f"  {names[i]:<12s} {m} {s} {r} {x} {q}")
+
+        # ── Overall ──
+        overall = per_dof.get("overall", {}) if per_dof else {}
+        if overall:
+            print("-" * 70)
+            print("  Overall")
+            print(
+                f"    Position RMSE:    {overall['pos_rmse_mm']:.2f} mm    "
+                f"Orientation RMSE:  {overall['orient_rmse_deg']:.4f} deg"
+            )
+            print(
+                f"    Position max:     {overall['pos_max_mm']:.2f} mm    "
+                f"Orientation max:   {overall['orient_max_deg']:.4f} deg"
+            )
+
+        # ── Validation ──
+        print("-" * 70)
+        if val is not None:
+            print(f"  Validation (separate set, n={val['n_val_samples']})")
+            print(
+                f"  {'Metric':<20s} {'Nominal':>10s} "
+                f"{'Calibrated':>12s} {'Improvement':>14s}"
+            )
+            print(f"  {'-'*20} {'-'*10} {'-'*12} {'-'*14}")
+            arrow_pos = (
+                "\u2193" if val["pos_improvement_pct"] > 0 else "\u2191"
+            )
+            arrow_orient = (
+                "\u2193" if val["orient_improvement_pct"] > 0 else "\u2191"
+            )
+            print(
+                f"  {'Position RMSE':<20s} "
+                f"{val['pos_rmse_nominal_mm']:10.2f} mm"
+                f"{val['pos_rmse_calibrated_mm']:12.2f} mm"
+                f"{val['pos_improvement_pct']:13.1f}%  {arrow_pos}"
+            )
+            print(
+                f"  {'Orientation RMSE':<20s} "
+                f"{val['orient_rmse_nominal_deg']:10.4f} deg"
+                f"{val['orient_rmse_calibrated_deg']:12.4f} deg"
+                f"{val['orient_improvement_pct']:13.1f}%  {arrow_orient}"
+            )
+            print(
+                f"  {'Position max':<20s} "
+                f"{val['pos_max_nominal_mm']:10.2f} mm"
+                f"{val['pos_max_calibrated_mm']:12.2f} mm"
+                f"{val['pos_improvement_pct']:13.1f}%  {arrow_pos}"
+            )
+            print(
+                f"  {'Orientation max':<20s} "
+                f"{val['orient_max_nominal_deg']:10.4f} deg"
+                f"{val['orient_max_calibrated_deg']:12.4f} deg"
+                f"{val['orient_improvement_pct']:13.1f}%  {arrow_orient}"
+            )
+        else:
+            print("  Validation: no separate validation data provided.")
+            print(
+                "    Collect measurements with random configurations "
+                "for FK testing."
+            )
+
+        # ── Parameter uncertainty (top 5) ──
+        std_pctg = eval_.get("param_stddev_percentage", [])
+        std_dev = eval_.get("param_stdev", [])
+        param_names = self.calib_config.get("param_name", [])
+        if std_pctg and param_names:
+            print("-" * 70)
+            ranked = sorted(
+                zip(param_names, std_dev, std_pctg),
+                key=lambda x: x[2],
+                reverse=True,
+            )[:5]
+            n_show = min(5, len(ranked))
+            print(
+                f"  Parameter Uncertainty (top {n_show} most uncertain)"
+            )
+            print(
+                f"  {'Parameter':<30s} {'Value':>12s} "
+                f"{'±σ':>12s} {'σ/|val|':>10s}"
+            )
+            print(
+                f"  {'-'*30} {'-'*12} {'-'*12} {'-'*10}"
+            )
+            for name, sd, sp in ranked:
+                print(
+                    f"  {name:<30s} {'':>12s} "
+                    f"{sd:12.6f} {sp:9.1f}%"
+                )
+
+        # ── Correlated pairs ──
+        corr_pairs = eval_.get("correlated_pairs", [])
+        print("-" * 70)
+        if corr_pairs:
+            print("  Correlated pairs (|\u03c1| > 0.8):")
+            for cp in corr_pairs:
+                print(
+                    f"    {cp['param_i']:<30s} \u2194 "
+                    f"{cp['param_j']:<30s} "
+                    f"\u03c1 = {cp['correlation']:+.3f}"
+                )
+        else:
+            print(
+                "  Parameter correlations: none exceed |\u03c1| > 0.8"
+            )
+
+        print("=" * 70)
+        print()

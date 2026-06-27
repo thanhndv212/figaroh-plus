@@ -160,7 +160,7 @@ class TestTiagoUrdfExporter:
         # FK should match original since base params are metrology-only
         from figaroh.tools.export_validation import URDFComparison
         comp = URDFComparison(str(tiago_urdf_path), modified)
-        err = comp.trajectory_errors(n_samples=10)
+        err = comp.fk_consistency_check(n_samples=10)
         assert err.rmse_position < 1e-10, f"Base params leaked into URDF: {err.rmse_position}"
 
     def test_export_with_joint_offset(self, tiago_urdf_path, output_path):
@@ -193,7 +193,7 @@ class TestTiagoUrdfExporter:
         modified = export_urdf(str(tiago_urdf_path), params, output_path=str(output_path))
 
         comp = URDFComparison(str(tiago_urdf_path), modified)
-        err = comp.trajectory_errors(n_samples=50)
+        err = comp.fk_consistency_check(n_samples=50)
 
         # Should detect position change from d_px/d_py on arm_3_joint
         assert err.rmse_position > 0.001, "Exporter should produce FK difference"

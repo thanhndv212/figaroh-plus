@@ -111,7 +111,7 @@ class TestURDFExporterNumerical:
         """100 random configs → RMSE position error ≈ d_px magnitude."""
         modified = export_urdf(self.nominal, self.params, output_path=self.output)
         comp = URDFComparison(self.nominal, modified)
-        err = comp.trajectory_errors(n_samples=100)
+        err = comp.fk_consistency_check(n_samples=100)
         # d_px=0.05 → rmse ≈ 0.05
         assert err.rmse_position < 0.15, f"RMSE pos too high: {err.rmse_position}"
         assert err.rmse_position > 0.001, "Changes not reflected in FK"
@@ -120,7 +120,7 @@ class TestURDFExporterNumerical:
         """100 random configs → RMSE orientation error ≈ d_phiz magnitude."""
         modified = export_urdf(self.nominal, self.params, output_path=self.output)
         comp = URDFComparison(self.nominal, modified)
-        err = comp.trajectory_errors(n_samples=100)
+        err = comp.fk_consistency_check(n_samples=100)
         assert err.rmse_orientation < 0.15, f"RMSE orient too high: {err.rmse_orientation}"
         assert err.rmse_orientation > 0.001, "Orientation changes not reflected"
 
@@ -128,7 +128,7 @@ class TestURDFExporterNumerical:
         """Max single-point error does not wildly exceed parameter magnitudes."""
         modified = export_urdf(self.nominal, self.params, output_path=self.output)
         comp = URDFComparison(self.nominal, modified)
-        err = comp.trajectory_errors(n_samples=100)
+        err = comp.fk_consistency_check(n_samples=100)
         # d_px=0.05 + d_phiz=0.1 → shouldn't exceed ~2× combined
         assert err.max_position < 0.3, f"Max pos err excessive: {err.max_position}"
         assert err.max_orientation < 0.3, f"Max orient err excessive: {err.max_orientation}"
@@ -137,7 +137,7 @@ class TestURDFExporterNumerical:
         """Empty params → exported URDF produces identical FK."""
         modified = export_urdf(self.nominal, {}, output_path=self.output)
         comp = URDFComparison(self.nominal, modified)
-        err = comp.trajectory_errors(n_samples=50)
+        err = comp.fk_consistency_check(n_samples=50)
         assert err.rmse_position < 1e-10, f"Identity drift: {err.rmse_position}"
         assert err.rmse_orientation < 1e-10
 
