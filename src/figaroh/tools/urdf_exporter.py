@@ -534,7 +534,6 @@ def frame_settings_doc(*, calibration_type: Optional[str] = None,
             "and configure your\n"
             "  controller or calibration pipeline accordingly.",
             note,
-            "frame_params",
         )
 
     return defaults
