@@ -1,6 +1,14 @@
 # FIGAROH
 **F**ree dynamics **I**dentification and **G**eometrical c**A**libration of **RO**bot and **H**uman
 
+<p align="center">
+  <a href="https://www.apache.org/licenses/LICENSE-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"/></a>
+  <a href="https://pypi.org/project/figaroh/"><img src="https://badge.fury.io/py/figaroh.svg" alt="PyPI version" height="20"/></a>
+  <a href="https://pypi.org/project/figaroh/"><img src="https://img.shields.io/pypi/dm/figaroh" alt="Downloads"/></a>
+  <a href="https://deepwiki.com/thanhndv212/figaroh-plus"><img src="https://img.shields.io/badge/docs-online-brightgreen" alt="Documentation"/></a>
+  <a href="https://deepwiki.com/thanhndv212/figaroh-plus"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"/></a>
+</p>
+
 FIGAROH is a Python toolbox providing efficient and highly flexible frameworks for dynamics identification and geometric calibration of rigid multi-body systems based on the URDF modeling convention. It supports both serial (industrial manipulators) and tree-structure systems (humanoids, mobile manipulators).
 
 **📦 Available on PyPI:** `pip install figaroh`
