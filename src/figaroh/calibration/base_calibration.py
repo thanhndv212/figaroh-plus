@@ -47,6 +47,7 @@ from figaroh.utils.config_parser import (
     create_task_config,
     is_unified_config,
 )
+import pinocchio as pin
 
 # Import from shared modules
 from figaroh.utils.error_handling import CalibrationError, handle_calibration_errors
@@ -100,7 +101,7 @@ class BaseCalibration(ABC):
         ...     def cost_function(self, var):
         ...         PEEe = calc_updated_fkm(self.model, self.data, var,
         ...                                self.q_measured, self.calib_config)
-        ...         residuals = self.PEE_measured - PEEe
+        ...         residuals = self._compute_logmap_residuals(self.PEE_measured, PEEe)
         ...         return self.apply_measurement_weighting(residuals)
         ...
         >>> # Run calibration
@@ -507,6 +508,84 @@ class BaseCalibration(ABC):
             self.model, self.data, res_, self.q_measured, self.calib_config
         )
 
+    def _compute_logmap_residuals(
+        self,
+        measured_flat: np.ndarray,
+        estimated_flat: np.ndarray,
+    ) -> np.ndarray:
+        """Compute pose residuals using the SE3 log map for geometric correctness.
+
+        Replaces the element-wise ``measured - estimated`` subtraction (which
+        treats roll-pitch-yaw angles as a vector space — incorrect) with the
+        proper SE3 error ``log(M_meas⁻¹ · M_est)``.  The result is a 6D twist::
+
+            twist = [v, ω]   where
+            v = body-frame position error (m),   ω = angle-axis orientation error (rad)
+
+        The angle-axis vector :math:`\\omega` is the geodesic on SO(3) — unlike
+        element-wise RPY subtraction, it has no singularity issues and is a
+        proper metric.
+
+        For **unmeasured DOFs** (e.g., orientation in position-only calibration),
+        the estimate's values are used to reconstruct the full SE3 transform.
+        This ensures the log map produces a meaningful geometric error for the
+        measured DOFs without requiring the unmeasured data to exist.
+        Unmeasured DOF components are excluded from the output.
+
+        Args:
+            measured_flat: Measured PEE array, flat DOF-major order
+                ``(n_meas * n_samples,)``.
+            estimated_flat: Estimated PEE array, same format.
+
+        Returns:
+            Flat residual array in the same DOF-major order as the input,
+            with geometrically correct SE3 errors.  Can be passed directly
+            to :meth:`apply_measurement_weighting`.
+        """
+        measurability = np.array(self.calib_config["measurability"], dtype=bool)
+        measured_dofs = np.where(measurability)[0]
+        unmeasured_dofs = np.where(~measurability)[0]
+        n_meas = len(measured_dofs)
+        n_samples = self.calib_config["NbSample"]
+        n_markers = self.calib_config.get("NbMarkers", 1)
+
+        # Reshape to (n_markers, n_meas, n_samples) — DOF-major
+        meas_3d = measured_flat.reshape((n_markers, n_meas, n_samples))
+        est_3d = estimated_flat.reshape((n_markers, n_meas, n_samples))
+
+        # Output SE3 errors: (n_markers, 6, n_samples)
+        se3_errors = np.zeros((n_markers, 6, n_samples))
+
+        for marker in range(n_markers):
+            for s in range(n_samples):
+                # Full 6D vectors — fill measured DOFs from data
+                meas_6d = np.zeros(6)
+                est_6d = np.zeros(6)
+                for i, dof in enumerate(measured_dofs):
+                    meas_6d[dof] = meas_3d[marker, i, s]
+                    est_6d[dof] = est_3d[marker, i, s]
+
+                # Fill unmeasured DOFs from estimate (best available guess)
+                for dof in unmeasured_dofs:
+                    meas_6d[dof] = est_6d[dof]
+
+                # Convert to SE3
+                M_meas = pin.SE3(
+                    pin.rpy.rpyToMatrix(meas_6d[3:6]), meas_6d[0:3]
+                )
+                M_est = pin.SE3(
+                    pin.rpy.rpyToMatrix(est_6d[3:6]), est_6d[0:3]
+                )
+
+                # Log map error: body-frame position + angle-axis orientation
+                delta = M_meas.inverse() * M_est
+                motion = pin.log(delta)
+                se3_errors[marker, :3, s] = motion.linear   # v: body-frame position
+                se3_errors[marker, 3:, s] = motion.angular  # ω: angle-axis orientation
+
+        # Select only measured DOF rows, flatten to DOF-major → same shape as input
+        return se3_errors[:, measured_dofs, :].flatten("C")
+
     def cost_function(self, var: np.ndarray) -> np.ndarray:
         """Calculate cost function for optimization.
 
@@ -528,7 +607,8 @@ class BaseCalibration(ABC):
             >>> def cost_function(self, var):
             ...     PEEe = calc_updated_fkm(self.model, self.data, var,
             ...                            self.q_measured, self.calib_config)
-            ...     raw_residuals = self.PEE_measured - PEEe
+            ...     raw_residuals = self._compute_logmap_residuals(
+            ...         self.PEE_measured, PEEe)
             ...     weighted_residuals = self.apply_measurement_weighting(
             ...         raw_residuals, pos_weight=1000.0, orient_weight=100.0)
             ...     # Add regularization if needed
@@ -546,11 +626,11 @@ class BaseCalibration(ABC):
             stacklevel=2,
         )
 
-        # Default implementation: basic residual calculation
+        # Default implementation: basic residual calculation using SE3 log map
         PEEe = calc_updated_fkm(
             self.model, self.data, var, self.q_measured, self.calib_config
         )
-        raw_residuals = self.PEE_measured - PEEe
+        raw_residuals = self._compute_logmap_residuals(self.PEE_measured, PEEe)
 
         # Apply basic measurement weighting if configuration is available
         try:
@@ -584,7 +664,8 @@ class BaseCalibration(ABC):
 
         Example:
             >>> # In derived class cost_function:
-            >>> raw_residuals = self.PEE_measured - PEEe
+            >>> raw_residuals = self._compute_logmap_residuals(
+            ...     self.PEE_measured, PEEe)
             >>> weighted_residuals = self.apply_measurement_weighting(
             ...     raw_residuals, pos_weight=1000.0, orient_weight=100.0)
         """
@@ -676,9 +757,10 @@ class BaseCalibration(ABC):
                 logger.warning(f"Optimization failed at iteration {iteration + 1}")
                 break
 
-            # Calculate residuals and detect outliers
+            # Calculate residuals using SE3 log map for geometrically
+            # correct error and detect outliers
             PEE_est = self.get_pose_from_measure(result.x)
-            residuals = PEE_est - self.PEE_measured
+            residuals = self._compute_logmap_residuals(self.PEE_measured, PEE_est)
             new_outliers = self._detect_outliers(residuals, outlier_threshold)
 
             if len(new_outliers) == 0:
@@ -739,12 +821,12 @@ class BaseCalibration(ABC):
             dict: Solution evaluation metrics
         """
         PEE_est = self.get_pose_from_measure(result.x)
-        residuals = PEE_est - self.PEE_measured
+        residuals = self._compute_logmap_residuals(self.PEE_measured, PEE_est)
         n_dofs = self.calib_config["calibration_index"]
         n_samples = self.calib_config["NbSample"]
 
         # Calculate metrics
-        rmse = np.sqrt(np.mean(residuals**2))
+        rmse = np.sqrt(np.mean(residuals ** 2))
         mae = np.mean(np.abs(residuals))
         max_error = np.max(np.abs(residuals))
 
@@ -835,9 +917,9 @@ class BaseCalibration(ABC):
         self.evaluation_metrics = evaluation
         self.outlier_indices = outlier_indices
 
-        # Calculate per-sample error distribution for plotting
+        # Calculate per-sample error distribution for plotting (SE3 log map)
         PEE_est = self.get_pose_from_measure(result.x)
-        residuals = PEE_est - self.PEE_measured
+        residuals = self._compute_logmap_residuals(self.PEE_measured, PEE_est)
         n_dofs = self.calib_config["calibration_index"]
         n_samples = self.calib_config["NbSample"]
         n_markers = self.calib_config["NbMarkers"]
