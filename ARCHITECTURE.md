@@ -19,7 +19,7 @@
 
 ---
 
-## Executive Summary
+## 1. Executive Summary
 
 FIGAROH (**F**ree dynamics **I**dentification and **G**eometrical c**A**libration of **RO**bot and **H**uman) is a modular framework for robot calibration and parameter identification. The architecture follows a **three-layer design**:
 
@@ -33,9 +33,50 @@ FIGAROH (**F**ree dynamics **I**dentification and **G**eometrical c**A**libratio
 - **Modular & Extensible**: Clear separation of concerns enables easy extension
 - **Production Ready**: Comprehensive error handling, validation, and documentation
 
+### Package Structure
+
+```
+figaroh/
+├── calibration/          # Geometric calibration framework
+│   ├── BaseCalibration       # Abstract base class for kinematic calibration
+│   ├── calibration_tools     # Parameter parsing, regressor computation
+│   ├── config                # Configuration loading and validation
+│   ├── data_loader           # CSV data loading utilities
+│   └── parameter             # Kinematic parameter management
+│
+├── identification/       # Dynamic parameter identification
+│   ├── BaseIdentification    # Abstract base class for dynamic identification
+│   ├── identification_tools  # Regressor utilities, parameter extraction
+│   ├── config                # Identification configuration parsing
+│   └── parameter             # Inertial parameter management (friction, inertia)
+│
+├── optimal/              # Optimization-based trajectory & configuration
+│   ├── BaseOptimalTrajectory     # IPOPT-based trajectory optimization
+│   ├── BaseOptimalCalibration    # Optimal calibration posture selection
+│   ├── BaseParameterComputer     # Base parameter computation utilities
+│   ├── TrajectoryConstraintManager # Constraint handling for optimization
+│   └── config                    # Optimization configuration management
+│
+├── tools/                # Core robotics utilities
+│   ├── RegressorBuilder      # Object-oriented regressor computation
+│   ├── LinearSolver          # Advanced linear solver (LS, Ridge, Lasso, etc.)
+│   ├── QRDecomposer          # QR decomposition for base parameters
+│   ├── CollisionManager      # Collision detection and visualization
+│   ├── RobotIPOPTSolver      # IPOPT optimization wrapper
+│   └── CubicSpline           # Trajectory interpolation utilities
+│
+├── utils/                # Helper utilities
+│   ├── UnifiedConfigParser   # YAML config with inheritance support
+│   ├── ResultsManager        # Unified plotting and result export
+│   ├── error_handling        # Custom exceptions and validation
+│   └── cubic_spline          # Spline trajectory generation
+│
+├── measurements/         # Data acquisition and processing
+└── visualisation/        # Meshcat-based 3D visualization
+```
 ---
 
-## System Overview
+## 2. System Overview
 
 > **📝 Note**: This document contains Mermaid diagrams. If they don't render:
 > 1. Install the "Markdown Preview Mermaid Support" extension in VS Code
@@ -178,7 +219,7 @@ graph TB
 
 ---
 
-## Layered Architecture
+## 3. Layered Architecture
 
 ### Layer 1: Backend Layer (`src/figaroh/backends/`)
 
@@ -427,7 +468,7 @@ sequenceDiagram
 
 ---
 
-## Module Details
+## 4. Module Details
 
 ### 1. Backend Layer
 
@@ -854,7 +895,7 @@ subject to:
 
 ---
 
-## Pinocchio Integration Map
+## 5. Pinocchio Integration Map
 
 ### Critical Functions (Backend-abstracted ✅)
 
@@ -923,7 +964,7 @@ graph LR
 
 ---
 
-## Data Flow
+## 6. Data Flow
 
 ### Identification Data Flow
 
@@ -1012,7 +1053,7 @@ flowchart TD
 
 ---
 
-## Backend Architecture
+## 7. Backend Architecture
 
 ### Backend Selection
 
@@ -1137,7 +1178,7 @@ class DynamicsBackend(ABC):
 
 ---
 
-## Extension Points
+## 8. Extension Points
 
 ### Adding a New Backend
 
@@ -1204,7 +1245,7 @@ class MyRobotCalibration(BaseCalibration):
 
 ---
 
-## Backend Migration Limitations
+## 9. Backend Migration Limitations
 
 > **This section documents the fundamental barriers to fully migrating FIGAROH's
 > calibration algorithms from Pinocchio to other simulator backends (MuJoCo, Genesis,
@@ -1311,7 +1352,7 @@ until simulator APIs evolve to support runtime model mutation.
 
 ---
 
-## Performance Considerations
+## 10. Performance Considerations
 
 ### Computational Bottlenecks
 
