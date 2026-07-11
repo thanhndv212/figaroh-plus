@@ -137,6 +137,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.optimal.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_param</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.optimal.base_parameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseParameterComputer</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.optimal.contraints</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrajectoryConstraintManager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.utils.results_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultsManager</span><span class="p">,</span> <span class="n">plot_with_fallback</span>
 
 
 <div class="viewcode-block" id="BaseOptimalTrajectory">
@@ -474,36 +475,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No trajectory data to plot&quot;</span><span class="p">)</span>
             <span class="k">return</span>
 
-        <span class="k">try</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">.results_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultsManager</span>
-
-            <span class="c1"># Initialize results manager</span>
-            <span class="n">robot_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;robot_name&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="n">results_manager</span> <span class="o">=</span> <span class="n">ResultsManager</span><span class="p">(</span><span class="s2">&quot;optimal_trajectory&quot;</span><span class="p">,</span> <span class="n">robot_name</span><span class="p">)</span>
-
-            <span class="c1"># Calculate overall condition number</span>
-            <span class="n">condition_number</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;final_condition_number&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span>
-                <span class="n">condition_number</span> <span class="o">==</span> <span class="mf">0.0</span>
-                <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;results&quot;</span><span class="p">)</span>
-                <span class="ow">and</span> <span class="s2">&quot;condition_numbers&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span>
-            <span class="p">):</span>
-                <span class="n">condition_number</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;condition_numbers&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;condition_numbers&quot;</span><span class="p">]</span>
-                    <span class="k">else</span> <span class="mf">0.0</span>
-                <span class="p">)</span>
-
-            <span class="c1"># Plot using unified manager</span>
-            <span class="n">results_manager</span><span class="o">.</span><span class="n">plot_optimal_trajectory_results</span><span class="p">(</span>
-                <span class="n">trajectories</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">,</span>
-                <span class="n">condition_number</span><span class="o">=</span><span class="n">condition_number</span><span class="p">,</span>
-                <span class="n">joint_names</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Joint </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CB</span><span class="o">.</span><span class="n">act_Jid</span><span class="p">))],</span>
-                <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Optimal Trajectory Generation Results&quot;</span><span class="p">,</span>
-            <span class="p">)</span>
-
-        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-            <span class="c1"># Fallback to existing plotting</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_basic_plots</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="c1"># Create subplots</span>
                 <span class="n">n_joints</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CB</span><span class="o">.</span><span class="n">act_Jid</span><span class="p">)</span>
@@ -567,7 +539,35 @@
                 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error plotting results: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error plotting results: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_managed_plot</span><span class="p">():</span>
+            <span class="n">robot_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;robot_name&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">results_manager</span> <span class="o">=</span> <span class="n">ResultsManager</span><span class="p">(</span><span class="s2">&quot;optimal_trajectory&quot;</span><span class="p">,</span> <span class="n">robot_name</span><span class="p">)</span>
+
+            <span class="c1"># Calculate overall condition number</span>
+            <span class="n">condition_number</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;final_condition_number&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">condition_number</span> <span class="o">==</span> <span class="mf">0.0</span>
+                <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;results&quot;</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="s2">&quot;condition_numbers&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span>
+            <span class="p">):</span>
+                <span class="n">condition_number</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;condition_numbers&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;condition_numbers&quot;</span><span class="p">]</span>
+                    <span class="k">else</span> <span class="mf">0.0</span>
+                <span class="p">)</span>
+
+            <span class="n">results_manager</span><span class="o">.</span><span class="n">plot_optimal_trajectory_results</span><span class="p">(</span>
+                <span class="n">trajectories</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">,</span>
+                <span class="n">condition_number</span><span class="o">=</span><span class="n">condition_number</span><span class="p">,</span>
+                <span class="n">joint_names</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Joint </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CB</span><span class="o">.</span><span class="n">act_Jid</span><span class="p">))],</span>
+                <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Optimal Trajectory Generation Results&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">plot_with_fallback</span><span class="p">(</span>
+            <span class="n">_managed_plot</span><span class="p">,</span> <span class="n">_basic_plots</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="s2">&quot;optimal_trajectory&quot;</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="BaseOptimalTrajectory.save_results">
@@ -579,8 +579,6 @@
             <span class="k">return</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">.results_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultsManager</span>
-
             <span class="c1"># Initialize results manager</span>
             <span class="n">robot_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;robot_name&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="n">results_manager</span> <span class="o">=</span> <span class="n">ResultsManager</span><span class="p">(</span><span class="s2">&quot;optimal_trajectory&quot;</span><span class="p">,</span> <span class="n">robot_name</span><span class="p">)</span>

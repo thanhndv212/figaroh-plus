@@ -112,6 +112,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="c1"># Setup logger for this module</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -138,6 +139,7 @@
     <span class="n">add_custom_parameters</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.solver</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearSolver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.utils.results_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_with_fallback</span>
 
 
 <div class="viewcode-block" id="BaseIdentification">
@@ -181,6 +183,22 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">tau_identif</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tau_noised</span> <span class="o">=</span> <span class="kc">None</span>
 
+        <span class="c1"># Held-out validation dataset (separate file, never a split of the</span>
+        <span class="c1"># training data). Populated by _load_validation_data() if</span>
+        <span class="c1"># identif_config[&quot;validation_data_file&quot;] is set.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_val_available</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_val_processed_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_val_num_samples</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Diagnostics captured during solve() for validation / reporting:</span>
+        <span class="c1"># column indices eliminated by _eliminate_zero_columns() and the</span>
+        <span class="c1"># base-column selection from the QR decomposition, both needed to</span>
+        <span class="c1"># evaluate phi_base against a regressor built from new (held-out)</span>
+        <span class="c1"># trajectory data.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_idx_eliminated</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_indices</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_decimate_used</span> <span class="o">=</span> <span class="kc">False</span>
+
         <span class="c1"># Set default filter configuration, can be overridden in subclasses</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filter_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
             <span class="s2">&quot;filter_config&quot;</span><span class="p">,</span>
@@ -202,7 +220,17 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">process_data</span><span class="p">(</span><span class="n">truncate</span><span class="o">=</span><span class="n">truncate</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">calculate_full_regressor</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initialize_standard_parameters</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">compute_reference_torque</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compute_reference_torque</span><span class="p">()</span>
+
+        <span class="c1"># If a held-out validation dataset is configured, load and process</span>
+        <span class="c1"># it now (mirrors BaseCalibration.load_data_set()). Never fails</span>
+        <span class="c1"># initialization if validation data is missing/unavailable.</span>
+        <span class="n">val_data_source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;validation_data_file&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">val_data_source</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_load_validation_data</span><span class="p">(</span><span class="n">val_data_source</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Validation data unavailable: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="BaseIdentification.solve">
@@ -214,6 +242,7 @@
         <span class="n">zero_tolerance</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
         <span class="n">plotting</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">save_results</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">html_report</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Main solving method for dynamic parameter identification.</span>
 
@@ -227,6 +256,9 @@
 <span class="sd">            zero_tolerance (float): Tolerance for eliminating zero columns</span>
 <span class="sd">            plotting (bool): Whether to generate plots</span>
 <span class="sd">            save_results (bool): Whether to save parameters to file</span>
+<span class="sd">            html_report (bool): If True, also export an HTML diagnostic</span>
+<span class="sd">                report (see :meth:`export_html_report`) after the terminal</span>
+<span class="sd">                quality report is printed.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            ndarray: Base parameters phi_base</span>
@@ -239,6 +271,8 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Starting </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> dynamic parameter identification...&quot;</span>
         <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_decimate_used</span> <span class="o">=</span> <span class="n">decimate</span>
 
         <span class="c1"># Validate prerequisites</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_validate_prerequisites</span><span class="p">()</span>
@@ -265,6 +299,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_compute_quality_metrics</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_store_results</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
 
+        <span class="c1"># Print quality report</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_quality_report</span><span class="p">()</span>
+
         <span class="c1"># Step 5: Optional plotting</span>
         <span class="k">if</span> <span class="n">plotting</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">plot_results</span><span class="p">()</span>
@@ -272,6 +309,10 @@
         <span class="c1"># Step 6: Optional parameter saving</span>
         <span class="k">if</span> <span class="n">save_results</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span><span class="p">()</span>
+
+        <span class="c1"># Step 7: Optional HTML diagnostic report</span>
+        <span class="k">if</span> <span class="n">html_report</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">export_html_report</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi_base</span></div>
 
@@ -432,6 +473,7 @@
 <span class="sd">            config_file (str): Path to configuration file (legacy or unified)</span>
 <span class="sd">            setting_type (str): Configuration section to load</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config_file_path</span> <span class="o">=</span> <span class="n">config_file</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading config from </span><span class="si">{</span><span class="n">config_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -464,14 +506,27 @@
 <div class="viewcode-block" id="BaseIdentification.load_trajectory_data">
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.base_identification.BaseIdentification.load_trajectory_data">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">load_trajectory_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_trajectory_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load and process CSV data.</span>
 
 <span class="sd">        This method must be implemented by robot-specific subclasses</span>
 <span class="sd">        to handle their specific data formats and file structures.</span>
 
+<span class="sd">        Args:</span>
+<span class="sd">            data_source: Optional override identifying an alternate dataset</span>
+<span class="sd">                to load instead of the class&#39;s normal training data (e.g.</span>
+<span class="sd">                a directory holding a held-out validation trajectory with</span>
+<span class="sd">                the same file layout/naming as the training data). When</span>
+<span class="sd">                ``None`` (default), the subclass loads its usual training</span>
+<span class="sd">                data exactly as before. Passed through from</span>
+<span class="sd">                ``identif_config[&quot;validation_data_file&quot;]`` by</span>
+<span class="sd">                :meth:`_load_validation_data`.</span>
+
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple: (timestamps, positions, velocities, torques) as numpy arrays</span>
+<span class="sd">            dict: Dictionary with keys &#39;timestamps&#39;, &#39;positions&#39;,</span>
+<span class="sd">            &#39;velocities&#39;, &#39;accelerations&#39;, &#39;torques&#39; (numpy arrays;</span>
+<span class="sd">            &#39;velocities&#39;/&#39;accelerations&#39; may be None to be derived by</span>
+<span class="sd">            differentiation).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
@@ -568,6 +623,148 @@
             <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;act_idxv&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span><span class="p">)</span>
         <span class="p">]</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_validation_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_source</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load and process a held-out validation trajectory.</span>
+
+<span class="sd">        Unlike a train/validation split of one dataset, this loads a</span>
+<span class="sd">        genuinely separate dataset — mirrors</span>
+<span class="sd">        :meth:`BaseCalibration._load_validation_data`. Reuses the exact</span>
+<span class="sd">        same per-robot loading/filtering/torque-processing pipeline as</span>
+<span class="sd">        training data (via polymorphic dispatch to</span>
+<span class="sd">        ``process_kinematics_data`` / ``process_torque_data``), so any</span>
+<span class="sd">        robot-specific overrides (motor-to-joint conversion, torque</span>
+<span class="sd">        scaling, etc.) apply identically to the validation set.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data_source: Passed through to :meth:`load_trajectory_data` as</span>
+<span class="sd">                its ``data_source`` override — e.g. a directory holding</span>
+<span class="sd">                validation CSVs with the same naming convention as the</span>
+<span class="sd">                training data.</span>
+
+<span class="sd">        Side Effects:</span>
+<span class="sd">            - Sets self._val_processed_data / self._val_num_samples</span>
+<span class="sd">            - Sets self._val_available = True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Save training state so validation loading can reuse the same</span>
+        <span class="c1"># instance methods without disturbing the training data already</span>
+        <span class="c1"># held in self.raw_data / self.processed_data / self.num_samples.</span>
+        <span class="n">orig_raw_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span>
+        <span class="n">orig_processed_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span>
+        <span class="n">orig_num_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_trajectory_data</span><span class="p">(</span><span class="n">data_source</span><span class="o">=</span><span class="n">data_source</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_truncate_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process_kinematics_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filter_config</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span><span class="p">[</span><span class="s2">&quot;torques&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_torque_data</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_build_full_configuration</span><span class="p">()</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_val_processed_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_val_num_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_val_available</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span> <span class="o">=</span> <span class="n">orig_raw_data</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span> <span class="o">=</span> <span class="n">orig_processed_data</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">=</span> <span class="n">orig_num_samples</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_validation_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute torque-prediction validation metrics on held-out data.</span>
+
+<span class="sd">        Evaluates both the pre-identification standard/CAD parameters</span>
+<span class="sd">        (&quot;nominal&quot;) and the identified base parameters (&quot;identified&quot;)</span>
+<span class="sd">        against measured torques on a dataset never used for fitting —</span>
+<span class="sd">        mirrors :meth:`BaseCalibration._compute_validation_metrics`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict with validation metrics, or None if no validation data</span>
+<span class="sd">            (or if solve() has not been run yet).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_val_available&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idx_eliminated</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_indices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">q_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_val_processed_data</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">]</span>
+        <span class="n">dq_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_val_processed_data</span><span class="p">[</span><span class="s2">&quot;velocities&quot;</span><span class="p">]</span>
+        <span class="n">ddq_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_val_processed_data</span><span class="p">[</span><span class="s2">&quot;accelerations&quot;</span><span class="p">]</span>
+
+        <span class="n">W_val_full</span> <span class="o">=</span> <span class="n">build_regressor_basic</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> <span class="n">q_val</span><span class="p">,</span> <span class="n">dq_val</span><span class="p">,</span> <span class="n">ddq_val</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span>
+        <span class="p">)</span>
+        <span class="n">W_val_reduced</span> <span class="o">=</span> <span class="n">build_regressor_reduced</span><span class="p">(</span><span class="n">W_val_full</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idx_eliminated</span><span class="p">)</span>
+        <span class="n">W_val_base</span> <span class="o">=</span> <span class="n">W_val_reduced</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_indices</span><span class="p">]</span>
+
+        <span class="n">n_active</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;act_idxv&quot;</span><span class="p">])</span>
+        <span class="n">n_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_val_num_samples</span>
+        <span class="n">n_rows</span> <span class="o">=</span> <span class="n">n_active</span> <span class="o">*</span> <span class="n">n_val</span>
+
+        <span class="n">phi_std_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">standard_parameter</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+        <span class="n">tau_val_nominal</span> <span class="o">=</span> <span class="p">(</span><span class="n">W_val_full</span> <span class="o">@</span> <span class="n">phi_std_vec</span><span class="p">)[:</span><span class="n">n_rows</span><span class="p">]</span>
+        <span class="n">tau_val_identif</span> <span class="o">=</span> <span class="p">(</span><span class="n">W_val_base</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi_base</span><span class="p">)[:</span><span class="n">n_rows</span><span class="p">]</span>
+
+        <span class="c1"># Joint-major, matching the regressor&#39;s row convention (block j</span>
+        <span class="c1"># occupies rows [j*n_val:(j+1)*n_val]).</span>
+        <span class="n">tau_val_measured</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_val_processed_data</span><span class="p">[</span><span class="s2">&quot;torques&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[:</span><span class="n">n_rows</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_stats</span><span class="p">(</span><span class="n">estimated</span><span class="p">):</span>
+            <span class="n">residuals</span> <span class="o">=</span> <span class="n">tau_val_measured</span> <span class="o">-</span> <span class="n">estimated</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;rmse&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residuals</span><span class="o">**</span><span class="mi">2</span><span class="p">))),</span>
+                <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">residuals</span><span class="p">))),</span>
+                <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">residuals</span><span class="p">))),</span>
+            <span class="p">}</span>
+
+        <span class="n">nominal_stats</span> <span class="o">=</span> <span class="n">_stats</span><span class="p">(</span><span class="n">tau_val_nominal</span><span class="p">)</span>
+        <span class="n">identif_stats</span> <span class="o">=</span> <span class="n">_stats</span><span class="p">(</span><span class="n">tau_val_identif</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_improvement</span><span class="p">(</span><span class="n">before</span><span class="p">,</span> <span class="n">after</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">before</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">before</span> <span class="o">-</span> <span class="n">after</span><span class="p">)</span> <span class="o">/</span> <span class="n">before</span> <span class="o">*</span> <span class="mi">100</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+
+        <span class="n">correlation</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">if</span> <span class="n">n_rows</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">correlation</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="n">tau_val_measured</span><span class="p">,</span> <span class="n">tau_val_identif</span><span class="p">)[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+                <span class="n">correlation</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+        <span class="c1"># Per-joint raw torque series (joint-major blocks of size n_val,</span>
+        <span class="c1"># same convention as _compute_per_joint_stats) — feeds verify()&#39;s</span>
+        <span class="c1"># before/after `series` export (Step 3, Feature 6 Phase A).</span>
+        <span class="n">active_joints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;active_joints&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">joint_names</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">active_joints</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_joints</span><span class="p">)</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;joint_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_active</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_per_joint</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="n">joint_names</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">n_val</span><span class="p">:(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_val</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_active</span><span class="p">)</span>
+            <span class="p">}</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;n_val_samples&quot;</span><span class="p">:</span> <span class="n">n_val</span><span class="p">,</span>
+            <span class="s2">&quot;rmse_nominal&quot;</span><span class="p">:</span> <span class="n">nominal_stats</span><span class="p">[</span><span class="s2">&quot;rmse&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;rmse_identified&quot;</span><span class="p">:</span> <span class="n">identif_stats</span><span class="p">[</span><span class="s2">&quot;rmse&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;max_nominal&quot;</span><span class="p">:</span> <span class="n">nominal_stats</span><span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;max_identified&quot;</span><span class="p">:</span> <span class="n">identif_stats</span><span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;improvement_pct&quot;</span><span class="p">:</span> <span class="n">_improvement</span><span class="p">(</span>
+                <span class="n">nominal_stats</span><span class="p">[</span><span class="s2">&quot;rmse&quot;</span><span class="p">],</span> <span class="n">identif_stats</span><span class="p">[</span><span class="s2">&quot;rmse&quot;</span><span class="p">]</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;correlation&quot;</span><span class="p">:</span> <span class="n">correlation</span><span class="p">,</span>
+            <span class="s2">&quot;joint_names&quot;</span><span class="p">:</span> <span class="n">joint_names</span><span class="p">,</span>
+            <span class="s2">&quot;tau_nominal_per_joint&quot;</span><span class="p">:</span> <span class="n">_per_joint</span><span class="p">(</span><span class="n">tau_val_nominal</span><span class="p">),</span>
+            <span class="s2">&quot;tau_identified_per_joint&quot;</span><span class="p">:</span> <span class="n">_per_joint</span><span class="p">(</span><span class="n">tau_val_identif</span><span class="p">),</span>
+            <span class="s2">&quot;tau_measured_per_joint&quot;</span><span class="p">:</span> <span class="n">_per_joint</span><span class="p">(</span><span class="n">tau_val_measured</span><span class="p">),</span>
+        <span class="p">}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_apply_filters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">signals</span><span class="p">,</span> <span class="n">nbutter</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">f_butter</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">med_fil</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">f_sample</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply median and lowpass filters to any number of signals.</span>
@@ -871,6 +1068,7 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">regressor_reduced</span> <span class="o">=</span> <span class="n">regressor_reduced</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">active_parameters</span> <span class="o">=</span> <span class="n">active_parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_idx_eliminated</span> <span class="o">=</span> <span class="n">idx_eliminated</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">regressor_reduced</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_parameters</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_apply_decimation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">regressor_reduced</span><span class="p">,</span> <span class="n">decimation_factor</span><span class="p">):</span>
@@ -972,10 +1170,20 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple: (tau_flattened, regressor_reduced)</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            ``self.processed_data[&quot;torques&quot;]`` has shape ``(num_samples,</span>
+<span class="sd">            num_active_joints)`` — sample-major. The regressor rows built</span>
+<span class="sd">            by :mod:`figaroh.tools.regressor` (and ``_apply_decimation``&#39;s</span>
+<span class="sd">            output) are joint-major: all samples of joint 0, then all</span>
+<span class="sd">            samples of joint 1, etc. A plain ``.flatten()`` here would</span>
+<span class="sd">            flatten sample-major, misaligning every row against the</span>
+<span class="sd">            regressor/estimated-torque order. Transposing first makes the</span>
+<span class="sd">            flatten joint-major, matching the regressor convention.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">tau_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span><span class="p">[</span><span class="s2">&quot;torques&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">tau_data</span><span class="p">,</span> <span class="s2">&quot;flatten&quot;</span><span class="p">):</span>
-            <span class="n">tau_flattened</span> <span class="o">=</span> <span class="n">tau_data</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+            <span class="n">tau_flattened</span> <span class="o">=</span> <span class="n">tau_data</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">tau_flattened</span> <span class="o">=</span> <span class="n">tau_data</span>
         <span class="k">return</span> <span class="n">tau_flattened</span><span class="p">,</span> <span class="n">regressor_reduced</span>
@@ -1011,6 +1219,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_params_r_for_recon</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
             <span class="n">decomposer</span><span class="o">.</span><span class="n">get_M_labels</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">or</span> <span class="n">active_parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
         <span class="p">)</span>
+        <span class="c1"># Base-column selection, needed to evaluate phi_base against a</span>
+        <span class="c1"># regressor built from held-out validation trajectory data (see</span>
+        <span class="c1"># _compute_validation_metrics()).</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_indices</span> <span class="o">=</span> <span class="n">decomposer</span><span class="o">.</span><span class="n">get_base_indices</span><span class="p">()</span>
 
         <span class="c1"># Calculate torque estimation (avoid redundant computation)</span>
         <span class="n">tau_estimated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">W_base</span><span class="p">,</span> <span class="n">phi_base</span><span class="p">)</span>
@@ -1086,6 +1298,12 @@
 
         <span class="c1"># Optional full-parameter reconstruction (default-off, v0.4.2)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_apply_reconstruction_if_enabled</span><span class="p">(</span><span class="n">identif_results</span><span class="p">)</span>
+
+        <span class="c1"># Held-out validation metrics (only present if validation_data_file</span>
+        <span class="c1"># was configured and successfully loaded)</span>
+        <span class="n">val_metrics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_validation_metrics</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">val_metrics</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;validation_metrics&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_metrics</span>
 
         <span class="c1"># Initialize ResultsManager for identification task</span>
         <span class="k">try</span><span class="p">:</span>
@@ -1420,6 +1638,343 @@
             <span class="s2">&quot;params_r&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">params_r</span><span class="p">,</span>
         <span class="p">}</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_per_joint_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Per-joint torque residual statistics (mean/std/RMSE/max), the</span>
+<span class="sd">        identification analogue of BaseCalibration&#39;s per-DOF stats.</span>
+
+<span class="sd">        Both ``solve(decimate=True)`` (explicit per-joint loop) and</span>
+<span class="sd">        ``solve(decimate=False)`` (``_prepare_undecimated_data``, which</span>
+<span class="sd">        transposes before flattening) produce torque/regressor rows in the</span>
+<span class="sd">        same joint-major block order, so slicing by joint is safe either</span>
+<span class="sd">        way.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict with joint_names/mean/std/rmse/max_abs lists, or None if</span>
+<span class="sd">            unavailable.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">tau_measured</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;torque processed&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">tau_estimated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;torque estimated&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">n_active</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;act_idxv&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">n_active</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">tau_measured</span><span class="o">.</span><span class="n">size</span> <span class="o">%</span> <span class="n">n_active</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">n_per_joint</span> <span class="o">=</span> <span class="n">tau_measured</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="n">n_active</span>
+        <span class="n">active_joints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;active_joints&quot;</span><span class="p">,</span> <span class="p">[])</span>
+
+        <span class="n">stats</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;joint_names&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;std&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;rmse&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;max_abs&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_active</span><span class="p">):</span>
+            <span class="n">sl</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">n_per_joint</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_per_joint</span><span class="p">)</span>
+            <span class="n">residual</span> <span class="o">=</span> <span class="n">tau_measured</span><span class="p">[</span><span class="n">sl</span><span class="p">]</span> <span class="o">-</span> <span class="n">tau_estimated</span><span class="p">[</span><span class="n">sl</span><span class="p">]</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">active_joints</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_joints</span><span class="p">)</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;joint_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;joint_names&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residual</span><span class="p">)))</span>
+            <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;std&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">residual</span><span class="p">)))</span>
+            <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;rmse&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residual</span><span class="o">**</span><span class="mi">2</span><span class="p">))))</span>
+            <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;max_abs&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">residual</span><span class="p">))))</span>
+        <span class="k">return</span> <span class="n">stats</span>
+
+<div class="viewcode-block" id="BaseIdentification.print_quality_report">
+<a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.base_identification.BaseIdentification.print_quality_report">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_quality_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print a formatted identification quality report to the terminal.</span>
+
+<span class="sd">        Reports condition number, overall torque residual statistics,</span>
+<span class="sd">        per-joint residuals (when available), base-parameter uncertainty,</span>
+<span class="sd">        held-out validation metrics (if configured), and optional</span>
+<span class="sd">        physical-consistency / reconstruction status.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No identification results to report. Run solve() first.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span>
+        <span class="n">per_joint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_per_joint_stats</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  IDENTIFICATION QUALITY REPORT&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+
+        <span class="n">cond_num</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;condition number&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;nan&quot;</span><span class="p">))</span>
+        <span class="n">n_base</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;base parameters names&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;  Base parameters: </span><span class="si">{</span><span class="n">n_base</span><span class="si">}</span><span class="s2">    &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Samples: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;num samples&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">cond_num</span><span class="p">):</span>
+            <span class="n">cond_label</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;well-conditioned&quot;</span>
+                <span class="k">if</span> <span class="n">cond_num</span> <span class="o">&lt;</span> <span class="mi">100</span>
+                <span class="k">else</span> <span class="s2">&quot;moderately-conditioned&quot;</span>
+                <span class="k">if</span> <span class="n">cond_num</span> <span class="o">&lt;</span> <span class="mi">1000</span>
+                <span class="k">else</span> <span class="s2">&quot;ill-conditioned&quot;</span>
+            <span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Condition:    </span><span class="si">{</span><span class="n">cond_num</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">cond_label</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Condition:    unavailable&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;  RMSE:         </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rmse norm (N/m)&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">))</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">    &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Correlation: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">correlation</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">per_joint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Per-Joint Torque Residuals (training set)&quot;</span><span class="p">)</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="n">per_joint</span><span class="p">[</span><span class="s2">&quot;joint_names&quot;</span><span class="p">]</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="s1">&#39;Joint&#39;</span><span class="si">:</span><span class="s2">&lt;22s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Mean&#39;</span><span class="si">:</span><span class="s2">&gt;10s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Std&#39;</span><span class="si">:</span><span class="s2">&gt;10s</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;RMSE&#39;</span><span class="si">:</span><span class="s2">&gt;10s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Max&#39;</span><span class="si">:</span><span class="s2">&gt;10s</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">22</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">10</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">10</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">10</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">10</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)):</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">per_joint</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">10.4f</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">per_joint</span><span class="p">[</span><span class="s1">&#39;std&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">10.4f</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">per_joint</span><span class="p">[</span><span class="s1">&#39;rmse&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">10.4f</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">per_joint</span><span class="p">[</span><span class="s1">&#39;max_abs&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">10.4f</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">names</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">&lt;22s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">r</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Per-joint residuals: unavailable&quot;</span><span class="p">)</span>
+
+        <span class="c1"># ── Base-parameter uncertainty ──</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+        <span class="n">std_relative</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;std_relative&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">base_names</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;base parameters names&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="n">std_relative</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">std_relative</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">base_names</span><span class="p">):</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">base_names</span><span class="p">)),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">std_relative</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Base-Parameter Uncertainty (top 5 by relative std-dev)&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">order</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    </span><span class="si">{</span><span class="n">base_names</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">&lt;50s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">std_relative</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">8.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Base-parameter uncertainty: unavailable&quot;</span><span class="p">)</span>
+
+        <span class="c1"># ── Validation ──</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;validation_metrics&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Validation (separate set, n=</span><span class="si">{</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;n_val_samples&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;    RMSE nominal:    </span><span class="si">{</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;rmse_nominal&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">    &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;RMSE identified: </span><span class="si">{</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;rmse_identified&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;    Improvement:     </span><span class="si">{</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;improvement_pct&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%    &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Correlation:     </span><span class="si">{</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;correlation&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Validation: no separate validation data provided.&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">&quot;    Set validation_data_file in the identification config &quot;</span>
+                <span class="s2">&quot;to enable held-out FK/torque validation.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># ── Optional physical consistency / reconstruction ──</span>
+        <span class="n">pc</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;physical consistency&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Physical consistency: </span><span class="si">{</span><span class="n">pc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;unknown&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">recon</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;reconstruction&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">recon</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Full-parameter reconstruction: </span><span class="si">{</span><span class="n">recon</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;unknown&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseIdentification.export_html_report">
+<a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.base_identification.BaseIdentification.export_html_report">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">export_html_report</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;results&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Export the identification quality report as a self-contained</span>
+<span class="sd">        HTML file — the visual counterpart of :meth:`print_quality_report`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            output_path: Explicit output file path. If None, writes to</span>
+<span class="sd">                ``&lt;output_dir&gt;/identification_report.html``.</span>
+<span class="sd">            output_dir: Directory used when output_path is not given</span>
+<span class="sd">                (created if missing).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The path the report was written to.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AttributeError: If solve() has not been run yet.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+                <span class="s2">&quot;No identification results available. Run solve() first.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">os</span><span class="w"> </span><span class="kn">import</span> <span class="n">makedirs</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">os.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">join</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.identification_report</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+            <span class="n">generate_identification_report</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">output_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">output_path</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s2">&quot;identification_report.html&quot;</span><span class="p">)</span>
+
+        <span class="n">generate_identification_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="o">=</span><span class="n">output_path</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;HTML quality report written to </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output_path</span></div>
+
+
+<div class="viewcode-block" id="BaseIdentification.verify">
+<a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.base_identification.BaseIdentification.verify">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">verify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thresholds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check this identification&#39;s metrics against pass/fail thresholds.</span>
+
+<span class="sd">        Unlike :meth:`print_quality_report`/:meth:`export_html_report`</span>
+<span class="sd">        (for a human to read), this returns a machine-checkable</span>
+<span class="sd">        :class:`~figaroh.tools._report_common.VerificationVerdict` a CI</span>
+<span class="sd">        script can branch on. Computed entirely from data already</span>
+<span class="sd">        gathered during :meth:`solve` — never raises after a successful</span>
+<span class="sd">        solve, and never gates ``solve()`` itself (opt-in, called</span>
+<span class="sd">        whenever the caller wants a verdict).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            thresholds: Per-metric ``{&quot;threshold&quot;: float, &quot;comparison&quot;:</span>
+<span class="sd">                &quot;max&quot;|&quot;min&quot;}`` overrides. Defaults to</span>
+<span class="sd">                ``IDENTIFICATION_DEFAULT_THRESHOLDS`` (a 6-DOF arm and a</span>
+<span class="sd">                30-DOF humanoid don&#39;t share the same bar — override per</span>
+<span class="sd">                robot as needed).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            VerificationVerdict: ``passed``, per-metric ``checks``, the</span>
+<span class="sd">            raw ``metrics`` dict, human-readable ``insights`` (the same</span>
+<span class="sd">            text used by :meth:`export_html_report`), and ``metadata``</span>
+<span class="sd">            (git commit, config file hash, timestamp, robot name).</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AttributeError: If called before :meth:`solve`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+                <span class="s2">&quot;No identification results available. Run solve() first.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools._report_common</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+            <span class="n">IDENTIFICATION_DEFAULT_THRESHOLDS</span><span class="p">,</span>
+            <span class="n">build_provenance_metadata</span><span class="p">,</span>
+            <span class="n">evaluate_thresholds</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.identification_report</span><span class="w"> </span><span class="kn">import</span> <span class="n">_build_insights</span>
+
+        <span class="n">thresholds</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">thresholds</span> <span class="k">if</span> <span class="n">thresholds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="n">IDENTIFICATION_DEFAULT_THRESHOLDS</span>
+        <span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span>
+        <span class="n">base_names</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;base parameters names&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">std_relative_raw</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;std_relative&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">std_relative</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">list</span><span class="p">(</span><span class="n">std_relative_raw</span><span class="p">)</span> <span class="k">if</span> <span class="n">std_relative_raw</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="p">)</span>
+        <span class="n">validation</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;validation_metrics&quot;</span><span class="p">)</span>
+
+        <span class="n">metrics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;condition_number&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;condition number&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;nan&quot;</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;rmse&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rmse norm (N/m)&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;nan&quot;</span><span class="p">)),</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">validation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">metrics</span><span class="p">[</span><span class="s2">&quot;validation_correlation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">validation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;correlation&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;nan&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">metrics</span><span class="p">[</span><span class="s2">&quot;validation_improvement_pct&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">validation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;improvement_pct&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;nan&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">verdict</span> <span class="o">=</span> <span class="n">evaluate_thresholds</span><span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="n">thresholds</span><span class="p">)</span>
+        <span class="n">verdict</span><span class="o">.</span><span class="n">insights</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">i</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">_build_insights</span><span class="p">(</span>
+                <span class="n">result</span><span class="p">,</span> <span class="n">std_relative</span><span class="p">,</span> <span class="n">base_names</span><span class="p">,</span> <span class="n">validation</span>
+            <span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">robot_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="s2">&quot;robot_name&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;identification&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">verdict</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">build_provenance_metadata</span><span class="p">(</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_config_file_path&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">robot_name</span>
+        <span class="p">)</span>
+
+        <span class="n">active_joints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;active_joints&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="n">validation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;tau_nominal_per_joint&quot;</span> <span class="ow">in</span> <span class="n">validation</span><span class="p">:</span>
+            <span class="n">n_val</span> <span class="o">=</span> <span class="n">validation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;n_val_samples&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">verdict</span><span class="o">.</span><span class="n">series</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_val</span><span class="p">)),</span>
+                <span class="s2">&quot;joint_names&quot;</span><span class="p">:</span> <span class="n">validation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                    <span class="s2">&quot;joint_names&quot;</span><span class="p">,</span> <span class="n">active_joints</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;nominal&quot;</span><span class="p">:</span> <span class="n">validation</span><span class="p">[</span><span class="s2">&quot;tau_nominal_per_joint&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;fitted&quot;</span><span class="p">:</span> <span class="n">validation</span><span class="p">[</span><span class="s2">&quot;tau_identified_per_joint&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;measured&quot;</span><span class="p">:</span> <span class="n">validation</span><span class="p">[</span><span class="s2">&quot;tau_measured_per_joint&quot;</span><span class="p">],</span>
+            <span class="p">}</span>
+        <span class="n">verdict</span><span class="o">.</span><span class="n">compat</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;active_joints&quot;</span><span class="p">:</span> <span class="n">active_joints</span><span class="p">,</span>
+            <span class="s2">&quot;decimate&quot;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_decimate_used&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)),</span>
+            <span class="s2">&quot;sample_count&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;num samples&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="s2">&quot;config_sha256&quot;</span><span class="p">:</span> <span class="n">verdict</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;config_sha256&quot;</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">verdict</span></div>
+
+
+<div class="viewcode-block" id="BaseIdentification.export_verification_report">
+<a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.base_identification.BaseIdentification.export_verification_report">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">export_verification_report</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;results&quot;</span><span class="p">,</span>
+        <span class="n">thresholds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write this identification&#39;s :meth:`verify` verdict as JSON.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            output_path: Explicit file path. If omitted, defaults to</span>
+<span class="sd">                ``{output_dir}/identification_verification.json``.</span>
+<span class="sd">            output_dir: Directory used when ``output_path`` is omitted.</span>
+<span class="sd">            thresholds: Forwarded to :meth:`verify`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The path the JSON verdict was written to.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">os</span><span class="w"> </span><span class="kn">import</span> <span class="n">makedirs</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">os.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">join</span>
+
+        <span class="n">verdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span><span class="n">thresholds</span><span class="o">=</span><span class="n">thresholds</span><span class="p">)</span>
+        <span class="n">verdict_dict</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">asdict</span><span class="p">(</span><span class="n">verdict</span><span class="p">)</span>
+
+        <span class="n">results_manager</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;results_manager&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">results_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">verdict_dict</span> <span class="o">=</span> <span class="n">results_manager</span><span class="o">.</span><span class="n">_convert_for_serialization</span><span class="p">(</span>
+                <span class="n">verdict_dict</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">output_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">output_path</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s2">&quot;identification_verification.json&quot;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">verdict_dict</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Verification report written to </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output_path</span></div>
+
+
 <div class="viewcode-block" id="BaseIdentification.plot_results">
 <a class="viewcode-back" href="../../../modules/identification.html#figaroh.identification.base_identification.BaseIdentification.plot_results">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1428,62 +1983,68 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No identification results to plot. Run solve() first.&quot;</span><span class="p">)</span>
             <span class="k">return</span>
 
-        <span class="c1"># Use pre-initialized results manager if available</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;results_manager&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_basic_plots</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="c1"># Plot using unified manager with self.result data</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">results_manager</span><span class="o">.</span><span class="n">plot_identification_results</span><span class="p">()</span>
-                <span class="k">return</span>
+                <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error plotting with ResultsManager: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Falling back to basic plotting...&quot;</span><span class="p">)</span>
-
-        <span class="c1"># Fallback to basic plotting if ResultsManager not available</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-
-            <span class="c1"># Extract data from self.result dictionary</span>
-            <span class="n">tau_measured</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;torque processed&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]))</span>
-            <span class="n">tau_identified</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;torque estimated&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]))</span>
-            <span class="n">parameter_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;base parameters values&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]))</span>
-
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau_measured</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau_identified</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No torque data available for plotting&quot;</span><span class="p">)</span>
-                <span class="k">return</span>
-
-            <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
-
-            <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tau_measured</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Measured (with noise)&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tau_identified</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Identified&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Sample&quot;</span><span class="p">)</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Torque (Nm)&quot;</span><span class="p">)</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> Torque Comparison&quot;</span><span class="p">)</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
-
-            <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameter_values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span>
-                    <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">parameter_values</span><span class="p">)),</span>
-                    <span class="n">parameter_values</span><span class="p">,</span>
-                    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
-                    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Base Parameters&quot;</span><span class="p">,</span>
+                <span class="c1"># Extract data from self.result dictionary</span>
+                <span class="n">tau_measured</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;torque processed&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]))</span>
+                <span class="n">tau_identified</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;torque estimated&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]))</span>
+                <span class="n">parameter_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                    <span class="s2">&quot;base parameters values&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
                 <span class="p">)</span>
-                <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Parameter Index&quot;</span><span class="p">)</span>
-                <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Parameter Value&quot;</span><span class="p">)</span>
-                <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Identified Base Parameters&quot;</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau_measured</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau_identified</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No torque data available for plotting&quot;</span><span class="p">)</span>
+                    <span class="k">return</span>
+
+                <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+
+                <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tau_measured</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Measured (with noise)&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tau_identified</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Identified&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Sample&quot;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Torque (Nm)&quot;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> Torque Comparison&quot;</span><span class="p">)</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
 
-            <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameter_values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span>
+                        <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">parameter_values</span><span class="p">)),</span>
+                        <span class="n">parameter_values</span><span class="p">,</span>
+                        <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+                        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Base Parameters&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Parameter Index&quot;</span><span class="p">)</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Parameter Value&quot;</span><span class="p">)</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Identified Base Parameters&quot;</span><span class="p">)</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
 
-        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;matplotlib not available for plotting&quot;</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plotting failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+                <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+            <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;matplotlib not available for plotting&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plotting failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Use pre-initialized results manager if available, else go straight</span>
+        <span class="c1"># to the basic-plotting fallback.</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;results_manager&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plot_with_fallback</span><span class="p">(</span>
+                <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_manager</span><span class="o">.</span><span class="n">plot_identification_results</span><span class="p">(</span>
+                    <span class="n">n_joints</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;act_idxv&quot;</span><span class="p">]),</span>
+                    <span class="n">joint_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;active_joints&quot;</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="n">_basic_plots</span><span class="p">,</span>
+                <span class="n">logger</span><span class="p">,</span>
+                <span class="s2">&quot;identification&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_basic_plots</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="BaseIdentification.save_results">

@@ -173,6 +173,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.qrdecomposition.QRDecomposer.expand_mapping_matrix_to_full"><code class="docutils literal notranslate"><span class="pre">QRDecomposer.expand_mapping_matrix_to_full()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.qrdecomposition.QRDecomposer.get_M"><code class="docutils literal notranslate"><span class="pre">QRDecomposer.get_M()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.qrdecomposition.QRDecomposer.get_M_labels"><code class="docutils literal notranslate"><span class="pre">QRDecomposer.get_M_labels()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.qrdecomposition.QRDecomposer.get_base_indices"><code class="docutils literal notranslate"><span class="pre">QRDecomposer.get_base_indices()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.qrdecomposition.QRDecomposer.get_base_mapping_matrix"><code class="docutils literal notranslate"><span class="pre">QRDecomposer.get_base_mapping_matrix()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.qrdecomposition.QRDecomposer.get_base_mapping_matrix_double"><code class="docutils literal notranslate"><span class="pre">QRDecomposer.get_base_mapping_matrix_double()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.tools.qrdecomposition.QRDecomposer.get_base_mapping_matrix_pivoting"><code class="docutils literal notranslate"><span class="pre">QRDecomposer.get_base_mapping_matrix_pivoting()</span></code></a></li>
@@ -1265,6 +1266,20 @@ matrix defined over the complete standard-parameter list.</p>
 <dt class="sig sig-object py" id="figaroh.tools.qrdecomposition.QRDecomposer.get_M_labels">
 <span class="sig-name descname"><span class="pre">get_M_labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/figaroh/tools/qrdecomposition.html#QRDecomposer.get_M_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.qrdecomposition.QRDecomposer.get_M_labels" title="Link to this definition"></a></dt>
 <dd><p>Return (base_param_expr, params_r) labels for the last stored M.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.tools.qrdecomposition.QRDecomposer.get_base_indices">
+<span class="sig-name descname"><span class="pre">get_base_indices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/figaroh/tools/qrdecomposition.html#QRDecomposer.get_base_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.tools.qrdecomposition.QRDecomposer.get_base_indices" title="Link to this definition"></a></dt>
+<dd><p>Return the base-column indices (into <code class="docutils literal notranslate"><span class="pre">params_r</span></code>) from the last
+<code class="docutils literal notranslate"><span class="pre">double_decomposition()</span></code> call, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not yet run.</p>
+<p>These indices select the columns of a <em>reduced</em> regressor (built
+with the same <code class="docutils literal notranslate"><span class="pre">params_r</span></code> ordering) that reproduce base-parameter
+predictions: <code class="docutils literal notranslate"><span class="pre">tau</span> <span class="pre">≈</span> <span class="pre">W_reduced[:,</span> <span class="pre">base_indices]</span> <span class="pre">&#64;</span> <span class="pre">phi_base</span></code>. Since
+the base/dependent column split reflects the robot’s kinematic
+structure rather than a specific trajectory, this selection is
+valid for any regressor built with the same <code class="docutils literal notranslate"><span class="pre">params_r</span></code> ordering
+— e.g. to evaluate an identified model on held-out validation data.</p>
 </dd></dl>
 
 <dl class="py method">

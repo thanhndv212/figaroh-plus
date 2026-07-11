@@ -195,6 +195,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">M_params_r</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">M_base_params_expr</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">M_method</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Column indices into params_r selected as the base (independent) set</span>
+        <span class="c1"># by the last decomposition. Only populated by double_decomposition().</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_indices</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regroup_indices</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># Diagnostics from the last decomposition (available via get_diagnostics)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_diag_R</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_cond_R1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -211,6 +215,23 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">get_M_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return (base_param_expr, params_r) labels for the last stored M.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">M_base_params_expr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">M_params_r</span></div>
+
+
+<div class="viewcode-block" id="QRDecomposer.get_base_indices">
+<a class="viewcode-back" href="../../../modules/tools.html#figaroh.tools.qrdecomposition.QRDecomposer.get_base_indices">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_base_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the base-column indices (into ``params_r``) from the last</span>
+<span class="sd">        ``double_decomposition()`` call, or ``None`` if not yet run.</span>
+
+<span class="sd">        These indices select the columns of a *reduced* regressor (built</span>
+<span class="sd">        with the same ``params_r`` ordering) that reproduce base-parameter</span>
+<span class="sd">        predictions: ``tau ≈ W_reduced[:, base_indices] @ phi_base``. Since</span>
+<span class="sd">        the base/dependent column split reflects the robot&#39;s kinematic</span>
+<span class="sd">        structure rather than a specific trajectory, this selection is</span>
+<span class="sd">        valid for any regressor built with the same ``params_r`` ordering</span>
+<span class="sd">        — e.g. to evaluate an identified model on held-out validation data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_indices</span></div>
 
 
 <div class="viewcode-block" id="QRDecomposer.get_diagnostics">
@@ -550,6 +571,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">M_params_r</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">params_r</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">M_base_params_expr</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">params_base_expr</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">M_method</span> <span class="o">=</span> <span class="s2">&quot;double&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">base_indices</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regroup_indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">regroup_indices</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_diag_R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">R_r</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_cond_R1</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">R1</span><span class="p">))</span> <span class="k">if</span> <span class="n">rank</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span>
 

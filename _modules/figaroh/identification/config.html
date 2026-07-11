@@ -196,6 +196,12 @@
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reconstruction</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;reconstruction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reconstruction</span>
 
+    <span class="c1"># Optional held-out validation dataset (separate from training data,</span>
+    <span class="c1"># never a split of it). Mirrors BaseCalibration&#39;s validation_data_file.</span>
+    <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;validation_data_file&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">identif_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+        <span class="s2">&quot;validation_data_file&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">)</span>
+
     <span class="k">return</span> <span class="n">identif_config</span></div>
 
 
@@ -263,6 +269,16 @@
     <span class="n">reconstruction</span> <span class="o">=</span> <span class="n">unified_identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;reconstruction&quot;</span><span class="p">,</span> <span class="p">{})</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reconstruction</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">reconstruction</span><span class="p">:</span>
         <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;reconstruction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reconstruction</span>
+
+    <span class="c1"># 10. Optional held-out validation dataset (separate file/directory,</span>
+    <span class="c1"># never a split of the training data). Mirrors calibration&#39;s</span>
+    <span class="c1"># tasks.calibration.data.validation_data_file.</span>
+    <span class="n">data_section</span> <span class="o">=</span> <span class="n">unified_identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_section</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">data_section</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;validation_data_file&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+        <span class="s2">&quot;validation_data_file&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">identif_config</span></div>
 

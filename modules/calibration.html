@@ -67,6 +67,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.calc_stddev"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.calc_stddev()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.cost_function"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.cost_function()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.create_param_list"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.create_param_list()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.export_html_report"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.export_html_report()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.export_verification_report"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.export_verification_report()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.get_pose_from_measure"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.get_pose_from_measure()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.initialize"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.initialize()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.load_data_set"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.load_data_set()</span></code></a></li>
@@ -79,6 +81,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.save_results"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.save_results()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.solve"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.solve()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.solve_optimisation"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.solve_optimisation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.verify"><code class="docutils literal notranslate"><span class="pre">BaseCalibration.verify()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -529,6 +532,58 @@ add_pee_name: End-effector frame naming utilities</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.export_html_report">
+<span class="sig-name descname"><span class="pre">export_html_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'results'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.export_html_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.export_html_report" title="Link to this definition"></a></dt>
+<dd><p>Export the calibration quality report as a self-contained HTML
+file — the visual counterpart of <a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.print_quality_report" title="figaroh.calibration.base_calibration.BaseCalibration.print_quality_report"><code class="xref py py-meth docutils literal notranslate"><span class="pre">print_quality_report()</span></code></a>.</p>
+<p>Renders the same metrics (convergence, per-DOF residuals,
+parameter uncertainty, correlation, validation) already computed
+during <a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.solve" title="figaroh.calibration.base_calibration.BaseCalibration.solve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">solve()</span></code></a>, plus an auto-generated “insights” section
+flagging ill-conditioning, poorly identified parameters, and
+strongly correlated pairs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_path</strong> – Explicit file path for the report. If omitted,
+defaults to <code class="docutils literal notranslate"><span class="pre">{output_dir}/calibration_report.html</span></code>.</p></li>
+<li><p><strong>output_dir</strong> – Directory used when <code class="docutils literal notranslate"><span class="pre">output_path</span></code> is omitted.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The path the report was written to.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AttributeError</strong> – If called before <a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.solve" title="figaroh.calibration.base_calibration.BaseCalibration.solve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">solve()</span></code></a>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.export_verification_report">
+<span class="sig-name descname"><span class="pre">export_verification_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'results'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thresholds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.export_verification_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.export_verification_report" title="Link to this definition"></a></dt>
+<dd><p>Write this calibration’s <a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.verify" title="figaroh.calibration.base_calibration.BaseCalibration.verify"><code class="xref py py-meth docutils literal notranslate"><span class="pre">verify()</span></code></a> verdict as JSON.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_path</strong> – Explicit file path. If omitted, defaults to
+<code class="docutils literal notranslate"><span class="pre">{output_dir}/calibration_verification.json</span></code>.</p></li>
+<li><p><strong>output_dir</strong> – Directory used when <code class="docutils literal notranslate"><span class="pre">output_path</span></code> is omitted.</p></li>
+<li><p><strong>thresholds</strong> – Forwarded to <a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.verify" title="figaroh.calibration.base_calibration.BaseCalibration.verify"><code class="xref py py-meth docutils literal notranslate"><span class="pre">verify()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The path the JSON verdict was written to.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.get_pose_from_measure">
 <span class="sig-name descname"><span class="pre">get_pose_from_measure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.get_pose_from_measure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.get_pose_from_measure" title="Link to this definition"></a></dt>
 <dd><p>Calculate forward kinematics with calibrated parameters.</p>
@@ -776,7 +831,7 @@ metrics (if available), parameter uncertainty, and correlations.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.solve">
-<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outlier_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_logging</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.solve" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outlier_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_logging</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">html_report</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.solve" title="Link to this definition"></a></dt>
 <dd><p>Execute the complete calibration process.</p>
 <p>This is the main entry point for calibration that:
 1. Runs the optimization algorithm via solve_optimisation()
@@ -785,6 +840,13 @@ metrics (if available), parameter uncertainty, and correlations.</p>
 <p>The method serves as a high-level orchestrator for the calibration
 workflow, delegating the actual optimization to solve_optimisation()
 and handling visualization based on user preferences.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>html_report</strong> – If True, also export an HTML diagnostic report
+(see <a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.export_html_report" title="figaroh.calibration.base_calibration.BaseCalibration.export_html_report"><code class="xref py py-meth docutils literal notranslate"><span class="pre">export_html_report()</span></code></a>) after the terminal
+quality report is printed.</p>
+</dd>
+</dl>
 <dl class="simple">
 <dt>Side Effects:</dt><dd><ul class="simple">
 <li><p>Updates calibration parameters through optimization</p></li>
@@ -796,7 +858,8 @@ and handling visualization based on user preferences.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <p>solve_optimisation: Core optimization implementation
-plot: Visualization and analysis plotting</p>
+plot: Visualization and analysis plotting
+export_html_report: Visual counterpart of the terminal report</p>
 </div>
 </dd></dl>
 
@@ -834,6 +897,40 @@ uses zero initialization.</p></li>
 <li><p>Creates self.evaluation_metrics with quality metrics</p></li>
 <li><p>Sets up logging if enabled</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="figaroh.calibration.base_calibration.BaseCalibration.verify">
+<span class="sig-name descname"><span class="pre">verify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thresholds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/figaroh/calibration/base_calibration.html#BaseCalibration.verify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#figaroh.calibration.base_calibration.BaseCalibration.verify" title="Link to this definition"></a></dt>
+<dd><p>Check this calibration’s metrics against pass/fail thresholds.</p>
+<p>Unlike <a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.print_quality_report" title="figaroh.calibration.base_calibration.BaseCalibration.print_quality_report"><code class="xref py py-meth docutils literal notranslate"><span class="pre">print_quality_report()</span></code></a>/<a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.export_html_report" title="figaroh.calibration.base_calibration.BaseCalibration.export_html_report"><code class="xref py py-meth docutils literal notranslate"><span class="pre">export_html_report()</span></code></a>
+(for a human to read), this returns a machine-checkable
+<code class="xref py py-class docutils literal notranslate"><span class="pre">VerificationVerdict</span></code> a CI
+script can branch on. Computed entirely from data already
+gathered during <a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.solve" title="figaroh.calibration.base_calibration.BaseCalibration.solve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">solve()</span></code></a> — never raises after a successful
+solve, and never gates <code class="docutils literal notranslate"><span class="pre">solve()</span></code> itself (opt-in, called
+whenever the caller wants a verdict).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>thresholds</strong> – Per-metric <code class="docutils literal notranslate"><span class="pre">{&quot;threshold&quot;:</span> <span class="pre">float,</span> <span class="pre">&quot;comparison&quot;:</span>
+<span class="pre">&quot;max&quot;|&quot;min&quot;}</span></code> overrides. Defaults to
+<code class="docutils literal notranslate"><span class="pre">CALIBRATION_DEFAULT_THRESHOLDS</span></code> (a 6-DOF arm and a
+30-DOF humanoid don’t share the same bar — override per
+robot as needed).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">passed</span></code>, per-metric <code class="docutils literal notranslate"><span class="pre">checks</span></code>, the
+raw <code class="docutils literal notranslate"><span class="pre">metrics</span></code> dict, human-readable <code class="docutils literal notranslate"><span class="pre">insights</span></code> (the same
+text used by <a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.export_html_report" title="figaroh.calibration.base_calibration.BaseCalibration.export_html_report"><code class="xref py py-meth docutils literal notranslate"><span class="pre">export_html_report()</span></code></a>), and <code class="docutils literal notranslate"><span class="pre">metadata</span></code>
+(git commit, config file hash, timestamp, robot name).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>VerificationVerdict</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AttributeError</strong> – If called before <a class="reference internal" href="#figaroh.calibration.base_calibration.BaseCalibration.solve" title="figaroh.calibration.base_calibration.BaseCalibration.solve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">solve()</span></code></a>.</p>
 </dd>
 </dl>
 </dd></dl>
