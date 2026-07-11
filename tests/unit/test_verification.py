@@ -239,6 +239,54 @@ class TestBaseCalibrationVerify:
         verdict = BaseCalibration.verify(calib)
         assert any("ill-conditioned" in text for text in verdict.insights)
 
+    def test_compat_populated_without_validation_data(self):
+        calib = FakeCalibrator(
+            _calib_eval(),
+            {"NbSample": 100, "param_name": ["p1"], "calibration_index": 6},
+        )
+        verdict = BaseCalibration.verify(calib)
+        assert verdict.compat["dof_names"] == [
+            "X (mm)", "Y (mm)", "Z (mm)",
+            "rx (deg)", "ry (deg)", "rz (deg)",
+        ]
+        assert verdict.compat["sample_count"] == 100
+        assert verdict.compat["config_sha256"] == "unknown"
+
+    def test_series_empty_without_validation_data(self):
+        calib = FakeCalibrator(
+            _calib_eval(), {"NbSample": 100, "param_name": ["p1"]}
+        )
+        verdict = BaseCalibration.verify(calib)
+        assert verdict.series == {}
+
+    def test_series_populated_with_validation_data(self):
+        calib = FakeCalibrator(
+            _calib_eval(),
+            {"NbSample": 100, "param_name": ["p1"], "calibration_index": 2},
+            results_data={
+                "validation_metrics": {
+                    "pos_rmse_calibrated_mm": 1.0,
+                    "orient_rmse_calibrated_deg": 0.05,
+                    "n_val_samples": 3,
+                    "dof_names": ["X (mm)", "Y (mm)"],
+                    "error_nominal_per_dof": {
+                        "X (mm)": [1.0, 2.0, 3.0],
+                        "Y (mm)": [4.0, 5.0, 6.0],
+                    },
+                    "error_fitted_per_dof": {
+                        "X (mm)": [0.1, 0.2, 0.3],
+                        "Y (mm)": [0.4, 0.5, 0.6],
+                    },
+                }
+            },
+        )
+        verdict = BaseCalibration.verify(calib)
+        assert verdict.series["time"] == [0, 1, 2]
+        assert verdict.series["dof_names"] == ["X (mm)", "Y (mm)"]
+        assert verdict.series["nominal"]["X (mm)"] == [1.0, 2.0, 3.0]
+        assert verdict.series["fitted"]["Y (mm)"] == [0.4, 0.5, 0.6]
+        assert verdict.series["measured"]["X (mm)"] == [0.0, 0.0, 0.0]
+
 
 class TestBaseCalibrationExportVerificationReport:
     def test_writes_valid_json(self, tmp_path):
@@ -252,6 +300,7 @@ class TestBaseCalibrationExportVerificationReport:
         assert path == str(out)
         data = json.loads(out.read_text())
         assert "passed" in data and "checks" in data and "metadata" in data
+        assert "series" in data and "compat" in data
 
     def test_numpy_metrics_are_json_safe(self, tmp_path):
         """condition_number/rmse in real code are numpy scalars, not
@@ -289,12 +338,16 @@ class FakeIdentifier:
         robot_name="fake_robot",
         config_file_path=None,
         results_manager=None,
+        identif_config=None,
+        decimate_used=False,
     ):
         self.result = result
         self.std_relative = std_relative
         self.robot_name = robot_name
         self._config_file_path = config_file_path
         self.results_manager = results_manager
+        self.identif_config = identif_config or {}
+        self._decimate_used = decimate_used
 
     # export_verification_report() calls self.verify() internally, so the
     # fake needs it bound as a real method, not just callable unbound.
@@ -367,6 +420,52 @@ class TestBaseIdentificationVerify:
         with pytest.raises(AttributeError):
             BaseIdentification.verify(ident)
 
+    def test_compat_populated_without_validation_data(self):
+        ident = FakeIdentifier(
+            _identif_result(**{"num samples": 500}),
+            identif_config={"active_joints": ["j1", "j2"]},
+            decimate_used=True,
+        )
+        verdict = BaseIdentification.verify(ident)
+        assert verdict.compat == {
+            "active_joints": ["j1", "j2"],
+            "decimate": True,
+            "sample_count": 500,
+            "config_sha256": "unknown",
+        }
+
+    def test_series_empty_without_validation_data(self):
+        ident = FakeIdentifier(_identif_result())
+        verdict = BaseIdentification.verify(ident)
+        assert verdict.series == {}
+
+    def test_series_populated_with_validation_data(self):
+        ident = FakeIdentifier(
+            _identif_result(
+                validation_metrics={
+                    "correlation": 0.99,
+                    "improvement_pct": 90.0,
+                    "n_val_samples": 2,
+                    "joint_names": ["j1", "j2"],
+                    "tau_nominal_per_joint": {
+                        "j1": [1.0, 2.0], "j2": [3.0, 4.0],
+                    },
+                    "tau_identified_per_joint": {
+                        "j1": [1.1, 2.1], "j2": [3.1, 4.1],
+                    },
+                    "tau_measured_per_joint": {
+                        "j1": [1.2, 2.2], "j2": [3.2, 4.2],
+                    },
+                }
+            )
+        )
+        verdict = BaseIdentification.verify(ident)
+        assert verdict.series["time"] == [0, 1]
+        assert verdict.series["joint_names"] == ["j1", "j2"]
+        assert verdict.series["nominal"]["j1"] == [1.0, 2.0]
+        assert verdict.series["fitted"]["j2"] == [3.1, 4.1]
+        assert verdict.series["measured"]["j1"] == [1.2, 2.2]
+
 
 class TestBaseIdentificationExportVerificationReport:
     def test_writes_valid_json(self, tmp_path):
@@ -378,6 +477,7 @@ class TestBaseIdentificationExportVerificationReport:
         assert path == str(out)
         data = json.loads(out.read_text())
         assert "passed" in data and "checks" in data and "metadata" in data
+        assert "series" in data and "compat" in data
 
     def test_numpy_metrics_are_json_safe(self, tmp_path):
         ident = FakeIdentifier(

@@ -2,16 +2,16 @@
 
 ## Date
 2026-07-10 (originated) / 2026-07-11 (consolidated into one document, reordered to match
-the decided build sequence, Step 1 implemented, Step 2 implemented)
+the decided build sequence, Step 1 implemented, Step 2 implemented, Step 3 implemented)
 
 ## Status
-In Progress — Feature 1, Feature 1b, Step 1 (Feature 5 Phases 1–2), and Step 2 (Feature 5
-Phase 4) implemented and tested. Everything else (Steps 3–7, Features 2–4) is unimplemented,
-and this document's section order now **is** the build order: read top to bottom from "Step
-3" onward to get the plan in the sequence it should actually be executed. "Later" (Features
-2, 3, 4) comes last, not because those matter less, but because Steps 1–7 build the
-verification/reporting tooling that makes correctness-sensitive modeling work (2–4)
-checkable as it's built.
+In Progress — Feature 1, Feature 1b, Step 1 (Feature 5 Phases 1–2), Step 2 (Feature 5
+Phase 4), and Step 3 (Feature 6 Phase A) implemented and tested. Everything else (Steps
+4–7, Features 2–4) is unimplemented, and this document's section order now **is** the
+build order: read top to bottom from "Step 4" onward to get the plan in the sequence it
+should actually be executed. "Later" (Features 2, 3, 4) comes last, not because those
+matter less, but because Steps 1–7 build the verification/reporting tooling that makes
+correctness-sensitive modeling work (2–4) checkable as it's built.
 
 ## Context
 
@@ -48,7 +48,7 @@ No task content, decision, risk note, or open question was dropped in either res
 | done | Feature 1b — Terminal + HTML quality report for `BaseIdentification` | Small–Medium | ✅ Implemented |
 | done | Step 1 — Feature 5, Phases 1+2 — fix reshape bug, dedup fallback plotting | Small | ✅ Implemented |
 | done | Step 2 — Feature 5, Phase 4 — machine-readable verification verdict | Medium | ✅ Implemented |
-| Step 3 | Feature 6, Phase A (redefined) — extend Step 2's export with `series`/`compat` | Small | Proposed |
+| done | Step 3 — Feature 6, Phase A (redefined) — extend Step 2's export with `series`/`compat` | Small | ✅ Implemented |
 | Step 4 | Feature 6, Phase B — before/after interactive panel | Small | Proposed |
 | Step 5 | Feature 6, Phase C — static two-run compare page | Small | Proposed |
 | Step 6 | Feature 5, Phase 3 — optimal-\* reports | Medium | Proposed |
@@ -520,7 +520,46 @@ insights code), not a defect in `verify()` itself.
 
 ## Step 3: Bundle export, redefined (Feature 6, Phase A)
 
-**Status:** Proposed — awaiting review, not yet implemented.
+**Status:** ✅ Implemented (2026-07-11). Verified with `pytest tests/unit/test_verification.py`
+(extended in place per A.6, 35 tests total — 6 new) and `pytest tests/unit` (368 passed, 5
+skipped, the same 4 pre-existing unrelated `cyipopt` failures as Steps 1–2). Also verified
+against real runs: `BaseIdentification.verify()` on the UR10 example — without validation
+data, `series` is correctly empty (`{}`) and `compat` still populates
+(`active_joints`/`decimate`/`sample_count`/`config_sha256`); with the genuinely separate
+validation dataset from Feature 1b, `series` populates with real per-joint nominal (~276
+Nm, the CAD/standard-parameter prediction, far off) vs. fitted (~42 Nm) vs. measured (~43
+Nm) torque triples — fitted visibly tracks measured, nominal doesn't, which is exactly the
+before/after signal Step 4's panel needs. `BaseCalibration.verify()` on the TIAGo
+calibration example — no validation data configured, so `series` is empty and `compat`
+populates (`dof_names`/`sample_count`/`config_sha256`). Both exports round-trip through
+`json.load()` cleanly (numpy-safe via the existing `_convert_for_serialization` reuse).
+
+Implementation notes (deviations from the design sketch, and why):
+
+- **Calibration's `series.measured` is a zero reference line, not a fourth independent
+  curve.** Unlike identification (where nominal/fitted/measured are three genuinely
+  distinct raw torque values), calibration's validation data only ever produces
+  *residuals* (`measured − estimated`, via the SE3 log map) — there is no raw "calibrated
+  pose" value in the same mm/deg units the rest of the verdict already reports in. Rather
+  than reconstruct raw poses from the log-map convention (fragile, and not needed by
+  anything downstream), `nominal`/`fitted` are the pre-/post-calibration error curves
+  already computed by `_compute_validation_metrics()` (now also returned per-DOF, not
+  just as summary stats), and `measured` is exposed as the zero line they're both being
+  compared against — mathematically correct (a measurement's error against itself is
+  zero) and sufficient for Step 4's overlay chart to show convergence.
+- **`series` is only populated when validation data is configured, gated the same way as
+  Step 2's `position_rmse_mm`/`validation_correlation` checks** (skip-not-fail spirit,
+  D1's "already-computed data" framing — there is nothing to expose without a validation
+  run). `compat`, by contrast, is **always** populated when `verify()` is called — it
+  describes the run itself (DOF/joint names, sample count, decimate flag, config hash),
+  not the validation-specific series.
+- **`time` is a plain sample index (`list(range(n_val)))`), not a real timestamp.**
+  Neither base class tracks per-sample timestamps today; inventing one would be guessing.
+  Sufficient for Step 4/5's overlay plots, which only need a shared x-axis.
+- **No second export method, per D4/A.2**: `series`/`compat` were added directly as two
+  more fields on the existing `VerificationVerdict` dataclass and populated inside the
+  existing `verify()`/`export_verification_report()` pair from Step 2 — no new file, no
+  new method.
 
 **Context — why Feature 6 exists.** A follow-on discussion to Feature 5 explored turning
 the reporting stack into a "product-level" interactive V&V suite: a run library, a
@@ -599,22 +638,25 @@ brainstorm; none are scoped here.
 `figaroh/src/figaroh/tools/_report_common.py` (same files as Step 2 — no new export
 method, no new file)
 
-| # | Task | Details |
-|---|------|---------|
-| A.1 | Add `series` and `compat` to `VerificationVerdict` | `series: {time, nominal, fitted, measured}`, `compat: {active_joints/dof_names, decimate, sample_count, config_hash}` — extends the dataclass from Step 2, doesn't replace it |
-| A.2 | `export_verification_report()` already writes these | No second export method: Step 2's `export_verification_report(output_path=None)` now includes `series`/`compat` in its JSON output |
-| A.3 | Populate `series` | Calibration: per-DOF nominal/calibrated/measured pose errors. Identification: per-joint nominal/identified/measured torque (reuse the joint-major slicing convention from `_compute_per_joint_stats()`, fixed in Step 1) |
-| A.4 | Populate `compat` | `active_joints` (or DOF names), `decimate` (identification only), `num samples`, config file sha256 |
-| A.5 | Numpy-safe JSON serialization | Reuse `ResultsManager._convert_for_serialization` rather than reimplementing (same as Step 2's P4.6) |
-| A.6 | Unit tests | Valid JSON, round-trips, numpy arrays/NaN handled, `series`/`compat` fields present for both domains — extend Step 2's `test_verification.py` rather than writing a parallel test file |
+| # | Task | Details | Status |
+|---|------|---------|--------|
+| A.1 | Add `series` and `compat` to `VerificationVerdict` | `series: {time, nominal, fitted, measured}`, `compat: {active_joints/dof_names, decimate, sample_count, config_hash}` — extends the dataclass from Step 2, doesn't replace it | ✅ |
+| A.2 | `export_verification_report()` already writes these | No second export method: Step 2's `export_verification_report(output_path=None)` now includes `series`/`compat` in its JSON output | ✅ |
+| A.3 | Populate `series` | Calibration: per-DOF nominal/calibrated/measured pose errors. Identification: per-joint nominal/identified/measured torque (reuse the joint-major slicing convention from `_compute_per_joint_stats()`, fixed in Step 1) | ✅ |
+| A.4 | Populate `compat` | `active_joints` (or DOF names), `decimate` (identification only), `num samples`, config file sha256 | ✅ |
+| A.5 | Numpy-safe JSON serialization | Reuse `ResultsManager._convert_for_serialization` rather than reimplementing (same as Step 2's P4.6) | ✅ |
+| A.6 | Unit tests | Valid JSON, round-trips, numpy arrays/NaN handled, `series`/`compat` fields present for both domains — extend Step 2's `test_verification.py` rather than writing a parallel test file | ✅ (6 new tests) |
 
 **Acceptance criteria:** `export_verification_report()` (from Step 2, now extended) produces
 a valid, numpy-safe JSON file for both domains, containing everything Steps 4 and 5 need
-and nothing more.
+and nothing more. ✅ — verified in both the no-validation-data case (`series={}`, `compat`
+still populated) and the with-validation-data case (real per-joint torque triples for
+identification) against real UR10/TIAGo runs.
 
-**Open question:** bundle/verdict output location — alongside the existing
-`results/{report}.html`/`.npz` output (e.g. `results/identification_verification.json`),
-or somewhere else?
+**Resolved (was an open question):** bundle/verdict output location — kept alongside the
+existing `results/{report}.html`/`.npz` output (`results/{calibration,identification}
+_verification.json`, same path Step 2 already established), not somewhere else. No reason
+emerged during implementation to split it out.
 
 ---
 
@@ -951,7 +993,25 @@ before Features 2 and 3 land, since it depends on having generic parameters
   stretch task to wire the verdict into a `figaroh-examples` smoke test) was
   not done — see Step 2's "Implementation notes" for why that's an acceptable
   gap for now.
-- Steps 3–7 (formerly part of "Feature 5" and "Feature 6") are proposed, not
+- Step 3 (Feature 6, Phase A: extend the verdict with `series`/`compat`) is
+  implemented as of this writing (2026-07-11), verified with
+  `pytest tests/unit/test_verification.py` (6 new tests, 35 total, all
+  passing) and `pytest tests/unit` (368 passed, 5 skipped, the same 4
+  pre-existing `cyipopt` failures). Verified against real runs:
+  `BaseIdentification.verify()` on the UR10 example produces real per-joint
+  before/after torque triples once validation data is wired in (nominal
+  ~276 Nm vs. fitted ~42 Nm vs. measured ~43 Nm for the first joint — fitted
+  visibly tracks measured, nominal doesn't), and correctly leaves `series`
+  empty (with `compat` still populated) when no validation data is
+  configured; `BaseCalibration.verify()` on the TIAGo example likewise
+  leaves `series` empty with `compat` populated in the no-validation-data
+  case. One deviation from the design sketch: calibration's `series`
+  exposes pre-/post-calibration *error* curves (not raw poses) with
+  `measured` as the zero line they converge toward, since calibration's
+  validation data only ever produces SE3 log-map residuals, not raw
+  reconstructable poses in the same mm/deg units already used elsewhere in
+  the verdict — see Step 3's "Implementation notes" for the full reasoning.
+- Steps 4–7 (formerly part of "Feature 5" and "Feature 6") are proposed, not
   implemented, as of this writing (2026-07-11). This document has gone
   through two structural revisions since they were written: merged from
   four files into one, then reordered from Feature-number order into build

@@ -160,10 +160,11 @@ class ThresholdCheck:
 class VerificationVerdict:
     """Machine-checkable pass/fail against a set of quality thresholds.
 
-    Produced by :func:`evaluate_thresholds`; ``insights``/``metadata`` are
-    filled in by the caller (``BaseCalibration.verify()`` /
-    ``BaseIdentification.verify()``) after construction, since those are
-    domain-specific / provenance data rather than threshold arithmetic.
+    Produced by :func:`evaluate_thresholds`; ``insights``/``metadata``/
+    ``series``/``compat`` are filled in by the caller
+    (``BaseCalibration.verify()`` / ``BaseIdentification.verify()``)
+    after construction, since those are domain-specific / provenance
+    data rather than threshold arithmetic.
     """
 
     passed: bool
@@ -171,6 +172,15 @@ class VerificationVerdict:
     metrics: Dict[str, float]
     insights: List[str] = field(default_factory=list)
     metadata: Dict[str, str] = field(default_factory=dict)
+    # Before/after time-series for Feature 6's interactive panel
+    # (Step 3/4). ``{"time": [...], "<dof_or_joint_names>": [...],
+    # "nominal": {name: [...]}, "fitted": {name: [...]},
+    # "measured": {name: [...]}}`` — empty when no validation data was
+    # configured (same skip-not-fail spirit as the threshold checks).
+    series: Dict[str, Any] = field(default_factory=dict)
+    # Compatibility descriptor for Feature 6's cross-run compare (Step
+    # 5): enough to tell whether two verdicts are safe to overlay.
+    compat: Dict[str, Any] = field(default_factory=dict)
 
 
 # Default thresholds are starting points, not values sourced from any real

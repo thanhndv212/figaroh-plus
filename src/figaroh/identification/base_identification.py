@@ -618,6 +618,21 @@ class BaseIdentification(ABC):
             except (np.linalg.LinAlgError, ValueError):
                 correlation = 1.0
 
+        # Per-joint raw torque series (joint-major blocks of size n_val,
+        # same convention as _compute_per_joint_stats) — feeds verify()'s
+        # before/after `series` export (Step 3, Feature 6 Phase A).
+        active_joints = self.identif_config.get("active_joints", [])
+        joint_names = [
+            active_joints[i] if i < len(active_joints) else f"joint_{i}"
+            for i in range(n_active)
+        ]
+
+        def _per_joint(arr):
+            return {
+                joint_names[i]: arr[i * n_val:(i + 1) * n_val].tolist()
+                for i in range(n_active)
+            }
+
         return {
             "n_val_samples": n_val,
             "rmse_nominal": nominal_stats["rmse"],
@@ -628,6 +643,10 @@ class BaseIdentification(ABC):
                 nominal_stats["rmse"], identif_stats["rmse"]
             ),
             "correlation": correlation,
+            "joint_names": joint_names,
+            "tau_nominal_per_joint": _per_joint(tau_val_nominal),
+            "tau_identified_per_joint": _per_joint(tau_val_identif),
+            "tau_measured_per_joint": _per_joint(tau_val_measured),
         }
 
     def _apply_filters(self, *signals, nbutter=4, f_butter=2, med_fil=5, f_sample=100):
@@ -1757,6 +1776,25 @@ class BaseIdentification(ABC):
         verdict.metadata = build_provenance_metadata(
             getattr(self, "_config_file_path", None), robot_name
         )
+
+        active_joints = self.identif_config.get("active_joints", [])
+        if validation is not None and "tau_nominal_per_joint" in validation:
+            n_val = validation.get("n_val_samples", 0)
+            verdict.series = {
+                "time": list(range(n_val)),
+                "joint_names": validation.get(
+                    "joint_names", active_joints
+                ),
+                "nominal": validation["tau_nominal_per_joint"],
+                "fitted": validation["tau_identified_per_joint"],
+                "measured": validation["tau_measured_per_joint"],
+            }
+        verdict.compat = {
+            "active_joints": active_joints,
+            "decimate": bool(getattr(self, "_decimate_used", False)),
+            "sample_count": result.get("num samples", 0),
+            "config_sha256": verdict.metadata.get("config_sha256"),
+        }
         return verdict
 
     def export_verification_report(

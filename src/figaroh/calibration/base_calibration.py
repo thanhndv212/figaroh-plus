@@ -580,8 +580,33 @@ class BaseCalibration(ABC):
                 return (before - after) / before * 100
             return 0.0
 
+        # Per-DOF scaled error series (nominal vs. calibrated, in the
+        # same mm/deg units as the summary stats above) — feeds
+        # verify()'s before/after `series` export (Step 3, Feature 6
+        # Phase A). "measured" has no separate error curve of its own
+        # (a measured pose's error against itself is zero by
+        # construction), so it is exposed as the zero reference line
+        # nominal/fitted are being compared against.
+        dof_names = [
+            "X (mm)", "Y (mm)", "Z (mm)",
+            "rx (deg)", "ry (deg)", "rz (deg)",
+        ][:n_dofs]
+        scales = np.array(
+            [1000.0 if i < 3 else 180.0 / np.pi for i in range(n_dofs)]
+        )
+        nom_scaled = resid_nom_2d * scales[:, None]
+        cal_scaled = resid_cal_2d * scales[:, None]
+
+        def _per_dof(arr_2d):
+            return {
+                dof_names[i]: arr_2d[i].tolist() for i in range(n_dofs)
+            }
+
         return {
             "n_val_samples": n_val,
+            "dof_names": dof_names,
+            "error_nominal_per_dof": _per_dof(nom_scaled),
+            "error_fitted_per_dof": _per_dof(cal_scaled),
             "pos_rmse_nominal_mm": pos_nom_stats["rmse"] * 1000,
             "pos_rmse_calibrated_mm": pos_cal_stats["rmse"] * 1000,
             "pos_max_nominal_mm": pos_nom_stats["max"] * 1000,
@@ -1750,6 +1775,27 @@ class BaseCalibration(ABC):
         verdict.metadata = build_provenance_metadata(
             getattr(self, "_config_file_path", None), robot_name
         )
+
+        n_dofs = self.calib_config.get("calibration_index", 0)
+        dof_names = [
+            "X (mm)", "Y (mm)", "Z (mm)",
+            "rx (deg)", "ry (deg)", "rz (deg)",
+        ][:n_dofs]
+        if validation is not None and "error_nominal_per_dof" in validation:
+            n_val = validation.get("n_val_samples", 0)
+            dof_names = validation.get("dof_names", dof_names)
+            verdict.series = {
+                "time": list(range(n_val)),
+                "dof_names": dof_names,
+                "nominal": validation["error_nominal_per_dof"],
+                "fitted": validation["error_fitted_per_dof"],
+                "measured": {name: [0.0] * n_val for name in dof_names},
+            }
+        verdict.compat = {
+            "dof_names": dof_names,
+            "sample_count": n_samples,
+            "config_sha256": verdict.metadata.get("config_sha256"),
+        }
         return verdict
 
     def export_verification_report(
