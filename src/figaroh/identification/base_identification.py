@@ -148,6 +148,7 @@ class BaseIdentification(ABC):
         plotting=True,
         save_results=False,
         html_report=False,
+        wls=False,
     ):
         """Main solving method for dynamic parameter identification.
 
@@ -164,6 +165,12 @@ class BaseIdentification(ABC):
             html_report (bool): If True, also export an HTML diagnostic
                 report (see :meth:`export_html_report`) after the terminal
                 quality report is printed.
+            wls (bool): If True, refine the OLS base-parameter estimate with
+                iteratively-weighted least squares (Gautier, 1997) before
+                computing quality metrics — see
+                :meth:`_apply_weighted_least_squares`. Relative standard
+                deviations from the WLS fit are stored under
+                ``self.result["wls_std_deviations"]``.
 
         Returns:
             ndarray: Base parameters phi_base
@@ -200,9 +207,20 @@ class BaseIdentification(ABC):
             tau_processed, W_processed, active_params
         )
 
+        # Step 3b: Optional weighted least squares refinement
+        wls_std = None
+        if wls:
+            phi_wls, wls_std = self._apply_weighted_least_squares()
+            self.phi_base = phi_wls
+            results["phi_base"] = phi_wls
+            results["tau_estimated"] = self.dynamic_regressor_base @ phi_wls
+            self.tau_identif = results["tau_estimated"]
+
         # Step 4: Store results and compute quality metrics
         self._compute_quality_metrics()
         self._store_results(results)
+        if wls_std is not None:
+            self.result["wls_std_deviations"] = wls_std
 
         # Print quality report
         self.print_quality_report()
@@ -1118,6 +1136,119 @@ class BaseIdentification(ABC):
             "M": self._M_matrix,
             "params_r": self._params_r_for_recon,
         }
+
+    def _apply_weighted_least_squares(self):
+        """Refine base parameters via iteratively-weighted least squares.
+
+        Re-solves the base-parameter regression using inverse joint-residual-
+        variance weighting (Gautier, 1997), starting from the OLS estimate
+        already stored in ``self.phi_base``. Robot-agnostic: relies only on
+        ``self.dynamic_regressor_base``, ``self.tau_noised``, and
+        ``self.model.nv``, all of which are set the same way by every
+        ``BaseIdentification`` subclass.
+
+        Returns:
+            tuple: (phi_wls, std_wls) — refined base parameters and their
+            relative standard deviations (%). Does not mutate ``self.result``;
+            the caller is responsible for storing these.
+        """
+        W_b = self.dynamic_regressor_base
+        tau = self.tau_noised
+        nv = self.model.nv
+
+        sig_ro_joint, diag_SIGMA = self._calculate_joint_variances(W_b, tau, nv)
+        self._joint_variances = sig_ro_joint
+
+        return self._solve_weighted_least_squares(W_b, tau, diag_SIGMA)
+
+    def _calculate_joint_variances(self, W_b, tau, nv):
+        """Calculate joint-wise residual variances efficiently.
+
+        Args:
+            W_b: Base regressor matrix
+            tau: Torque vector (flattened, stacked per joint)
+            nv: Number of velocity variables (joints)
+
+        Returns:
+            tuple: (joint_variances, diagonal_covariance)
+        """
+        row_size = tau.shape[0]
+
+        if W_b.shape[0] != row_size:
+            raise ValueError(
+                f"Dimension mismatch: regressor has {W_b.shape[0]} rows, "
+                f"but torque has {row_size} elements"
+            )
+
+        samples_per_joint = row_size // nv
+
+        sig_ro_joint = np.zeros(nv)
+        diag_SIGMA = np.zeros(row_size)
+
+        tau_pred_full = W_b @ self.phi_base
+        residuals = tau - tau_pred_full
+
+        for i in range(nv):
+            start_idx = i * samples_per_joint
+            end_idx = (i + 1) * samples_per_joint
+            if end_idx > row_size:
+                end_idx = row_size
+
+            residuals_joint = residuals[start_idx:end_idx]
+
+            if len(residuals_joint) > 0:
+                sig_ro_joint[i] = np.mean(residuals_joint**2)
+            else:
+                sig_ro_joint[i] = 1e-6
+
+            diag_SIGMA[start_idx:end_idx] = sig_ro_joint[i]
+
+        return sig_ro_joint, diag_SIGMA
+
+    def _solve_weighted_least_squares(self, W_b, tau, diag_SIGMA):
+        """Solve the weighted least squares problem.
+
+        Args:
+            W_b: Base regressor matrix
+            tau: Torque vector
+            diag_SIGMA: Diagonal covariance matrix values
+
+        Returns:
+            tuple: (phi_wls, std_wls) — WLS parameter estimates and their
+            relative standard deviations (%).
+        """
+        weights = 1.0 / (diag_SIGMA + 1e-12)
+        W_sqrt = np.sqrt(weights)[:, np.newaxis]
+
+        W_weighted = W_b * W_sqrt
+        tau_weighted = tau * W_sqrt.ravel()
+
+        WTW = W_weighted.T @ W_weighted
+        WTtau = W_weighted.T @ tau_weighted
+
+        C_X = np.linalg.inv(WTW)
+        phi_wls = C_X @ WTtau
+        phi_wls = np.around(phi_wls, 6)
+
+        std_wls = self._compute_wls_standard_deviations(C_X, phi_wls)
+
+        return phi_wls, std_wls
+
+    def _compute_wls_standard_deviations(self, C_X, phi_wls):
+        """Compute weighted least squares standard deviations efficiently.
+
+        Args:
+            C_X: Covariance matrix
+            phi_wls: WLS parameter estimates
+
+        Returns:
+            ndarray: Relative standard deviations as percentages
+        """
+        variances = np.diag(C_X)
+        std_deviations = np.sqrt(variances)
+        relative_std = 100 * std_deviations / np.abs(phi_wls)
+
+        return np.around(relative_std, 2)
 
     def _compute_quality_metrics(self):
         """Compute quality metrics for the identification.
