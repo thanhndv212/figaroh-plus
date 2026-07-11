@@ -24,6 +24,7 @@ import yaml
 import numpy as np
 from abc import ABC, abstractmethod
 import dataclasses
+from typing import Any, Dict, Optional
 
 # Setup logger for this module
 logger = logging.getLogger(__name__)
@@ -371,6 +372,7 @@ class BaseIdentification(ABC):
             config_file (str): Path to configuration file (legacy or unified)
             setting_type (str): Configuration section to load
         """
+        self._config_file_path = config_file
         try:
             logger.info(f"Loading config from {config_file}")
 
@@ -1672,6 +1674,129 @@ class BaseIdentification(ABC):
 
         generate_identification_report(self, output_path=output_path)
         logger.info(f"HTML quality report written to {output_path}")
+        return output_path
+
+    def verify(self, thresholds: Optional[Dict[str, Dict[str, Any]]] = None):
+        """Check this identification's metrics against pass/fail thresholds.
+
+        Unlike :meth:`print_quality_report`/:meth:`export_html_report`
+        (for a human to read), this returns a machine-checkable
+        :class:`~figaroh.tools._report_common.VerificationVerdict` a CI
+        script can branch on. Computed entirely from data already
+        gathered during :meth:`solve` — never raises after a successful
+        solve, and never gates ``solve()`` itself (opt-in, called
+        whenever the caller wants a verdict).
+
+        Args:
+            thresholds: Per-metric ``{"threshold": float, "comparison":
+                "max"|"min"}`` overrides. Defaults to
+                ``IDENTIFICATION_DEFAULT_THRESHOLDS`` (a 6-DOF arm and a
+                30-DOF humanoid don't share the same bar — override per
+                robot as needed).
+
+        Returns:
+            VerificationVerdict: ``passed``, per-metric ``checks``, the
+            raw ``metrics`` dict, human-readable ``insights`` (the same
+            text used by :meth:`export_html_report`), and ``metadata``
+            (git commit, config file hash, timestamp, robot name).
+
+        Raises:
+            AttributeError: If called before :meth:`solve`.
+        """
+        if self.result is None:
+            raise AttributeError(
+                "No identification results available. Run solve() first."
+            )
+
+        from figaroh.tools._report_common import (
+            IDENTIFICATION_DEFAULT_THRESHOLDS,
+            build_provenance_metadata,
+            evaluate_thresholds,
+        )
+        from figaroh.tools.identification_report import _build_insights
+
+        thresholds = (
+            thresholds if thresholds is not None
+            else IDENTIFICATION_DEFAULT_THRESHOLDS
+        )
+
+        result = self.result
+        base_names = result.get("base parameters names", [])
+        std_relative_raw = getattr(self, "std_relative", None)
+        std_relative = (
+            list(std_relative_raw) if std_relative_raw is not None else []
+        )
+        validation = result.get("validation_metrics")
+
+        metrics: Dict[str, float] = {
+            "condition_number": result.get(
+                "condition number", float("nan")
+            ),
+            "rmse": result.get("rmse norm (N/m)", float("nan")),
+        }
+        if validation is not None:
+            metrics["validation_correlation"] = validation.get(
+                "correlation", float("nan")
+            )
+            metrics["validation_improvement_pct"] = validation.get(
+                "improvement_pct", float("nan")
+            )
+
+        verdict = evaluate_thresholds(metrics, thresholds)
+        verdict.insights = [
+            i["text"]
+            for i in _build_insights(
+                result, std_relative, base_names, validation
+            )
+        ]
+        robot_name = getattr(
+            self,
+            "robot_name",
+            self.__class__.__name__.lower().replace("identification", ""),
+        )
+        verdict.metadata = build_provenance_metadata(
+            getattr(self, "_config_file_path", None), robot_name
+        )
+        return verdict
+
+    def export_verification_report(
+        self,
+        output_path: str = None,
+        output_dir: str = "results",
+        thresholds: Optional[Dict[str, Dict[str, Any]]] = None,
+    ) -> str:
+        """Write this identification's :meth:`verify` verdict as JSON.
+
+        Args:
+            output_path: Explicit file path. If omitted, defaults to
+                ``{output_dir}/identification_verification.json``.
+            output_dir: Directory used when ``output_path`` is omitted.
+            thresholds: Forwarded to :meth:`verify`.
+
+        Returns:
+            str: The path the JSON verdict was written to.
+        """
+        import json
+        from os import makedirs
+        from os.path import join
+
+        verdict = self.verify(thresholds=thresholds)
+        verdict_dict = dataclasses.asdict(verdict)
+
+        results_manager = getattr(self, "results_manager", None)
+        if results_manager is not None:
+            verdict_dict = results_manager._convert_for_serialization(
+                verdict_dict
+            )
+
+        if output_path is None:
+            makedirs(output_dir, exist_ok=True)
+            output_path = join(output_dir, "identification_verification.json")
+
+        with open(output_path, "w") as f:
+            json.dump(verdict_dict, f, indent=2)
+
+        logger.info(f"Verification report written to {output_path}")
         return output_path
 
     def plot_results(self):

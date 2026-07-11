@@ -27,7 +27,11 @@ that shared, domain-independent layer.
 
 import html
 import math
-from typing import Any, Dict, List
+import subprocess
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from os.path import abspath
+from typing import Any, Dict, List, Optional
 
 UNCERTAINTY_WARN_PCT = 30.0
 UNCERTAINTY_CAUTION_PCT = 10.0
@@ -139,6 +143,137 @@ def _correlation_section(corr_pairs: List[Dict[str, Any]]) -> str:
       <tbody>{"".join(rows)}</tbody>
     </table>
     """
+
+
+@dataclass
+class ThresholdCheck:
+    """One metric checked against one threshold."""
+
+    name: str
+    value: float
+    threshold: float
+    comparison: str  # "max" or "min"
+    passed: bool
+
+
+@dataclass
+class VerificationVerdict:
+    """Machine-checkable pass/fail against a set of quality thresholds.
+
+    Produced by :func:`evaluate_thresholds`; ``insights``/``metadata`` are
+    filled in by the caller (``BaseCalibration.verify()`` /
+    ``BaseIdentification.verify()``) after construction, since those are
+    domain-specific / provenance data rather than threshold arithmetic.
+    """
+
+    passed: bool
+    checks: List[ThresholdCheck]
+    metrics: Dict[str, float]
+    insights: List[str] = field(default_factory=list)
+    metadata: Dict[str, str] = field(default_factory=dict)
+
+
+# Default thresholds are starting points, not values sourced from any real
+# deployment's acceptance criteria — every call site can override them
+# (D4: thresholds are per-call config, not hardcoded constants).
+CALIBRATION_DEFAULT_THRESHOLDS: Dict[str, Dict[str, Any]] = {
+    "position_rmse_mm": {"threshold": 2.0, "comparison": "max"},
+    "orientation_rmse_deg": {"threshold": 0.1, "comparison": "max"},
+    "condition_number": {"threshold": 1000.0, "comparison": "max"},
+}
+
+IDENTIFICATION_DEFAULT_THRESHOLDS: Dict[str, Dict[str, Any]] = {
+    "validation_correlation": {"threshold": 0.9, "comparison": "min"},
+    "condition_number": {"threshold": 1000.0, "comparison": "max"},
+    "validation_improvement_pct": {"threshold": 50.0, "comparison": "min"},
+}
+
+
+def evaluate_thresholds(
+    metrics: Dict[str, float], thresholds: Dict[str, Dict[str, Any]]
+) -> VerificationVerdict:
+    """Check each metric named in ``thresholds`` against its threshold.
+
+    A threshold whose metric is missing from ``metrics`` (or is NaN) —
+    e.g. a validation-set threshold when no validation data was
+    provided — is silently skipped rather than counted as a failure;
+    ``verify()`` callers can note the gap via ``insights`` instead. An
+    empty check list (nothing was evaluable) counts as passed: there is
+    nothing to fail on.
+    """
+    checks: List[ThresholdCheck] = []
+    for name, spec in thresholds.items():
+        value = metrics.get(name)
+        if value is None or (isinstance(value, float) and math.isnan(value)):
+            continue
+
+        threshold = spec["threshold"]
+        comparison = spec["comparison"]
+        if comparison == "max":
+            passed = value <= threshold
+        elif comparison == "min":
+            passed = value >= threshold
+        else:
+            raise ValueError(
+                f"Unknown comparison {comparison!r} for threshold {name!r} "
+                "(expected 'max' or 'min')"
+            )
+        checks.append(
+            ThresholdCheck(
+                name=name,
+                value=float(value),
+                threshold=float(threshold),
+                comparison=comparison,
+                passed=bool(passed),
+            )
+        )
+
+    overall_passed = all(c.passed for c in checks) if checks else True
+    return VerificationVerdict(
+        passed=overall_passed, checks=checks, metrics=dict(metrics)
+    )
+
+
+def _git_commit_hash() -> str:
+    """Best-effort current git commit hash — never raises."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if result.returncode == 0:
+            return result.stdout.strip()
+    except Exception:
+        pass
+    return "unknown"
+
+
+def _config_file_sha256(config_file_path: Optional[str]) -> str:
+    """Best-effort sha256 of the config file used for this run — never raises."""
+    if not config_file_path:
+        return "unknown"
+    try:
+        import hashlib
+
+        with open(abspath(config_file_path), "rb") as f:
+            return hashlib.sha256(f.read()).hexdigest()
+    except Exception:
+        return "unknown"
+
+
+def build_provenance_metadata(
+    config_file_path: Optional[str], robot_name: str
+) -> Dict[str, str]:
+    """Git commit, config file hash, timestamp, robot name — for a
+    :class:`VerificationVerdict`'s ``metadata`` field."""
+    return {
+        "git_commit": _git_commit_hash(),
+        "config_sha256": _config_file_sha256(config_file_path),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "robot_name": str(robot_name),
+    }
 
 
 _STYLE = """
