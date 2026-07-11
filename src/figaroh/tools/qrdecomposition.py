@@ -102,6 +102,10 @@ class QRDecomposer:
         self.M_params_r: Optional[List[str]] = None
         self.M_base_params_expr: Optional[List[str]] = None
         self.M_method: Optional[str] = None
+        # Column indices into params_r selected as the base (independent) set
+        # by the last decomposition. Only populated by double_decomposition().
+        self.base_indices: Optional[List[int]] = None
+        self.regroup_indices: Optional[List[int]] = None
         # Diagnostics from the last decomposition (available via get_diagnostics)
         self._last_diag_R: Optional[np.ndarray] = None
         self._last_cond_R1: Optional[float] = None
@@ -113,6 +117,20 @@ class QRDecomposer:
     def get_M_labels(self) -> Tuple[Optional[List[str]], Optional[List[str]]]:
         """Return (base_param_expr, params_r) labels for the last stored M."""
         return self.M_base_params_expr, self.M_params_r
+
+    def get_base_indices(self) -> Optional[List[int]]:
+        """Return the base-column indices (into ``params_r``) from the last
+        ``double_decomposition()`` call, or ``None`` if not yet run.
+
+        These indices select the columns of a *reduced* regressor (built
+        with the same ``params_r`` ordering) that reproduce base-parameter
+        predictions: ``tau ≈ W_reduced[:, base_indices] @ phi_base``. Since
+        the base/dependent column split reflects the robot's kinematic
+        structure rather than a specific trajectory, this selection is
+        valid for any regressor built with the same ``params_r`` ordering
+        — e.g. to evaluate an identified model on held-out validation data.
+        """
+        return self.base_indices
 
     def get_diagnostics(self) -> Dict[str, Any]:
         """Return stability diagnostics from the last decomposition.
@@ -440,6 +458,8 @@ class QRDecomposer:
         self.M_params_r = list(params_r)
         self.M_base_params_expr = list(params_base_expr)
         self.M_method = "double"
+        self.base_indices = list(base_indices)
+        self.regroup_indices = list(regroup_indices)
         self._last_diag_R = np.abs(np.diag(R_r))
         self._last_cond_R1 = float(np.linalg.cond(R1)) if rank > 0 else 0.0
 

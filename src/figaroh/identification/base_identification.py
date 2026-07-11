@@ -91,6 +91,22 @@ class BaseIdentification(ABC):
         self.tau_identif = None
         self.tau_noised = None
 
+        # Held-out validation dataset (separate file, never a split of the
+        # training data). Populated by _load_validation_data() if
+        # identif_config["validation_data_file"] is set.
+        self._val_available = False
+        self._val_processed_data = None
+        self._val_num_samples = None
+
+        # Diagnostics captured during solve() for validation / reporting:
+        # column indices eliminated by _eliminate_zero_columns() and the
+        # base-column selection from the QR decomposition, both needed to
+        # evaluate phi_base against a regressor built from new (held-out)
+        # trajectory data.
+        self._idx_eliminated = None
+        self._base_indices = None
+        self._decimate_used = False
+
         # Set default filter configuration, can be overridden in subclasses
         self.filter_config = self.identif_config.get(
             "filter_config",
@@ -112,6 +128,16 @@ class BaseIdentification(ABC):
         self.initialize_standard_parameters()
         self.compute_reference_torque()
 
+        # If a held-out validation dataset is configured, load and process
+        # it now (mirrors BaseCalibration.load_data_set()). Never fails
+        # initialization if validation data is missing/unavailable.
+        val_data_source = self.identif_config.get("validation_data_file")
+        if val_data_source:
+            try:
+                self._load_validation_data(val_data_source)
+            except Exception as e:
+                logger.warning(f"Validation data unavailable: {e}")
+
     def solve(
         self,
         decimate=True,
@@ -119,6 +145,7 @@ class BaseIdentification(ABC):
         zero_tolerance=0.001,
         plotting=True,
         save_results=False,
+        html_report=False,
     ):
         """Main solving method for dynamic parameter identification.
 
@@ -132,6 +159,9 @@ class BaseIdentification(ABC):
             zero_tolerance (float): Tolerance for eliminating zero columns
             plotting (bool): Whether to generate plots
             save_results (bool): Whether to save parameters to file
+            html_report (bool): If True, also export an HTML diagnostic
+                report (see :meth:`export_html_report`) after the terminal
+                quality report is printed.
 
         Returns:
             ndarray: Base parameters phi_base
@@ -144,6 +174,8 @@ class BaseIdentification(ABC):
         logger.info(
             f"Starting {self.__class__.__name__} dynamic parameter identification..."
         )
+
+        self._decimate_used = decimate
 
         # Validate prerequisites
         self._validate_prerequisites()
@@ -170,6 +202,9 @@ class BaseIdentification(ABC):
         self._compute_quality_metrics()
         self._store_results(results)
 
+        # Print quality report
+        self.print_quality_report()
+
         # Step 5: Optional plotting
         if plotting:
             self.plot_results()
@@ -177,6 +212,10 @@ class BaseIdentification(ABC):
         # Step 6: Optional parameter saving
         if save_results:
             self.save_results()
+
+        # Step 7: Optional HTML diagnostic report
+        if html_report:
+            self.export_html_report()
 
         return self.phi_base
 
@@ -360,14 +399,27 @@ class BaseIdentification(ABC):
             raise
 
     @abstractmethod
-    def load_trajectory_data(self):
+    def load_trajectory_data(self, data_source: str = None):
         """Load and process CSV data.
 
         This method must be implemented by robot-specific subclasses
         to handle their specific data formats and file structures.
 
+        Args:
+            data_source: Optional override identifying an alternate dataset
+                to load instead of the class's normal training data (e.g.
+                a directory holding a held-out validation trajectory with
+                the same file layout/naming as the training data). When
+                ``None`` (default), the subclass loads its usual training
+                data exactly as before. Passed through from
+                ``identif_config["validation_data_file"]`` by
+                :meth:`_load_validation_data`.
+
         Returns:
-            tuple: (timestamps, positions, velocities, torques) as numpy arrays
+            dict: Dictionary with keys 'timestamps', 'positions',
+            'velocities', 'accelerations', 'torques' (numpy arrays;
+            'velocities'/'accelerations' may be None to be derived by
+            differentiation).
         """
         pass
 
@@ -451,6 +503,129 @@ class BaseIdentification(ABC):
         self.tau_ref = tau_ref[
             range(len(self.identif_config["act_idxv"]) * self.num_samples)
         ]
+
+    def _load_validation_data(self, data_source: str):
+        """Load and process a held-out validation trajectory.
+
+        Unlike a train/validation split of one dataset, this loads a
+        genuinely separate dataset — mirrors
+        :meth:`BaseCalibration._load_validation_data`. Reuses the exact
+        same per-robot loading/filtering/torque-processing pipeline as
+        training data (via polymorphic dispatch to
+        ``process_kinematics_data`` / ``process_torque_data``), so any
+        robot-specific overrides (motor-to-joint conversion, torque
+        scaling, etc.) apply identically to the validation set.
+
+        Args:
+            data_source: Passed through to :meth:`load_trajectory_data` as
+                its ``data_source`` override — e.g. a directory holding
+                validation CSVs with the same naming convention as the
+                training data.
+
+        Side Effects:
+            - Sets self._val_processed_data / self._val_num_samples
+            - Sets self._val_available = True
+        """
+        # Save training state so validation loading can reuse the same
+        # instance methods without disturbing the training data already
+        # held in self.raw_data / self.processed_data / self.num_samples.
+        orig_raw_data = self.raw_data
+        orig_processed_data = self.processed_data
+        orig_num_samples = self.num_samples
+
+        try:
+            self.raw_data = self.load_trajectory_data(data_source=data_source)
+            self.raw_data = self._truncate_data(self.raw_data, None)
+            self.process_kinematics_data(self.filter_config)
+            self.processed_data["torques"] = self.process_torque_data()
+            self.num_samples = self.processed_data["positions"].shape[0]
+            self._build_full_configuration()
+
+            self._val_processed_data = self.processed_data
+            self._val_num_samples = self.num_samples
+            self._val_available = True
+        finally:
+            self.raw_data = orig_raw_data
+            self.processed_data = orig_processed_data
+            self.num_samples = orig_num_samples
+
+    def _compute_validation_metrics(self):
+        """Compute torque-prediction validation metrics on held-out data.
+
+        Evaluates both the pre-identification standard/CAD parameters
+        ("nominal") and the identified base parameters ("identified")
+        against measured torques on a dataset never used for fitting —
+        mirrors :meth:`BaseCalibration._compute_validation_metrics`.
+
+        Returns:
+            Dict with validation metrics, or None if no validation data
+            (or if solve() has not been run yet).
+        """
+        if not getattr(self, "_val_available", False):
+            return None
+        if self._idx_eliminated is None or self._base_indices is None:
+            return None
+
+        q_val = self._val_processed_data["positions"]
+        dq_val = self._val_processed_data["velocities"]
+        ddq_val = self._val_processed_data["accelerations"]
+
+        W_val_full = build_regressor_basic(
+            self.robot, q_val, dq_val, ddq_val, self.identif_config
+        )
+        W_val_reduced = build_regressor_reduced(W_val_full, self._idx_eliminated)
+        W_val_base = W_val_reduced[:, self._base_indices]
+
+        n_active = len(self.identif_config["act_idxv"])
+        n_val = self._val_num_samples
+        n_rows = n_active * n_val
+
+        phi_std_vec = np.array(list(self.standard_parameter.values()))
+        tau_val_nominal = (W_val_full @ phi_std_vec)[:n_rows]
+        tau_val_identif = (W_val_base @ self.phi_base)[:n_rows]
+
+        # Joint-major, matching the regressor's row convention (block j
+        # occupies rows [j*n_val:(j+1)*n_val]).
+        tau_val_measured = (
+            np.asarray(self._val_processed_data["torques"]).T.flatten()[:n_rows]
+        )
+
+        def _stats(estimated):
+            residuals = tau_val_measured - estimated
+            return {
+                "rmse": float(np.sqrt(np.mean(residuals**2))),
+                "max": float(np.max(np.abs(residuals))),
+                "mean": float(np.mean(np.abs(residuals))),
+            }
+
+        nominal_stats = _stats(tau_val_nominal)
+        identif_stats = _stats(tau_val_identif)
+
+        def _improvement(before, after):
+            if before > 0:
+                return (before - after) / before * 100
+            return 0.0
+
+        correlation = 1.0
+        if n_rows > 1:
+            try:
+                correlation = float(
+                    np.corrcoef(tau_val_measured, tau_val_identif)[0, 1]
+                )
+            except (np.linalg.LinAlgError, ValueError):
+                correlation = 1.0
+
+        return {
+            "n_val_samples": n_val,
+            "rmse_nominal": nominal_stats["rmse"],
+            "rmse_identified": identif_stats["rmse"],
+            "max_nominal": nominal_stats["max"],
+            "max_identified": identif_stats["max"],
+            "improvement_pct": _improvement(
+                nominal_stats["rmse"], identif_stats["rmse"]
+            ),
+            "correlation": correlation,
+        }
 
     def _apply_filters(self, *signals, nbutter=4, f_butter=2, med_fil=5, f_sample=100):
         """Apply median and lowpass filters to any number of signals.
@@ -745,6 +920,7 @@ class BaseIdentification(ABC):
         )
         self.regressor_reduced = regressor_reduced
         self.active_parameters = active_parameters
+        self._idx_eliminated = idx_eliminated
         return self.regressor_reduced, self.active_parameters
 
     def _apply_decimation(self, regressor_reduced, decimation_factor):
@@ -846,10 +1022,20 @@ class BaseIdentification(ABC):
 
         Returns:
             tuple: (tau_flattened, regressor_reduced)
+
+        Note:
+            ``self.processed_data["torques"]`` has shape ``(num_samples,
+            num_active_joints)`` — sample-major. The regressor rows built
+            by :mod:`figaroh.tools.regressor` (and ``_apply_decimation``'s
+            output) are joint-major: all samples of joint 0, then all
+            samples of joint 1, etc. A plain ``.flatten()`` here would
+            flatten sample-major, misaligning every row against the
+            regressor/estimated-torque order. Transposing first makes the
+            flatten joint-major, matching the regressor convention.
         """
         tau_data = self.processed_data["torques"]
         if hasattr(tau_data, "flatten"):
-            tau_flattened = tau_data.flatten()
+            tau_flattened = tau_data.T.flatten()
         else:
             tau_flattened = tau_data
         return tau_flattened, regressor_reduced
@@ -885,6 +1071,10 @@ class BaseIdentification(ABC):
         self._params_r_for_recon = list(
             decomposer.get_M_labels()[1] or active_parameters.keys()
         )
+        # Base-column selection, needed to evaluate phi_base against a
+        # regressor built from held-out validation trajectory data (see
+        # _compute_validation_metrics()).
+        self._base_indices = decomposer.get_base_indices()
 
         # Calculate torque estimation (avoid redundant computation)
         tau_estimated = np.dot(W_base, phi_base)
@@ -960,6 +1150,12 @@ class BaseIdentification(ABC):
 
         # Optional full-parameter reconstruction (default-off, v0.4.2)
         self._apply_reconstruction_if_enabled(identif_results)
+
+        # Held-out validation metrics (only present if validation_data_file
+        # was configured and successfully loaded)
+        val_metrics = self._compute_validation_metrics()
+        if val_metrics is not None:
+            self.result["validation_metrics"] = val_metrics
 
         # Initialize ResultsManager for identification task
         try:
@@ -1293,6 +1489,189 @@ class BaseIdentification(ABC):
             "theta_r_dict": result.as_dict(),
             "params_r": result.params_r,
         }
+
+    def _compute_per_joint_stats(self):
+        """Per-joint torque residual statistics (mean/std/RMSE/max), the
+        identification analogue of BaseCalibration's per-DOF stats.
+
+        Both ``solve(decimate=True)`` (explicit per-joint loop) and
+        ``solve(decimate=False)`` (``_prepare_undecimated_data``, which
+        transposes before flattening) produce torque/regressor rows in the
+        same joint-major block order, so slicing by joint is safe either
+        way.
+
+        Returns:
+            Dict with joint_names/mean/std/rmse/max_abs lists, or None if
+            unavailable.
+        """
+        if self.result is None:
+            return None
+
+        tau_measured = np.asarray(self.result["torque processed"]).flatten()
+        tau_estimated = np.asarray(self.result["torque estimated"]).flatten()
+        n_active = len(self.identif_config["act_idxv"])
+        if n_active == 0 or tau_measured.size % n_active != 0:
+            return None
+
+        n_per_joint = tau_measured.size // n_active
+        active_joints = self.identif_config.get("active_joints", [])
+
+        stats = {"joint_names": [], "mean": [], "std": [], "rmse": [], "max_abs": []}
+        for i in range(n_active):
+            sl = slice(i * n_per_joint, (i + 1) * n_per_joint)
+            residual = tau_measured[sl] - tau_estimated[sl]
+            name = active_joints[i] if i < len(active_joints) else f"joint_{i}"
+            stats["joint_names"].append(name)
+            stats["mean"].append(float(np.mean(residual)))
+            stats["std"].append(float(np.std(residual)))
+            stats["rmse"].append(float(np.sqrt(np.mean(residual**2))))
+            stats["max_abs"].append(float(np.max(np.abs(residual))))
+        return stats
+
+    def print_quality_report(self):
+        """Print a formatted identification quality report to the terminal.
+
+        Reports condition number, overall torque residual statistics,
+        per-joint residuals (when available), base-parameter uncertainty,
+        held-out validation metrics (if configured), and optional
+        physical-consistency / reconstruction status.
+        """
+        if self.result is None:
+            logger.warning("No identification results to report. Run solve() first.")
+            return
+
+        result = self.result
+        per_joint = self._compute_per_joint_stats()
+
+        print()
+        print("=" * 70)
+        print("  IDENTIFICATION QUALITY REPORT")
+        print("=" * 70)
+
+        cond_num = result.get("condition number", float("nan"))
+        n_base = len(result.get("base parameters names", []))
+        print(
+            f"  Base parameters: {n_base}    "
+            f"Samples: {result.get('num samples', 0)}"
+        )
+        if not np.isnan(cond_num):
+            cond_label = (
+                "well-conditioned"
+                if cond_num < 100
+                else "moderately-conditioned"
+                if cond_num < 1000
+                else "ill-conditioned"
+            )
+            print(f"  Condition:    {cond_num:.1f} ({cond_label})")
+        else:
+            print("  Condition:    unavailable")
+        print(
+            f"  RMSE:         {result.get('rmse norm (N/m)', float('nan')):.4f}    "
+            f"Correlation: {self.correlation:.4f}"
+        )
+
+        if per_joint is not None:
+            print("-" * 70)
+            print("  Per-Joint Torque Residuals (training set)")
+            names = per_joint["joint_names"]
+            print(
+                f"  {'Joint':<22s} {'Mean':>10s} {'Std':>10s} "
+                f"{'RMSE':>10s} {'Max':>10s}"
+            )
+            print(f"  {'-'*22} {'-'*10} {'-'*10} {'-'*10} {'-'*10}")
+            for i in range(len(names)):
+                m = f"{per_joint['mean'][i]:10.4f}"
+                s = f"{per_joint['std'][i]:10.4f}"
+                r = f"{per_joint['rmse'][i]:10.4f}"
+                x = f"{per_joint['max_abs'][i]:10.4f}"
+                print(f"  {names[i]:<22s} {m} {s} {r} {x}")
+        else:
+            print("-" * 70)
+            print("  Per-joint residuals: unavailable")
+
+        # ── Base-parameter uncertainty ──
+        print("-" * 70)
+        std_relative = getattr(self, "std_relative", None)
+        base_names = result.get("base parameters names", [])
+        if std_relative is not None and len(std_relative) == len(base_names):
+            order = sorted(
+                range(len(base_names)), key=lambda i: -abs(std_relative[i])
+            )
+            print("  Base-Parameter Uncertainty (top 5 by relative std-dev)")
+            for i in order[:5]:
+                print(f"    {base_names[i]:<50s} {std_relative[i]:8.1f}%")
+        else:
+            print("  Base-parameter uncertainty: unavailable")
+
+        # ── Validation ──
+        print("-" * 70)
+        val = result.get("validation_metrics")
+        if val is not None:
+            print(f"  Validation (separate set, n={val['n_val_samples']})")
+            print(
+                f"    RMSE nominal:    {val['rmse_nominal']:.4f}    "
+                f"RMSE identified: {val['rmse_identified']:.4f}"
+            )
+            print(
+                f"    Improvement:     {val['improvement_pct']:.1f}%    "
+                f"Correlation:     {val['correlation']:.4f}"
+            )
+        else:
+            print("  Validation: no separate validation data provided.")
+            print(
+                "    Set validation_data_file in the identification config "
+                "to enable held-out FK/torque validation."
+            )
+
+        # ── Optional physical consistency / reconstruction ──
+        pc = result.get("physical consistency")
+        if pc is not None:
+            print("-" * 70)
+            print(f"  Physical consistency: {pc.get('status', 'unknown')}")
+        recon = result.get("reconstruction")
+        if recon is not None:
+            print("-" * 70)
+            print(f"  Full-parameter reconstruction: {recon.get('status', 'unknown')}")
+
+        print("=" * 70)
+
+    def export_html_report(
+        self, output_path: str = None, output_dir: str = "results"
+    ) -> str:
+        """Export the identification quality report as a self-contained
+        HTML file — the visual counterpart of :meth:`print_quality_report`.
+
+        Args:
+            output_path: Explicit output file path. If None, writes to
+                ``<output_dir>/identification_report.html``.
+            output_dir: Directory used when output_path is not given
+                (created if missing).
+
+        Returns:
+            The path the report was written to.
+
+        Raises:
+            AttributeError: If solve() has not been run yet.
+        """
+        if self.result is None:
+            raise AttributeError(
+                "No identification results available. Run solve() first."
+            )
+
+        from os import makedirs
+        from os.path import join
+
+        from figaroh.tools.identification_report import (
+            generate_identification_report,
+        )
+
+        if output_path is None:
+            makedirs(output_dir, exist_ok=True)
+            output_path = join(output_dir, "identification_report.html")
+
+        generate_identification_report(self, output_path=output_path)
+        logger.info(f"HTML quality report written to {output_path}")
+        return output_path
 
     def plot_results(self):
         """Plot identification results using unified results manager."""
