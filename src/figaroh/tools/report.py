@@ -29,6 +29,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from figaroh.tools._report_common import (
+    _SERIES_CHART_SCRIPT,
     _STYLE,
     UNCERTAINTY_CAUTION_PCT,
     UNCERTAINTY_WARN_PCT,
@@ -37,6 +38,7 @@ from figaroh.tools._report_common import (
     _esc,
     _insights_section,
     _param_uncertainty_section,
+    _series_panel_section,
     _uncertainty_tier,
 )
 
@@ -343,6 +345,7 @@ def generate_calibration_report(
 <meta charset="utf-8">
 <title>{_esc(report_title)}</title>
 <style>{_STYLE}</style>
+<script>{_SERIES_CHART_SCRIPT}</script>
 </head>
 <body>
 <div class="page">
@@ -367,6 +370,13 @@ def generate_calibration_report(
   <section>
     <h2>Validation</h2>
     <div class="card">{_validation_section(validation)}</div>
+  </section>
+
+  <section>
+    <h2>Before / after</h2>
+    <div class="card">{_series_panel_section(
+        validation, "calibration", "series-panel"
+    )}</div>
   </section>
 
   <section>

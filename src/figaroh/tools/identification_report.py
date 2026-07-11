@@ -37,12 +37,14 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from figaroh.tools._report_common import (
+    _SERIES_CHART_SCRIPT,
     _STYLE,
     UNCERTAINTY_WARN_PCT,
     VALIDATION_IMPROVEMENT_WARN_PCT,
     _esc,
     _insights_section,
     _param_uncertainty_section,
+    _series_panel_section,
 )
 
 CONDITION_ILL_THRESHOLD = 1000.0
@@ -361,6 +363,7 @@ def generate_identification_report(
 <meta charset="utf-8">
 <title>{_esc(report_title)}</title>
 <style>{_STYLE}</style>
+<script>{_SERIES_CHART_SCRIPT}</script>
 </head>
 <body>
 <div class="page">
@@ -385,6 +388,13 @@ def generate_identification_report(
   <section>
     <h2>Validation</h2>
     <div class="card">{_validation_section(validation)}</div>
+  </section>
+
+  <section>
+    <h2>Before / after</h2>
+    <div class="card">{_series_panel_section(
+        validation, "identification", "series-panel"
+    )}</div>
   </section>
 
   <section>

@@ -227,6 +227,80 @@ class TestGenerateCalibrationReport:
         doc = generate_calibration_report(calibrator)
         assert "No per-DOF residual data available" in doc
 
+    def test_before_after_series_unavailable_without_validation(self):
+        calibrator = FakeCalibrator(_base_eval(), _base_config())
+        doc = generate_calibration_report(calibrator)
+        assert "before/after series unavailable" in doc.lower()
+        assert "initSeriesPanel" not in doc.split("<script>")[0]
+
+    def test_renders_before_after_series_when_present(self):
+        results_data = {
+            "validation_metrics": {
+                "n_val_samples": 3,
+                "pos_rmse_nominal_mm": 12.3,
+                "pos_rmse_calibrated_mm": 0.7,
+                "pos_improvement_pct": 94.3,
+                "orient_rmse_nominal_deg": 2.1,
+                "orient_rmse_calibrated_deg": 0.02,
+                "orient_improvement_pct": 99.0,
+                "pos_max_nominal_mm": 20.0,
+                "pos_max_calibrated_mm": 2.0,
+                "orient_max_nominal_deg": 5.0,
+                "orient_max_calibrated_deg": 0.1,
+                "dof_names": ["X (mm)", "Y (mm)"],
+                "error_nominal_per_dof": {
+                    "X (mm)": [1.0, 2.0, 3.0], "Y (mm)": [4.0, 5.0, 6.0],
+                },
+                "error_fitted_per_dof": {
+                    "X (mm)": [0.1, 0.2, 0.3], "Y (mm)": [0.4, 0.5, 0.6],
+                },
+            }
+        }
+        calibrator = FakeCalibrator(
+            _base_eval(), _base_config(), results_data
+        )
+        doc = generate_calibration_report(calibrator)
+        assert "initSeriesPanel(" in doc
+        assert "function initSeriesPanel" in doc
+        assert "series-panel-select" in doc
+        assert '"names": ["X (mm)", "Y (mm)"]' in doc
+        assert "\"measured\": {\"X (mm)\": [0.0, 0.0, 0.0]" in doc
+        # Regression: the function definition must appear (in <head>)
+        # before the invocation further down the page — scripts execute
+        # in document order, so a call before its definition would throw
+        # ReferenceError in a real browser.
+        assert doc.index("function initSeriesPanel") < doc.index(
+            'initSeriesPanel("series-panel"'
+        )
+
+    def test_self_contained_html_check_survives_series_panel(self):
+        """The series panel's SVG-namespace string must not reintroduce
+        a literal external-request-looking substring."""
+        results_data = {
+            "validation_metrics": {
+                "n_val_samples": 1,
+                "pos_rmse_nominal_mm": 1.0,
+                "pos_rmse_calibrated_mm": 1.0,
+                "pos_improvement_pct": 1.0,
+                "orient_rmse_nominal_deg": 1.0,
+                "orient_rmse_calibrated_deg": 1.0,
+                "orient_improvement_pct": 1.0,
+                "pos_max_nominal_mm": 1.0,
+                "pos_max_calibrated_mm": 1.0,
+                "orient_max_nominal_deg": 1.0,
+                "orient_max_calibrated_deg": 1.0,
+                "dof_names": ["X (mm)"],
+                "error_nominal_per_dof": {"X (mm)": [1.0]},
+                "error_fitted_per_dof": {"X (mm)": [0.1]},
+            }
+        }
+        calibrator = FakeCalibrator(
+            _base_eval(), _base_config(), results_data
+        )
+        doc = generate_calibration_report(calibrator)
+        assert "http://" not in doc
+        assert "https://" not in doc
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

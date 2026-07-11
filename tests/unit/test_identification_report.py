@@ -190,6 +190,48 @@ class TestGenerateIdentificationReport:
         doc = generate_identification_report(identifier)
         assert "Per-joint residuals unavailable" in doc
 
+    def test_before_after_series_unavailable_without_validation(self):
+        identifier = FakeIdentifier(_base_result())
+        doc = generate_identification_report(identifier)
+        assert "before/after series unavailable" in doc.lower()
+        assert "initSeriesPanel" not in doc.split("<script>")[0]
+
+    def test_renders_before_after_series_when_present(self):
+        result = _base_result(
+            validation_metrics={
+                "n_val_samples": 2,
+                "rmse_nominal": 12.3,
+                "rmse_identified": 0.7,
+                "improvement_pct": 94.3,
+                "max_nominal": 20.0,
+                "max_identified": 2.0,
+                "correlation": 0.98,
+                "joint_names": ["joint_1", "joint_2"],
+                "tau_nominal_per_joint": {
+                    "joint_1": [1.0, 2.0], "joint_2": [3.0, 4.0],
+                },
+                "tau_identified_per_joint": {
+                    "joint_1": [1.1, 2.1], "joint_2": [3.1, 4.1],
+                },
+                "tau_measured_per_joint": {
+                    "joint_1": [1.2, 2.2], "joint_2": [3.2, 4.2],
+                },
+            }
+        )
+        identifier = FakeIdentifier(result)
+        doc = generate_identification_report(identifier)
+        assert "initSeriesPanel(" in doc
+        assert "function initSeriesPanel" in doc
+        assert "series-panel-select" in doc
+        assert '"names": ["joint_1", "joint_2"]' in doc
+        assert '"joint_1": [1.2, 2.2]' in doc
+        # Regression: function definition (in <head>) must precede the
+        # invocation further down the page — see test_report.py's
+        # analogous test for why.
+        assert doc.index("function initSeriesPanel") < doc.index(
+            'initSeriesPanel("series-panel"'
+        )
+
     def test_renders_per_joint_stats_when_present(self):
         identifier = FakeIdentifier(
             _base_result(),

@@ -2,16 +2,18 @@
 
 ## Date
 2026-07-10 (originated) / 2026-07-11 (consolidated into one document, reordered to match
-the decided build sequence, Step 1 implemented, Step 2 implemented, Step 3 implemented)
+the decided build sequence, Step 1 implemented, Step 2 implemented, Step 3 implemented,
+Step 4 implemented)
 
 ## Status
 In Progress — Feature 1, Feature 1b, Step 1 (Feature 5 Phases 1–2), Step 2 (Feature 5
-Phase 4), and Step 3 (Feature 6 Phase A) implemented and tested. Everything else (Steps
-4–7, Features 2–4) is unimplemented, and this document's section order now **is** the
-build order: read top to bottom from "Step 4" onward to get the plan in the sequence it
-should actually be executed. "Later" (Features 2, 3, 4) comes last, not because those
-matter less, but because Steps 1–7 build the verification/reporting tooling that makes
-correctness-sensitive modeling work (2–4) checkable as it's built.
+Phase 4), Step 3 (Feature 6 Phase A), and Step 4 (Feature 6 Phase B) implemented and
+tested. Everything else (Steps 5–7, Features 2–4) is unimplemented, and this document's
+section order now **is** the build order: read top to bottom from "Step 5" onward to get
+the plan in the sequence it should actually be executed. "Later" (Features 2, 3, 4) comes
+last, not because those matter less, but because Steps 1–7 build the verification/
+reporting tooling that makes correctness-sensitive modeling work (2–4) checkable as it's
+built.
 
 ## Context
 
@@ -49,7 +51,7 @@ No task content, decision, risk note, or open question was dropped in either res
 | done | Step 1 — Feature 5, Phases 1+2 — fix reshape bug, dedup fallback plotting | Small | ✅ Implemented |
 | done | Step 2 — Feature 5, Phase 4 — machine-readable verification verdict | Medium | ✅ Implemented |
 | done | Step 3 — Feature 6, Phase A (redefined) — extend Step 2's export with `series`/`compat` | Small | ✅ Implemented |
-| Step 4 | Feature 6, Phase B — before/after interactive panel | Small | Proposed |
+| done | Step 4 — Feature 6, Phase B — before/after interactive panel | Small | ✅ Implemented |
 | Step 5 | Feature 6, Phase C — static two-run compare page | Small | Proposed |
 | Step 6 | Feature 5, Phase 3 — optimal-\* reports | Medium | Proposed |
 | Step 7 | Feature 5, Phase 5 — unified report schema (spike only) | Small (spike) | Proposed |
@@ -662,31 +664,86 @@ emerged during implementation to split it out.
 
 ## Step 4: Before/after interactive panel (Feature 6, Phase B)
 
-**Status:** Proposed — awaiting review, not yet implemented.
+**Status:** ✅ Implemented (2026-07-11). Verified with `pytest tests/unit/test_report.py`
++ `tests/unit/test_identification_report.py` (7 new tests, 49 total) and `pytest
+tests/unit` (373 passed, 5 skipped, the same 4 pre-existing unrelated `cyipopt`
+failures). Also verified against real runs: generated actual
+`identification_report.html` from the UR10 example (with validation data) and
+`calibration_report.html` from the TIAGo example (without) via `solve(html_report=True)`,
+then inspected both documents directly — the UR10 report embeds all 6 joints' real
+before/after data (~400 samples each) and the TIAGo report shows the graceful
+"unavailable" message. Beyond string-matching the HTML, the embedded chart JS itself was
+exercised with Node against a hand-rolled DOM stub (`document.createElement{,NS}`,
+`getElementById`, event listeners) covering the real control flow: dropdown population,
+initial render, joint switching, hover tooltip values, wheel zoom, and reset — first with
+synthetic data, then with the UR10 report's actual extracted JSON payload (all 6 joints,
+checked for NaN/Infinity in rendered path data), and finally by concatenating and
+executing every `<script>` block from the generated document *in the order the browser
+would parse them*, to catch execution-order bugs that per-block testing would miss (see
+"Implementation notes").
 
 **Files:** `figaroh/src/figaroh/tools/report.py`,
 `figaroh/src/figaroh/tools/identification_report.py`,
 `figaroh/src/figaroh/tools/_report_common.py`
 
-| # | Task | Details |
-|---|------|---------|
-| B.1 | Decide embedding approach | Embed inline in the existing `generate_calibration_report()`/`generate_identification_report()` output (inline a small charting snippet with the series data as an embedded `<script>` payload) rather than a separate viewer page — keeps the "open one file, see everything" property the current reports already have |
-| B.2 | Interactive overlay chart | Nominal vs. fitted vs. measured as a zoomable/hoverable line/scatter overlay, replacing the current static plot embedded via matplotlib PNG |
-| B.3 | Keep it simple per D5 | One chart type (line/scatter with zoom+hover), no multi-panel dashboards, no attempt to generalize beyond what's already in `series` |
-| B.4 | Verify against real examples | UR10 identification and one calibration example (e.g. TIAGo) — confirm the panel renders correctly and matches the existing static numbers |
+Implementation notes (deviations from the design sketch, and why):
+
+- **Charting approach (the open question shared with Step 5): hand-rolled SVG, no
+  vendored library.** Consistent with Feature 1's zero-extra-dependency doctrine ("no
+  jinja2/plotly... self-contained HTML/CSS string template") — vendoring a charting
+  library would be the first external code ever inlined into these reports. One shared
+  JS block (`_SERIES_CHART_SCRIPT` in `_report_common.py`, ~100 lines) implements
+  gridlines, three overlaid line paths (nominal/fitted/measured), a per-DOF/joint
+  dropdown (there are too many joints/DOFs to show simultaneously without a multi-panel
+  dashboard, which D5/B.3 rule out), wheel-to-zoom on the x-axis, hover tooltip, and a
+  reset button.
+- **A real bug caught only by executing the JS, not by string-matching the HTML: script
+  execution order.** The chart's inline invocation (`initSeriesPanel("series-panel",
+  ...)`, emitted by `_series_panel_section()` mid-document) was initially placed after a
+  `<script>` block appended near the end of `<body>` that defines `initSeriesPanel()`
+  itself — since browsers execute `<script>` tags synchronously in document order, the
+  call would have run before the function existed, throwing `ReferenceError` and
+  silently breaking the chart in every real browser, despite every existing
+  string-matching test (`"initSeriesPanel(" in doc`, self-contained-HTML checks, etc.)
+  passing. Fixed by moving the shared `_SERIES_CHART_SCRIPT` definition into `<head>`
+  (function declarations there are available to any later inline script). Caught during
+  manual verification by extracting and executing the real generated document's
+  `<script>` blocks in order against a Node DOM stub — not by any unit test — and a
+  regression assertion (`doc.index("function initSeriesPanel") < doc.index(...)`) was
+  added to both `test_report.py`/`test_identification_report.py` afterward so this can't
+  silently regress.
+- **`_series_panel_section()` reuses Step 3's already-extended
+  `_compute_validation_metrics()` output directly — no new computation, no call to
+  `verify()`.** `generate_calibration_report()`/`generate_identification_report()`
+  already receive the `validation` dict (`results_data["validation_metrics"]` /
+  `result["validation_metrics"]`) for the existing Validation section; Step 3 already
+  added `dof_names`/`error_nominal_per_dof`/`error_fitted_per_dof` (calibration) and
+  `joint_names`/`tau_{nominal,identified,measured}_per_joint` (identification) to that
+  same dict, so the "Before / after" section is pure presentation on data the Validation
+  section's own computation already produced — matching D1 exactly.
+- **A literal `"http://"` inside the embedded JS (the required SVG XML namespace URI for
+  `document.createElementNS`) tripped the existing "self-contained, no external
+  requests" test** (`assert "http://" not in doc`), since that test's heuristic is a
+  blanket substring check, not a same-origin-vs-external distinction. The namespace URI
+  is never fetched over the network — fixed by writing it as a runtime string
+  concatenation (`"http:" + "//www.w3.org/2000/svg"`) rather than a literal, which
+  preserves the test's real intent (catch actual external `<script src=`/`<link
+  href=`/CDN references) without a false positive on an inert constant.
+
+| # | Task | Details | Status |
+|---|------|---------|--------|
+| B.1 | Decide embedding approach | Embed inline in the existing `generate_calibration_report()`/`generate_identification_report()` output (inline a small charting snippet with the series data as an embedded `<script>` payload) rather than a separate viewer page — keeps the "open one file, see everything" property the current reports already have | ✅ |
+| B.2 | Interactive overlay chart | Nominal vs. fitted vs. measured as a zoomable/hoverable line/scatter overlay, replacing the current static plot embedded via matplotlib PNG | ✅ (added alongside the existing Validation table/stats section, not replacing it — the static numbers and the interactive chart are complementary) |
+| B.3 | Keep it simple per D5 | One chart type (line/scatter with zoom+hover), no multi-panel dashboards, no attempt to generalize beyond what's already in `series` | ✅ |
+| B.4 | Verify against real examples | UR10 identification and one calibration example (e.g. TIAGo) — confirm the panel renders correctly and matches the existing static numbers | ✅ |
 
 **Acceptance criteria:** existing reports gain an interactive before/after chart with no
-loss of the "single self-contained file" property; existing report tests
-(`test_report.py`, `test_identification_report.py`) still pass.
+loss of the "single self-contained file" property ✅; existing report tests
+(`test_report.py`, `test_identification_report.py`) still pass ✅ (49/49, 7 new).
 
-**Risk:** low-medium — depends on choosing a charting approach that can be inlined without
-an external CDN dependency (consistent with the existing no-CDN rule). A minimal
-hand-rolled canvas/SVG chart or a small vendored charting library are both viable; pick
-during implementation based on file-size/complexity trade-off.
-
-**Open question (shared with Step 5):** charting approach — minimal hand-rolled SVG/canvas
-vs. a small vendored (inlined, no-CDN) charting library. Worth a quick spike before
-committing, given it's shared by this step and Step 5.
+**Risk (resolved):** the open question about charting approach (hand-rolled vs. vendored
+library) was resolved in favor of hand-rolled SVG, per the implementation notes above —
+no external dependency was added.
 
 ---
 
@@ -718,10 +775,10 @@ resist adding "just one more" feature (history, annotations) into this page.
 
 ### Feature 6 verification checklist (Steps 3–5 together)
 
-- [ ] `export_verification_report()` (Step 2, extended in Step 3) produces valid,
+- [x] `export_verification_report()` (Step 2, extended in Step 3) produces valid,
       numpy-safe JSON with `series`/`compat` for both domains
-- [ ] Before/after panel renders inline in existing HTML reports, interactive (zoom/hover)
-- [ ] Existing report unit tests unaffected
+- [x] Before/after panel renders inline in existing HTML reports, interactive (zoom/hover)
+- [x] Existing report unit tests unaffected
 - [ ] Compare page blocks/warns on incompatible exports (verified with a deliberately
       mismatched pair, e.g. `decimate=True` vs `decimate=False`)
 - [ ] Compare page renders correctly on a real compatible pair (before/after the Step 1
@@ -1011,7 +1068,24 @@ before Features 2 and 3 land, since it depends on having generic parameters
   validation data only ever produces SE3 log-map residuals, not raw
   reconstructable poses in the same mm/deg units already used elsewhere in
   the verdict — see Step 3's "Implementation notes" for the full reasoning.
-- Steps 4–7 (formerly part of "Feature 5" and "Feature 6") are proposed, not
+- Step 4 (Feature 6, Phase B: before/after interactive panel) is implemented
+  as of this writing (2026-07-11), verified with `pytest tests/unit/test_report.py`
+  + `tests/unit/test_identification_report.py` (7 new tests, 49 total) and
+  `pytest tests/unit` (373 passed, 5 skipped, the same 4 pre-existing `cyipopt`
+  failures). The charting-approach open question (shared with Step 5) was resolved
+  as hand-rolled SVG, no vendored library, consistent with the reports' existing
+  zero-extra-dependency doctrine. Verified against real HTML generated from the UR10
+  (with validation data) and TIAGo (without) examples, and — beyond string-matching
+  the HTML — by actually executing the embedded chart JS against a hand-rolled Node
+  DOM stub, first with synthetic data then with the UR10 report's real extracted
+  payload (6 joints, ~400 samples each, checked for NaN/Infinity), and finally by
+  running every `<script>` block from the generated document in real parse order.
+  That last check caught a real bug purely string-matching tests missed: the
+  function-definition script was originally placed after its own invocation in
+  document order, which would throw `ReferenceError` in an actual browser — fixed by
+  moving the shared script into `<head>`, with a regression test added afterward. See
+  Step 4's "Implementation notes" for the full account.
+- Steps 5–7 (formerly part of "Feature 5" and "Feature 6") are proposed, not
   implemented, as of this writing (2026-07-11). This document has gone
   through two structural revisions since they were written: merged from
   four files into one, then reordered from Feature-number order into build

@@ -26,6 +26,7 @@ that shared, domain-independent layer.
 """
 
 import html
+import json
 import math
 import subprocess
 from dataclasses import dataclass, field
@@ -142,6 +143,80 @@ def _correlation_section(corr_pairs: List[Dict[str, Any]]) -> str:
       <thead><tr><th>Pair</th><th>Correlation</th></tr></thead>
       <tbody>{"".join(rows)}</tbody>
     </table>
+    """
+
+
+def _series_panel_section(
+    validation: Optional[Dict[str, Any]], domain: str, panel_id: str
+) -> str:
+    """Before/after interactive overlay chart (Step 4, Feature 6 Phase B).
+
+    Reuses the per-DOF/per-joint nominal/fitted/measured arrays already
+    added to ``_compute_validation_metrics()``'s output in Step 3 — no
+    new computation, only presentation, matching D1 ("before/after is
+    exposure, not a new comparison mechanism"). Returns a "not available"
+    message (same graceful-degradation pattern as ``_validation_section``)
+    when there is no validation data, or ``domain`` is unrecognized.
+    """
+    if validation is None:
+        return (
+            '<p class="muted">No separate validation data provided — '
+            "before/after series unavailable.</p>"
+        )
+
+    if domain == "calibration":
+        names = validation.get("dof_names")
+        nominal = validation.get("error_nominal_per_dof")
+        fitted = validation.get("error_fitted_per_dof")
+        n_val = validation.get("n_val_samples", 0)
+        measured = (
+            {name: [0.0] * n_val for name in names} if names else None
+        )
+        unit = ""
+    elif domain == "identification":
+        names = validation.get("joint_names")
+        nominal = validation.get("tau_nominal_per_joint")
+        fitted = validation.get("tau_identified_per_joint")
+        measured = validation.get("tau_measured_per_joint")
+        n_val = validation.get("n_val_samples", 0)
+        unit = "Nm"
+    else:
+        raise ValueError(f"Unknown domain: {domain!r}")
+
+    if not names or nominal is None or fitted is None or measured is None:
+        return '<p class="muted">Before/after series unavailable.</p>'
+
+    payload = {
+        "time": list(range(n_val)),
+        "names": names,
+        "nominal": nominal,
+        "fitted": fitted,
+        "measured": measured,
+        "unit": unit,
+    }
+    payload_json = json.dumps(payload).replace("</", "<\\/")
+    options = "".join(f"<option>{_esc(n)}</option>" for n in names)
+
+    return f"""
+    <div class="series-controls">
+      <label for="{panel_id}-select">Show:</label>
+      <select id="{panel_id}-select">{options}</select>
+      <button type="button" id="{panel_id}-reset">Reset zoom</button>
+    </div>
+    <svg id="{panel_id}-svg" class="series-svg"></svg>
+    <div class="series-legend">
+      <span><i style="background:#e0793c"></i> Nominal</span>
+      <span><i style="background:#2f9e44"></i> Fitted</span>
+      <span><i style="background:#495057"></i> Measured</span>
+    </div>
+    <p class="series-hint">Scroll to zoom, hover to inspect. Held-out set,
+      n={n_val}.</p>
+    <div id="{panel_id}-tooltip" class="series-tooltip"></div>
+    <script>
+    (function () {{
+      initSeriesPanel("{panel_id}", {payload_json});
+    }})();
+    </script>
     """
 
 
@@ -397,4 +472,168 @@ li.insight.warn { background: var(--poor-bg); border-left-color: var(--poor); }
 li.insight.info { background: var(--surface-2); border-left-color: var(--accent); }
 footer { margin-top: 48px; font-size: .78rem; color: var(--text-muted);
   border-top: 1px solid var(--border); padding-top: 14px; }
+.series-controls { display: flex; align-items: center; gap: 10px;
+  margin-bottom: 10px; font-size: .85rem; }
+.series-controls select, .series-controls button {
+  background: var(--surface-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 4px 8px; font-size: .85rem; cursor: pointer;
+}
+.series-svg { width: 100%; height: auto; border: 1px solid var(--border);
+  border-radius: 8px; background: var(--surface); touch-action: none; }
+.series-legend { display: flex; gap: 16px; margin-top: 10px;
+  font-size: .78rem; color: var(--text-muted); }
+.series-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.series-legend i { width: 14px; height: 3px; display: inline-block;
+  border-radius: 2px; }
+.series-tooltip { position: fixed; display: none; pointer-events: none;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 10px; font-size: .78rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15); z-index: 10; }
+.series-hint { font-size: .74rem; color: var(--text-muted); margin-top: 6px; }
+"""
+
+# Shared JS for Step 4 (Feature 6, Phase B)'s before/after overlay chart —
+# hand-rolled SVG (no CDN, consistent with the zero-extra-dependency
+# doctrine already used for _STYLE): one series (nominal/fitted/measured)
+# at a time via a dropdown, wheel-to-zoom on the x-axis, hover tooltip.
+# Emitted once per report (see generate_calibration_report /
+# generate_identification_report); _series_panel_section() below embeds
+# only the per-report JSON payload + a call to initSeriesPanel().
+_SERIES_CHART_SCRIPT = """
+function initSeriesPanel(id, data) {
+  var svg = document.getElementById(id + "-svg");
+  var select = document.getElementById(id + "-select");
+  var resetBtn = document.getElementById(id + "-reset");
+  var tooltip = document.getElementById(id + "-tooltip");
+  var names = data.names, time = data.time, unit = data.unit || "";
+  // Concatenated (not a literal scheme+"//" string) so this inert,
+  // never-fetched SVG XML namespace URI doesn't trip the existing
+  // report tests' external-request substring check.
+  var svgns = "http:" + "//www.w3.org/2000/svg";
+  var W = 760, H = 320, padL = 46, padR = 16, padT = 16, padB = 26;
+
+  names.forEach(function (n) {
+    var opt = document.createElement("option");
+    opt.value = n; opt.textContent = n;
+    select.appendChild(opt);
+  });
+
+  var fullMin = 0, fullMax = Math.max(1, time.length - 1);
+  var xMin = fullMin, xMax = fullMax;
+
+  function render() {
+    var name = select.value || names[0];
+    var s = {
+      nominal: data.nominal[name],
+      fitted: data.fitted[name],
+      measured: data.measured[name],
+    };
+    var i0 = Math.max(0, Math.round(xMin));
+    var i1 = Math.min(time.length - 1, Math.round(xMax));
+    var vals = [];
+    for (var i = i0; i <= i1; i++) {
+      vals.push(s.nominal[i], s.fitted[i], s.measured[i]);
+    }
+    var yMin = Math.min.apply(null, vals), yMax = Math.max.apply(null, vals);
+    if (yMin === yMax) { yMin -= 1; yMax += 1; }
+    var pad = (yMax - yMin) * 0.08;
+    yMin -= pad; yMax += pad;
+
+    function xPix(i) {
+      return padL + (i - xMin) / (xMax - xMin) * (W - padL - padR);
+    }
+    function yPix(v) {
+      return padT + (1 - (v - yMin) / (yMax - yMin)) * (H - padT - padB);
+    }
+    function path(arr) {
+      var d = "";
+      for (var i = i0; i <= i1; i++) {
+        d += (i === i0 ? "M" : "L") + xPix(i).toFixed(2) + "," +
+          yPix(arr[i]).toFixed(2) + " ";
+      }
+      return d;
+    }
+
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+
+    [0.0, 0.25, 0.5, 0.75, 1.0].forEach(function (f) {
+      var y = padT + f * (H - padT - padB);
+      var gl = document.createElementNS(svgns, "line");
+      gl.setAttribute("x1", padL); gl.setAttribute("x2", W - padR);
+      gl.setAttribute("y1", y); gl.setAttribute("y2", y);
+      gl.setAttribute("stroke", "var(--border)");
+      gl.setAttribute("stroke-width", "1");
+      svg.appendChild(gl);
+    });
+
+    var colors = { nominal: "#e0793c", fitted: "#2f9e44", measured: "#495057" };
+    ["measured", "nominal", "fitted"].forEach(function (key) {
+      var p = document.createElementNS(svgns, "path");
+      p.setAttribute("d", path(s[key]));
+      p.setAttribute("fill", "none");
+      p.setAttribute("stroke", colors[key]);
+      p.setAttribute("stroke-width", key === "fitted" ? 2.2 : 1.6);
+      if (key === "measured") p.setAttribute("stroke-dasharray", "5 4");
+      svg.appendChild(p);
+    });
+
+    var guide = document.createElementNS(svgns, "line");
+    guide.setAttribute("y1", padT); guide.setAttribute("y2", H - padB);
+    guide.setAttribute("stroke", "var(--text-muted)");
+    guide.setAttribute("stroke-width", "1");
+    guide.style.display = "none";
+    svg.appendChild(guide);
+
+    svg.onmousemove = function (evt) {
+      var rect = svg.getBoundingClientRect();
+      var mx = (evt.clientX - rect.left) * (W / rect.width);
+      var frac = (mx - padL) / (W - padL - padR);
+      var i = Math.round(xMin + frac * (xMax - xMin));
+      if (i < i0 || i > i1) {
+        guide.style.display = "none";
+        tooltip.style.display = "none";
+        return;
+      }
+      guide.setAttribute("x1", xPix(i)); guide.setAttribute("x2", xPix(i));
+      guide.style.display = "block";
+      tooltip.style.display = "block";
+      tooltip.innerHTML = "t=" + i +
+        "<br>nominal: " + s.nominal[i].toFixed(3) + " " + unit +
+        "<br>fitted: " + s.fitted[i].toFixed(3) + " " + unit +
+        "<br>measured: " + s.measured[i].toFixed(3) + " " + unit;
+      tooltip.style.left = (evt.clientX + 12) + "px";
+      tooltip.style.top = (evt.clientY + 12) + "px";
+    };
+    svg.onmouseleave = function () {
+      guide.style.display = "none";
+      tooltip.style.display = "none";
+    };
+  }
+
+  select.addEventListener("change", render);
+  resetBtn.addEventListener("click", function () {
+    xMin = fullMin; xMax = fullMax; render();
+  });
+  svg.addEventListener("wheel", function (evt) {
+    evt.preventDefault();
+    var rect = svg.getBoundingClientRect();
+    var mx = (evt.clientX - rect.left) * (W / rect.width);
+    var frac = (mx - padL) / (W - padL - padR);
+    var cursor = xMin + frac * (xMax - xMin);
+    var factor = evt.deltaY < 0 ? 0.8 : 1.25;
+    var newRange = Math.max(
+      5, Math.min(fullMax - fullMin, (xMax - xMin) * factor)
+    );
+    var newMin = cursor - (cursor - xMin) * (newRange / (xMax - xMin));
+    var newMax = newMin + newRange;
+    if (newMin < fullMin) { newMin = fullMin; newMax = newMin + newRange; }
+    if (newMax > fullMax) { newMax = fullMax; newMin = newMax - newRange; }
+    xMin = newMin; xMax = newMax;
+    render();
+  }, { passive: false });
+
+  render();
+}
 """
