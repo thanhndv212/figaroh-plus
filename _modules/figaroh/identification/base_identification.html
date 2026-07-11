@@ -243,6 +243,7 @@
         <span class="n">plotting</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">save_results</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">html_report</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">wls</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Main solving method for dynamic parameter identification.</span>
 
@@ -259,6 +260,12 @@
 <span class="sd">            html_report (bool): If True, also export an HTML diagnostic</span>
 <span class="sd">                report (see :meth:`export_html_report`) after the terminal</span>
 <span class="sd">                quality report is printed.</span>
+<span class="sd">            wls (bool): If True, refine the OLS base-parameter estimate with</span>
+<span class="sd">                iteratively-weighted least squares (Gautier, 1997) before</span>
+<span class="sd">                computing quality metrics — see</span>
+<span class="sd">                :meth:`_apply_weighted_least_squares`. Relative standard</span>
+<span class="sd">                deviations from the WLS fit are stored under</span>
+<span class="sd">                ``self.result[&quot;wls_std_deviations&quot;]``.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            ndarray: Base parameters phi_base</span>
@@ -295,9 +302,20 @@
             <span class="n">tau_processed</span><span class="p">,</span> <span class="n">W_processed</span><span class="p">,</span> <span class="n">active_params</span>
         <span class="p">)</span>
 
+        <span class="c1"># Step 3b: Optional weighted least squares refinement</span>
+        <span class="n">wls_std</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">wls</span><span class="p">:</span>
+            <span class="n">phi_wls</span><span class="p">,</span> <span class="n">wls_std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_weighted_least_squares</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">phi_base</span> <span class="o">=</span> <span class="n">phi_wls</span>
+            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;phi_base&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">phi_wls</span>
+            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;tau_estimated&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_regressor_base</span> <span class="o">@</span> <span class="n">phi_wls</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tau_identif</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;tau_estimated&quot;</span><span class="p">]</span>
+
         <span class="c1"># Step 4: Store results and compute quality metrics</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_compute_quality_metrics</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_store_results</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">wls_std</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;wls_std_deviations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">wls_std</span>
 
         <span class="c1"># Print quality report</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">print_quality_report</span><span class="p">()</span>
@@ -1244,6 +1262,119 @@
             <span class="s2">&quot;M&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_M_matrix</span><span class="p">,</span>
             <span class="s2">&quot;params_r&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params_r_for_recon</span><span class="p">,</span>
         <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_apply_weighted_least_squares</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Refine base parameters via iteratively-weighted least squares.</span>
+
+<span class="sd">        Re-solves the base-parameter regression using inverse joint-residual-</span>
+<span class="sd">        variance weighting (Gautier, 1997), starting from the OLS estimate</span>
+<span class="sd">        already stored in ``self.phi_base``. Robot-agnostic: relies only on</span>
+<span class="sd">        ``self.dynamic_regressor_base``, ``self.tau_noised``, and</span>
+<span class="sd">        ``self.model.nv``, all of which are set the same way by every</span>
+<span class="sd">        ``BaseIdentification`` subclass.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: (phi_wls, std_wls) — refined base parameters and their</span>
+<span class="sd">            relative standard deviations (%). Does not mutate ``self.result``;</span>
+<span class="sd">            the caller is responsible for storing these.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">W_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_regressor_base</span>
+        <span class="n">tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_noised</span>
+        <span class="n">nv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nv</span>
+
+        <span class="n">sig_ro_joint</span><span class="p">,</span> <span class="n">diag_SIGMA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_joint_variances</span><span class="p">(</span><span class="n">W_b</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">nv</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_joint_variances</span> <span class="o">=</span> <span class="n">sig_ro_joint</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_weighted_least_squares</span><span class="p">(</span><span class="n">W_b</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">diag_SIGMA</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_joint_variances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W_b</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">nv</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate joint-wise residual variances efficiently.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            W_b: Base regressor matrix</span>
+<span class="sd">            tau: Torque vector (flattened, stacked per joint)</span>
+<span class="sd">            nv: Number of velocity variables (joints)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: (joint_variances, diagonal_covariance)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">row_size</span> <span class="o">=</span> <span class="n">tau</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">W_b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">row_size</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Dimension mismatch: regressor has </span><span class="si">{</span><span class="n">W_b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> rows, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;but torque has </span><span class="si">{</span><span class="n">row_size</span><span class="si">}</span><span class="s2"> elements&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">samples_per_joint</span> <span class="o">=</span> <span class="n">row_size</span> <span class="o">//</span> <span class="n">nv</span>
+
+        <span class="n">sig_ro_joint</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nv</span><span class="p">)</span>
+        <span class="n">diag_SIGMA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">row_size</span><span class="p">)</span>
+
+        <span class="n">tau_pred_full</span> <span class="o">=</span> <span class="n">W_b</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi_base</span>
+        <span class="n">residuals</span> <span class="o">=</span> <span class="n">tau</span> <span class="o">-</span> <span class="n">tau_pred_full</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nv</span><span class="p">):</span>
+            <span class="n">start_idx</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">samples_per_joint</span>
+            <span class="n">end_idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">samples_per_joint</span>
+            <span class="k">if</span> <span class="n">end_idx</span> <span class="o">&gt;</span> <span class="n">row_size</span><span class="p">:</span>
+                <span class="n">end_idx</span> <span class="o">=</span> <span class="n">row_size</span>
+
+            <span class="n">residuals_joint</span> <span class="o">=</span> <span class="n">residuals</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">residuals_joint</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">sig_ro_joint</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residuals_joint</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sig_ro_joint</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e-6</span>
+
+            <span class="n">diag_SIGMA</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">sig_ro_joint</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">sig_ro_joint</span><span class="p">,</span> <span class="n">diag_SIGMA</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_solve_weighted_least_squares</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W_b</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">diag_SIGMA</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Solve the weighted least squares problem.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            W_b: Base regressor matrix</span>
+<span class="sd">            tau: Torque vector</span>
+<span class="sd">            diag_SIGMA: Diagonal covariance matrix values</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: (phi_wls, std_wls) — WLS parameter estimates and their</span>
+<span class="sd">            relative standard deviations (%).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">diag_SIGMA</span> <span class="o">+</span> <span class="mf">1e-12</span><span class="p">)</span>
+        <span class="n">W_sqrt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">weights</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+
+        <span class="n">W_weighted</span> <span class="o">=</span> <span class="n">W_b</span> <span class="o">*</span> <span class="n">W_sqrt</span>
+        <span class="n">tau_weighted</span> <span class="o">=</span> <span class="n">tau</span> <span class="o">*</span> <span class="n">W_sqrt</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+        <span class="n">WTW</span> <span class="o">=</span> <span class="n">W_weighted</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">W_weighted</span>
+        <span class="n">WTtau</span> <span class="o">=</span> <span class="n">W_weighted</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">tau_weighted</span>
+
+        <span class="n">C_X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">WTW</span><span class="p">)</span>
+        <span class="n">phi_wls</span> <span class="o">=</span> <span class="n">C_X</span> <span class="o">@</span> <span class="n">WTtau</span>
+        <span class="n">phi_wls</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">phi_wls</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+
+        <span class="n">std_wls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_wls_standard_deviations</span><span class="p">(</span><span class="n">C_X</span><span class="p">,</span> <span class="n">phi_wls</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">phi_wls</span><span class="p">,</span> <span class="n">std_wls</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_wls_standard_deviations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">C_X</span><span class="p">,</span> <span class="n">phi_wls</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute weighted least squares standard deviations efficiently.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            C_X: Covariance matrix</span>
+<span class="sd">            phi_wls: WLS parameter estimates</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ndarray: Relative standard deviations as percentages</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">C_X</span><span class="p">)</span>
+        <span class="n">std_deviations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">variances</span><span class="p">)</span>
+        <span class="n">relative_std</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">std_deviations</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">phi_wls</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">relative_std</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_compute_quality_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute quality metrics for the identification.</span>
