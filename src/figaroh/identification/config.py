@@ -262,6 +262,9 @@ def _extract_problem_config(identif_config, problem):
     )
     identif_config["has_joint_offset"] = model_components.get("joint_offset", True)
 
+    # Solver: weighted least squares refinement (see BaseIdentification.solve)
+    identif_config["wls"] = problem.get("wls", False)
+
 
 def _extract_mechanical_params(identif_config, mechanics):
     """Extract mechanical parameters (friction, inertia, ratios).
