@@ -1269,31 +1269,43 @@
 <span class="sd">        Re-solves the base-parameter regression using inverse joint-residual-</span>
 <span class="sd">        variance weighting (Gautier, 1997), starting from the OLS estimate</span>
 <span class="sd">        already stored in ``self.phi_base``. Robot-agnostic: relies only on</span>
-<span class="sd">        ``self.dynamic_regressor_base``, ``self.tau_noised``, and</span>
-<span class="sd">        ``self.model.nv``, all of which are set the same way by every</span>
-<span class="sd">        ``BaseIdentification`` subclass.</span>
+<span class="sd">        ``self.dynamic_regressor_base``, ``self.tau_noised``, and the active</span>
+<span class="sd">        joint count (``self.identif_config[&quot;act_idxv&quot;]``), all of which are</span>
+<span class="sd">        set the same way by every ``BaseIdentification`` subclass.</span>
+
+<span class="sd">        Note: the row-block count here must be the number of *identified*</span>
+<span class="sd">        joints (``len(act_idxv)``), not ``self.model.nv`` — the two only</span>
+<span class="sd">        coincide for robots where every model joint is identified (e.g. a</span>
+<span class="sd">        bare 6-DOF arm). For a subset-identified robot like a mobile</span>
+<span class="sd">        manipulator, ``model.nv`` includes joints the regressor never</span>
+<span class="sd">        stacked rows for, which misaligns the per-joint residual slicing</span>
+<span class="sd">        entirely.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple: (phi_wls, std_wls) — refined base parameters and their</span>
-<span class="sd">            relative standard deviations (%). Does not mutate ``self.result``;</span>
-<span class="sd">            the caller is responsible for storing these.</span>
+<span class="sd">            relative standard deviations (%). Does not mutate</span>
+<span class="sd">            ``self.result``; the caller is responsible for storing these.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">W_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_regressor_base</span>
         <span class="n">tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_noised</span>
-        <span class="n">nv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nv</span>
+        <span class="n">n_active</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;act_idxv&quot;</span><span class="p">])</span>
 
-        <span class="n">sig_ro_joint</span><span class="p">,</span> <span class="n">diag_SIGMA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_joint_variances</span><span class="p">(</span><span class="n">W_b</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">nv</span><span class="p">)</span>
+        <span class="n">sig_ro_joint</span><span class="p">,</span> <span class="n">diag_SIGMA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_joint_variances</span><span class="p">(</span><span class="n">W_b</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">n_active</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_joint_variances</span> <span class="o">=</span> <span class="n">sig_ro_joint</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_weighted_least_squares</span><span class="p">(</span><span class="n">W_b</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">diag_SIGMA</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_joint_variances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W_b</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">nv</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_joint_variances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W_b</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">n_active</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate joint-wise residual variances efficiently.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            W_b: Base regressor matrix</span>
 <span class="sd">            tau: Torque vector (flattened, stacked per joint)</span>
-<span class="sd">            nv: Number of velocity variables (joints)</span>
+<span class="sd">            n_active: Number of identified (active) joints — the regressor</span>
+<span class="sd">                stacks exactly this many equal-sized row blocks, one per</span>
+<span class="sd">                active joint. Not necessarily ``self.model.nv``: a</span>
+<span class="sd">                subset-identified robot has fewer active joints than total</span>
+<span class="sd">                model DOF.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple: (joint_variances, diagonal_covariance)</span>
@@ -1306,15 +1318,15 @@
                 <span class="sa">f</span><span class="s2">&quot;but torque has </span><span class="si">{</span><span class="n">row_size</span><span class="si">}</span><span class="s2"> elements&quot;</span>
             <span class="p">)</span>
 
-        <span class="n">samples_per_joint</span> <span class="o">=</span> <span class="n">row_size</span> <span class="o">//</span> <span class="n">nv</span>
+        <span class="n">samples_per_joint</span> <span class="o">=</span> <span class="n">row_size</span> <span class="o">//</span> <span class="n">n_active</span>
 
-        <span class="n">sig_ro_joint</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nv</span><span class="p">)</span>
+        <span class="n">sig_ro_joint</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_active</span><span class="p">)</span>
         <span class="n">diag_SIGMA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">row_size</span><span class="p">)</span>
 
         <span class="n">tau_pred_full</span> <span class="o">=</span> <span class="n">W_b</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi_base</span>
         <span class="n">residuals</span> <span class="o">=</span> <span class="n">tau</span> <span class="o">-</span> <span class="n">tau_pred_full</span>
 
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nv</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_active</span><span class="p">):</span>
             <span class="n">start_idx</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">samples_per_joint</span>
             <span class="n">end_idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">samples_per_joint</span>
             <span class="k">if</span> <span class="n">end_idx</span> <span class="o">&gt;</span> <span class="n">row_size</span><span class="p">:</span>
