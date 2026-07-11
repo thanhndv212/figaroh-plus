@@ -22,5 +22,6 @@ from . import robotcollisions
 from . import robotipopt
 from . import urdf_exporter
 from . import export_validation
+from . import report
 
 __all__ = []

@@ -224,6 +224,7 @@ class BaseCalibration(ABC):
         enable_logging=True,
         plotting=False,
         save_results=False,
+        html_report=False,
     ):
         """Execute the complete calibration process.
 
@@ -236,6 +237,11 @@ class BaseCalibration(ABC):
         workflow, delegating the actual optimization to solve_optimisation()
         and handling visualization based on user preferences.
 
+        Args:
+            html_report: If True, also export an HTML diagnostic report
+                (see :meth:`export_html_report`) after the terminal
+                quality report is printed.
+
         Side Effects:
             - Updates calibration parameters through optimization
             - Sets self.STATUS to "CALIBRATED" on successful completion
@@ -244,6 +250,7 @@ class BaseCalibration(ABC):
         See Also:
             solve_optimisation: Core optimization implementation
             plot: Visualization and analysis plotting
+            export_html_report: Visual counterpart of the terminal report
         """
         result, outlier_indices = self.solve_optimisation(
             method=method,
@@ -277,6 +284,8 @@ class BaseCalibration(ABC):
             self.plot_results()
         if save_results:
             self.save_results()
+        if html_report:
+            self.export_html_report()
         return result
 
     def plot_results(self):
@@ -1615,6 +1624,46 @@ class BaseCalibration(ABC):
             except Exception as e:
                 logger.error(f"Error saving with ResultsManager: {e}")
                 logger.info("Falling back to basic saving...")
+
+    def export_html_report(
+        self, output_path: str = None, output_dir: str = "results"
+    ) -> str:
+        """Export the calibration quality report as a self-contained HTML
+        file — the visual counterpart of :meth:`print_quality_report`.
+
+        Renders the same metrics (convergence, per-DOF residuals,
+        parameter uncertainty, correlation, validation) already computed
+        during :meth:`solve`, plus an auto-generated "insights" section
+        flagging ill-conditioning, poorly identified parameters, and
+        strongly correlated pairs.
+
+        Args:
+            output_path: Explicit file path for the report. If omitted,
+                defaults to ``{output_dir}/calibration_report.html``.
+            output_dir: Directory used when ``output_path`` is omitted.
+
+        Returns:
+            str: The path the report was written to.
+
+        Raises:
+            AttributeError: If called before :meth:`solve`.
+        """
+        if not hasattr(self, "evaluation_metrics"):
+            raise AttributeError(
+                "No calibration results available. Run solve() first."
+            )
+
+        from os import makedirs
+        from os.path import join
+        from figaroh.tools.report import generate_calibration_report
+
+        if output_path is None:
+            makedirs(output_dir, exist_ok=True)
+            output_path = join(output_dir, "calibration_report.html")
+
+        generate_calibration_report(self, output_path=output_path)
+        logger.info(f"HTML quality report written to {output_path}")
+        return output_path
 
     def print_quality_report(self):
         """Print a formatted calibration quality report to the terminal.
