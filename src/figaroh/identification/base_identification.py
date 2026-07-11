@@ -1143,31 +1143,43 @@ class BaseIdentification(ABC):
         Re-solves the base-parameter regression using inverse joint-residual-
         variance weighting (Gautier, 1997), starting from the OLS estimate
         already stored in ``self.phi_base``. Robot-agnostic: relies only on
-        ``self.dynamic_regressor_base``, ``self.tau_noised``, and
-        ``self.model.nv``, all of which are set the same way by every
-        ``BaseIdentification`` subclass.
+        ``self.dynamic_regressor_base``, ``self.tau_noised``, and the active
+        joint count (``self.identif_config["act_idxv"]``), all of which are
+        set the same way by every ``BaseIdentification`` subclass.
+
+        Note: the row-block count here must be the number of *identified*
+        joints (``len(act_idxv)``), not ``self.model.nv`` — the two only
+        coincide for robots where every model joint is identified (e.g. a
+        bare 6-DOF arm). For a subset-identified robot like a mobile
+        manipulator, ``model.nv`` includes joints the regressor never
+        stacked rows for, which misaligns the per-joint residual slicing
+        entirely.
 
         Returns:
             tuple: (phi_wls, std_wls) — refined base parameters and their
-            relative standard deviations (%). Does not mutate ``self.result``;
-            the caller is responsible for storing these.
+            relative standard deviations (%). Does not mutate
+            ``self.result``; the caller is responsible for storing these.
         """
         W_b = self.dynamic_regressor_base
         tau = self.tau_noised
-        nv = self.model.nv
+        n_active = len(self.identif_config["act_idxv"])
 
-        sig_ro_joint, diag_SIGMA = self._calculate_joint_variances(W_b, tau, nv)
+        sig_ro_joint, diag_SIGMA = self._calculate_joint_variances(W_b, tau, n_active)
         self._joint_variances = sig_ro_joint
 
         return self._solve_weighted_least_squares(W_b, tau, diag_SIGMA)
 
-    def _calculate_joint_variances(self, W_b, tau, nv):
+    def _calculate_joint_variances(self, W_b, tau, n_active):
         """Calculate joint-wise residual variances efficiently.
 
         Args:
             W_b: Base regressor matrix
             tau: Torque vector (flattened, stacked per joint)
-            nv: Number of velocity variables (joints)
+            n_active: Number of identified (active) joints — the regressor
+                stacks exactly this many equal-sized row blocks, one per
+                active joint. Not necessarily ``self.model.nv``: a
+                subset-identified robot has fewer active joints than total
+                model DOF.
 
         Returns:
             tuple: (joint_variances, diagonal_covariance)
@@ -1180,15 +1192,15 @@ class BaseIdentification(ABC):
                 f"but torque has {row_size} elements"
             )
 
-        samples_per_joint = row_size // nv
+        samples_per_joint = row_size // n_active
 
-        sig_ro_joint = np.zeros(nv)
+        sig_ro_joint = np.zeros(n_active)
         diag_SIGMA = np.zeros(row_size)
 
         tau_pred_full = W_b @ self.phi_base
         residuals = tau - tau_pred_full
 
-        for i in range(nv):
+        for i in range(n_active):
             start_idx = i * samples_per_joint
             end_idx = (i + 1) * samples_per_joint
             if end_idx > row_size:
