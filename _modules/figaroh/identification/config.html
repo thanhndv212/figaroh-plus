@@ -356,6 +356,9 @@
     <span class="p">)</span>
     <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;has_joint_offset&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_components</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;joint_offset&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
+    <span class="c1"># Solver: weighted least squares refinement (see BaseIdentification.solve)</span>
+    <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;wls&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;wls&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_extract_mechanical_params</span><span class="p">(</span><span class="n">identif_config</span><span class="p">,</span> <span class="n">mechanics</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract mechanical parameters (friction, inertia, ratios).</span>
