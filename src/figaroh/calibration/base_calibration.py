@@ -51,6 +51,7 @@ import pinocchio as pin
 
 # Import from shared modules
 from figaroh.utils.error_handling import CalibrationError, handle_calibration_errors
+from figaroh.utils.results_manager import plot_with_fallback
 
 # Setup logger for this module
 logger = logging.getLogger(__name__)
@@ -314,25 +315,26 @@ class BaseCalibration(ABC):
             plot_3d_poses: 3D pose comparison visualization
         """
 
-        # Use pre-initialized results manager if available
-        if hasattr(self, "results_manager") and self.results_manager is not None:
+        def _basic_plots():
             try:
-                # Plot using unified manager with self.result data
-                self.results_manager.plot_calibration_results()
-                return
-
+                self.plot_errors_distribution()
+                self.plot_3d_poses()
+                # self.plot_joint_configurations()
+                plt.show()
             except Exception as e:
-                logger.error(f"Error plotting with ResultsManager: {e}")
-                logger.info("Falling back to basic plotting...")
+                logger.warning(f"Plotting failed: {e}")
 
-        # Fallback to basic plotting if ResultsManager not available
-        try:
-            self.plot_errors_distribution()
-            self.plot_3d_poses()
-            # self.plot_joint_configurations()
-            plt.show()
-        except Exception as e:
-            logger.warning(f"Plotting failed: {e}")
+        # Use pre-initialized results manager if available, else go straight
+        # to the basic-plotting fallback.
+        if hasattr(self, "results_manager") and self.results_manager is not None:
+            plot_with_fallback(
+                lambda: self.results_manager.plot_calibration_results(),
+                _basic_plots,
+                logger,
+                "calibration",
+            )
+        else:
+            _basic_plots()
 
     def load_param(self, config_file: str, setting_type: str = "calibration"):
         """Load calibration parameters from YAML configuration file.

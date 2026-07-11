@@ -49,6 +49,7 @@ from figaroh.tools.robotipopt import (
 from figaroh.optimal.config import load_param
 from figaroh.optimal.base_parameter import BaseParameterComputer
 from figaroh.optimal.contraints import TrajectoryConstraintManager
+from figaroh.utils.results_manager import ResultsManager, plot_with_fallback
 
 
 class BaseOptimalTrajectory:
@@ -370,36 +371,7 @@ class BaseOptimalTrajectory:
             self.logger.warning("No trajectory data to plot")
             return
 
-        try:
-            from .results_manager import ResultsManager
-
-            # Initialize results manager
-            robot_name = getattr(self, "robot_name", self.robot.model.name)
-            results_manager = ResultsManager("optimal_trajectory", robot_name)
-
-            # Calculate overall condition number
-            condition_number = getattr(self, "final_condition_number", 0.0)
-            if (
-                condition_number == 0.0
-                and hasattr(self, "results")
-                and "condition_numbers" in self.results
-            ):
-                condition_number = (
-                    self.results["condition_numbers"][-1]
-                    if self.results["condition_numbers"]
-                    else 0.0
-                )
-
-            # Plot using unified manager
-            results_manager.plot_optimal_trajectory_results(
-                trajectories=self.results,
-                condition_number=condition_number,
-                joint_names=[f"Joint {i+1}" for i in range(len(self.CB.act_Jid))],
-                title="Optimal Trajectory Generation Results",
-            )
-
-        except ImportError:
-            # Fallback to existing plotting
+        def _basic_plots():
             try:
                 # Create subplots
                 n_joints = len(self.CB.act_Jid)
@@ -465,6 +437,34 @@ class BaseOptimalTrajectory:
             except Exception as e:
                 self.logger.error(f"Error plotting results: {e}")
 
+        def _managed_plot():
+            robot_name = getattr(self, "robot_name", self.robot.model.name)
+            results_manager = ResultsManager("optimal_trajectory", robot_name)
+
+            # Calculate overall condition number
+            condition_number = getattr(self, "final_condition_number", 0.0)
+            if (
+                condition_number == 0.0
+                and hasattr(self, "results")
+                and "condition_numbers" in self.results
+            ):
+                condition_number = (
+                    self.results["condition_numbers"][-1]
+                    if self.results["condition_numbers"]
+                    else 0.0
+                )
+
+            results_manager.plot_optimal_trajectory_results(
+                trajectories=self.results,
+                condition_number=condition_number,
+                joint_names=[f"Joint {i+1}" for i in range(len(self.CB.act_Jid))],
+                title="Optimal Trajectory Generation Results",
+            )
+
+        plot_with_fallback(
+            _managed_plot, _basic_plots, self.logger, "optimal_trajectory"
+        )
+
     def save_results(self, output_dir="results"):
         """Save optimal trajectory results using unified results manager."""
         if not self.results["T_F"]:
@@ -472,8 +472,6 @@ class BaseOptimalTrajectory:
             return
 
         try:
-            from .results_manager import ResultsManager
-
             # Initialize results manager
             robot_name = getattr(self, "robot_name", self.robot.model.name)
             results_manager = ResultsManager("optimal_trajectory", robot_name)

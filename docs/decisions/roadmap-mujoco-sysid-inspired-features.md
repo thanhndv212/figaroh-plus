@@ -1,16 +1,16 @@
 # Roadmap: FIGAROH Quality & Reporting Infrastructure
 
 ## Date
-2026-07-10 (originated) / 2026-07-11 (consolidated into one document, then reordered to
-match the decided build sequence)
+2026-07-10 (originated) / 2026-07-11 (consolidated into one document, reordered to match
+the decided build sequence, Step 1 implemented)
 
 ## Status
-In Progress — Feature 1 and Feature 1b implemented and tested. Everything else (Features
-2–6) is unimplemented, and this document's section order now **is** the build order: read
-top to bottom from "Step 1" onward to get the plan in the sequence it should actually be
-executed. "Later" (Features 2, 3, 4) comes last, not because those matter less, but because
-Steps 1–7 build the verification/reporting tooling that makes correctness-sensitive
-modeling work (2–4) checkable as it's built.
+In Progress — Feature 1, Feature 1b, and Step 1 (Feature 5 Phases 1–2) implemented and
+tested. Everything else (Steps 2–7, Features 2–4) is unimplemented, and this document's
+section order now **is** the build order: read top to bottom from "Step 2" onward to get
+the plan in the sequence it should actually be executed. "Later" (Features 2, 3, 4) comes
+last, not because those matter less, but because Steps 1–7 build the verification/reporting
+tooling that makes correctness-sensitive modeling work (2–4) checkable as it's built.
 
 ## Context
 
@@ -45,7 +45,7 @@ No task content, decision, risk note, or open question was dropped in either res
 |---|---|---|---|
 | done | Feature 1 — HTML diagnostic report (calibration) | Small | ✅ Implemented |
 | done | Feature 1b — Terminal + HTML quality report for `BaseIdentification` | Small–Medium | ✅ Implemented |
-| Step 1 | Feature 5, Phases 1+2 — fix reshape bug, dedup fallback plotting | Small | Proposed |
+| done | Step 1 — Feature 5, Phases 1+2 — fix reshape bug, dedup fallback plotting | Small | ✅ Implemented |
 | Step 2 | Feature 5, Phase 4 — machine-readable verification verdict | Medium | Proposed |
 | Step 3 | Feature 6, Phase A (redefined) — extend Step 2's export with `series`/`compat` | Small | Proposed |
 | Step 4 | Feature 6, Phase B — before/after interactive panel | Small | Proposed |
@@ -238,7 +238,18 @@ In `figaroh-examples`: `examples/{ur10,tiago,staubli_tx40}/utils/*_tools.py`
 
 ## Step 1: Fix the reshape bug and dedup fallback plotting (Feature 5, Phases 1–2)
 
-**Status:** Proposed — awaiting review, not yet implemented.
+**Status:** ✅ Implemented (2026-07-11). Verified with
+`pytest tests/unit/test_results_manager.py` (6 new tests) and
+`pytest tests/unit` (333 passed, 5 skipped — the 4 pre-existing `test_robotipopt.py`
+failures are an unrelated missing `cyipopt` dependency, confirmed present before this
+work started too). Also verified against real runs: UR10 identification
+(`decimate=False`) via `UR10Identification.plot_results()` directly (no manual
+per-joint workaround) now produces 12 correctly-labeled lines (6 joints ×
+measured/identified) instead of one mislabeled "Joint 1" trace; TIAGo calibration
+via `TiagoCalibration.plot_results()` still produces its plot unchanged.
+
+Implementation notes (see also "Findings" below for one correction to this section's
+original plan):
 
 **Why first:** small, low-risk, fixes things already confirmed broken/duplicated, zero
 dependencies. Also unblocks Step 3 (Feature 6 Phase A), which reuses the same joint-major
@@ -328,23 +339,22 @@ Step 7's schema spike. See Step 6 for why.
 **Files:** `figaroh/src/figaroh/utils/results_manager.py`,
 `figaroh/src/figaroh/identification/base_identification.py`
 
-| # | Task | Details |
-|---|------|---------|
-| P1.1 | Add explicit shape info to the plot call | `plot_identification_results()` gains a required `n_joints: int` param (or derives it from a now-required `joint_names` list — pick one during implementation) |
-| P1.2 | Fix the reshape | Replace `tau.reshape(-1, 1)` with `tau.reshape(n_joints, -1).T` when the input is 1D — matches the joint-major convention already used in `_compute_per_joint_stats()` (`base_identification.py`) |
-| P1.3 | Thread `joint_names` through | `_plot_torque_comparison`/`_plot_torque_residuals` already accept `joint_names` — verify they render one legend entry per joint instead of one "Joint 1" for the whole array once P1.2 lands |
-| P1.4 | Update call site | `BaseIdentification.plot_results()` passes `n_joints=len(self.identif_config["act_idxv"])`, `joint_names=self.identif_config.get("active_joints")` |
-| P1.5 | Regression test | New test in `tests/unit/test_results_manager.py` (new file): synthetic joint-major flattened array with known per-joint values; assert each subplot's y-data equals the correct joint's slice, not the concatenated whole |
-| P1.6 | Manual verification | Re-run the UR10 identification example; `ur10_identif.plot_results()` (no manual workaround) should reproduce the correctly-per-joint-labeled plot |
+| # | Task | Details | Status |
+|---|------|---------|--------|
+| P1.1 | Add explicit shape info to the plot call | `plot_identification_results()` gains optional `n_joints: int` and `joint_names` params, both defaulting to `None`/looked up from `self.result` | ✅ |
+| P1.2 | Fix the reshape | Replace `tau.reshape(-1, 1)` with `tau.reshape(n_joints, -1).T` when the input is 1D **and** `n_joints` is given; falls back to the old `reshape(-1, 1)` only when `n_joints` is not provided (rather than guessing) — matches the joint-major convention already used in `_compute_per_joint_stats()` (`base_identification.py`) | ✅ |
+| P1.3 | Thread `joint_names` through | `_plot_torque_comparison`/`_plot_torque_residuals` already accept `joint_names` — confirmed they render one legend entry per joint once P1.2 lands | ✅ |
+| P1.4 | Update call site | `BaseIdentification.plot_results()` passes `n_joints=len(self.identif_config["act_idxv"])`, `joint_names=self.identif_config.get("active_joints")` | ✅ |
+| P1.5 | Regression test | `tests/unit/test_results_manager.py` (new file): synthetic joint-major flattened array with known per-joint values; asserts each line's y-data equals the correct joint's slice, plus a no-`n_joints` fallback case and a 2D-input-unaffected case | ✅ |
+| P1.6 | Manual verification | Re-ran the UR10 identification example (`decimate=False`); `ur10_identif.plot_results()` (no manual workaround) now produces 12 lines (6 joints × measured/identified), each correctly labeled by joint name | ✅ |
 
 **Acceptance criteria:** `plot_results()` on a multi-joint identification produces one
 correctly-labeled subplot/trace per joint; existing calibration plotting (already 2D,
 unaffected by this bug) has zero behavior change; `tests/unit` still green.
 
 **Risk:** low — the function's current behavior is already wrong, so any caller relying on
-the old output was relying on a bug. Grep for other callers of
-`plot_identification_results` before changing its signature (currently none outside
-`BaseIdentification.plot_results()`, per repo search — reconfirm at implementation time).
+the old output was relying on a bug. Confirmed the only caller of
+`plot_identification_results` outside its own module is `BaseIdentification.plot_results()`.
 
 ### Phase 2: Deduplicate the fallback-plotting block
 
@@ -354,18 +364,31 @@ the old output was relying on a bug. Grep for other callers of
 `figaroh/src/figaroh/optimal/base_optimal_calibration.py`,
 `figaroh/src/figaroh/optimal/base_optimal_trajectory.py`
 
-| # | Task | Details |
-|---|------|---------|
-| P2.1 | Add `plot_with_fallback()` helper | In `utils/results_manager.py`: `def plot_with_fallback(primary: Callable[[], None], fallback: Callable[[], None], logger, context: str) -> None` — calls `primary()`, on exception logs and calls `fallback()` |
-| P2.2 | Refactor `BaseCalibration.plot_results()` | Replace inline try/except with `plot_with_fallback(lambda: self.results_manager.plot_calibration_results(), lambda: <existing fallback body>, logger, "calibration")` |
-| P2.3 | Refactor `BaseIdentification.plot_results()` | Same pattern |
-| P2.4 | Refactor `BaseOptimalCalibration.plot_results()`/`.plot()` | Same pattern (two methods currently — confirm during implementation whether both need it or `.plot()` is dead code) |
-| P2.5 | Refactor `BaseOptimalTrajectory.plot_results()` | Same pattern |
-| P2.6 | Unit test | `tests/unit/test_results_manager.py`: fallback triggers when primary raises; primary's return value used when it succeeds; no double-plotting |
+| # | Task | Details | Status |
+|---|------|---------|--------|
+| P2.1 | Add `plot_with_fallback()` helper | In `utils/results_manager.py`: `def plot_with_fallback(primary: Callable[[], None], fallback: Callable[[], None], logger, context: str) -> None` — calls `primary()`, on exception logs and calls `fallback()` | ✅ |
+| P2.2 | Refactor `BaseCalibration.plot_results()` | Replaced inline try/except with `plot_with_fallback(lambda: self.results_manager.plot_calibration_results(), _basic_plots, logger, "calibration")` | ✅ |
+| P2.3 | Refactor `BaseIdentification.plot_results()` | Same pattern; the managed-plot lambda now also passes `n_joints`/`joint_names` per Phase 1 | ✅ |
+| P2.4 | Refactor `BaseOptimalCalibration.plot_results()`/`.plot()` | **Confirmed:** two genuinely different methods, not dead code — `.plot()` (D-optimality-ratio/weight plots, no `ResultsManager`) is what `solve()` actually calls; `plot_results()` (the `ResultsManager` + fallback pattern) has no callers anywhere in `figaroh`/`figaroh-examples` today but is public API. Only `plot_results()` matches the pattern being deduped, so only it was refactored; `.plot()` was left untouched (out of scope — it doesn't use `ResultsManager` at all) | ✅ |
+| P2.5 | Refactor `BaseOptimalTrajectory.plot_results()` | Same pattern | ✅ |
+| P2.6 | Unit test | `tests/unit/test_results_manager.py`: fallback triggers when primary raises; primary's return value used when it succeeds (fallback not called); no double-plotting | ✅ |
 
 **Acceptance criteria:** all four `plot_results()` methods behaviorally unchanged (same
 plots produced, same fallback-on-error behavior), each now ~5 lines instead of ~15;
 duplicated try/except block count goes from 4 to 0.
+
+**Finding (worth keeping):** `base_optimal_calibration.py` and `base_optimal_trajectory.py`
+originally caught only `ImportError` around their `ResultsManager` call (so an internal
+exception thrown *inside* `plot_optimal_calibration_results()`/`plot_optimal_trajectory_results()`
+— e.g. from a bad argument — would propagate uncaught), while `base_calibration.py` and
+`base_identification.py` caught broad `Exception` (so an internal error there safely falls
+back). Routing all four through the same `plot_with_fallback()` helper (which always
+catches `Exception`) fixes this inconsistency as a side effect of the dedup — the two
+optimal-\* classes are now as robust to an internal plotting error as the other two,
+matching the spirit of "four near-identical blocks" this step set out to unify. Also
+removed two now-redundant inline `from .results_manager import ResultsManager` imports in
+`BaseOptimalCalibration.save_results()`/`BaseOptimalTrajectory.save_results()` that would
+otherwise shadow (and lint-flag, `F811`) the new module-level import.
 
 **Risk:** low — pure refactor, no behavior change intended. Verify via before/after manual
 run on one calibration and one identification example.
@@ -848,7 +871,28 @@ before Features 2 and 3 land, since it depends on having generic parameters
   A third bug (`calculate_first_second_order_differentiation()`'s
   `range(nq - 1)` loop silently zeroing the last joint's acceleration) was
   found but deliberately left unfixed — see "Findings" under Feature 1b.
-- Steps 1–7 (formerly "Feature 5" and "Feature 6") are proposed, not
+- Step 1 (Feature 5, Phases 1–2: reshape-bug fix + fallback-plotting dedup) is
+  implemented as of this writing (2026-07-11), verified with
+  `pytest tests/unit/test_results_manager.py` (6 new tests, all passing) and
+  `pytest tests/unit` (333 passed, 5 skipped, 4 pre-existing unrelated
+  `cyipopt`-dependency failures in `test_robotipopt.py`). Verified against real
+  runs of both `figaroh-examples/examples/ur10/identification.py`'s
+  `UR10Identification.plot_results()` (now produces 12 correctly-labeled lines
+  instead of one mislabeled "Joint 1" trace) and
+  `figaroh-examples/examples/tiago/calibration.py`'s
+  `TiagoCalibration.plot_results()` (unchanged output, confirming the dedup
+  refactor is behavior-preserving there). One correction to the original plan
+  surfaced during implementation: `BaseOptimalCalibration` really does have two
+  distinct methods (`.plot()`, called by `solve()`, not using `ResultsManager`
+  at all; `plot_results()`, unused by any caller today but public API, using
+  the `ResultsManager`+fallback pattern) — only `plot_results()` was in scope
+  for the dedup. See Step 1's Phase 2 "Finding" for a second fix that fell out
+  of the dedup: two of the four classes previously caught only `ImportError`
+  around their `ResultsManager` call (not `Exception`), so an internal
+  plotting error there would have propagated instead of falling back; routing
+  all four through the shared `plot_with_fallback()` helper fixed this
+  inconsistency too.
+- Steps 2–7 (formerly "Feature 5" and "Feature 6") are proposed, not
   implemented, as of this writing (2026-07-11). This document has gone
   through two structural revisions since they were written: merged from
   four files into one, then reordered from Feature-number order into build

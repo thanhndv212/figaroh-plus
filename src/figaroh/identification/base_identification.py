@@ -50,6 +50,7 @@ from figaroh.identification.parameter import (
     add_custom_parameters,
 )
 from figaroh.tools.solver import LinearSolver
+from figaroh.utils.results_manager import plot_with_fallback
 
 
 class BaseIdentification(ABC):
@@ -1679,62 +1680,68 @@ class BaseIdentification(ABC):
             logger.warning("No identification results to plot. Run solve() first.")
             return
 
-        # Use pre-initialized results manager if available
-        if hasattr(self, "results_manager") and self.results_manager is not None:
+        def _basic_plots():
             try:
-                # Plot using unified manager with self.result data
-                self.results_manager.plot_identification_results()
-                return
+                import matplotlib.pyplot as plt
 
-            except Exception as e:
-                logger.error(f"Error plotting with ResultsManager: {e}")
-                logger.info("Falling back to basic plotting...")
-
-        # Fallback to basic plotting if ResultsManager not available
-        try:
-            import matplotlib.pyplot as plt
-
-            # Extract data from self.result dictionary
-            tau_measured = self.result.get("torque processed", np.array([]))
-            tau_identified = self.result.get("torque estimated", np.array([]))
-            parameter_values = self.result.get("base parameters values", np.array([]))
-
-            if len(tau_measured) == 0 or len(tau_identified) == 0:
-                logger.warning("No torque data available for plotting")
-                return
-
-            plt.figure(figsize=(12, 8))
-
-            plt.subplot(2, 1, 1)
-            plt.plot(tau_measured, label="Measured (with noise)", alpha=0.7)
-            plt.plot(tau_identified, label="Identified", alpha=0.7)
-            plt.xlabel("Sample")
-            plt.ylabel("Torque (Nm)")
-            plt.title(f"{self.__class__.__name__} Torque Comparison")
-            plt.legend()
-            plt.grid(True, alpha=0.3)
-
-            plt.subplot(2, 1, 2)
-            if len(parameter_values) > 0:
-                plt.bar(
-                    range(len(parameter_values)),
-                    parameter_values,
-                    alpha=0.7,
-                    label="Base Parameters",
+                # Extract data from self.result dictionary
+                tau_measured = self.result.get("torque processed", np.array([]))
+                tau_identified = self.result.get("torque estimated", np.array([]))
+                parameter_values = self.result.get(
+                    "base parameters values", np.array([])
                 )
-                plt.xlabel("Parameter Index")
-                plt.ylabel("Parameter Value")
-                plt.title("Identified Base Parameters")
+
+                if len(tau_measured) == 0 or len(tau_identified) == 0:
+                    logger.warning("No torque data available for plotting")
+                    return
+
+                plt.figure(figsize=(12, 8))
+
+                plt.subplot(2, 1, 1)
+                plt.plot(tau_measured, label="Measured (with noise)", alpha=0.7)
+                plt.plot(tau_identified, label="Identified", alpha=0.7)
+                plt.xlabel("Sample")
+                plt.ylabel("Torque (Nm)")
+                plt.title(f"{self.__class__.__name__} Torque Comparison")
                 plt.legend()
                 plt.grid(True, alpha=0.3)
 
-            plt.tight_layout()
-            plt.show()
+                plt.subplot(2, 1, 2)
+                if len(parameter_values) > 0:
+                    plt.bar(
+                        range(len(parameter_values)),
+                        parameter_values,
+                        alpha=0.7,
+                        label="Base Parameters",
+                    )
+                    plt.xlabel("Parameter Index")
+                    plt.ylabel("Parameter Value")
+                    plt.title("Identified Base Parameters")
+                    plt.legend()
+                    plt.grid(True, alpha=0.3)
 
-        except ImportError:
-            logger.warning("matplotlib not available for plotting")
-        except Exception as e:
-            logger.warning(f"Plotting failed: {e}")
+                plt.tight_layout()
+                plt.show()
+
+            except ImportError:
+                logger.warning("matplotlib not available for plotting")
+            except Exception as e:
+                logger.warning(f"Plotting failed: {e}")
+
+        # Use pre-initialized results manager if available, else go straight
+        # to the basic-plotting fallback.
+        if hasattr(self, "results_manager") and self.results_manager is not None:
+            plot_with_fallback(
+                lambda: self.results_manager.plot_identification_results(
+                    n_joints=len(self.identif_config["act_idxv"]),
+                    joint_names=self.identif_config.get("active_joints"),
+                ),
+                _basic_plots,
+                logger,
+                "identification",
+            )
+        else:
+            _basic_plots()
 
     def save_results(self, output_dir="results"):
         """Save identification results using unified results manager."""

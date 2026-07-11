@@ -49,6 +49,7 @@ from figaroh.utils.config_parser import (
 from figaroh.utils.error_handling import (
     CalibrationError,
 )
+from figaroh.utils.results_manager import ResultsManager, plot_with_fallback
 
 
 class BaseOptimalCalibration(ABC):
@@ -722,31 +723,7 @@ class BaseOptimalCalibration(ABC):
             )
             return
 
-        try:
-            from .results_manager import ResultsManager
-
-            # Initialize results manager
-            robot_name = self.calib_config.get("robot_name", self.model.name)
-            results_manager = ResultsManager("optimal_calibration", robot_name)
-
-            # Prepare data for plotting
-            weights = (
-                np.array(list(self.w_dict_sort.values()))
-                if hasattr(self, "w_dict_sort")
-                else np.array([])
-            )
-
-            # Plot using unified manager
-            results_manager.plot_optimal_calibration_results(
-                configurations=self.optimal_configurations,
-                weights=weights,
-                title="Optimal Calibration Configuration Results",
-            )
-
-        except ImportError:
-            # Fallback to existing plotting
-            import matplotlib.pyplot as plt
-
+        def _basic_plots():
             fig, ax = plt.subplots(1, 2, figsize=(14, 6))
 
             ax[0].bar(
@@ -770,6 +747,22 @@ class BaseOptimalCalibration(ABC):
             ax[1].grid(True, linestyle="--")
             plt.show()
 
+        def _managed_plot():
+            robot_name = self.calib_config.get("robot_name", self.model.name)
+            results_manager = ResultsManager("optimal_calibration", robot_name)
+            weights = (
+                np.array(list(self.w_dict_sort.values()))
+                if hasattr(self, "w_dict_sort")
+                else np.array([])
+            )
+            results_manager.plot_optimal_calibration_results(
+                configurations=self.optimal_configurations,
+                weights=weights,
+                title="Optimal Calibration Configuration Results",
+            )
+
+        plot_with_fallback(_managed_plot, _basic_plots, logger, "optimal_calibration")
+
     def save_results(self, output_dir="results"):
         """Save optimal configuration results using unified results manager."""
         if (
@@ -782,8 +775,6 @@ class BaseOptimalCalibration(ABC):
             return
 
         try:
-            from .results_manager import ResultsManager
-
             # Initialize results manager
             robot_name = self.calib_config.get("robot_name", self.model.name)
             results_manager = ResultsManager("optimal_calibration", robot_name)
