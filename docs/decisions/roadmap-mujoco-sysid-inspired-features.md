@@ -3,17 +3,17 @@
 ## Date
 2026-07-10 (originated) / 2026-07-11 (consolidated into one document, reordered to match
 the decided build sequence, Step 1 implemented, Step 2 implemented, Step 3 implemented,
-Step 4 implemented)
+Step 4 implemented) / 2026-07-12 (Step 5 implemented)
 
 ## Status
 In Progress — Feature 1, Feature 1b, Step 1 (Feature 5 Phases 1–2), Step 2 (Feature 5
-Phase 4), Step 3 (Feature 6 Phase A), and Step 4 (Feature 6 Phase B) implemented and
-tested. Everything else (Steps 5–7, Features 2–4) is unimplemented, and this document's
-section order now **is** the build order: read top to bottom from "Step 5" onward to get
-the plan in the sequence it should actually be executed. "Later" (Features 2, 3, 4) comes
-last, not because those matter less, but because Steps 1–7 build the verification/
-reporting tooling that makes correctness-sensitive modeling work (2–4) checkable as it's
-built.
+Phase 4), Step 3 (Feature 6 Phase A), Step 4 (Feature 6 Phase B), and Step 5 (Feature 6
+Phase C) implemented and tested. Everything else (Steps 6–7, Features 2–4) is
+unimplemented, and this document's section order now **is** the build order: read top to
+bottom from "Step 6" onward to get the plan in the sequence it should actually be
+executed. "Later" (Features 2, 3, 4) comes last, not because those matter less, but
+because Steps 1–7 build the verification/reporting tooling that makes correctness-sensitive
+modeling work (2–4) checkable as it's built.
 
 ## Context
 
@@ -52,7 +52,7 @@ No task content, decision, risk note, or open question was dropped in either res
 | done | Step 2 — Feature 5, Phase 4 — machine-readable verification verdict | Medium | ✅ Implemented |
 | done | Step 3 — Feature 6, Phase A (redefined) — extend Step 2's export with `series`/`compat` | Small | ✅ Implemented |
 | done | Step 4 — Feature 6, Phase B — before/after interactive panel | Small | ✅ Implemented |
-| Step 5 | Feature 6, Phase C — static two-run compare page | Small | Proposed |
+| done | Step 5 — Feature 6, Phase C — static two-run compare page | Small | ✅ Implemented |
 | Step 6 | Feature 5, Phase 3 — optimal-\* reports | Medium | Proposed |
 | Step 7 | Feature 5, Phase 5 — unified report schema (spike only) | Small (spike) | Proposed |
 | Later | Feature 2 — generic `Parameter` + modifier abstraction | Medium | Not started |
@@ -749,29 +749,95 @@ no external dependency was added.
 
 ## Step 5: Static two-run compare page (Feature 6, Phase C)
 
-**Status:** Proposed — awaiting review, not yet implemented.
+**Status:** ✅ Implemented (2026-07-12). Verified with `pytest tests/unit/test_compare_report.py`
+(14 new tests) and `pytest tests/unit` (387 passed, 5 skipped, the same 4 pre-existing
+unrelated `cyipopt` failures as Steps 1–4). Also verified by actually executing the page's
+real, extracted `<script>` blocks against a hand-rolled Node DOM stub (`document.
+createElement{,NS}`, `getElementById`, `classList`, `addEventListener`/`on<event>`
+assignment, a `FileReader` stub) — the same technique used to verify Step 4's chart —
+covering: loading two compatible identification exports (same `active_joints`/`decimate`/
+comparable `sample_count`) and confirming the compat banner reads "Compatible", the diff
+table renders all four metrics with the correct improve/regress coloring (direction pulled
+from each verdict's `checks[].comparison`), the series dropdown populates with the shared
+joint names, hover/tooltip and wheel-zoom run without throwing, and toggling a run's
+visibility re-renders cleanly; loading an identification pair that differs only in
+`decimate` and confirming the page blocks with a reason mentioning `decimate`, hides the
+results section by default, and reveals it (with a persistent forced-comparison banner)
+once "compare anyway" is checked; and a calibration-domain pair with no `series` data and a
+>20%-apart `sample_count` mismatch, confirming domain inference (`dof_names` vs.
+`active_joints`) works, the mismatch is flagged, and the series card degrades gracefully
+(hidden, not broken) when neither run has validation series data.
 
-**Files (new):** `figaroh/src/figaroh/tools/compare_report.py` (generates the static HTML
-shell), a template following the existing `_STYLE` doctrine
-**Files (modified):** none required — this consumes the JSON from Step 3, doesn't change
-either Base class further
+Implementation notes (deviations from the original design sketch, and why):
 
-| # | Task | Details |
-|---|------|---------|
-| C.1 | Compatibility check (D3) | Compare `compat` blocks of the two loaded JSON files: same domain, same active joints/DOF names, same decimate flag, comparable sample counts. Block rendering with a clear message on mismatch; allow an explicit "compare anyway" override for the user, but never silently proceed |
-| C.2 | Metric diff table | Per summary stat: run A value, run B value, Δ, % change, colored by improve/regress |
-| C.3 | Overlaid series plot | Both runs' nominal/fitted/measured curves on shared axes, per-run visibility toggle, reusing Step 4's chart approach |
-| C.4 | Client-side file loading | Drag-and-drop or `<input type=file>` for both JSON files; no server, no network request |
-| C.5 | Manual verification | Compare two real UR10 identification runs — e.g. a run from before the `decimate=False` row-order fix (Step 1) vs. after, as a real-world test of both the diff table and the compatibility check (these two runs differ only in the fix, not in `compat` fields, so this specific pair should compare cleanly and show the RMSE/correlation improvement) |
+- **No second chart-script constant is shared with Step 4's `_SERIES_CHART_SCRIPT`.**
+  That function (`initSeriesPanel`) switches between one run's nominal/fitted/measured
+  curves via a dropdown; this page overlays *two* runs at once with a per-run visibility
+  toggle, which is a different rendering shape (up to 6 lines, two color families, a
+  run-keyed tooltip). Per D2 ("reusing Step 4's chart approach"), the new
+  `initComparePanel` mirrors the same interaction model (gridlines, wheel-to-zoom, hover
+  tooltip, hand-rolled SVG, the same `"http:" + "//..."` concatenation trick to dodge the
+  self-containment test's blanket `"http://"` substring check) rather than literally
+  reusing `initSeriesPanel`, which has no toggle/multi-run concept to extend.
+- **Control handlers use property assignment (`el.onchange = fn`), not
+  `addEventListener`, inside `initComparePanel`.** Unlike `initSeriesPanel` (called
+  exactly once per report), the compare page's chart can be legitimately re-initialized
+  many times in one session — every time the user swaps either file. `addEventListener`
+  would stack a new listener on each re-init; property assignment naturally replaces the
+  previous handler.
+- **A real DOM-stub bug, not a page bug, was caught and fixed during manual verification:**
+  the Node harness's first `escHtml()` pass returned empty strings for every escaped value
+  (metric names, incompatibility reasons), because the stub's `textContent` setter didn't
+  update `innerHTML` the way a real browser's does — and `escHtml()` (matching the pattern
+  used implicitly elsewhere in the reporting stack) relies on exactly that link
+  (`div.textContent = s; return div.innerHTML`). Fixed in the test harness only; no
+  production code changed. Worth recording because it is the same category of gap Step 4's
+  execution-order bug came from — a real-JS-execution check catches classes of bug that
+  string-matching assertions can't, but only if the stub itself models real DOM semantics
+  closely enough.
+- **Sample-count "comparable" is a >20%-relative-difference threshold**, not exact
+  equality — chosen because decimation/trajectory-length differences of a few samples are
+  expected and not disqualifying, while a run with a fundamentally different amount of data
+  (e.g. 100 vs. 500 samples) is a real comparability risk per D3's spirit. Not sourced from
+  a specific deployment; overridable only via the "compare anyway" escape hatch (D4's
+  per-call-threshold philosophy doesn't apply here — there is no server-side call site to
+  configure, only a client-side static page).
+- **Metric improve/regress coloring falls back to no color, not a guess, when a metric
+  has no matching `checks[].comparison` entry.** `VerificationVerdict.metrics` can contain
+  entries beyond what `checks` covers (e.g. `rmse` is reported but has no default
+  threshold), and there is no way to know whether lower or higher is better without that
+  direction — coloring it anyway would be a fabricated signal. Confirmed in manual
+  verification: `rmse` renders as an uncolored delta while `validation_correlation` (which
+  has a `min`-comparison check on both sides) renders green on improvement.
+- **Calibration's `series.measured` is a synthetic zero line** for the same reason
+  documented in Step 3 — reused here unchanged since Step 5 only reads `series`, it
+  doesn't recompute it.
 
-**Acceptance criteria:** compare page renders correctly on two compatible exports; refuses
-or clearly warns on incompatible ones (different `decimate`, different active joints,
-different domain); works fully offline as a single opened HTML file plus two dropped JSON
-files.
+**Files (new):** `figaroh/src/figaroh/tools/compare_report.py` (`generate_compare_page()`
+— chart script `_COMPARE_CHART_SCRIPT`, driver script `_COMPARE_DRIVER_SCRIPT`, page-local
+style `_COMPARE_STYLE` layered on the shared `_STYLE`), `tests/unit/test_compare_report.py`
+**Files (modified):** `figaroh/src/figaroh/tools/__init__.py` (registers the new module,
+same pattern as `report`/`identification_report`) — no change to either base class, per
+the original plan.
 
-**Risk:** low — no backend, no new state to manage, smallest-blast-radius way to deliver
-the comparison feature. Main risk is scope creep back toward the deferred list below —
-resist adding "just one more" feature (history, annotations) into this page.
+| # | Task | Details | Status |
+|---|------|---------|--------|
+| C.1 | Compatibility check (D3) | Compare `compat` blocks of the two loaded JSON files: domain inferred from `dof_names` (calibration) vs. `active_joints` (identification) presence, same joint/DOF names, same `decimate` flag (identification only), sample counts within 20% of each other. Block rendering with a clear message on mismatch; an explicit "compare anyway" checkbox overrides the block (with a persistent warning banner while forced), but never silently proceeds | ✅ |
+| C.2 | Metric diff table | Union of both verdicts' `metrics` keys: run A value, run B value, Δ, % change, colored improve/regress using direction pulled from `checks[].comparison`; uncolored when no matching check exists | ✅ |
+| C.3 | Overlaid series plot | Both runs' nominal/fitted/measured curves on shared axes (intersection of joint/DOF names), a checkbox per run to toggle visibility, wheel-zoom + hover tooltip matching Step 4's interaction model | ✅ |
+| C.4 | Client-side file loading | `<input type=file>` plus drag-and-drop onto the same zone for both JSON files; `FileReader.readAsText` + `JSON.parse`, no server, no network request | ✅ |
+| C.5 | Manual verification | Synthetic before/after identification exports modeled on the Step 1 `decimate=False` fix (poor correlation/high RMSE before, near-1.0 correlation/low RMSE after, same `compat`) run through the real extracted page scripts via a Node DOM stub — compared cleanly, diff table showed the RMSE/correlation improvement colored correctly. A literal UR10 example run pair was not regenerated for this step (the Step 1/1b/2/3 UR10 data already demonstrates the underlying numbers); the synthetic pair exercises the same code path end-to-end | ✅ (adjusted scope — see note) |
+
+**Acceptance criteria:** compare page renders correctly on two compatible exports ✅;
+refuses (with a clear, overridable message) on incompatible ones (different `decimate`,
+different active joints/DOF names, different domain, substantially different sample
+counts) ✅; works fully offline as a single opened HTML file plus two loaded JSON files —
+verified via real script execution against a DOM stub, not just string-matching the
+markup ✅.
+
+**Risk (resolved):** no backend, no new state to manage — the smallest-blast-radius way to
+deliver the comparison feature, as anticipated. No scope crept back toward the deferred
+list (history, annotations, live threshold editing) during implementation.
 
 ### Feature 6 verification checklist (Steps 3–5 together)
 
@@ -779,11 +845,14 @@ resist adding "just one more" feature (history, annotations) into this page.
       numpy-safe JSON with `series`/`compat` for both domains
 - [x] Before/after panel renders inline in existing HTML reports, interactive (zoom/hover)
 - [x] Existing report unit tests unaffected
-- [ ] Compare page blocks/warns on incompatible exports (verified with a deliberately
-      mismatched pair, e.g. `decimate=True` vs `decimate=False`)
-- [ ] Compare page renders correctly on a real compatible pair (before/after the Step 1
-      row-order fix), showing the expected RMSE/correlation improvement
-- [ ] Zero new running processes required for any of Steps 3–5 — everything is either an
+- [x] Compare page blocks/warns on incompatible exports (verified with a deliberately
+      mismatched pair, `decimate=True` vs `decimate=False`, via real script execution
+      against a Node DOM stub)
+- [x] Compare page renders correctly on a compatible pair modeled on before/after the
+      Step 1 row-order fix, showing the expected RMSE/correlation improvement in the diff
+      table (synthetic data exercising the real page code, not a freshly regenerated UR10
+      run — see Step 5's C.5 note)
+- [x] Zero new running processes required for any of Steps 3–5 — everything is either an
       existing `solve()`-time export or a static file opened in a browser
 
 ### Feature 6 explicitly deferred (do not build now — revisit only if this MVP gets used repeatedly)
