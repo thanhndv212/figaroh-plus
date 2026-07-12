@@ -4,7 +4,7 @@
 <p align="center">
   <a href="https://www.apache.org/licenses/LICENSE-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"/></a>
   <a href="https://pypi.org/project/figaroh/"><img src="https://badge.fury.io/py/figaroh.svg" alt="PyPI version" height="20"/></a>
-  <a href="https://deepwiki.com/thanhndv212/figaroh-plus"><img src="https://img.shields.io/badge/docs-online-brightgreen" alt="Documentation"/></a>
+  <a href="https://thanhndv212.github.io/figaroh-plus/"><img src="https://img.shields.io/badge/docs-online-brightgreen" alt="Documentation"/></a>
   <a href="https://deepwiki.com/thanhndv212/figaroh-plus"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"/></a>
 </p>
 

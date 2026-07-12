@@ -64,10 +64,12 @@ dev = [
     "mypy",
     "pre-commit",
 ]
+# Keep in sync with docs/requirements.txt (the docs CI installs that file).
 docs = [
-    "sphinx",
-    "sphinx-rtd-theme",
-    "sphinx-autodoc-typehints",
+    "mkdocs>=1.6",
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.25",
+    "mkdocs-include-markdown-plugin>=6.0",
 ]
 examples = [
     "jupyter",
