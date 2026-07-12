@@ -241,6 +241,7 @@
 
     <span class="c1"># 1. Extract basic robot information</span>
     <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;robot_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">identif_config</span><span class="p">[</span><span class="s2">&quot;instance&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">unified_identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;instance&quot;</span><span class="p">,</span> <span class="p">{})</span>
 
     <span class="c1"># 2. Extract signal processing parameters</span>
     <span class="n">_extract_signal_processing_params</span><span class="p">(</span><span class="n">identif_config</span><span class="p">,</span> <span class="n">signal_processing</span><span class="p">)</span>

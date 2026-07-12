@@ -115,6 +115,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">os.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">abspath</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timezone</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">least_squares</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span>
@@ -348,6 +349,7 @@
 <span class="sd">            plot: Visualization and analysis plotting</span>
 <span class="sd">            export_html_report: Visual counterpart of the terminal report</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run_started_at</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
         <span class="n">result</span><span class="p">,</span> <span class="n">outlier_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solve_optimisation</span><span class="p">(</span>
             <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
             <span class="n">max_iterations</span><span class="o">=</span><span class="n">max_iterations</span><span class="p">,</span>
@@ -357,6 +359,7 @@
 
         <span class="c1"># Evaluate solution</span>
         <span class="n">evaluation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_solution</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">outlier_indices</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run_finished_at</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
 
         <span class="c1"># Log final results</span>
         <span class="k">if</span> <span class="n">enable_logging</span><span class="p">:</span>
@@ -1442,6 +1445,14 @@
         <span class="k">if</span> <span class="n">val_metrics</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;validation_metrics&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_metrics</span>
 
+        <span class="c1"># Provenance snapshot — nominal model, config, software, data,</span>
+        <span class="c1"># timestamps — consumed identically by print_quality_report,</span>
+        <span class="c1"># export_html_report, verify(), and archive_run() so they can</span>
+        <span class="c1"># never disagree about what produced this result.</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.provenance</span><span class="w"> </span><span class="kn">import</span> <span class="n">collect_run_provenance</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run_provenance</span> <span class="o">=</span> <span class="n">collect_run_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;calibration&quot;</span><span class="p">)</span>
+
         <span class="c1"># Initialize ResultsManager for calibration task</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.utils.results_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultsManager</span>
@@ -1867,10 +1878,10 @@
 
         <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools._report_common</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
             <span class="n">CALIBRATION_DEFAULT_THRESHOLDS</span><span class="p">,</span>
-            <span class="n">build_provenance_metadata</span><span class="p">,</span>
             <span class="n">evaluate_thresholds</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.report</span><span class="w"> </span><span class="kn">import</span> <span class="n">_build_insights</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.provenance</span><span class="w"> </span><span class="kn">import</span> <span class="n">collect_run_provenance</span>
 
         <span class="n">thresholds</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">thresholds</span> <span class="k">if</span> <span class="n">thresholds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
@@ -1903,18 +1914,9 @@
             <span class="n">i</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">_build_insights</span><span class="p">(</span><span class="n">eval_</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">param_names</span><span class="p">,</span> <span class="n">validation</span><span class="p">)</span>
         <span class="p">]</span>
-        <span class="n">robot_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="s2">&quot;robot_name&quot;</span><span class="p">,</span>
-            <span class="nb">getattr</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
-                <span class="s2">&quot;name&quot;</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;calibration&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
-            <span class="p">),</span>
-        <span class="p">)</span>
-        <span class="n">verdict</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">build_provenance_metadata</span><span class="p">(</span>
-            <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_config_file_path&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">robot_name</span>
-        <span class="p">)</span>
+        <span class="n">verdict</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_run_provenance&quot;</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="p">)</span> <span class="ow">or</span> <span class="n">collect_run_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;calibration&quot;</span><span class="p">)</span>
 
         <span class="n">n_dofs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;calibration_index&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">dof_names</span> <span class="o">=</span> <span class="p">[</span>
@@ -1934,7 +1936,7 @@
         <span class="n">verdict</span><span class="o">.</span><span class="n">compat</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;dof_names&quot;</span><span class="p">:</span> <span class="n">dof_names</span><span class="p">,</span>
             <span class="s2">&quot;sample_count&quot;</span><span class="p">:</span> <span class="n">n_samples</span><span class="p">,</span>
-            <span class="s2">&quot;config_sha256&quot;</span><span class="p">:</span> <span class="n">verdict</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;config_sha256&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;config_sha256&quot;</span><span class="p">:</span> <span class="n">verdict</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sha256&quot;</span><span class="p">),</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">verdict</span></div>
 

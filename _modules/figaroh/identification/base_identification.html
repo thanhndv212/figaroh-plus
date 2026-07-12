@@ -112,6 +112,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timezone</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="c1"># Setup logger for this module</span>
@@ -279,6 +280,7 @@
             <span class="sa">f</span><span class="s2">&quot;Starting </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> dynamic parameter identification...&quot;</span>
         <span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run_started_at</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_decimate_used</span> <span class="o">=</span> <span class="n">decimate</span>
 
         <span class="c1"># Validate prerequisites</span>
@@ -312,6 +314,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">tau_identif</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;tau_estimated&quot;</span><span class="p">]</span>
 
         <span class="c1"># Step 4: Store results and compute quality metrics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run_finished_at</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_compute_quality_metrics</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_store_results</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">wls_std</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1448,6 +1451,14 @@
         <span class="k">if</span> <span class="n">val_metrics</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;validation_metrics&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_metrics</span>
 
+        <span class="c1"># Provenance snapshot — nominal model, config, software, data,</span>
+        <span class="c1"># timestamps — consumed identically by print_quality_report,</span>
+        <span class="c1"># export_html_report, verify(), and archive_run() so they can</span>
+        <span class="c1"># never disagree about what produced this result.</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.provenance</span><span class="w"> </span><span class="kn">import</span> <span class="n">collect_run_provenance</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run_provenance</span> <span class="o">=</span> <span class="n">collect_run_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;identification&quot;</span><span class="p">)</span>
+
         <span class="c1"># Initialize ResultsManager for identification task</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.utils.results_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultsManager</span>
@@ -2006,10 +2017,10 @@
 
         <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools._report_common</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
             <span class="n">IDENTIFICATION_DEFAULT_THRESHOLDS</span><span class="p">,</span>
-            <span class="n">build_provenance_metadata</span><span class="p">,</span>
             <span class="n">evaluate_thresholds</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.identification_report</span><span class="w"> </span><span class="kn">import</span> <span class="n">_build_insights</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.provenance</span><span class="w"> </span><span class="kn">import</span> <span class="n">collect_run_provenance</span>
 
         <span class="n">thresholds</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">thresholds</span> <span class="k">if</span> <span class="n">thresholds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
@@ -2045,14 +2056,9 @@
                 <span class="n">result</span><span class="p">,</span> <span class="n">std_relative</span><span class="p">,</span> <span class="n">base_names</span><span class="p">,</span> <span class="n">validation</span>
             <span class="p">)</span>
         <span class="p">]</span>
-        <span class="n">robot_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="s2">&quot;robot_name&quot;</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;identification&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
-        <span class="p">)</span>
-        <span class="n">verdict</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">build_provenance_metadata</span><span class="p">(</span>
-            <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_config_file_path&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">robot_name</span>
-        <span class="p">)</span>
+        <span class="n">verdict</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_run_provenance&quot;</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="p">)</span> <span class="ow">or</span> <span class="n">collect_run_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;identification&quot;</span><span class="p">)</span>
 
         <span class="n">active_joints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;active_joints&quot;</span><span class="p">,</span> <span class="p">[])</span>
         <span class="k">if</span> <span class="n">validation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;tau_nominal_per_joint&quot;</span> <span class="ow">in</span> <span class="n">validation</span><span class="p">:</span>
@@ -2070,7 +2076,7 @@
             <span class="s2">&quot;active_joints&quot;</span><span class="p">:</span> <span class="n">active_joints</span><span class="p">,</span>
             <span class="s2">&quot;decimate&quot;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_decimate_used&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)),</span>
             <span class="s2">&quot;sample_count&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;num samples&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-            <span class="s2">&quot;config_sha256&quot;</span><span class="p">:</span> <span class="n">verdict</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;config_sha256&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;config_sha256&quot;</span><span class="p">:</span> <span class="n">verdict</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sha256&quot;</span><span class="p">),</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">verdict</span></div>
 

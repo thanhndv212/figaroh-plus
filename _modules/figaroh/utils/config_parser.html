@@ -612,6 +612,14 @@
     <span class="k">if</span> <span class="s2">&quot;properties&quot;</span> <span class="ow">in</span> <span class="n">robot_config</span><span class="p">:</span>
         <span class="n">combined_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">robot_config</span><span class="p">[</span><span class="s2">&quot;properties&quot;</span><span class="p">])</span>
 
+    <span class="c1"># Physical-asset identity, distinct from the model type above (e.g.</span>
+    <span class="c1"># &quot;ur10&quot; is shared by every UR10; robot.instance.asset_id identifies</span>
+    <span class="c1"># one physical unit). Optional — omitted configs simply carry no</span>
+    <span class="c1"># instance block, and provenance capture renders that as</span>
+    <span class="c1"># &quot;unspecified unit&quot; rather than guessing.</span>
+    <span class="k">if</span> <span class="s2">&quot;instance&quot;</span> <span class="ow">in</span> <span class="n">robot_config</span><span class="p">:</span>
+        <span class="n">combined_config</span><span class="p">[</span><span class="s2">&quot;instance&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">robot_config</span><span class="p">[</span><span class="s2">&quot;instance&quot;</span><span class="p">]</span>
+
     <span class="c1"># Add task configuration (excluding metadata)</span>
     <span class="n">task_data</span> <span class="o">=</span> <span class="p">{</span>
         <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
