@@ -146,6 +146,148 @@ def _correlation_section(corr_pairs: List[Dict[str, Any]]) -> str:
     """
 
 
+def _hash_short(value: Optional[str]) -> str:
+    if not value or value in ("unknown", "unavailable", "not_found"):
+        return value or "unavailable"
+    return value[:12]
+
+
+def _run_title(provenance: Optional[Dict[str, Any]], fallback: str) -> str:
+    """"{asset_id} ({model})" when a physical unit is identified, else
+    just the model/class name — used for the report's <h1>."""
+    if not provenance:
+        return fallback
+    asset = provenance.get("asset", {})
+    model = provenance.get("model", {})
+    model_name = model.get("robot_name") or fallback
+    if asset.get("is_specified"):
+        return f"{asset.get('asset_id')} ({model_name})"
+    return model_name
+
+
+def _provenance_section(provenance: Optional[Dict[str, Any]]) -> str:
+    """Render the run-provenance record — physical asset, nominal
+    reference model, exact config used, software versions, input data
+    files, timestamps — as a compact key/value grid.
+
+    This is what makes a report a traceable record rather than a bare
+    metrics dump: two reports with different ``config.sha256`` or
+    ``model.urdf_sha256`` were provably produced under different
+    conditions, even if every other field looks similar. Shared
+    verbatim between the calibration and identification reports.
+    """
+    if not provenance:
+        return (
+            '<p class="muted">No provenance record available for this '
+            "run (produced by a version of figaroh predating run "
+            "provenance capture).</p>"
+        )
+
+    asset = provenance.get("asset", {})
+    model = provenance.get("model", {})
+    config = provenance.get("config", {})
+    software = provenance.get("software", {})
+    timestamps = provenance.get("timestamps", {})
+    data = provenance.get("data", {})
+
+    def _row(key: str, val: Any, css_class: str = "") -> str:
+        return (
+            f'<div class="kv-row"><span class="kv-key">{_esc(key)}</span>'
+            f'<span class="kv-val {css_class}">{_esc(val)}</span></div>'
+        )
+
+    if asset.get("is_specified"):
+        asset_rows = [_row("Asset ID", asset.get("asset_id", ""))]
+        for label, key in (
+            ("Label", "label"),
+            ("Serial", "serial_number"),
+            ("Site", "site"),
+            ("Operator", "operator"),
+        ):
+            if asset.get(key):
+                asset_rows.append(_row(label, asset[key]))
+    else:
+        asset_rows = [
+            _row(
+                "Asset ID",
+                "unspecified unit — set robot.instance.asset_id or "
+                "pass --asset-id",
+                "unspecified",
+            )
+        ]
+
+    model_rows = [
+        _row("Model", model.get("robot_name", "unknown")),
+        _row("URDF", model.get("urdf_path", "unavailable")),
+        _row("URDF sha256", _hash_short(model.get("urdf_sha256"))),
+        _row(
+            "DOF (nq / nv)",
+            f"{model.get('nq', '?')} / {model.get('nv', '?')}",
+        ),
+    ]
+
+    config_values = config.get("values", {})
+    config_rows = [
+        _row("Path", config.get("path", "unavailable")),
+        _row("sha256", _hash_short(config.get("sha256"))),
+    ]
+    for key, value in config_values.items():
+        if isinstance(value, (list, tuple)):
+            value = ", ".join(str(v) for v in value)
+        config_rows.append(_row(key, value))
+
+    software_rows = [
+        _row("figaroh", software.get("figaroh", "unknown")),
+        _row("pinocchio", software.get("pinocchio", "unknown")),
+        _row("python", software.get("python", "unknown")),
+        _row(
+            "git commit",
+            _hash_short(software.get("git_commit"))
+            + (" (dirty)" if software.get("git_dirty") else ""),
+        ),
+    ]
+
+    time_rows = [
+        _row("Run started", timestamps.get("run_started", "")),
+        _row("Run finished", timestamps.get("run_finished", "")),
+    ]
+
+    data_rows = []
+    for key, info in data.items():
+        if not isinstance(info, dict):
+            continue
+        label = key.replace("_", " ")
+        if info.get("status") == "not_found":
+            data_rows.append(
+                _row(label, f"not found: {info.get('path', '')}")
+            )
+        else:
+            data_rows.append(_row(label, info.get("path", "")))
+
+    groups = [
+        ("Asset", asset_rows),
+        ("Nominal model", model_rows),
+        ("Configuration", config_rows),
+        ("Software", software_rows),
+        ("Timestamps (UTC)", time_rows),
+        ("Data files", data_rows),
+    ]
+    group_html = "".join(
+        f'<div class="kv-group"><h3>{_esc(title)}</h3>{"".join(rows)}</div>'
+        for title, rows in groups
+        if rows
+    )
+
+    run_id = provenance.get("run_id", "")
+    header = (
+        f'<p class="run-id">Run ID: <code>{_esc(run_id)}</code></p>'
+        if run_id
+        else ""
+    )
+
+    return f'{header}<div class="kv-grid">{group_html}</div>'
+
+
 def _series_panel_section(
     validation: Optional[Dict[str, Any]], domain: str, panel_id: str
 ) -> str:
@@ -239,14 +381,17 @@ class VerificationVerdict:
     ``series``/``compat`` are filled in by the caller
     (``BaseCalibration.verify()`` / ``BaseIdentification.verify()``)
     after construction, since those are domain-specific / provenance
-    data rather than threshold arithmetic.
+    data rather than threshold arithmetic. ``metadata`` holds the full
+    nested provenance record from
+    :func:`figaroh.tools.provenance.collect_run_provenance` (run id,
+    asset identity, nominal model, config, software, data, timestamps).
     """
 
     passed: bool
     checks: List[ThresholdCheck]
     metrics: Dict[str, float]
     insights: List[str] = field(default_factory=list)
-    metadata: Dict[str, str] = field(default_factory=dict)
+    metadata: Dict[str, Any] = field(default_factory=dict)
     # Before/after time-series for Feature 6's interactive panel
     # (Step 3/4). ``{"time": [...], "<dof_or_joint_names>": [...],
     # "nominal": {name: [...]}, "fitted": {name: [...]},
@@ -491,6 +636,23 @@ footer { margin-top: 48px; font-size: .78rem; color: var(--text-muted);
   border-radius: 6px; padding: 6px 10px; font-size: .78rem;
   box-shadow: 0 2px 8px rgba(0,0,0,.15); z-index: 10; }
 .series-hint { font-size: .74rem; color: var(--text-muted); margin-top: 6px; }
+.run-id { color: var(--text-muted); font-size: .85rem; margin: 0 0 14px; }
+.run-id code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas,
+  monospace; }
+.kv-grid { display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 20px 30px; }
+.kv-group h3 { font-size: .72rem; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--text-muted); margin: 0 0 8px;
+  font-weight: 600; }
+.kv-row { display: flex; justify-content: space-between; gap: 14px;
+  padding: 4px 0; font-size: .85rem; border-bottom: 1px dotted var(--border); }
+.kv-row:last-child { border-bottom: none; }
+.kv-key { color: var(--text-muted); flex-shrink: 0; }
+.kv-val { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas,
+  monospace; text-align: right; word-break: break-all; }
+.kv-val.unspecified { color: var(--fair); font-style: italic;
+  font-family: inherit; text-align: left; }
 """
 
 # Shared JS for Step 4 (Feature 6, Phase B)'s before/after overlay chart —

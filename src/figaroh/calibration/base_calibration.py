@@ -27,6 +27,7 @@ from yaml.loader import SafeLoader
 from os.path import abspath
 import matplotlib.pyplot as plt
 import logging
+from datetime import datetime, timezone
 from scipy.optimize import least_squares
 from abc import ABC
 from typing import Optional, List, Dict, Any, Tuple
@@ -253,6 +254,7 @@ class BaseCalibration(ABC):
             plot: Visualization and analysis plotting
             export_html_report: Visual counterpart of the terminal report
         """
+        self._run_started_at = datetime.now(timezone.utc).isoformat()
         result, outlier_indices = self.solve_optimisation(
             method=method,
             max_iterations=max_iterations,
@@ -262,6 +264,7 @@ class BaseCalibration(ABC):
 
         # Evaluate solution
         evaluation = self._evaluate_solution(result, outlier_indices)
+        self._run_finished_at = datetime.now(timezone.utc).isoformat()
 
         # Log final results
         if enable_logging:
@@ -1325,6 +1328,14 @@ class BaseCalibration(ABC):
         if val_metrics is not None:
             self.results_data["validation_metrics"] = val_metrics
 
+        # Provenance snapshot — nominal model, config, software, data,
+        # timestamps — consumed identically by print_quality_report,
+        # export_html_report, verify(), and archive_run() so they can
+        # never disagree about what produced this result.
+        from figaroh.tools.provenance import collect_run_provenance
+
+        self._run_provenance = collect_run_provenance(self, "calibration")
+
         # Initialize ResultsManager for calibration task
         try:
             from figaroh.utils.results_manager import ResultsManager
@@ -1727,10 +1738,10 @@ class BaseCalibration(ABC):
 
         from figaroh.tools._report_common import (
             CALIBRATION_DEFAULT_THRESHOLDS,
-            build_provenance_metadata,
             evaluate_thresholds,
         )
         from figaroh.tools.report import _build_insights
+        from figaroh.tools.provenance import collect_run_provenance
 
         thresholds = (
             thresholds if thresholds is not None
@@ -1763,18 +1774,9 @@ class BaseCalibration(ABC):
             i["text"]
             for i in _build_insights(eval_, n_samples, param_names, validation)
         ]
-        robot_name = getattr(
-            self,
-            "robot_name",
-            getattr(
-                self.model,
-                "name",
-                self.__class__.__name__.lower().replace("calibration", ""),
-            ),
-        )
-        verdict.metadata = build_provenance_metadata(
-            getattr(self, "_config_file_path", None), robot_name
-        )
+        verdict.metadata = getattr(
+            self, "_run_provenance", None
+        ) or collect_run_provenance(self, "calibration")
 
         n_dofs = self.calib_config.get("calibration_index", 0)
         dof_names = [
@@ -1794,7 +1796,7 @@ class BaseCalibration(ABC):
         verdict.compat = {
             "dof_names": dof_names,
             "sample_count": n_samples,
-            "config_sha256": verdict.metadata.get("config_sha256"),
+            "config_sha256": verdict.metadata.get("config", {}).get("sha256"),
         }
         return verdict
 

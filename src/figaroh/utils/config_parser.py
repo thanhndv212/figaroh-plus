@@ -513,6 +513,14 @@ def create_task_config(
     if "properties" in robot_config:
         combined_config.update(robot_config["properties"])
 
+    # Physical-asset identity, distinct from the model type above (e.g.
+    # "ur10" is shared by every UR10; robot.instance.asset_id identifies
+    # one physical unit). Optional — omitted configs simply carry no
+    # instance block, and provenance capture renders that as
+    # "unspecified unit" rather than guessing.
+    if "instance" in robot_config:
+        combined_config["instance"] = robot_config["instance"]
+
     # Add task configuration (excluding metadata)
     task_data = {
         k: v

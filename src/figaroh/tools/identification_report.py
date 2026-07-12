@@ -44,6 +44,8 @@ from figaroh.tools._report_common import (
     _esc,
     _insights_section,
     _param_uncertainty_section,
+    _provenance_section,
+    _run_title,
     _series_panel_section,
 )
 
@@ -354,7 +356,11 @@ def generate_identification_report(
 
     insights = _build_insights(result, std_relative, base_names, validation)
 
-    report_title = title or f"{type(identifier).__name__} Quality Report"
+    provenance = getattr(identifier, "_run_provenance", None)
+    report_title = title or (
+        f"{_run_title(provenance, type(identifier).__name__)} "
+        "— Identification Quality Report"
+    )
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
 
     doc = f"""<!doctype html>
@@ -369,6 +375,11 @@ def generate_identification_report(
 <div class="page">
   <h1>{_esc(report_title)}</h1>
   <p class="subtitle">Generated {_esc(timestamp)}</p>
+
+  <section>
+    <h2>Provenance</h2>
+    <div class="card">{_provenance_section(provenance)}</div>
+  </section>
 
   <section>
     <h2>Summary</h2>

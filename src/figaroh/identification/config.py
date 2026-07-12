@@ -148,6 +148,7 @@ def unified_to_legacy_identif_config(robot, unified_identif_config) -> dict:
 
     # 1. Extract basic robot information
     identif_config["robot_name"] = robot.model.name
+    identif_config["instance"] = unified_identif_config.get("instance", {})
 
     # 2. Extract signal processing parameters
     _extract_signal_processing_params(identif_config, signal_processing)

@@ -24,6 +24,7 @@ import yaml
 import numpy as np
 from abc import ABC, abstractmethod
 import dataclasses
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 # Setup logger for this module
@@ -184,6 +185,7 @@ class BaseIdentification(ABC):
             f"Starting {self.__class__.__name__} dynamic parameter identification..."
         )
 
+        self._run_started_at = datetime.now(timezone.utc).isoformat()
         self._decimate_used = decimate
 
         # Validate prerequisites
@@ -217,6 +219,7 @@ class BaseIdentification(ABC):
             self.tau_identif = results["tau_estimated"]
 
         # Step 4: Store results and compute quality metrics
+        self._run_finished_at = datetime.now(timezone.utc).isoformat()
         self._compute_quality_metrics()
         self._store_results(results)
         if wls_std is not None:
@@ -1322,6 +1325,14 @@ class BaseIdentification(ABC):
         if val_metrics is not None:
             self.result["validation_metrics"] = val_metrics
 
+        # Provenance snapshot — nominal model, config, software, data,
+        # timestamps — consumed identically by print_quality_report,
+        # export_html_report, verify(), and archive_run() so they can
+        # never disagree about what produced this result.
+        from figaroh.tools.provenance import collect_run_provenance
+
+        self._run_provenance = collect_run_provenance(self, "identification")
+
         # Initialize ResultsManager for identification task
         try:
             from figaroh.utils.results_manager import ResultsManager
@@ -1872,10 +1883,10 @@ class BaseIdentification(ABC):
 
         from figaroh.tools._report_common import (
             IDENTIFICATION_DEFAULT_THRESHOLDS,
-            build_provenance_metadata,
             evaluate_thresholds,
         )
         from figaroh.tools.identification_report import _build_insights
+        from figaroh.tools.provenance import collect_run_provenance
 
         thresholds = (
             thresholds if thresholds is not None
@@ -1911,14 +1922,9 @@ class BaseIdentification(ABC):
                 result, std_relative, base_names, validation
             )
         ]
-        robot_name = getattr(
-            self,
-            "robot_name",
-            self.__class__.__name__.lower().replace("identification", ""),
-        )
-        verdict.metadata = build_provenance_metadata(
-            getattr(self, "_config_file_path", None), robot_name
-        )
+        verdict.metadata = getattr(
+            self, "_run_provenance", None
+        ) or collect_run_provenance(self, "identification")
 
         active_joints = self.identif_config.get("active_joints", [])
         if validation is not None and "tau_nominal_per_joint" in validation:
@@ -1936,7 +1942,7 @@ class BaseIdentification(ABC):
             "active_joints": active_joints,
             "decimate": bool(getattr(self, "_decimate_used", False)),
             "sample_count": result.get("num samples", 0),
-            "config_sha256": verdict.metadata.get("config_sha256"),
+            "config_sha256": verdict.metadata.get("config", {}).get("sha256"),
         }
         return verdict
 

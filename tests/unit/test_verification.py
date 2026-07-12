@@ -172,7 +172,7 @@ class TestBaseCalibrationVerify:
         )
         verdict = BaseCalibration.verify(calib)
         assert verdict.passed is True
-        assert verdict.metadata["robot_name"] == "fake_robot"
+        assert verdict.metadata["model"]["robot_name"] == "fake_robot"
 
     def test_fails_on_ill_conditioned(self):
         calib = FakeCalibrator(
@@ -370,7 +370,7 @@ class TestBaseIdentificationVerify:
         ident = FakeIdentifier(_identif_result())
         verdict = BaseIdentification.verify(ident)
         assert verdict.passed is True
-        assert verdict.metadata["robot_name"] == "fake_robot"
+        assert verdict.metadata["model"]["robot_name"] == "fake_robot"
 
     def test_fails_on_ill_conditioned(self):
         ident = FakeIdentifier(
