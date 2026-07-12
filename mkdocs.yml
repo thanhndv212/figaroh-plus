@@ -2,7 +2,7 @@ site_name: FIGAROH
 site_description: >-
   A Python toolbox for dynamic parameter identification and geometric
   calibration of robots and humans.
-site_url: https://thanhndv212.github.io/figaroh/
+site_url: https://thanhndv212.github.io/figaroh-plus/
 repo_url: https://github.com/thanhndv212/figaroh-plus
 repo_name: thanhndv212/figaroh-plus
 edit_uri: edit/main/docs/source/
