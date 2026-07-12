@@ -16,12 +16,15 @@ and identification.
   Elastic Net, Tikhonov, constrained, robust, weighted)
 - **Regularization and constraint optimization** (L1/L2 regularization, box
   constraints, linear equality/inequality)
-- Unified configuration system with template inheritance
+- [Unified configuration system with template inheritance](concepts/configuration.md)
 - Advanced regressor computation with object-oriented design
 - Support for URDF modeling convention
+- [Pluggable dynamics backends](concepts/backends.md) (Pinocchio, MuJoCo,
+  Genesis, Isaac Sim)
 - Optional physical-consistency projection and base→full parameter
   reconstruction for identification
-- Extensive examples and tutorials
+- [Extensive examples and tutorials](tutorials/index.md) covering UR10,
+  TIAGo, TALOS, and Staubli TX40
 
 ## Quick Links
 
@@ -34,6 +37,9 @@ and identification.
 | I want to... | Go to |
 |---|---|
 | Install FIGAROH and run my first calibration/identification | [Getting Started](getting_started.md) |
+| Understand the theory behind calibration/identification/optimal design | [Tutorials](tutorials/index.md) |
+| Understand how the library is structured, or how backends/config work | [Concepts](concepts/architecture.md) |
 | Generate quality reports and CI-gateable pass/fail verdicts | [Reporting & Verification](guides/reporting_and_verification.md) |
-| Understand how the library is structured | [Architecture](architecture.md) |
-| Look up a specific class or function | Core Modules / Tools & Utilities in the nav |
+| See a complete, runnable example for my robot (or a similar one) | [Examples Gallery](examples/index.md) |
+| Look up a specific class or function | [API Reference](api/index.md) |
+| Check what's planned, what changed, or troubleshoot an issue | [Further Reading](further_reading/faq.md) |

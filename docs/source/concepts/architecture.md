@@ -6,4 +6,4 @@ so it stays next to the source tree it describes. This page embeds it
 directly so the same content is browsable as part of the docs site,
 without a second copy to keep in sync.
 
-{% include-markdown "../../ARCHITECTURE.md" heading-offset=1 %}
+{% include-markdown "../../../ARCHITECTURE.md" heading-offset=1 %}

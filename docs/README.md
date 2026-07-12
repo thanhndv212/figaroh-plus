@@ -43,10 +43,18 @@ python -m http.server 8000
 
 ## Adding a page
 
-1. Add the Markdown file under `docs/source/` (or a subfolder, e.g.
-   `docs/source/guides/`).
-2. Add it to the `nav:` section of `mkdocs.yml` at the repo root — MkDocs
-   only shows pages listed there.
+1. Add the Markdown file under `docs/source/`, in the subfolder matching
+   its kind:
+   - `concepts/` — how a subsystem works (architecture, backends, config)
+   - `tutorials/` — task-driven, narrated walkthroughs of a workflow
+   - `guides/` — how-to for a specific feature
+   - `examples/` — gallery pages pointing into the
+     [figaroh-examples](https://github.com/thanhndv212/figaroh-examples)
+     repo (kept short; the full implementation lives in that repo, not here)
+   - `api/` — mkdocstrings pages, one per `src/figaroh` subpackage
+   - `further_reading/` — roadmap, changelog, FAQ, design decisions
+2. Add it to the `nav:` section of `mkdocs.yml` at the repo root, under the
+   matching top-level caption — MkDocs only shows pages listed there.
 
 ## Adding an API reference page
 

@@ -16,65 +16,10 @@ conda activate figaroh-dev
 pip install -e .
 ```
 
-## Configuration System
-
-FIGAROH uses a flexible YAML-based configuration system that supports both
-a modern unified format and a legacy format.
-
-### Unified Configuration Format
-
-The modern unified format provides better organization and template
-inheritance:
-
-```yaml
-# modern_config.yaml
-inherit_from: "templates/base_robot.yaml"
-
-robot:
-  name: "tiago"
-  urdf_path: "urdf/tiago.urdf"
-
-calibration:
-  method: "full_params"
-  sensor_type: "camera"
-
-  markers:
-    - ref_joint: "wrist_3_joint"
-      position: [0.1, 0.0, 0.05]
-      measure: [true, true, true, true, true, true]
-
-identification:
-  mechanics:
-    friction_coefficients:
-      viscous: [0.01, 0.02, 0.015]
-      static: [0.001, 0.002, 0.0015]
-    actuator_inertias: [0.1, 0.15, 0.12]
-
-  signal_processing:
-    sampling_frequency: 5000.0
-    cutoff_frequency: 100.0
-```
-
-### Legacy Format Support
-
-Existing configurations continue to work without modification:
-
-```yaml
-# legacy_config.yaml
-calibration:
-  calib_level: full_params
-  markers:
-    - ref_joint: wrist_3_joint
-      measure: [True, True, True, True, True, True]
-
-identification:
-  robot_params:
-    - fv: [0.01, 0.02, 0.015]
-      fs: [0.001, 0.002, 0.0015]
-  processing_params:
-    - ts: 0.0002
-      cut_off_frequency_butterworth: 100.0
-```
+FIGAROH's configuration system (unified vs. legacy YAML format, template
+inheritance) is covered separately in
+[Configuration System](concepts/configuration.md) — read that before writing
+your first robot config.
 
 ## Quick Start Examples
 
@@ -134,20 +79,6 @@ builder = RegressorBuilder(robot, config)
 W = builder.build_basic_regressor(q, dq, ddq)
 ```
 
-### Configuration Management
-
-```python
-from figaroh.utils.config_parser import UnifiedConfigParser
-
-# Parse any configuration format
-parser = UnifiedConfigParser("config/robot_config.yaml")
-config = parser.parse()
-
-# Create task-specific configuration
-calib_config = parser.create_task_config(robot, config, "calibration")
-identif_config = parser.create_task_config(robot, config, "identification")
-```
-
 ### Advanced Linear Solver
 
 ```python
@@ -187,11 +118,12 @@ params = identifier.solve_with_custom_solver(
 
 ## Next Steps
 
+- Follow the [Tutorials](tutorials/index.md) for an end-to-end walkthrough of
+  calibration, identification, and optimal experiment design.
 - Read [Reporting & Verification](guides/reporting_and_verification.md) to
   turn a solved calibration/identification into a shareable report and a
   CI-gateable pass/fail check.
-- Explore the [Examples Repository](https://github.com/thanhndv212/figaroh-examples)
-  for complete, runnable workflows per robot.
-- Check the Core Modules / Tools & Utilities API reference for detailed
-  module information.
-- Review the configuration templates for your specific robot type.
+- Browse the [Examples Gallery](examples/index.md) for complete, runnable
+  workflows per robot (UR10, TIAGo, TALOS, Staubli TX40).
+- Check the API Reference for detailed module information.
+- Set up your own robot config from a [template](examples/templates.md).

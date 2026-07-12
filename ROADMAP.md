@@ -85,7 +85,7 @@ identification toolbox** that enables researchers and engineers to:
   before/after panel, and a static two-run compare page
   (`tools/compare_report.py`). Tracked separately from this roadmap's Track A/B —
   full design history and status in
-  [`docs/decisions/roadmap-mujoco-sysid-inspired-features.md`](docs/decisions/roadmap-mujoco-sysid-inspired-features.md).
+  [`docs/decisions/roadmap-mujoco-sysid-inspired-features.md`](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/roadmap-mujoco-sysid-inspired-features.md).
 
 **Test suite (verified by running `pytest`):**
 - 259 tests collected across 11 files in `tests/unit/`:

@@ -65,17 +65,40 @@ plugins:
 
 nav:
   - Home: index.md
-  - Getting Started: getting_started.md
+  - User Guide:
+      - Getting Started: getting_started.md
+      - Tutorials:
+          - Overview: tutorials/index.md
+          - Calibration Walkthrough: tutorials/calibration_walkthrough.md
+          - Identification Walkthrough: tutorials/identification_walkthrough.md
+          - Optimal Experiment Design: tutorials/optimal_design.md
+  - Concepts:
+      - Architecture: concepts/architecture.md
+      - Configuration System: concepts/configuration.md
+      - Backends: concepts/backends.md
+      - Integration API: concepts/integration.md
   - Guides:
       - Reporting & Verification: guides/reporting_and_verification.md
-  - Core Modules:
+  - Examples Gallery:
+      - Overview: examples/index.md
+      - UR10: examples/ur10.md
+      - TIAGo: examples/tiago.md
+      - TALOS: examples/talos.md
+      - Staubli TX40: examples/staubli_tx40.md
+      - Config Templates: examples/templates.md
+  - API Reference:
+      - Overview: api/index.md
       - Calibration: api/calibration.md
       - Identification: api/identification.md
-  - Tools & Utilities:
+      - Optimal: api/optimal.md
+      - Backends: api/backends.md
+      - Integration: api/integration.md
+      - Measurements: api/measurements.md
       - Tools: api/tools.md
       - Utils: api/utils.md
-      - Measurements: api/measurements.md
       - Visualisation: api/visualisation.md
-  - Advanced Features:
-      - Optimal: api/optimal.md
-  - Architecture: architecture.md
+  - Further Reading:
+      - Roadmap: further_reading/roadmap.md
+      - Changelog: further_reading/changelog.md
+      - FAQ: further_reading/faq.md
+      - Design Decisions: further_reading/decisions.md

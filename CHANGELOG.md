@@ -66,7 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `BaseOptimalTrajectory`.
 
 Full design history and rationale:
-[`docs/decisions/roadmap-mujoco-sysid-inspired-features.md`](docs/decisions/roadmap-mujoco-sysid-inspired-features.md).
+[`docs/decisions/roadmap-mujoco-sysid-inspired-features.md`](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/roadmap-mujoco-sysid-inspired-features.md).
 
 ## [0.4.4] - 2026-06-27
 
