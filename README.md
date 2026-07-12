@@ -87,6 +87,17 @@ cd figaroh-examples && pip install -r requirements.txt
 - **Abstract base classes** for extensibility
 - **Pinocchio 3.x compatibility**
 - **Cross-platform**: Linux, macOS, Windows
+
+### 📊 Reporting & Verification (V&V)
+- **Self-contained HTML diagnostic reports** with an interactive before/after
+  chart — `solve(html_report=True)` / `export_html_report()`
+- **Machine-readable pass/fail verdicts** for CI — `verify()` /
+  `export_verification_report()`, with overridable quality thresholds
+- **Static two-run compare page** — `generate_compare_page()` diffs two
+  exported runs offline, with a mandatory compatibility check before
+  overlaying them
+- See the [Reporting & Verification guide](https://thanhndv212.github.io/figaroh/guides/reporting_and_verification/)
+  for the full walkthrough
 ---
 
 ## Core Modules (See more at [ARCHITECTURE](ARCHITECTURE))
@@ -142,6 +153,8 @@ consistent set using a convex SDP/LMI based on Pinocchio pseudo-inertia.
 | `QRDecomposer` | QR decomposition with column pivoting for base parameter identification |
 | `CollisionManager` | Pinocchio-based collision detection with visualization |
 | `RobotIPOPTSolver` | High-level IPOPT interface with automatic differentiation |
+| `generate_calibration_report` / `generate_identification_report` | Self-contained HTML diagnostic reports (`tools/report.py`, `tools/identification_report.py`) |
+| `generate_compare_page` | Static, offline two-run compare page (`tools/compare_report.py`) |
 
 ### `figaroh.utils` — Configuration & Results
 
@@ -191,26 +204,29 @@ Generate exciting trajectories or calibration postures:
 - **For calibration**: Combinatorial selection of postures maximizing observability
 
 ### Step 3: Data Collection & Processing
-Load experimental data with automatic validation:
+`initialize()` loads and validates experimental data (paths come from the
+YAML config, e.g. `measurement_file`):
 
 ```python
-from figaroh.calibration import BaseCalibration
-
 calibrator = MyCalibration(robot, "config/robot_config.yaml")
-calibrator.load_data("data/measurements.csv")
+calibrator.initialize()
 ```
 
 ### Step 4: Parameter Estimation
-Run identification/calibration with quality metrics:
+Run identification/calibration, then get a quality report, an optional
+HTML report, and a pass/fail verdict for the same run:
 
 ```python
 # Calibration
-calibrator.solve()
+calibrator.solve(html_report=True)      # prints + writes results/calibration_report.html
 print(f"RMSE: {calibrator.evaluation_metrics['rmse']:.6f}")
+verdict = calibrator.verify()           # pass/fail against quality thresholds
 
 # Identification
-identifier.solve(decimate=True, decimation_factor=10)
+identifier.solve(decimate=True, decimation_factor=10, html_report=True)
 print(f"Correlation: {identifier.correlation:.4f}")
+verdict = identifier.verify()
+identifier.export_verification_report()  # results/identification_verification.json
 ```
 
 ### Step 5: Model Update

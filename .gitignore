@@ -5,6 +5,7 @@ data_list.docx
 **.pyc
 **/.DS_Store
 build/*
+site/
 cmake/*
 .vscode/*
 .github/skills

@@ -5,6 +5,69 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `feat(reporting)`: Self-contained HTML diagnostic reports for both
+  calibration and identification.
+  - `figaroh.tools.report.generate_calibration_report()` /
+    `BaseCalibration.export_html_report()` — summary, auto-generated
+    insights, per-DOF residual table, parameter uncertainty bars,
+    correlation section, validation section.
+  - `figaroh.tools.identification_report.generate_identification_report()` /
+    `BaseIdentification.export_html_report()` — same shape, adapted to
+    identification's per-joint torque residuals and base-parameter
+    uncertainty.
+  - `figaroh.tools._report_common` — shared HTML/CSS kernel (styling,
+    escaping, insight/uncertainty/correlation section builders) reused by
+    both generators.
+  - Opt-in via `solve(html_report=True)` on both base classes, matching the
+    existing `plotting`/`save_results` flag pattern.
+- `feat(identification)`: `BaseIdentification.print_quality_report()` —
+  terminal quality report (condition number, RMSE, per-joint residuals,
+  base-parameter uncertainty, validation, physical-consistency/
+  reconstruction status), the identification analogue of calibration's
+  existing terminal report.
+- `feat(identification)`: Held-out validation support for identification,
+  mirroring calibration's — a genuinely separate dataset via
+  `identification.data.validation_data_file`, never a runtime split of
+  training data.
+- `feat(reporting)`: Machine-readable verification verdicts.
+  - `VerificationVerdict` / `ThresholdCheck` (`figaroh.tools._report_common`)
+    — a structured pass/fail against per-metric thresholds, with
+    provenance (git commit, config hash, timestamp).
+  - `verify(thresholds=None)` and `export_verification_report(output_path=None,
+    output_dir="results", thresholds=None)` added to both `BaseCalibration`
+    and `BaseIdentification`. Default thresholds cover condition number and,
+    when validation data is configured, validation-set RMSE/correlation/
+    improvement — every threshold is overridable per call. A threshold whose
+    metric isn't computable is skipped, not failed.
+  - Called explicitly (not from inside `solve()`) — verification is opt-in
+    output computed from already-stored results.
+- `feat(reporting)`: Interactive before/after panel embedded in both HTML
+  reports — a zoomable, hoverable overlay of nominal vs. fitted vs. measured
+  values, rendered as hand-rolled inline SVG (no new dependency).
+- `feat(reporting)`: `figaroh.tools.compare_report.generate_compare_page()`
+  — a static, self-contained, offline HTML page that loads two exported
+  verification JSON files client-side and renders a per-metric diff table
+  plus an overlaid before/after chart, gated by a mandatory compatibility
+  check (domain, joint/DOF names, `decimate`, sample count) with an
+  explicit "compare anyway" override on mismatch. No backend, no run
+  history.
+- `fix(results_manager)`: `plot_identification_results()` reshaped 1D
+  torque arrays as `reshape(-1, 1)`, silently collapsing a multi-joint,
+  joint-major-flattened array into a single mislabeled trace. Now accepts
+  explicit `n_joints`/`joint_names` and reshapes joint-major
+  (`reshape(n_joints, -1).T`) when provided.
+- `refactor(results_manager)`: `plot_with_fallback()` helper deduplicates
+  the four near-identical try/except plotting blocks across
+  `BaseCalibration`, `BaseIdentification`, `BaseOptimalCalibration`, and
+  `BaseOptimalTrajectory`.
+
+Full design history and rationale:
+[`docs/decisions/roadmap-mujoco-sysid-inspired-features.md`](docs/decisions/roadmap-mujoco-sysid-inspired-features.md).
+
 ## [0.4.4] - 2026-06-27
 
 ### Added

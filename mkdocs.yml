@@ -1,0 +1,81 @@
+site_name: FIGAROH
+site_description: >-
+  A Python toolbox for dynamic parameter identification and geometric
+  calibration of robots and humans.
+site_url: https://thanhndv212.github.io/figaroh/
+repo_url: https://github.com/thanhndv212/figaroh-plus
+repo_name: thanhndv212/figaroh-plus
+edit_uri: edit/main/docs/source/
+
+docs_dir: docs/source
+site_dir: site
+
+# docs/decisions/ is a sibling of docs_dir (docs/source/), not inside it, so
+# MkDocs never reads it — no exclude_docs needed to keep it off the built
+# site.
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+    - search.suggest
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - tables
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - include-markdown
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            merge_init_into_class: true
+            members_order: source
+
+nav:
+  - Home: index.md
+  - Getting Started: getting_started.md
+  - Guides:
+      - Reporting & Verification: guides/reporting_and_verification.md
+  - Core Modules:
+      - Calibration: api/calibration.md
+      - Identification: api/identification.md
+  - Tools & Utilities:
+      - Tools: api/tools.md
+      - Utils: api/utils.md
+      - Measurements: api/measurements.md
+      - Visualisation: api/visualisation.md
+  - Advanced Features:
+      - Optimal: api/optimal.md
+  - Architecture: architecture.md
