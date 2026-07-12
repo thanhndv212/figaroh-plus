@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://thanhndv212.github.io/figaroh-plus/api/measurements/">
+        <link rel="canonical" href="https://thanhndv212.github.io/figaroh-plus/concepts/integration/">
       
       
-        <link rel="prev" href="../integration/">
+        <link rel="prev" href="../backends/">
       
       
-        <link rel="next" href="../tools/">
+        <link rel="next" href="../../guides/reporting_and_verification/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Measurements - FIGAROH</title>
+        <title>Integration API - FIGAROH</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#measurements" class="md-skip">
+        <a href="#integration-api" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Measurements
+              Integration API
             
           </span>
         </div>
@@ -264,11 +264,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../concepts/architecture/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../architecture/" class="md-tabs__link">
           
   
   
@@ -324,13 +326,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../api/" class="md-tabs__link">
           
   
   
@@ -697,26 +697,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   
@@ -734,7 +739,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -752,7 +757,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/architecture/" class="md-nav__link">
+      <a href="../architecture/" class="md-nav__link">
         
   
   
@@ -780,7 +785,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/configuration/" class="md-nav__link">
+      <a href="../configuration/" class="md-nav__link">
         
   
   
@@ -808,7 +813,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/backends/" class="md-nav__link">
+      <a href="../backends/" class="md-nav__link">
         
   
   
@@ -833,10 +838,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../concepts/integration/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integration API
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -852,6 +884,59 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#robotidentificationsystem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RobotIdentificationSystem
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#identificationresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IdentificationResult
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-this-vs-a-full-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use this vs. a full example
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1182,31 +1267,26 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
             
   
   
@@ -1224,7 +1304,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1242,7 +1322,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../api/" class="md-nav__link">
         
   
   
@@ -1270,7 +1350,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../calibration/" class="md-nav__link">
+      <a href="../../api/calibration/" class="md-nav__link">
         
   
   
@@ -1298,7 +1378,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../identification/" class="md-nav__link">
+      <a href="../../api/identification/" class="md-nav__link">
         
   
   
@@ -1326,7 +1406,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../optimal/" class="md-nav__link">
+      <a href="../../api/optimal/" class="md-nav__link">
         
   
   
@@ -1354,7 +1434,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../backends/" class="md-nav__link">
+      <a href="../../api/backends/" class="md-nav__link">
         
   
   
@@ -1382,7 +1462,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../integration/" class="md-nav__link">
+      <a href="../../api/integration/" class="md-nav__link">
         
   
   
@@ -1407,37 +1487,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Measurements
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../api/measurements/" class="md-nav__link">
         
   
   
@@ -1453,65 +1506,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#figaroh.measurements.measurement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        measurement
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#figaroh.measurements.measurement.Measurement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Measurement
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Measurement">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#figaroh.measurements.measurement.Measurement.add_SE3_measurement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        add_SE3_measurement
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1524,7 +1518,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tools/" class="md-nav__link">
+      <a href="../../api/tools/" class="md-nav__link">
         
   
   
@@ -1552,7 +1546,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../utils/" class="md-nav__link">
+      <a href="../../api/utils/" class="md-nav__link">
         
   
   
@@ -1580,7 +1574,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../visualisation/" class="md-nav__link">
+      <a href="../../api/visualisation/" class="md-nav__link">
         
   
   
@@ -1806,10 +1800,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#figaroh.measurements.measurement" class="md-nav__link">
+  <a href="#robotidentificationsystem" class="md-nav__link">
     <span class="md-ellipsis">
       
-        measurement
+        RobotIdentificationSystem
       
     </span>
   </a>
@@ -1817,30 +1811,24 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#figaroh.measurements.measurement.Measurement" class="md-nav__link">
+  <a href="#identificationresult" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Measurement
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Measurement">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#figaroh.measurements.measurement.Measurement.add_SE3_measurement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        add_SE3_measurement
+        IdentificationResult
       
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-this-vs-a-full-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use this vs. a full example
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1861,7 +1849,7 @@
 
 
   
-    <a href="https://github.com/thanhndv212/figaroh-plus/edit/main/docs/source/api/measurements.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/thanhndv212/figaroh-plus/edit/main/docs/source/concepts/integration.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1869,350 +1857,58 @@
   
 
 
-<h1 id="measurements">Measurements<a class="headerlink" href="#measurements" title="Permanent link">&para;</a></h1>
-
-
-<div class="doc doc-object doc-module">
-
-
-
-<a id="figaroh.measurements.measurement"></a>
-    <div class="doc doc-contents first">
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="figaroh.measurements.measurement.Measurement" class="doc doc-heading">
-              <code class="highlight language-python"><span class="n">Measurement</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">joint</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></code>
-
-<a href="#figaroh.measurements.measurement.Measurement" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents ">
-
-
-
-        <p>Class for handling different types of measurements.</p>
-
-        <p>Initialize measurement.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>name</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Name of measurement</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>joint</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Joint where measurement is expressed</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>frame</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Closest frame from measurement</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>type</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Type of measurement (SE3, wrench, current)</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>value</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>6D measurement value wrt joint placement</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-
-
-
-
-
-
-                  <details class="mkdocstrings-source">
-                    <summary>Source code in <code>src/figaroh/measurements/measurement.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">joint</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize measurement.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        name: Name of measurement</span>
-<span class="sd">        joint: Joint where measurement is expressed</span>
-<span class="sd">        frame: Closest frame from measurement</span>
-<span class="sd">        type: Type of measurement (SE3, wrench, current)</span>
-<span class="sd">        value: 6D measurement value wrt joint placement</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">joint</span> <span class="o">=</span> <span class="n">joint</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">type</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;SE3&quot;</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">SE3_value</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">SE3</span><span class="p">(</span>
-            <span class="n">pin</span><span class="o">.</span><span class="n">rpyToMatrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">value</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="mi">5</span><span class="p">]])),</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="mi">2</span><span class="p">]]),</span>
-        <span class="p">)</span>
-    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;wrench&quot;</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">wrench_value</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">Force</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;current&quot;</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_value</span> <span class="o">=</span> <span class="n">value</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The type of your measurement is not valid&quot;</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-                  </details>
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="figaroh.measurements.measurement.Measurement.add_SE3_measurement" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">add_SE3_measurement</span><span class="p">(</span><span class="n">model</span><span class="p">)</span></code>
-
-<a href="#figaroh.measurements.measurement.Measurement.add_SE3_measurement" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Add SE3 measurement to model.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>model</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Pinocchio model to add measurement to</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>tuple</code></td>            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Updated model and data</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/figaroh/measurements/measurement.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span>
-<span class="normal">63</span>
-<span class="normal">64</span>
-<span class="normal">65</span>
-<span class="normal">66</span>
-<span class="normal">67</span>
-<span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_SE3_measurement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add SE3 measurement to model.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        model: Pinocchio model to add measurement to</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        tuple: Updated model and data</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;SE3&quot;</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">frame_index</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">addFrame</span><span class="p">(</span>
-            <span class="n">pin</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                <span class="n">model</span><span class="o">.</span><span class="n">getJointId</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">joint</span><span class="p">),</span>
-                <span class="n">model</span><span class="o">.</span><span class="n">getFrameId</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">),</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">SE3_value</span><span class="p">,</span>
-                <span class="n">pin</span><span class="o">.</span><span class="n">OP_FRAME</span><span class="p">,</span>
-            <span class="p">),</span>
-            <span class="s2">&quot;False&quot;</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">createData</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-
-
-  </div>
-
-    </div>
-
-</div>
-
-
-
-
-  </div>
-
-    </div>
-
-</div>
+<h1 id="integration-api">Integration API<a class="headerlink" href="#integration-api" title="Permanent link">&para;</a></h1>
+<p><code>figaroh.integration</code> wraps the <a href="../backends/">backend abstraction</a> and the
+<code>BaseIdentification</code> workflow class into a one-line, script-friendly API —
+for when you want a quick identification run without writing a
+robot-specific <code>BaseIdentification</code> subclass (see the
+<a href="../../tutorials/">tutorials</a> and
+<a href="../../examples/">Examples Gallery</a> for the subclassing pattern the
+full examples use instead).</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.integration</span><span class="w"> </span><span class="kn">import</span> <span class="n">RobotIdentificationSystem</span>
+
+<span class="c1"># Create from URDF, defaulting to the Pinocchio backend</span>
+<span class="n">system</span> <span class="o">=</span> <span class="n">RobotIdentificationSystem</span><span class="o">.</span><span class="n">from_urdf</span><span class="p">(</span><span class="s2">&quot;robot.urdf&quot;</span><span class="p">)</span>
+
+<span class="c1"># Or pick a backend explicitly</span>
+<span class="n">system</span> <span class="o">=</span> <span class="n">RobotIdentificationSystem</span><span class="o">.</span><span class="n">from_urdf</span><span class="p">(</span><span class="s2">&quot;robot.urdf&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;mujoco&quot;</span><span class="p">)</span>
+
+<span class="c1"># Run identification against CSV trajectory data</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">identify_parameters</span><span class="p">(</span>
+    <span class="n">config</span><span class="o">=</span><span class="s2">&quot;config/robot_config.yaml&quot;</span><span class="p">,</span>
+    <span class="n">data_dir</span><span class="o">=</span><span class="s2">&quot;data/&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Identified </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">phi_base</span><span class="p">)</span><span class="si">}</span><span class="s2"> base parameters&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RMS error: </span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">rms_error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="robotidentificationsystem"><code>RobotIdentificationSystem</code><a class="headerlink" href="#robotidentificationsystem" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>from_urdf(urdf_path, backend="pinocchio", package_dirs=None, free_flyer=False, **kwargs)</code>
+  — construct from a URDF, loading it through <code>figaroh.tools.load_robot</code>.</li>
+<li><code>from_mjcf(mjcf_path, ...)</code> — reserved for MJCF-native workflows; not yet
+  implemented (<code>BaseIdentification</code> currently requires a URDF-based <code>Robot</code>
+  object; raises <code>NotImplementedError</code> until that's refactored).</li>
+<li><code>identify_parameters(config, data_dir=None, decimate=True, decimation_factor=10, zero_tolerance=0.001, plotting=False, save_results=False, **kwargs)</code>
+  — loads <code>q</code>/<code>dq</code>/<code>ddq</code>/<code>tau</code> CSVs from <code>data_dir</code> (or <code>data_files</code> in the
+  config), builds the regressor, solves for base parameters, and returns an
+  <code>IdentificationResult</code>.</li>
+</ul>
+<h2 id="identificationresult"><code>IdentificationResult</code><a class="headerlink" href="#identificationresult" title="Permanent link">&para;</a></h2>
+<p>A plain dataclass: <code>phi_base</code>, <code>params_base</code>, <code>phi_standard</code> (if
+physical-consistency reconstruction is enabled), <code>rms_error</code>, <code>correlation</code>,
+<code>backend</code>, <code>model_path</code>, <code>config</code>, and <code>raw</code> (the full result dict from
+<code>BaseIdentification</code>, for anything not surfaced on the dataclass directly).</p>
+<h2 id="when-to-use-this-vs-a-full-example">When to use this vs. a full example<a class="headerlink" href="#when-to-use-this-vs-a-full-example" title="Permanent link">&para;</a></h2>
+<p><code>RobotIdentificationSystem</code> is the fast path: one call, CSV-in the four
+required columns (<code>q.csv</code>, <code>dq.csv</code>, <code>ddq.csv</code>, <code>tau.csv</code>), a result object
+out. The <a href="../../examples/">Examples Gallery</a> robots
+(UR10, TIAGo, TALOS, Staubli TX40) instead subclass <code>BaseCalibration</code> /
+<code>BaseIdentification</code> directly — reach for that pattern once you need
+robot-specific cost functions, custom data loaders, or the full reporting/
+verification suite wired into a CLI script.</p>
+<p>See <a href="../../api/integration/">API Reference → Integration</a> for the complete
+signatures.</p>
 
 
 

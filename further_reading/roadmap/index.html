@@ -1,0 +1,4486 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A Python toolbox for dynamic parameter identification and geometric calibration of robots and humans.">
+      
+      
+      
+        <link rel="canonical" href="https://thanhndv212.github.io/figaroh-plus/further_reading/roadmap/">
+      
+      
+        <link rel="prev" href="../../api/visualisation/">
+      
+      
+        <link rel="next" href="../changelog/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Roadmap - FIGAROH</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#roadmap" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="FIGAROH" class="md-header__button md-logo" aria-label="FIGAROH" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            FIGAROH
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Roadmap
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/thanhndv212/figaroh-plus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    thanhndv212/figaroh-plus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting_started/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../concepts/architecture/" class="md-tabs__link">
+          
+  
+  
+  Concepts
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guides/reporting_and_verification/" class="md-tabs__link">
+          
+  
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../examples/" class="md-tabs__link">
+          
+  
+  
+  Examples Gallery
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  Further Reading
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="FIGAROH" class="md-nav__button md-logo" aria-label="FIGAROH" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    FIGAROH
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/thanhndv212/figaroh-plus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    thanhndv212/figaroh-plus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/calibration_walkthrough/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration Walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/identification_walkthrough/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identification Walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/optimal_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Optimal Experiment Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concepts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integration API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/reporting_and_verification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reporting & Verification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples Gallery
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples Gallery
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/ur10/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UR10
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/tiago/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TIAGo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/talos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TALOS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/staubli_tx40/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Staubli TX40
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/templates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config Templates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/calibration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/identification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/optimal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Optimal
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/measurements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Measurements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Utils
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/visualisation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visualisation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Further Reading
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Further Reading
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh-combined-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FIGAROH Combined Roadmap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FIGAROH Combined Roadmap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-vision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Vision
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-strategic-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Strategic Principles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-current-state-verified-snapshot-june-19-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Current State (Verified Snapshot, June 19, 2026)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Current State (Verified Snapshot, June 19, 2026)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-figaroh-core-figaroh-v043" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 FIGAROH Core (figaroh/, v0.4.3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-figaroh-examples-figaroh-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 FIGAROH-Examples (figaroh-examples/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-track-a-algorithmic-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Track A — Algorithmic Features
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Track A — Algorithmic Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#v04-current-minor-physical-consistency-reconstruction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.4 (Current Minor) — Physical Consistency &amp; Reconstruction
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.4 (Current Minor) — Physical Consistency &amp; Reconstruction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#v041-lmi-physical-consistency-projection-done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.4.1 — LMI Physical-Consistency Projection ✅ DONE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v042-base-full-parameter-reconstruction-done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.4.2 — Base → Full Parameter Reconstruction ✅ DONE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v043-cad-informed-constraints-done-released-2026-06-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.4.3 — CAD-Informed Constraints ✅ DONE (released 2026-06-02)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v04x-cross-cutting-gates-remaining" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.4.x — Cross-Cutting Gates (REMAINING)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v05-modular-refactor-visualization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.5 — Modular Refactor &amp; Visualization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.5 — Modular Refactor &amp; Visualization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#051-modular-refactor-internal-no-public-api-break" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.5.1 Modular refactor (internal, no public API break)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#052-docs-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.5.2 Docs &amp; examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#053-major-visualization-update-inspection-of-physicality" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.5.3 Major visualization update (inspection of physicality)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v06-online-identification-friction-fim-oed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.6 — Online Identification, Friction, FIM-OED
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.6 — Online Identification, Friction, FIM-OED">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#061-online-identification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.6.1 Online identification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#062-new-friction-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.6.2 New friction models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#063-oed-refactor-fisher-information-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.6.3 OED refactor: Fisher Information Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v07-multi-sensor-calibration-round-tripping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.7 — Multi-Sensor Calibration &amp; Round-Tripping
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.7 — Multi-Sensor Calibration &amp; Round-Tripping">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#071-multi-sensor-calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.7.1 Multi-sensor calibration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#072-urdfyaml-round-tripping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.7.2 URDF↔YAML round-tripping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#073-test-suite-real-gates-not-just-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.7.3 Test suite (real gates, not just examples)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v10-api-stabilization-convex-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.0 — API Stabilization &amp; Convex ID
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v1.0 — API Stabilization &amp; Convex ID">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-architecture-consolidation-breaking-changes-allowed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.0.1 Architecture consolidation (breaking changes allowed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-physically-consistent-pipeline-as-first-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.0.2 Physically consistent pipeline as first-class
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-track-b-multi-simulator-backend-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Track B — Multi-Simulator Backend Integration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Track B — Multi-Simulator Backend Integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-foundation-q2-2026-mostly-complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Foundation (Q2 2026) — 🔄 MOSTLY COMPLETE
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 1: Foundation (Q2 2026) — 🔄 MOSTLY COMPLETE">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-121-dynamicsbackend-interface-done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1.2.1: DynamicsBackend Interface — ✅ DONE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-122-pinocchiobackend-done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1.2.2: PinocchioBackend — ✅ DONE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-123-core-module-migration-done-algorithm-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1.2.3: Core Module Migration — ✅ DONE (Algorithm Path)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-131-high-level-integration-api-not-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1.3.1: High-Level Integration API — ❌ NOT STARTED
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-mujoco-genesis-backends-q3-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: MuJoCo &amp; Genesis Backends (Q3 2026)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 2: MuJoCo &amp; Genesis Backends (Q3 2026)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-mujoco-backend-implemented-validation-pending" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 MuJoCo Backend — 🔄 IMPLEMENTED, VALIDATION PENDING
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-genesis-backend-not-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Genesis Backend — ❌ NOT STARTED
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-cross-backend-validation-week-21-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Cross-Backend Validation (Week 21-24)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-isaacsim-backend-ecosystem-q4-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: IsaacSim Backend &amp; Ecosystem (Q4 2026)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 3: IsaacSim Backend &amp; Ecosystem (Q4 2026)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-isaacsim-backend-not-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 IsaacSim Backend — ❌ NOT STARTED
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-unified-documentation-week-33-36" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Unified Documentation (Week 33-36)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-tooling-developer-experience-week-37-40" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Tooling &amp; Developer Experience (Week 37-40)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-ecosystem-advanced-features-2027" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Ecosystem &amp; Advanced Features (2027+)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 4: Ecosystem &amp; Advanced Features (2027+)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-web-interface-q1-2027" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Web Interface (Q1 2027)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-ros-2-integration-q1-q2-2027" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 ROS 2 Integration (Q1-Q2 2027)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-ml-enhanced-identification-q3-q4-2027" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 ML-Enhanced Identification (Q3-Q4 2027)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-cloud-deployment-q4-2027" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Cloud Deployment (Q4 2027)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-cross-cutting-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Cross-Cutting Work
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Cross-Cutting Work">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples-figaroh-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples (figaroh-examples)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ci-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CI / Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deprecation-archiving" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deprecation / Archiving
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-resource-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Resource Planning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Resource Planning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#team-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Team Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeline-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeline Summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#budget-estimate-rough-phase-1-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Budget Estimate (Rough, Phase 1-3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-success-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Success Metrics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Success Metrics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#technical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-experience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User Experience
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#community" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Community
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-risk-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Risk Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Risk Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#high-risk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        High-Risk
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#medium-risk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medium-Risk
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#low-risk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Low-Risk
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-revision-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Revision History
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Revision History">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#version-15-june-19-2026-track-b-step-4-implemented-mujoco-backend-fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version 1.5 (June 19, 2026) — Track B Step 4 Implemented (MuJoCo Backend Fixed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-14-june-19-2026-track-b-step-5-complete-core-algorithm-path-migrated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version 1.4 (June 19, 2026) — Track B Step 5 Complete (Core Algorithm Path Migrated)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-13-june-19-2026-track-b-step-5-implemented-partial-core-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version 1.3 (June 19, 2026) — Track B Step 5 Implemented (Partial Core Migration)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-12-june-19-2026-track-b-steps-1-3-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version 1.2 (June 19, 2026) — Track B Steps 1-3 Implemented
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-11-june-19-2026-implementation-state-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version 1.1 (June 19, 2026) — Implementation State Verification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-10-june-19-2026-combined-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version 1.0 (June 19, 2026) — Combined Roadmap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prior-documents-superseded-moved-to-deprecated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prior documents (superseded, moved to deprecated/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh-combined-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FIGAROH Combined Roadmap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FIGAROH Combined Roadmap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-vision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Vision
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-strategic-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Strategic Principles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-current-state-verified-snapshot-june-19-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Current State (Verified Snapshot, June 19, 2026)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Current State (Verified Snapshot, June 19, 2026)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-figaroh-core-figaroh-v043" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 FIGAROH Core (figaroh/, v0.4.3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-figaroh-examples-figaroh-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 FIGAROH-Examples (figaroh-examples/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-track-a-algorithmic-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Track A — Algorithmic Features
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Track A — Algorithmic Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#v04-current-minor-physical-consistency-reconstruction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.4 (Current Minor) — Physical Consistency &amp; Reconstruction
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.4 (Current Minor) — Physical Consistency &amp; Reconstruction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#v041-lmi-physical-consistency-projection-done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.4.1 — LMI Physical-Consistency Projection ✅ DONE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v042-base-full-parameter-reconstruction-done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.4.2 — Base → Full Parameter Reconstruction ✅ DONE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v043-cad-informed-constraints-done-released-2026-06-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.4.3 — CAD-Informed Constraints ✅ DONE (released 2026-06-02)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v04x-cross-cutting-gates-remaining" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.4.x — Cross-Cutting Gates (REMAINING)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v05-modular-refactor-visualization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.5 — Modular Refactor &amp; Visualization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.5 — Modular Refactor &amp; Visualization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#051-modular-refactor-internal-no-public-api-break" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.5.1 Modular refactor (internal, no public API break)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#052-docs-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.5.2 Docs &amp; examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#053-major-visualization-update-inspection-of-physicality" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.5.3 Major visualization update (inspection of physicality)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v06-online-identification-friction-fim-oed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.6 — Online Identification, Friction, FIM-OED
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.6 — Online Identification, Friction, FIM-OED">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#061-online-identification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.6.1 Online identification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#062-new-friction-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.6.2 New friction models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#063-oed-refactor-fisher-information-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.6.3 OED refactor: Fisher Information Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v07-multi-sensor-calibration-round-tripping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.7 — Multi-Sensor Calibration &amp; Round-Tripping
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.7 — Multi-Sensor Calibration &amp; Round-Tripping">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#071-multi-sensor-calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.7.1 Multi-sensor calibration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#072-urdfyaml-round-tripping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.7.2 URDF↔YAML round-tripping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#073-test-suite-real-gates-not-just-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.7.3 Test suite (real gates, not just examples)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v10-api-stabilization-convex-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.0 — API Stabilization &amp; Convex ID
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v1.0 — API Stabilization &amp; Convex ID">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-architecture-consolidation-breaking-changes-allowed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.0.1 Architecture consolidation (breaking changes allowed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-physically-consistent-pipeline-as-first-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.0.2 Physically consistent pipeline as first-class
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-track-b-multi-simulator-backend-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Track B — Multi-Simulator Backend Integration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Track B — Multi-Simulator Backend Integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-foundation-q2-2026-mostly-complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Foundation (Q2 2026) — 🔄 MOSTLY COMPLETE
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 1: Foundation (Q2 2026) — 🔄 MOSTLY COMPLETE">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-121-dynamicsbackend-interface-done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1.2.1: DynamicsBackend Interface — ✅ DONE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-122-pinocchiobackend-done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1.2.2: PinocchioBackend — ✅ DONE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-123-core-module-migration-done-algorithm-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1.2.3: Core Module Migration — ✅ DONE (Algorithm Path)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-131-high-level-integration-api-not-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1.3.1: High-Level Integration API — ❌ NOT STARTED
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-mujoco-genesis-backends-q3-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: MuJoCo &amp; Genesis Backends (Q3 2026)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 2: MuJoCo &amp; Genesis Backends (Q3 2026)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-mujoco-backend-implemented-validation-pending" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 MuJoCo Backend — 🔄 IMPLEMENTED, VALIDATION PENDING
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-genesis-backend-not-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Genesis Backend — ❌ NOT STARTED
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-cross-backend-validation-week-21-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Cross-Backend Validation (Week 21-24)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-isaacsim-backend-ecosystem-q4-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: IsaacSim Backend &amp; Ecosystem (Q4 2026)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 3: IsaacSim Backend &amp; Ecosystem (Q4 2026)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-isaacsim-backend-not-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 IsaacSim Backend — ❌ NOT STARTED
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-unified-documentation-week-33-36" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Unified Documentation (Week 33-36)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-tooling-developer-experience-week-37-40" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Tooling &amp; Developer Experience (Week 37-40)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-ecosystem-advanced-features-2027" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Ecosystem &amp; Advanced Features (2027+)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 4: Ecosystem &amp; Advanced Features (2027+)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-web-interface-q1-2027" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Web Interface (Q1 2027)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-ros-2-integration-q1-q2-2027" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 ROS 2 Integration (Q1-Q2 2027)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-ml-enhanced-identification-q3-q4-2027" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 ML-Enhanced Identification (Q3-Q4 2027)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-cloud-deployment-q4-2027" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Cloud Deployment (Q4 2027)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-cross-cutting-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Cross-Cutting Work
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Cross-Cutting Work">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples-figaroh-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples (figaroh-examples)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ci-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CI / Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deprecation-archiving" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deprecation / Archiving
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-resource-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Resource Planning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Resource Planning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#team-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Team Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeline-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeline Summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#budget-estimate-rough-phase-1-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Budget Estimate (Rough, Phase 1-3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-success-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Success Metrics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Success Metrics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#technical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-experience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User Experience
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#community" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Community
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-risk-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Risk Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Risk Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#high-risk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        High-Risk
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#medium-risk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medium-Risk
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#low-risk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Low-Risk
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-revision-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Revision History
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Revision History">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#version-15-june-19-2026-track-b-step-4-implemented-mujoco-backend-fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version 1.5 (June 19, 2026) — Track B Step 4 Implemented (MuJoCo Backend Fixed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-14-june-19-2026-track-b-step-5-complete-core-algorithm-path-migrated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version 1.4 (June 19, 2026) — Track B Step 5 Complete (Core Algorithm Path Migrated)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-13-june-19-2026-track-b-step-5-implemented-partial-core-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version 1.3 (June 19, 2026) — Track B Step 5 Implemented (Partial Core Migration)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-12-june-19-2026-track-b-steps-1-3-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version 1.2 (June 19, 2026) — Track B Steps 1-3 Implemented
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-11-june-19-2026-implementation-state-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version 1.1 (June 19, 2026) — Implementation State Verification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-10-june-19-2026-combined-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version 1.0 (June 19, 2026) — Combined Roadmap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prior-documents-superseded-moved-to-deprecated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prior documents (superseded, moved to deprecated/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/thanhndv212/figaroh-plus/edit/main/docs/source/further_reading/roadmap.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="roadmap">Roadmap<a class="headerlink" href="#roadmap" title="Permanent link">&para;</a></h1>
+<p>The canonical roadmap lives at the repository root
+(<a href="https://github.com/thanhndv212/figaroh-plus/blob/main/ROADMAP.md"><code>ROADMAP.md</code></a>)
+so it stays next to the code it tracks. This page embeds it directly so the
+same content is browsable as part of the docs site, without a second copy
+to keep in sync.</p>
+<h2 id="figaroh-combined-roadmap">FIGAROH Combined Roadmap<a class="headerlink" href="#figaroh-combined-roadmap" title="Permanent link">&para;</a></h2>
+<p><strong>Document Version:</strong> 1.4 (Track B Step 5 complete — core algorithm path migrated)
+<strong>Date:</strong> June 19, 2026
+<strong>Current Release:</strong> <code>figaroh</code> 0.4.3 (PyPI)
+<strong>Status:</strong> v0.4.x algorithmic features largely landed; Track B Phase 1 backend abstraction functional and core algorithm path migrated (identification + calibration route through PinocchioBackend)</p>
+<blockquote>
+<p><strong>Single source of truth.</strong> This document merges the private algorithmic roadmap
+(version-tracked features: physical consistency, reconstruction, online ID, etc.)
+with the public multi-simulator integration roadmap (backend abstraction,
+Pinocchio/MuJoCo/Genesis/IsaacSim). The two tracks are orthogonal but intersect
+at v1.0 (API stabilization requires the backend abstraction to be real) and at
+<code>figaroh-examples</code> (both tracks need examples).</p>
+<p><strong>Accuracy note:</strong> Status markers below are reconciled against the actual codebase
+as of June 2026, not the aspirational claims in the former <code>ARCHITECTURE.md</code> /
+<code>IMPLEMENTATION_ROADMAP.md</code>. Where a prior doc claimed "✅ completed" but the
+code does not exist, this document marks it ❌ or 🔄.</p>
+</blockquote>
+<hr />
+<h3 id="1-vision">1. Vision<a class="headerlink" href="#1-vision" title="Permanent link">&para;</a></h3>
+<p><strong>Transform FIGAROH into a universal, simulator-agnostic calibration and
+identification toolbox</strong> that enables researchers and engineers to:</p>
+<ul>
+<li>Identify <strong>physically feasible</strong> full per-link inertial parameters — not just
+  reduced base-parameter sets — suitable for URDF export, simulation, and control.</li>
+<li>Switch between dynamics backends (Pinocchio, MuJoCo, Genesis, IsaacSim) with
+  minimal code changes, leveraging each simulator's strengths while maintaining
+  consistent algorithms.</li>
+<li>Integrate seamlessly into existing workflows with straightforward, step-by-step
+  APIs and comprehensive documentation.</li>
+<li>Achieve production-grade reliability with comprehensive tests, CI, and examples.</li>
+</ul>
+<hr />
+<h3 id="2-strategic-principles">2. Strategic Principles<a class="headerlink" href="#2-strategic-principles" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Leverage, Don't Reinvent</strong></li>
+<li>Use existing simulator converters instead of building custom ones.</li>
+<li>Build on FIGAROH's mature algorithms; extend, don't fork.</li>
+<li>
+<p>Integrate shared infrastructure from <code>figaroh-examples</code> where it belongs.</p>
+</li>
+<li>
+<p><strong>Abstraction Over Implementation</strong></p>
+</li>
+<li>Define clean interfaces for dynamics backends.</li>
+<li>Enable pluggable simulator implementations.</li>
+<li>
+<p>Maintain algorithm consistency across backends.</p>
+</li>
+<li>
+<p><strong>Do Not Break Existing Workflows</strong></p>
+</li>
+<li>New functionality is <strong>opt-in</strong> through config flags and/or new classes until v1.0.</li>
+<li>Separate concerns: (A) identify parameters, (B) enforce physical feasibility,
+     (C) export back to URDF/YAML + visualize/validate.</li>
+<li>
+<p>Prefer small, testable building blocks over monolithic drops.</p>
+</li>
+<li>
+<p><strong>User Experience First</strong></p>
+</li>
+<li>Prioritize ease of use and clear documentation.</li>
+<li>Provide step-by-step workflows; getting started in &lt;5 minutes.</li>
+<li>
+<p>Minimize learning curve for new users and new simulators.</p>
+</li>
+<li>
+<p><strong>Incremental, Validated Progress</strong></p>
+</li>
+<li>Deliver working features incrementally.</li>
+<li>Validate each backend and feature thoroughly.</li>
+<li>Maintain backward compatibility.</li>
+</ol>
+<hr />
+<h3 id="3-current-state-verified-snapshot-june-19-2026">3. Current State (Verified Snapshot, June 19, 2026)<a class="headerlink" href="#3-current-state-verified-snapshot-june-19-2026" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>Status below is verified against the actual codebase (file existence, test runs,
+grep checks), not prior doc claims. Test run: <code>pytest --co</code> = 214 collected;
+<code>pytest</code> = 208 passed, 4 failed, 2 skipped.</p>
+</blockquote>
+<h4 id="31-figaroh-core-figaroh-v043">3.1 FIGAROH Core (<code>figaroh/</code>, v0.4.3)<a class="headerlink" href="#31-figaroh-core-figaroh-v043" title="Permanent link">&para;</a></h4>
+<p><strong>Algorithmic features — solid and actively developed:</strong>
+- Mature identification (regressor-based, QR base parameters, 10+ linear solver methods)
+- Geometric calibration (multi-sensor, optimal postures)
+- Optimal trajectory generation (IPOPT)
+- <strong>v0.4.1</strong> LMI physical-consistency projection ✅ (<code>identification/physical_consistency.py</code>, tested)
+- <strong>v0.4.2</strong> Base → full parameter reconstruction ✅ (<code>identification/reconstruction.py</code>, nullspace + SDP)
+- <strong>v0.4.3</strong> CAD-informed constraints ✅ (<code>identification/cad_constraints.py</code>, released 2026-06-02)
+- <strong>Reporting &amp; verification (V&amp;V) suite</strong> ✅ — HTML diagnostic reports, machine-readable
+  pass/fail verdicts (<code>verify()</code>/<code>export_verification_report()</code>), an interactive
+  before/after panel, and a static two-run compare page
+  (<code>tools/compare_report.py</code>). Tracked separately from this roadmap's Track A/B —
+  full design history and status in
+  <a href="https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/roadmap-mujoco-sysid-inspired-features.md"><code>docs/decisions/roadmap-mujoco-sysid-inspired-features.md</code></a>.</p>
+<p><strong>Test suite (verified by running <code>pytest</code>):</strong>
+- 259 tests collected across 11 files in <code>tests/unit/</code>:
+  <code>test_solver.py</code>, <code>test_qr_decomposition.py</code>, <code>test_reconstruction.py</code>,
+  <code>test_physical_consistency.py</code>, <code>test_cad_constraints.py</code>, <code>test_regressor.py</code>,
+  <code>test_robotvisualization.py</code>, <code>test_robotcollisions.py</code>, <code>test_robotipopt.py</code>,
+  <code>test_backends.py</code> (45 tests: 32 Pinocchio + 13 MuJoCo)
+- <strong>253 passed, 4 failed, 2 skipped.</strong>
+- The 4 failures are all in <code>test_robotipopt.py</code> (IPOPT solver tests) — pre-existing.
+- ⚠️ Prior docs claimed "198/198 pass" — inaccurate on both counts (count and pass rate).
+- <code>test_cad_constraints.py</code> exists but was not mentioned in the old roadmap checklist.</p>
+<p><strong>Backend abstraction — functional (PinocchioBackend + MuJoCoBackend implemented):</strong>
+- <code>DynamicsBackend</code> abstract interface (<code>backends/base.py</code>): ✅ exists, extended with 6 optional model-introspection methods (<code>get_inertias</code>, <code>get_frame_id</code>, <code>compute_difference</code>, <code>compute_integrate</code>, <code>random_configuration</code>, <code>get_model_object</code>)
+- <code>PinocchioBackend</code> (<code>backends/pinocchio.py</code>): ✅ <strong>implemented</strong> (371 lines) — wraps <code>pin.crba</code>, <code>pin.computeCoriolisMatrix</code>, <code>pin.computeGeneralizedGravity</code>, <code>pin.rnea</code>, <code>pin.aba</code>, <code>pin.computeJointTorqueRegressor</code>, <code>pin.computeFrameJacobian</code>, FK, plus all optional Lie group methods. Includes <code>from_model()</code> classmethod for wrapping existing <code>pin.Model</code>/<code>pin.Data</code> without URDF re-loading. Factory <code>get_backend("pinocchio")</code> now works.
+- <code>MuJoCoBackend</code> (<code>backends/mujoco.py</code>): ✅ implemented and functional — dynamics (mass matrix, Coriolis, gravity, inverse/forward dynamics), kinematics (FK, Jacobian), regressor. ⚠️ Regressor delegates to Pinocchio's analytical <code>computeJointTorqueRegressor</code> (MuJoCo doesn't support runtime inertial parameter perturbation for finite differences). Coriolis matrix uses finite-difference Jacobian/2 approach (Euler's theorem for quadratic homogeneous functions). Mass matrix fixed to call <code>mj_forward</code> before <code>mj_crb</code>.
+- <code>GenesisBackend</code>: ❌ not started
+- <code>IsaacSimBackend</code>: ❌ not started
+- <code>integration/</code> directory: ❌ does not exist (high-level API not started)
+- <code>cli/</code> directory: ❌ does not exist (CLI tool not started)
+- Backend test suite (<code>tests/unit/test_backends.py</code>): ✅ 45 tests (32 Pinocchio + 13 MuJoCo) covering factory, initialization, numerical correctness, kinematics, regressor self-consistency, Coriolis consistency, optional methods, interface conformance.
+- <strong>Core module migration (Step 5):</strong> <code>Robot</code> class has lazy <code>backend</code> property (wraps existing model via <code>PinocchioBackend.from_model()</code>). Full algorithm path migrated:
+  - <strong>Identification:</strong> <code>RegressorBuilder</code> routes through <code>robot.backend.compute_regressor()</code>; <code>identification_tools.py</code> accepts optional <code>backend</code> for <code>compute_difference()</code>; <code>randomdata.py</code> routes through <code>robot.backend.compute_inverse_dynamics()</code>.
+  - <strong>Calibration:</strong> <code>calibration_tools.py</code> — 7 functions migrated (<code>get_rel_kinreg</code>, <code>get_rel_jac</code>, <code>update_forward_kinematics</code>, <code>calc_updated_fkm</code>, <code>calculate_kinematics_model</code>, <code>calculate_identifiable_kinematics_model</code>, <code>calculate_base_kinematics_regressor</code>) with optional <code>backend=None</code> parameter routing FK, Jacobian, gravity, and random-configuration through backend. <code>computeFrameKinematicRegressor</code> uses <code>get_model_object()</code> escape hatch (no backend equivalent yet).
+  - All changes are "strangler fig" pattern — new path when backend available, old <code>pin.*</code> path as fallback. 6 files modified, +268/-79 lines.</p>
+<p><strong>Tooling/infra:</strong>
+- <code>robot_format_converter</code>: deprecated (notice + migration guide done; GitHub
+  archiving pending July 1, 2026)
+- <code>figaroh-mujoco</code>: deprecated &amp; merged into core as <code>backends/mujoco.py</code>
+  (archiving pending July 1, 2026)
+- CI builds docs only (<code>.github/workflows/docs.yml</code>); <strong>no test/lint CI workflow</strong>.
+  Quality gate = <code>pre-commit run --all-files</code>.
+- Dev branch: <code>devel</code>; release branch: <code>main</code>.</p>
+<h4 id="32-figaroh-examples-figaroh-examples">3.2 FIGAROH-Examples (<code>figaroh-examples/</code>)<a class="headerlink" href="#32-figaroh-examples-figaroh-examples" title="Permanent link">&para;</a></h4>
+<p><strong>Robot examples (verified real-vs-partial):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Example</th>
+<th>Status</th>
+<th>Scripts present</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ur10/</code></td>
+<td>✅ Full</td>
+<td>calibration, identification, optimal_config, optimal_trajectory, update_model</td>
+<td>All real (52–122 lines each); utils ~1656 lines; 6 config YAMLs; 4 data CSVs</td>
+</tr>
+<tr>
+<td><code>tiago/</code></td>
+<td>✅ Full</td>
+<td>calibration, identification, optimal_config, optimal_trajectory</td>
+<td>No <code>update_model.py</code>; utils ~7482 lines (incl. 7242-line collision model); 8 config YAMLs; 7 URDF variants; rich data</td>
+</tr>
+<tr>
+<td><code>talos/</code></td>
+<td>⚠️ Partial</td>
+<td>calibration_upperbody, update_model</td>
+<td>Missing identification, optimal_config, optimal_trajectory; utils ~3876 lines</td>
+</tr>
+<tr>
+<td><code>staubli_tx40/</code></td>
+<td>⚠️ Partial</td>
+<td>identification</td>
+<td>Missing calibration, optimal_config, optimal_trajectory, update_model; utils ~20306 lines; 2 large data CSVs (2.1–2.3MB)</td>
+</tr>
+<tr>
+<td><code>templates/</code></td>
+<td>⚠️ Scaffold</td>
+<td>—</td>
+<td><code>base_robot_config.yaml</code> (221L), <code>manipulator_robot.yaml</code> (43L), <code>humanoid_robot.yaml</code> (71L). Starter templates only, not exercised examples.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>examples/shared/</code> — ❌ DOES NOT EXIST.</strong>
+The former <code>FIGAROH_ECOSYSTEM_ANALYSIS.md</code> described 9 shared files in detail
+(base_calibration.py, base_identification.py, config_manager.py, etc.) but this
+directory is absent. Each robot example has its own <code>utils/</code> folder instead.
+All references to <code>shared/</code> infrastructure in prior docs are stale.</p>
+<p><strong><code>web-interface/</code> — ✅ REAL WORKING APP (not a scaffold).</strong>
+- Built on <strong>Viser</strong> (3D web framework), not the React/Three.js stack the old
+  Phase 4 plan described.
+- 21 Python files, ~20K+ lines total:
+  - <code>app.py</code> (206L), <code>main.py</code> (58L, CLI entry with argparse)
+  - <code>components/</code> (8 files, ~4209L): setup_panel, robot_panel, task_panel, data_panel,
+    config_panel, results_panel, visualization_panel, streamlined_task_panel
+    (results_panel and visualization_panel are thin stubs; rest substantial)
+  - <code>core/</code> (6 files): interface.py (744L), streamlined_interface.py (11448L),
+    robot_manager.py (378L), task_manager.py, example_loader.py (95L), session_manager.py
+  - <code>utils/file_utils.py</code> (3919L)
+- Features: interactive 3D viz, multiple robot loaders (figaroh/robot_description/yourdfpy),
+  task management with threading, progress tracking, session management.
+- Marked "⚠️ Under development" in its README.</p>
+<p><strong>Simulator integration examples — ❌ ALL MISSING.</strong>
+<code>examples/mujoco_integration/</code>, <code>genesis_integration/</code>, <code>isaacsim_integration/</code>
+do not exist.</p>
+<p><strong>End-to-end example (ID → projection → reconstruction → URDF export) — ❌ MISSING.</strong>
+No single script chains these steps. Individual scripts exist per robot, and
+<code>update_model.py</code> (ur10, talos) handles URDF/xacro updating, but no script
+combines identification output → physical projection → reconstruction → URDF export.</p>
+<p><strong>CAD-constraints example — ❌ MISSING.</strong>
+Grep across all of <code>figaroh-examples</code> for <code>cad_constraint</code>, <code>physical_consistency</code>,
+<code>reconstruction</code> returns <strong>zero matches</strong>. The v0.4.3 CHANGELOG claim "Example YAML
+comment block for cad_constraints in figaroh-examples/examples/templates/manipulator_robot.yaml"
+is <strong>false</strong> — that file is 43 lines with no CAD block. No config anywhere exercises
+CAD constraints, physical consistency, or reconstruction.</p>
+<p><strong><code>tests/</code> — ✅ REAL.</strong>
+9 files, ~3684 lines: <code>run_tests.py</code>, <code>test_backward_compatibility.py</code> (634L),
+<code>test_robot_configs.py</code> (659L), <code>test_robot_integration.py</code> (536L),
+<code>test_config_integration.py</code> (391L), <code>test_unified_config_parser.py</code> (470L),
+<code>test_error_handling.py</code> (209L), <code>test_ur10_backward_compatibility.py</code> (259L),
+<code>test_tiago_backward_compatibility.py</code> (302L), <code>conftest.py</code>.</p>
+<p><strong><code>create_example.sh</code> — ✅ REAL (934 lines).</strong>
+Scaffolds a new robot example folder from the TIAGO template.</p>
+<hr />
+<h3 id="4-track-a-algorithmic-features">4. Track A — Algorithmic Features<a class="headerlink" href="#4-track-a-algorithmic-features" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>Source: former <code>ROADMAP_PRIVATE.md</code>. Version-tracked, opt-in, non-breaking until v1.0.
+Problem context: classic inverse-dynamics identification yields a reduced/base
+parameter set because the regressor is rank-deficient; users want full per-link
+physical parameters (mass, CoM, inertia) that are <strong>physically feasible</strong>
+($m&gt;0$, valid/PSD inertia). Promising direction: Lee et al. (2020)-style convex
+identification using spatial inertia + convex feasibility (SDP/LMI).</p>
+</blockquote>
+<h4 id="v04-current-minor-physical-consistency-reconstruction">v0.4 (Current Minor) — Physical Consistency &amp; Reconstruction<a class="headerlink" href="#v04-current-minor-physical-consistency-reconstruction" title="Permanent link">&para;</a></h4>
+<h5 id="v041-lmi-physical-consistency-projection-done">v0.4.1 — LMI Physical-Consistency Projection ✅ DONE<a class="headerlink" href="#v041-lmi-physical-consistency-projection-done" title="Permanent link">&para;</a></h5>
+<p>Opt-in post-processing stage: given a full per-link inertial set (10D <code>p10</code> per
+link), return the closest physically feasible set.</p>
+<ul>
+<li><strong>Module:</strong> <code>figaroh.identification.physical_consistency</code></li>
+<li><strong>API:</strong></li>
+<li><code>is_feasible_link(p10, ...) -&gt; FeasibilityReport</code> (alias of <code>check_p10_feasibility</code>)</li>
+<li><code>project_link(p10, weights, mass_min, solver, tol) -&gt; (p10_proj, ProjectionReport)</code> (alias of <code>project_p10_lmi</code>)</li>
+<li><code>project_robot_p10_lmi(params_by_link, ...) -&gt; (projected_by_link, RobotProjectionReport)</code></li>
+<li><strong>Constraints (per-link convex SDP):</strong></li>
+<li>C1: $m \ge m_{\min}$ (linear)</li>
+<li>C2: $P(p_i) \succeq 0$ (pseudo-inertia 4×4 PSD, via <code>pinocchio.PseudoInertia.FromDynamicParameters</code>)</li>
+<li><strong>Objective:</strong> $\min_{p_i} | W(p_i - \hat{p}_i) |_2^2$ s.t. C1, C2</li>
+<li><strong>Config:</strong> <code>identification.physical_consistency.{enabled, method, per_link, mass_min, weights.{mode,manual}, solver.{backend,verbose,max_seconds}, tolerances.psd_eig}</code></li>
+<li><strong>Solver:</strong> <code>picos</code> + CVXOPT (open-source) or MOSEK (preferred). Clear <code>ImportError</code> when backend missing.</li>
+<li><strong>Tests:</strong> TC-1 through TC-6 pass in <code>test_physical_consistency.py</code> (feasible-unchanged, Pinocchio round-trip, negative-mass corrected, indefinite-inertia corrected, weighting sanity, backend-missing error).</li>
+<li><strong>Minor gaps:</strong> <code>solver.max_seconds</code> not yet mapped from YAML; export-to-URDF path not yet using projected inertials.</li>
+</ul>
+<h5 id="v042-base-full-parameter-reconstruction-done">v0.4.2 — Base → Full Parameter Reconstruction ✅ DONE<a class="headerlink" href="#v042-base-full-parameter-reconstruction-done" title="Permanent link">&para;</a></h5>
+<p>Given identified base parameters, return a specific full-parameter set by selecting
+a point in the equivalence class.</p>
+<ul>
+<li><strong>Module:</strong> <code>figaroh.identification.reconstruction</code></li>
+<li><strong>Entry point:</strong> <code>reconstruct_full_parameters(base_result, *, method="nullspace"|"sdp"|"auto", prior="urdf"|"yaml"|dict, config) -&gt; (parameter_dict_full, report)</code></li>
+<li><strong>Base mapping:</strong> $\phi_{\text{base}} \approx M\,\theta_{\text{full}}$; $M$ retrieved via <code>QRDecomposer.get_M()</code> / <code>get_M_labels()</code>. <code>BaseResult</code> frozen dataclass carries $(M, \phi_{\text{base}}, \text{params}_r)$.</li>
+<li><strong>Option A (nullspace, fast):</strong> $\hat\theta_0 = \arg\min |M\theta - \phi_{\text{base}}|^2$; parameterize via nullspace $N$; regularize toward prior $\theta_{\text{prior}}$. Alternating loop with v0.4.1 projection for feasibility.</li>
+<li><strong>Option B (SDP, convex):</strong> $\min |W(\theta - \theta_{\text{prior}})|^2$ s.t. $M\theta = \phi_{\text{base}}$ and per-joint $P(p_{10,j}) \succeq 0$ via Schur-complement epigraph. Feasibility by construction.</li>
+<li><strong><code>method: "auto"</code>:</strong> tries SDP when picos available, falls back silently to nullspace.</li>
+<li><strong>Report:</strong> <code>ReconstructionResult</code> with <code>status</code> (<code>ok|solver_missing|error</code>), <code>base_residual_norm</code>, <code>objective</code>, <code>theta_r_dict</code>, <code>params_r</code>.</li>
+<li><strong>Config:</strong> <code>identification.reconstruction.{enabled, method, prior.source, tolerances.{base_residual,psd_eig}, nullspace.{lambda,max_iters}, sdp.{solver,max_seconds,verbose}}</code></li>
+<li><strong>Pipeline:</strong> <code>_apply_reconstruction_if_enabled()</code> hook in <code>BaseIdentification._store_results()</code> after physical-consistency step.</li>
+<li><strong>Tests:</strong> 17 tests in <code>test_reconstruction.py</code> (prior labels, dict output, prior propagation, BaseResult, residual norm, YAML prior, p10 indices, nullspace end-to-end, auto fallback, unsupported method error). Total suite: 214 collected, 208 passed, 4 failed (IPOPT), 2 skipped.</li>
+</ul>
+<h5 id="v043-cad-informed-constraints-done-released-2026-06-02">v0.4.3 — CAD-Informed Constraints ✅ DONE (released 2026-06-02)<a class="headerlink" href="#v043-cad-informed-constraints-done-released-2026-06-02" title="Permanent link">&para;</a></h5>
+<p>Convex CAD-informed constraints for inertial parameter identification.</p>
+<ul>
+<li><strong>Module:</strong> <code>figaroh.identification.cad_constraints</code></li>
+<li><strong>API:</strong></li>
+<li><code>CADConstraints</code> dataclass — per-link mass bounds, first-moment (CoM) bounds, symmetry equalities</li>
+<li><code>add_mass_bounds(cad, joint, *, m_min, m_max)</code></li>
+<li><code>add_com_bounds(cad, joint, *, axis, h_min, h_max)</code></li>
+<li><code>add_symmetry_constraints(cad, joint_a, joint_b, *, keys)</code></li>
+<li><code>bounds_from_urdf(model, ...)</code> — derive bounds from Pinocchio model URDF inertials</li>
+<li><code>build_cad_constraints_from_config(cfg, *, model)</code> — from YAML; <code>None</code> when empty (safe default-off)</li>
+<li><code>apply_cad_constraints_to_problem(problem, theta, params_r, cad)</code> — inject into picos <code>Problem</code></li>
+<li><strong>Integration:</strong> <code>project_p10_lmi</code> / <code>project_robot_p10_lmi</code> / <code>_reconstruct_sdp</code> / <code>reconstruct_full_parameters</code> all accept optional <code>cad_constraints</code> kwarg. Both <code>_apply_physical_consistency_if_enabled</code> and <code>_apply_reconstruction_if_enabled</code> parse CAD config.</li>
+<li><strong>Tests:</strong> <code>tests/unit/test_cad_constraints.py</code> exists and passes.</li>
+<li><strong>All new params optional with safe defaults — fully backward-compatible.</strong></li>
+<li>⚠️ <strong>Example gap:</strong> The v0.4.3 CHANGELOG claims "Example YAML comment block for
+  cad_constraints in figaroh-examples/examples/templates/manipulator_robot.yaml" —
+  this is <strong>false</strong> (file is 43 lines, no CAD block; grep confirms zero matches
+  across all of figaroh-examples). No example config exercises CAD constraints.</li>
+</ul>
+<h5 id="v04x-cross-cutting-gates-remaining">v0.4.x — Cross-Cutting Gates (REMAINING)<a class="headerlink" href="#v04x-cross-cutting-gates-remaining" title="Permanent link">&para;</a></h5>
+<ul>
+<li>[ ] <strong>One end-to-end example</strong> in <code>figaroh-examples</code>: classic ID → physical projection → (optional) reconstruction → URDF export</li>
+<li>[ ] <strong>Docs</strong>: Sphinx page for <code>physical_consistency</code> and <code>reconstruction</code> APIs with config reference</li>
+<li>[ ] <strong>CHANGELOG entry</strong> for 0.4.x summarizing all new public APIs</li>
+<li>[ ] <code>picos</code> backend availability documented in <code>README.md</code> and install guide (solver requirements + graceful error when missing)</li>
+<li>[ ] <strong>CI</strong>: test matrix runs with and without optional <code>picos</code>/<code>cvxopt</code> to verify lazy-import errors surface cleanly</li>
+<li>[ ] <code>solver.max_seconds</code> forwarded from config (field exists, not mapped from YAML)</li>
+<li>[ ] Export-to-URDF/YAML path uses projected inertials when enabled (currently overwrites in-place; raw should be preserved alongside projected)</li>
+</ul>
+<hr />
+<h4 id="v05-modular-refactor-visualization">v0.5 — Modular Refactor &amp; Visualization<a class="headerlink" href="#v05-modular-refactor-visualization" title="Permanent link">&para;</a></h4>
+<h5 id="051-modular-refactor-internal-no-public-api-break">0.5.1 Modular refactor (internal, no public API break)<a class="headerlink" href="#051-modular-refactor-internal-no-public-api-break" title="Permanent link">&para;</a></h5>
+<p>Goal: make later convex ID integration clean.
+- Extract "identification pipeline stages" into internal helpers:
+  - regressor prep / decimation / column elimination
+  - "base parameter computation"
+  - "parameter packaging (per-link mapping)"
+- Keep <code>BaseIdentification.solve()</code> behavior unchanged.</p>
+<h5 id="052-docs-examples">0.5.2 Docs &amp; examples<a class="headerlink" href="#052-docs-examples" title="Permanent link">&para;</a></h5>
+<ul>
+<li>One focused example: "classic ID → physical projection → URDF export".</li>
+<li>Document solver setup for <code>picos</code> backends and graceful fallback when not installed.</li>
+</ul>
+<h5 id="053-major-visualization-update-inspection-of-physicality">0.5.3 Major visualization update (inspection of physicality)<a class="headerlink" href="#053-major-visualization-update-inspection-of-physicality" title="Permanent link">&para;</a></h5>
+<p>Deliverables:
+- Inertia ellipsoid / principal axes visualization
+- CoM overlay vs link geometry
+- Before/after comparison (raw ID vs projected/reconstructed)</p>
+<p>Essential because convex feasibility can still produce surprising inertias without good priors — visual QA is critical.</p>
+<hr />
+<h4 id="v06-online-identification-friction-fim-oed">v0.6 — Online Identification, Friction, FIM-OED<a class="headerlink" href="#v06-online-identification-friction-fim-oed" title="Permanent link">&para;</a></h4>
+<h5 id="061-online-identification">0.6.1 Online identification<a class="headerlink" href="#061-online-identification" title="Permanent link">&para;</a></h5>
+<ul>
+<li><code>figaroh.identification.online</code> with at least one robust baseline:</li>
+<li>RLS (with forgetting factor)</li>
+<li>optional sliding-window LS</li>
+<li>(later) EKF/UKF for combined state+parameter estimation</li>
+<li>Must reuse the same regressor interface already used by offline ID.</li>
+</ul>
+<h5 id="062-new-friction-models">0.6.2 New friction models<a class="headerlink" href="#062-new-friction-models" title="Permanent link">&para;</a></h5>
+<p>Behind a clean interface:
+- Stribeck (nonlinear)
+- dead-zone/backlash as experimental
+- keep existing viscous/Coulomb intact</p>
+<h5 id="063-oed-refactor-fisher-information-metrics">0.6.3 OED refactor: Fisher Information Metrics<a class="headerlink" href="#063-oed-refactor-fisher-information-metrics" title="Permanent link">&para;</a></h5>
+<ul>
+<li>FIM computation utilities and metrics: $\log\det(\text{FIM})$, A-/E-optimality</li>
+<li>Keep existing condition-number objective available for backward compatibility.</li>
+</ul>
+<hr />
+<h4 id="v07-multi-sensor-calibration-round-tripping">v0.7 — Multi-Sensor Calibration &amp; Round-Tripping<a class="headerlink" href="#v07-multi-sensor-calibration-round-tripping" title="Permanent link">&para;</a></h4>
+<h5 id="071-multi-sensor-calibration">0.7.1 Multi-sensor calibration<a class="headerlink" href="#071-multi-sensor-calibration" title="Permanent link">&para;</a></h5>
+<ul>
+<li>Sensor-agnostic residual + Jacobian interface</li>
+<li>At least one new sensor type end-to-end (IMU or AprilTag-based camera) as reference implementation</li>
+</ul>
+<h5 id="072-urdfyaml-round-tripping">0.7.2 URDF↔YAML round-tripping<a class="headerlink" href="#072-urdfyaml-round-tripping" title="Permanent link">&para;</a></h5>
+<ul>
+<li>Export identified parameters to a diff-friendly YAML "model delta"</li>
+<li>Regenerate URDF inertials from YAML with version tagging + provenance metadata</li>
+</ul>
+<h5 id="073-test-suite-real-gates-not-just-examples">0.7.3 Test suite (real gates, not just examples)<a class="headerlink" href="#073-test-suite-real-gates-not-just-examples" title="Permanent link">&para;</a></h5>
+<ul>
+<li>Unit tests: physical feasibility checks, projection/reconstruction invariants, regressor assembly sanity</li>
+<li>Integration tests: at least one small robot model fixture</li>
+<li>CI matrix (pragmatic): Python 3.10–3.12, macOS+Linux first</li>
+</ul>
+<hr />
+<h4 id="v10-api-stabilization-convex-id">v1.0 — API Stabilization &amp; Convex ID<a class="headerlink" href="#v10-api-stabilization-convex-id" title="Permanent link">&para;</a></h4>
+<h5 id="101-architecture-consolidation-breaking-changes-allowed">1.0.1 Architecture consolidation (breaking changes allowed)<a class="headerlink" href="#101-architecture-consolidation-breaking-changes-allowed" title="Permanent link">&para;</a></h5>
+<ul>
+<li>Stabilize public APIs: <code>BaseCalibration</code>, <code>BaseIdentification</code>, OED class(es)</li>
+<li>Move "experimental" features behind clear namespaces</li>
+<li>Migration guide v0.7 → v1.0</li>
+<li><strong>Backend abstraction must be real by this point</strong> (see Track B) — PinocchioBackend
+  wrapping existing direct Pinocchio calls is the minimum gate.</li>
+</ul>
+<h5 id="102-physically-consistent-pipeline-as-first-class">1.0.2 Physically consistent pipeline as first-class<a class="headerlink" href="#102-physically-consistent-pipeline-as-first-class" title="Permanent link">&para;</a></h5>
+<ul>
+<li>Users choose: "classic ID (fast)" vs "physically consistent ID (recommended for export)"</li>
+<li>Consistent outputs for URDF export</li>
+<li>Full Lee et al.-style convex identification backend becomes "official" — but only
+  after v0.4–v0.7 deliver the necessary primitives (feasibility/projection/reconstruction,
+  QA, tests, solver story).</li>
+</ul>
+<hr />
+<h3 id="5-track-b-multi-simulator-backend-integration">5. Track B — Multi-Simulator Backend Integration<a class="headerlink" href="#5-track-b-multi-simulator-backend-integration" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>Source: former <code>IMPLEMENTATION_ROADMAP.md</code>. Phase-based, quarterly timeline.
+<strong>Reality check:</strong> Phase 1 was claimed "✅ COMPLETED" in the prior doc but is
+only partially done — the PinocchioBackend file does not exist and Pinocchio is
+used directly throughout core. Status below is reconciled to actual code.</p>
+</blockquote>
+<h4 id="phase-1-foundation-q2-2026-mostly-complete">Phase 1: Foundation (Q2 2026) — 🔄 MOSTLY COMPLETE<a class="headerlink" href="#phase-1-foundation-q2-2026-mostly-complete" title="Permanent link">&para;</a></h4>
+<p><strong>Objective:</strong> Establish core architecture for multi-simulator support.</p>
+<table>
+<thead>
+<tr>
+<th>Deliverable</th>
+<th>Prior claim</th>
+<th>Actual status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DynamicsBackend</code> abstract interface (<code>backends/base.py</code>)</td>
+<td>✅</td>
+<td>✅ exists + 6 optional methods added</td>
+</tr>
+<tr>
+<td><code>PinocchioBackend</code> (<code>backends/pinocchio.py</code>)</td>
+<td>✅ mostly</td>
+<td>✅ <strong>implemented</strong> (371 lines, 32 tests pass)</td>
+</tr>
+<tr>
+<td><code>MuJoCoBackend</code> (<code>backends/mujoco.py</code>)</td>
+<td>✅ mostly</td>
+<td>✅ functional (regressor delegates to Pinocchio analytical; Coriolis via FD Jacobian/2; mass matrix fixed)</td>
+</tr>
+<tr>
+<td>Backend factory <code>get_backend()</code></td>
+<td>✅</td>
+<td>✅ works (<code>pinocchio</code> + <code>mujoco</code> available)</td>
+</tr>
+<tr>
+<td>Backend test suite (<code>tests/unit/test_backends.py</code>)</td>
+<td>🔄</td>
+<td>✅ 32 tests, all pass</td>
+</tr>
+<tr>
+<td>Deprecate <code>robot_format_converter</code></td>
+<td>✅</td>
+<td>✅ notice+guide done; ⏳ GitHub archive pending Jul 1, 2026</td>
+</tr>
+<tr>
+<td>Merge <code>figaroh-mujoco</code> into core</td>
+<td>✅</td>
+<td>✅ merged; ⏳ GitHub archive pending Jul 1, 2026</td>
+</tr>
+<tr>
+<td>Architecture docs (<code>ARCHITECTURE.md</code>)</td>
+<td>✅</td>
+<td>⚠️ partly aspirational/out of date (per <code>AGENTS.md</code>)</td>
+</tr>
+<tr>
+<td>High-level integration API (<code>integration/api.py</code>)</td>
+<td>—</td>
+<td>❌ not started</td>
+</tr>
+<tr>
+<td>Performance benchmarks (Pinocchio vs MuJoCo)</td>
+<td>🔄</td>
+<td>❌ not started</td>
+</tr>
+<tr>
+<td>Migrate existing examples to backend abstraction</td>
+<td>🔄</td>
+<td>❌ not started</td>
+</tr>
+<tr>
+<td>Migrate core modules to use backend abstraction</td>
+<td>—</td>
+<td>✅ done (identification + calibration algorithm path migrated; visualization/collisions/data-types remain Pinocchio-specific by design)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Highest-leverage next step:</strong> Implement <code>PinocchioBackend</code> by wrapping the
+Pinocchio calls already scattered through <code>tools/</code>, <code>calibration/</code>,
+<code>identification/</code>. This is the default backend the roadmap claims is done but
+isn't, and it's the prerequisite for making the abstraction meaningful.</p>
+<h5 id="task-121-dynamicsbackend-interface-done">Task 1.2.1: DynamicsBackend Interface — ✅ DONE<a class="headerlink" href="#task-121-dynamicsbackend-interface-done" title="Permanent link">&para;</a></h5>
+<ul>
+<li><code>backends/base.py</code>: abstract class, 9 abstract methods (mass matrix, Coriolis,
+  gravity, FK, Jacobian, regressor, inverse dynamics, forward dynamics),
+  3 properties (<code>nq</code>, <code>nv</code>, <code>model_format</code>), context manager support.</li>
+<li>9 optional methods: <code>compute_dynamics_derivatives</code>, <code>get_joint_names</code>,
+  <code>get_frame_names</code>, <code>get_inertias</code>, <code>get_frame_id</code>, <code>compute_difference</code>,
+  <code>compute_integrate</code>, <code>random_configuration</code>, <code>get_model_object</code>.</li>
+</ul>
+<h5 id="task-122-pinocchiobackend-done">Task 1.2.2: PinocchioBackend — ✅ DONE<a class="headerlink" href="#task-122-pinocchiobackend-done" title="Permanent link">&para;</a></h5>
+<ul>
+<li><strong>Location:</strong> <code>figaroh/backends/pinocchio.py</code> (371 lines)</li>
+<li>Wraps <code>pin.crba</code>, <code>pin.computeCoriolisMatrix</code>, <code>pin.computeGeneralizedGravity</code>,
+  <code>pin.rnea</code>, <code>pin.aba</code>, <code>pin.computeJointTorqueRegressor</code>, <code>pin.computeFrameJacobian</code>,
+  <code>pin.forwardKinematics</code>/<code>pin.updateFramePlacements</code>, <code>pin.difference</code>, <code>pin.integrate</code>,
+  <code>pin.randomConfiguration</code>.</li>
+<li>Supports free-flyer root joint via <code>free_flyer</code>/<code>isFext</code> kwargs.</li>
+<li>All return values <code>.copy()</code>'d to prevent shared-memory mutations.</li>
+<li>32 tests in <code>test_backends.py</code> — numerical correctness verified against direct
+  <code>pin.*</code> calls at atol=1e-10.</li>
+<li><strong>Remaining:</strong> Core modules still use direct <code>pin.*</code> calls in calibration, visualization, collisions, and model loading (Step 5 — partial migration done, calibration pending).</li>
+</ul>
+<h5 id="task-123-core-module-migration-done-algorithm-path">Task 1.2.3: Core Module Migration — ✅ DONE (Algorithm Path)<a class="headerlink" href="#task-123-core-module-migration-done-algorithm-path" title="Permanent link">&para;</a></h5>
+<p><strong>Strategy:</strong> "Strangler fig" pattern — <code>Robot</code> class gains lazy <code>backend</code> property (wraps existing <code>pin.Model</code>/<code>pin.Data</code> via <code>PinocchioBackend.from_model()</code>). Core modules route through <code>robot.backend</code> when available, fall back to direct <code>pin.*</code> calls otherwise. Fully backward-compatible.</p>
+<p><strong>Migrated (✅ — full algorithm path):</strong>
+- <code>tools/regressor.py</code> — <code>RegressorBuilder</code> uses <code>robot.backend.compute_regressor()</code>, <code>robot.backend.nv</code>, <code>robot.backend.get_inertias()</code> when backend available
+- <code>identification/identification_tools.py</code> — <code>calculate_first_second_order_differentiation</code> accepts optional <code>backend</code> parameter for <code>compute_difference()</code>
+- <code>tools/randomdata.py</code> — <code>get_torque_rand</code> uses <code>robot.backend.compute_inverse_dynamics()</code>, <code>generate_waypoints</code>/<code>generate_waypoints_fext</code> use backend-aware <code>nq</code>/<code>nv</code>
+- <code>calibration/calibration_tools.py</code> — 7 functions migrated with optional <code>backend=None</code>: <code>get_rel_kinreg</code>, <code>get_rel_jac</code>, <code>update_forward_kinematics</code>, <code>calc_updated_fkm</code>, <code>calculate_kinematics_model</code>, <code>calculate_identifiable_kinematics_model</code>, <code>calculate_base_kinematics_regressor</code>. Routes FK, Jacobian, gravity, random-configuration through backend. <code>computeFrameKinematicRegressor</code> uses <code>get_model_object()</code> escape hatch.</p>
+<p><strong>Intentionally not migrated (Pinocchio-specific by design):</strong>
+- <code>calibration/parameter.py</code> — <code>pin.SE3</code>, <code>pin.Frame</code>, <code>pin.Inertia.Zero()</code>, <code>pin.rpy.rpyToMatrix</code> data type construction + model introspection (<code>joint.shortname()</code>). Would require parallel type system.
+- <code>measurements/measurement.py</code> — <code>pin.SE3</code>, <code>pin.Force</code>, <code>pin.Frame</code> data type construction. No callers in active codebase.
+- <code>tools/robotvisualization.py</code> — Meshcat/Gepetto visualization is inherently Pinocchio-coupled. Out of scope for backend track.
+- <code>tools/robotcollisions.py</code> — hppfcl/coal collision detection is Pinocchio-specific. No other simulator has equivalent collision interface.
+- <code>utils/cubic_spline.py</code> — <code>pin.rnea</code> + FK for visualization. Deferred to v0.5.
+- Data type construction (<code>pin.SE3</code>, <code>pin.Quaternion</code>, <code>pin.Force</code>, <code>pin.rpy.rpyToMatrix</code>, <code>pin.rpy.matrixToRpy</code>) — used throughout calibration. Would require a common math library layer (e.g., <code>scipy.spatial.transform.Rotation</code>) — under investigation for future backend track expansion.</p>
+<h5 id="task-131-high-level-integration-api-not-started">Task 1.3.1: High-Level Integration API — ❌ NOT STARTED<a class="headerlink" href="#task-131-high-level-integration-api-not-started" title="Permanent link">&para;</a></h5>
+<ul>
+<li><strong>Location:</strong> <code>figaroh/integration/api.py</code></li>
+<li><code>RobotIdentificationSystem(backend="pinocchio"|"mujoco"|"genesis"|"isaacsim")</code></li>
+<li><code>from_urdf()</code> / <code>from_mjcf()</code> classmethods</li>
+<li><code>identify_parameters(data_path, **config) -&gt; Results</code> one-line API</li>
+<li>Tutorial notebook + API docs</li>
+</ul>
+<hr />
+<h4 id="phase-2-mujoco-genesis-backends-q3-2026">Phase 2: MuJoCo &amp; Genesis Backends (Q3 2026)<a class="headerlink" href="#phase-2-mujoco-genesis-backends-q3-2026" title="Permanent link">&para;</a></h4>
+<p><strong>Objective:</strong> Implement and validate MuJoCo and Genesis backends.</p>
+<h5 id="21-mujoco-backend-implemented-validation-pending">2.1 MuJoCo Backend — 🔄 IMPLEMENTED, VALIDATION PENDING<a class="headerlink" href="#21-mujoco-backend-implemented-validation-pending" title="Permanent link">&para;</a></h5>
+<ul>
+<li><code>backends/mujoco.py</code>: ✅ core methods (mass matrix, inverse dynamics, FK, Jacobian, regressor, URDF→MJCF auto-conversion)</li>
+<li><strong>Remaining:</strong></li>
+<li>[ ] All interface tests passing</li>
+<li>[ ] Performance benchmarks (target: 2-3x faster than Pinocchio)</li>
+<li>[ ] Format conversion guide (URDF → MJCF)</li>
+<li><strong>Examples</strong> (<code>figaroh-examples/examples/mujoco_integration/</code>):</li>
+<li>UR10 identification with MuJoCo (load URDF → MJCF → identify → compare with Pinocchio)</li>
+<li>Humanoid calibration with MuJoCo (TALOS, geometric calibration, optimal trajectories)</li>
+<li>Contact identification (unique to MuJoCo's contact solver)</li>
+</ul>
+<h5 id="22-genesis-backend-not-started">2.2 Genesis Backend — ❌ NOT STARTED<a class="headerlink" href="#22-genesis-backend-not-started" title="Permanent link">&para;</a></h5>
+<ul>
+<li><strong>Location:</strong> <code>figaroh/backends/genesis.py</code> (does not exist)</li>
+<li><strong>Dependencies:</strong> <code>genesis-world&gt;=0.1.0</code></li>
+<li>GPU acceleration, native Python API, USD/MJCF/URDF support</li>
+<li><strong>Examples</strong> (<code>figaroh-examples/examples/genesis_integration/</code>):</li>
+<li>Humanoid identification with Genesis (TALOS USD, GPU-accelerated, batch trajectories)</li>
+<li>Mobile manipulator calibration (TIAGo, mobile base + arm, Genesis rendering)</li>
+<li>Large-scale parallel identification (multiple robots, GPU batch, benchmarks)</li>
+</ul>
+<h5 id="23-cross-backend-validation-week-21-24">2.3 Cross-Backend Validation (Week 21-24)<a class="headerlink" href="#23-cross-backend-validation-week-21-24" title="Permanent link">&para;</a></h5>
+<ul>
+<li><strong>Dynamics consistency:</strong> same robot/config, compare M, C, g across backends; tolerance &lt;0.1%</li>
+<li><strong>Identification consistency:</strong> same trajectory data/algorithm, compare parameters; tolerance &lt;1%</li>
+<li><strong>Performance benchmarks:</strong> mass matrix (1000 samples), regressor (1000 samples), full ID (10000 samples)</li>
+<li>Target: MuJoCo 2-3x, Genesis 5-10x (GPU), IsaacSim 3-5x (GPU) vs Pinocchio</li>
+<li>Automated CI/CD integration, benchmark dashboard, validation report</li>
+</ul>
+<hr />
+<h4 id="phase-3-isaacsim-backend-ecosystem-q4-2026">Phase 3: IsaacSim Backend &amp; Ecosystem (Q4 2026)<a class="headerlink" href="#phase-3-isaacsim-backend-ecosystem-q4-2026" title="Permanent link">&para;</a></h4>
+<p><strong>Objective:</strong> Complete simulator coverage and build ecosystem tools.</p>
+<h5 id="31-isaacsim-backend-not-started">3.1 IsaacSim Backend — ❌ NOT STARTED<a class="headerlink" href="#31-isaacsim-backend-not-started" title="Permanent link">&para;</a></h5>
+<ul>
+<li><strong>Location:</strong> <code>figaroh/backends/isaacsim.py</code> (does not exist)</li>
+<li><strong>Dependencies:</strong> <code>isaacsim&gt;=2023.1.0</code></li>
+<li>USD-based workflow, NVIDIA GPU acceleration, Isaac Lab integration, photorealistic rendering</li>
+<li><strong>Challenges:</strong> USD format requirement (conversion needed), licensing/installation, Omniverse API paradigm</li>
+<li><strong>Examples</strong> (<code>figaroh-examples/examples/isaacsim_integration/</code>):</li>
+<li>Industrial manipulator identification (UR10 USD, URDF→USD converter, photorealistic)</li>
+<li>Mobile manipulator in Isaac Lab (TIAGo, RL integration, sim-to-real)</li>
+<li>Multi-robot scenario (shared environment, parallel identification, GPU dynamics)</li>
+</ul>
+<h5 id="32-unified-documentation-week-33-36">3.2 Unified Documentation (Week 33-36)<a class="headerlink" href="#32-unified-documentation-week-33-36" title="Permanent link">&para;</a></h5>
+<ul>
+<li><strong>Location:</strong> <code>figaroh/docs/</code></li>
+<li>Structure: <code>getting-started/</code>, <code>simulators/{pinocchio,mujoco,genesis,isaacsim}.md</code>, <code>tutorials/{industrial,humanoid,mobile,custom}.md</code>, <code>api-reference/{backends,identification,calibration,optimal}.md</code>, <code>migration/{from-pinocchio-only,choosing-simulator,performance-guide}.md</code></li>
+<li>Sphinx or MkDocs, auto-generated API reference, tutorials with code, migration guides</li>
+</ul>
+<h5 id="33-tooling-developer-experience-week-37-40">3.3 Tooling &amp; Developer Experience (Week 37-40)<a class="headerlink" href="#33-tooling-developer-experience-week-37-40" title="Permanent link">&para;</a></h5>
+<ul>
+<li><strong>CLI</strong> (<code>figaroh/cli/</code>, Click): <code>figaroh identify</code>, <code>optimize-trajectory</code>, <code>calibrate</code>, <code>backends list/info</code>, <code>convert</code></li>
+<li><strong>VS Code extension</strong> (optional, P3): syntax highlighting, IntelliSense, integrated terminal, result visualization</li>
+</ul>
+<hr />
+<h4 id="phase-4-ecosystem-advanced-features-2027">Phase 4: Ecosystem &amp; Advanced Features (2027+)<a class="headerlink" href="#phase-4-ecosystem-advanced-features-2027" title="Permanent link">&para;</a></h4>
+<h5 id="41-web-interface-q1-2027">4.1 Web Interface (Q1 2027)<a class="headerlink" href="#41-web-interface-q1-2027" title="Permanent link">&para;</a></h5>
+<ul>
+<li>Drag-and-drop robot models, interactive trajectory design, real-time identification progress, result dashboard, report export</li>
+<li><strong>Note:</strong> <code>figaroh-examples/web-interface/</code> is already a <strong>real working Viser-based app</strong>
+  (21 files, ~20K lines, 3D visualization, task management, multiple robot loaders) —
+  see §3.2. Marked "under development" but substantially built. Phase 4 work is
+  hardening, completing stub panels (results/visualization), and productionizing
+  rather than greenfield.</li>
+<li>Original plan called for FastAPI + React/Three.js; actual implementation uses
+  <strong>Viser</strong>. Reconcile the tech-stack decision.</li>
+</ul>
+<h5 id="42-ros-2-integration-q1-q2-2027">4.2 ROS 2 Integration (Q1-Q2 2027)<a class="headerlink" href="#42-ros-2-integration-q1-q2-2027" title="Permanent link">&para;</a></h5>
+<ul>
+<li>Real-time identification nodes, service interfaces, topic-based data streaming, launch files, MoveIt 2 integration</li>
+</ul>
+<h5 id="43-ml-enhanced-identification-q3-q4-2027">4.3 ML-Enhanced Identification (Q3-Q4 2027)<a class="headerlink" href="#43-ml-enhanced-identification-q3-q4-2027" title="Permanent link">&para;</a></h5>
+<ul>
+<li>Neural network regressors, physics-informed neural networks, hybrid models (physics + ML), uncertainty quantification, transfer learning across robots</li>
+</ul>
+<h5 id="44-cloud-deployment-q4-2027">4.4 Cloud Deployment (Q4 2027)<a class="headerlink" href="#44-cloud-deployment-q4-2027" title="Permanent link">&para;</a></h5>
+<ul>
+<li>AWS/GCP/Azure, Kubernetes orchestration, distributed identification, multi-tenant, API management</li>
+</ul>
+<hr />
+<h3 id="6-cross-cutting-work">6. Cross-Cutting Work<a class="headerlink" href="#6-cross-cutting-work" title="Permanent link">&para;</a></h3>
+<h4 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[ ] Sphinx docs site (Phase 3, but <code>physical_consistency</code>/<code>reconstruction</code> pages needed sooner — v0.4.x gate)</li>
+<li>[ ] API reference auto-generation</li>
+<li>[ ] 10+ comprehensive tutorials</li>
+<li>[ ] Migration guides (from Pinocchio-only, choosing simulator, performance)</li>
+<li>[ ] <code>picos</code> solver-availability docs in README + install guide (v0.4.x gate)</li>
+</ul>
+<h4 id="examples-figaroh-examples">Examples (<code>figaroh-examples</code>)<a class="headerlink" href="#examples-figaroh-examples" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[ ] v0.4.x end-to-end example: classic ID → projection → reconstruction → URDF export (❌ missing)</li>
+<li>[ ] CAD-constraints example config (❌ missing — v0.4.3 CHANGELOG claim of a template comment block is false)</li>
+<li>[ ] Physical-consistency / reconstruction example configs (❌ zero matches in figaroh-examples)</li>
+<li>[ ] Complete <code>talos/</code> example (⚠️ partial — missing identification, optimal_config, optimal_trajectory)</li>
+<li>[ ] Complete <code>staubli_tx40/</code> example (⚠️ partial — missing calibration, optimal_config, optimal_trajectory, update_model)</li>
+<li>[ ] MuJoCo integration examples (3, Phase 2)</li>
+<li>[ ] Genesis integration examples (3, Phase 2)</li>
+<li>[ ] IsaacSim integration examples (3, Phase 3)</li>
+<li>[ ] Example gallery &amp; showcase (Phase 3)</li>
+<li>✅ <code>ur10/</code> and <code>tiago/</code> are full real examples</li>
+<li>✅ <code>tests/</code> is real (9 files, ~3684 lines)</li>
+<li>✅ <code>create_example.sh</code> is real (934 lines)</li>
+<li>❌ <code>examples/shared/</code> does not exist (prior docs described it in detail — stale)</li>
+</ul>
+<h4 id="ci-testing">CI / Testing<a class="headerlink" href="#ci-testing" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[ ] <strong>Test/lint CI workflow</strong> (currently only docs CI exists — this is a gap for both tracks)</li>
+<li>[ ] CI matrix: Python 3.10–3.12, macOS+Linux (v0.7.3, but pragmatic to start sooner)</li>
+<li>[ ] CI matrix with/without optional <code>picos</code>/<code>cvxopt</code> (v0.4.x gate)</li>
+<li>[ ] Cross-backend validation suite (Phase 2.3)</li>
+<li>[ ] Performance benchmark dashboard (Phase 2.3)</li>
+</ul>
+<h4 id="deprecation-archiving">Deprecation / Archiving<a class="headerlink" href="#deprecation-archiving" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[ ] Archive <code>robot_format_converter</code> on GitHub (July 1, 2026)</li>
+<li>[ ] Archive <code>figaroh-mujoco</code> on GitHub (July 1, 2026)</li>
+<li>[ ] Mark PyPI packages deprecated (December 31, 2026)</li>
+</ul>
+<hr />
+<h3 id="7-resource-planning">7. Resource Planning<a class="headerlink" href="#7-resource-planning" title="Permanent link">&para;</a></h3>
+<h4 id="team-structure">Team Structure<a class="headerlink" href="#team-structure" title="Permanent link">&para;</a></h4>
+<p><strong>Core Team (4):</strong> Project Lead (1), Core Developers (2), QA Engineer (1)
+<strong>Specialist Teams (2-3 each):</strong> MuJoCo (2), Genesis (2), IsaacSim (2), Documentation (2), Examples (2)
+<strong>Total:</strong> 14-16 people</p>
+<h4 id="timeline-summary">Timeline Summary<a class="headerlink" href="#timeline-summary" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Track</th>
+<th>Milestone</th>
+<th>Target</th>
+<th>Key Deliverables</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>v0.4.x gates</td>
+<td>imminent</td>
+<td>End-to-end example, docs, CI matrix, CHANGELOG</td>
+</tr>
+<tr>
+<td>A</td>
+<td>v0.5</td>
+<td>next</td>
+<td>Modular refactor, viz update (inertia ellipsoids, CoM overlay)</td>
+</tr>
+<tr>
+<td>A</td>
+<td>v0.6</td>
+<td>—</td>
+<td>Online ID, friction models, FIM-OED</td>
+</tr>
+<tr>
+<td>A</td>
+<td>v0.7</td>
+<td>—</td>
+<td>Multi-sensor calibration, URDF↔YAML round-trip, test suite</td>
+</tr>
+<tr>
+<td>A</td>
+<td>v1.0</td>
+<td>—</td>
+<td>API stabilization, convex ID first-class, migration guide</td>
+</tr>
+<tr>
+<td>B</td>
+<td>Phase 1</td>
+<td>Q2 2026</td>
+<td>PinocchioBackend (❌ critical gap), integration API, tests, benchmarks</td>
+</tr>
+<tr>
+<td>B</td>
+<td>Phase 2</td>
+<td>Q3 2026</td>
+<td>MuJoCo validation, Genesis backend, cross-backend suite</td>
+</tr>
+<tr>
+<td>B</td>
+<td>Phase 3</td>
+<td>Q4 2026</td>
+<td>IsaacSim backend, unified docs, CLI tool</td>
+</tr>
+<tr>
+<td>B</td>
+<td>Phase 4</td>
+<td>2027+</td>
+<td>Web interface, ROS 2, ML-enhanced, cloud</td>
+</tr>
+</tbody>
+</table>
+<h4 id="budget-estimate-rough-phase-1-3">Budget Estimate (Rough, Phase 1-3)<a class="headerlink" href="#budget-estimate-rough-phase-1-3" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Personnel: 14-16 people × 9 months × $10K/month = $1.26M - $1.44M</li>
+<li>Infrastructure: GPU compute $45K + CI/CD $18K + docs hosting $9K = $72K</li>
+<li><strong>Total Phase 1-3:</strong> ~$1.35M - $1.55M</li>
+</ul>
+<hr />
+<h3 id="8-success-metrics">8. Success Metrics<a class="headerlink" href="#8-success-metrics" title="Permanent link">&para;</a></h3>
+<h4 id="technical">Technical<a class="headerlink" href="#technical" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[ ] All backends pass 100% of interface tests</li>
+<li>[ ] &lt;1% difference in identified parameters across backends</li>
+<li>[ ] &lt;0.1% difference in dynamics computations across backends</li>
+<li>[ ] MuJoCo 2-3x faster than Pinocchio; Genesis (GPU) 5-10x; IsaacSim (GPU) 3-5x</li>
+<li>[ ] 95%+ test coverage; zero critical bugs; CI/CD passing on all PRs</li>
+<li>[ ] All projected link inertias satisfy $m \ge m_{\min}$ and <code>min_eig(P) &gt;= -psd_eig_tol</code></li>
+</ul>
+<h4 id="user-experience">User Experience<a class="headerlink" href="#user-experience" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[ ] Getting started in &lt;5 minutes for any simulator</li>
+<li>[ ] Single-line integration for common workflows</li>
+<li>[ ] &lt;10 lines of code for complete identification</li>
+<li>[ ] 100% API coverage in docs; 10+ tutorials; video demos per simulator</li>
+</ul>
+<h4 id="community">Community<a class="headerlink" href="#community" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[ ] 1000+ GitHub stars (combined repos); 100+ active users; 10+ external contributors</li>
+</ul>
+<hr />
+<h3 id="9-risk-management">9. Risk Management<a class="headerlink" href="#9-risk-management" title="Permanent link">&para;</a></h3>
+<h4 id="high-risk">High-Risk<a class="headerlink" href="#high-risk" title="Permanent link">&para;</a></h4>
+<ol>
+<li><strong>Simulator API changes</strong> — version pinning, automated testing, regular updates</li>
+<li><strong>Performance regressions from abstraction layer</strong> — continuous benchmarking, profiling, optimization</li>
+<li><strong>Format conversion inconsistencies</strong> — validation tests, user guides, fallback options</li>
+<li><strong>PinocchioBackend debt</strong> — the abstraction is claimed done but isn't; every day core uses direct <code>pin.*</code> calls makes the eventual refactor harder. Prioritize wrapping.</li>
+</ol>
+<h4 id="medium-risk">Medium-Risk<a class="headerlink" href="#medium-risk" title="Permanent link">&para;</a></h4>
+<ol>
+<li><strong>Team availability</strong> — cross-training, documentation, external contractors</li>
+<li><strong>Dependency conflicts</strong> (simulators require conflicting deps) — optional dependencies, separate environments, Docker</li>
+<li><strong>SDP solver availability</strong> (<code>picos</code>/<code>cvxopt</code>/<code>mosek</code>) — lazy imports, graceful errors, documented requirements</li>
+</ol>
+<h4 id="low-risk">Low-Risk<a class="headerlink" href="#low-risk" title="Permanent link">&para;</a></h4>
+<ol>
+<li><strong>Licensing issues</strong> — clear documentation, open-source alternatives</li>
+</ol>
+<hr />
+<h3 id="10-revision-history">10. Revision History<a class="headerlink" href="#10-revision-history" title="Permanent link">&para;</a></h3>
+<h4 id="version-15-june-19-2026-track-b-step-4-implemented-mujoco-backend-fixed">Version 1.5 (June 19, 2026) — Track B Step 4 Implemented (MuJoCo Backend Fixed)<a class="headerlink" href="#version-15-june-19-2026-track-b-step-4-implemented-mujoco-backend-fixed" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong><code>MuJoCoBackend.compute_regressor()</code></strong> fixed — replaced identity placeholder with
+  Pinocchio's analytical <code>computeJointTorqueRegressor</code> (delegated via lazy-loaded
+  <code>pin.Model</code>). MuJoCo 3.9.0 doesn't support runtime inertial parameter perturbation,
+  making finite-difference approach infeasible. Pinocchio is always available as a
+  FIGAROH dependency, so this is a pragmatic solution.</li>
+<li><strong><code>MuJoCoBackend.compute_coriolis_matrix()</code></strong> fixed — replaced incorrect outer-product
+  approximation with proper finite-difference Jacobian/2 approach. Uses Euler's theorem
+  for quadratic homogeneous functions: since Coriolis forces f(v) = C(q,v)<em>v are
+  quadratic in v, the Jacobian df/dv = 2</em>C (Christoffel symbols are symmetric).</li>
+<li><strong><code>MuJoCoBackend.compute_mass_matrix()</code></strong> fixed — added <code>mj_forward</code> call before
+  <code>mj_crb</code> (required in MuJoCo 3.x; without it, mass matrix returns zeros).</li>
+<li><strong><code>__init__.py</code> availability check fixed</strong> — <code>list_backends()</code> now checks
+  <code>MUJOCO_AVAILABLE</code>/<code>PINOCCHIO_AVAILABLE</code> flags, not just whether the class imports.
+  Previously reported <code>mujoco: True</code> even when mujoco wasn't installed.</li>
+<li><strong>13 new MuJoCo tests</strong> added to <code>test_backends.py</code>: initialization, dynamics,
+  regressor (self-consistency + cross-backend match with Pinocchio), Coriolis
+  (shape + zero-velocity + consistency), kinematics.</li>
+<li><strong>Test suite:</strong> 253 passed, 4 failed (pre-existing IPOPT), 2 skipped. Zero regressions.</li>
+<li><strong>Key finding:</strong> MuJoCo's model parameters (body_mass, body_inertia, body_ipos) are
+  NOT mutable at runtime in 3.9.0 — changes don't affect <code>mj_inverse</code> output. This is
+  the same class of limitation as the calibration model manipulation blocker.</li>
+</ul>
+<h4 id="version-14-june-19-2026-track-b-step-5-complete-core-algorithm-path-migrated">Version 1.4 (June 19, 2026) — Track B Step 5 Complete (Core Algorithm Path Migrated)<a class="headerlink" href="#version-14-june-19-2026-track-b-step-5-complete-core-algorithm-path-migrated" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong><code>calibration/calibration_tools.py</code></strong> migrated — 7 functions with dynamics computation now accept
+  optional <code>backend=None</code> parameter: <code>get_rel_kinreg</code>, <code>get_rel_jac</code>, <code>update_forward_kinematics</code>,
+  <code>calc_updated_fkm</code>, <code>calculate_kinematics_model</code>, <code>calculate_identifiable_kinematics_model</code>,
+  <code>calculate_base_kinematics_regressor</code>. Routes FK, Jacobian, gravity, random-configuration through
+  backend. <code>computeFrameKinematicRegressor</code> uses <code>get_model_object()</code> escape hatch (no backend equiv).</li>
+<li><strong>Step 5 marked complete</strong> — the full algorithm path (identification + calibration) now routes
+  through <code>PinocchioBackend</code> when a backend is available. 6 files modified, +268/-79 lines total.</li>
+<li><strong>Remaining Pinocchio coupling</strong> explicitly categorized as "by design": data type construction
+  (<code>SE3</code>, <code>Quaternion</code>, <code>Force</code>, <code>Frame</code>), model manipulation (<code>jointPlacements</code>), visualization
+  (Meshcat/Gepetto), collision detection (hppfcl/coal). These require parallel type systems or
+  simulator-specific APIs — out of scope for current backend track, under investigation.</li>
+<li><strong>Test suite:</strong> 240 passed, 4 failed (pre-existing IPOPT), 2 skipped. Zero regressions.</li>
+<li><strong>MuJoCo equivalents research</strong> launched (librarian, background) — investigating whether
+  SE3/transforms, frame management, kinematic regressor, model manipulation, collision detection,
+  and visualization can be abstracted across simulators for future full migration.</li>
+</ul>
+<h4 id="version-13-june-19-2026-track-b-step-5-implemented-partial-core-migration">Version 1.3 (June 19, 2026) — Track B Step 5 Implemented (Partial Core Migration)<a class="headerlink" href="#version-13-june-19-2026-track-b-step-5-implemented-partial-core-migration" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong><code>PinocchioBackend.from_model()</code></strong> classmethod added — wraps existing <code>pin.Model</code>/<code>pin.Data</code>
+  without URDF re-loading, enabling model sharing with <code>Robot</code>/<code>RobotWrapper</code> instances.</li>
+<li><strong><code>Robot.backend</code></strong> lazy property added — creates <code>PinocchioBackend.from_model(self.model, self.data)</code>
+  on first access. This is the integration seam for the "strangler fig" migration.</li>
+<li><strong><code>RegressorBuilder</code></strong> migrated — routes through <code>robot.backend.compute_regressor()</code>,
+  <code>robot.backend.nv</code>, <code>robot.backend.get_inertias()</code> when backend available. Backward-compatible
+  <code>hasattr(robot, 'backend')</code> fallback to direct <code>pin.*</code> calls.</li>
+<li><strong><code>identification_tools.py</code></strong> migrated — <code>calculate_first_second_order_differentiation</code> accepts
+  optional <code>backend</code> parameter for <code>compute_difference()</code>.</li>
+<li><strong><code>randomdata.py</code></strong> migrated — <code>get_torque_rand</code> uses <code>robot.backend.compute_inverse_dynamics()</code>,
+  <code>generate_waypoints</code>/<code>generate_waypoints_fext</code> use backend-aware <code>nq</code>/<code>nv</code>.</li>
+<li><strong>Smoke test confirmed:</strong> <code>Robot</code> → <code>backend</code> → <code>PinocchioBackend</code> → <code>RegressorBuilder</code> exercises
+  the backend path (not the fallback). Regressor results identical to direct <code>pin.*</code> calls.</li>
+<li><strong>Test suite:</strong> 240 passed, 4 failed (pre-existing IPOPT), 2 skipped. Zero regressions.</li>
+<li><strong>5 files modified:</strong> pinocchio.py (+from_model), robot.py (+backend property), regressor.py
+  (backend-aware), identification_tools.py (+backend param), randomdata.py (backend-aware).</li>
+<li><strong>Remaining migration:</strong> calibration, visualization, collisions, model loading, data types.</li>
+</ul>
+<h4 id="version-12-june-19-2026-track-b-steps-1-3-implemented">Version 1.2 (June 19, 2026) — Track B Steps 1-3 Implemented<a class="headerlink" href="#version-12-june-19-2026-track-b-steps-1-3-implemented" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>PinocchioBackend</strong> implemented (<code>backends/pinocchio.py</code>, 371 lines) — wraps all
+  Pinocchio dynamics/kinematics/regressor calls + Lie group ops. <code>get_backend("pinocchio")</code>
+  now works (was raising ValueError).</li>
+<li><strong>DynamicsBackend interface extended</strong> (<code>base.py</code>) — 6 new optional methods:
+  <code>get_inertias</code>, <code>get_frame_id</code>, <code>compute_difference</code>, <code>compute_integrate</code>,
+  <code>random_configuration</code>, <code>get_model_object</code>.</li>
+<li><strong>Backend test suite</strong> created (<code>tests/unit/test_backends.py</code>, 32 tests) — factory,
+  initialization, numerical correctness vs direct <code>pin.*</code> (atol=1e-10), kinematics,
+  optional methods, interface conformance. All pass.</li>
+<li><strong>Test suite updated:</strong> 246 collected, 240 passed, 4 failed (pre-existing IPOPT),
+  2 skipped. Zero regressions.</li>
+<li>Phase 1 upgraded from "🔄 PARTIALLY COMPLETE" to "🔄 MOSTLY COMPLETE".</li>
+<li>Remaining Phase 1 gaps: core module migration (Step 5), integration API (Step 6),
+  MuJoCo regressor fix (Step 4), performance benchmarks.</li>
+</ul>
+<h4 id="version-11-june-19-2026-implementation-state-verification">Version 1.1 (June 19, 2026) — Implementation State Verification<a class="headerlink" href="#version-11-june-19-2026-implementation-state-verification" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Ran <code>pytest</code> and verified file/directory existence against actual codebase.</li>
+<li><strong>Test suite corrected:</strong> 214 collected, 208 passed, 4 failed (test_robotipopt.py),
+  2 skipped — not "198/198 pass" as prior docs claimed.</li>
+<li><strong><code>test_cad_constraints.py</code></strong> added to v0.4.3 inventory (was missing from checklist).</li>
+<li><strong><code>examples/shared/</code></strong> marked ❌ — does not exist; prior ecosystem analysis described
+  9 files in detail but the directory is absent. All references removed/corrected.</li>
+<li><strong><code>web-interface/</code></strong> upgraded from "scaffolded early" to "real working Viser app"
+  (21 files, ~20K lines). Tech stack corrected from React/Three.js to Viser.</li>
+<li><strong>Robot examples verified real-vs-partial:</strong> ur10 ✅ full, tiago ✅ full,
+  talos ⚠️ partial, staubli_tx40 ⚠️ partial, templates ⚠️ scaffold only.</li>
+<li><strong>CAD-constraints example claim retracted:</strong> v0.4.3 CHANGELOG claim of a YAML
+  comment block in <code>manipulator_robot.yaml</code> is false (grep confirms zero matches
+  across all of figaroh-examples).</li>
+<li><strong><code>integration/</code> and <code>cli/</code> directories</strong> confirmed absent (not just "not started").</li>
+<li>Phase 4 web interface section updated to reflect existing Viser implementation.</li>
+</ul>
+<h4 id="version-10-june-19-2026-combined-roadmap">Version 1.0 (June 19, 2026) — Combined Roadmap<a class="headerlink" href="#version-10-june-19-2026-combined-roadmap" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Merged <code>ROADMAP_PRIVATE.md</code> (algorithmic features, v0.4–v1.0) and <code>IMPLEMENTATION_ROADMAP.md</code> (multi-simulator backends, Phase 1–4) into a single document.</li>
+<li>Reconciled status markers against actual codebase: PinocchioBackend marked ❌ (file does not exist); Phase 1 downgraded from "✅ COMPLETED" to "🔄 PARTIALLY COMPLETE".</li>
+<li>Identified PinocchioBackend implementation as the highest-leverage next step for Track B.</li>
+<li>Preserved detailed design specs (v0.4.1–v0.4.3) and phase plans as engineering reference.</li>
+<li>Added cross-cutting work section consolidating docs/examples/CI/deprecation items from both tracks.</li>
+</ul>
+<h4 id="prior-documents-superseded-moved-to-deprecated">Prior documents (superseded, moved to <code>deprecated/</code>)<a class="headerlink" href="#prior-documents-superseded-moved-to-deprecated" title="Permanent link">&para;</a></h4>
+<ul>
+<li><code>deprecated/ROADMAP_PRIVATE.md</code> (v0.4 design specs, was gitignored in <code>figaroh/</code>) — content folded into Track A</li>
+<li><code>deprecated/IMPLEMENTATION_ROADMAP.md</code> v2.0 (June 3, 2026, was workspace root) — content folded into Track B</li>
+<li><code>deprecated/FIGAROH_ECOSYSTEM_ANALYSIS.md</code> v1.0 (June 3, 2026) — analysis input, not a roadmap; findings incorporated</li>
+<li><code>deprecated/TASK_1.1_IMPLEMENTATION_SUMMARY.md</code> (June 3, 2026) — deprecation task summary; status folded into §3 and §6</li>
+</ul>
+<hr />
+<p><strong>End of Combined Roadmap</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "content.code.copy", "content.action.edit", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

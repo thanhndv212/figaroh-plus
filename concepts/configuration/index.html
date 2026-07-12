@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://thanhndv212.github.io/figaroh-plus/api/measurements/">
+        <link rel="canonical" href="https://thanhndv212.github.io/figaroh-plus/concepts/configuration/">
       
       
-        <link rel="prev" href="../integration/">
+        <link rel="prev" href="../architecture/">
       
       
-        <link rel="next" href="../tools/">
+        <link rel="next" href="../backends/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Measurements - FIGAROH</title>
+        <title>Configuration System - FIGAROH</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#measurements" class="md-skip">
+        <a href="#configuration-system" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Measurements
+              Configuration System
             
           </span>
         </div>
@@ -264,11 +264,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../concepts/architecture/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../architecture/" class="md-tabs__link">
           
   
   
@@ -324,13 +326,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../api/" class="md-tabs__link">
           
   
   
@@ -697,26 +697,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   
@@ -734,7 +739,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -752,7 +757,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/architecture/" class="md-nav__link">
+      <a href="../architecture/" class="md-nav__link">
         
   
   
@@ -777,10 +782,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../concepts/configuration/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration System
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -796,6 +828,98 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#unified-configuration-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unified configuration format
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#legacy-format-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Legacy format support
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parsing-a-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parsing a config
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#template-inheritance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template inheritance
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Template inheritance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-a-new-robot-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating a new robot config
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -808,7 +932,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/backends/" class="md-nav__link">
+      <a href="../backends/" class="md-nav__link">
         
   
   
@@ -836,7 +960,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/integration/" class="md-nav__link">
+      <a href="../integration/" class="md-nav__link">
         
   
   
@@ -1182,31 +1306,26 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
             
   
   
@@ -1224,7 +1343,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1242,7 +1361,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../api/" class="md-nav__link">
         
   
   
@@ -1270,7 +1389,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../calibration/" class="md-nav__link">
+      <a href="../../api/calibration/" class="md-nav__link">
         
   
   
@@ -1298,7 +1417,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../identification/" class="md-nav__link">
+      <a href="../../api/identification/" class="md-nav__link">
         
   
   
@@ -1326,7 +1445,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../optimal/" class="md-nav__link">
+      <a href="../../api/optimal/" class="md-nav__link">
         
   
   
@@ -1354,7 +1473,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../backends/" class="md-nav__link">
+      <a href="../../api/backends/" class="md-nav__link">
         
   
   
@@ -1382,7 +1501,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../integration/" class="md-nav__link">
+      <a href="../../api/integration/" class="md-nav__link">
         
   
   
@@ -1407,37 +1526,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Measurements
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../api/measurements/" class="md-nav__link">
         
   
   
@@ -1453,65 +1545,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#figaroh.measurements.measurement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        measurement
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#figaroh.measurements.measurement.Measurement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Measurement
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Measurement">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#figaroh.measurements.measurement.Measurement.add_SE3_measurement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        add_SE3_measurement
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1524,7 +1557,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tools/" class="md-nav__link">
+      <a href="../../api/tools/" class="md-nav__link">
         
   
   
@@ -1552,7 +1585,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../utils/" class="md-nav__link">
+      <a href="../../api/utils/" class="md-nav__link">
         
   
   
@@ -1580,7 +1613,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../visualisation/" class="md-nav__link">
+      <a href="../../api/visualisation/" class="md-nav__link">
         
   
   
@@ -1806,10 +1839,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#figaroh.measurements.measurement" class="md-nav__link">
+  <a href="#unified-configuration-format" class="md-nav__link">
     <span class="md-ellipsis">
       
-        measurement
+        Unified configuration format
       
     </span>
   </a>
@@ -1817,22 +1850,44 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#figaroh.measurements.measurement.Measurement" class="md-nav__link">
+  <a href="#legacy-format-support" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Measurement
+        Legacy format support
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Measurement">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parsing-a-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parsing a config
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#template-inheritance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template inheritance
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Template inheritance">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#figaroh.measurements.measurement.Measurement.add_SE3_measurement" class="md-nav__link">
+  <a href="#creating-a-new-robot-config" class="md-nav__link">
     <span class="md-ellipsis">
       
-        add_SE3_measurement
+        Creating a new robot config
       
     </span>
   </a>
@@ -1841,6 +1896,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next steps
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1861,7 +1927,7 @@
 
 
   
-    <a href="https://github.com/thanhndv212/figaroh-plus/edit/main/docs/source/api/measurements.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/thanhndv212/figaroh-plus/edit/main/docs/source/concepts/configuration.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1869,350 +1935,143 @@
   
 
 
-<h1 id="measurements">Measurements<a class="headerlink" href="#measurements" title="Permanent link">&para;</a></h1>
-
-
-<div class="doc doc-object doc-module">
-
-
-
-<a id="figaroh.measurements.measurement"></a>
-    <div class="doc doc-contents first">
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="figaroh.measurements.measurement.Measurement" class="doc doc-heading">
-              <code class="highlight language-python"><span class="n">Measurement</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">joint</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></code>
-
-<a href="#figaroh.measurements.measurement.Measurement" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents ">
-
-
-
-        <p>Class for handling different types of measurements.</p>
-
-        <p>Initialize measurement.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>name</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Name of measurement</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>joint</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Joint where measurement is expressed</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>frame</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Closest frame from measurement</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>type</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Type of measurement (SE3, wrench, current)</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>value</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>6D measurement value wrt joint placement</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-
-
-
-
-
-
-                  <details class="mkdocstrings-source">
-                    <summary>Source code in <code>src/figaroh/measurements/measurement.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">joint</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize measurement.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        name: Name of measurement</span>
-<span class="sd">        joint: Joint where measurement is expressed</span>
-<span class="sd">        frame: Closest frame from measurement</span>
-<span class="sd">        type: Type of measurement (SE3, wrench, current)</span>
-<span class="sd">        value: 6D measurement value wrt joint placement</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">joint</span> <span class="o">=</span> <span class="n">joint</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">type</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;SE3&quot;</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">SE3_value</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">SE3</span><span class="p">(</span>
-            <span class="n">pin</span><span class="o">.</span><span class="n">rpyToMatrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">value</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="mi">5</span><span class="p">]])),</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="mi">2</span><span class="p">]]),</span>
-        <span class="p">)</span>
-    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;wrench&quot;</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">wrench_value</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">Force</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;current&quot;</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_value</span> <span class="o">=</span> <span class="n">value</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The type of your measurement is not valid&quot;</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-                  </details>
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="figaroh.measurements.measurement.Measurement.add_SE3_measurement" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">add_SE3_measurement</span><span class="p">(</span><span class="n">model</span><span class="p">)</span></code>
-
-<a href="#figaroh.measurements.measurement.Measurement.add_SE3_measurement" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Add SE3 measurement to model.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>model</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Pinocchio model to add measurement to</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>tuple</code></td>            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Updated model and data</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/figaroh/measurements/measurement.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span>
-<span class="normal">63</span>
-<span class="normal">64</span>
-<span class="normal">65</span>
-<span class="normal">66</span>
-<span class="normal">67</span>
-<span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_SE3_measurement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add SE3 measurement to model.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        model: Pinocchio model to add measurement to</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        tuple: Updated model and data</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;SE3&quot;</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">frame_index</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">addFrame</span><span class="p">(</span>
-            <span class="n">pin</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                <span class="n">model</span><span class="o">.</span><span class="n">getJointId</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">joint</span><span class="p">),</span>
-                <span class="n">model</span><span class="o">.</span><span class="n">getFrameId</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">),</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">SE3_value</span><span class="p">,</span>
-                <span class="n">pin</span><span class="o">.</span><span class="n">OP_FRAME</span><span class="p">,</span>
-            <span class="p">),</span>
-            <span class="s2">&quot;False&quot;</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">createData</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-
-
-  </div>
-
-    </div>
-
-</div>
-
-
-
-
-  </div>
-
-    </div>
-
-</div>
+<h1 id="configuration-system">Configuration System<a class="headerlink" href="#configuration-system" title="Permanent link">&para;</a></h1>
+<p>FIGAROH uses a flexible YAML-based configuration system that supports both
+a modern unified format (with template inheritance) and a legacy flat
+format. Every robot example in
+<a href="https://github.com/thanhndv212/figaroh-examples">figaroh-examples</a> ships a
+config under <code>examples/&lt;robot&gt;/config/</code>; this page explains the format
+those files follow.</p>
+<h2 id="unified-configuration-format">Unified configuration format<a class="headerlink" href="#unified-configuration-format" title="Permanent link">&para;</a></h2>
+<p>The modern unified format provides better organization and template
+inheritance:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># modern_config.yaml</span>
+<span class="nt">inherit_from</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;templates/base_robot.yaml&quot;</span>
+
+<span class="nt">robot</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;tiago&quot;</span>
+<span class="w">  </span><span class="nt">urdf_path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;urdf/tiago.urdf&quot;</span>
+
+<span class="nt">calibration</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;full_params&quot;</span>
+<span class="w">  </span><span class="nt">sensor_type</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;camera&quot;</span>
+
+<span class="w">  </span><span class="nt">markers</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ref_joint</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;wrist_3_joint&quot;</span>
+<span class="w">      </span><span class="nt">position</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.05</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">measure</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">true</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">]</span>
+
+<span class="nt">identification</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mechanics</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">friction_coefficients</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">viscous</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.01</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.02</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.015</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">static</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.001</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.002</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.0015</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">actuator_inertias</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.15</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.12</span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="nt">signal_processing</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sampling_frequency</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5000.0</span>
+<span class="w">    </span><span class="nt">cutoff_frequency</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100.0</span>
+</code></pre></div>
+<h2 id="legacy-format-support">Legacy format support<a class="headerlink" href="#legacy-format-support" title="Permanent link">&para;</a></h2>
+<p>Existing configurations continue to work without modification:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># legacy_config.yaml</span>
+<span class="nt">calibration</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">calib_level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">full_params</span>
+<span class="w">  </span><span class="nt">markers</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ref_joint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wrist_3_joint</span>
+<span class="w">      </span><span class="nt">measure</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">True</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">True</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">True</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">True</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">True</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">True</span><span class="p p-Indicator">]</span>
+
+<span class="nt">identification</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">robot_params</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fv</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.01</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.02</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.015</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">fs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.001</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.002</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.0015</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">processing_params</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0002</span>
+<span class="w">      </span><span class="nt">cut_off_frequency_butterworth</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100.0</span>
+</code></pre></div>
+<h2 id="parsing-a-config">Parsing a config<a class="headerlink" href="#parsing-a-config" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.utils.config_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">UnifiedConfigParser</span>
+
+<span class="c1"># Parse any configuration format</span>
+<span class="n">parser</span> <span class="o">=</span> <span class="n">UnifiedConfigParser</span><span class="p">(</span><span class="s2">&quot;config/robot_config.yaml&quot;</span><span class="p">)</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">()</span>
+
+<span class="c1"># Create task-specific configuration</span>
+<span class="n">calib_config</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">create_task_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;calibration&quot;</span><span class="p">)</span>
+<span class="n">identif_config</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">create_task_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;identification&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="template-inheritance">Template inheritance<a class="headerlink" href="#template-inheritance" title="Permanent link">&para;</a></h2>
+<p>The unified format's real power is <code>extends:</code> — a robot config file
+references a shared template so it only needs to specify what's actually
+robot-specific. Templates and real examples live in
+<a href="https://github.com/thanhndv212/figaroh-examples/tree/main/examples/templates">figaroh-examples/examples/templates</a>:</p>
+<table>
+<thead>
+<tr>
+<th>Template</th>
+<th>Extends</th>
+<th>For</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>base_robot_config.yaml</code></td>
+<td>— (root of the chain)</td>
+<td>Defines the full schema (<code>meta</code>, <code>robot</code>, <code>tasks</code>, <code>environment</code>, <code>custom</code>); every other template extends this</td>
+</tr>
+<tr>
+<td><code>manipulator_robot.yaml</code></td>
+<td><code>base_robot_config.yaml</code></td>
+<td>Fixed-base serial arms (UR10, Staubli TX40, KUKA) — no mobile base, wrist-mounted 6-DOF marker default</td>
+</tr>
+<tr>
+<td><code>humanoid_robot.yaml</code></td>
+<td><code>base_robot_config.yaml</code></td>
+<td>Humanoid / mobile manipulators (TIAGo, TALOS) — coupled wrists, mobile base, head camera + F/T sensors, 1000 Hz default sampling</td>
+</tr>
+</tbody>
+</table>
+<p>A robot config points at the template that matches its kinematic shape:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># examples/ur10/config/ur10_unified_config.yaml</span>
+<span class="nt">extends</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;../../templates/manipulator_robot.yaml&quot;</span>
+
+<span class="nt">robot</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ur10&quot;</span>
+<span class="w">  </span><span class="nt">properties</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">joints</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">active_joints</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;shoulder_pan_joint&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;shoulder_lift_joint&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;...&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">mechanics</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">reduction_ratios</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">50.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">50.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">50.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">50.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">50.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">50.0</span><span class="p p-Indicator">]</span>
+</code></pre></div>
+<p><code>UnifiedConfigParser</code> resolves the chain (robot config → template →
+<code>base_robot_config.yaml</code>) and deep-merges it:</p>
+<ul>
+<li><strong>Scalars</strong> (strings, numbers, booleans): the more specific file wins.</li>
+<li><strong>Dictionaries</strong>: merged recursively — keys only in the template are kept,
+  keys only in the robot config are added.</li>
+<li><strong>Lists</strong>: replaced entirely, not merged — a robot's <code>markers:</code> list
+  replaces the template's, it doesn't append to it.</li>
+</ul>
+<h3 id="creating-a-new-robot-config">Creating a new robot config<a class="headerlink" href="#creating-a-new-robot-config" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Pick the template that matches your robot: <code>manipulator_robot.yaml</code> for a
+   fixed-base arm, <code>humanoid_robot.yaml</code> for a humanoid or mobile
+   manipulator, <code>base_robot_config.yaml</code> directly for anything else.</li>
+<li>Point a new config at it with <code>extends:</code> and fill in only what differs
+   (joint names, limits, friction coefficients, marker configuration).</li>
+<li>Set <code>tasks.&lt;task&gt;.enabled: true</code> for each task your robot supports.</li>
+</ol>
+<p><code>examples/create_example.sh &lt;robot_name&gt;</code> in figaroh-examples scaffolds this
+structure for you from the TIAGo layout — see the
+<a href="../../examples/templates/">Examples Gallery</a> for the full inheritance rules
+and worked examples.</p>
+<h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../../tutorials/">Tutorials</a> walk through a full calibration and
+  identification run using these configs.</li>
+<li><a href="../../examples/templates/">Examples Gallery → Config Templates</a> has the
+  complete override rules and best practices for template authors.</li>
+</ul>
 
 
 
