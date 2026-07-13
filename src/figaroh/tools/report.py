@@ -122,16 +122,25 @@ def _build_insights(
                     "metrics reflect fit quality on the training set "
                     "only, not generalization.",
         })
-    elif validation.get("pos_improvement_pct", 100.0) < (
-        VALIDATION_IMPROVEMENT_WARN_PCT
-    ):
-        insights.append({
-            "level": "warn",
-            "text": "Validation position RMSE improved by only "
-                    f"{validation['pos_improvement_pct']:.1f}% over "
-                    "nominal — check model assumptions or "
-                    "configuration.",
-        })
+    else:
+        if validation.get("validation_source") == "calibration_data_fallback":
+            insights.append({
+                "level": "warn",
+                "text": "No separate validation data provided — "
+                        "validation metrics fall back to the "
+                        "calibration data itself and do NOT test "
+                        "generalization to new configurations.",
+            })
+        if validation.get("pos_improvement_pct", 100.0) < (
+            VALIDATION_IMPROVEMENT_WARN_PCT
+        ):
+            insights.append({
+                "level": "warn",
+                "text": "Validation position RMSE improved by only "
+                        f"{validation['pos_improvement_pct']:.1f}% over "
+                        "nominal — check model assumptions or "
+                        "configuration.",
+            })
 
     if not insights:
         insights.append({
@@ -261,6 +270,15 @@ def _validation_section(validation: Optional[Dict[str, Any]]) -> str:
             "</tr>"
         )
 
+    warning_html = ""
+    if validation.get("validation_source") == "calibration_data_fallback":
+        warning_html = (
+            '<p class="warning">⚠ No separate validation data was '
+            "provided — falling back to calibration data. These "
+            "metrics are <strong>not</strong> an independent "
+            "generalization test.</p>"
+        )
+
     rows = [
         _row(
             "Position RMSE",
@@ -292,8 +310,14 @@ def _validation_section(validation: Optional[Dict[str, Any]]) -> str:
         ),
     ]
 
+    set_label = (
+        "calibration set (fallback)"
+        if validation.get("validation_source") == "calibration_data_fallback"
+        else "held-out set"
+    )
     return f"""
-    <p class="muted">Held-out set, n={validation.get("n_val_samples", 0)}</p>
+    {warning_html}
+    <p class="muted">{set_label}, n={validation.get("n_val_samples", 0)}</p>
     <table class="data">
       <thead>
         <tr><th>Metric</th><th>Nominal</th><th>Calibrated</th>

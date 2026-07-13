@@ -531,9 +531,29 @@ class BaseCalibration(ABC):
         the ground-truth measured poses.
 
         Returns:
-            Dict with validation metrics, or None if no validation data.
+            Dict with validation metrics, or None if neither validation
+            nor calibration data is available. When no separate
+            validation set was configured (or it failed to load), this
+            falls back to evaluating against the calibration data
+            itself so a V&V report can still be produced — a warning
+            is logged and ``"validation_source"`` in the returned dict
+            is set to ``"calibration_data_fallback"`` so callers/report
+            renderers can flag it as not an independent test.
         """
-        if not getattr(self, "_val_available", False):
+        if getattr(self, "_val_available", False):
+            q_val, PEE_val = self._q_val, self._PEE_val
+            validation_source = "validation_data"
+        elif hasattr(self, "q_measured") and hasattr(self, "PEE_measured"):
+            logger.warning(
+                "No separate validation data available "
+                "(validation_data_file not configured or failed to "
+                "load); falling back to calibration data for "
+                "validation metrics. These results are NOT an "
+                "independent generalization test."
+            )
+            q_val, PEE_val = self.q_measured, self.PEE_measured
+            validation_source = "calibration_data_fallback"
+        else:
             return None
 
         result = self.LM_result
@@ -541,18 +561,18 @@ class BaseCalibration(ABC):
 
         # FK for nominal and calibrated on validation set
         PEE_nom = calc_updated_fkm(
-            self.model, self.data, zeros, self._q_val, self.calib_config
+            self.model, self.data, zeros, q_val, self.calib_config
         )
         PEE_cal = calc_updated_fkm(
-            self.model, self.data, result.x, self._q_val, self.calib_config
+            self.model, self.data, result.x, q_val, self.calib_config
         )
 
         # Log-map residuals
-        resid_nom = self._compute_logmap_residuals(self._PEE_val, PEE_nom)
-        resid_cal = self._compute_logmap_residuals(self._PEE_val, PEE_cal)
+        resid_nom = self._compute_logmap_residuals(PEE_val, PEE_nom)
+        resid_cal = self._compute_logmap_residuals(PEE_val, PEE_cal)
 
         n_dofs = self.calib_config["calibration_index"]
-        n_val = len(self._q_val)
+        n_val = len(q_val)
 
         # Reshape to (n_dofs, n_val) — DOF-major
         resid_nom_2d = resid_nom.reshape((n_dofs, n_val))
@@ -607,6 +627,7 @@ class BaseCalibration(ABC):
 
         return {
             "n_val_samples": n_val,
+            "validation_source": validation_source,
             "dof_names": dof_names,
             "error_nominal_per_dof": _per_dof(nom_scaled),
             "error_fitted_per_dof": _per_dof(cal_scaled),
@@ -1928,7 +1949,15 @@ class BaseCalibration(ABC):
         # ── Validation ──
         print("-" * 70)
         if val is not None:
-            print(f"  Validation (separate set, n={val['n_val_samples']})")
+            if val.get("validation_source") == "calibration_data_fallback":
+                print(
+                    "  ⚠ WARNING: no separate validation data "
+                    "provided — falling back to calibration data. "
+                    "These are NOT an independent generalization test."
+                )
+                print(f"  Validation (calibration set, n={val['n_val_samples']})")
+            else:
+                print(f"  Validation (separate set, n={val['n_val_samples']})")
             print(
                 f"  {'Metric':<20s} {'Nominal':>10s} "
                 f"{'Calibrated':>12s} {'Improvement':>14s}"

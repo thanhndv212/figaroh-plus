@@ -116,6 +116,16 @@ def _build_insights(
                     "to enable it.",
         })
     else:
+        if validation.get("validation_source") == (
+            "identification_data_fallback"
+        ):
+            insights.append({
+                "level": "warn",
+                "text": "No separate validation data provided — "
+                        "validation metrics fall back to the "
+                        "identification data itself and do NOT test "
+                        "generalization to new trajectories.",
+            })
         corr = validation.get("correlation", 1.0)
         if corr < LOW_CORRELATION_WARN:
             insights.append({
@@ -242,6 +252,15 @@ def _validation_section(validation: Optional[Dict[str, Any]]) -> str:
             "a split of the training data) to test generalization.</p>"
         )
 
+    warning_html = ""
+    if validation.get("validation_source") == "identification_data_fallback":
+        warning_html = (
+            '<p class="warning">⚠ No separate validation data was '
+            "provided — falling back to identification data. These "
+            "metrics are <strong>not</strong> an independent "
+            "generalization test.</p>"
+        )
+
     improvement = validation.get("improvement_pct", 0.0)
     arrow = "↓" if improvement > 0 else "↑"
     rows = (
@@ -261,8 +280,15 @@ def _validation_section(validation: Optional[Dict[str, Any]]) -> str:
 
     n_val = validation.get("n_val_samples", 0)
     val_corr = validation.get("correlation", float("nan"))
+    set_label = (
+        "identification set (fallback)"
+        if validation.get("validation_source")
+        == "identification_data_fallback"
+        else "held-out set"
+    )
     return f"""
-    <p class="muted">Held-out set, n={n_val}
+    {warning_html}
+    <p class="muted">{set_label}, n={n_val}
       &middot; correlation {val_corr:.4f}</p>
     <table class="data">
       <thead>

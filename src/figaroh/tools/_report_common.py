@@ -288,6 +288,35 @@ def _provenance_section(provenance: Optional[Dict[str, Any]]) -> str:
     return f'{header}<div class="kv-grid">{group_html}</div>'
 
 
+
+
+# Above this cap, the before/after chart's inline JSON payload and SVG
+# path strings get large enough (multi-MB HTML, tens of thousands of
+# path points) to stall or fail to paint in the browser — seen in
+# practice on a validation-data-fallback run with n_val ~45k. Uniformly
+# subsample instead of truncating so the displayed shape still spans
+# the full trajectory.
+_MAX_SERIES_POINTS = 3000
+
+
+def _downsample_series(
+    time: List[int], series_dicts: List[Dict[str, List[float]]], max_points: int
+) -> tuple:
+    """Uniformly subsample time + parallel per-name series to at most
+    ``max_points``, keeping all series aligned to the same indices."""
+    n = len(time)
+    if n <= max_points:
+        return time, series_dicts
+    stride = math.ceil(n / max_points)
+    idx = list(range(0, n, stride))
+    new_time = [time[i] for i in idx]
+    new_series_dicts = [
+        {name: [arr[i] for i in idx] for name, arr in d.items()}
+        for d in series_dicts
+    ]
+    return new_time, new_series_dicts
+
+
 def _series_panel_section(
     validation: Optional[Dict[str, Any]], domain: str, panel_id: str
 ) -> str:
@@ -328,8 +357,14 @@ def _series_panel_section(
     if not names or nominal is None or fitted is None or measured is None:
         return '<p class="muted">Before/after series unavailable.</p>'
 
+    time = list(range(n_val))
+    n_shown = min(n_val, _MAX_SERIES_POINTS)
+    time, (nominal, fitted, measured) = _downsample_series(
+        time, [nominal, fitted, measured], _MAX_SERIES_POINTS
+    )
+
     payload = {
-        "time": list(range(n_val)),
+        "time": time,
         "names": names,
         "nominal": nominal,
         "fitted": fitted,
@@ -337,7 +372,16 @@ def _series_panel_section(
         "unit": unit,
     }
     payload_json = json.dumps(payload).replace("</", "<\\/")
+    # Options are rendered server-side here; initSeriesPanel() must not
+    # re-populate them client-side (that duplicated every entry).
     options = "".join(f"<option>{_esc(n)}</option>" for n in names)
+
+    hint = f"Held-out set, n={n_val}."
+    if n_shown < n_val:
+        hint = (
+            f"Held-out set, n={n_val} (displaying {n_shown} "
+            "uniformly-subsampled points)."
+        )
 
     return f"""
     <div class="series-controls">
@@ -351,8 +395,7 @@ def _series_panel_section(
       <span><i style="background:#2f9e44"></i> Fitted</span>
       <span><i style="background:#495057"></i> Measured</span>
     </div>
-    <p class="series-hint">Scroll to zoom, hover to inspect. Held-out set,
-      n={n_val}.</p>
+    <p class="series-hint">Scroll to zoom, hover to inspect. {hint}</p>
     <div id="{panel_id}-tooltip" class="series-tooltip"></div>
     <script>
     (function () {{
@@ -583,6 +626,10 @@ table.data thead th {
 table.data td.num, table.data th:not(:first-child) { text-align: right; }
 table.data tbody tr:last-child td { border-bottom: none; }
 .muted { color: var(--text-muted); font-size: .9rem; }
+.warning {
+  color: var(--fair); background: var(--fair-bg); font-size: .88rem;
+  padding: 8px 12px; border-radius: 6px; margin: 0 0 12px;
+}
 .bar-cell { width: 160px; }
 .bar-track {
   background: var(--surface-2); border-radius: 4px; height: 8px;
@@ -675,11 +722,9 @@ function initSeriesPanel(id, data) {
   var svgns = "http:" + "//www.w3.org/2000/svg";
   var W = 760, H = 320, padL = 46, padR = 16, padT = 16, padB = 26;
 
-  names.forEach(function (n) {
-    var opt = document.createElement("option");
-    opt.value = n; opt.textContent = n;
-    select.appendChild(opt);
-  });
+  // <option>s for `select` are rendered server-side by
+  // _series_panel_section() — do not repopulate them here, or every
+  // entry appears twice in the dropdown.
 
   var fullMin = 0, fullMax = Math.max(1, time.length - 1);
   var xMin = fullMin, xMax = fullMax;

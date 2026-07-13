@@ -582,17 +582,37 @@ class BaseIdentification(ABC):
         mirrors :meth:`BaseCalibration._compute_validation_metrics`.
 
         Returns:
-            Dict with validation metrics, or None if no validation data
-            (or if solve() has not been run yet).
+            Dict with validation metrics, or None if solve() has not
+            been run yet. When no separate validation set was
+            configured (or it failed to load), this falls back to
+            evaluating against the identification data itself so a
+            V&V report can still be produced — a warning is logged and
+            ``"validation_source"`` in the returned dict is set to
+            ``"identification_data_fallback"`` so callers/report
+            renderers can flag it as not an independent test.
         """
-        if not getattr(self, "_val_available", False):
-            return None
         if self._idx_eliminated is None or self._base_indices is None:
             return None
 
-        q_val = self._val_processed_data["positions"]
-        dq_val = self._val_processed_data["velocities"]
-        ddq_val = self._val_processed_data["accelerations"]
+        if getattr(self, "_val_available", False):
+            val_processed_data = self._val_processed_data
+            n_val = self._val_num_samples
+            validation_source = "validation_data"
+        else:
+            logger.warning(
+                "No separate validation data available "
+                "(validation_data_file not configured or failed to "
+                "load); falling back to identification data for "
+                "validation metrics. These results are NOT an "
+                "independent generalization test."
+            )
+            val_processed_data = self.processed_data
+            n_val = self.num_samples
+            validation_source = "identification_data_fallback"
+
+        q_val = val_processed_data["positions"]
+        dq_val = val_processed_data["velocities"]
+        ddq_val = val_processed_data["accelerations"]
 
         W_val_full = build_regressor_basic(
             self.robot, q_val, dq_val, ddq_val, self.identif_config
@@ -600,18 +620,37 @@ class BaseIdentification(ABC):
         W_val_reduced = build_regressor_reduced(W_val_full, self._idx_eliminated)
         W_val_base = W_val_reduced[:, self._base_indices]
 
-        n_active = len(self.identif_config["act_idxv"])
-        n_val = self._val_num_samples
+        act_idxv = self.identif_config["act_idxv"]
+        n_active = len(act_idxv)
         n_rows = n_active * n_val
 
+        def _select_active_joint_rows(vec: np.ndarray) -> np.ndarray:
+            """Extract the active joints' blocks from a full-model
+            joint-major vector (block j occupies rows
+            [j*n_val:(j+1)*n_val] for j in 0..self.nv-1 — see
+            :mod:`figaroh.tools.regressor`).
+
+            Active joints are usually a strict subset of the model's
+            DOFs (e.g. TIAGo identifies only torso+arm out of many
+            more DOFs), so ``act_idxv`` is generally *not*
+            ``[0, 1, ..., n_active-1]`` — a plain ``vec[:n_rows]``
+            would silently grab the wrong joints' blocks. This mirrors
+            the row-selection already used correctly in
+            :meth:`_decimate_regressor_matrix`.
+            """
+            return np.concatenate(
+                [vec[idx * n_val:(idx + 1) * n_val] for idx in act_idxv]
+            )
+
         phi_std_vec = np.array(list(self.standard_parameter.values()))
-        tau_val_nominal = (W_val_full @ phi_std_vec)[:n_rows]
-        tau_val_identif = (W_val_base @ self.phi_base)[:n_rows]
+        tau_val_nominal = _select_active_joint_rows(W_val_full @ phi_std_vec)
+        tau_val_identif = _select_active_joint_rows(W_val_base @ self.phi_base)
 
         # Joint-major, matching the regressor's row convention (block j
-        # occupies rows [j*n_val:(j+1)*n_val]).
+        # occupies rows [j*n_val:(j+1)*n_val]) — torques columns are
+        # already restricted to active joints in act_idxv order.
         tau_val_measured = (
-            np.asarray(self._val_processed_data["torques"]).T.flatten()[:n_rows]
+            np.asarray(val_processed_data["torques"]).T.flatten()[:n_rows]
         )
 
         def _stats(estimated):
@@ -656,6 +695,7 @@ class BaseIdentification(ABC):
 
         return {
             "n_val_samples": n_val,
+            "validation_source": validation_source,
             "rmse_nominal": nominal_stats["rmse"],
             "rmse_identified": identif_stats["rmse"],
             "max_nominal": nominal_stats["max"],
@@ -1783,7 +1823,18 @@ class BaseIdentification(ABC):
         print("-" * 70)
         val = result.get("validation_metrics")
         if val is not None:
-            print(f"  Validation (separate set, n={val['n_val_samples']})")
+            if val.get("validation_source") == "identification_data_fallback":
+                print(
+                    "  ⚠ WARNING: no separate validation data "
+                    "provided — falling back to identification data. "
+                    "These are NOT an independent generalization test."
+                )
+                print(
+                    f"  Validation (identification set, "
+                    f"n={val['n_val_samples']})"
+                )
+            else:
+                print(f"  Validation (separate set, n={val['n_val_samples']})")
             print(
                 f"    RMSE nominal:    {val['rmse_nominal']:.4f}    "
                 f"RMSE identified: {val['rmse_identified']:.4f}"

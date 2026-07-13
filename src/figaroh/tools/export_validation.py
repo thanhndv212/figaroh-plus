@@ -667,18 +667,18 @@ class URDFComparison:
 
         @speed_slider.on_update
         def _on_speed_change(_event):
-            anim_state["speed"] = _event.value
+            anim_state["speed"] = _event.target.value
 
         @pose_slider.on_update
         def _on_pose_change(_event):
-            static_state["idx"] = int(_event.value)
+            static_state["idx"] = int(_event.target.value)
             _update_static_pose()
 
         @opacity_slider.on_update
         def _on_opacity_change(_event):
-            static_state["opacity"] = _event.value
+            static_state["opacity"] = _event.target.value
             for mesh in static_vis_mod._meshes:
-                mesh.opacity = _event.value
+                mesh.opacity = _event.target.value
 
         # --- Initial state ---
         _update_static_pose()
