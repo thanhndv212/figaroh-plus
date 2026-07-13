@@ -11,4 +11,4 @@ from . import utils
 from . import visualisation
 from . import optimal
 
-__version__ = "0.4.4"
+__version__ = "0.4.5"

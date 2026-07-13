@@ -1,0 +1,104 @@
+site_name: FIGAROH
+site_description: >-
+  A Python toolbox for dynamic parameter identification and geometric
+  calibration of robots and humans.
+site_url: https://thanhndv212.github.io/figaroh-plus/
+repo_url: https://github.com/thanhndv212/figaroh-plus
+repo_name: thanhndv212/figaroh-plus
+edit_uri: edit/main/docs/source/
+
+docs_dir: docs/source
+site_dir: site
+
+# docs/decisions/ is a sibling of docs_dir (docs/source/), not inside it, so
+# MkDocs never reads it — no exclude_docs needed to keep it off the built
+# site.
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+    - search.suggest
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - tables
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - include-markdown
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            merge_init_into_class: true
+            members_order: source
+
+nav:
+  - Home: index.md
+  - User Guide:
+      - Getting Started: getting_started.md
+      - Tutorials:
+          - Overview: tutorials/index.md
+          - Calibration Walkthrough: tutorials/calibration_walkthrough.md
+          - Identification Walkthrough: tutorials/identification_walkthrough.md
+          - Optimal Experiment Design: tutorials/optimal_design.md
+  - Concepts:
+      - Architecture: concepts/architecture.md
+      - Configuration System: concepts/configuration.md
+      - Backends: concepts/backends.md
+      - Integration API: concepts/integration.md
+  - Guides:
+      - Reporting & Verification: guides/reporting_and_verification.md
+  - Examples Gallery:
+      - Overview: examples/index.md
+      - UR10: examples/ur10.md
+      - TIAGo: examples/tiago.md
+      - TALOS: examples/talos.md
+      - Staubli TX40: examples/staubli_tx40.md
+      - Config Templates: examples/templates.md
+  - API Reference:
+      - Overview: api/index.md
+      - Calibration: api/calibration.md
+      - Identification: api/identification.md
+      - Optimal: api/optimal.md
+      - Backends: api/backends.md
+      - Integration: api/integration.md
+      - Measurements: api/measurements.md
+      - Tools: api/tools.md
+      - Utils: api/utils.md
+      - Visualisation: api/visualisation.md
+  - Further Reading:
+      - Roadmap: further_reading/roadmap.md
+      - Changelog: further_reading/changelog.md
+      - FAQ: further_reading/faq.md
+      - Design Decisions: further_reading/decisions.md

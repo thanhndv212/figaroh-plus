@@ -80,6 +80,12 @@ identification toolbox** that enables researchers and engineers to:
 - **v0.4.1** LMI physical-consistency projection ✅ (`identification/physical_consistency.py`, tested)
 - **v0.4.2** Base → full parameter reconstruction ✅ (`identification/reconstruction.py`, nullspace + SDP)
 - **v0.4.3** CAD-informed constraints ✅ (`identification/cad_constraints.py`, released 2026-06-02)
+- **Reporting & verification (V&V) suite** ✅ — HTML diagnostic reports, machine-readable
+  pass/fail verdicts (`verify()`/`export_verification_report()`), an interactive
+  before/after panel, and a static two-run compare page
+  (`tools/compare_report.py`). Tracked separately from this roadmap's Track A/B —
+  full design history and status in
+  [`docs/decisions/roadmap-mujoco-sysid-inspired-features.md`](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/roadmap-mujoco-sysid-inspired-features.md).
 
 **Test suite (verified by running `pytest`):**
 - 259 tests collected across 11 files in `tests/unit/`:

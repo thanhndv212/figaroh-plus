@@ -106,6 +106,12 @@ def get_param_from_yaml(robot, identif_data):
     if isinstance(reconstruction, dict):
         identif_config["reconstruction"] = reconstruction
 
+    # Optional held-out validation dataset (separate from training data,
+    # never a split of it). Mirrors BaseCalibration's validation_data_file.
+    identif_config["validation_data_file"] = identif_data.get(
+        "validation_data_file", ""
+    )
+
     return identif_config
 
 
@@ -142,6 +148,7 @@ def unified_to_legacy_identif_config(robot, unified_identif_config) -> dict:
 
     # 1. Extract basic robot information
     identif_config["robot_name"] = robot.model.name
+    identif_config["instance"] = unified_identif_config.get("instance", {})
 
     # 2. Extract signal processing parameters
     _extract_signal_processing_params(identif_config, signal_processing)
@@ -170,6 +177,16 @@ def unified_to_legacy_identif_config(robot, unified_identif_config) -> dict:
     reconstruction = unified_identif_config.get("reconstruction", {})
     if isinstance(reconstruction, dict) and reconstruction:
         identif_config["reconstruction"] = reconstruction
+
+    # 10. Optional held-out validation dataset (separate file/directory,
+    # never a split of the training data). Mirrors calibration's
+    # tasks.calibration.data.validation_data_file.
+    data_section = unified_identif_config.get("data", {})
+    if not isinstance(data_section, dict):
+        data_section = {}
+    identif_config["validation_data_file"] = data_section.get(
+        "validation_data_file", ""
+    )
 
     return identif_config
 
@@ -245,6 +262,9 @@ def _extract_problem_config(identif_config, problem):
         "actuator_inertia", True
     )
     identif_config["has_joint_offset"] = model_components.get("joint_offset", True)
+
+    # Solver: weighted least squares refinement (see BaseIdentification.solve)
+    identif_config["wls"] = problem.get("wls", False)
 
 
 def _extract_mechanical_params(identif_config, mechanics):

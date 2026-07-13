@@ -4,15 +4,14 @@
 <p align="center">
   <a href="https://www.apache.org/licenses/LICENSE-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"/></a>
   <a href="https://pypi.org/project/figaroh/"><img src="https://badge.fury.io/py/figaroh.svg" alt="PyPI version" height="20"/></a>
-  <a href="https://pypi.org/project/figaroh/"><img src="https://img.shields.io/pypi/dm/figaroh" alt="Downloads"/></a>
-  <a href="https://deepwiki.com/thanhndv212/figaroh-plus"><img src="https://img.shields.io/badge/docs-online-brightgreen" alt="Documentation"/></a>
+  <a href="https://thanhndv212.github.io/figaroh-plus/"><img src="https://img.shields.io/badge/docs-online-brightgreen" alt="Documentation"/></a>
   <a href="https://deepwiki.com/thanhndv212/figaroh-plus"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"/></a>
 </p>
 
 FIGAROH is a Python toolbox providing efficient and highly flexible frameworks for dynamics identification and geometric calibration of rigid multi-body systems based on the URDF modeling convention. It supports both serial (industrial manipulators) and tree-structure systems (humanoids, mobile manipulators).
 
 **📦 Available on PyPI:** `pip install figaroh`
-**📖 Version:** 0.4.4
+**📖 Version:** 0.4.5
 
 > Note: This repo is a fork from [gitlab repo](https://gitlab.laas.fr/gepetto/figaroh) of which the author is no longer a contributor.
 
@@ -54,53 +53,54 @@ git clone https://github.com/thanhndv212/figaroh-examples.git
 cd figaroh-examples && pip install -r requirements.txt
 ```
 
----
-
-## Package Structure
-
-```
-figaroh/
-├── calibration/          # Geometric calibration framework
-│   ├── BaseCalibration       # Abstract base class for kinematic calibration
-│   ├── calibration_tools     # Parameter parsing, regressor computation
-│   ├── config                # Configuration loading and validation
-│   ├── data_loader           # CSV data loading utilities
-│   └── parameter             # Kinematic parameter management
-│
-├── identification/       # Dynamic parameter identification
-│   ├── BaseIdentification    # Abstract base class for dynamic identification
-│   ├── identification_tools  # Regressor utilities, parameter extraction
-│   ├── config                # Identification configuration parsing
-│   └── parameter             # Inertial parameter management (friction, inertia)
-│
-├── optimal/              # Optimization-based trajectory & configuration
-│   ├── BaseOptimalTrajectory     # IPOPT-based trajectory optimization
-│   ├── BaseOptimalCalibration    # Optimal calibration posture selection
-│   ├── BaseParameterComputer     # Base parameter computation utilities
-│   ├── TrajectoryConstraintManager # Constraint handling for optimization
-│   └── config                    # Optimization configuration management
-│
-├── tools/                # Core robotics utilities
-│   ├── RegressorBuilder      # Object-oriented regressor computation
-│   ├── LinearSolver          # Advanced linear solver (LS, Ridge, Lasso, etc.)
-│   ├── QRDecomposer          # QR decomposition for base parameters
-│   ├── CollisionManager      # Collision detection and visualization
-│   ├── RobotIPOPTSolver      # IPOPT optimization wrapper
-│   └── CubicSpline           # Trajectory interpolation utilities
-│
-├── utils/                # Helper utilities
-│   ├── UnifiedConfigParser   # YAML config with inheritance support
-│   ├── ResultsManager        # Unified plotting and result export
-│   ├── error_handling        # Custom exceptions and validation
-│   └── cubic_spline          # Spline trajectory generation
-│
-├── measurements/         # Data acquisition and processing
-└── visualisation/        # Meshcat-based 3D visualization
-```
+| Robot | Tasks |
+|-------|-------|
+| **Staubli TX40** | Dynamic identification |
+| **Universal UR10** | Geometric calibration (RealSense camera) |
+| **TIAGo** | Full workflow: identification + calibration |
+| **TALOS Humanoid** | Torso-arm calibration, whole-body calibration (to be released) |
 
 ---
 
-## Core Modules
+## Key Features
+
+### 🔧 Dynamic Identification
+- Extended dynamic models: friction, actuator inertia, joint offsets
+- Optimal exciting trajectory generation (IPOPT)
+- Multiple parameter estimation algorithms
+- Physically consistent parameters for URDF updates
+
+### 📐 Geometric Calibration
+- Full kinematic parameter estimation (6 DOF per joint)
+- Optimal posture selection via combinatorial optimization
+- Support for cameras, motion capture, planar constraints
+- Direct URDF model updates
+
+### ⚙️ Configuration System
+- **Unified YAML format** with template inheritance
+- **Automatic format detection** (legacy compatibility)
+- **Variable expansion** and validation
+- **Task-specific configs**: calibration, identification, optimal trajectory
+
+### 🛠️ Modern Architecture
+- **Proper logging** (NullHandler pattern for libraries)
+- **Abstract base classes** for extensibility
+- **Pinocchio 3.x compatibility**
+- **Cross-platform**: Linux, macOS, Windows
+
+### 📊 Reporting & Verification (V&V)
+- **Self-contained HTML diagnostic reports** with an interactive before/after
+  chart — `solve(html_report=True)` / `export_html_report()`
+- **Machine-readable pass/fail verdicts** for CI — `verify()` /
+  `export_verification_report()`, with overridable quality thresholds
+- **Static two-run compare page** — `generate_compare_page()` diffs two
+  exported runs offline, with a mandatory compatibility check before
+  overlaying them
+- See the [Reporting & Verification guide](https://thanhndv212.github.io/figaroh-plus/guides/reporting_and_verification/)
+  for the full walkthrough
+---
+
+## Core Modules (See more at [ARCHITECTURE](ARCHITECTURE))
 
 ### `figaroh.calibration` — Geometric Calibration
 
@@ -153,6 +153,8 @@ consistent set using a convex SDP/LMI based on Pinocchio pseudo-inertia.
 | `QRDecomposer` | QR decomposition with column pivoting for base parameter identification |
 | `CollisionManager` | Pinocchio-based collision detection with visualization |
 | `RobotIPOPTSolver` | High-level IPOPT interface with automatic differentiation |
+| `generate_calibration_report` / `generate_identification_report` | Self-contained HTML diagnostic reports (`tools/report.py`, `tools/identification_report.py`) |
+| `generate_compare_page` | Static, offline two-run compare page (`tools/compare_report.py`) |
 
 ### `figaroh.utils` — Configuration & Results
 
@@ -162,33 +164,6 @@ consistent set using a convex SDP/LMI based on Pinocchio pseudo-inertia.
 | `ResultsManager` | Unified plotting for calibration/identification results |
 | `CubicSpline` | C² continuous spline trajectory generation |
 
----
-
-## Key Features
-
-### 🔧 Dynamic Identification
-- Extended dynamic models: friction, actuator inertia, joint offsets
-- Optimal exciting trajectory generation (IPOPT)
-- Multiple parameter estimation algorithms
-- Physically consistent parameters for URDF updates
-
-### 📐 Geometric Calibration
-- Full kinematic parameter estimation (6 DOF per joint)
-- Optimal posture selection via combinatorial optimization
-- Support for cameras, motion capture, planar constraints
-- Direct URDF model updates
-
-### ⚙️ Configuration System
-- **Unified YAML format** with template inheritance
-- **Automatic format detection** (legacy compatibility)
-- **Variable expansion** and validation
-- **Task-specific configs**: calibration, identification, optimal trajectory
-
-### 🛠️ Modern Architecture
-- **Proper logging** (NullHandler pattern for libraries)
-- **Abstract base classes** for extensibility
-- **Pinocchio 3.x compatibility**
-- **Cross-platform**: Linux, macOS, Windows
 ---
 
 ## Methodology
@@ -229,26 +204,29 @@ Generate exciting trajectories or calibration postures:
 - **For calibration**: Combinatorial selection of postures maximizing observability
 
 ### Step 3: Data Collection & Processing
-Load experimental data with automatic validation:
+`initialize()` loads and validates experimental data (paths come from the
+YAML config, e.g. `measurement_file`):
 
 ```python
-from figaroh.calibration import BaseCalibration
-
 calibrator = MyCalibration(robot, "config/robot_config.yaml")
-calibrator.load_data("data/measurements.csv")
+calibrator.initialize()
 ```
 
 ### Step 4: Parameter Estimation
-Run identification/calibration with quality metrics:
+Run identification/calibration, then get a quality report, an optional
+HTML report, and a pass/fail verdict for the same run:
 
 ```python
 # Calibration
-calibrator.solve()
+calibrator.solve(html_report=True)      # prints + writes results/calibration_report.html
 print(f"RMSE: {calibrator.evaluation_metrics['rmse']:.6f}")
+verdict = calibrator.verify()           # pass/fail against quality thresholds
 
 # Identification
-identifier.solve(decimate=True, decimation_factor=10)
+identifier.solve(decimate=True, decimation_factor=10, html_report=True)
 print(f"Correlation: {identifier.correlation:.4f}")
+verdict = identifier.verify()
+identifier.export_verification_report()  # results/identification_verification.json
 ```
 
 ### Step 5: Model Update
@@ -267,18 +245,6 @@ Export calibrated/identified parameters to URDF or YAML.
 
 ---
 
-## Examples
-
-Complete working examples are available in [figaroh-examples](https://github.com/thanhndv212/figaroh-examples):
-
-| Robot | Tasks |
-|-------|-------|
-| **Staubli TX40** | Dynamic identification |
-| **Universal UR10** | Geometric calibration (RealSense camera) |
-| **TIAGo** | Full workflow: identification + calibration |
-| **TALOS Humanoid** | Torso-arm calibration, whole-body calibration |
-
----
 ## Citations
 
 If you use FIGAROH in your research, please cite the following papers:

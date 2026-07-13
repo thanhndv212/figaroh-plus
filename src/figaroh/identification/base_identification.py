@@ -24,6 +24,8 @@ import yaml
 import numpy as np
 from abc import ABC, abstractmethod
 import dataclasses
+from datetime import datetime, timezone
+from typing import Any, Dict, Optional
 
 # Setup logger for this module
 logger = logging.getLogger(__name__)
@@ -50,6 +52,7 @@ from figaroh.identification.parameter import (
     add_custom_parameters,
 )
 from figaroh.tools.solver import LinearSolver
+from figaroh.utils.results_manager import plot_with_fallback
 
 
 class BaseIdentification(ABC):
@@ -91,6 +94,22 @@ class BaseIdentification(ABC):
         self.tau_identif = None
         self.tau_noised = None
 
+        # Held-out validation dataset (separate file, never a split of the
+        # training data). Populated by _load_validation_data() if
+        # identif_config["validation_data_file"] is set.
+        self._val_available = False
+        self._val_processed_data = None
+        self._val_num_samples = None
+
+        # Diagnostics captured during solve() for validation / reporting:
+        # column indices eliminated by _eliminate_zero_columns() and the
+        # base-column selection from the QR decomposition, both needed to
+        # evaluate phi_base against a regressor built from new (held-out)
+        # trajectory data.
+        self._idx_eliminated = None
+        self._base_indices = None
+        self._decimate_used = False
+
         # Set default filter configuration, can be overridden in subclasses
         self.filter_config = self.identif_config.get(
             "filter_config",
@@ -112,6 +131,16 @@ class BaseIdentification(ABC):
         self.initialize_standard_parameters()
         self.compute_reference_torque()
 
+        # If a held-out validation dataset is configured, load and process
+        # it now (mirrors BaseCalibration.load_data_set()). Never fails
+        # initialization if validation data is missing/unavailable.
+        val_data_source = self.identif_config.get("validation_data_file")
+        if val_data_source:
+            try:
+                self._load_validation_data(val_data_source)
+            except Exception as e:
+                logger.warning(f"Validation data unavailable: {e}")
+
     def solve(
         self,
         decimate=True,
@@ -119,6 +148,8 @@ class BaseIdentification(ABC):
         zero_tolerance=0.001,
         plotting=True,
         save_results=False,
+        html_report=False,
+        wls=False,
     ):
         """Main solving method for dynamic parameter identification.
 
@@ -132,6 +163,15 @@ class BaseIdentification(ABC):
             zero_tolerance (float): Tolerance for eliminating zero columns
             plotting (bool): Whether to generate plots
             save_results (bool): Whether to save parameters to file
+            html_report (bool): If True, also export an HTML diagnostic
+                report (see :meth:`export_html_report`) after the terminal
+                quality report is printed.
+            wls (bool): If True, refine the OLS base-parameter estimate with
+                iteratively-weighted least squares (Gautier, 1997) before
+                computing quality metrics — see
+                :meth:`_apply_weighted_least_squares`. Relative standard
+                deviations from the WLS fit are stored under
+                ``self.result["wls_std_deviations"]``.
 
         Returns:
             ndarray: Base parameters phi_base
@@ -144,6 +184,9 @@ class BaseIdentification(ABC):
         logger.info(
             f"Starting {self.__class__.__name__} dynamic parameter identification..."
         )
+
+        self._run_started_at = datetime.now(timezone.utc).isoformat()
+        self._decimate_used = decimate
 
         # Validate prerequisites
         self._validate_prerequisites()
@@ -166,9 +209,24 @@ class BaseIdentification(ABC):
             tau_processed, W_processed, active_params
         )
 
+        # Step 3b: Optional weighted least squares refinement
+        wls_std = None
+        if wls:
+            phi_wls, wls_std = self._apply_weighted_least_squares()
+            self.phi_base = phi_wls
+            results["phi_base"] = phi_wls
+            results["tau_estimated"] = self.dynamic_regressor_base @ phi_wls
+            self.tau_identif = results["tau_estimated"]
+
         # Step 4: Store results and compute quality metrics
+        self._run_finished_at = datetime.now(timezone.utc).isoformat()
         self._compute_quality_metrics()
         self._store_results(results)
+        if wls_std is not None:
+            self.result["wls_std_deviations"] = wls_std
+
+        # Print quality report
+        self.print_quality_report()
 
         # Step 5: Optional plotting
         if plotting:
@@ -177,6 +235,10 @@ class BaseIdentification(ABC):
         # Step 6: Optional parameter saving
         if save_results:
             self.save_results()
+
+        # Step 7: Optional HTML diagnostic report
+        if html_report:
+            self.export_html_report()
 
         return self.phi_base
 
@@ -331,6 +393,7 @@ class BaseIdentification(ABC):
             config_file (str): Path to configuration file (legacy or unified)
             setting_type (str): Configuration section to load
         """
+        self._config_file_path = config_file
         try:
             logger.info(f"Loading config from {config_file}")
 
@@ -360,14 +423,27 @@ class BaseIdentification(ABC):
             raise
 
     @abstractmethod
-    def load_trajectory_data(self):
+    def load_trajectory_data(self, data_source: str = None):
         """Load and process CSV data.
 
         This method must be implemented by robot-specific subclasses
         to handle their specific data formats and file structures.
 
+        Args:
+            data_source: Optional override identifying an alternate dataset
+                to load instead of the class's normal training data (e.g.
+                a directory holding a held-out validation trajectory with
+                the same file layout/naming as the training data). When
+                ``None`` (default), the subclass loads its usual training
+                data exactly as before. Passed through from
+                ``identif_config["validation_data_file"]`` by
+                :meth:`_load_validation_data`.
+
         Returns:
-            tuple: (timestamps, positions, velocities, torques) as numpy arrays
+            dict: Dictionary with keys 'timestamps', 'positions',
+            'velocities', 'accelerations', 'torques' (numpy arrays;
+            'velocities'/'accelerations' may be None to be derived by
+            differentiation).
         """
         pass
 
@@ -451,6 +527,188 @@ class BaseIdentification(ABC):
         self.tau_ref = tau_ref[
             range(len(self.identif_config["act_idxv"]) * self.num_samples)
         ]
+
+    def _load_validation_data(self, data_source: str):
+        """Load and process a held-out validation trajectory.
+
+        Unlike a train/validation split of one dataset, this loads a
+        genuinely separate dataset — mirrors
+        :meth:`BaseCalibration._load_validation_data`. Reuses the exact
+        same per-robot loading/filtering/torque-processing pipeline as
+        training data (via polymorphic dispatch to
+        ``process_kinematics_data`` / ``process_torque_data``), so any
+        robot-specific overrides (motor-to-joint conversion, torque
+        scaling, etc.) apply identically to the validation set.
+
+        Args:
+            data_source: Passed through to :meth:`load_trajectory_data` as
+                its ``data_source`` override — e.g. a directory holding
+                validation CSVs with the same naming convention as the
+                training data.
+
+        Side Effects:
+            - Sets self._val_processed_data / self._val_num_samples
+            - Sets self._val_available = True
+        """
+        # Save training state so validation loading can reuse the same
+        # instance methods without disturbing the training data already
+        # held in self.raw_data / self.processed_data / self.num_samples.
+        orig_raw_data = self.raw_data
+        orig_processed_data = self.processed_data
+        orig_num_samples = self.num_samples
+
+        try:
+            self.raw_data = self.load_trajectory_data(data_source=data_source)
+            self.raw_data = self._truncate_data(self.raw_data, None)
+            self.process_kinematics_data(self.filter_config)
+            self.processed_data["torques"] = self.process_torque_data()
+            self.num_samples = self.processed_data["positions"].shape[0]
+            self._build_full_configuration()
+
+            self._val_processed_data = self.processed_data
+            self._val_num_samples = self.num_samples
+            self._val_available = True
+        finally:
+            self.raw_data = orig_raw_data
+            self.processed_data = orig_processed_data
+            self.num_samples = orig_num_samples
+
+    def _compute_validation_metrics(self):
+        """Compute torque-prediction validation metrics on held-out data.
+
+        Evaluates both the pre-identification standard/CAD parameters
+        ("nominal") and the identified base parameters ("identified")
+        against measured torques on a dataset never used for fitting —
+        mirrors :meth:`BaseCalibration._compute_validation_metrics`.
+
+        Returns:
+            Dict with validation metrics, or None if solve() has not
+            been run yet. When no separate validation set was
+            configured (or it failed to load), this falls back to
+            evaluating against the identification data itself so a
+            V&V report can still be produced — a warning is logged and
+            ``"validation_source"`` in the returned dict is set to
+            ``"identification_data_fallback"`` so callers/report
+            renderers can flag it as not an independent test.
+        """
+        if self._idx_eliminated is None or self._base_indices is None:
+            return None
+
+        if getattr(self, "_val_available", False):
+            val_processed_data = self._val_processed_data
+            n_val = self._val_num_samples
+            validation_source = "validation_data"
+        else:
+            logger.warning(
+                "No separate validation data available "
+                "(validation_data_file not configured or failed to "
+                "load); falling back to identification data for "
+                "validation metrics. These results are NOT an "
+                "independent generalization test."
+            )
+            val_processed_data = self.processed_data
+            n_val = self.num_samples
+            validation_source = "identification_data_fallback"
+
+        q_val = val_processed_data["positions"]
+        dq_val = val_processed_data["velocities"]
+        ddq_val = val_processed_data["accelerations"]
+
+        W_val_full = build_regressor_basic(
+            self.robot, q_val, dq_val, ddq_val, self.identif_config
+        )
+        W_val_reduced = build_regressor_reduced(W_val_full, self._idx_eliminated)
+        W_val_base = W_val_reduced[:, self._base_indices]
+
+        act_idxv = self.identif_config["act_idxv"]
+        n_active = len(act_idxv)
+        n_rows = n_active * n_val
+
+        def _select_active_joint_rows(vec: np.ndarray) -> np.ndarray:
+            """Extract the active joints' blocks from a full-model
+            joint-major vector (block j occupies rows
+            [j*n_val:(j+1)*n_val] for j in 0..self.nv-1 — see
+            :mod:`figaroh.tools.regressor`).
+
+            Active joints are usually a strict subset of the model's
+            DOFs (e.g. TIAGo identifies only torso+arm out of many
+            more DOFs), so ``act_idxv`` is generally *not*
+            ``[0, 1, ..., n_active-1]`` — a plain ``vec[:n_rows]``
+            would silently grab the wrong joints' blocks. This mirrors
+            the row-selection already used correctly in
+            :meth:`_decimate_regressor_matrix`.
+            """
+            return np.concatenate(
+                [vec[idx * n_val:(idx + 1) * n_val] for idx in act_idxv]
+            )
+
+        phi_std_vec = np.array(list(self.standard_parameter.values()))
+        tau_val_nominal = _select_active_joint_rows(W_val_full @ phi_std_vec)
+        tau_val_identif = _select_active_joint_rows(W_val_base @ self.phi_base)
+
+        # Joint-major, matching the regressor's row convention (block j
+        # occupies rows [j*n_val:(j+1)*n_val]) — torques columns are
+        # already restricted to active joints in act_idxv order.
+        tau_val_measured = (
+            np.asarray(val_processed_data["torques"]).T.flatten()[:n_rows]
+        )
+
+        def _stats(estimated):
+            residuals = tau_val_measured - estimated
+            return {
+                "rmse": float(np.sqrt(np.mean(residuals**2))),
+                "max": float(np.max(np.abs(residuals))),
+                "mean": float(np.mean(np.abs(residuals))),
+            }
+
+        nominal_stats = _stats(tau_val_nominal)
+        identif_stats = _stats(tau_val_identif)
+
+        def _improvement(before, after):
+            if before > 0:
+                return (before - after) / before * 100
+            return 0.0
+
+        correlation = 1.0
+        if n_rows > 1:
+            try:
+                correlation = float(
+                    np.corrcoef(tau_val_measured, tau_val_identif)[0, 1]
+                )
+            except (np.linalg.LinAlgError, ValueError):
+                correlation = 1.0
+
+        # Per-joint raw torque series (joint-major blocks of size n_val,
+        # same convention as _compute_per_joint_stats) — feeds verify()'s
+        # before/after `series` export (Step 3, Feature 6 Phase A).
+        active_joints = self.identif_config.get("active_joints", [])
+        joint_names = [
+            active_joints[i] if i < len(active_joints) else f"joint_{i}"
+            for i in range(n_active)
+        ]
+
+        def _per_joint(arr):
+            return {
+                joint_names[i]: arr[i * n_val:(i + 1) * n_val].tolist()
+                for i in range(n_active)
+            }
+
+        return {
+            "n_val_samples": n_val,
+            "validation_source": validation_source,
+            "rmse_nominal": nominal_stats["rmse"],
+            "rmse_identified": identif_stats["rmse"],
+            "max_nominal": nominal_stats["max"],
+            "max_identified": identif_stats["max"],
+            "improvement_pct": _improvement(
+                nominal_stats["rmse"], identif_stats["rmse"]
+            ),
+            "correlation": correlation,
+            "joint_names": joint_names,
+            "tau_nominal_per_joint": _per_joint(tau_val_nominal),
+            "tau_identified_per_joint": _per_joint(tau_val_identif),
+            "tau_measured_per_joint": _per_joint(tau_val_measured),
+        }
 
     def _apply_filters(self, *signals, nbutter=4, f_butter=2, med_fil=5, f_sample=100):
         """Apply median and lowpass filters to any number of signals.
@@ -745,6 +1003,7 @@ class BaseIdentification(ABC):
         )
         self.regressor_reduced = regressor_reduced
         self.active_parameters = active_parameters
+        self._idx_eliminated = idx_eliminated
         return self.regressor_reduced, self.active_parameters
 
     def _apply_decimation(self, regressor_reduced, decimation_factor):
@@ -846,10 +1105,20 @@ class BaseIdentification(ABC):
 
         Returns:
             tuple: (tau_flattened, regressor_reduced)
+
+        Note:
+            ``self.processed_data["torques"]`` has shape ``(num_samples,
+            num_active_joints)`` — sample-major. The regressor rows built
+            by :mod:`figaroh.tools.regressor` (and ``_apply_decimation``'s
+            output) are joint-major: all samples of joint 0, then all
+            samples of joint 1, etc. A plain ``.flatten()`` here would
+            flatten sample-major, misaligning every row against the
+            regressor/estimated-torque order. Transposing first makes the
+            flatten joint-major, matching the regressor convention.
         """
         tau_data = self.processed_data["torques"]
         if hasattr(tau_data, "flatten"):
-            tau_flattened = tau_data.flatten()
+            tau_flattened = tau_data.T.flatten()
         else:
             tau_flattened = tau_data
         return tau_flattened, regressor_reduced
@@ -885,6 +1154,10 @@ class BaseIdentification(ABC):
         self._params_r_for_recon = list(
             decomposer.get_M_labels()[1] or active_parameters.keys()
         )
+        # Base-column selection, needed to evaluate phi_base against a
+        # regressor built from held-out validation trajectory data (see
+        # _compute_validation_metrics()).
+        self._base_indices = decomposer.get_base_indices()
 
         # Calculate torque estimation (avoid redundant computation)
         tau_estimated = np.dot(W_base, phi_base)
@@ -906,6 +1179,131 @@ class BaseIdentification(ABC):
             "M": self._M_matrix,
             "params_r": self._params_r_for_recon,
         }
+
+    def _apply_weighted_least_squares(self):
+        """Refine base parameters via iteratively-weighted least squares.
+
+        Re-solves the base-parameter regression using inverse joint-residual-
+        variance weighting (Gautier, 1997), starting from the OLS estimate
+        already stored in ``self.phi_base``. Robot-agnostic: relies only on
+        ``self.dynamic_regressor_base``, ``self.tau_noised``, and the active
+        joint count (``self.identif_config["act_idxv"]``), all of which are
+        set the same way by every ``BaseIdentification`` subclass.
+
+        Note: the row-block count here must be the number of *identified*
+        joints (``len(act_idxv)``), not ``self.model.nv`` — the two only
+        coincide for robots where every model joint is identified (e.g. a
+        bare 6-DOF arm). For a subset-identified robot like a mobile
+        manipulator, ``model.nv`` includes joints the regressor never
+        stacked rows for, which misaligns the per-joint residual slicing
+        entirely.
+
+        Returns:
+            tuple: (phi_wls, std_wls) — refined base parameters and their
+            relative standard deviations (%). Does not mutate
+            ``self.result``; the caller is responsible for storing these.
+        """
+        W_b = self.dynamic_regressor_base
+        tau = self.tau_noised
+        n_active = len(self.identif_config["act_idxv"])
+
+        sig_ro_joint, diag_SIGMA = self._calculate_joint_variances(W_b, tau, n_active)
+        self._joint_variances = sig_ro_joint
+
+        return self._solve_weighted_least_squares(W_b, tau, diag_SIGMA)
+
+    def _calculate_joint_variances(self, W_b, tau, n_active):
+        """Calculate joint-wise residual variances efficiently.
+
+        Args:
+            W_b: Base regressor matrix
+            tau: Torque vector (flattened, stacked per joint)
+            n_active: Number of identified (active) joints — the regressor
+                stacks exactly this many equal-sized row blocks, one per
+                active joint. Not necessarily ``self.model.nv``: a
+                subset-identified robot has fewer active joints than total
+                model DOF.
+
+        Returns:
+            tuple: (joint_variances, diagonal_covariance)
+        """
+        row_size = tau.shape[0]
+
+        if W_b.shape[0] != row_size:
+            raise ValueError(
+                f"Dimension mismatch: regressor has {W_b.shape[0]} rows, "
+                f"but torque has {row_size} elements"
+            )
+
+        samples_per_joint = row_size // n_active
+
+        sig_ro_joint = np.zeros(n_active)
+        diag_SIGMA = np.zeros(row_size)
+
+        tau_pred_full = W_b @ self.phi_base
+        residuals = tau - tau_pred_full
+
+        for i in range(n_active):
+            start_idx = i * samples_per_joint
+            end_idx = (i + 1) * samples_per_joint
+            if end_idx > row_size:
+                end_idx = row_size
+
+            residuals_joint = residuals[start_idx:end_idx]
+
+            if len(residuals_joint) > 0:
+                sig_ro_joint[i] = np.mean(residuals_joint**2)
+            else:
+                sig_ro_joint[i] = 1e-6
+
+            diag_SIGMA[start_idx:end_idx] = sig_ro_joint[i]
+
+        return sig_ro_joint, diag_SIGMA
+
+    def _solve_weighted_least_squares(self, W_b, tau, diag_SIGMA):
+        """Solve the weighted least squares problem.
+
+        Args:
+            W_b: Base regressor matrix
+            tau: Torque vector
+            diag_SIGMA: Diagonal covariance matrix values
+
+        Returns:
+            tuple: (phi_wls, std_wls) — WLS parameter estimates and their
+            relative standard deviations (%).
+        """
+        weights = 1.0 / (diag_SIGMA + 1e-12)
+        W_sqrt = np.sqrt(weights)[:, np.newaxis]
+
+        W_weighted = W_b * W_sqrt
+        tau_weighted = tau * W_sqrt.ravel()
+
+        WTW = W_weighted.T @ W_weighted
+        WTtau = W_weighted.T @ tau_weighted
+
+        C_X = np.linalg.inv(WTW)
+        phi_wls = C_X @ WTtau
+        phi_wls = np.around(phi_wls, 6)
+
+        std_wls = self._compute_wls_standard_deviations(C_X, phi_wls)
+
+        return phi_wls, std_wls
+
+    def _compute_wls_standard_deviations(self, C_X, phi_wls):
+        """Compute weighted least squares standard deviations efficiently.
+
+        Args:
+            C_X: Covariance matrix
+            phi_wls: WLS parameter estimates
+
+        Returns:
+            ndarray: Relative standard deviations as percentages
+        """
+        variances = np.diag(C_X)
+        std_deviations = np.sqrt(variances)
+        relative_std = 100 * std_deviations / np.abs(phi_wls)
+
+        return np.around(relative_std, 2)
 
     def _compute_quality_metrics(self):
         """Compute quality metrics for the identification.
@@ -960,6 +1358,20 @@ class BaseIdentification(ABC):
 
         # Optional full-parameter reconstruction (default-off, v0.4.2)
         self._apply_reconstruction_if_enabled(identif_results)
+
+        # Held-out validation metrics (only present if validation_data_file
+        # was configured and successfully loaded)
+        val_metrics = self._compute_validation_metrics()
+        if val_metrics is not None:
+            self.result["validation_metrics"] = val_metrics
+
+        # Provenance snapshot — nominal model, config, software, data,
+        # timestamps — consumed identically by print_quality_report,
+        # export_html_report, verify(), and archive_run() so they can
+        # never disagree about what produced this result.
+        from figaroh.tools.provenance import collect_run_provenance
+
+        self._run_provenance = collect_run_provenance(self, "identification")
 
         # Initialize ResultsManager for identification task
         try:
@@ -1294,68 +1706,405 @@ class BaseIdentification(ABC):
             "params_r": result.params_r,
         }
 
+    def _compute_per_joint_stats(self):
+        """Per-joint torque residual statistics (mean/std/RMSE/max), the
+        identification analogue of BaseCalibration's per-DOF stats.
+
+        Both ``solve(decimate=True)`` (explicit per-joint loop) and
+        ``solve(decimate=False)`` (``_prepare_undecimated_data``, which
+        transposes before flattening) produce torque/regressor rows in the
+        same joint-major block order, so slicing by joint is safe either
+        way.
+
+        Returns:
+            Dict with joint_names/mean/std/rmse/max_abs lists, or None if
+            unavailable.
+        """
+        if self.result is None:
+            return None
+
+        tau_measured = np.asarray(self.result["torque processed"]).flatten()
+        tau_estimated = np.asarray(self.result["torque estimated"]).flatten()
+        n_active = len(self.identif_config["act_idxv"])
+        if n_active == 0 or tau_measured.size % n_active != 0:
+            return None
+
+        n_per_joint = tau_measured.size // n_active
+        active_joints = self.identif_config.get("active_joints", [])
+
+        stats = {"joint_names": [], "mean": [], "std": [], "rmse": [], "max_abs": []}
+        for i in range(n_active):
+            sl = slice(i * n_per_joint, (i + 1) * n_per_joint)
+            residual = tau_measured[sl] - tau_estimated[sl]
+            name = active_joints[i] if i < len(active_joints) else f"joint_{i}"
+            stats["joint_names"].append(name)
+            stats["mean"].append(float(np.mean(residual)))
+            stats["std"].append(float(np.std(residual)))
+            stats["rmse"].append(float(np.sqrt(np.mean(residual**2))))
+            stats["max_abs"].append(float(np.max(np.abs(residual))))
+        return stats
+
+    def print_quality_report(self):
+        """Print a formatted identification quality report to the terminal.
+
+        Reports condition number, overall torque residual statistics,
+        per-joint residuals (when available), base-parameter uncertainty,
+        held-out validation metrics (if configured), and optional
+        physical-consistency / reconstruction status.
+        """
+        if self.result is None:
+            logger.warning("No identification results to report. Run solve() first.")
+            return
+
+        result = self.result
+        per_joint = self._compute_per_joint_stats()
+
+        print()
+        print("=" * 70)
+        print("  IDENTIFICATION QUALITY REPORT")
+        print("=" * 70)
+
+        cond_num = result.get("condition number", float("nan"))
+        n_base = len(result.get("base parameters names", []))
+        print(
+            f"  Base parameters: {n_base}    "
+            f"Samples: {result.get('num samples', 0)}"
+        )
+        if not np.isnan(cond_num):
+            cond_label = (
+                "well-conditioned"
+                if cond_num < 100
+                else "moderately-conditioned"
+                if cond_num < 1000
+                else "ill-conditioned"
+            )
+            print(f"  Condition:    {cond_num:.1f} ({cond_label})")
+        else:
+            print("  Condition:    unavailable")
+        print(
+            f"  RMSE:         {result.get('rmse norm (N/m)', float('nan')):.4f}    "
+            f"Correlation: {self.correlation:.4f}"
+        )
+
+        if per_joint is not None:
+            print("-" * 70)
+            print("  Per-Joint Torque Residuals (training set)")
+            names = per_joint["joint_names"]
+            print(
+                f"  {'Joint':<22s} {'Mean':>10s} {'Std':>10s} "
+                f"{'RMSE':>10s} {'Max':>10s}"
+            )
+            print(f"  {'-'*22} {'-'*10} {'-'*10} {'-'*10} {'-'*10}")
+            for i in range(len(names)):
+                m = f"{per_joint['mean'][i]:10.4f}"
+                s = f"{per_joint['std'][i]:10.4f}"
+                r = f"{per_joint['rmse'][i]:10.4f}"
+                x = f"{per_joint['max_abs'][i]:10.4f}"
+                print(f"  {names[i]:<22s} {m} {s} {r} {x}")
+        else:
+            print("-" * 70)
+            print("  Per-joint residuals: unavailable")
+
+        # ── Base-parameter uncertainty ──
+        print("-" * 70)
+        std_relative = getattr(self, "std_relative", None)
+        base_names = result.get("base parameters names", [])
+        if std_relative is not None and len(std_relative) == len(base_names):
+            order = sorted(
+                range(len(base_names)), key=lambda i: -abs(std_relative[i])
+            )
+            print("  Base-Parameter Uncertainty (top 5 by relative std-dev)")
+            for i in order[:5]:
+                print(f"    {base_names[i]:<50s} {std_relative[i]:8.1f}%")
+        else:
+            print("  Base-parameter uncertainty: unavailable")
+
+        # ── Validation ──
+        print("-" * 70)
+        val = result.get("validation_metrics")
+        if val is not None:
+            if val.get("validation_source") == "identification_data_fallback":
+                print(
+                    "  ⚠ WARNING: no separate validation data "
+                    "provided — falling back to identification data. "
+                    "These are NOT an independent generalization test."
+                )
+                print(
+                    f"  Validation (identification set, "
+                    f"n={val['n_val_samples']})"
+                )
+            else:
+                print(f"  Validation (separate set, n={val['n_val_samples']})")
+            print(
+                f"    RMSE nominal:    {val['rmse_nominal']:.4f}    "
+                f"RMSE identified: {val['rmse_identified']:.4f}"
+            )
+            print(
+                f"    Improvement:     {val['improvement_pct']:.1f}%    "
+                f"Correlation:     {val['correlation']:.4f}"
+            )
+        else:
+            print("  Validation: no separate validation data provided.")
+            print(
+                "    Set validation_data_file in the identification config "
+                "to enable held-out FK/torque validation."
+            )
+
+        # ── Optional physical consistency / reconstruction ──
+        pc = result.get("physical consistency")
+        if pc is not None:
+            print("-" * 70)
+            print(f"  Physical consistency: {pc.get('status', 'unknown')}")
+        recon = result.get("reconstruction")
+        if recon is not None:
+            print("-" * 70)
+            print(f"  Full-parameter reconstruction: {recon.get('status', 'unknown')}")
+
+        print("=" * 70)
+
+    def export_html_report(
+        self, output_path: str = None, output_dir: str = "results"
+    ) -> str:
+        """Export the identification quality report as a self-contained
+        HTML file — the visual counterpart of :meth:`print_quality_report`.
+
+        Args:
+            output_path: Explicit output file path. If None, writes to
+                ``<output_dir>/identification_report.html``.
+            output_dir: Directory used when output_path is not given
+                (created if missing).
+
+        Returns:
+            The path the report was written to.
+
+        Raises:
+            AttributeError: If solve() has not been run yet.
+        """
+        if self.result is None:
+            raise AttributeError(
+                "No identification results available. Run solve() first."
+            )
+
+        from os import makedirs
+        from os.path import join
+
+        from figaroh.tools.identification_report import (
+            generate_identification_report,
+        )
+
+        if output_path is None:
+            makedirs(output_dir, exist_ok=True)
+            output_path = join(output_dir, "identification_report.html")
+
+        generate_identification_report(self, output_path=output_path)
+        logger.info(f"HTML quality report written to {output_path}")
+        return output_path
+
+    def verify(self, thresholds: Optional[Dict[str, Dict[str, Any]]] = None):
+        """Check this identification's metrics against pass/fail thresholds.
+
+        Unlike :meth:`print_quality_report`/:meth:`export_html_report`
+        (for a human to read), this returns a machine-checkable
+        :class:`~figaroh.tools._report_common.VerificationVerdict` a CI
+        script can branch on. Computed entirely from data already
+        gathered during :meth:`solve` — never raises after a successful
+        solve, and never gates ``solve()`` itself (opt-in, called
+        whenever the caller wants a verdict).
+
+        Args:
+            thresholds: Per-metric ``{"threshold": float, "comparison":
+                "max"|"min"}`` overrides. Defaults to
+                ``IDENTIFICATION_DEFAULT_THRESHOLDS`` (a 6-DOF arm and a
+                30-DOF humanoid don't share the same bar — override per
+                robot as needed).
+
+        Returns:
+            VerificationVerdict: ``passed``, per-metric ``checks``, the
+            raw ``metrics`` dict, human-readable ``insights`` (the same
+            text used by :meth:`export_html_report`), and ``metadata``
+            (git commit, config file hash, timestamp, robot name).
+
+        Raises:
+            AttributeError: If called before :meth:`solve`.
+        """
+        if self.result is None:
+            raise AttributeError(
+                "No identification results available. Run solve() first."
+            )
+
+        from figaroh.tools._report_common import (
+            IDENTIFICATION_DEFAULT_THRESHOLDS,
+            evaluate_thresholds,
+        )
+        from figaroh.tools.identification_report import _build_insights
+        from figaroh.tools.provenance import collect_run_provenance
+
+        thresholds = (
+            thresholds if thresholds is not None
+            else IDENTIFICATION_DEFAULT_THRESHOLDS
+        )
+
+        result = self.result
+        base_names = result.get("base parameters names", [])
+        std_relative_raw = getattr(self, "std_relative", None)
+        std_relative = (
+            list(std_relative_raw) if std_relative_raw is not None else []
+        )
+        validation = result.get("validation_metrics")
+
+        metrics: Dict[str, float] = {
+            "condition_number": result.get(
+                "condition number", float("nan")
+            ),
+            "rmse": result.get("rmse norm (N/m)", float("nan")),
+        }
+        if validation is not None:
+            metrics["validation_correlation"] = validation.get(
+                "correlation", float("nan")
+            )
+            metrics["validation_improvement_pct"] = validation.get(
+                "improvement_pct", float("nan")
+            )
+
+        verdict = evaluate_thresholds(metrics, thresholds)
+        verdict.insights = [
+            i["text"]
+            for i in _build_insights(
+                result, std_relative, base_names, validation
+            )
+        ]
+        verdict.metadata = getattr(
+            self, "_run_provenance", None
+        ) or collect_run_provenance(self, "identification")
+
+        active_joints = self.identif_config.get("active_joints", [])
+        if validation is not None and "tau_nominal_per_joint" in validation:
+            n_val = validation.get("n_val_samples", 0)
+            verdict.series = {
+                "time": list(range(n_val)),
+                "joint_names": validation.get(
+                    "joint_names", active_joints
+                ),
+                "nominal": validation["tau_nominal_per_joint"],
+                "fitted": validation["tau_identified_per_joint"],
+                "measured": validation["tau_measured_per_joint"],
+            }
+        verdict.compat = {
+            "active_joints": active_joints,
+            "decimate": bool(getattr(self, "_decimate_used", False)),
+            "sample_count": result.get("num samples", 0),
+            "config_sha256": verdict.metadata.get("config", {}).get("sha256"),
+        }
+        return verdict
+
+    def export_verification_report(
+        self,
+        output_path: str = None,
+        output_dir: str = "results",
+        thresholds: Optional[Dict[str, Dict[str, Any]]] = None,
+    ) -> str:
+        """Write this identification's :meth:`verify` verdict as JSON.
+
+        Args:
+            output_path: Explicit file path. If omitted, defaults to
+                ``{output_dir}/identification_verification.json``.
+            output_dir: Directory used when ``output_path`` is omitted.
+            thresholds: Forwarded to :meth:`verify`.
+
+        Returns:
+            str: The path the JSON verdict was written to.
+        """
+        import json
+        from os import makedirs
+        from os.path import join
+
+        verdict = self.verify(thresholds=thresholds)
+        verdict_dict = dataclasses.asdict(verdict)
+
+        results_manager = getattr(self, "results_manager", None)
+        if results_manager is not None:
+            verdict_dict = results_manager._convert_for_serialization(
+                verdict_dict
+            )
+
+        if output_path is None:
+            makedirs(output_dir, exist_ok=True)
+            output_path = join(output_dir, "identification_verification.json")
+
+        with open(output_path, "w") as f:
+            json.dump(verdict_dict, f, indent=2)
+
+        logger.info(f"Verification report written to {output_path}")
+        return output_path
+
     def plot_results(self):
         """Plot identification results using unified results manager."""
         if not hasattr(self, "result") or self.result is None:
             logger.warning("No identification results to plot. Run solve() first.")
             return
 
-        # Use pre-initialized results manager if available
-        if hasattr(self, "results_manager") and self.results_manager is not None:
+        def _basic_plots():
             try:
-                # Plot using unified manager with self.result data
-                self.results_manager.plot_identification_results()
-                return
+                import matplotlib.pyplot as plt
 
-            except Exception as e:
-                logger.error(f"Error plotting with ResultsManager: {e}")
-                logger.info("Falling back to basic plotting...")
-
-        # Fallback to basic plotting if ResultsManager not available
-        try:
-            import matplotlib.pyplot as plt
-
-            # Extract data from self.result dictionary
-            tau_measured = self.result.get("torque processed", np.array([]))
-            tau_identified = self.result.get("torque estimated", np.array([]))
-            parameter_values = self.result.get("base parameters values", np.array([]))
-
-            if len(tau_measured) == 0 or len(tau_identified) == 0:
-                logger.warning("No torque data available for plotting")
-                return
-
-            plt.figure(figsize=(12, 8))
-
-            plt.subplot(2, 1, 1)
-            plt.plot(tau_measured, label="Measured (with noise)", alpha=0.7)
-            plt.plot(tau_identified, label="Identified", alpha=0.7)
-            plt.xlabel("Sample")
-            plt.ylabel("Torque (Nm)")
-            plt.title(f"{self.__class__.__name__} Torque Comparison")
-            plt.legend()
-            plt.grid(True, alpha=0.3)
-
-            plt.subplot(2, 1, 2)
-            if len(parameter_values) > 0:
-                plt.bar(
-                    range(len(parameter_values)),
-                    parameter_values,
-                    alpha=0.7,
-                    label="Base Parameters",
+                # Extract data from self.result dictionary
+                tau_measured = self.result.get("torque processed", np.array([]))
+                tau_identified = self.result.get("torque estimated", np.array([]))
+                parameter_values = self.result.get(
+                    "base parameters values", np.array([])
                 )
-                plt.xlabel("Parameter Index")
-                plt.ylabel("Parameter Value")
-                plt.title("Identified Base Parameters")
+
+                if len(tau_measured) == 0 or len(tau_identified) == 0:
+                    logger.warning("No torque data available for plotting")
+                    return
+
+                plt.figure(figsize=(12, 8))
+
+                plt.subplot(2, 1, 1)
+                plt.plot(tau_measured, label="Measured (with noise)", alpha=0.7)
+                plt.plot(tau_identified, label="Identified", alpha=0.7)
+                plt.xlabel("Sample")
+                plt.ylabel("Torque (Nm)")
+                plt.title(f"{self.__class__.__name__} Torque Comparison")
                 plt.legend()
                 plt.grid(True, alpha=0.3)
 
-            plt.tight_layout()
-            plt.show()
+                plt.subplot(2, 1, 2)
+                if len(parameter_values) > 0:
+                    plt.bar(
+                        range(len(parameter_values)),
+                        parameter_values,
+                        alpha=0.7,
+                        label="Base Parameters",
+                    )
+                    plt.xlabel("Parameter Index")
+                    plt.ylabel("Parameter Value")
+                    plt.title("Identified Base Parameters")
+                    plt.legend()
+                    plt.grid(True, alpha=0.3)
 
-        except ImportError:
-            logger.warning("matplotlib not available for plotting")
-        except Exception as e:
-            logger.warning(f"Plotting failed: {e}")
+                plt.tight_layout()
+                plt.show()
+
+            except ImportError:
+                logger.warning("matplotlib not available for plotting")
+            except Exception as e:
+                logger.warning(f"Plotting failed: {e}")
+
+        # Use pre-initialized results manager if available, else go straight
+        # to the basic-plotting fallback.
+        if hasattr(self, "results_manager") and self.results_manager is not None:
+            plot_with_fallback(
+                lambda: self.results_manager.plot_identification_results(
+                    n_joints=len(self.identif_config["act_idxv"]),
+                    joint_names=self.identif_config.get("active_joints"),
+                ),
+                _basic_plots,
+                logger,
+                "identification",
+            )
+        else:
+            _basic_plots()
 
     def save_results(self, output_dir="results"):
         """Save identification results using unified results manager."""

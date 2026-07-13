@@ -1,8 +1,11 @@
 # FIGAROH Architecture Documentation
 
-**Version:** 3.1
-**Date:** June 27, 2026
-**Status:** v0.4.4 released — calibration validation, quality report, URDF export, interactive visualization
+**Version:** 3.2
+**Date:** July 12, 2026
+**Status:** v0.4.4 released — calibration validation, quality report, URDF export, interactive
+visualization, plus the reporting & verification (V&V) suite (HTML diagnostic reports,
+machine-readable pass/fail verdicts, before/after panel, static two-run compare page —
+see [§4.6](#4-module-details))
 
 ---
 
@@ -19,7 +22,7 @@
 
 ---
 
-## Executive Summary
+## 1. Executive Summary
 
 FIGAROH (**F**ree dynamics **I**dentification and **G**eometrical c**A**libration of **RO**bot and **H**uman) is a modular framework for robot calibration and parameter identification. The architecture follows a **three-layer design**:
 
@@ -33,9 +36,50 @@ FIGAROH (**F**ree dynamics **I**dentification and **G**eometrical c**A**libratio
 - **Modular & Extensible**: Clear separation of concerns enables easy extension
 - **Production Ready**: Comprehensive error handling, validation, and documentation
 
+### Package Structure
+
+```
+figaroh/
+├── calibration/          # Geometric calibration framework
+│   ├── BaseCalibration       # Abstract base class for kinematic calibration
+│   ├── calibration_tools     # Parameter parsing, regressor computation
+│   ├── config                # Configuration loading and validation
+│   ├── data_loader           # CSV data loading utilities
+│   └── parameter             # Kinematic parameter management
+│
+├── identification/       # Dynamic parameter identification
+│   ├── BaseIdentification    # Abstract base class for dynamic identification
+│   ├── identification_tools  # Regressor utilities, parameter extraction
+│   ├── config                # Identification configuration parsing
+│   └── parameter             # Inertial parameter management (friction, inertia)
+│
+├── optimal/              # Optimization-based trajectory & configuration
+│   ├── BaseOptimalTrajectory     # IPOPT-based trajectory optimization
+│   ├── BaseOptimalCalibration    # Optimal calibration posture selection
+│   ├── BaseParameterComputer     # Base parameter computation utilities
+│   ├── TrajectoryConstraintManager # Constraint handling for optimization
+│   └── config                    # Optimization configuration management
+│
+├── tools/                # Core robotics utilities
+│   ├── RegressorBuilder      # Object-oriented regressor computation
+│   ├── LinearSolver          # Advanced linear solver (LS, Ridge, Lasso, etc.)
+│   ├── QRDecomposer          # QR decomposition for base parameters
+│   ├── CollisionManager      # Collision detection and visualization
+│   ├── RobotIPOPTSolver      # IPOPT optimization wrapper
+│   └── CubicSpline           # Trajectory interpolation utilities
+│
+├── utils/                # Helper utilities
+│   ├── UnifiedConfigParser   # YAML config with inheritance support
+│   ├── ResultsManager        # Unified plotting and result export
+│   ├── error_handling        # Custom exceptions and validation
+│   └── cubic_spline          # Spline trajectory generation
+│
+├── measurements/         # Data acquisition and processing
+└── visualisation/        # Meshcat-based 3D visualization
+```
 ---
 
-## System Overview
+## 2. System Overview
 
 > **📝 Note**: This document contains Mermaid diagrams. If they don't render:
 > 1. Install the "Markdown Preview Mermaid Support" extension in VS Code
@@ -178,7 +222,7 @@ graph TB
 
 ---
 
-## Layered Architecture
+## 3. Layered Architecture
 
 ### Layer 1: Backend Layer (`src/figaroh/backends/`)
 
@@ -427,7 +471,7 @@ sequenceDiagram
 
 ---
 
-## Module Details
+## 4. Module Details
 
 ### 1. Backend Layer
 
@@ -852,9 +896,85 @@ subject to:
 - B-splines: cubic/quintic splines with waypoints
 - Polynomial: 5th order trajectories
 
+### 6. Reporting & Verification (V&V) Suite
+
+**Purpose:** Turn the metrics `solve()` already computes into four
+consumable artifacts — a terminal report (human, right now), a
+self-contained HTML report (human, shareable), a machine-readable verdict
+(CI/scripts), and a static two-run compare page (offline, no backend). See
+[`docs/source/guides/reporting_and_verification.md`](docs/source/guides/reporting_and_verification.md)
+for usage; this section covers structure only.
+
+**Shared kernel (`tools/_report_common.py`):** HTML/CSS primitives
+(`_STYLE`, `_esc`, `_insights_section`, `_param_uncertainty_section`,
+`_correlation_section`, `_series_panel_section`) and the verdict data model
+used by both domains:
+
+```python
+@dataclass
+class ThresholdCheck:
+    name: str; value: float; threshold: float
+    comparison: str  # "max" or "min"
+    passed: bool
+
+@dataclass
+class VerificationVerdict:
+    passed: bool
+    checks: List[ThresholdCheck]
+    metrics: Dict[str, float]
+    insights: List[str]
+    metadata: Dict[str, Any]   # provenance: git commit, config hash, timestamp
+    series: Dict[str, Any]     # before/after time series, empty if no validation data
+    compat: Dict[str, Any]     # domain/joint-names/decimate/sample_count, for cross-run compare
+```
+
+**Per-domain adapters** — structurally parallel, not shared, because
+calibration (iterative nonlinear fit, per-DOF pose error) and
+identification (one-shot linear QR solve, per-joint torque error) produce
+different diagnostics:
+
+| | `tools/report.py` (calibration) | `tools/identification_report.py` (identification) |
+|---|---|---|
+| HTML generator | `generate_calibration_report(calibrator, ...)` | `generate_identification_report(identifier, ...)` |
+| Called via | `BaseCalibration.export_html_report()` | `BaseIdentification.export_html_report()` |
+| Opt-in flag | `solve(html_report=True)` | `solve(html_report=True)` |
+
+**Verification methods, added to both `BaseCalibration` and
+`BaseIdentification`:**
+
+```python
+def verify(thresholds: dict = None) -> VerificationVerdict:
+    """Check self.evaluation_metrics / self.result against pass/fail
+    thresholds (default: condition_number ≤ 1000, plus domain-specific
+    validation-set thresholds). A threshold whose metric wasn't computed
+    (no validation data configured) is skipped, not failed."""
+
+def export_verification_report(
+    output_path: str = None, output_dir: str = "results",
+    thresholds: dict = None,
+) -> str:
+    """verify() + write the verdict as numpy-safe JSON
+    ({output_dir}/{calibration,identification}_verification.json)."""
+```
+
+Called explicitly (not from inside `solve()`) — verification is opt-in
+output computed from already-stored results, not a new gate that could
+make a successful numerical solve raise.
+
+**Cross-run comparison (`tools/compare_report.py`):** a static,
+self-contained HTML shell (`generate_compare_page()`) with no run object of
+its own — it loads two `export_verification_report()` JSON files
+client-side (drag-and-drop or file picker) and, after a mandatory
+compatibility check on their `compat` blocks (domain, joint/DOF names,
+`decimate`, sample count), renders a metric diff table and an overlaid
+before/after chart entirely in the browser. No backend, no run history —
+deliberately cut down from a broader "V&V dashboard" concept; see
+`docs/decisions/roadmap-mujoco-sysid-inspired-features.md` (Feature 6) for
+why.
+
 ---
 
-## Pinocchio Integration Map
+## 5. Pinocchio Integration Map
 
 ### Critical Functions (Backend-abstracted ✅)
 
@@ -923,7 +1043,7 @@ graph LR
 
 ---
 
-## Data Flow
+## 6. Data Flow
 
 ### Identification Data Flow
 
@@ -1012,7 +1132,7 @@ flowchart TD
 
 ---
 
-## Backend Architecture
+## 7. Backend Architecture
 
 ### Backend Selection
 
@@ -1137,7 +1257,7 @@ class DynamicsBackend(ABC):
 
 ---
 
-## Extension Points
+## 8. Extension Points
 
 ### Adding a New Backend
 
@@ -1204,7 +1324,7 @@ class MyRobotCalibration(BaseCalibration):
 
 ---
 
-## Backend Migration Limitations
+## 9. Backend Migration Limitations
 
 > **This section documents the fundamental barriers to fully migrating FIGAROH's
 > calibration algorithms from Pinocchio to other simulator backends (MuJoCo, Genesis,
@@ -1311,7 +1431,7 @@ until simulator APIs evolve to support runtime model mutation.
 
 ---
 
-## Performance Considerations
+## 10. Performance Considerations
 
 ### Computational Bottlenecks
 
@@ -1402,6 +1522,6 @@ long-term paths to resolution.
 
 ---
 
-**Document Version:** 3.0
-**Last Updated:** June 19, 2026
+**Document Version:** 3.2
+**Last Updated:** July 12, 2026
 **Maintained by:** FIGAROH Core Team

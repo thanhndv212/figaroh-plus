@@ -5,6 +5,135 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.4.5] - 2026-07-13
+
+### Added
+
+- `feat(identification)`: Weighted least squares (WLS) support —
+  `BaseIdentification.solve(wls=True)` refines the OLS base-parameter
+  estimate with iteratively-weighted least squares (Gautier, 1997) before
+  computing quality metrics, so the terminal/HTML report and `verify()`
+  verdict reflect the WLS-refined parameters rather than a stale OLS
+  estimate. Config-driven via `identification.problem.wls` in the unified
+  YAML config, following the existing `has_friction`/`has_joint_offset`
+  pattern.
+- `feat(tooling)`: `figaroh.tools.provenance` and `figaroh.tools.run_archive`
+  — every calibration/identification run now carries a provenance record
+  (git commit, config hash, timestamps, robot/asset identity), and
+  `archive_run()` writes each run to a timestamped
+  `results/runs/<robot>/<task>/<timestamp>/` directory (config snapshot,
+  provenance JSON, report) instead of overwriting a single `results/` path.
+- `feat(validation)`: When no separate validation dataset is configured,
+  calibration and identification now fall back to evaluating validation
+  metrics against the training data itself — rather than silently omitting
+  the validation section — with an explicit warning surfaced in the
+  terminal report, HTML report, and machine-readable insights.
+- `feat(reporting)`: Self-contained HTML diagnostic reports for both
+  calibration and identification.
+  - `figaroh.tools.report.generate_calibration_report()` /
+    `BaseCalibration.export_html_report()` — summary, auto-generated
+    insights, per-DOF residual table, parameter uncertainty bars,
+    correlation section, validation section.
+  - `figaroh.tools.identification_report.generate_identification_report()` /
+    `BaseIdentification.export_html_report()` — same shape, adapted to
+    identification's per-joint torque residuals and base-parameter
+    uncertainty.
+  - `figaroh.tools._report_common` — shared HTML/CSS kernel (styling,
+    escaping, insight/uncertainty/correlation section builders) reused by
+    both generators.
+  - Opt-in via `solve(html_report=True)` on both base classes, matching the
+    existing `plotting`/`save_results` flag pattern.
+- `feat(identification)`: `BaseIdentification.print_quality_report()` —
+  terminal quality report (condition number, RMSE, per-joint residuals,
+  base-parameter uncertainty, validation, physical-consistency/
+  reconstruction status), the identification analogue of calibration's
+  existing terminal report.
+- `feat(identification)`: Held-out validation support for identification,
+  mirroring calibration's — a genuinely separate dataset via
+  `identification.data.validation_data_file`, never a runtime split of
+  training data.
+- `feat(reporting)`: Machine-readable verification verdicts.
+  - `VerificationVerdict` / `ThresholdCheck` (`figaroh.tools._report_common`)
+    — a structured pass/fail against per-metric thresholds, with
+    provenance (git commit, config hash, timestamp).
+  - `verify(thresholds=None)` and `export_verification_report(output_path=None,
+    output_dir="results", thresholds=None)` added to both `BaseCalibration`
+    and `BaseIdentification`. Default thresholds cover condition number and,
+    when validation data is configured, validation-set RMSE/correlation/
+    improvement — every threshold is overridable per call. A threshold whose
+    metric isn't computable is skipped, not failed.
+  - Called explicitly (not from inside `solve()`) — verification is opt-in
+    output computed from already-stored results.
+- `feat(reporting)`: Interactive before/after panel embedded in both HTML
+  reports — a zoomable, hoverable overlay of nominal vs. fitted vs. measured
+  values, rendered as hand-rolled inline SVG (no new dependency).
+- `feat(reporting)`: `figaroh.tools.compare_report.generate_compare_page()`
+  — a static, self-contained, offline HTML page that loads two exported
+  verification JSON files client-side and renders a per-metric diff table
+  plus an overlaid before/after chart, gated by a mandatory compatibility
+  check (domain, joint/DOF names, `decimate`, sample count) with an
+  explicit "compare anyway" override on mismatch. No backend, no run
+  history.
+- `fix(results_manager)`: `plot_identification_results()` reshaped 1D
+  torque arrays as `reshape(-1, 1)`, silently collapsing a multi-joint,
+  joint-major-flattened array into a single mislabeled trace. Now accepts
+  explicit `n_joints`/`joint_names` and reshapes joint-major
+  (`reshape(n_joints, -1).T`) when provided.
+- `refactor(results_manager)`: `plot_with_fallback()` helper deduplicates
+  the four near-identical try/except plotting blocks across
+  `BaseCalibration`, `BaseIdentification`, `BaseOptimalCalibration`, and
+  `BaseOptimalTrajectory`.
+
+### Fixed
+
+- `fix(calibration)`: `BaseCalibration.calc_stddev()` computed the
+  calibrated-parameter count (`self.nvars`) once in `__init__`, before
+  `initialize()` populated the actual parameter list — leaving it stuck at
+  0 and silently producing empty `std_dev`/`std_pctg` lists. The "Parameter
+  uncertainty" section was therefore always empty in both the terminal and
+  HTML calibration reports. Now derives the count from the solved parameter
+  vector (`len(result.x)`) at computation time.
+- `fix(identification)`: `_compute_validation_metrics()`'s before/after
+  torque chart sliced the first `n_active` joint-blocks off the full-model
+  regressor, which is only correct when the active/identified joints are
+  exactly DOFs `0..n_active-1`. For robots identifying a strict subset of
+  joints (e.g. TIAGo: torso+arm out of many more DOFs), this silently
+  returned the wrong joints' nominal/identified torque predictions —
+  visible as identical nominal/fitted curves and wildly wrong magnitudes in
+  the before/after chart. Now indexes by the actual `act_idxv` DOF indices,
+  mirroring the row-selection already used correctly in
+  `_decimate_regressor_matrix`.
+- `fix(identification)`: `_apply_weighted_least_squares()` sliced the
+  stacked regressor into `model.nv` equal blocks to estimate per-joint
+  residual variance, which is only correct when every model joint is
+  identified. For subset-identified robots (TIAGo: `model.nv=24`, 8 joints
+  identified), this misaligned the slicing entirely, producing an RMSE
+  ~2000x worse than plain OLS. Now uses `len(identif_config["act_idxv"])`,
+  the same quantity `_decimate_regressor_matrix` already uses.
+- `fix(identification)`: `_prepare_undecimated_data()` flattened torque
+  data sample-major while regressor rows are joint-major, corrupting
+  `solve(decimate=False)`'s correlation/RMSE (0.44 vs 0.966 on identical
+  data pre-fix).
+- `fix(reporting)`: the before/after HTML panel's joint/DOF dropdown
+  rendered its options twice — once server-side in the generated HTML,
+  once again client-side via JS — so every entry appeared duplicated in
+  the selector.
+- `fix(reporting)`: the before/after HTML panel embedded the full
+  validation-set series inline with no cap; for large validation sets
+  (e.g. a fallback-to-full-training-data run with ~45k samples) this
+  produced multi-MB HTML pages whose SVG path strings were too large to
+  render reliably in the browser. Now uniformly subsampled to at most 3000
+  points, with the displayed sample count disclosed in the chart caption.
+- `fix(export_validation)`: the interactive viser GUI's speed/pose/opacity
+  sliders crashed with `AttributeError: 'GuiEvent' object has no attribute
+  'value'` on every drag — `GuiEvent` exposes the changed control via
+  `.target`, not `.value` directly.
+
+Full design history and rationale:
+[`docs/decisions/roadmap-mujoco-sysid-inspired-features.md`](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/roadmap-mujoco-sysid-inspired-features.md).
+
 ## [0.4.4] - 2026-06-27
 
 ### Added

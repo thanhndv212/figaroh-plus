@@ -315,6 +315,7 @@ def unified_to_legacy_config(robot, unified_calib_config) -> dict:
     # 1. Extract basic robot information
     calib_config["robot_name"] = robot.model.name
     calib_config["q0"] = robot.q0
+    calib_config["instance"] = unified_calib_config.get("instance", {})
 
     # 2. Extract and validate markers/measurements
     _extract_marker_info(calib_config, measurements)

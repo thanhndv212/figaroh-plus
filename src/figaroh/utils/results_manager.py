@@ -10,7 +10,7 @@ import yaml
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from typing import Dict, Any, Optional, List, Union
+from typing import Callable, Dict, Any, Optional, List, Union
 from datetime import datetime
 import logging
 
@@ -238,6 +238,7 @@ class ResultsManager:
         parameter_names: Optional[List[str]] = None,
         time_vector: Optional[np.ndarray] = None,
         joint_names: Optional[List[str]] = None,
+        n_joints: Optional[int] = None,
         title: str = "Identification Results",
     ) -> None:
         """
@@ -250,6 +251,10 @@ class ResultsManager:
             parameter_names: Parameter names (optional, uses self.result)
             time_vector: Time vector for plots
             joint_names: Names of robot joints
+            n_joints: Number of active joints. Required when a torque array is
+                1D, since a flattened array is joint-major (all samples of
+                joint 0, then joint 1, ...) and cannot be reshaped correctly
+                without knowing the joint count.
             title: Plot title
         """
         if not HAS_MATPLOTLIB:
@@ -268,20 +273,37 @@ class ResultsManager:
                 )
             if parameter_names is None:
                 parameter_names = self.result.get("base parameters names", [])
+            if joint_names is None:
+                joint_names = self.result.get("active joints", None)
+            if n_joints is None:
+                n_joints = self.result.get("n_active_joints", None)
+
+            tau_measured = np.asarray(tau_measured)
+            tau_identified = np.asarray(tau_identified)
 
             # Validate data availability
-            if len(tau_measured) == 0 or len(tau_identified) == 0:
+            if tau_measured.size == 0 or tau_identified.size == 0:
                 self.logger.error("No torque data available for plotting")
                 return
 
             fig = plt.figure(figsize=self.PLOT_STYLES["identification"]["figsize"])
             gs = GridSpec(2, 2, figure=fig, hspace=0.3, wspace=0.3)
 
-            # Determine if we need to reshape data (1D to 2D for multi-joint)
+            # A 1D array is joint-major (all samples of joint 0, then joint
+            # 1, ...), not sample-major — reshape(-1, 1) would silently
+            # treat the whole concatenated array as a single joint. Require
+            # n_joints to reshape correctly; without it, fall back to a
+            # single-column plot rather than guessing.
             if tau_measured.ndim == 1:
-                tau_measured = tau_measured.reshape(-1, 1)
+                if n_joints:
+                    tau_measured = tau_measured.reshape(n_joints, -1).T
+                else:
+                    tau_measured = tau_measured.reshape(-1, 1)
             if tau_identified.ndim == 1:
-                tau_identified = tau_identified.reshape(-1, 1)
+                if n_joints:
+                    tau_identified = tau_identified.reshape(n_joints, -1).T
+                else:
+                    tau_identified = tau_identified.reshape(-1, 1)
 
             n_samples = tau_measured.shape[0]
 
@@ -318,14 +340,7 @@ class ResultsManager:
 
         except Exception as e:
             self.logger.error(f"Error plotting identification results: {e}")
-            import traceback
-
-            traceback.print_exc()
-            plt.tight_layout()
-            plt.show()
-
-        except Exception as e:
-            self.logger.error(f"Error plotting identification results: {e}")
+            logger.debug("Debug info:", exc_info=True)
 
     def plot_optimal_calibration_results(
         self,
@@ -817,6 +832,26 @@ class ResultsManager:
             return bool(data)
         else:
             return data
+
+
+def plot_with_fallback(
+    primary: Callable[[], None],
+    fallback: Callable[[], None],
+    logger: logging.Logger,
+    context: str,
+) -> None:
+    """Run ``primary()``; on any exception, log it and run ``fallback()``.
+
+    Shared by every ``Base*.plot_results()`` method, each of which
+    previously duplicated this same try/except pattern around a call into
+    :class:`ResultsManager` with a raw-matplotlib fallback.
+    """
+    try:
+        primary()
+    except Exception as e:
+        logger.error(f"Error plotting with ResultsManager ({context}): {e}")
+        logger.info("Falling back to basic plotting...")
+        fallback()
 
 
 # Convenience functions for backward compatibility

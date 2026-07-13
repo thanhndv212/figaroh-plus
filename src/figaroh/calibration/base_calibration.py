@@ -27,6 +27,7 @@ from yaml.loader import SafeLoader
 from os.path import abspath
 import matplotlib.pyplot as plt
 import logging
+from datetime import datetime, timezone
 from scipy.optimize import least_squares
 from abc import ABC
 from typing import Optional, List, Dict, Any, Tuple
@@ -51,6 +52,7 @@ import pinocchio as pin
 
 # Import from shared modules
 from figaroh.utils.error_handling import CalibrationError, handle_calibration_errors
+from figaroh.utils.results_manager import plot_with_fallback
 
 # Setup logger for this module
 logger = logging.getLogger(__name__)
@@ -224,6 +226,7 @@ class BaseCalibration(ABC):
         enable_logging=True,
         plotting=False,
         save_results=False,
+        html_report=False,
     ):
         """Execute the complete calibration process.
 
@@ -236,6 +239,11 @@ class BaseCalibration(ABC):
         workflow, delegating the actual optimization to solve_optimisation()
         and handling visualization based on user preferences.
 
+        Args:
+            html_report: If True, also export an HTML diagnostic report
+                (see :meth:`export_html_report`) after the terminal
+                quality report is printed.
+
         Side Effects:
             - Updates calibration parameters through optimization
             - Sets self.STATUS to "CALIBRATED" on successful completion
@@ -244,7 +252,9 @@ class BaseCalibration(ABC):
         See Also:
             solve_optimisation: Core optimization implementation
             plot: Visualization and analysis plotting
+            export_html_report: Visual counterpart of the terminal report
         """
+        self._run_started_at = datetime.now(timezone.utc).isoformat()
         result, outlier_indices = self.solve_optimisation(
             method=method,
             max_iterations=max_iterations,
@@ -254,6 +264,7 @@ class BaseCalibration(ABC):
 
         # Evaluate solution
         evaluation = self._evaluate_solution(result, outlier_indices)
+        self._run_finished_at = datetime.now(timezone.utc).isoformat()
 
         # Log final results
         if enable_logging:
@@ -277,6 +288,8 @@ class BaseCalibration(ABC):
             self.plot_results()
         if save_results:
             self.save_results()
+        if html_report:
+            self.export_html_report()
         return result
 
     def plot_results(self):
@@ -305,25 +318,26 @@ class BaseCalibration(ABC):
             plot_3d_poses: 3D pose comparison visualization
         """
 
-        # Use pre-initialized results manager if available
-        if hasattr(self, "results_manager") and self.results_manager is not None:
+        def _basic_plots():
             try:
-                # Plot using unified manager with self.result data
-                self.results_manager.plot_calibration_results()
-                return
-
+                self.plot_errors_distribution()
+                self.plot_3d_poses()
+                # self.plot_joint_configurations()
+                plt.show()
             except Exception as e:
-                logger.error(f"Error plotting with ResultsManager: {e}")
-                logger.info("Falling back to basic plotting...")
+                logger.warning(f"Plotting failed: {e}")
 
-        # Fallback to basic plotting if ResultsManager not available
-        try:
-            self.plot_errors_distribution()
-            self.plot_3d_poses()
-            # self.plot_joint_configurations()
-            plt.show()
-        except Exception as e:
-            logger.warning(f"Plotting failed: {e}")
+        # Use pre-initialized results manager if available, else go straight
+        # to the basic-plotting fallback.
+        if hasattr(self, "results_manager") and self.results_manager is not None:
+            plot_with_fallback(
+                lambda: self.results_manager.plot_calibration_results(),
+                _basic_plots,
+                logger,
+                "calibration",
+            )
+        else:
+            _basic_plots()
 
     def load_param(self, config_file: str, setting_type: str = "calibration"):
         """Load calibration parameters from YAML configuration file.
@@ -336,6 +350,7 @@ class BaseCalibration(ABC):
             config_file (str): Path to configuration file (legacy or unified)
             setting_type (str): Configuration section to load
         """
+        self._config_file_path = config_file
         try:
             logger.info(f"Loading config from {config_file}")
 
@@ -516,9 +531,29 @@ class BaseCalibration(ABC):
         the ground-truth measured poses.
 
         Returns:
-            Dict with validation metrics, or None if no validation data.
+            Dict with validation metrics, or None if neither validation
+            nor calibration data is available. When no separate
+            validation set was configured (or it failed to load), this
+            falls back to evaluating against the calibration data
+            itself so a V&V report can still be produced — a warning
+            is logged and ``"validation_source"`` in the returned dict
+            is set to ``"calibration_data_fallback"`` so callers/report
+            renderers can flag it as not an independent test.
         """
-        if not getattr(self, "_val_available", False):
+        if getattr(self, "_val_available", False):
+            q_val, PEE_val = self._q_val, self._PEE_val
+            validation_source = "validation_data"
+        elif hasattr(self, "q_measured") and hasattr(self, "PEE_measured"):
+            logger.warning(
+                "No separate validation data available "
+                "(validation_data_file not configured or failed to "
+                "load); falling back to calibration data for "
+                "validation metrics. These results are NOT an "
+                "independent generalization test."
+            )
+            q_val, PEE_val = self.q_measured, self.PEE_measured
+            validation_source = "calibration_data_fallback"
+        else:
             return None
 
         result = self.LM_result
@@ -526,18 +561,18 @@ class BaseCalibration(ABC):
 
         # FK for nominal and calibrated on validation set
         PEE_nom = calc_updated_fkm(
-            self.model, self.data, zeros, self._q_val, self.calib_config
+            self.model, self.data, zeros, q_val, self.calib_config
         )
         PEE_cal = calc_updated_fkm(
-            self.model, self.data, result.x, self._q_val, self.calib_config
+            self.model, self.data, result.x, q_val, self.calib_config
         )
 
         # Log-map residuals
-        resid_nom = self._compute_logmap_residuals(self._PEE_val, PEE_nom)
-        resid_cal = self._compute_logmap_residuals(self._PEE_val, PEE_cal)
+        resid_nom = self._compute_logmap_residuals(PEE_val, PEE_nom)
+        resid_cal = self._compute_logmap_residuals(PEE_val, PEE_cal)
 
         n_dofs = self.calib_config["calibration_index"]
-        n_val = len(self._q_val)
+        n_val = len(q_val)
 
         # Reshape to (n_dofs, n_val) — DOF-major
         resid_nom_2d = resid_nom.reshape((n_dofs, n_val))
@@ -568,8 +603,34 @@ class BaseCalibration(ABC):
                 return (before - after) / before * 100
             return 0.0
 
+        # Per-DOF scaled error series (nominal vs. calibrated, in the
+        # same mm/deg units as the summary stats above) — feeds
+        # verify()'s before/after `series` export (Step 3, Feature 6
+        # Phase A). "measured" has no separate error curve of its own
+        # (a measured pose's error against itself is zero by
+        # construction), so it is exposed as the zero reference line
+        # nominal/fitted are being compared against.
+        dof_names = [
+            "X (mm)", "Y (mm)", "Z (mm)",
+            "rx (deg)", "ry (deg)", "rz (deg)",
+        ][:n_dofs]
+        scales = np.array(
+            [1000.0 if i < 3 else 180.0 / np.pi for i in range(n_dofs)]
+        )
+        nom_scaled = resid_nom_2d * scales[:, None]
+        cal_scaled = resid_cal_2d * scales[:, None]
+
+        def _per_dof(arr_2d):
+            return {
+                dof_names[i]: arr_2d[i].tolist() for i in range(n_dofs)
+            }
+
         return {
             "n_val_samples": n_val,
+            "validation_source": validation_source,
+            "dof_names": dof_names,
+            "error_nominal_per_dof": _per_dof(nom_scaled),
+            "error_fitted_per_dof": _per_dof(cal_scaled),
             "pos_rmse_nominal_mm": pos_nom_stats["rmse"] * 1000,
             "pos_rmse_calibrated_mm": pos_cal_stats["rmse"] * 1000,
             "pos_max_nominal_mm": pos_nom_stats["max"] * 1000,
@@ -1288,6 +1349,14 @@ class BaseCalibration(ABC):
         if val_metrics is not None:
             self.results_data["validation_metrics"] = val_metrics
 
+        # Provenance snapshot — nominal model, config, software, data,
+        # timestamps — consumed identically by print_quality_report,
+        # export_html_report, verify(), and archive_run() so they can
+        # never disagree about what produced this result.
+        from figaroh.tools.provenance import collect_run_provenance
+
+        self._run_provenance = collect_run_provenance(self, "calibration")
+
         # Initialize ResultsManager for calibration task
         try:
             from figaroh.utils.results_manager import ResultsManager
@@ -1417,16 +1486,23 @@ class BaseCalibration(ABC):
             >>> print(f"Percentage errors: {calibrator.std_pctg}")
         """
         try:
+            # self.nvars is set once in __init__, from calib_config["param_name"]
+            # *before* initialize()/create_param_list() finishes populating it
+            # (e.g. add_base_name/add_pee_name append entries afterward), so it
+            # can under-count the actual calibrated parameters. result.x is the
+            # solved parameter vector itself — always the true count.
+            nvars = len(result.x)
+            self.nvars = nvars
             sigma_ro_sq = (result.cost**2) / (
                 self.calib_config["NbSample"] * self.calib_config["calibration_index"]
-                - self.nvars
+                - nvars
             )
             J = result.jac
             C_param = sigma_ro_sq * np.linalg.pinv(np.dot(J.T, J))
             self._C_param = C_param
             std_dev = []
             std_pctg = []
-            for i_ in range(self.nvars):
+            for i_ in range(nvars):
                 std_dev.append(np.sqrt(C_param[i_, i_]))
                 if result.x[i_] != 0:
                     std_pctg.append(abs(np.sqrt(C_param[i_, i_]) / result.x[i_]))
@@ -1616,6 +1692,183 @@ class BaseCalibration(ABC):
                 logger.error(f"Error saving with ResultsManager: {e}")
                 logger.info("Falling back to basic saving...")
 
+    def export_html_report(
+        self, output_path: str = None, output_dir: str = "results"
+    ) -> str:
+        """Export the calibration quality report as a self-contained HTML
+        file — the visual counterpart of :meth:`print_quality_report`.
+
+        Renders the same metrics (convergence, per-DOF residuals,
+        parameter uncertainty, correlation, validation) already computed
+        during :meth:`solve`, plus an auto-generated "insights" section
+        flagging ill-conditioning, poorly identified parameters, and
+        strongly correlated pairs.
+
+        Args:
+            output_path: Explicit file path for the report. If omitted,
+                defaults to ``{output_dir}/calibration_report.html``.
+            output_dir: Directory used when ``output_path`` is omitted.
+
+        Returns:
+            str: The path the report was written to.
+
+        Raises:
+            AttributeError: If called before :meth:`solve`.
+        """
+        if not hasattr(self, "evaluation_metrics"):
+            raise AttributeError(
+                "No calibration results available. Run solve() first."
+            )
+
+        from os import makedirs
+        from os.path import join
+        from figaroh.tools.report import generate_calibration_report
+
+        if output_path is None:
+            makedirs(output_dir, exist_ok=True)
+            output_path = join(output_dir, "calibration_report.html")
+
+        generate_calibration_report(self, output_path=output_path)
+        logger.info(f"HTML quality report written to {output_path}")
+        return output_path
+
+    def verify(self, thresholds: Optional[Dict[str, Dict[str, Any]]] = None):
+        """Check this calibration's metrics against pass/fail thresholds.
+
+        Unlike :meth:`print_quality_report`/:meth:`export_html_report`
+        (for a human to read), this returns a machine-checkable
+        :class:`~figaroh.tools._report_common.VerificationVerdict` a CI
+        script can branch on. Computed entirely from data already
+        gathered during :meth:`solve` — never raises after a successful
+        solve, and never gates ``solve()`` itself (opt-in, called
+        whenever the caller wants a verdict).
+
+        Args:
+            thresholds: Per-metric ``{"threshold": float, "comparison":
+                "max"|"min"}`` overrides. Defaults to
+                ``CALIBRATION_DEFAULT_THRESHOLDS`` (a 6-DOF arm and a
+                30-DOF humanoid don't share the same bar — override per
+                robot as needed).
+
+        Returns:
+            VerificationVerdict: ``passed``, per-metric ``checks``, the
+            raw ``metrics`` dict, human-readable ``insights`` (the same
+            text used by :meth:`export_html_report`), and ``metadata``
+            (git commit, config file hash, timestamp, robot name).
+
+        Raises:
+            AttributeError: If called before :meth:`solve`.
+        """
+        if not hasattr(self, "evaluation_metrics"):
+            raise AttributeError(
+                "No calibration results available. Run solve() first."
+            )
+
+        from figaroh.tools._report_common import (
+            CALIBRATION_DEFAULT_THRESHOLDS,
+            evaluate_thresholds,
+        )
+        from figaroh.tools.report import _build_insights
+        from figaroh.tools.provenance import collect_run_provenance
+
+        thresholds = (
+            thresholds if thresholds is not None
+            else CALIBRATION_DEFAULT_THRESHOLDS
+        )
+
+        eval_ = self.evaluation_metrics
+        n_samples = self.calib_config.get("NbSample", 0)
+        param_names = self.calib_config.get("param_name", [])
+        results_data = getattr(self, "results_data", None) or {}
+        validation = results_data.get("validation_metrics")
+
+        metrics: Dict[str, float] = {
+            "condition_number": eval_.get("condition_number", float("nan")),
+            "rmse": eval_.get("rmse", float("nan")),
+            "outlier_percentage": eval_.get(
+                "outlier_percentage", float("nan")
+            ),
+        }
+        if validation is not None:
+            metrics["position_rmse_mm"] = validation.get(
+                "pos_rmse_calibrated_mm", float("nan")
+            )
+            metrics["orientation_rmse_deg"] = validation.get(
+                "orient_rmse_calibrated_deg", float("nan")
+            )
+
+        verdict = evaluate_thresholds(metrics, thresholds)
+        verdict.insights = [
+            i["text"]
+            for i in _build_insights(eval_, n_samples, param_names, validation)
+        ]
+        verdict.metadata = getattr(
+            self, "_run_provenance", None
+        ) or collect_run_provenance(self, "calibration")
+
+        n_dofs = self.calib_config.get("calibration_index", 0)
+        dof_names = [
+            "X (mm)", "Y (mm)", "Z (mm)",
+            "rx (deg)", "ry (deg)", "rz (deg)",
+        ][:n_dofs]
+        if validation is not None and "error_nominal_per_dof" in validation:
+            n_val = validation.get("n_val_samples", 0)
+            dof_names = validation.get("dof_names", dof_names)
+            verdict.series = {
+                "time": list(range(n_val)),
+                "dof_names": dof_names,
+                "nominal": validation["error_nominal_per_dof"],
+                "fitted": validation["error_fitted_per_dof"],
+                "measured": {name: [0.0] * n_val for name in dof_names},
+            }
+        verdict.compat = {
+            "dof_names": dof_names,
+            "sample_count": n_samples,
+            "config_sha256": verdict.metadata.get("config", {}).get("sha256"),
+        }
+        return verdict
+
+    def export_verification_report(
+        self,
+        output_path: str = None,
+        output_dir: str = "results",
+        thresholds: Optional[Dict[str, Dict[str, Any]]] = None,
+    ) -> str:
+        """Write this calibration's :meth:`verify` verdict as JSON.
+
+        Args:
+            output_path: Explicit file path. If omitted, defaults to
+                ``{output_dir}/calibration_verification.json``.
+            output_dir: Directory used when ``output_path`` is omitted.
+            thresholds: Forwarded to :meth:`verify`.
+
+        Returns:
+            str: The path the JSON verdict was written to.
+        """
+        import dataclasses
+        import json
+        from os import makedirs
+        from os.path import join
+
+        verdict = self.verify(thresholds=thresholds)
+        verdict_dict = dataclasses.asdict(verdict)
+
+        results_manager = getattr(self, "results_manager", None)
+        if results_manager is not None:
+            verdict_dict = results_manager._convert_for_serialization(
+                verdict_dict
+            )
+
+        if output_path is None:
+            makedirs(output_dir, exist_ok=True)
+            output_path = join(output_dir, "calibration_verification.json")
+
+        with open(output_path, "w") as f:
+            json.dump(verdict_dict, f, indent=2)
+
+        logger.info(f"Verification report written to {output_path}")
+        return output_path
+
     def print_quality_report(self):
         """Print a formatted calibration quality report to the terminal.
 
@@ -1703,7 +1956,15 @@ class BaseCalibration(ABC):
         # ── Validation ──
         print("-" * 70)
         if val is not None:
-            print(f"  Validation (separate set, n={val['n_val_samples']})")
+            if val.get("validation_source") == "calibration_data_fallback":
+                print(
+                    "  ⚠ WARNING: no separate validation data "
+                    "provided — falling back to calibration data. "
+                    "These are NOT an independent generalization test."
+                )
+                print(f"  Validation (calibration set, n={val['n_val_samples']})")
+            else:
+                print(f"  Validation (separate set, n={val['n_val_samples']})")
             print(
                 f"  {'Metric':<20s} {'Nominal':>10s} "
                 f"{'Calibrated':>12s} {'Improvement':>14s}"
