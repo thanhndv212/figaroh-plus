@@ -1486,16 +1486,23 @@ class BaseCalibration(ABC):
             >>> print(f"Percentage errors: {calibrator.std_pctg}")
         """
         try:
+            # self.nvars is set once in __init__, from calib_config["param_name"]
+            # *before* initialize()/create_param_list() finishes populating it
+            # (e.g. add_base_name/add_pee_name append entries afterward), so it
+            # can under-count the actual calibrated parameters. result.x is the
+            # solved parameter vector itself — always the true count.
+            nvars = len(result.x)
+            self.nvars = nvars
             sigma_ro_sq = (result.cost**2) / (
                 self.calib_config["NbSample"] * self.calib_config["calibration_index"]
-                - self.nvars
+                - nvars
             )
             J = result.jac
             C_param = sigma_ro_sq * np.linalg.pinv(np.dot(J.T, J))
             self._C_param = C_param
             std_dev = []
             std_pctg = []
-            for i_ in range(self.nvars):
+            for i_ in range(nvars):
                 std_dev.append(np.sqrt(C_param[i_, i_]))
                 if result.x[i_] != 0:
                     std_pctg.append(abs(np.sqrt(C_param[i_, i_]) / result.x[i_]))
