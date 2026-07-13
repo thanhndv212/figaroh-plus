@@ -12,7 +12,7 @@ subpackage:
 | [Backends](backends.md) | `DynamicsBackend` interface + Pinocchio/MuJoCo implementations |
 | [Integration](integration.md) | `RobotIdentificationSystem`, the one-line workflow API |
 | [Measurements](measurements.md) | Measurement data structures |
-| [Tools](tools.md) | Reporting/verification, linear solver, robot management, regressor builder, visualization, collisions, QR decomposition, IPOPT wrapper, URDF export |
+| [Tools](tools.md) | Reporting/verification, provenance & run archiving, linear solver, robot management, regressor builder, visualization, collisions, QR decomposition, IPOPT wrapper, URDF export |
 | [Utils](utils.md) | Config parser, cubic spline, results manager, error handling |
 | [Visualisation](visualisation.md) | Plotting and viser-based visualization helpers |
 

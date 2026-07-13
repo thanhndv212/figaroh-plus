@@ -32,6 +32,25 @@ dataclasses used by both report generators.
     options:
       show_root_heading: false
 
+### provenance
+
+Run provenance metadata — git commit, config hash, timestamps, robot/asset
+identity — attached to every calibration/identification run.
+
+::: figaroh.tools.provenance
+    options:
+      show_root_heading: false
+
+### run_archive
+
+Writes each run to a timestamped `results/runs/<robot>/<task>/<timestamp>/`
+directory (config snapshot, provenance JSON, report) instead of overwriting
+a single `results/` path.
+
+::: figaroh.tools.run_archive
+    options:
+      show_root_heading: false
+
 ## Linear Solver
 
 ::: figaroh.tools.solver
