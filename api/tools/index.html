@@ -1695,6 +1695,95 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="build_provenance_metadata">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        provenance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.tools.provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        provenance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.tools.provenance.collect_run_provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        collect_run_provenance
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="collect_run_provenance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#run_archive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run_archive
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.tools.run_archive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run_archive
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.tools.run_archive.compute_run_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compute_run_dir
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.tools.run_archive.archive_run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        archive_run
+      
+    </span>
+  </a>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3778,6 +3867,95 @@
     <span class="md-ellipsis">
       
         build_provenance_metadata
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="build_provenance_metadata">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        provenance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.tools.provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        provenance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.tools.provenance.collect_run_provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        collect_run_provenance
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="collect_run_provenance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#run_archive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run_archive
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.tools.run_archive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run_archive
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.tools.run_archive.compute_run_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compute_run_dir
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.tools.run_archive.archive_run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        archive_run
       
     </span>
   </a>
@@ -6965,6 +7143,795 @@ nothing to fail on.</p>
         <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
         <span class="s2">&quot;robot_name&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">robot_name</span><span class="p">),</span>
     <span class="p">}</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h3 id="provenance">provenance<a class="headerlink" href="#provenance" title="Permanent link">&para;</a></h3>
+<p>Run provenance metadata — git commit, config hash, timestamps, robot/asset
+identity — attached to every calibration/identification run.</p>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="figaroh.tools.provenance"></a>
+    <div class="doc doc-contents first">
+
+        <p>Run provenance capture — the single source of truth for "what produced
+this fit": the nominal reference model, the exact config used, software
+versions, input data files, and (if configured) the physical asset
+identity. Consumed identically by the terminal report, the HTML report,
+the JSON verification verdict, and the run archive, so the four can never
+disagree about what produced a given result.</p>
+<p>Reuses :func:<code>figaroh.tools._report_common._git_commit_hash</code> and
+:func:<code>figaroh.tools._report_common._config_file_sha256</code> rather than
+duplicating hashing logic.</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="figaroh.tools.provenance.collect_run_provenance" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">collect_run_provenance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span></code>
+
+<a href="#figaroh.tools.provenance.collect_run_provenance" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Build the full provenance record for one V&amp;V run.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>obj</code>
+            </td>
+            <td>
+                  <code><span title="typing.Any">Any</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A <code>BaseIdentification</code> or <code>BaseCalibration</code> instance
+(or duck-typed equivalent) after its config has been loaded
+— i.e. safe to call any time after <code>load_param()</code>, though
+it is normally captured once in <code>_store_results</code>/
+<code>_store_optimization_results</code> right after <code>solve()</code>
+finishes computing, so <code>run_finished</code> is accurate.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>task</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>"identification"</code> or <code>"calibration"</code> — selects which
+curated config-key allowlist to surface under
+<code>config.values</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A JSON-serializable nested dict (see module docstring for the</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>four consumers). Never raises: every sub-lookup is best-effort.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/figaroh/tools/provenance.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">collect_run_provenance</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build the full provenance record for one V&amp;V run.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        obj: A ``BaseIdentification`` or ``BaseCalibration`` instance</span>
+<span class="sd">            (or duck-typed equivalent) after its config has been loaded</span>
+<span class="sd">            — i.e. safe to call any time after ``load_param()``, though</span>
+<span class="sd">            it is normally captured once in ``_store_results``/</span>
+<span class="sd">            ``_store_optimization_results`` right after ``solve()``</span>
+<span class="sd">            finishes computing, so ``run_finished`` is accurate.</span>
+<span class="sd">        task: ``&quot;identification&quot;`` or ``&quot;calibration&quot;`` — selects which</span>
+<span class="sd">            curated config-key allowlist to surface under</span>
+<span class="sd">            ``config.values``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A JSON-serializable nested dict (see module docstring for the</span>
+<span class="sd">        four consumers). Never raises: every sub-lookup is best-effort.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;identif_config&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;calib_config&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="p">{}</span>
+    <span class="p">)</span>
+    <span class="n">config_keys</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">_IDENTIFICATION_CONFIG_KEYS</span>
+        <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="s2">&quot;identification&quot;</span>
+        <span class="k">else</span> <span class="n">_CALIBRATION_CONFIG_KEYS</span>
+    <span class="p">)</span>
+
+    <span class="n">asset</span> <span class="o">=</span> <span class="n">_asset_identity</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+    <span class="n">git_commit</span> <span class="o">=</span> <span class="n">_git_commit_hash</span><span class="p">()</span>
+    <span class="n">run_started</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;_run_started_at&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">now</span>
+    <span class="n">run_finished</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;_run_finished_at&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">now</span>
+
+    <span class="n">run_id</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">asset</span><span class="p">[</span><span class="s2">&quot;asset_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">),</span>
+            <span class="n">task</span><span class="p">,</span>
+            <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">T%H%M%SZ&quot;</span><span class="p">),</span>
+            <span class="n">git_commit</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span> <span class="k">if</span> <span class="n">git_commit</span> <span class="o">!=</span> <span class="s2">&quot;unknown&quot;</span> <span class="k">else</span> <span class="s2">&quot;nogit&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="n">config_path</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;_config_file_path&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;run_id&quot;</span><span class="p">:</span> <span class="n">run_id</span><span class="p">,</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">task</span><span class="p">,</span>
+        <span class="s2">&quot;asset&quot;</span><span class="p">:</span> <span class="n">asset</span><span class="p">,</span>
+        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">_model_identity</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span>
+        <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="n">config_path</span> <span class="ow">or</span> <span class="s2">&quot;unavailable&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;sha256&quot;</span><span class="p">:</span> <span class="n">_config_file_sha256</span><span class="p">(</span><span class="n">config_path</span><span class="p">),</span>
+            <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="n">_config_values</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">config_keys</span><span class="p">),</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;software&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="o">**</span><span class="n">_software_versions</span><span class="p">(),</span>
+            <span class="s2">&quot;git_commit&quot;</span><span class="p">:</span> <span class="n">git_commit</span><span class="p">,</span>
+            <span class="s2">&quot;git_dirty&quot;</span><span class="p">:</span> <span class="n">_git_dirty</span><span class="p">(),</span>
+            <span class="s2">&quot;hostname&quot;</span><span class="p">:</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">(),</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">_data_files_provenance</span><span class="p">(</span><span class="n">config</span><span class="p">),</span>
+        <span class="s2">&quot;timestamps&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;run_started&quot;</span><span class="p">:</span> <span class="n">run_started</span><span class="p">,</span>
+            <span class="s2">&quot;run_finished&quot;</span><span class="p">:</span> <span class="n">run_finished</span><span class="p">,</span>
+            <span class="s2">&quot;report_generated&quot;</span><span class="p">:</span> <span class="n">now</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h3 id="run_archive">run_archive<a class="headerlink" href="#run_archive" title="Permanent link">&para;</a></h3>
+<p>Writes each run to a timestamped <code>results/runs/&lt;robot&gt;/&lt;task&gt;/&lt;timestamp&gt;/</code>
+directory (config snapshot, provenance JSON, report) instead of overwriting
+a single <code>results/</code> path.</p>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="figaroh.tools.run_archive"></a>
+    <div class="doc doc-contents first">
+
+        <p>Longitudinal run archive — a fleet's V&amp;V history.</p>
+<p><code>export_html_report()</code>/<code>export_verification_report()</code> write to fixed
+filenames that get overwritten by the next run, so a robot calibrated
+monthly only ever has its most recent report on disk. :func:<code>archive_run</code>
+instead writes each run to its own immutable, timestamped directory under
+<code>results/runs/{asset_id}/{task}/{timestamp}_{git_short}/</code> and appends a
+one-line summary to <code>results/runs/index.jsonl</code> — a zero-dependency,
+git-diffable, <code>jq</code>-able index of every run ever performed, per asset.</p>
+<p>Call after :meth:<code>~figaroh.identification.base_identification.BaseIdentification.solve</code>
+(and, typically, after <code>export_html_report()</code>/<code>export_verification_report()</code>
+so their output gets copied in alongside the raw provenance/parameters).</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="figaroh.tools.run_archive.compute_run_dir" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">compute_run_dir</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="s1">&#39;results/runs&#39;</span><span class="p">)</span></code>
+
+<a href="#figaroh.tools.run_archive.compute_run_dir" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Compute this run's dedicated directory path from provenance.</p>
+<p>Deterministic for a given <code>obj._run_provenance</code> — safe to call more
+than once (e.g. once for the HTML report's output_path, again for the
+verdict's) and get back the identical path, since the timestamp is
+read from the already-fixed provenance record, never re-derived from
+wall clock.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>obj</code>
+            </td>
+            <td>
+                  <code><span title="typing.Any">Any</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A <code>BaseIdentification</code>/<code>BaseCalibration</code> instance after
+:meth:<code>solve</code> has been called (i.e. <code>_run_provenance</code> is
+populated).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>root</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Archive root directory (created if missing).</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;results/runs&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>Path</code></td>            <td>
+                  <code><span title="pathlib.Path">Path</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The directory for this run, created if missing.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="AttributeError">AttributeError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If called before :meth:<code>solve</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/figaroh/tools/run_archive.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_run_dir</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;results/runs&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute this run&#39;s dedicated directory path from provenance.</span>
+
+<span class="sd">    Deterministic for a given ``obj._run_provenance`` — safe to call more</span>
+<span class="sd">    than once (e.g. once for the HTML report&#39;s output_path, again for the</span>
+<span class="sd">    verdict&#39;s) and get back the identical path, since the timestamp is</span>
+<span class="sd">    read from the already-fixed provenance record, never re-derived from</span>
+<span class="sd">    wall clock.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        obj: A ``BaseIdentification``/``BaseCalibration`` instance after</span>
+<span class="sd">            :meth:`solve` has been called (i.e. ``_run_provenance`` is</span>
+<span class="sd">            populated).</span>
+<span class="sd">        root: Archive root directory (created if missing).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Path: The directory for this run, created if missing.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AttributeError: If called before :meth:`solve`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">provenance</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;_run_provenance&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">provenance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+            <span class="s2">&quot;No run provenance available. Run solve() first.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">task</span> <span class="o">=</span> <span class="n">provenance</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;task&quot;</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">)</span>
+    <span class="n">asset_id</span> <span class="o">=</span> <span class="n">provenance</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;asset&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;asset_id&quot;</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">)</span>
+
+    <span class="n">run_finished</span> <span class="o">=</span> <span class="n">provenance</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;timestamps&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;run_finished&quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="n">run_finished</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+    <span class="n">ts_compact</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">T%H%M%SZ&quot;</span><span class="p">)</span>
+    <span class="n">git_short</span> <span class="o">=</span> <span class="n">provenance</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;software&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;git_commit&quot;</span><span class="p">,</span> <span class="s2">&quot;nogit&quot;</span><span class="p">)[:</span><span class="mi">8</span><span class="p">]</span>
+
+    <span class="n">root_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+    <span class="n">run_dir</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">root_path</span>
+        <span class="o">/</span> <span class="n">_safe_path_component</span><span class="p">(</span><span class="n">asset_id</span><span class="p">)</span>
+        <span class="o">/</span> <span class="n">_safe_path_component</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+        <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ts_compact</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">_safe_path_component</span><span class="p">(</span><span class="n">git_short</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+    <span class="n">run_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">run_dir</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="figaroh.tools.run_archive.archive_run" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">archive_run</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">run_dir</span><span class="p">)</span></code>
+
+<a href="#figaroh.tools.run_archive.archive_run" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Finalize archiving into an already-computed run_dir.</p>
+<p>Writes provenance.json / config.snapshot.yaml / parameters.csv, and
+appends the index.jsonl entry (reading run_dir/verdict.json for
+pass/metrics if the caller already wrote one there).</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>obj</code>
+            </td>
+            <td>
+                  <code><span title="typing.Any">Any</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A <code>BaseIdentification</code>/<code>BaseCalibration</code> instance after
+:meth:<code>solve</code> has been called (i.e. <code>_run_provenance</code> is
+populated).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>run_dir</code>
+            </td>
+            <td>
+                  <code><span title="pathlib.Path">Path</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The directory for this run (typically obtained via
+:func:<code>compute_run_dir</code>). Expected to already exist; the
+caller should have written <code>report.html</code> and/or
+<code>verdict.json</code> there before calling this function.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>str</code></td>            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The path to this run's archive directory (echoed back for
+convenience).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="AttributeError">AttributeError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If called before :meth:<code>solve</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/figaroh/tools/run_archive.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">archive_run</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">run_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Finalize archiving into an already-computed run_dir.</span>
+
+<span class="sd">    Writes provenance.json / config.snapshot.yaml / parameters.csv, and</span>
+<span class="sd">    appends the index.jsonl entry (reading run_dir/verdict.json for</span>
+<span class="sd">    pass/metrics if the caller already wrote one there).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        obj: A ``BaseIdentification``/``BaseCalibration`` instance after</span>
+<span class="sd">            :meth:`solve` has been called (i.e. ``_run_provenance`` is</span>
+<span class="sd">            populated).</span>
+<span class="sd">        run_dir: The directory for this run (typically obtained via</span>
+<span class="sd">            :func:`compute_run_dir`). Expected to already exist; the</span>
+<span class="sd">            caller should have written ``report.html`` and/or</span>
+<span class="sd">            ``verdict.json`` there before calling this function.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The path to this run&#39;s archive directory (echoed back for</span>
+<span class="sd">            convenience).</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AttributeError: If called before :meth:`solve`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">provenance</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;_run_provenance&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">provenance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+            <span class="s2">&quot;No run provenance available. Run solve() first.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">run_dir</span> <span class="o">/</span> <span class="s2">&quot;provenance.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">provenance</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+
+    <span class="n">config</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;identif_config&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span>
+        <span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;calib_config&quot;</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">config</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">run_dir</span> <span class="o">/</span> <span class="s2">&quot;config.snapshot.yaml&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span>
+                <span class="n">_yaml_safe</span><span class="p">(</span><span class="n">config</span><span class="p">),</span> <span class="n">f</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+    <span class="n">param_names</span><span class="p">,</span> <span class="n">param_values</span> <span class="o">=</span> <span class="n">_extract_parameters</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">param_names</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">run_dir</span> <span class="o">/</span> <span class="s2">&quot;parameters.csv&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">([</span><span class="s2">&quot;parameter&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">])</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writerows</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">param_names</span><span class="p">,</span> <span class="n">param_values</span><span class="p">))</span>
+
+    <span class="c1"># Determine the root for index (run_dir is .../root/asset/task/timestamp/)</span>
+    <span class="n">root_path</span> <span class="o">=</span> <span class="n">run_dir</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span>
+    <span class="n">_append_index</span><span class="p">(</span><span class="n">root_path</span><span class="p">,</span> <span class="n">provenance</span><span class="p">,</span> <span class="n">run_dir</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Run archived to </span><span class="si">{</span><span class="n">run_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">run_dir</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
