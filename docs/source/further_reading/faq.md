@@ -68,14 +68,14 @@ This is almost always a data-quality problem, not an algorithm problem:
   tightening the Butterworth cutoff frequency in `signal_processing`.
 - Do you have a genuinely held-out `validation_data_file` configured? A run
   with no validation data skips (not fails) the validation-based checks in
-  `verify()` — see [thresholds](../guides/reporting_and_verification.md).
+  `verify()` — see [thresholds](../reporting_and_verification.md).
 
 ### Why did a metric get *skipped* instead of *failed* in my verification report?
 
 A threshold whose metric can't be computed — typically because no
 `validation_data_file` is configured — is skipped rather than counted as a
 failure. An empty check list counts as passed since there's nothing to
-fail on. See [Reporting & Verification](../guides/reporting_and_verification.md).
+fail on. See [Reporting & Verification](../reporting_and_verification.md).
 
 ## Examples
 

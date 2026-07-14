@@ -44,7 +44,7 @@ result = calibrator.solve(plotting=False, html_report=True)
 
 `solve(html_report=True)` also writes a self-contained HTML diagnostic
 report alongside the terminal quality report that's always printed — see
-[Reporting & Verification](guides/reporting_and_verification.md) for the
+[Reporting & Verification](reporting_and_verification.md) for the
 full report/verdict/compare-page suite.
 
 ### Basic Identification
@@ -120,7 +120,7 @@ params = identifier.solve_with_custom_solver(
 
 - Follow the [Tutorials](tutorials/index.md) for an end-to-end walkthrough of
   calibration, identification, and optimal experiment design.
-- Read [Reporting & Verification](guides/reporting_and_verification.md) to
+- Read [Reporting & Verification](reporting_and_verification.md) to
   turn a solved calibration/identification into a shareable report and a
   CI-gateable pass/fail check.
 - Browse the [Examples Gallery](examples/index.md) for complete, runnable

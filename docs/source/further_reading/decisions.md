@@ -11,7 +11,7 @@ its usage docs.
 | Document | What it covers |
 |---|---|
 | [`implementation-plan-calibration-validation-quality-report.md`](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/implementation-plan-calibration-validation-quality-report.md) | FK validation + statistical quality matrix implementation plan |
-| [`roadmap-mujoco-sysid-inspired-features.md`](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/roadmap-mujoco-sysid-inspired-features.md) | Quality & reporting infrastructure roadmap — the design rationale behind the [Reporting & Verification](../guides/reporting_and_verification.md) suite, including why the compare page is a static two-run artifact rather than a run history/dashboard |
+| [`roadmap-mujoco-sysid-inspired-features.md`](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/roadmap-mujoco-sysid-inspired-features.md) | Quality & reporting infrastructure roadmap — the design rationale behind the [Reporting & Verification](../reporting_and_verification.md) suite, including why the compare page is a static two-run artifact rather than a run history/dashboard |
 | [`sysid-comparison-mujoco-vs-figaroh.md`](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/sysid-comparison-mujoco-vs-figaroh.md) | Research note comparing MuJoCo's `sysid` tooling against FIGAROH's approach |
 
 See also the top-level [`ARCHITECTURE.md`](../concepts/architecture.md) and

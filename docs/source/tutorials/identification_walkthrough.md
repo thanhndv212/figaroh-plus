@@ -90,14 +90,14 @@ limits used to sanity-check the logged data.
 - Torque prediction accuracy above ~95% (`validation_correlation` above the
   default 0.9 threshold) on held-out trajectories
 - A condition number well under the default 1000.0 threshold — see
-  [verification thresholds](../guides/reporting_and_verification.md)
+  [verification thresholds](../reporting_and_verification.md)
 
 The quality of all three depends heavily on the trajectory used to collect
 data — see [Optimal Experiment Design](optimal_design.md).
 
 ## Next steps
 
-- [Reporting & Verification](../guides/reporting_and_verification.md) — the
+- [Reporting & Verification](../reporting_and_verification.md) — the
   full report/verdict/compare-page suite, and how to wire `--verify` into CI.
 - [Examples Gallery](../examples/index.md) — complete identification scripts
   for UR10, TIAGo, and Staubli TX40.

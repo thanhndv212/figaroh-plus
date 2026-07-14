@@ -902,7 +902,7 @@ subject to:
 consumable artifacts — a terminal report (human, right now), a
 self-contained HTML report (human, shareable), a machine-readable verdict
 (CI/scripts), and a static two-run compare page (offline, no backend). See
-[`docs/source/guides/reporting_and_verification.md`](docs/source/guides/reporting_and_verification.md)
+[`docs/source/reporting_and_verification.md`](docs/source/reporting_and_verification.md)
 for usage; this section covers structure only.
 
 **Shared kernel (`tools/_report_common.py`):** HTML/CSS primitives

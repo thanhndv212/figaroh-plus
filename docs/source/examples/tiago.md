@@ -53,7 +53,7 @@ All saved files are timestamped: `data/calibration/calibration_results_{ts}.npz`
 Archived under `results/runs/tiago-<asset>/{calibration,identification}/<timestamp>/`
 by default (or `results/` with `--no-archive`) — HTML report, verification
 JSON, and (for calibration) a `compare.html` for offline before/after
-comparison. See [Reporting & Verification](../guides/reporting_and_verification.md).
+comparison. See [Reporting & Verification](../reporting_and_verification.md).
 
 ## See also
 

@@ -11,7 +11,7 @@ and identification.
 - **Reporting & verification (V&V) suite** — terminal and self-contained
   HTML diagnostic reports, a machine-readable pass/fail verdict
   (`verify()`), and a static two-run compare page. See
-  [Reporting & Verification](guides/reporting_and_verification.md).
+  [Reporting & Verification](reporting_and_verification.md).
 - **Advanced linear solver with 10 methods** (lstsq, QR, SVD, Ridge, Lasso,
   Elastic Net, Tikhonov, constrained, robust, weighted)
 - **Regularization and constraint optimization** (L1/L2 regularization, box
@@ -39,7 +39,7 @@ and identification.
 | Install FIGAROH and run my first calibration/identification | [Getting Started](getting_started.md) |
 | Understand the theory behind calibration/identification/optimal design | [Tutorials](tutorials/index.md) |
 | Understand how the library is structured, or how backends/config work | [Concepts](concepts/architecture.md) |
-| Generate quality reports and CI-gateable pass/fail verdicts | [Reporting & Verification](guides/reporting_and_verification.md) |
+| Generate quality reports and CI-gateable pass/fail verdicts | [Reporting & Verification](reporting_and_verification.md) |
 | See a complete, runnable example for my robot (or a similar one) | [Examples Gallery](examples/index.md) |
 | Look up a specific class or function | [API Reference](api/index.md) |
 | Check what's planned, what changed, or troubleshoot an issue | [Further Reading](further_reading/faq.md) |

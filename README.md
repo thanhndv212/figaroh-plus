@@ -96,7 +96,7 @@ cd figaroh-examples && pip install -r requirements.txt
 - **Static two-run compare page** — `generate_compare_page()` diffs two
   exported runs offline, with a mandatory compatibility check before
   overlaying them
-- See the [Reporting & Verification guide](https://thanhndv212.github.io/figaroh-plus/guides/reporting_and_verification/)
+- See the [Reporting & Verification guide](https://thanhndv212.github.io/figaroh-plus/reporting_and_verification/)
   for the full walkthrough
 ---
 
