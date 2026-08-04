@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `fix(calibration)`: `calc_updated_fkm` now supports joint elasticity
+  (`non_geom`) and camera/ref-frame base composition — capabilities
+  previously implemented only in a second, dead-code function,
+  `update_forward_kinematics` (zero callers in `figaroh`/`figaroh-examples`),
+  which had regressed relative to its own predecessor and was deleted as
+  part of this fix:
+  - The base/camera transform (`bMo`/`wMo`) was computed but never composed
+    into the returned pose.
+  - Elasticity indexing (`xyz_rpy[elas_id + 3]`) went out of bounds for any
+    rotary joint — i.e. every revolute joint.
+  - The elasticity parameter-match loop reused a stale `key` left over from
+    an unrelated earlier loop instead of iterating its own.
+  - The per-sample pose write was gated on a parameter-count bookkeeping
+    variable that accumulated across the whole sample loop instead of
+    resetting per sample, silently zeroing out later samples.
+  - (Found while implementing the merge) the elasticity branch also read
+    `data.oMf`/`get_rel_transform` without re-running forward kinematics
+    after perturbing `model.jointPlacements` for the deflection, so the
+    elastic offset never actually reached the output pose — fixed by
+    re-running FK before computing `oMee`.
+  - `calc_updated_fkm` previously silently ignored `calib_config["non_geom"]`
+    entirely (every real caller uses this function, not the dead one) — it
+    now actually applies elasticity when the flag is set.
+  - `NbMarkers > 1` now raises `NotImplementedError` instead of silently
+    logging a warning and falling back to an identity marker transform.
+  - Verified against the TIAGo Pro reference calibration dataset
+    (`figaroh-examples/examples/tiago_pro`, 94 samples): the existing
+    `full_params`/`known_baseframe=False` geometric path is numerically
+    unchanged (bit-identical output for a fixed parameter set and data).
+
 ## [0.4.5] - 2026-07-13
 
 ### Added
