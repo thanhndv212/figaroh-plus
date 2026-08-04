@@ -87,7 +87,6 @@ __all__ = [
     "get_rel_kinreg",
     "get_rel_jac",
     "initialize_variables",
-    "update_forward_kinematics",
     "calc_updated_fkm",
     "update_joint_placement",
     "calculate_kinematics_model",
@@ -288,17 +287,30 @@ def initialize_variables(calib_config, mode=0, seed=0):
     return var, nvar
 
 
-def update_forward_kinematics(
-    model, data, var, q, calib_config, verbose=0, backend=None
-):
-    """Update forward kinematics with calibration parameters.
+def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None):
+    """Update forward kinematics with world frame transformations.
 
-    Applies geometric and kinematic error parameters to update joint placements
-    and compute end-effector poses. Handles:
-    1. Base/camera transformations
-    2. Joint placement offsets
-    3. End-effector marker frames
-    4. Joint elasticity effects
+    Single, unified FK-update function for calibration: composes the full
+    chain of transformations::
+
+        wMf = wMo * oMee * eeMf
+
+    where:
+        - ``wMo``: world (measurement) frame to the kinematic chain's start
+          frame. Estimated directly when ``BASE_TPL`` params are present in
+          ``param_name`` (unknown base frame, e.g. ``known_baseframe=False``),
+          estimated via a known camera/ref-frame anchor when
+          ``calib_config["base_to_ref_frame"]``/``"ref_frame"`` are set (e.g.
+          eye-hand calibration), or identity otherwise.
+        - ``oMee``: start frame to end frame, through the updated kinematic
+          chain (``full_params``/``joint_offset`` geometric error
+          parameters), optionally including joint elasticity when
+          ``calib_config["non_geom"]`` is set — a per-joint compliance
+          parameter (``ELAS_TPL``) that adds a gravity-torque-proportional
+          deflection about that joint's own motion axis, then reverts it,
+          on every sample.
+        - ``eeMf``: end frame to the measured marker frame (``EE_TPL``
+          params), or identity if not estimated.
 
     Args:
         model (pin.Model): Robot model to update
@@ -308,224 +320,26 @@ def update_forward_kinematics(
         calib_config (dict): Calibration parameters containing:
             - calib_model: "full_params" or "joint_offset"
             - start_frame, end_frame: Frame names
+            - base_to_ref_frame, ref_frame: Optional camera-style known
+              chain anchor (eye-hand calibration); None to disable
+            - non_geom: Whether to apply joint elasticity
             - actJoint_idx: Active joint indices
             - measurability: Active DOFs
+            - NbMarkers: Must be 1 (multi-marker is not supported)
         verbose (int, optional): Print update info. Defaults to 0.
-        backend (DynamicsBackend, optional): If provided, routes forward kinematics
-            and gravity calls through the backend abstraction.
-
-    Returns:
-        ndarray: Flattened end-effector measurements for all samples
-
-    Side Effects:
-        - Modifies model joint placements temporarily
-        - Reverts model to original state before returning
-    """
-    # read calib_config['param_name'] to allocate offset parameters to correct SE3
-    # convert translation: add a vector of 3 to SE3.translation
-    # convert orientation: convert SE3.rotation 3x3 matrix to vector rpy, add
-    #  to vector rpy, convert back to to 3x3 matrix
-
-    # name reference of calibration parameters
-    if calib_config["calib_model"] == "full_params":
-        axis_tpl = FULL_PARAMTPL
-    elif calib_config["calib_model"] == "joint_offset":
-        axis_tpl = JOINT_OFFSETTPL
-
-    # order of joint in variables are arranged as in calib_config['actJoint_idx']
-    assert len(var) == len(
-        calib_config["param_name"]
-    ), "Length of variables != length of params"
-    param_dict = dict(zip(calib_config["param_name"], var))
-    origin_model = model.copy()
-
-    # update model.jointPlacements
-    updated_params = []
-    start_f = calib_config["start_frame"]
-    end_f = calib_config["end_frame"]
-
-    # define transformation for camera frame
-    if calib_config["base_to_ref_frame"] is not None:
-        start_f = calib_config["ref_frame"]
-        # base frame to ref frame (i.e. Tiago: camera transformation)
-        base_tf = np.zeros(6)
-        for key in param_dict.keys():
-            for base_id, base_ax in enumerate(BASE_TPL):
-                if base_ax in key:
-                    base_tf[base_id] = param_dict[key]
-                    updated_params.append(key)
-        b_to_cam = get_rel_transform(
-            model, data, calib_config["start_frame"], calib_config["base_to_ref_frame"]
-        )
-        ref_to_cam = cartesian_to_SE3(base_tf)
-        cam_to_ref = ref_to_cam.actInv(pin.SE3.Identity())
-        bMo = b_to_cam * cam_to_ref
-    else:
-        if calib_config["calib_model"] == "joint_offset":
-            base_tf = np.zeros(6)
-            for key in param_dict.keys():
-                for base_id, base_ax in enumerate(BASE_TPL):
-                    if base_ax in key:
-                        base_tf[base_id] = param_dict[key]
-                        updated_params.append(key)
-            bMo = cartesian_to_SE3(base_tf)
-
-    # update model.jointPlacements with joint 'full_params'/'joint_offset'
-    for j_id in calib_config["actJoint_idx"]:
-        xyz_rpy = np.zeros(6)
-        j_name = model.names[j_id]
-        for key in param_dict.keys():
-            if j_name in key:
-                # update xyz_rpy with kinematic errors
-                for axis_id, axis in enumerate(axis_tpl):
-                    if axis in key:
-                        if verbose == 1:
-                            logger.debug(
-                                "Updating [{}] joint placement at axis {} with [{}]".format(
-                                    j_name, axis, key
-                                )
-                            )
-                        xyz_rpy[axis_id] += param_dict[key]
-                        updated_params.append(key)
-        model = update_joint_placement(model, j_id, xyz_rpy)
-    PEE = np.zeros((calib_config["calibration_index"], calib_config["NbSample"]))
-
-    # update end_effector frame
-    for marker_idx in range(1, calib_config["NbMarkers"] + 1):
-        pee = np.zeros(6)
-        ee_name = "EE"
-        for key in param_dict.keys():
-            if ee_name in key and str(marker_idx) in key:
-                # update xyz_rpy with kinematic errors
-                for axis_pee_id, axis_pee in enumerate(EE_TPL):
-                    if axis_pee in key:
-                        if verbose == 1:
-                            logger.debug(
-                                "Updating [{}_{}] joint placement at axis {} with [{}]".format(
-                                    ee_name, str(marker_idx), axis_pee, key
-                                )
-                            )
-                        pee[axis_pee_id] += param_dict[key]
-                        # updated_params.append(key)
-
-        eeMf = cartesian_to_SE3(pee)
-
-    # get transform
-    q_ = np.copy(q)
-    for i in range(calib_config["NbSample"]):
-        if backend is not None:
-            backend.compute_forward_kinematics(q_[i, :])
-        else:
-            pin.framesForwardKinematics(model, data, q_[i, :])
-            pin.updateFramePlacements(model, data)
-        # update model.jointPlacements with joint elastic error
-        if calib_config["non_geom"]:
-            if backend is not None:
-                tau = backend.compute_gravity_vector(q_[i, :])
-            else:
-                tau = pin.computeGeneralizedGravity(
-                    model, data, q_[i, :]
-                )  # vector size of 32 = nq < njoints
-            # update xyz_rpy with joint elastic error
-            for j_id in calib_config["actJoint_idx"]:
-                xyz_rpy = np.zeros(6)
-                j_name = model.names[j_id]
-                tau_j = tau[j_id - 1]  # nq = njoints -1
-                if j_name in key:
-                    for elas_id, elas in enumerate(ELAS_TPL):
-                        if elas in key:
-                            param_dict[key] = param_dict[key] * tau_j
-                            xyz_rpy[elas_id + 3] += param_dict[
-                                key
-                            ]  # +3 to add only on orienation
-                            updated_params.append(key)
-                model = update_joint_placement(model, j_id, xyz_rpy)
-            # get relative transform with updated model
-            oMee = get_rel_transform(
-                model, data, calib_config["start_frame"], calib_config["end_frame"]
-            )
-            # revert model back to origin from added joint elastic error
-            for j_id in calib_config["actJoint_idx"]:
-                xyz_rpy = np.zeros(6)
-                j_name = model.names[j_id]
-                tau_j = tau[j_id - 1]  # nq = njoints -1
-                if j_name in key:
-                    for elas_id, elas in enumerate(ELAS_TPL):
-                        if elas in key:
-                            param_dict[key] = param_dict[key] * tau_j
-                            xyz_rpy[elas_id + 3] += param_dict[
-                                key
-                            ]  # +3 to add only on orienation
-                            updated_params.append(key)
-                model = update_joint_placement(model, j_id, -xyz_rpy)
-
-        else:
-            oMee = get_rel_transform(
-                model, data, calib_config["start_frame"], calib_config["end_frame"]
-            )
-
-        if len(updated_params) < len(param_dict):
-
-            oMf = oMee * eeMf
-            # final transform
-            trans = oMf.translation.tolist()
-            orient = pin.rpy.matrixToRpy(oMf.rotation).tolist()
-            loc = trans + orient
-            measure = []
-            for mea_id, mea in enumerate(calib_config["measurability"]):
-                if mea:
-                    measure.append(loc[mea_id])
-            # PEE[(marker_idx-1)*calib_config['calibration_index']:marker_idx*calib_config['calibration_index'], i] = np.array(measure)
-            PEE[:, i] = np.array(measure)
-
-            # assert len(updated_params) == len(param_dict), "Not all parameters are updated"
-
-    PEE = PEE.flatten("C")
-    # revert model back to original
-    assert origin_model.jointPlacements != model.jointPlacements, "before revert"
-    for j_id in calib_config["actJoint_idx"]:
-        xyz_rpy = np.zeros(6)
-        j_name = model.names[j_id]
-        for key in param_dict.keys():
-            if j_name in key:
-                # update xyz_rpy
-                for axis_id, axis in enumerate(axis_tpl):
-                    if axis in key:
-                        xyz_rpy[axis_id] = param_dict[key]
-        model = update_joint_placement(model, j_id, -xyz_rpy)
-
-    assert origin_model.jointPlacements != model.jointPlacements, "after revert"
-
-    return PEE
-
-
-def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None):
-    """Update forward kinematics with world frame transformations.
-
-    Specialized version that explicitly handles transformations between:
-    1. World frame to start frame (wMo)
-    2. Start frame to end frame (oMee)
-    3. End frame to marker frame (eeMf)
-
-    Args:
-        model (pin.Model): Robot model to update
-        data (pin.Data): Robot data
-        var (ndarray): Parameter vector matching calib_config["param_name"]
-        q (ndarray): Joint configurations matrix (n_samples, n_joints)
-        calib_config (dict): Calibration parameters containing:
-            - Frames and parameters from update_forward_kinematics()
-            - NbMarkers=1 (only supports single marker)
-        verbose (int, optional): Print update info. Defaults to 0.
-        backend (DynamicsBackend, optional): If provided, routes forward kinematics
-            calls through the backend abstraction.
+        backend (DynamicsBackend, optional): If provided, routes forward
+            kinematics and gravity calls through the backend abstraction.
 
     Returns:
         ndarray: Flattened marker measurements in world frame
 
+    Raises:
+        NotImplementedError: If calib_config["NbMarkers"] > 1.
+
     Notes:
-        - Excludes joint elasticity effects
-        - Requires base or end-effector parameters in param_name
-        - Validates all parameters are properly updated
+        - Requires base or end-effector parameters in param_name to
+          estimate wMo / eeMf; otherwise they default to identity.
+        - Validates all parameters in param_name are consumed exactly once.
     """
 
     # name reference of calibration parameters
@@ -563,11 +377,25 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
     start_f = calib_config["start_frame"]
     end_f = calib_config["end_frame"]
 
-    # if world frame (measurement ref frame) to the start frame is not known,
-    # base_tpl needs to be used to define the first 6 parameters
-
     # 1/ calc transformation from the world frame to start frame: wMo
-    if base_param_incl:
+    base_to_ref_frame = calib_config.get("base_to_ref_frame")
+    if base_to_ref_frame is not None:
+        # known chain anchor + unknown camera/ref pose (e.g. eye-hand calib)
+        start_f = calib_config["ref_frame"]
+        base_tf = np.zeros(6)
+        for key in param_dict.keys():
+            for base_id, base_ax in enumerate(BASE_TPL):
+                if base_ax in key:
+                    base_tf[base_id] = param_dict[key]
+                    updated_params.append(key)
+        b_to_cam = get_rel_transform(
+            model, data, calib_config["start_frame"], base_to_ref_frame
+        )
+        ref_to_cam = cartesian_to_SE3(base_tf)
+        cam_to_ref = ref_to_cam.actInv(pin.SE3.Identity())
+        wMo = b_to_cam * cam_to_ref
+    elif base_param_incl:
+        # fully unknown world (measurement) frame to start frame transform
         base_tf = np.zeros(6)
         for key in param_dict.keys():
             for base_id, base_ax in enumerate(BASE_TPL):
@@ -602,9 +430,11 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
             eeMf = cartesian_to_SE3(pee)
     else:
         if calib_config["NbMarkers"] > 1:
-            logger.warning("Multiple markers are not supported.")
-        else:
-            eeMf = pin.SE3.Identity()
+            raise NotImplementedError(
+                "calc_updated_fkm only supports NbMarkers == 1, got "
+                "NbMarkers={}.".format(calib_config["NbMarkers"])
+            )
+        eeMf = pin.SE3.Identity()
 
     # 3/ calculate transformation from start frame to end frame of kinematic chain using updated model: oMee
 
@@ -632,6 +462,27 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
         # updaet joint placement
         model = update_joint_placement(model, j_id, xyz_rpy)
 
+    # joint elasticity: one compliance parameter per active joint (ELAS_TPL,
+    # see _build_elastic_param_names), matched once here since the mapping
+    # joint -> param is static; the deflection itself is gravity-torque
+    # dependent and recomputed per sample below.
+    elastic_map = {}
+    if calib_config.get("non_geom"):
+        for j_id in calib_config["actJoint_idx"]:
+            j_name = model.names[j_id]
+            for key in param_dict.keys():
+                if j_name in key:
+                    for elas_id, elas in enumerate(ELAS_TPL):
+                        if elas in key:
+                            if verbose == 1:
+                                logger.debug(
+                                    "Joint [{}] elastic gain [{}] on axis {}".format(
+                                        j_name, key, elas
+                                    )
+                                )
+                            elastic_map[j_id] = (key, elas_id)
+                            updated_params.append(key)
+
     # check if all parameters are updated to the model
     assert len(updated_params) == len(
         list(param_dict.keys())
@@ -651,9 +502,33 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
             pin.framesForwardKinematics(model, data, q_[i, :])
             pin.updateFramePlacements(model, data)
 
-        # NOTE: joint elastic error is not considered in this version
+        if elastic_map:
+            if backend is not None:
+                tau = backend.compute_gravity_vector(q_[i, :])
+            else:
+                tau = pin.computeGeneralizedGravity(model, data, q_[i, :])
 
-        oMee = get_rel_transform(model, data, start_f, end_f)
+            for j_id, (key, elas_id) in elastic_map.items():
+                xyz_rpy = np.zeros(6)
+                xyz_rpy[elas_id] = param_dict[key] * tau[j_id - 1]
+                model = update_joint_placement(model, j_id, xyz_rpy)
+
+            # jointPlacements changed: data.oMf is stale until FK is redone
+            if backend is not None:
+                backend.compute_forward_kinematics(q_[i, :])
+            else:
+                pin.framesForwardKinematics(model, data, q_[i, :])
+                pin.updateFramePlacements(model, data)
+
+            oMee = get_rel_transform(model, data, start_f, end_f)
+
+            # revert model back to origin from the added joint elastic error
+            for j_id, (key, elas_id) in elastic_map.items():
+                xyz_rpy = np.zeros(6)
+                xyz_rpy[elas_id] = param_dict[key] * tau[j_id - 1]
+                model = update_joint_placement(model, j_id, -xyz_rpy)
+        else:
+            oMee = get_rel_transform(model, data, start_f, end_f)
 
         # calculate transformation from world frame to end-effector frame
         wMee = wMo * oMee
