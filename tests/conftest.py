@@ -47,6 +47,65 @@ def temp_urdf():
 
 
 @pytest.fixture
+def two_joint_urdf():
+    """Two-revolute-joint chain with distinct, nonzero link masses.
+
+    Used to test per-joint behavior (e.g. calc_updated_fkm elasticity)
+    where a single-joint model can't distinguish "applied to the right
+    joint" from "applied to the only joint".
+    """
+    urdf_content = """<?xml version="1.0"?>
+<robot name="two_joint_test_robot">
+  <link name="base_link">
+    <inertial>
+      <mass value="1.0"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+    </inertial>
+  </link>
+
+  <joint name="joint1" type="revolute">
+    <parent link="base_link"/>
+    <child link="link1"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-3.14" upper="3.14" effort="100" velocity="1"/>
+  </joint>
+
+  <link name="link1">
+    <inertial>
+      <mass value="1.5"/>
+      <origin xyz="0.2 0 0"/>
+      <inertia ixx="0.05" ixy="0" ixz="0" iyy="0.05" iyz="0" izz="0.05"/>
+    </inertial>
+  </link>
+
+  <joint name="joint2" type="revolute">
+    <parent link="link1"/>
+    <child link="link2"/>
+    <origin xyz="0.3 0 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-3.14" upper="3.14" effort="100" velocity="1"/>
+  </joint>
+
+  <link name="link2">
+    <inertial>
+      <mass value="0.8"/>
+      <origin xyz="0.15 0 0"/>
+      <inertia ixx="0.02" ixy="0" ixz="0" iyy="0.02" iyz="0" izz="0.02"/>
+    </inertial>
+  </link>
+</robot>"""
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".urdf", delete=False) as f:
+        f.write(urdf_content)
+        temp_path = f.name
+
+    yield temp_path
+
+    os.unlink(temp_path)
+
+
+@pytest.fixture
 def sample_robot_data():
     """Generate sample robot trajectory data."""
     np.random.seed(42)  # Reproducible tests
@@ -127,8 +186,7 @@ def tiago_data_dir() -> Path:
 def tiago_eye_hand_csv(tiago_data_dir) -> Path:
     """Path to a reference eye-hand calibration CSV file."""
     csv_path = (
-        tiago_data_dir
-        / "eye_hand_calibration_recorded_data_48c_hey5_cb_center.csv"
+        tiago_data_dir / "eye_hand_calibration_recorded_data_48c_hey5_cb_center.csv"
     )
     if not csv_path.exists():
         pytest.skip(f"Eye-hand CSV not found: {csv_path}")
