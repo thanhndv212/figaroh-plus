@@ -1071,11 +1071,14 @@ class BaseCalibration(ABC):
         # ── Condition number ──
         cond_num, cond_label = self._compute_condition_number(result)
 
+        # Calculate standard deviation of estimated parameters -- must run
+        # before _compute_parameter_correlation(), which reads self._C_param
+        # and silently returns [] if it isn't set yet (e.g. first solve() on
+        # a fresh instance).
+        self.calc_stddev(result)
+
         # ── Parameter correlation ──
         correlated_pairs = self._compute_parameter_correlation()
-
-        # Calculate standard deviation of estimated parameters
-        self.calc_stddev(result)
 
         return {
             "rmse": rmse,
