@@ -129,6 +129,9 @@ and worked examples.
 
 ## Next steps
 
+- [Configuration Parameter Reference](config_parameters.md) — what each
+  `calibration:`/`identification:` field actually means, its units, and
+  which pipeline step consumes it.
 - [Tutorials](../tutorials/index.md) walk through a full calibration and
   identification run using these configs.
 - [Examples Gallery → Config Templates](../examples/templates.md) has the

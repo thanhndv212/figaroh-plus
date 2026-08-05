@@ -38,6 +38,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     (`figaroh-examples/examples/tiago_pro`, 94 samples): the existing
     `full_params`/`known_baseframe=False` geometric path is numerically
     unchanged (bit-identical output for a fixed parameter set and data).
+- `fix(config)`: `unified_to_legacy_config` read `parameters.free_flyer`, a
+  key the unified schema never defines (the template puts it at
+  `kinematics.free_flying_base`) — a unified config setting
+  `free_flying_base: true` was silently ignored, always resolving to
+  `free_flyer=False`. Extraction moved to `_extract_frame_info`, reading
+  the correct key.
+- `fix(config)`: eye-hand calibration (`base_to_ref_frame`/`ref_frame`) had
+  no unified-format equivalent, even though the schema template already
+  reserved `tasks.calibration.eye_hand.{camera_frame,reference_frame}` for
+  it — `unified_to_legacy_config` just never read that section. Added
+  `_extract_eye_hand_params`, wired in.
+
+### Added
+
+- `feat(config)`: Legacy flat config format (`calibration:`/`identification:`
+  top-level sections) is now deprecated in favor of the unified format —
+  loading one emits a `DeprecationWarning` (+ `logger.warning`) from
+  `figaroh.calibration.config.get_param_from_yaml` /
+  `figaroh.identification.config.get_param_from_yaml`, the single parser
+  every legacy-format caller funnels through regardless of entry point.
+- `feat(utils)`: `figaroh.utils.config_migration` — converts a legacy config
+  to unified format automatically (`python -m figaroh.utils.config_migration
+  --input legacy.yaml --output unified.yaml`), including the eye-hand and
+  free-flyer fields fixed above. An optional `--urdf` flag runs a
+  round-trip self-check (converts, then re-parses through the real
+  `unified_to_legacy_*config` and diffs against the original) rather than
+  trusting the conversion blindly. Fields with no unified-format consumer
+  today are preserved under `custom:` instead of silently dropped. See
+  "Migrating from legacy to unified format" in
+  `docs/source/concepts/config_parameters.md`.
 
 ## [0.4.5] - 2026-07-13
 

@@ -76,6 +76,7 @@ nav:
   - Concepts:
       - Architecture: concepts/architecture.md
       - Configuration System: concepts/configuration.md
+      - Configuration Parameter Reference: concepts/config_parameters.md
       - Backends: concepts/backends.md
       - Integration API: concepts/integration.md
   - Examples Gallery:
