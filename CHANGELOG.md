@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.6] - 2026-08-06
+
 ### Fixed
 
 - `fix(calibration)`: `calc_updated_fkm` now supports joint elasticity
@@ -49,6 +51,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   reserved `tasks.calibration.eye_hand.{camera_frame,reference_frame}` for
   it — `unified_to_legacy_config` just never read that section. Added
   `_extract_eye_hand_params`, wired in.
+- `fix(calibration)`: `BaseCalibration` reported RMSE/MAE two different ways
+  that could disagree by exactly `sqrt(n_dofs)` depending on which number
+  you looked at — `_evaluate_solution`'s `evaluation_metrics["rmse"]`/`["mae"]`
+  flattened every x/y/z/... residual component into one list (a "mean of
+  squared components" convention), while `_compute_per_dof_stats`'s
+  `pos_rmse_mm`/`orient_rmse_deg` and the validation table reduced each
+  sample's residual vector to one Euclidean-norm distance first, then
+  aggregated. For position-only calibration these differed by exactly
+  `sqrt(3)`, always. Converged `_evaluate_solution`, `_detect_outliers`, and
+  `_store_optimization_results`'s `_PEE_dist` onto the per-sample-distance
+  convention — the physically meaningful one (an actual 3D positioning
+  error in mm) and the one most of the report already used. Outlier
+  detection is unaffected (scale-invariant comparison). Also added
+  `pos_mae_mm`/`orient_mae_deg` to `_compute_per_dof_stats`'s "overall"
+  block (RMSE already had a position/orientation split; MAE didn't),
+  surfaced as "Position MAE"/"Orientation MAE" in both the terminal
+  quality report and the HTML report (`report.py`). Re-verified against
+  tiago, tiago_pro, ur10, and talos calibration runs.
+- `fix(calibration)`: `calc_stddev()` ran *after*
+  `_compute_parameter_correlation()` in `BaseCalibration`, but correlation
+  reads `self._C_param`, which `calc_stddev()` is what sets — on a fresh
+  instance's first `solve()`, correlation silently returned `[]` instead
+  of the actual pairs. Reordered so `calc_stddev()` runs first.
 
 ### Added
 

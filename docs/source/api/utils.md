@@ -27,3 +27,14 @@ by both calibration and identification (`plot_with_fallback`,
 ::: figaroh.utils.error_handling
     options:
       show_root_heading: false
+
+## Config Migration
+
+Converts a legacy flat (`calibration:`/`identification:`) config to the
+unified `extends:`/`tasks:` format, including an optional round-trip
+self-check against a URDF. See "Migrating from legacy to unified format"
+in [Config Parameters](../concepts/config_parameters.md).
+
+::: figaroh.utils.config_migration
+    options:
+      show_root_heading: false
