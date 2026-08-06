@@ -1638,7 +1638,18 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="[Unreleased]">
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#046-2026-08-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.4.6] - 2026-08-06
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.4.6] - 2026-08-06">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2408,7 +2419,18 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="[Unreleased]">
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#046-2026-08-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.4.6] - 2026-08-06
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.4.6] - 2026-08-06">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3095,6 +3117,7 @@ copy to keep in sync.</p>
 <p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
 and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
 <h3 id="unreleased">[Unreleased]<a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h3>
+<h3 id="046-2026-08-06">[0.4.6] - 2026-08-06<a class="headerlink" href="#046-2026-08-06" title="Permanent link">&para;</a></h3>
 <h4 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h4>
 <ul>
 <li><code>fix(calibration)</code>: <code>calc_updated_fkm</code> now supports joint elasticity
@@ -3137,6 +3160,29 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
   reserved <code>tasks.calibration.eye_hand.{camera_frame,reference_frame}</code> for
   it — <code>unified_to_legacy_config</code> just never read that section. Added
   <code>_extract_eye_hand_params</code>, wired in.</li>
+<li><code>fix(calibration)</code>: <code>BaseCalibration</code> reported RMSE/MAE two different ways
+  that could disagree by exactly <code>sqrt(n_dofs)</code> depending on which number
+  you looked at — <code>_evaluate_solution</code>'s <code>evaluation_metrics["rmse"]</code>/<code>["mae"]</code>
+  flattened every x/y/z/... residual component into one list (a "mean of
+  squared components" convention), while <code>_compute_per_dof_stats</code>'s
+  <code>pos_rmse_mm</code>/<code>orient_rmse_deg</code> and the validation table reduced each
+  sample's residual vector to one Euclidean-norm distance first, then
+  aggregated. For position-only calibration these differed by exactly
+  <code>sqrt(3)</code>, always. Converged <code>_evaluate_solution</code>, <code>_detect_outliers</code>, and
+  <code>_store_optimization_results</code>'s <code>_PEE_dist</code> onto the per-sample-distance
+  convention — the physically meaningful one (an actual 3D positioning
+  error in mm) and the one most of the report already used. Outlier
+  detection is unaffected (scale-invariant comparison). Also added
+  <code>pos_mae_mm</code>/<code>orient_mae_deg</code> to <code>_compute_per_dof_stats</code>'s "overall"
+  block (RMSE already had a position/orientation split; MAE didn't),
+  surfaced as "Position MAE"/"Orientation MAE" in both the terminal
+  quality report and the HTML report (<code>report.py</code>). Re-verified against
+  tiago, tiago_pro, ur10, and talos calibration runs.</li>
+<li><code>fix(calibration)</code>: <code>calc_stddev()</code> ran <em>after</em>
+  <code>_compute_parameter_correlation()</code> in <code>BaseCalibration</code>, but correlation
+  reads <code>self._C_param</code>, which <code>calc_stddev()</code> is what sets — on a fresh
+  instance's first <code>solve()</code>, correlation silently returned <code>[]</code> instead
+  of the actual pairs. Reordered so <code>calc_stddev()</code> runs first.</li>
 </ul>
 <h4 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h4>
 <ul>

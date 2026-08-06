@@ -2070,6 +2070,83 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#config-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Config Migration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.utils.config_migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        config_migration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.utils.config_migration.legacy_calibration_to_unified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        legacy_calibration_to_unified
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.utils.config_migration.legacy_identification_to_unified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        legacy_identification_to_unified
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.utils.config_migration.merge_unified_sections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        merge_unified_sections
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.utils.config_migration.convert_legacy_to_unified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        convert_legacy_to_unified
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.utils.config_migration.self_check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        self_check
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2901,6 +2978,83 @@
     <span class="md-ellipsis">
       
         setup_example_logging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#config-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Config Migration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.utils.config_migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        config_migration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.utils.config_migration.legacy_calibration_to_unified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        legacy_calibration_to_unified
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.utils.config_migration.legacy_identification_to_unified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        legacy_identification_to_unified
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.utils.config_migration.merge_unified_sections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        merge_unified_sections
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.utils.config_migration.convert_legacy_to_unified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        convert_legacy_to_unified
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.utils.config_migration.self_check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        self_check
       
     </span>
   </a>
@@ -10018,6 +10172,1155 @@ utilities for robot identification and calibration workflows.</p>
         <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">logger</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="config-migration">Config Migration<a class="headerlink" href="#config-migration" title="Permanent link">&para;</a></h2>
+<p>Converts a legacy flat (<code>calibration:</code>/<code>identification:</code>) config to the
+unified <code>extends:</code>/<code>tasks:</code> format, including an optional round-trip
+self-check against a URDF. See "Migrating from legacy to unified format"
+in <a href="../../concepts/config_parameters/">Config Parameters</a>.</p>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="figaroh.utils.config_migration"></a>
+    <div class="doc doc-contents first">
+
+        <p>Legacy -&gt; unified config migration.</p>
+<p>Converts a legacy flat <code>calibration:</code>/<code>identification:</code> config into the
+unified <code>extends:</code>/<code>tasks:</code> format, using the exact field mapping
+documented in <code>docs/source/concepts/config_parameters.md</code>. This is the
+reverse of :func:<code>figaroh.calibration.config.unified_to_legacy_config</code> and
+:func:<code>figaroh.identification.config.unified_to_legacy_identif_config</code>.</p>
+<p>Fields with no unified-format consumer today (<code>is_static_regressor</code>,
+<code>is_inertia_regressor</code>, <code>embedded_forces</code>, <code>sync_joint_motion</code>, and the
+parsed-but-unused joint limit / <code>ratio_essential</code> fields — see
+config_parameters.md) are preserved under the <code>custom:</code> section rather than
+silently dropped.</p>
+<p>CLI usage::</p>
+<div class="highlight"><pre><span></span><code>python -m figaroh.utils.config_migration \
+    --input legacy_config.yaml --output unified_config.yaml \
+    [--task auto|calibration|identification] \
+    [--template base|manipulator|humanoid] \
+    [--urdf robot.urdf]   # enables the round-trip self-check
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="figaroh.utils.config_migration.legacy_calibration_to_unified" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">legacy_calibration_to_unified</span><span class="p">(</span><span class="n">calib_data</span><span class="p">)</span></code>
+
+<a href="#figaroh.utils.config_migration.legacy_calibration_to_unified" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Convert a legacy <code>calibration:</code> section to unified <code>tasks.calibration</code>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>calib_data</code>
+            </td>
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The dict under the <code>calibration:</code> key of a legacy
+config file (e.g. <code>yaml.safe_load(f)["calibration"]</code>).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A <code>{"tasks": {"calibration": {...}}}</code> fragment, ready to merge</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>with the identification fragment and an <code>extends:</code> root.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/figaroh/utils/config_migration.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">legacy_calibration_to_unified</span><span class="p">(</span><span class="n">calib_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a legacy ``calibration:`` section to unified ``tasks.calibration``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        calib_data: The dict under the ``calibration:`` key of a legacy</span>
+<span class="sd">            config file (e.g. ``yaml.safe_load(f)[&quot;calibration&quot;]``).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A ``{&quot;tasks&quot;: {&quot;calibration&quot;: {...}}}`` fragment, ready to merge</span>
+<span class="sd">        with the identification fragment and an ``extends:`` root.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">markers</span> <span class="o">=</span> <span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;markers&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
+    <span class="n">unified_markers</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;reference_joint&quot;</span><span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ref_joint&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;measurable_dof&quot;</span><span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;measure&quot;</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">]),</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">markers</span>
+    <span class="p">]</span>
+
+    <span class="n">calibration_task</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;kinematic_calibration&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;calibration_level&quot;</span><span class="p">:</span> <span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;calib_level&quot;</span><span class="p">,</span> <span class="s2">&quot;full_params&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;include_non_geometric&quot;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;non_geom&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)),</span>
+            <span class="s2">&quot;regularization_coefficient&quot;</span><span class="p">:</span> <span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;coeff_regularize&quot;</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">),</span>
+            <span class="s2">&quot;outlier_threshold&quot;</span><span class="p">:</span> <span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;outlier_eps&quot;</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;kinematics&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;base_frame&quot;</span><span class="p">:</span> <span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;base_frame&quot;</span><span class="p">,</span> <span class="s2">&quot;universe&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;tool_frame&quot;</span><span class="p">:</span> <span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tool_frame&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;free_flying_base&quot;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;free_flyer&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)),</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;measurements&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;markers&quot;</span><span class="p">:</span> <span class="n">unified_markers</span><span class="p">,</span>
+            <span class="s2">&quot;poses&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;base_pose&quot;</span><span class="p">:</span> <span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;base_pose&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;tool_pose&quot;</span><span class="p">:</span> <span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tip_pose&quot;</span><span class="p">),</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;source_file&quot;</span><span class="p">:</span> <span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data_file&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;sample_configurations_file&quot;</span><span class="p">:</span> <span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sample_configs_file&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;number_of_samples&quot;</span><span class="p">:</span> <span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nb_sample&quot;</span><span class="p">,</span> <span class="mi">500</span><span class="p">),</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+
+    <span class="n">base_to_ref_frame</span> <span class="o">=</span> <span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;base_to_ref_frame&quot;</span><span class="p">)</span>
+    <span class="n">ref_frame</span> <span class="o">=</span> <span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ref_frame&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">base_to_ref_frame</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">ref_frame</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">calibration_task</span><span class="p">[</span><span class="s2">&quot;eye_hand&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;camera_frame&quot;</span><span class="p">:</span> <span class="n">base_to_ref_frame</span><span class="p">,</span>
+            <span class="s2">&quot;reference_frame&quot;</span><span class="p">:</span> <span class="n">ref_frame</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;tasks&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;calibration&quot;</span><span class="p">:</span> <span class="n">calibration_task</span><span class="p">}}</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="figaroh.utils.config_migration.legacy_identification_to_unified" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">legacy_identification_to_unified</span><span class="p">(</span><span class="n">identif_data</span><span class="p">)</span></code>
+
+<a href="#figaroh.utils.config_migration.legacy_identification_to_unified" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Convert a legacy <code>identification:</code> section to unified format.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>identif_data</code>
+            </td>
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The dict under the <code>identification:</code> key of a
+legacy config file.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A ``{"robot": {"properties": {...}}, "tasks": {"identification":</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>{...}}, "custom": {...}}<code>fragment.</code>robot.properties`` holds</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>fields shared across tasks (mechanics, joints); <code>custom</code> holds</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>fields with no current unified-format consumer.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/figaroh/utils/config_migration.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">legacy_identification_to_unified</span><span class="p">(</span><span class="n">identif_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a legacy ``identification:`` section to unified format.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        identif_data: The dict under the ``identification:`` key of a</span>
+<span class="sd">            legacy config file.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A ``{&quot;robot&quot;: {&quot;properties&quot;: {...}}, &quot;tasks&quot;: {&quot;identification&quot;:</span>
+<span class="sd">        {...}}, &quot;custom&quot;: {...}}`` fragment. ``robot.properties`` holds</span>
+<span class="sd">        fields shared across tasks (mechanics, joints); ``custom`` holds</span>
+<span class="sd">        fields with no current unified-format consumer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">robot_params</span> <span class="o">=</span> <span class="p">(</span><span class="n">identif_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;robot_params&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[{}])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">problem_params</span> <span class="o">=</span> <span class="p">(</span><span class="n">identif_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;problem_params&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[{}])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">process_params</span> <span class="o">=</span> <span class="p">(</span><span class="n">identif_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;processing_params&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[{}])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">tls_params</span> <span class="o">=</span> <span class="p">(</span><span class="n">identif_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tls_params&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[{}])[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">robot_properties</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;joints&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;joint_limits&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="n">robot_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;q_lim_def&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;velocity&quot;</span><span class="p">:</span> <span class="n">robot_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dq_lim_def&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;acceleration&quot;</span><span class="p">:</span> <span class="n">robot_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ddq_lim_def&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;torque&quot;</span><span class="p">:</span> <span class="n">robot_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tau_lim_def&quot;</span><span class="p">),</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;mechanics&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;friction_coefficients&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;viscous&quot;</span><span class="p">:</span> <span class="n">robot_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fv&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;static&quot;</span><span class="p">:</span> <span class="n">robot_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fs&quot;</span><span class="p">),</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;actuator_inertias&quot;</span><span class="p">:</span> <span class="n">robot_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Ia&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;joint_offsets&quot;</span><span class="p">:</span> <span class="n">robot_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;offset&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;reduction_ratios&quot;</span><span class="p">:</span> <span class="n">robot_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;reduction_ratio&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;ratio_essential&quot;</span><span class="p">:</span> <span class="n">robot_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ratio_essential&quot;</span><span class="p">),</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;coupling&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;has_coupled_wrist&quot;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">problem_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;has_coupled_wrist&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)),</span>
+            <span class="s2">&quot;Iam6&quot;</span><span class="p">:</span> <span class="n">robot_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Iam6&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="s2">&quot;fvm6&quot;</span><span class="p">:</span> <span class="n">robot_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fvm6&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="s2">&quot;fsm6&quot;</span><span class="p">:</span> <span class="n">robot_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fsm6&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+    <span class="n">active_joints</span> <span class="o">=</span> <span class="n">problem_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;active_joints&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">active_joints</span><span class="p">:</span>
+        <span class="n">robot_properties</span><span class="p">[</span><span class="s2">&quot;joints&quot;</span><span class="p">][</span><span class="s2">&quot;active_joints&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">active_joints</span>
+
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">process_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ts&quot;</span><span class="p">)</span>
+    <span class="n">sampling_frequency</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">ts</span><span class="p">)</span> <span class="k">if</span> <span class="n">ts</span> <span class="k">else</span> <span class="mf">5000.0</span>
+
+    <span class="n">force_torque</span> <span class="o">=</span> <span class="n">problem_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;force_torque&quot;</span><span class="p">)</span>
+    <span class="n">force_torque_sensors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">list</span><span class="p">(</span><span class="n">force_torque</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">force_torque</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="k">else</span> <span class="p">([</span><span class="n">force_torque</span><span class="p">]</span> <span class="k">if</span> <span class="n">force_torque</span> <span class="k">else</span> <span class="p">[])</span>
+    <span class="p">)</span>
+
+    <span class="n">identification_task</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;dynamic_identification&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;problem&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;include_external_forces&quot;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span>
+                <span class="n">problem_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;is_external_wrench&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;use_joint_torques&quot;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">problem_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;is_joint_torques&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)),</span>
+            <span class="s2">&quot;force_torque_sensors&quot;</span><span class="p">:</span> <span class="n">force_torque_sensors</span><span class="p">,</span>
+            <span class="s2">&quot;external_wrench_offsets&quot;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span>
+                <span class="n">problem_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;external_wrench_offsets&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;model_components&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;friction&quot;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">problem_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;has_friction&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)),</span>
+                <span class="s2">&quot;actuator_inertia&quot;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span>
+                    <span class="n">problem_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;has_actuator_inertia&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;joint_offset&quot;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">problem_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;has_joint_offset&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)),</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;signal_processing&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;sampling_frequency&quot;</span><span class="p">:</span> <span class="n">sampling_frequency</span><span class="p">,</span>
+            <span class="s2">&quot;cutoff_frequency&quot;</span><span class="p">:</span> <span class="n">process_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;cut_off_frequency_butterworth&quot;</span><span class="p">,</span> <span class="mf">100.0</span>
+            <span class="p">),</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;load_configuration&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;additional_mass&quot;</span><span class="p">:</span> <span class="n">tls_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mass_load&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+            <span class="s2">&quot;loaded_body_index&quot;</span><span class="p">:</span> <span class="n">tls_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;which_body_loaded&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+
+    <span class="n">custom</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">unconsumed_problem</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">problem_params</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_UNCONSUMED_PROBLEM_PARAMS</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">problem_params</span>
+    <span class="p">}</span>
+    <span class="n">unconsumed_tls</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">tls_params</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_UNCONSUMED_TLS_PARAMS</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">tls_params</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">unconsumed_problem</span><span class="p">:</span>
+        <span class="n">custom</span><span class="p">[</span><span class="s2">&quot;legacy_problem_params&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">unconsumed_problem</span>
+    <span class="k">if</span> <span class="n">unconsumed_tls</span><span class="p">:</span>
+        <span class="n">custom</span><span class="p">[</span><span class="s2">&quot;legacy_tls_params&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">unconsumed_tls</span>
+
+    <span class="n">result</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;robot&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="n">robot_properties</span><span class="p">},</span>
+        <span class="s2">&quot;tasks&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;identification&quot;</span><span class="p">:</span> <span class="n">identification_task</span><span class="p">},</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">custom</span><span class="p">:</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;custom&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">custom</span>
+    <span class="k">return</span> <span class="n">result</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="figaroh.utils.config_migration.merge_unified_sections" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">merge_unified_sections</span><span class="p">(</span><span class="o">*</span><span class="n">docs</span><span class="p">)</span></code>
+
+<a href="#figaroh.utils.config_migration.merge_unified_sections" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Merge fragments produced by <code>legacy_*_to_unified</code> into one document.</p>
+<p>A legacy file commonly has both <code>calibration:</code> and <code>identification:</code>
+sections; each converts independently and the results are merged here.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/figaroh/utils/config_migration.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">merge_unified_sections</span><span class="p">(</span><span class="o">*</span><span class="n">docs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge fragments produced by ``legacy_*_to_unified`` into one document.</span>
+
+<span class="sd">    A legacy file commonly has both ``calibration:`` and ``identification:``</span>
+<span class="sd">    sections; each converts independently and the results are merged here.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">merged</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;tasks&quot;</span><span class="p">:</span> <span class="p">{}}</span>
+    <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;tasks&quot;</span><span class="p">:</span>
+                <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;tasks&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;robot&quot;</span><span class="p">:</span>
+                <span class="n">merged</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;robot&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{}})</span>
+                <span class="n">_deep_merge</span><span class="p">(</span>
+                    <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;robot&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;properties&quot;</span><span class="p">,</span> <span class="p">{}),</span>
+                    <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;properties&quot;</span><span class="p">,</span> <span class="p">{}),</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;custom&quot;</span><span class="p">:</span>
+                <span class="n">merged</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;custom&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">merged</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="k">return</span> <span class="n">merged</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="figaroh.utils.config_migration.convert_legacy_to_unified" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">convert_legacy_to_unified</span><span class="p">(</span><span class="n">legacy_config</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="s1">&#39;base&#39;</span><span class="p">)</span></code>
+
+<a href="#figaroh.utils.config_migration.convert_legacy_to_unified" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Convert a full legacy config dict (both sections, if present).</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>legacy_config</code>
+            </td>
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The parsed legacy YAML (top-level dict with
+<code>calibration</code>/<code>identification</code> keys).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>template</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Which template to <code>extends:</code> — <code>"base"</code> (default,
+safest — no inherited defaults to reason about),
+<code>"manipulator"</code>, or <code>"humanoid"</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;base&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A complete unified-format config dict, ready to <code>yaml.dump</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If neither <code>calibration</code> nor <code>identification</code> is
+present, or <code>template</code> is not a known key.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/figaroh/utils/config_migration.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">convert_legacy_to_unified</span><span class="p">(</span>
+    <span class="n">legacy_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">template</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;base&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a full legacy config dict (both sections, if present).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        legacy_config: The parsed legacy YAML (top-level dict with</span>
+<span class="sd">            ``calibration``/``identification`` keys).</span>
+<span class="sd">        template: Which template to ``extends:`` — ``&quot;base&quot;`` (default,</span>
+<span class="sd">            safest — no inherited defaults to reason about),</span>
+<span class="sd">            ``&quot;manipulator&quot;``, or ``&quot;humanoid&quot;``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A complete unified-format config dict, ready to ``yaml.dump``.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If neither ``calibration`` nor ``identification`` is</span>
+<span class="sd">            present, or ``template`` is not a known key.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">template</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">TEMPLATE_PATHS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Unknown template </span><span class="si">{</span><span class="n">template</span><span class="si">!r}</span><span class="s2">; choose from </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">TEMPLATE_PATHS</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">docs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="s2">&quot;calibration&quot;</span> <span class="ow">in</span> <span class="n">legacy_config</span><span class="p">:</span>
+        <span class="n">docs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">legacy_calibration_to_unified</span><span class="p">(</span><span class="n">legacy_config</span><span class="p">[</span><span class="s2">&quot;calibration&quot;</span><span class="p">]))</span>
+    <span class="k">if</span> <span class="s2">&quot;identification&quot;</span> <span class="ow">in</span> <span class="n">legacy_config</span><span class="p">:</span>
+        <span class="n">docs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">legacy_identification_to_unified</span><span class="p">(</span><span class="n">legacy_config</span><span class="p">[</span><span class="s2">&quot;identification&quot;</span><span class="p">]))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">docs</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;No &#39;calibration&#39; or &#39;identification&#39; section found in legacy config&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">merged</span> <span class="o">=</span> <span class="n">merge_unified_sections</span><span class="p">(</span><span class="o">*</span><span class="n">docs</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">task_name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;calibration&quot;</span><span class="p">,</span> <span class="s2">&quot;identification&quot;</span><span class="p">):</span>
+        <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;tasks&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">task_name</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;extends&quot;</span><span class="p">:</span> <span class="n">TEMPLATE_PATHS</span><span class="p">[</span><span class="n">template</span><span class="p">]}</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">merged</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="figaroh.utils.config_migration.self_check" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">self_check</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">legacy_config</span><span class="p">,</span> <span class="n">unified_doc</span><span class="p">)</span></code>
+
+<a href="#figaroh.utils.config_migration.self_check" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Round-trip <code>unified_doc</code> back through the real unified parser and
+diff the recovered <code>calib_config</code>/<code>identif_config</code> against the
+original legacy sections.</p>
+<p>This reuses the exact same code path production uses
+(<code>create_task_config</code> + <code>unified_to_legacy_*config</code>) rather than
+reimplementing the flattening logic, so it can't silently diverge from
+what the pipeline actually does.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>robot</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A robot instance with <code>.model</code>/<code>.data</code> (needed for frame
+validation inside <code>unified_to_legacy_config</code>).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>legacy_config</code>
+            </td>
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The original parsed legacy YAML.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>unified_doc</code>
+            </td>
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The output of :func:<code>convert_legacy_to_unified</code>
+(with <code>extends:</code> already resolved away, i.e. pass the merged
+dict as if template inheritance had already happened — for a
+from-scratch check, resolve inheritance first via
+<code>UnifiedConfigParser</code> if the template adds required fields).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>``{"ok": bool, "mismatches": {"<section>.<field>": {"expected":</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>..., "got": ...}}}``</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/figaroh/utils/config_migration.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">self_check</span><span class="p">(</span>
+    <span class="n">robot</span><span class="p">,</span> <span class="n">legacy_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">unified_doc</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Round-trip ``unified_doc`` back through the real unified parser and</span>
+<span class="sd">    diff the recovered ``calib_config``/``identif_config`` against the</span>
+<span class="sd">    original legacy sections.</span>
+
+<span class="sd">    This reuses the exact same code path production uses</span>
+<span class="sd">    (``create_task_config`` + ``unified_to_legacy_*config``) rather than</span>
+<span class="sd">    reimplementing the flattening logic, so it can&#39;t silently diverge from</span>
+<span class="sd">    what the pipeline actually does.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        robot: A robot instance with ``.model``/``.data`` (needed for frame</span>
+<span class="sd">            validation inside ``unified_to_legacy_config``).</span>
+<span class="sd">        legacy_config: The original parsed legacy YAML.</span>
+<span class="sd">        unified_doc: The output of :func:`convert_legacy_to_unified`</span>
+<span class="sd">            (with ``extends:`` already resolved away, i.e. pass the merged</span>
+<span class="sd">            dict as if template inheritance had already happened — for a</span>
+<span class="sd">            from-scratch check, resolve inheritance first via</span>
+<span class="sd">            ``UnifiedConfigParser`` if the template adds required fields).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``{&quot;ok&quot;: bool, &quot;mismatches&quot;: {&quot;&lt;section&gt;.&lt;field&gt;&quot;: {&quot;expected&quot;:</span>
+<span class="sd">        ..., &quot;got&quot;: ...}}}``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.utils.config_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_task_config</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.calibration.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">unified_to_legacy_config</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.identification.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">unified_to_legacy_identif_config</span>
+
+    <span class="n">mismatches</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="s2">&quot;calibration&quot;</span> <span class="ow">in</span> <span class="n">legacy_config</span><span class="p">:</span>
+        <span class="n">original</span> <span class="o">=</span> <span class="n">legacy_config</span><span class="p">[</span><span class="s2">&quot;calibration&quot;</span><span class="p">]</span>
+        <span class="n">task_config</span> <span class="o">=</span> <span class="n">create_task_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_doc</span><span class="p">,</span> <span class="s2">&quot;calibration&quot;</span><span class="p">)</span>
+        <span class="n">recovered</span> <span class="o">=</span> <span class="n">unified_to_legacy_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">task_config</span><span class="p">)</span>
+        <span class="n">checks</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;calib_level&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;calib_model&quot;</span><span class="p">,</span> <span class="s2">&quot;full_params&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;non_geom&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;non_geom&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+            <span class="s2">&quot;base_frame&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;start_frame&quot;</span><span class="p">,</span> <span class="s2">&quot;universe&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;tool_frame&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;end_frame&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="s2">&quot;free_flyer&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;free_flyer&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+            <span class="s2">&quot;base_to_ref_frame&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;base_to_ref_frame&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="s2">&quot;ref_frame&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;ref_frame&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="s2">&quot;coeff_regularize&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;coeff_regularize&quot;</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">),</span>
+            <span class="s2">&quot;outlier_eps&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;outlier_eps&quot;</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span>
+            <span class="s2">&quot;data_file&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;data_file&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="s2">&quot;nb_sample&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;NbSample&quot;</span><span class="p">,</span> <span class="mi">500</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">legacy_key</span><span class="p">,</span> <span class="p">(</span><span class="n">recovered_key</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span> <span class="ow">in</span> <span class="n">checks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">expected</span> <span class="o">=</span> <span class="n">original</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">legacy_key</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+            <span class="n">got</span> <span class="o">=</span> <span class="n">recovered</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">recovered_key</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">expected</span> <span class="o">!=</span> <span class="n">got</span><span class="p">:</span>
+                <span class="n">mismatches</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;calibration.</span><span class="si">{</span><span class="n">legacy_key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;expected&quot;</span><span class="p">:</span> <span class="n">expected</span><span class="p">,</span>
+                    <span class="s2">&quot;got&quot;</span><span class="p">:</span> <span class="n">got</span><span class="p">,</span>
+                <span class="p">}</span>
+
+    <span class="k">if</span> <span class="s2">&quot;identification&quot;</span> <span class="ow">in</span> <span class="n">legacy_config</span><span class="p">:</span>
+        <span class="n">original</span> <span class="o">=</span> <span class="n">legacy_config</span><span class="p">[</span><span class="s2">&quot;identification&quot;</span><span class="p">]</span>
+        <span class="n">task_config</span> <span class="o">=</span> <span class="n">create_task_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_doc</span><span class="p">,</span> <span class="s2">&quot;identification&quot;</span><span class="p">)</span>
+        <span class="n">recovered</span> <span class="o">=</span> <span class="n">unified_to_legacy_identif_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">task_config</span><span class="p">)</span>
+        <span class="n">robot_params</span> <span class="o">=</span> <span class="p">(</span><span class="n">original</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;robot_params&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[{}])[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">problem_params</span> <span class="o">=</span> <span class="p">(</span><span class="n">original</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;problem_params&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[{}])[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">checks</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;fv&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">robot_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fv&quot;</span><span class="p">),</span> <span class="n">recovered</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fv&quot;</span><span class="p">)),</span>
+            <span class="s2">&quot;fs&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">robot_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fs&quot;</span><span class="p">),</span> <span class="n">recovered</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fs&quot;</span><span class="p">)),</span>
+            <span class="s2">&quot;Ia&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">robot_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Ia&quot;</span><span class="p">),</span> <span class="n">recovered</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Ia&quot;</span><span class="p">)),</span>
+            <span class="s2">&quot;has_friction&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="n">problem_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;has_friction&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                <span class="n">recovered</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;has_friction&quot;</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;has_coupled_wrist&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="n">problem_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;has_coupled_wrist&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                <span class="n">recovered</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;has_coupled_wrist&quot;</span><span class="p">),</span>
+            <span class="p">),</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">field</span><span class="p">,</span> <span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">got</span><span class="p">)</span> <span class="ow">in</span> <span class="n">checks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">expected</span> <span class="o">!=</span> <span class="n">got</span><span class="p">:</span>
+                <span class="n">mismatches</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;identification.</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;expected&quot;</span><span class="p">:</span> <span class="n">expected</span><span class="p">,</span>
+                    <span class="s2">&quot;got&quot;</span><span class="p">:</span> <span class="n">got</span><span class="p">,</span>
+                <span class="p">}</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="p">:</span> <span class="ow">not</span> <span class="n">mismatches</span><span class="p">,</span> <span class="s2">&quot;mismatches&quot;</span><span class="p">:</span> <span class="n">mismatches</span><span class="p">}</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
