@@ -11,7 +11,7 @@
 FIGAROH is a Python toolbox providing efficient and highly flexible frameworks for dynamics identification and geometric calibration of rigid multi-body systems based on the URDF modeling convention. It supports both serial (industrial manipulators) and tree-structure systems (humanoids, mobile manipulators).
 
 **📦 Available on PyPI:** `pip install figaroh`
-**📖 Version:** 0.4.5
+**📖 Version:** 0.4.6
 
 > Note: This repo is a fork from [gitlab repo](https://gitlab.laas.fr/gepetto/figaroh) of which the author is no longer a contributor.
 
@@ -96,7 +96,7 @@ cd figaroh-examples && pip install -r requirements.txt
 - **Static two-run compare page** — `generate_compare_page()` diffs two
   exported runs offline, with a mandatory compatibility check before
   overlaying them
-- See the [Reporting & Verification guide](https://thanhndv212.github.io/figaroh-plus/guides/reporting_and_verification/)
+- See the [Reporting & Verification guide](https://thanhndv212.github.io/figaroh-plus/reporting_and_verification/)
   for the full walkthrough
 ---
 

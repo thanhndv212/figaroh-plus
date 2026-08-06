@@ -13,7 +13,7 @@ subpackage:
 | [Integration](integration.md) | `RobotIdentificationSystem`, the one-line workflow API |
 | [Measurements](measurements.md) | Measurement data structures |
 | [Tools](tools.md) | Reporting/verification, provenance & run archiving, linear solver, robot management, regressor builder, visualization, collisions, QR decomposition, IPOPT wrapper, URDF export |
-| [Utils](utils.md) | Config parser, cubic spline, results manager, error handling |
+| [Utils](utils.md) | Config parser, cubic spline, results manager, error handling, legacy-to-unified config migration |
 | [Visualisation](visualisation.md) | Plotting and viser-based visualization helpers |
 
 New to the library? Start with [Concepts](../concepts/architecture.md) for

@@ -49,7 +49,7 @@ result = calibrator.solve(plotting=False, html_report=True)
 `solve()` always prints a terminal quality report (condition number,
 per-DOF residual RMSE, outlier count). `html_report=True` additionally
 writes a self-contained diagnostic page — see
-[Reporting & Verification](../guides/reporting_and_verification.md).
+[Reporting & Verification](../reporting_and_verification.md).
 
 From the command line, the TIAGo example wraps this in one script:
 
@@ -77,7 +77,7 @@ declares:
 ## Expected results
 
 A well-conditioned calibration (condition number well below the default
-1000.0 threshold — see [verification thresholds](../guides/reporting_and_verification.md))
+1000.0 threshold — see [verification thresholds](../reporting_and_verification.md))
 typically takes end-effector position error from 5-10mm down to under 1mm,
 validated on a held-out set of configurations not used to fit `Δθ`.
 
@@ -86,7 +86,7 @@ validated on a held-out set of configurations not used to fit `Δθ`.
 - [Identification Walkthrough](identification_walkthrough.md) — once
   kinematics are corrected, identify the *dynamic* parameters (mass,
   inertia, friction) for control and simulation.
-- [Reporting & Verification](../guides/reporting_and_verification.md) — turn
+- [Reporting & Verification](../reporting_and_verification.md) — turn
   this run into a shareable report and a CI-gateable pass/fail check.
 - [Examples Gallery](../examples/index.md) — complete calibration scripts
   for UR10, TIAGo, and TALOS.

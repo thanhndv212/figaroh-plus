@@ -67,7 +67,7 @@ Both problems reduce to the same idea: the [regressor](identification_walkthroug
 set carries about the parameters you want. A poorly chosen measurement set
 can be numerically singular even with hundreds of samples; a well-designed
 one is well-conditioned with a fraction of the data. FIGAROH's condition
-number check in [`verify()`](../guides/reporting_and_verification.md)
+number check in [`verify()`](../reporting_and_verification.md)
 (default threshold: 1000.0) is the same metric these two steps are
 optimizing — it exists precisely to catch a bad experiment design *before*
 you trust the identified parameters.

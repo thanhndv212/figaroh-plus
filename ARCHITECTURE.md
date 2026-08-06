@@ -730,15 +730,27 @@ resolves `package://` mesh URIs by searching `ROS_PACKAGE_PATH` and auto-discove
 **Forward Kinematics Update:**
 ```python
 def calc_updated_fkm(model, data, var, q_measured, calib_config) -> poses:
-    """Update FK with calibration parameters"""
-    # 1. Update joint placements
+    """Update FK with calibration parameters. Composes wMf = wMo * oMee * eeMf:
+    wMo (world/measurement frame -> chain start; unknown-baseframe or
+    known camera/ref-frame anchor), oMee (geometric joint-placement errors,
+    optionally with per-joint gravity-torque-driven elasticity when
+    calib_config["non_geom"] is set), eeMf (end frame -> marker frame)."""
+    # 1. Update joint placements (full_params / joint_offset)
     update_joint_placement(model, var, calib_config)
-    # 2. Compute forward kinematics
+    # 2. Compute forward kinematics (re-run after any elastic perturbation --
+    #    get_rel_transform reads the cached data.oMf, not live state)
     pin.framesForwardKinematics(model, data, q)
     pin.updateFramePlacements(model, data)
-    # 3. Extract end-effector poses
+    # 3. Extract end-effector poses, composed with wMo and eeMf
     return get_frame_poses(data, frame_ids)
 ```
+
+This is the single FK-update function for calibration — it previously had a
+sibling, `update_forward_kinematics`, which supported elasticity and
+camera-ref-frame composition but had accumulated several correctness
+regressions and had no callers anywhere in `figaroh`/`figaroh-examples`; its
+capabilities were merged into `calc_updated_fkm` and the dead function was
+removed.
 
 **Jacobian & Regressor:**
 ```python
@@ -902,7 +914,7 @@ subject to:
 consumable artifacts — a terminal report (human, right now), a
 self-contained HTML report (human, shareable), a machine-readable verdict
 (CI/scripts), and a static two-run compare page (offline, no backend). See
-[`docs/source/guides/reporting_and_verification.md`](docs/source/guides/reporting_and_verification.md)
+[`docs/source/reporting_and_verification.md`](docs/source/reporting_and_verification.md)
 for usage; this section covers structure only.
 
 **Shared kernel (`tools/_report_common.py`):** HTML/CSS primitives

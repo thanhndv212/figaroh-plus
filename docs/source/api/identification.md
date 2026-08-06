@@ -2,7 +2,7 @@
 
 The identification module provides tools for dynamic parameter
 identification of robots, including the
-[reporting & verification suite](../guides/reporting_and_verification.md)
+[reporting & verification suite](../reporting_and_verification.md)
 (`print_quality_report()`, `export_html_report()`, `verify()`,
 `export_verification_report()`) attached directly to `BaseIdentification`.
 

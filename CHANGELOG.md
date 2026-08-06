@@ -7,6 +7,93 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.6] - 2026-08-06
+
+### Fixed
+
+- `fix(calibration)`: `calc_updated_fkm` now supports joint elasticity
+  (`non_geom`) and camera/ref-frame base composition — capabilities
+  previously implemented only in a second, dead-code function,
+  `update_forward_kinematics` (zero callers in `figaroh`/`figaroh-examples`),
+  which had regressed relative to its own predecessor and was deleted as
+  part of this fix:
+  - The base/camera transform (`bMo`/`wMo`) was computed but never composed
+    into the returned pose.
+  - Elasticity indexing (`xyz_rpy[elas_id + 3]`) went out of bounds for any
+    rotary joint — i.e. every revolute joint.
+  - The elasticity parameter-match loop reused a stale `key` left over from
+    an unrelated earlier loop instead of iterating its own.
+  - The per-sample pose write was gated on a parameter-count bookkeeping
+    variable that accumulated across the whole sample loop instead of
+    resetting per sample, silently zeroing out later samples.
+  - (Found while implementing the merge) the elasticity branch also read
+    `data.oMf`/`get_rel_transform` without re-running forward kinematics
+    after perturbing `model.jointPlacements` for the deflection, so the
+    elastic offset never actually reached the output pose — fixed by
+    re-running FK before computing `oMee`.
+  - `calc_updated_fkm` previously silently ignored `calib_config["non_geom"]`
+    entirely (every real caller uses this function, not the dead one) — it
+    now actually applies elasticity when the flag is set.
+  - `NbMarkers > 1` now raises `NotImplementedError` instead of silently
+    logging a warning and falling back to an identity marker transform.
+  - Verified against the TIAGo Pro reference calibration dataset
+    (`figaroh-examples/examples/tiago_pro`, 94 samples): the existing
+    `full_params`/`known_baseframe=False` geometric path is numerically
+    unchanged (bit-identical output for a fixed parameter set and data).
+- `fix(config)`: `unified_to_legacy_config` read `parameters.free_flyer`, a
+  key the unified schema never defines (the template puts it at
+  `kinematics.free_flying_base`) — a unified config setting
+  `free_flying_base: true` was silently ignored, always resolving to
+  `free_flyer=False`. Extraction moved to `_extract_frame_info`, reading
+  the correct key.
+- `fix(config)`: eye-hand calibration (`base_to_ref_frame`/`ref_frame`) had
+  no unified-format equivalent, even though the schema template already
+  reserved `tasks.calibration.eye_hand.{camera_frame,reference_frame}` for
+  it — `unified_to_legacy_config` just never read that section. Added
+  `_extract_eye_hand_params`, wired in.
+- `fix(calibration)`: `BaseCalibration` reported RMSE/MAE two different ways
+  that could disagree by exactly `sqrt(n_dofs)` depending on which number
+  you looked at — `_evaluate_solution`'s `evaluation_metrics["rmse"]`/`["mae"]`
+  flattened every x/y/z/... residual component into one list (a "mean of
+  squared components" convention), while `_compute_per_dof_stats`'s
+  `pos_rmse_mm`/`orient_rmse_deg` and the validation table reduced each
+  sample's residual vector to one Euclidean-norm distance first, then
+  aggregated. For position-only calibration these differed by exactly
+  `sqrt(3)`, always. Converged `_evaluate_solution`, `_detect_outliers`, and
+  `_store_optimization_results`'s `_PEE_dist` onto the per-sample-distance
+  convention — the physically meaningful one (an actual 3D positioning
+  error in mm) and the one most of the report already used. Outlier
+  detection is unaffected (scale-invariant comparison). Also added
+  `pos_mae_mm`/`orient_mae_deg` to `_compute_per_dof_stats`'s "overall"
+  block (RMSE already had a position/orientation split; MAE didn't),
+  surfaced as "Position MAE"/"Orientation MAE" in both the terminal
+  quality report and the HTML report (`report.py`). Re-verified against
+  tiago, tiago_pro, ur10, and talos calibration runs.
+- `fix(calibration)`: `calc_stddev()` ran *after*
+  `_compute_parameter_correlation()` in `BaseCalibration`, but correlation
+  reads `self._C_param`, which `calc_stddev()` is what sets — on a fresh
+  instance's first `solve()`, correlation silently returned `[]` instead
+  of the actual pairs. Reordered so `calc_stddev()` runs first.
+
+### Added
+
+- `feat(config)`: Legacy flat config format (`calibration:`/`identification:`
+  top-level sections) is now deprecated in favor of the unified format —
+  loading one emits a `DeprecationWarning` (+ `logger.warning`) from
+  `figaroh.calibration.config.get_param_from_yaml` /
+  `figaroh.identification.config.get_param_from_yaml`, the single parser
+  every legacy-format caller funnels through regardless of entry point.
+- `feat(utils)`: `figaroh.utils.config_migration` — converts a legacy config
+  to unified format automatically (`python -m figaroh.utils.config_migration
+  --input legacy.yaml --output unified.yaml`), including the eye-hand and
+  free-flyer fields fixed above. An optional `--urdf` flag runs a
+  round-trip self-check (converts, then re-parses through the real
+  `unified_to_legacy_*config` and diffs against the original) rather than
+  trusting the conversion blindly. Fields with no unified-format consumer
+  today are preserved under `custom:` instead of silently dropped. See
+  "Migrating from legacy to unified format" in
+  `docs/source/concepts/config_parameters.md`.
+
 ## [0.4.5] - 2026-07-13
 
 ### Added

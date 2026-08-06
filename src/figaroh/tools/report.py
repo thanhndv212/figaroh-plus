@@ -218,6 +218,18 @@ def _per_dof_section(per_dof: Dict[str, Any]) -> str:
     overall = per_dof.get("overall", {})
     overall_html = ""
     if overall:
+        mae_html = ""
+        if "pos_mae_mm" in overall:
+            mae_html = f"""
+          <div class="stat">
+            <div class="stat-label">Position MAE</div>
+            <div class="stat-value">{overall["pos_mae_mm"]:.2f} mm</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Orientation MAE</div>
+            <div class="stat-value">{overall["orient_mae_deg"]:.4f} deg</div>
+          </div>
+            """
         overall_html = f"""
         <div class="stat-row" style="margin-top:14px;">
           <div class="stat">
@@ -228,6 +240,7 @@ def _per_dof_section(per_dof: Dict[str, Any]) -> str:
             <div class="stat-label">Orientation RMSE</div>
             <div class="stat-value">{overall["orient_rmse_deg"]:.4f} deg</div>
           </div>
+          {mae_html}
           <div class="stat">
             <div class="stat-label">Position max</div>
             <div class="stat-value">{overall["pos_max_mm"]:.2f} mm</div>

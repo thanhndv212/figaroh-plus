@@ -1,7 +1,7 @@
 # Calibration
 
 The calibration module provides tools for geometric calibration of robots,
-including the [reporting & verification suite](../guides/reporting_and_verification.md)
+including the [reporting & verification suite](../reporting_and_verification.md)
 (`print_quality_report()`, `export_html_report()`, `verify()`,
 `export_verification_report()`) attached directly to `BaseCalibration`.
 

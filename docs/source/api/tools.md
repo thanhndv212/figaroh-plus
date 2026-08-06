@@ -2,7 +2,7 @@
 
 ## Reporting & Verification
 
-The [reporting & verification suite](../guides/reporting_and_verification.md)'s
+The [reporting & verification suite](../reporting_and_verification.md)'s
 HTML report generators and the static two-run compare page.
 
 ### report

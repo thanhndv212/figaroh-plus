@@ -24,10 +24,18 @@ This module handles all configuration-related functionality including:
 """
 
 import logging
+import warnings
 
 # Setup logger for this module
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
+
+_LEGACY_CONFIG_DEPRECATION_MESSAGE = (
+    "Legacy flat config format is deprecated in favor of the unified "
+    "format (extends: + tasks.*). Migrate with: python -m "
+    "figaroh.utils.config_migration --input <legacy.yaml> --output "
+    "<unified.yaml>. See docs/source/concepts/configuration.md."
+)
 
 
 def get_sup_joints(model, start_frame, end_frame):
@@ -129,6 +137,10 @@ def get_param_from_yaml(robot, calib_data) -> dict:
         >>> print(params['NbMarkers'])
         2
     """
+    warnings.warn(_LEGACY_CONFIG_DEPRECATION_MESSAGE, DeprecationWarning, stacklevel=2)
+    logger.warning(
+        "Loading legacy config format — consider migrating (see DeprecationWarning)."
+    )
     # NOTE: since joint 0 is universe and it is trivial,
     # indices of joints are different from indices of joint configuration,
     # different from indices of joint velocities
@@ -341,6 +353,9 @@ def unified_to_legacy_config(robot, unified_calib_config) -> dict:
     # 7. Extract calibration parameters
     _extract_calibration_params(calib_config, robot, parameters)
 
+    # 7b. Extract eye-hand (camera) calibration frames, if enabled
+    _extract_eye_hand_params(calib_config, unified_calib_config)
+
     # 8. Extract data configuration
     calib_config["NbSample"] = data.get("number_of_samples", 500)
     calib_config["data_file"] = data.get("source_file")
@@ -400,6 +415,35 @@ def _extract_frame_info(calib_config, robot, kinematics):
 
     calib_config["start_frame"] = start_frame
     calib_config["end_frame"] = end_frame
+    # True if the robot base itself is unconstrained/floating. Lives under
+    # kinematics (not parameters) in the unified schema -- see
+    # templates/base_robot_config.yaml's tasks.calibration.kinematics.
+    calib_config["free_flyer"] = kinematics.get("free_flying_base", False)
+
+
+def _extract_eye_hand_params(calib_config, unified_calib_config):
+    """Extract eye-hand (camera) calibration frames, if enabled.
+
+    Eye-hand calibration estimates the pose of a camera/sensor mounted
+    somewhere in the middle of the kinematic chain: ``camera_frame`` is
+    reachable from ``base_frame`` via a *known* transform, and
+    ``reference_frame`` is where the chain resumes after the *unknown*
+    camera pose being estimated. See "Why the camera pose is a free
+    parameter, not a small offset" in
+    docs/source/concepts/config_parameters.md.
+
+    Args:
+        calib_config (dict): Configuration dictionary to update
+        unified_calib_config (dict): Task-level calibration config (the
+            dict returned by ``create_task_config(..., "calibration")``)
+    """
+    eye_hand = unified_calib_config.get("eye_hand", {})
+    if isinstance(eye_hand, dict) and eye_hand.get("enabled"):
+        calib_config["base_to_ref_frame"] = eye_hand.get("camera_frame")
+        calib_config["ref_frame"] = eye_hand.get("reference_frame")
+    else:
+        calib_config["base_to_ref_frame"] = None
+        calib_config["ref_frame"] = None
 
 
 def _extract_tool_info(calib_config, robot, end_frame):
@@ -483,10 +527,10 @@ def _extract_calibration_params(calib_config, robot, parameters):
 
     calib_config["param_name"] = param_name
 
-    # Store calibration settings
+    # Store calibration settings (free_flyer is extracted from kinematics
+    # in _extract_frame_info, not from parameters -- see that function)
     calib_config.update(
         {
-            "free_flyer": parameters.get("free_flyer", False),
             "non_geom": non_geom,
             "eps": 1e-3,
             "PLOT": 0,

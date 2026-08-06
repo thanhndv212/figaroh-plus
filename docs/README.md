@@ -47,7 +47,8 @@ python -m http.server 8000
    its kind:
    - `concepts/` — how a subsystem works (architecture, backends, config)
    - `tutorials/` — task-driven, narrated walkthroughs of a workflow
-   - `guides/` — how-to for a specific feature
+   - top-level `docs/source/` — standalone User Guide pages (e.g. Getting
+     Started, Reporting & Verification)
    - `examples/` — gallery pages pointing into the
      [figaroh-examples](https://github.com/thanhndv212/figaroh-examples)
      repo (kept short; the full implementation lives in that repo, not here)

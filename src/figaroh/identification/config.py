@@ -23,6 +23,19 @@ This module handles all configuration-related functionality including:
 - Signal processing and mechanical parameter management
 """
 
+import logging
+import warnings
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
+
+_LEGACY_CONFIG_DEPRECATION_MESSAGE = (
+    "Legacy flat config format is deprecated in favor of the unified "
+    "format (extends: + tasks.*). Migrate with: python -m "
+    "figaroh.utils.config_migration --input <legacy.yaml> --output "
+    "<unified.yaml>. See docs/source/concepts/configuration.md."
+)
+
 # Export public API
 __all__ = [
     "get_param_from_yaml",
@@ -53,6 +66,10 @@ def get_param_from_yaml(robot, identif_data):
         >>> params = get_param_from_yaml(robot, config)
         >>> print(params["nb_samples"])
     """
+    warnings.warn(_LEGACY_CONFIG_DEPRECATION_MESSAGE, DeprecationWarning, stacklevel=2)
+    logger.warning(
+        "Loading legacy config format — consider migrating (see DeprecationWarning)."
+    )
 
     # robot_name: anchor as a reference point for executing
     robot_name = robot.model.name

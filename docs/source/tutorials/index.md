@@ -39,4 +39,4 @@ collected.
 
 Every workflow ends the same way: call `.verify()` for a pass/fail verdict
 and `.export_html_report()` for a shareable diagnostic — see
-[Reporting & Verification](../guides/reporting_and_verification.md).
+[Reporting & Verification](../reporting_and_verification.md).

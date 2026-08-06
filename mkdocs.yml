@@ -67,6 +67,7 @@ nav:
   - Home: index.md
   - User Guide:
       - Getting Started: getting_started.md
+      - Reporting & Verification: reporting_and_verification.md
       - Tutorials:
           - Overview: tutorials/index.md
           - Calibration Walkthrough: tutorials/calibration_walkthrough.md
@@ -75,10 +76,9 @@ nav:
   - Concepts:
       - Architecture: concepts/architecture.md
       - Configuration System: concepts/configuration.md
+      - Configuration Parameter Reference: concepts/config_parameters.md
       - Backends: concepts/backends.md
       - Integration API: concepts/integration.md
-  - Guides:
-      - Reporting & Verification: guides/reporting_and_verification.md
   - Examples Gallery:
       - Overview: examples/index.md
       - UR10: examples/ur10.md

@@ -1024,8 +1024,14 @@ class BaseCalibration(ABC):
 
         residuals_2d = residuals.reshape((n_dofs, n_samples))
 
-        # Calculate RMS error per sample
-        rms_errors = np.sqrt(np.mean(residuals_2d**2, axis=0))
+        # Per-sample Euclidean-norm error (all DOFs combined into one
+        # physical distance per sample) -- same convention used everywhere
+        # else "error magnitude" is reported (_evaluate_solution,
+        # _compute_per_dof_stats, _error_stats). Outlier flagging itself is
+        # scale-invariant (mean + k*std of the same values), so this choice
+        # doesn't change which samples get flagged vs. the old per-sample
+        # RMS-across-DOFs convention -- it's purely for consistency.
+        rms_errors = np.sqrt(np.sum(residuals_2d**2, axis=0))
 
         # Detect outliers
         mean_error = np.mean(rms_errors)
@@ -1050,17 +1056,28 @@ class BaseCalibration(ABC):
         n_dofs = self.calib_config["calibration_index"]
         n_samples = self.calib_config["NbSample"]
 
-        # Calculate metrics
-        rmse = np.sqrt(np.mean(residuals ** 2))
-        mae = np.mean(np.abs(residuals))
-        max_error = np.max(np.abs(residuals))
-
-        # Per-sample metrics
+        # Metrics are computed on the per-sample Euclidean-norm error (all
+        # DOFs combined into one physical distance per sample), not on each
+        # x/y/z/... component as an independent scalar -- this is the same
+        # convention _compute_per_dof_stats()'s "overall" block and
+        # _error_stats() (validation table) use, so "RMSE"/"MAE" mean the
+        # same thing everywhere in the report instead of differing by
+        # sqrt(n_dofs) depending on which number you're looking at.
         if len(residuals) == n_dofs * n_samples:
             residuals_2d = residuals.reshape((n_dofs, n_samples))
-            sample_rms = np.sqrt(np.mean(residuals_2d**2, axis=0))
-            mean_sample_rms = np.mean(sample_rms)
-            std_sample_rms = np.std(sample_rms)
+            per_sample_error = np.sqrt(np.sum(residuals_2d**2, axis=0))
+        else:
+            residuals_2d = None
+            per_sample_error = np.abs(residuals)
+
+        rmse = np.sqrt(np.mean(per_sample_error ** 2))
+        mae = np.mean(per_sample_error)
+        max_error = np.max(per_sample_error)
+
+        # Per-sample metrics
+        if residuals_2d is not None:
+            mean_sample_rms = np.mean(per_sample_error)
+            std_sample_rms = np.std(per_sample_error)
         else:
             mean_sample_rms = rmse
             std_sample_rms = 0.0
@@ -1071,11 +1088,14 @@ class BaseCalibration(ABC):
         # ── Condition number ──
         cond_num, cond_label = self._compute_condition_number(result)
 
+        # Calculate standard deviation of estimated parameters -- must run
+        # before _compute_parameter_correlation(), which reads self._C_param
+        # and silently returns [] if it isn't set yet (e.g. first solve() on
+        # a fresh instance).
+        self.calc_stddev(result)
+
         # ── Parameter correlation ──
         correlated_pairs = self._compute_parameter_correlation()
-
-        # Calculate standard deviation of estimated parameters
-        self.calc_stddev(result)
 
         return {
             "rmse": rmse,
@@ -1104,8 +1124,14 @@ class BaseCalibration(ABC):
         """Compute per-DOF residual statistics.
 
         Returns dict with keys: 'dof_names', 'mean', 'std', 'rmse',
-        'max_abs', 'r_squared' — each a list of length n_dofs.
-        Units: position DOFs=mm, orientation DOFs=deg.
+        'max_abs', 'r_squared' — each a list of length n_dofs — plus
+        'overall': {pos_rmse_mm, orient_rmse_deg, pos_mae_mm,
+        orient_mae_deg, pos_max_mm, orient_max_deg}, each the per-sample
+        Euclidean-norm error for that DOF group (position DOFs 0:3,
+        orientation DOFs 3:6) aggregated across samples -- same convention
+        _evaluate_solution()'s rmse/mae use, so a "Position RMSE"/"Position
+        MAE" here always means the same thing as anywhere else in the
+        report. Units: position DOFs=mm, orientation DOFs=deg.
         """
         dof_names = [
             "X (mm)", "Y (mm)", "Z (mm)",
@@ -1151,18 +1177,14 @@ class BaseCalibration(ABC):
             residuals_2d[3:6, :] if n_dofs >= 6
             else np.zeros((3, n_samples))
         )
-        pos_rmse = float(
-            np.sqrt(np.mean(np.sum(pos_rows ** 2, axis=0)))
-        ) * 1000
-        orient_rmse = float(
-            np.sqrt(np.mean(np.sum(orient_rows ** 2, axis=0)))
-        ) * 180 / np.pi
-        pos_max = float(
-            np.max(np.sqrt(np.sum(pos_rows ** 2, axis=0)))
-        ) * 1000
-        orient_max = float(
-            np.max(np.sqrt(np.sum(orient_rows ** 2, axis=0)))
-        ) * 180 / np.pi
+        pos_norm = np.sqrt(np.sum(pos_rows ** 2, axis=0))
+        orient_norm = np.sqrt(np.sum(orient_rows ** 2, axis=0))
+        pos_rmse = float(np.sqrt(np.mean(pos_norm ** 2))) * 1000
+        orient_rmse = float(np.sqrt(np.mean(orient_norm ** 2))) * 180 / np.pi
+        pos_mae = float(np.mean(pos_norm)) * 1000
+        orient_mae = float(np.mean(orient_norm)) * 180 / np.pi
+        pos_max = float(np.max(pos_norm)) * 1000
+        orient_max = float(np.max(orient_norm)) * 180 / np.pi
 
         return {
             "dof_names": dof_names,
@@ -1174,6 +1196,8 @@ class BaseCalibration(ABC):
             "overall": {
                 "pos_rmse_mm": pos_rmse,
                 "orient_rmse_deg": orient_rmse,
+                "pos_mae_mm": pos_mae,
+                "orient_mae_deg": orient_mae,
                 "pos_max_mm": pos_max,
                 "orient_max_deg": orient_max,
             },
@@ -1309,10 +1333,12 @@ class BaseCalibration(ABC):
 
         # if len(residuals) == n_dofs * n_samples * n_markers:
         #     residuals_3d = residuals.reshape((n_markers, n_dofs, n_samples))
-        #     self._PEE_dist = np.sqrt(np.mean(residuals_3d**2, axis=1))
+        #     self._PEE_dist = np.sqrt(np.sum(residuals_3d**2, axis=1))
         if len(residuals) == n_dofs * n_samples:
             residuals_2d = residuals.reshape((n_dofs, n_samples))
-            sample_rms = np.sqrt(np.mean(residuals_2d**2, axis=0))
+            # Per-sample Euclidean-norm error -- same convention as
+            # _evaluate_solution()'s rmse/mae, see comment there.
+            sample_rms = np.sqrt(np.sum(residuals_2d**2, axis=0))
             self._PEE_dist = sample_rms.reshape((1, n_samples))
         else:
             # Fallback for unexpected residual shapes
@@ -1948,6 +1974,11 @@ class BaseCalibration(ABC):
                 f"    Position RMSE:    {overall['pos_rmse_mm']:.2f} mm    "
                 f"Orientation RMSE:  {overall['orient_rmse_deg']:.4f} deg"
             )
+            if "pos_mae_mm" in overall:
+                print(
+                    f"    Position MAE:     {overall['pos_mae_mm']:.2f} mm    "
+                    f"Orientation MAE:   {overall['orient_mae_deg']:.4f} deg"
+                )
             print(
                 f"    Position max:     {overall['pos_max_mm']:.2f} mm    "
                 f"Orientation max:   {overall['orient_max_deg']:.4f} deg"
