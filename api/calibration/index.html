@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -796,6 +796,34 @@
     
   
     Configuration System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/config_parameters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Parameter Reference
   
 
     
@@ -1785,17 +1813,6 @@
     <span class="md-ellipsis">
       
         initialize_variables
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#figaroh.calibration.calibration_tools.update_forward_kinematics" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        update_forward_kinematics
       
     </span>
   </a>
@@ -3049,17 +3066,6 @@
     <span class="md-ellipsis">
       
         initialize_variables
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#figaroh.calibration.calibration_tools.update_forward_kinematics" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        update_forward_kinematics
       
     </span>
   </a>
@@ -5884,33 +5890,7 @@ weighted_residuals = self.apply_measurement_weighting(
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/base_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1386</span>
-<span class="normal">1387</span>
-<span class="normal">1388</span>
-<span class="normal">1389</span>
-<span class="normal">1390</span>
-<span class="normal">1391</span>
-<span class="normal">1392</span>
-<span class="normal">1393</span>
-<span class="normal">1394</span>
-<span class="normal">1395</span>
-<span class="normal">1396</span>
-<span class="normal">1397</span>
-<span class="normal">1398</span>
-<span class="normal">1399</span>
-<span class="normal">1400</span>
-<span class="normal">1401</span>
-<span class="normal">1402</span>
-<span class="normal">1403</span>
-<span class="normal">1404</span>
-<span class="normal">1405</span>
-<span class="normal">1406</span>
-<span class="normal">1407</span>
-<span class="normal">1408</span>
-<span class="normal">1409</span>
-<span class="normal">1410</span>
-<span class="normal">1411</span>
-<span class="normal">1412</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1412</span>
 <span class="normal">1413</span>
 <span class="normal">1414</span>
 <span class="normal">1415</span>
@@ -5952,7 +5932,33 @@ weighted_residuals = self.apply_measurement_weighting(
 <span class="normal">1451</span>
 <span class="normal">1452</span>
 <span class="normal">1453</span>
-<span class="normal">1454</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve_optimisation</span><span class="p">(</span>
+<span class="normal">1454</span>
+<span class="normal">1455</span>
+<span class="normal">1456</span>
+<span class="normal">1457</span>
+<span class="normal">1458</span>
+<span class="normal">1459</span>
+<span class="normal">1460</span>
+<span class="normal">1461</span>
+<span class="normal">1462</span>
+<span class="normal">1463</span>
+<span class="normal">1464</span>
+<span class="normal">1465</span>
+<span class="normal">1466</span>
+<span class="normal">1467</span>
+<span class="normal">1468</span>
+<span class="normal">1469</span>
+<span class="normal">1470</span>
+<span class="normal">1471</span>
+<span class="normal">1472</span>
+<span class="normal">1473</span>
+<span class="normal">1474</span>
+<span class="normal">1475</span>
+<span class="normal">1476</span>
+<span class="normal">1477</span>
+<span class="normal">1478</span>
+<span class="normal">1479</span>
+<span class="normal">1480</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve_optimisation</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">var_init</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;lm&quot;</span><span class="p">,</span>
@@ -6114,33 +6120,7 @@ print(f"Percentage errors: {calibrator.std_pctg}")</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/base_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1456</span>
-<span class="normal">1457</span>
-<span class="normal">1458</span>
-<span class="normal">1459</span>
-<span class="normal">1460</span>
-<span class="normal">1461</span>
-<span class="normal">1462</span>
-<span class="normal">1463</span>
-<span class="normal">1464</span>
-<span class="normal">1465</span>
-<span class="normal">1466</span>
-<span class="normal">1467</span>
-<span class="normal">1468</span>
-<span class="normal">1469</span>
-<span class="normal">1470</span>
-<span class="normal">1471</span>
-<span class="normal">1472</span>
-<span class="normal">1473</span>
-<span class="normal">1474</span>
-<span class="normal">1475</span>
-<span class="normal">1476</span>
-<span class="normal">1477</span>
-<span class="normal">1478</span>
-<span class="normal">1479</span>
-<span class="normal">1480</span>
-<span class="normal">1481</span>
-<span class="normal">1482</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1482</span>
 <span class="normal">1483</span>
 <span class="normal">1484</span>
 <span class="normal">1485</span>
@@ -6172,7 +6152,33 @@ print(f"Percentage errors: {calibrator.std_pctg}")</p>
 <span class="normal">1511</span>
 <span class="normal">1512</span>
 <span class="normal">1513</span>
-<span class="normal">1514</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calc_stddev</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+<span class="normal">1514</span>
+<span class="normal">1515</span>
+<span class="normal">1516</span>
+<span class="normal">1517</span>
+<span class="normal">1518</span>
+<span class="normal">1519</span>
+<span class="normal">1520</span>
+<span class="normal">1521</span>
+<span class="normal">1522</span>
+<span class="normal">1523</span>
+<span class="normal">1524</span>
+<span class="normal">1525</span>
+<span class="normal">1526</span>
+<span class="normal">1527</span>
+<span class="normal">1528</span>
+<span class="normal">1529</span>
+<span class="normal">1530</span>
+<span class="normal">1531</span>
+<span class="normal">1532</span>
+<span class="normal">1533</span>
+<span class="normal">1534</span>
+<span class="normal">1535</span>
+<span class="normal">1536</span>
+<span class="normal">1537</span>
+<span class="normal">1538</span>
+<span class="normal">1539</span>
+<span class="normal">1540</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calc_stddev</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate parameter uncertainty statistics from optimization results.</span>
 
 <span class="sd">    Computes standard deviation and percentage uncertainty for each</span>
@@ -6314,33 +6320,7 @@ calc_stddev: Error statistics computation</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/base_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1516</span>
-<span class="normal">1517</span>
-<span class="normal">1518</span>
-<span class="normal">1519</span>
-<span class="normal">1520</span>
-<span class="normal">1521</span>
-<span class="normal">1522</span>
-<span class="normal">1523</span>
-<span class="normal">1524</span>
-<span class="normal">1525</span>
-<span class="normal">1526</span>
-<span class="normal">1527</span>
-<span class="normal">1528</span>
-<span class="normal">1529</span>
-<span class="normal">1530</span>
-<span class="normal">1531</span>
-<span class="normal">1532</span>
-<span class="normal">1533</span>
-<span class="normal">1534</span>
-<span class="normal">1535</span>
-<span class="normal">1536</span>
-<span class="normal">1537</span>
-<span class="normal">1538</span>
-<span class="normal">1539</span>
-<span class="normal">1540</span>
-<span class="normal">1541</span>
-<span class="normal">1542</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1542</span>
 <span class="normal">1543</span>
 <span class="normal">1544</span>
 <span class="normal">1545</span>
@@ -6363,7 +6343,33 @@ calc_stddev: Error statistics computation</p>
 <span class="normal">1562</span>
 <span class="normal">1563</span>
 <span class="normal">1564</span>
-<span class="normal">1565</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_errors_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">1565</span>
+<span class="normal">1566</span>
+<span class="normal">1567</span>
+<span class="normal">1568</span>
+<span class="normal">1569</span>
+<span class="normal">1570</span>
+<span class="normal">1571</span>
+<span class="normal">1572</span>
+<span class="normal">1573</span>
+<span class="normal">1574</span>
+<span class="normal">1575</span>
+<span class="normal">1576</span>
+<span class="normal">1577</span>
+<span class="normal">1578</span>
+<span class="normal">1579</span>
+<span class="normal">1580</span>
+<span class="normal">1581</span>
+<span class="normal">1582</span>
+<span class="normal">1583</span>
+<span class="normal">1584</span>
+<span class="normal">1585</span>
+<span class="normal">1586</span>
+<span class="normal">1587</span>
+<span class="normal">1588</span>
+<span class="normal">1589</span>
+<span class="normal">1590</span>
+<span class="normal">1591</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_errors_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot error distribution analysis for calibration assessment.</span>
 
 <span class="sd">    Creates bar plots showing pose error magnitudes across all samples</span>
@@ -6466,33 +6472,7 @@ calc_stddev: Error statistics computation</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/base_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1567</span>
-<span class="normal">1568</span>
-<span class="normal">1569</span>
-<span class="normal">1570</span>
-<span class="normal">1571</span>
-<span class="normal">1572</span>
-<span class="normal">1573</span>
-<span class="normal">1574</span>
-<span class="normal">1575</span>
-<span class="normal">1576</span>
-<span class="normal">1577</span>
-<span class="normal">1578</span>
-<span class="normal">1579</span>
-<span class="normal">1580</span>
-<span class="normal">1581</span>
-<span class="normal">1582</span>
-<span class="normal">1583</span>
-<span class="normal">1584</span>
-<span class="normal">1585</span>
-<span class="normal">1586</span>
-<span class="normal">1587</span>
-<span class="normal">1588</span>
-<span class="normal">1589</span>
-<span class="normal">1590</span>
-<span class="normal">1591</span>
-<span class="normal">1592</span>
-<span class="normal">1593</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1593</span>
 <span class="normal">1594</span>
 <span class="normal">1595</span>
 <span class="normal">1596</span>
@@ -6548,7 +6528,33 @@ calc_stddev: Error statistics computation</p>
 <span class="normal">1646</span>
 <span class="normal">1647</span>
 <span class="normal">1648</span>
-<span class="normal">1649</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_3d_poses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">INCLUDE_UNCALIB</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="normal">1649</span>
+<span class="normal">1650</span>
+<span class="normal">1651</span>
+<span class="normal">1652</span>
+<span class="normal">1653</span>
+<span class="normal">1654</span>
+<span class="normal">1655</span>
+<span class="normal">1656</span>
+<span class="normal">1657</span>
+<span class="normal">1658</span>
+<span class="normal">1659</span>
+<span class="normal">1660</span>
+<span class="normal">1661</span>
+<span class="normal">1662</span>
+<span class="normal">1663</span>
+<span class="normal">1664</span>
+<span class="normal">1665</span>
+<span class="normal">1666</span>
+<span class="normal">1667</span>
+<span class="normal">1668</span>
+<span class="normal">1669</span>
+<span class="normal">1670</span>
+<span class="normal">1671</span>
+<span class="normal">1672</span>
+<span class="normal">1673</span>
+<span class="normal">1674</span>
+<span class="normal">1675</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_3d_poses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">INCLUDE_UNCALIB</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot 3D poses comparing measured vs estimated poses.</span>
 
 <span class="sd">    Args:</span>
@@ -6653,25 +6659,25 @@ calc_stddev: Error statistics computation</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/base_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1651</span>
-<span class="normal">1652</span>
-<span class="normal">1653</span>
-<span class="normal">1654</span>
-<span class="normal">1655</span>
-<span class="normal">1656</span>
-<span class="normal">1657</span>
-<span class="normal">1658</span>
-<span class="normal">1659</span>
-<span class="normal">1660</span>
-<span class="normal">1661</span>
-<span class="normal">1662</span>
-<span class="normal">1663</span>
-<span class="normal">1664</span>
-<span class="normal">1665</span>
-<span class="normal">1666</span>
-<span class="normal">1667</span>
-<span class="normal">1668</span>
-<span class="normal">1669</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_joint_configurations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1677</span>
+<span class="normal">1678</span>
+<span class="normal">1679</span>
+<span class="normal">1680</span>
+<span class="normal">1681</span>
+<span class="normal">1682</span>
+<span class="normal">1683</span>
+<span class="normal">1684</span>
+<span class="normal">1685</span>
+<span class="normal">1686</span>
+<span class="normal">1687</span>
+<span class="normal">1688</span>
+<span class="normal">1689</span>
+<span class="normal">1690</span>
+<span class="normal">1691</span>
+<span class="normal">1692</span>
+<span class="normal">1693</span>
+<span class="normal">1694</span>
+<span class="normal">1695</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_joint_configurations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot joint configurations within range bounds.&quot;&quot;&quot;</span>
     <span class="n">fig4</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
     <span class="n">fig4</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Joint configurations with joint bounds&quot;</span><span class="p">)</span>
@@ -6712,29 +6718,29 @@ calc_stddev: Error statistics computation</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/base_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1671</span>
-<span class="normal">1672</span>
-<span class="normal">1673</span>
-<span class="normal">1674</span>
-<span class="normal">1675</span>
-<span class="normal">1676</span>
-<span class="normal">1677</span>
-<span class="normal">1678</span>
-<span class="normal">1679</span>
-<span class="normal">1680</span>
-<span class="normal">1681</span>
-<span class="normal">1682</span>
-<span class="normal">1683</span>
-<span class="normal">1684</span>
-<span class="normal">1685</span>
-<span class="normal">1686</span>
-<span class="normal">1687</span>
-<span class="normal">1688</span>
-<span class="normal">1689</span>
-<span class="normal">1690</span>
-<span class="normal">1691</span>
-<span class="normal">1692</span>
-<span class="normal">1693</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;results&quot;</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1697</span>
+<span class="normal">1698</span>
+<span class="normal">1699</span>
+<span class="normal">1700</span>
+<span class="normal">1701</span>
+<span class="normal">1702</span>
+<span class="normal">1703</span>
+<span class="normal">1704</span>
+<span class="normal">1705</span>
+<span class="normal">1706</span>
+<span class="normal">1707</span>
+<span class="normal">1708</span>
+<span class="normal">1709</span>
+<span class="normal">1710</span>
+<span class="normal">1711</span>
+<span class="normal">1712</span>
+<span class="normal">1713</span>
+<span class="normal">1714</span>
+<span class="normal">1715</span>
+<span class="normal">1716</span>
+<span class="normal">1717</span>
+<span class="normal">1718</span>
+<span class="normal">1719</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;results&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Save calibration results using unified results manager.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;result&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No calibration results to save. Run solve() first.&quot;</span><span class="p">)</span>
@@ -6879,33 +6885,7 @@ defaults to <code>{output_dir}/calibration_report.html</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/base_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1695</span>
-<span class="normal">1696</span>
-<span class="normal">1697</span>
-<span class="normal">1698</span>
-<span class="normal">1699</span>
-<span class="normal">1700</span>
-<span class="normal">1701</span>
-<span class="normal">1702</span>
-<span class="normal">1703</span>
-<span class="normal">1704</span>
-<span class="normal">1705</span>
-<span class="normal">1706</span>
-<span class="normal">1707</span>
-<span class="normal">1708</span>
-<span class="normal">1709</span>
-<span class="normal">1710</span>
-<span class="normal">1711</span>
-<span class="normal">1712</span>
-<span class="normal">1713</span>
-<span class="normal">1714</span>
-<span class="normal">1715</span>
-<span class="normal">1716</span>
-<span class="normal">1717</span>
-<span class="normal">1718</span>
-<span class="normal">1719</span>
-<span class="normal">1720</span>
-<span class="normal">1721</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1721</span>
 <span class="normal">1722</span>
 <span class="normal">1723</span>
 <span class="normal">1724</span>
@@ -6917,7 +6897,33 @@ defaults to <code>{output_dir}/calibration_report.html</code>.</p>
 <span class="normal">1730</span>
 <span class="normal">1731</span>
 <span class="normal">1732</span>
-<span class="normal">1733</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">export_html_report</span><span class="p">(</span>
+<span class="normal">1733</span>
+<span class="normal">1734</span>
+<span class="normal">1735</span>
+<span class="normal">1736</span>
+<span class="normal">1737</span>
+<span class="normal">1738</span>
+<span class="normal">1739</span>
+<span class="normal">1740</span>
+<span class="normal">1741</span>
+<span class="normal">1742</span>
+<span class="normal">1743</span>
+<span class="normal">1744</span>
+<span class="normal">1745</span>
+<span class="normal">1746</span>
+<span class="normal">1747</span>
+<span class="normal">1748</span>
+<span class="normal">1749</span>
+<span class="normal">1750</span>
+<span class="normal">1751</span>
+<span class="normal">1752</span>
+<span class="normal">1753</span>
+<span class="normal">1754</span>
+<span class="normal">1755</span>
+<span class="normal">1756</span>
+<span class="normal">1757</span>
+<span class="normal">1758</span>
+<span class="normal">1759</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">export_html_report</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;results&quot;</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Export the calibration quality report as a self-contained HTML</span>
@@ -7092,33 +7098,7 @@ robot as needed).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/base_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1735</span>
-<span class="normal">1736</span>
-<span class="normal">1737</span>
-<span class="normal">1738</span>
-<span class="normal">1739</span>
-<span class="normal">1740</span>
-<span class="normal">1741</span>
-<span class="normal">1742</span>
-<span class="normal">1743</span>
-<span class="normal">1744</span>
-<span class="normal">1745</span>
-<span class="normal">1746</span>
-<span class="normal">1747</span>
-<span class="normal">1748</span>
-<span class="normal">1749</span>
-<span class="normal">1750</span>
-<span class="normal">1751</span>
-<span class="normal">1752</span>
-<span class="normal">1753</span>
-<span class="normal">1754</span>
-<span class="normal">1755</span>
-<span class="normal">1756</span>
-<span class="normal">1757</span>
-<span class="normal">1758</span>
-<span class="normal">1759</span>
-<span class="normal">1760</span>
-<span class="normal">1761</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1761</span>
 <span class="normal">1762</span>
 <span class="normal">1763</span>
 <span class="normal">1764</span>
@@ -7186,7 +7166,33 @@ robot as needed).</p>
 <span class="normal">1826</span>
 <span class="normal">1827</span>
 <span class="normal">1828</span>
-<span class="normal">1829</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">verify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thresholds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="normal">1829</span>
+<span class="normal">1830</span>
+<span class="normal">1831</span>
+<span class="normal">1832</span>
+<span class="normal">1833</span>
+<span class="normal">1834</span>
+<span class="normal">1835</span>
+<span class="normal">1836</span>
+<span class="normal">1837</span>
+<span class="normal">1838</span>
+<span class="normal">1839</span>
+<span class="normal">1840</span>
+<span class="normal">1841</span>
+<span class="normal">1842</span>
+<span class="normal">1843</span>
+<span class="normal">1844</span>
+<span class="normal">1845</span>
+<span class="normal">1846</span>
+<span class="normal">1847</span>
+<span class="normal">1848</span>
+<span class="normal">1849</span>
+<span class="normal">1850</span>
+<span class="normal">1851</span>
+<span class="normal">1852</span>
+<span class="normal">1853</span>
+<span class="normal">1854</span>
+<span class="normal">1855</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">verify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thresholds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check this calibration&#39;s metrics against pass/fail thresholds.</span>
 
 <span class="sd">    Unlike :meth:`print_quality_report`/:meth:`export_html_report`</span>
@@ -7390,33 +7396,7 @@ robot as needed).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/base_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1831</span>
-<span class="normal">1832</span>
-<span class="normal">1833</span>
-<span class="normal">1834</span>
-<span class="normal">1835</span>
-<span class="normal">1836</span>
-<span class="normal">1837</span>
-<span class="normal">1838</span>
-<span class="normal">1839</span>
-<span class="normal">1840</span>
-<span class="normal">1841</span>
-<span class="normal">1842</span>
-<span class="normal">1843</span>
-<span class="normal">1844</span>
-<span class="normal">1845</span>
-<span class="normal">1846</span>
-<span class="normal">1847</span>
-<span class="normal">1848</span>
-<span class="normal">1849</span>
-<span class="normal">1850</span>
-<span class="normal">1851</span>
-<span class="normal">1852</span>
-<span class="normal">1853</span>
-<span class="normal">1854</span>
-<span class="normal">1855</span>
-<span class="normal">1856</span>
-<span class="normal">1857</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1857</span>
 <span class="normal">1858</span>
 <span class="normal">1859</span>
 <span class="normal">1860</span>
@@ -7429,7 +7409,33 @@ robot as needed).</p>
 <span class="normal">1867</span>
 <span class="normal">1868</span>
 <span class="normal">1869</span>
-<span class="normal">1870</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">export_verification_report</span><span class="p">(</span>
+<span class="normal">1870</span>
+<span class="normal">1871</span>
+<span class="normal">1872</span>
+<span class="normal">1873</span>
+<span class="normal">1874</span>
+<span class="normal">1875</span>
+<span class="normal">1876</span>
+<span class="normal">1877</span>
+<span class="normal">1878</span>
+<span class="normal">1879</span>
+<span class="normal">1880</span>
+<span class="normal">1881</span>
+<span class="normal">1882</span>
+<span class="normal">1883</span>
+<span class="normal">1884</span>
+<span class="normal">1885</span>
+<span class="normal">1886</span>
+<span class="normal">1887</span>
+<span class="normal">1888</span>
+<span class="normal">1889</span>
+<span class="normal">1890</span>
+<span class="normal">1891</span>
+<span class="normal">1892</span>
+<span class="normal">1893</span>
+<span class="normal">1894</span>
+<span class="normal">1895</span>
+<span class="normal">1896</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">export_verification_report</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;results&quot;</span><span class="p">,</span>
@@ -7493,33 +7499,7 @@ metrics (if available), parameter uncertainty, and correlations.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/base_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1872</span>
-<span class="normal">1873</span>
-<span class="normal">1874</span>
-<span class="normal">1875</span>
-<span class="normal">1876</span>
-<span class="normal">1877</span>
-<span class="normal">1878</span>
-<span class="normal">1879</span>
-<span class="normal">1880</span>
-<span class="normal">1881</span>
-<span class="normal">1882</span>
-<span class="normal">1883</span>
-<span class="normal">1884</span>
-<span class="normal">1885</span>
-<span class="normal">1886</span>
-<span class="normal">1887</span>
-<span class="normal">1888</span>
-<span class="normal">1889</span>
-<span class="normal">1890</span>
-<span class="normal">1891</span>
-<span class="normal">1892</span>
-<span class="normal">1893</span>
-<span class="normal">1894</span>
-<span class="normal">1895</span>
-<span class="normal">1896</span>
-<span class="normal">1897</span>
-<span class="normal">1898</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1898</span>
 <span class="normal">1899</span>
 <span class="normal">1900</span>
 <span class="normal">1901</span>
@@ -7676,7 +7656,38 @@ metrics (if available), parameter uncertainty, and correlations.</p>
 <span class="normal">2052</span>
 <span class="normal">2053</span>
 <span class="normal">2054</span>
-<span class="normal">2055</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_quality_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">2055</span>
+<span class="normal">2056</span>
+<span class="normal">2057</span>
+<span class="normal">2058</span>
+<span class="normal">2059</span>
+<span class="normal">2060</span>
+<span class="normal">2061</span>
+<span class="normal">2062</span>
+<span class="normal">2063</span>
+<span class="normal">2064</span>
+<span class="normal">2065</span>
+<span class="normal">2066</span>
+<span class="normal">2067</span>
+<span class="normal">2068</span>
+<span class="normal">2069</span>
+<span class="normal">2070</span>
+<span class="normal">2071</span>
+<span class="normal">2072</span>
+<span class="normal">2073</span>
+<span class="normal">2074</span>
+<span class="normal">2075</span>
+<span class="normal">2076</span>
+<span class="normal">2077</span>
+<span class="normal">2078</span>
+<span class="normal">2079</span>
+<span class="normal">2080</span>
+<span class="normal">2081</span>
+<span class="normal">2082</span>
+<span class="normal">2083</span>
+<span class="normal">2084</span>
+<span class="normal">2085</span>
+<span class="normal">2086</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_quality_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Print a formatted calibration quality report to the terminal.</span>
 
 <span class="sd">    Reports convergence, per-DOF residual statistics, validation</span>
@@ -7755,6 +7766,11 @@ metrics (if available), parameter uncertainty, and correlations.</p>
             <span class="sa">f</span><span class="s2">&quot;    Position RMSE:    </span><span class="si">{</span><span class="n">overall</span><span class="p">[</span><span class="s1">&#39;pos_rmse_mm&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> mm    &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;Orientation RMSE:  </span><span class="si">{</span><span class="n">overall</span><span class="p">[</span><span class="s1">&#39;orient_rmse_deg&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> deg&quot;</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;pos_mae_mm&quot;</span> <span class="ow">in</span> <span class="n">overall</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;    Position MAE:     </span><span class="si">{</span><span class="n">overall</span><span class="p">[</span><span class="s1">&#39;pos_mae_mm&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> mm    &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Orientation MAE:   </span><span class="si">{</span><span class="n">overall</span><span class="p">[</span><span class="s1">&#39;orient_mae_deg&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> deg&quot;</span>
+            <span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;    Position max:     </span><span class="si">{</span><span class="n">overall</span><span class="p">[</span><span class="s1">&#39;pos_max_mm&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> mm    &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;Orientation max:   </span><span class="si">{</span><span class="n">overall</span><span class="p">[</span><span class="s1">&#39;orient_max_deg&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> deg&quot;</span>
@@ -8046,15 +8062,7 @@ print(params['NbMarkers'])
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 89</span>
-<span class="normal"> 90</span>
-<span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 97</span>
 <span class="normal"> 98</span>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
@@ -8235,7 +8243,19 @@ print(params['NbMarkers'])
 <span class="normal">275</span>
 <span class="normal">276</span>
 <span class="normal">277</span>
-<span class="normal">278</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse calibration parameters from YAML configuration file.</span>
 
 <span class="sd">    Processes robot and calibration data to build a parameter dictionary containing</span>
@@ -8278,6 +8298,10 @@ print(params['NbMarkers'])
 <span class="sd">        &gt;&gt;&gt; print(params[&#39;NbMarkers&#39;])</span>
 <span class="sd">        2</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">_LEGACY_CONFIG_DEPRECATION_MESSAGE</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+        <span class="s2">&quot;Loading legacy config format — consider migrating (see DeprecationWarning).&quot;</span>
+    <span class="p">)</span>
     <span class="c1"># NOTE: since joint 0 is universe and it is trivial,</span>
     <span class="c1"># indices of joints are different from indices of joint configuration,</span>
     <span class="c1"># different from indices of joint velocities</span>
@@ -8567,19 +8591,7 @@ legacy_config = unified_to_legacy_config(robot, unified_config)</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">281</span>
-<span class="normal">282</span>
-<span class="normal">283</span>
-<span class="normal">284</span>
-<span class="normal">285</span>
-<span class="normal">286</span>
-<span class="normal">287</span>
-<span class="normal">288</span>
-<span class="normal">289</span>
-<span class="normal">290</span>
-<span class="normal">291</span>
-<span class="normal">292</span>
-<span class="normal">293</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">293</span>
 <span class="normal">294</span>
 <span class="normal">295</span>
 <span class="normal">296</span>
@@ -8635,7 +8647,22 @@ legacy_config = unified_to_legacy_config(robot, unified_config)</p>
 <span class="normal">346</span>
 <span class="normal">347</span>
 <span class="normal">348</span>
-<span class="normal">349</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">unified_to_legacy_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_calib_config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">unified_to_legacy_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_calib_config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert unified configuration format to legacy calib_config format.</span>
 
 <span class="sd">    Maps the new unified configuration structure to the exact format expected</span>
@@ -8697,6 +8724,9 @@ legacy_config = unified_to_legacy_config(robot, unified_config)</p>
 
     <span class="c1"># 7. Extract calibration parameters</span>
     <span class="n">_extract_calibration_params</span><span class="p">(</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+
+    <span class="c1"># 7b. Extract eye-hand (camera) calibration frames, if enabled</span>
+    <span class="n">_extract_eye_hand_params</span><span class="p">(</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">unified_calib_config</span><span class="p">)</span>
 
     <span class="c1"># 8. Extract data configuration</span>
     <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;number_of_samples&quot;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
@@ -8845,15 +8875,7 @@ contribute to relative motion.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">41</span>
 <span class="normal">42</span>
 <span class="normal">43</span>
 <span class="normal">44</span>
@@ -8898,7 +8920,15 @@ contribute to relative motion.</p>
 <span class="normal">83</span>
 <span class="normal">84</span>
 <span class="normal">85</span>
-<span class="normal">86</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_sup_joints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">):</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span>
+<span class="normal">92</span>
+<span class="normal">93</span>
+<span class="normal">94</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_sup_joints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get list of supporting joints between two frames in kinematic chain.</span>
 
 <span class="sd">    Finds all joints that contribute to relative motion between start_frame and</span>
@@ -10419,7 +10449,8 @@ Defaults to [].</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/calibration_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">102</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">101</span>
+<span class="normal">102</span>
 <span class="normal">103</span>
 <span class="normal">104</span>
 <span class="normal">105</span>
@@ -10434,8 +10465,7 @@ Defaults to [].</p>
 <span class="normal">114</span>
 <span class="normal">115</span>
 <span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cartesian_to_SE3</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+<span class="normal">117</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cartesian_to_SE3</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert cartesian coordinates to SE3 transformation.</span>
 
 <span class="sd">    Args:</span>
@@ -10545,7 +10575,8 @@ transform = xyzquat_to_SE3(pos_quat)</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/calibration_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">121</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">120</span>
+<span class="normal">121</span>
 <span class="normal">122</span>
 <span class="normal">123</span>
 <span class="normal">124</span>
@@ -10569,8 +10600,7 @@ transform = xyzquat_to_SE3(pos_quat)</p>
 <span class="normal">142</span>
 <span class="normal">143</span>
 <span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">xyzquat_to_SE3</span><span class="p">(</span><span class="n">xyzquat</span><span class="p">):</span>
+<span class="normal">145</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">xyzquat_to_SE3</span><span class="p">(</span><span class="n">xyzquat</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert XYZ position and quaternion orientation to SE3 transformation.</span>
 
 <span class="sd">    Takes a 7D vector containing XYZ position and WXYZ quaternion and creates</span>
@@ -10744,7 +10774,8 @@ Assumes forward kinematics has been updated.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/calibration_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">149</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">148</span>
+<span class="normal">149</span>
 <span class="normal">150</span>
 <span class="normal">151</span>
 <span class="normal">152</span>
@@ -10769,8 +10800,7 @@ Assumes forward kinematics has been updated.</p>
 <span class="normal">171</span>
 <span class="normal">172</span>
 <span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_rel_transform</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">):</span>
+<span class="normal">174</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_rel_transform</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get relative transformation between two frames.</span>
 
 <span class="sd">    Calculates the transform from start_frame to end_frame in the kinematic chain.</span>
@@ -10955,7 +10985,8 @@ calls through the backend abstraction.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/calibration_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">178</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">177</span>
+<span class="normal">178</span>
 <span class="normal">179</span>
 <span class="normal">180</span>
 <span class="normal">181</span>
@@ -10986,8 +11017,7 @@ calls through the backend abstraction.</p>
 <span class="normal">206</span>
 <span class="normal">207</span>
 <span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_rel_kinreg</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">209</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_rel_kinreg</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate relative kinematic regressor between frames.</span>
 
 <span class="sd">    Computes frame Jacobian-based regressor matrix mapping small joint displacements</span>
@@ -11186,7 +11216,8 @@ and Jacobian calls through the backend abstraction.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/calibration_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">213</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">212</span>
+<span class="normal">213</span>
 <span class="normal">214</span>
 <span class="normal">215</span>
 <span class="normal">216</span>
@@ -11225,8 +11256,7 @@ and Jacobian calls through the backend abstraction.</p>
 <span class="normal">249</span>
 <span class="normal">250</span>
 <span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_rel_jac</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">252</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_rel_jac</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate relative Jacobian matrix between two frames.</span>
 
 <span class="sd">    Computes the difference between Jacobians of end_frame and start_frame,</span>
@@ -11394,7 +11424,8 @@ print(var.shape)
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/calibration_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">259</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">258</span>
+<span class="normal">259</span>
 <span class="normal">260</span>
 <span class="normal">261</span>
 <span class="normal">262</span>
@@ -11422,8 +11453,7 @@ print(var.shape)
 <span class="normal">284</span>
 <span class="normal">285</span>
 <span class="normal">286</span>
-<span class="normal">287</span>
-<span class="normal">288</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">initialize_variables</span><span class="p">(</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="normal">287</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">initialize_variables</span><span class="p">(</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize variables for Levenberg-Marquardt optimization.</span>
 
 <span class="sd">    Creates initial parameter vector either as zeros or random values within bounds.</span>
@@ -11462,22 +11492,41 @@ print(var.shape)
 <div class="doc doc-object doc-function">
 
 
-<h2 id="figaroh.calibration.calibration_tools.update_forward_kinematics" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">update_forward_kinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+<h2 id="figaroh.calibration.calibration_tools.calc_updated_fkm" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">calc_updated_fkm</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
-<a href="#figaroh.calibration.calibration_tools.update_forward_kinematics" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#figaroh.calibration.calibration_tools.calc_updated_fkm" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
     <div class="doc doc-contents ">
 
-        <p>Update forward kinematics with calibration parameters.</p>
-<p>Applies geometric and kinematic error parameters to update joint placements
-and compute end-effector poses. Handles:
-1. Base/camera transformations
-2. Joint placement offsets
-3. End-effector marker frames
-4. Joint elasticity effects</p>
+        <p>Update forward kinematics with world frame transformations.</p>
+<p>Single, unified FK-update function for calibration: composes the full
+chain of transformations::</p>
+<div class="highlight"><pre><span></span><code>wMf = wMo * oMee * eeMf
+</code></pre></div>
 
+
+<details class="where" open>
+  <summary>where</summary>
+  <ul>
+<li><code>wMo</code>: world (measurement) frame to the kinematic chain's start
+  frame. Estimated directly when <code>BASE_TPL</code> params are present in
+  <code>param_name</code> (unknown base frame, e.g. <code>known_baseframe=False</code>),
+  estimated via a known camera/ref-frame anchor when
+  <code>calib_config["base_to_ref_frame"]</code>/<code>"ref_frame"</code> are set (e.g.
+  eye-hand calibration), or identity otherwise.</li>
+<li><code>oMee</code>: start frame to end frame, through the updated kinematic
+  chain (<code>full_params</code>/<code>joint_offset</code> geometric error
+  parameters), optionally including joint elasticity when
+  <code>calib_config["non_geom"]</code> is set — a per-joint compliance
+  parameter (<code>ELAS_TPL</code>) that adds a gravity-torque-proportional
+  deflection about that joint's own motion axis, then reverts it,
+  on every sample.</li>
+<li><code>eeMf</code>: end frame to the measured marker frame (<code>EE_TPL</code>
+  params), or identity if not estimated.</li>
+</ul>
+</details>
 
 <p><span class="doc-section-title">Parameters:</span></p>
     <table>
@@ -11566,8 +11615,12 @@ and compute end-effector poses. Handles:
                 <p>Calibration parameters containing:
 - calib_model: "full_params" or "joint_offset"
 - start_frame, end_frame: Frame names
+- base_to_ref_frame, ref_frame: Optional camera-style known
+  chain anchor (eye-hand calibration); None to disable
+- non_geom: Whether to apply joint elasticity
 - actJoint_idx: Active joint indices
-- measurability: Active DOFs</p>
+- measurability: Active DOFs
+- NbMarkers: Must be 1 (multi-marker is not supported)</p>
               </div>
             </td>
             <td>
@@ -11599,8 +11652,8 @@ and compute end-effector poses. Handles:
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If provided, routes forward kinematics
-and gravity calls through the backend abstraction.</p>
+                <p>If provided, routes forward
+kinematics and gravity calls through the backend abstraction.</p>
               </div>
             </td>
             <td>
@@ -11625,7 +11678,7 @@ and gravity calls through the backend abstraction.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Flattened end-effector measurements for all samples</p>
+                <p>Flattened marker measurements in world frame</p>
               </div>
             </td>
           </tr>
@@ -11633,17 +11686,42 @@ and gravity calls through the backend abstraction.</p>
     </table>
 
 
-<details class="side-effects" open>
-  <summary>Side Effects</summary>
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="NotImplementedError">NotImplementedError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If calib_config["NbMarkers"] &gt; 1.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="notes" open>
+  <summary>Notes</summary>
   <ul>
-<li>Modifies model joint placements temporarily</li>
-<li>Reverts model to original state before returning</li>
+<li>Requires base or end-effector parameters in param_name to
+  estimate wMo / eeMf; otherwise they default to identity.</li>
+<li>Validates all parameters in param_name are consumed exactly once.</li>
 </ul>
 </details>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/calibration_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">291</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">290</span>
+<span class="normal">291</span>
 <span class="normal">292</span>
 <span class="normal">293</span>
 <span class="normal">294</span>
@@ -11851,403 +11929,10 @@ and gravity calls through the backend abstraction.</p>
 <span class="normal">496</span>
 <span class="normal">497</span>
 <span class="normal">498</span>
-<span class="normal">499</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_forward_kinematics</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span>
-<span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update forward kinematics with calibration parameters.</span>
-
-<span class="sd">    Applies geometric and kinematic error parameters to update joint placements</span>
-<span class="sd">    and compute end-effector poses. Handles:</span>
-<span class="sd">    1. Base/camera transformations</span>
-<span class="sd">    2. Joint placement offsets</span>
-<span class="sd">    3. End-effector marker frames</span>
-<span class="sd">    4. Joint elasticity effects</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        model (pin.Model): Robot model to update</span>
-<span class="sd">        data (pin.Data): Robot data</span>
-<span class="sd">        var (ndarray): Parameter vector matching calib_config[&quot;param_name&quot;]</span>
-<span class="sd">        q (ndarray): Joint configurations matrix (n_samples, n_joints)</span>
-<span class="sd">        calib_config (dict): Calibration parameters containing:</span>
-<span class="sd">            - calib_model: &quot;full_params&quot; or &quot;joint_offset&quot;</span>
-<span class="sd">            - start_frame, end_frame: Frame names</span>
-<span class="sd">            - actJoint_idx: Active joint indices</span>
-<span class="sd">            - measurability: Active DOFs</span>
-<span class="sd">        verbose (int, optional): Print update info. Defaults to 0.</span>
-<span class="sd">        backend (DynamicsBackend, optional): If provided, routes forward kinematics</span>
-<span class="sd">            and gravity calls through the backend abstraction.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        ndarray: Flattened end-effector measurements for all samples</span>
-
-<span class="sd">    Side Effects:</span>
-<span class="sd">        - Modifies model joint placements temporarily</span>
-<span class="sd">        - Reverts model to original state before returning</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># read calib_config[&#39;param_name&#39;] to allocate offset parameters to correct SE3</span>
-    <span class="c1"># convert translation: add a vector of 3 to SE3.translation</span>
-    <span class="c1"># convert orientation: convert SE3.rotation 3x3 matrix to vector rpy, add</span>
-    <span class="c1">#  to vector rpy, convert back to to 3x3 matrix</span>
-
-    <span class="c1"># name reference of calibration parameters</span>
-    <span class="k">if</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;calib_model&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;full_params&quot;</span><span class="p">:</span>
-        <span class="n">axis_tpl</span> <span class="o">=</span> <span class="n">FULL_PARAMTPL</span>
-    <span class="k">elif</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;calib_model&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;joint_offset&quot;</span><span class="p">:</span>
-        <span class="n">axis_tpl</span> <span class="o">=</span> <span class="n">JOINT_OFFSETTPL</span>
-
-    <span class="c1"># order of joint in variables are arranged as in calib_config[&#39;actJoint_idx&#39;]</span>
-    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span>
-        <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;param_name&quot;</span><span class="p">]</span>
-    <span class="p">),</span> <span class="s2">&quot;Length of variables != length of params&quot;</span>
-    <span class="n">param_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;param_name&quot;</span><span class="p">],</span> <span class="n">var</span><span class="p">))</span>
-    <span class="n">origin_model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-
-    <span class="c1"># update model.jointPlacements</span>
-    <span class="n">updated_params</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">start_f</span> <span class="o">=</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">]</span>
-    <span class="n">end_f</span> <span class="o">=</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;end_frame&quot;</span><span class="p">]</span>
-
-    <span class="c1"># define transformation for camera frame</span>
-    <span class="k">if</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;base_to_ref_frame&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">start_f</span> <span class="o">=</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;ref_frame&quot;</span><span class="p">]</span>
-        <span class="c1"># base frame to ref frame (i.e. Tiago: camera transformation)</span>
-        <span class="n">base_tf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">base_id</span><span class="p">,</span> <span class="n">base_ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">BASE_TPL</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">base_ax</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
-                    <span class="n">base_tf</span><span class="p">[</span><span class="n">base_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-                    <span class="n">updated_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-        <span class="n">b_to_cam</span> <span class="o">=</span> <span class="n">get_rel_transform</span><span class="p">(</span>
-            <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">],</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;base_to_ref_frame&quot;</span><span class="p">]</span>
-        <span class="p">)</span>
-        <span class="n">ref_to_cam</span> <span class="o">=</span> <span class="n">cartesian_to_SE3</span><span class="p">(</span><span class="n">base_tf</span><span class="p">)</span>
-        <span class="n">cam_to_ref</span> <span class="o">=</span> <span class="n">ref_to_cam</span><span class="o">.</span><span class="n">actInv</span><span class="p">(</span><span class="n">pin</span><span class="o">.</span><span class="n">SE3</span><span class="o">.</span><span class="n">Identity</span><span class="p">())</span>
-        <span class="n">bMo</span> <span class="o">=</span> <span class="n">b_to_cam</span> <span class="o">*</span> <span class="n">cam_to_ref</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;calib_model&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;joint_offset&quot;</span><span class="p">:</span>
-            <span class="n">base_tf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                <span class="k">for</span> <span class="n">base_id</span><span class="p">,</span> <span class="n">base_ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">BASE_TPL</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">base_ax</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
-                        <span class="n">base_tf</span><span class="p">[</span><span class="n">base_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-                        <span class="n">updated_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-            <span class="n">bMo</span> <span class="o">=</span> <span class="n">cartesian_to_SE3</span><span class="p">(</span><span class="n">base_tf</span><span class="p">)</span>
-
-    <span class="c1"># update model.jointPlacements with joint &#39;full_params&#39;/&#39;joint_offset&#39;</span>
-    <span class="k">for</span> <span class="n">j_id</span> <span class="ow">in</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">]:</span>
-        <span class="n">xyz_rpy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
-        <span class="n">j_name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">j_id</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">j_name</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
-                <span class="c1"># update xyz_rpy with kinematic errors</span>
-                <span class="k">for</span> <span class="n">axis_id</span><span class="p">,</span> <span class="n">axis</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">axis_tpl</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                                <span class="s2">&quot;Updating [</span><span class="si">{}</span><span class="s2">] joint placement at axis </span><span class="si">{}</span><span class="s2"> with [</span><span class="si">{}</span><span class="s2">]&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                    <span class="n">j_name</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">key</span>
-                                <span class="p">)</span>
-                            <span class="p">)</span>
-                        <span class="n">xyz_rpy</span><span class="p">[</span><span class="n">axis_id</span><span class="p">]</span> <span class="o">+=</span> <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-                        <span class="n">updated_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">j_id</span><span class="p">,</span> <span class="n">xyz_rpy</span><span class="p">)</span>
-    <span class="n">PEE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;calibration_index&quot;</span><span class="p">],</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]))</span>
-
-    <span class="c1"># update end_effector frame</span>
-    <span class="k">for</span> <span class="n">marker_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-        <span class="n">pee</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
-        <span class="n">ee_name</span> <span class="o">=</span> <span class="s2">&quot;EE&quot;</span>
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">ee_name</span> <span class="ow">in</span> <span class="n">key</span> <span class="ow">and</span> <span class="nb">str</span><span class="p">(</span><span class="n">marker_idx</span><span class="p">)</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
-                <span class="c1"># update xyz_rpy with kinematic errors</span>
-                <span class="k">for</span> <span class="n">axis_pee_id</span><span class="p">,</span> <span class="n">axis_pee</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">EE_TPL</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">axis_pee</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                                <span class="s2">&quot;Updating [</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">] joint placement at axis </span><span class="si">{}</span><span class="s2"> with [</span><span class="si">{}</span><span class="s2">]&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                    <span class="n">ee_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">marker_idx</span><span class="p">),</span> <span class="n">axis_pee</span><span class="p">,</span> <span class="n">key</span>
-                                <span class="p">)</span>
-                            <span class="p">)</span>
-                        <span class="n">pee</span><span class="p">[</span><span class="n">axis_pee_id</span><span class="p">]</span> <span class="o">+=</span> <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-                        <span class="c1"># updated_params.append(key)</span>
-
-        <span class="n">eeMf</span> <span class="o">=</span> <span class="n">cartesian_to_SE3</span><span class="p">(</span><span class="n">pee</span><span class="p">)</span>
-
-    <span class="c1"># get transform</span>
-    <span class="n">q_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]):</span>
-        <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">backend</span><span class="o">.</span><span class="n">compute_forward_kinematics</span><span class="p">(</span><span class="n">q_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">pin</span><span class="o">.</span><span class="n">framesForwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
-            <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-        <span class="c1"># update model.jointPlacements with joint elastic error</span>
-        <span class="k">if</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;non_geom&quot;</span><span class="p">]:</span>
-            <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">tau</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">compute_gravity_vector</span><span class="p">(</span><span class="n">q_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">tau</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeGeneralizedGravity</span><span class="p">(</span>
-                    <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
-                <span class="p">)</span>  <span class="c1"># vector size of 32 = nq &lt; njoints</span>
-            <span class="c1"># update xyz_rpy with joint elastic error</span>
-            <span class="k">for</span> <span class="n">j_id</span> <span class="ow">in</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">]:</span>
-                <span class="n">xyz_rpy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
-                <span class="n">j_name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">j_id</span><span class="p">]</span>
-                <span class="n">tau_j</span> <span class="o">=</span> <span class="n">tau</span><span class="p">[</span><span class="n">j_id</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># nq = njoints -1</span>
-                <span class="k">if</span> <span class="n">j_name</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
-                    <span class="k">for</span> <span class="n">elas_id</span><span class="p">,</span> <span class="n">elas</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ELAS_TPL</span><span class="p">):</span>
-                        <span class="k">if</span> <span class="n">elas</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
-                            <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">*</span> <span class="n">tau_j</span>
-                            <span class="n">xyz_rpy</span><span class="p">[</span><span class="n">elas_id</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">+=</span> <span class="n">param_dict</span><span class="p">[</span>
-                                <span class="n">key</span>
-                            <span class="p">]</span>  <span class="c1"># +3 to add only on orienation</span>
-                            <span class="n">updated_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-                <span class="n">model</span> <span class="o">=</span> <span class="n">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">j_id</span><span class="p">,</span> <span class="n">xyz_rpy</span><span class="p">)</span>
-            <span class="c1"># get relative transform with updated model</span>
-            <span class="n">oMee</span> <span class="o">=</span> <span class="n">get_rel_transform</span><span class="p">(</span>
-                <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">],</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;end_frame&quot;</span><span class="p">]</span>
-            <span class="p">)</span>
-            <span class="c1"># revert model back to origin from added joint elastic error</span>
-            <span class="k">for</span> <span class="n">j_id</span> <span class="ow">in</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">]:</span>
-                <span class="n">xyz_rpy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
-                <span class="n">j_name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">j_id</span><span class="p">]</span>
-                <span class="n">tau_j</span> <span class="o">=</span> <span class="n">tau</span><span class="p">[</span><span class="n">j_id</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># nq = njoints -1</span>
-                <span class="k">if</span> <span class="n">j_name</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
-                    <span class="k">for</span> <span class="n">elas_id</span><span class="p">,</span> <span class="n">elas</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ELAS_TPL</span><span class="p">):</span>
-                        <span class="k">if</span> <span class="n">elas</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
-                            <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">*</span> <span class="n">tau_j</span>
-                            <span class="n">xyz_rpy</span><span class="p">[</span><span class="n">elas_id</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">+=</span> <span class="n">param_dict</span><span class="p">[</span>
-                                <span class="n">key</span>
-                            <span class="p">]</span>  <span class="c1"># +3 to add only on orienation</span>
-                            <span class="n">updated_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-                <span class="n">model</span> <span class="o">=</span> <span class="n">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">j_id</span><span class="p">,</span> <span class="o">-</span><span class="n">xyz_rpy</span><span class="p">)</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">oMee</span> <span class="o">=</span> <span class="n">get_rel_transform</span><span class="p">(</span>
-                <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">],</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;end_frame&quot;</span><span class="p">]</span>
-            <span class="p">)</span>
-
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">updated_params</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">param_dict</span><span class="p">):</span>
-
-            <span class="n">oMf</span> <span class="o">=</span> <span class="n">oMee</span> <span class="o">*</span> <span class="n">eeMf</span>
-            <span class="c1"># final transform</span>
-            <span class="n">trans</span> <span class="o">=</span> <span class="n">oMf</span><span class="o">.</span><span class="n">translation</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-            <span class="n">orient</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">rpy</span><span class="o">.</span><span class="n">matrixToRpy</span><span class="p">(</span><span class="n">oMf</span><span class="o">.</span><span class="n">rotation</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-            <span class="n">loc</span> <span class="o">=</span> <span class="n">trans</span> <span class="o">+</span> <span class="n">orient</span>
-            <span class="n">measure</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">mea_id</span><span class="p">,</span> <span class="n">mea</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;measurability&quot;</span><span class="p">]):</span>
-                <span class="k">if</span> <span class="n">mea</span><span class="p">:</span>
-                    <span class="n">measure</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loc</span><span class="p">[</span><span class="n">mea_id</span><span class="p">])</span>
-            <span class="c1"># PEE[(marker_idx-1)*calib_config[&#39;calibration_index&#39;]:marker_idx*calib_config[&#39;calibration_index&#39;], i] = np.array(measure)</span>
-            <span class="n">PEE</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">measure</span><span class="p">)</span>
-
-            <span class="c1"># assert len(updated_params) == len(param_dict), &quot;Not all parameters are updated&quot;</span>
-
-    <span class="n">PEE</span> <span class="o">=</span> <span class="n">PEE</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">)</span>
-    <span class="c1"># revert model back to original</span>
-    <span class="k">assert</span> <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span><span class="p">,</span> <span class="s2">&quot;before revert&quot;</span>
-    <span class="k">for</span> <span class="n">j_id</span> <span class="ow">in</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">]:</span>
-        <span class="n">xyz_rpy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
-        <span class="n">j_name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">j_id</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">j_name</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
-                <span class="c1"># update xyz_rpy</span>
-                <span class="k">for</span> <span class="n">axis_id</span><span class="p">,</span> <span class="n">axis</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">axis_tpl</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
-                        <span class="n">xyz_rpy</span><span class="p">[</span><span class="n">axis_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">j_id</span><span class="p">,</span> <span class="o">-</span><span class="n">xyz_rpy</span><span class="p">)</span>
-
-    <span class="k">assert</span> <span class="n">origin_model</span><span class="o">.</span><span class="n">jointPlacements</span> <span class="o">!=</span> <span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span><span class="p">,</span> <span class="s2">&quot;after revert&quot;</span>
-
-    <span class="k">return</span> <span class="n">PEE</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="figaroh.calibration.calibration_tools.calc_updated_fkm" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">calc_updated_fkm</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
-
-<a href="#figaroh.calibration.calibration_tools.calc_updated_fkm" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Update forward kinematics with world frame transformations.</p>
-<p>Specialized version that explicitly handles transformations between:
-1. World frame to start frame (wMo)
-2. Start frame to end frame (oMee)
-3. End frame to marker frame (eeMf)</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>model</code>
-            </td>
-            <td>
-                  <code><span title="pinocchio.Model">Model</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Robot model to update</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>data</code>
-            </td>
-            <td>
-                  <code><span title="pinocchio.Data">Data</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Robot data</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>var</code>
-            </td>
-            <td>
-                  <code><span title="ndarray">ndarray</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Parameter vector matching calib_config["param_name"]</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>q</code>
-            </td>
-            <td>
-                  <code><span title="ndarray">ndarray</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Joint configurations matrix (n_samples, n_joints)</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>calib_config</code>
-            </td>
-            <td>
-                  <code><span title="dict">dict</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Calibration parameters containing:
-- Frames and parameters from update_forward_kinematics()
-- NbMarkers=1 (only supports single marker)</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>verbose</code>
-            </td>
-            <td>
-                  <code><span title="int">int</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Print update info. Defaults to 0.</p>
-              </div>
-            </td>
-            <td>
-                  <code>0</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>backend</code>
-            </td>
-            <td>
-                  <code><span title="DynamicsBackend">DynamicsBackend</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If provided, routes forward kinematics
-calls through the backend abstraction.</p>
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>ndarray</code></td>            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Flattened marker measurements in world frame</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-<details class="notes" open>
-  <summary>Notes</summary>
-  <ul>
-<li>Excludes joint elasticity effects</li>
-<li>Requires base or end-effector parameters in param_name</li>
-<li>Validates all parameters are properly updated</li>
-</ul>
-</details>
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/figaroh/calibration/calibration_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">502</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
 <span class="normal">503</span>
 <span class="normal">504</span>
 <span class="normal">505</span>
@@ -12310,138 +11995,30 @@ calls through the backend abstraction.</p>
 <span class="normal">562</span>
 <span class="normal">563</span>
 <span class="normal">564</span>
-<span class="normal">565</span>
-<span class="normal">566</span>
-<span class="normal">567</span>
-<span class="normal">568</span>
-<span class="normal">569</span>
-<span class="normal">570</span>
-<span class="normal">571</span>
-<span class="normal">572</span>
-<span class="normal">573</span>
-<span class="normal">574</span>
-<span class="normal">575</span>
-<span class="normal">576</span>
-<span class="normal">577</span>
-<span class="normal">578</span>
-<span class="normal">579</span>
-<span class="normal">580</span>
-<span class="normal">581</span>
-<span class="normal">582</span>
-<span class="normal">583</span>
-<span class="normal">584</span>
-<span class="normal">585</span>
-<span class="normal">586</span>
-<span class="normal">587</span>
-<span class="normal">588</span>
-<span class="normal">589</span>
-<span class="normal">590</span>
-<span class="normal">591</span>
-<span class="normal">592</span>
-<span class="normal">593</span>
-<span class="normal">594</span>
-<span class="normal">595</span>
-<span class="normal">596</span>
-<span class="normal">597</span>
-<span class="normal">598</span>
-<span class="normal">599</span>
-<span class="normal">600</span>
-<span class="normal">601</span>
-<span class="normal">602</span>
-<span class="normal">603</span>
-<span class="normal">604</span>
-<span class="normal">605</span>
-<span class="normal">606</span>
-<span class="normal">607</span>
-<span class="normal">608</span>
-<span class="normal">609</span>
-<span class="normal">610</span>
-<span class="normal">611</span>
-<span class="normal">612</span>
-<span class="normal">613</span>
-<span class="normal">614</span>
-<span class="normal">615</span>
-<span class="normal">616</span>
-<span class="normal">617</span>
-<span class="normal">618</span>
-<span class="normal">619</span>
-<span class="normal">620</span>
-<span class="normal">621</span>
-<span class="normal">622</span>
-<span class="normal">623</span>
-<span class="normal">624</span>
-<span class="normal">625</span>
-<span class="normal">626</span>
-<span class="normal">627</span>
-<span class="normal">628</span>
-<span class="normal">629</span>
-<span class="normal">630</span>
-<span class="normal">631</span>
-<span class="normal">632</span>
-<span class="normal">633</span>
-<span class="normal">634</span>
-<span class="normal">635</span>
-<span class="normal">636</span>
-<span class="normal">637</span>
-<span class="normal">638</span>
-<span class="normal">639</span>
-<span class="normal">640</span>
-<span class="normal">641</span>
-<span class="normal">642</span>
-<span class="normal">643</span>
-<span class="normal">644</span>
-<span class="normal">645</span>
-<span class="normal">646</span>
-<span class="normal">647</span>
-<span class="normal">648</span>
-<span class="normal">649</span>
-<span class="normal">650</span>
-<span class="normal">651</span>
-<span class="normal">652</span>
-<span class="normal">653</span>
-<span class="normal">654</span>
-<span class="normal">655</span>
-<span class="normal">656</span>
-<span class="normal">657</span>
-<span class="normal">658</span>
-<span class="normal">659</span>
-<span class="normal">660</span>
-<span class="normal">661</span>
-<span class="normal">662</span>
-<span class="normal">663</span>
-<span class="normal">664</span>
-<span class="normal">665</span>
-<span class="normal">666</span>
-<span class="normal">667</span>
-<span class="normal">668</span>
-<span class="normal">669</span>
-<span class="normal">670</span>
-<span class="normal">671</span>
-<span class="normal">672</span>
-<span class="normal">673</span>
-<span class="normal">674</span>
-<span class="normal">675</span>
-<span class="normal">676</span>
-<span class="normal">677</span>
-<span class="normal">678</span>
-<span class="normal">679</span>
-<span class="normal">680</span>
-<span class="normal">681</span>
-<span class="normal">682</span>
-<span class="normal">683</span>
-<span class="normal">684</span>
-<span class="normal">685</span>
-<span class="normal">686</span>
-<span class="normal">687</span>
-<span class="normal">688</span>
-<span class="normal">689</span>
-<span class="normal">690</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calc_updated_fkm</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">565</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calc_updated_fkm</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update forward kinematics with world frame transformations.</span>
 
-<span class="sd">    Specialized version that explicitly handles transformations between:</span>
-<span class="sd">    1. World frame to start frame (wMo)</span>
-<span class="sd">    2. Start frame to end frame (oMee)</span>
-<span class="sd">    3. End frame to marker frame (eeMf)</span>
+<span class="sd">    Single, unified FK-update function for calibration: composes the full</span>
+<span class="sd">    chain of transformations::</span>
+
+<span class="sd">        wMf = wMo * oMee * eeMf</span>
+
+<span class="sd">    where:</span>
+<span class="sd">        - ``wMo``: world (measurement) frame to the kinematic chain&#39;s start</span>
+<span class="sd">          frame. Estimated directly when ``BASE_TPL`` params are present in</span>
+<span class="sd">          ``param_name`` (unknown base frame, e.g. ``known_baseframe=False``),</span>
+<span class="sd">          estimated via a known camera/ref-frame anchor when</span>
+<span class="sd">          ``calib_config[&quot;base_to_ref_frame&quot;]``/``&quot;ref_frame&quot;`` are set (e.g.</span>
+<span class="sd">          eye-hand calibration), or identity otherwise.</span>
+<span class="sd">        - ``oMee``: start frame to end frame, through the updated kinematic</span>
+<span class="sd">          chain (``full_params``/``joint_offset`` geometric error</span>
+<span class="sd">          parameters), optionally including joint elasticity when</span>
+<span class="sd">          ``calib_config[&quot;non_geom&quot;]`` is set — a per-joint compliance</span>
+<span class="sd">          parameter (``ELAS_TPL``) that adds a gravity-torque-proportional</span>
+<span class="sd">          deflection about that joint&#39;s own motion axis, then reverts it,</span>
+<span class="sd">          on every sample.</span>
+<span class="sd">        - ``eeMf``: end frame to the measured marker frame (``EE_TPL``</span>
+<span class="sd">          params), or identity if not estimated.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model (pin.Model): Robot model to update</span>
@@ -12449,19 +12026,28 @@ calls through the backend abstraction.</p>
 <span class="sd">        var (ndarray): Parameter vector matching calib_config[&quot;param_name&quot;]</span>
 <span class="sd">        q (ndarray): Joint configurations matrix (n_samples, n_joints)</span>
 <span class="sd">        calib_config (dict): Calibration parameters containing:</span>
-<span class="sd">            - Frames and parameters from update_forward_kinematics()</span>
-<span class="sd">            - NbMarkers=1 (only supports single marker)</span>
+<span class="sd">            - calib_model: &quot;full_params&quot; or &quot;joint_offset&quot;</span>
+<span class="sd">            - start_frame, end_frame: Frame names</span>
+<span class="sd">            - base_to_ref_frame, ref_frame: Optional camera-style known</span>
+<span class="sd">              chain anchor (eye-hand calibration); None to disable</span>
+<span class="sd">            - non_geom: Whether to apply joint elasticity</span>
+<span class="sd">            - actJoint_idx: Active joint indices</span>
+<span class="sd">            - measurability: Active DOFs</span>
+<span class="sd">            - NbMarkers: Must be 1 (multi-marker is not supported)</span>
 <span class="sd">        verbose (int, optional): Print update info. Defaults to 0.</span>
-<span class="sd">        backend (DynamicsBackend, optional): If provided, routes forward kinematics</span>
-<span class="sd">            calls through the backend abstraction.</span>
+<span class="sd">        backend (DynamicsBackend, optional): If provided, routes forward</span>
+<span class="sd">            kinematics and gravity calls through the backend abstraction.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        ndarray: Flattened marker measurements in world frame</span>
 
+<span class="sd">    Raises:</span>
+<span class="sd">        NotImplementedError: If calib_config[&quot;NbMarkers&quot;] &gt; 1.</span>
+
 <span class="sd">    Notes:</span>
-<span class="sd">        - Excludes joint elasticity effects</span>
-<span class="sd">        - Requires base or end-effector parameters in param_name</span>
-<span class="sd">        - Validates all parameters are properly updated</span>
+<span class="sd">        - Requires base or end-effector parameters in param_name to</span>
+<span class="sd">          estimate wMo / eeMf; otherwise they default to identity.</span>
+<span class="sd">        - Validates all parameters in param_name are consumed exactly once.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># name reference of calibration parameters</span>
@@ -12499,11 +12085,25 @@ calls through the backend abstraction.</p>
     <span class="n">start_f</span> <span class="o">=</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">]</span>
     <span class="n">end_f</span> <span class="o">=</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;end_frame&quot;</span><span class="p">]</span>
 
-    <span class="c1"># if world frame (measurement ref frame) to the start frame is not known,</span>
-    <span class="c1"># base_tpl needs to be used to define the first 6 parameters</span>
-
     <span class="c1"># 1/ calc transformation from the world frame to start frame: wMo</span>
-    <span class="k">if</span> <span class="n">base_param_incl</span><span class="p">:</span>
+    <span class="n">base_to_ref_frame</span> <span class="o">=</span> <span class="n">calib_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;base_to_ref_frame&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">base_to_ref_frame</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># known chain anchor + unknown camera/ref pose (e.g. eye-hand calib)</span>
+        <span class="n">start_f</span> <span class="o">=</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;ref_frame&quot;</span><span class="p">]</span>
+        <span class="n">base_tf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">base_id</span><span class="p">,</span> <span class="n">base_ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">BASE_TPL</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">base_ax</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+                    <span class="n">base_tf</span><span class="p">[</span><span class="n">base_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                    <span class="n">updated_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">b_to_cam</span> <span class="o">=</span> <span class="n">get_rel_transform</span><span class="p">(</span>
+            <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;start_frame&quot;</span><span class="p">],</span> <span class="n">base_to_ref_frame</span>
+        <span class="p">)</span>
+        <span class="n">ref_to_cam</span> <span class="o">=</span> <span class="n">cartesian_to_SE3</span><span class="p">(</span><span class="n">base_tf</span><span class="p">)</span>
+        <span class="n">cam_to_ref</span> <span class="o">=</span> <span class="n">ref_to_cam</span><span class="o">.</span><span class="n">actInv</span><span class="p">(</span><span class="n">pin</span><span class="o">.</span><span class="n">SE3</span><span class="o">.</span><span class="n">Identity</span><span class="p">())</span>
+        <span class="n">wMo</span> <span class="o">=</span> <span class="n">b_to_cam</span> <span class="o">*</span> <span class="n">cam_to_ref</span>
+    <span class="k">elif</span> <span class="n">base_param_incl</span><span class="p">:</span>
+        <span class="c1"># fully unknown world (measurement) frame to start frame transform</span>
         <span class="n">base_tf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">base_id</span><span class="p">,</span> <span class="n">base_ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">BASE_TPL</span><span class="p">):</span>
@@ -12538,9 +12138,11 @@ calls through the backend abstraction.</p>
             <span class="n">eeMf</span> <span class="o">=</span> <span class="n">cartesian_to_SE3</span><span class="p">(</span><span class="n">pee</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Multiple markers are not supported.&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">eeMf</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">SE3</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;calc_updated_fkm only supports NbMarkers == 1, got &quot;</span>
+                <span class="s2">&quot;NbMarkers=</span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbMarkers&quot;</span><span class="p">])</span>
+            <span class="p">)</span>
+        <span class="n">eeMf</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">SE3</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span>
 
     <span class="c1"># 3/ calculate transformation from start frame to end frame of kinematic chain using updated model: oMee</span>
 
@@ -12568,6 +12170,27 @@ calls through the backend abstraction.</p>
         <span class="c1"># updaet joint placement</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">j_id</span><span class="p">,</span> <span class="n">xyz_rpy</span><span class="p">)</span>
 
+    <span class="c1"># joint elasticity: one compliance parameter per active joint (ELAS_TPL,</span>
+    <span class="c1"># see _build_elastic_param_names), matched once here since the mapping</span>
+    <span class="c1"># joint -&gt; param is static; the deflection itself is gravity-torque</span>
+    <span class="c1"># dependent and recomputed per sample below.</span>
+    <span class="n">elastic_map</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">calib_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;non_geom&quot;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j_id</span> <span class="ow">in</span> <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;actJoint_idx&quot;</span><span class="p">]:</span>
+            <span class="n">j_name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">j_id</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">j_name</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">elas_id</span><span class="p">,</span> <span class="n">elas</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ELAS_TPL</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">elas</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                    <span class="s2">&quot;Joint [</span><span class="si">{}</span><span class="s2">] elastic gain [</span><span class="si">{}</span><span class="s2">] on axis </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                        <span class="n">j_name</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">elas</span>
+                                    <span class="p">)</span>
+                                <span class="p">)</span>
+                            <span class="n">elastic_map</span><span class="p">[</span><span class="n">j_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">elas_id</span><span class="p">)</span>
+                            <span class="n">updated_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
     <span class="c1"># check if all parameters are updated to the model</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">updated_params</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span>
         <span class="nb">list</span><span class="p">(</span><span class="n">param_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
@@ -12587,9 +12210,33 @@ calls through the backend abstraction.</p>
             <span class="n">pin</span><span class="o">.</span><span class="n">framesForwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
             <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 
-        <span class="c1"># NOTE: joint elastic error is not considered in this version</span>
+        <span class="k">if</span> <span class="n">elastic_map</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">tau</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">compute_gravity_vector</span><span class="p">(</span><span class="n">q_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tau</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeGeneralizedGravity</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
 
-        <span class="n">oMee</span> <span class="o">=</span> <span class="n">get_rel_transform</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_f</span><span class="p">,</span> <span class="n">end_f</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">j_id</span><span class="p">,</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">elas_id</span><span class="p">)</span> <span class="ow">in</span> <span class="n">elastic_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">xyz_rpy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+                <span class="n">xyz_rpy</span><span class="p">[</span><span class="n">elas_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">*</span> <span class="n">tau</span><span class="p">[</span><span class="n">j_id</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">model</span> <span class="o">=</span> <span class="n">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">j_id</span><span class="p">,</span> <span class="n">xyz_rpy</span><span class="p">)</span>
+
+            <span class="c1"># jointPlacements changed: data.oMf is stale until FK is redone</span>
+            <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">backend</span><span class="o">.</span><span class="n">compute_forward_kinematics</span><span class="p">(</span><span class="n">q_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pin</span><span class="o">.</span><span class="n">framesForwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
+                <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+            <span class="n">oMee</span> <span class="o">=</span> <span class="n">get_rel_transform</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_f</span><span class="p">,</span> <span class="n">end_f</span><span class="p">)</span>
+
+            <span class="c1"># revert model back to origin from the added joint elastic error</span>
+            <span class="k">for</span> <span class="n">j_id</span><span class="p">,</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">elas_id</span><span class="p">)</span> <span class="ow">in</span> <span class="n">elastic_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">xyz_rpy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+                <span class="n">xyz_rpy</span><span class="p">[</span><span class="n">elas_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">*</span> <span class="n">tau</span><span class="p">[</span><span class="n">j_id</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">model</span> <span class="o">=</span> <span class="n">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">j_id</span><span class="p">,</span> <span class="o">-</span><span class="n">xyz_rpy</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">oMee</span> <span class="o">=</span> <span class="n">get_rel_transform</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_f</span><span class="p">,</span> <span class="n">end_f</span><span class="p">)</span>
 
         <span class="c1"># calculate transformation from world frame to end-effector frame</span>
         <span class="n">wMee</span> <span class="o">=</span> <span class="n">wMo</span> <span class="o">*</span> <span class="n">oMee</span>
@@ -12739,35 +12386,35 @@ calls through the backend abstraction.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/calibration_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">693</span>
-<span class="normal">694</span>
-<span class="normal">695</span>
-<span class="normal">696</span>
-<span class="normal">697</span>
-<span class="normal">698</span>
-<span class="normal">699</span>
-<span class="normal">700</span>
-<span class="normal">701</span>
-<span class="normal">702</span>
-<span class="normal">703</span>
-<span class="normal">704</span>
-<span class="normal">705</span>
-<span class="normal">706</span>
-<span class="normal">707</span>
-<span class="normal">708</span>
-<span class="normal">709</span>
-<span class="normal">710</span>
-<span class="normal">711</span>
-<span class="normal">712</span>
-<span class="normal">713</span>
-<span class="normal">714</span>
-<span class="normal">715</span>
-<span class="normal">716</span>
-<span class="normal">717</span>
-<span class="normal">718</span>
-<span class="normal">719</span>
-<span class="normal">720</span>
-<span class="normal">721</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">joint_idx</span><span class="p">,</span> <span class="n">xyz_rpy</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">568</span>
+<span class="normal">569</span>
+<span class="normal">570</span>
+<span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span>
+<span class="normal">574</span>
+<span class="normal">575</span>
+<span class="normal">576</span>
+<span class="normal">577</span>
+<span class="normal">578</span>
+<span class="normal">579</span>
+<span class="normal">580</span>
+<span class="normal">581</span>
+<span class="normal">582</span>
+<span class="normal">583</span>
+<span class="normal">584</span>
+<span class="normal">585</span>
+<span class="normal">586</span>
+<span class="normal">587</span>
+<span class="normal">588</span>
+<span class="normal">589</span>
+<span class="normal">590</span>
+<span class="normal">591</span>
+<span class="normal">592</span>
+<span class="normal">593</span>
+<span class="normal">594</span>
+<span class="normal">595</span>
+<span class="normal">596</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">joint_idx</span><span class="p">,</span> <span class="n">xyz_rpy</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update joint placement with offset parameters.</span>
 
 <span class="sd">    Modifies a joint&#39;s placement transform by adding position and orientation offsets.</span>
@@ -12943,46 +12590,46 @@ and Jacobian calls through the backend abstraction.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/calibration_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">727</span>
-<span class="normal">728</span>
-<span class="normal">729</span>
-<span class="normal">730</span>
-<span class="normal">731</span>
-<span class="normal">732</span>
-<span class="normal">733</span>
-<span class="normal">734</span>
-<span class="normal">735</span>
-<span class="normal">736</span>
-<span class="normal">737</span>
-<span class="normal">738</span>
-<span class="normal">739</span>
-<span class="normal">740</span>
-<span class="normal">741</span>
-<span class="normal">742</span>
-<span class="normal">743</span>
-<span class="normal">744</span>
-<span class="normal">745</span>
-<span class="normal">746</span>
-<span class="normal">747</span>
-<span class="normal">748</span>
-<span class="normal">749</span>
-<span class="normal">750</span>
-<span class="normal">751</span>
-<span class="normal">752</span>
-<span class="normal">753</span>
-<span class="normal">754</span>
-<span class="normal">755</span>
-<span class="normal">756</span>
-<span class="normal">757</span>
-<span class="normal">758</span>
-<span class="normal">759</span>
-<span class="normal">760</span>
-<span class="normal">761</span>
-<span class="normal">762</span>
-<span class="normal">763</span>
-<span class="normal">764</span>
-<span class="normal">765</span>
-<span class="normal">766</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_kinematics_model</span><span class="p">(</span><span class="n">q_i</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">602</span>
+<span class="normal">603</span>
+<span class="normal">604</span>
+<span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span>
+<span class="normal">611</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span>
+<span class="normal">627</span>
+<span class="normal">628</span>
+<span class="normal">629</span>
+<span class="normal">630</span>
+<span class="normal">631</span>
+<span class="normal">632</span>
+<span class="normal">633</span>
+<span class="normal">634</span>
+<span class="normal">635</span>
+<span class="normal">636</span>
+<span class="normal">637</span>
+<span class="normal">638</span>
+<span class="normal">639</span>
+<span class="normal">640</span>
+<span class="normal">641</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_kinematics_model</span><span class="p">(</span><span class="n">q_i</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate Jacobian and kinematic regressor for single configuration.</span>
 
 <span class="sd">    Computes frame Jacobian and kinematic regressor matrices for tool frame</span>
@@ -13176,98 +12823,98 @@ and forwards backend to called functions.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/calibration_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">769</span>
-<span class="normal">770</span>
-<span class="normal">771</span>
-<span class="normal">772</span>
-<span class="normal">773</span>
-<span class="normal">774</span>
-<span class="normal">775</span>
-<span class="normal">776</span>
-<span class="normal">777</span>
-<span class="normal">778</span>
-<span class="normal">779</span>
-<span class="normal">780</span>
-<span class="normal">781</span>
-<span class="normal">782</span>
-<span class="normal">783</span>
-<span class="normal">784</span>
-<span class="normal">785</span>
-<span class="normal">786</span>
-<span class="normal">787</span>
-<span class="normal">788</span>
-<span class="normal">789</span>
-<span class="normal">790</span>
-<span class="normal">791</span>
-<span class="normal">792</span>
-<span class="normal">793</span>
-<span class="normal">794</span>
-<span class="normal">795</span>
-<span class="normal">796</span>
-<span class="normal">797</span>
-<span class="normal">798</span>
-<span class="normal">799</span>
-<span class="normal">800</span>
-<span class="normal">801</span>
-<span class="normal">802</span>
-<span class="normal">803</span>
-<span class="normal">804</span>
-<span class="normal">805</span>
-<span class="normal">806</span>
-<span class="normal">807</span>
-<span class="normal">808</span>
-<span class="normal">809</span>
-<span class="normal">810</span>
-<span class="normal">811</span>
-<span class="normal">812</span>
-<span class="normal">813</span>
-<span class="normal">814</span>
-<span class="normal">815</span>
-<span class="normal">816</span>
-<span class="normal">817</span>
-<span class="normal">818</span>
-<span class="normal">819</span>
-<span class="normal">820</span>
-<span class="normal">821</span>
-<span class="normal">822</span>
-<span class="normal">823</span>
-<span class="normal">824</span>
-<span class="normal">825</span>
-<span class="normal">826</span>
-<span class="normal">827</span>
-<span class="normal">828</span>
-<span class="normal">829</span>
-<span class="normal">830</span>
-<span class="normal">831</span>
-<span class="normal">832</span>
-<span class="normal">833</span>
-<span class="normal">834</span>
-<span class="normal">835</span>
-<span class="normal">836</span>
-<span class="normal">837</span>
-<span class="normal">838</span>
-<span class="normal">839</span>
-<span class="normal">840</span>
-<span class="normal">841</span>
-<span class="normal">842</span>
-<span class="normal">843</span>
-<span class="normal">844</span>
-<span class="normal">845</span>
-<span class="normal">846</span>
-<span class="normal">847</span>
-<span class="normal">848</span>
-<span class="normal">849</span>
-<span class="normal">850</span>
-<span class="normal">851</span>
-<span class="normal">852</span>
-<span class="normal">853</span>
-<span class="normal">854</span>
-<span class="normal">855</span>
-<span class="normal">856</span>
-<span class="normal">857</span>
-<span class="normal">858</span>
-<span class="normal">859</span>
-<span class="normal">860</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_identifiable_kinematics_model</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">644</span>
+<span class="normal">645</span>
+<span class="normal">646</span>
+<span class="normal">647</span>
+<span class="normal">648</span>
+<span class="normal">649</span>
+<span class="normal">650</span>
+<span class="normal">651</span>
+<span class="normal">652</span>
+<span class="normal">653</span>
+<span class="normal">654</span>
+<span class="normal">655</span>
+<span class="normal">656</span>
+<span class="normal">657</span>
+<span class="normal">658</span>
+<span class="normal">659</span>
+<span class="normal">660</span>
+<span class="normal">661</span>
+<span class="normal">662</span>
+<span class="normal">663</span>
+<span class="normal">664</span>
+<span class="normal">665</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
+<span class="normal">668</span>
+<span class="normal">669</span>
+<span class="normal">670</span>
+<span class="normal">671</span>
+<span class="normal">672</span>
+<span class="normal">673</span>
+<span class="normal">674</span>
+<span class="normal">675</span>
+<span class="normal">676</span>
+<span class="normal">677</span>
+<span class="normal">678</span>
+<span class="normal">679</span>
+<span class="normal">680</span>
+<span class="normal">681</span>
+<span class="normal">682</span>
+<span class="normal">683</span>
+<span class="normal">684</span>
+<span class="normal">685</span>
+<span class="normal">686</span>
+<span class="normal">687</span>
+<span class="normal">688</span>
+<span class="normal">689</span>
+<span class="normal">690</span>
+<span class="normal">691</span>
+<span class="normal">692</span>
+<span class="normal">693</span>
+<span class="normal">694</span>
+<span class="normal">695</span>
+<span class="normal">696</span>
+<span class="normal">697</span>
+<span class="normal">698</span>
+<span class="normal">699</span>
+<span class="normal">700</span>
+<span class="normal">701</span>
+<span class="normal">702</span>
+<span class="normal">703</span>
+<span class="normal">704</span>
+<span class="normal">705</span>
+<span class="normal">706</span>
+<span class="normal">707</span>
+<span class="normal">708</span>
+<span class="normal">709</span>
+<span class="normal">710</span>
+<span class="normal">711</span>
+<span class="normal">712</span>
+<span class="normal">713</span>
+<span class="normal">714</span>
+<span class="normal">715</span>
+<span class="normal">716</span>
+<span class="normal">717</span>
+<span class="normal">718</span>
+<span class="normal">719</span>
+<span class="normal">720</span>
+<span class="normal">721</span>
+<span class="normal">722</span>
+<span class="normal">723</span>
+<span class="normal">724</span>
+<span class="normal">725</span>
+<span class="normal">726</span>
+<span class="normal">727</span>
+<span class="normal">728</span>
+<span class="normal">729</span>
+<span class="normal">730</span>
+<span class="normal">731</span>
+<span class="normal">732</span>
+<span class="normal">733</span>
+<span class="normal">734</span>
+<span class="normal">735</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_identifiable_kinematics_model</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate identifiable Jacobian and regressor matrices.</span>
 
 <span class="sd">    Builds aggregated Jacobian and regressor matrices from either:</span>
@@ -13535,103 +13182,103 @@ called functions for backend-aware computation.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/calibration_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">863</span>
-<span class="normal">864</span>
-<span class="normal">865</span>
-<span class="normal">866</span>
-<span class="normal">867</span>
-<span class="normal">868</span>
-<span class="normal">869</span>
-<span class="normal">870</span>
-<span class="normal">871</span>
-<span class="normal">872</span>
-<span class="normal">873</span>
-<span class="normal">874</span>
-<span class="normal">875</span>
-<span class="normal">876</span>
-<span class="normal">877</span>
-<span class="normal">878</span>
-<span class="normal">879</span>
-<span class="normal">880</span>
-<span class="normal">881</span>
-<span class="normal">882</span>
-<span class="normal">883</span>
-<span class="normal">884</span>
-<span class="normal">885</span>
-<span class="normal">886</span>
-<span class="normal">887</span>
-<span class="normal">888</span>
-<span class="normal">889</span>
-<span class="normal">890</span>
-<span class="normal">891</span>
-<span class="normal">892</span>
-<span class="normal">893</span>
-<span class="normal">894</span>
-<span class="normal">895</span>
-<span class="normal">896</span>
-<span class="normal">897</span>
-<span class="normal">898</span>
-<span class="normal">899</span>
-<span class="normal">900</span>
-<span class="normal">901</span>
-<span class="normal">902</span>
-<span class="normal">903</span>
-<span class="normal">904</span>
-<span class="normal">905</span>
-<span class="normal">906</span>
-<span class="normal">907</span>
-<span class="normal">908</span>
-<span class="normal">909</span>
-<span class="normal">910</span>
-<span class="normal">911</span>
-<span class="normal">912</span>
-<span class="normal">913</span>
-<span class="normal">914</span>
-<span class="normal">915</span>
-<span class="normal">916</span>
-<span class="normal">917</span>
-<span class="normal">918</span>
-<span class="normal">919</span>
-<span class="normal">920</span>
-<span class="normal">921</span>
-<span class="normal">922</span>
-<span class="normal">923</span>
-<span class="normal">924</span>
-<span class="normal">925</span>
-<span class="normal">926</span>
-<span class="normal">927</span>
-<span class="normal">928</span>
-<span class="normal">929</span>
-<span class="normal">930</span>
-<span class="normal">931</span>
-<span class="normal">932</span>
-<span class="normal">933</span>
-<span class="normal">934</span>
-<span class="normal">935</span>
-<span class="normal">936</span>
-<span class="normal">937</span>
-<span class="normal">938</span>
-<span class="normal">939</span>
-<span class="normal">940</span>
-<span class="normal">941</span>
-<span class="normal">942</span>
-<span class="normal">943</span>
-<span class="normal">944</span>
-<span class="normal">945</span>
-<span class="normal">946</span>
-<span class="normal">947</span>
-<span class="normal">948</span>
-<span class="normal">949</span>
-<span class="normal">950</span>
-<span class="normal">951</span>
-<span class="normal">952</span>
-<span class="normal">953</span>
-<span class="normal">954</span>
-<span class="normal">955</span>
-<span class="normal">956</span>
-<span class="normal">957</span>
-<span class="normal">958</span>
-<span class="normal">959</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_base_kinematics_regressor</span><span class="p">(</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">738</span>
+<span class="normal">739</span>
+<span class="normal">740</span>
+<span class="normal">741</span>
+<span class="normal">742</span>
+<span class="normal">743</span>
+<span class="normal">744</span>
+<span class="normal">745</span>
+<span class="normal">746</span>
+<span class="normal">747</span>
+<span class="normal">748</span>
+<span class="normal">749</span>
+<span class="normal">750</span>
+<span class="normal">751</span>
+<span class="normal">752</span>
+<span class="normal">753</span>
+<span class="normal">754</span>
+<span class="normal">755</span>
+<span class="normal">756</span>
+<span class="normal">757</span>
+<span class="normal">758</span>
+<span class="normal">759</span>
+<span class="normal">760</span>
+<span class="normal">761</span>
+<span class="normal">762</span>
+<span class="normal">763</span>
+<span class="normal">764</span>
+<span class="normal">765</span>
+<span class="normal">766</span>
+<span class="normal">767</span>
+<span class="normal">768</span>
+<span class="normal">769</span>
+<span class="normal">770</span>
+<span class="normal">771</span>
+<span class="normal">772</span>
+<span class="normal">773</span>
+<span class="normal">774</span>
+<span class="normal">775</span>
+<span class="normal">776</span>
+<span class="normal">777</span>
+<span class="normal">778</span>
+<span class="normal">779</span>
+<span class="normal">780</span>
+<span class="normal">781</span>
+<span class="normal">782</span>
+<span class="normal">783</span>
+<span class="normal">784</span>
+<span class="normal">785</span>
+<span class="normal">786</span>
+<span class="normal">787</span>
+<span class="normal">788</span>
+<span class="normal">789</span>
+<span class="normal">790</span>
+<span class="normal">791</span>
+<span class="normal">792</span>
+<span class="normal">793</span>
+<span class="normal">794</span>
+<span class="normal">795</span>
+<span class="normal">796</span>
+<span class="normal">797</span>
+<span class="normal">798</span>
+<span class="normal">799</span>
+<span class="normal">800</span>
+<span class="normal">801</span>
+<span class="normal">802</span>
+<span class="normal">803</span>
+<span class="normal">804</span>
+<span class="normal">805</span>
+<span class="normal">806</span>
+<span class="normal">807</span>
+<span class="normal">808</span>
+<span class="normal">809</span>
+<span class="normal">810</span>
+<span class="normal">811</span>
+<span class="normal">812</span>
+<span class="normal">813</span>
+<span class="normal">814</span>
+<span class="normal">815</span>
+<span class="normal">816</span>
+<span class="normal">817</span>
+<span class="normal">818</span>
+<span class="normal">819</span>
+<span class="normal">820</span>
+<span class="normal">821</span>
+<span class="normal">822</span>
+<span class="normal">823</span>
+<span class="normal">824</span>
+<span class="normal">825</span>
+<span class="normal">826</span>
+<span class="normal">827</span>
+<span class="normal">828</span>
+<span class="normal">829</span>
+<span class="normal">830</span>
+<span class="normal">831</span>
+<span class="normal">832</span>
+<span class="normal">833</span>
+<span class="normal">834</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_base_kinematics_regressor</span><span class="p">(</span>
     <span class="n">q</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">,</span> <span class="n">tol_qr</span><span class="o">=</span><span class="n">TOL_QR</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate base regressor matrix for calibration parameters.</span>
@@ -13912,15 +13559,7 @@ contribute to relative motion.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">41</span>
 <span class="normal">42</span>
 <span class="normal">43</span>
 <span class="normal">44</span>
@@ -13965,7 +13604,15 @@ contribute to relative motion.</p>
 <span class="normal">83</span>
 <span class="normal">84</span>
 <span class="normal">85</span>
-<span class="normal">86</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_sup_joints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">):</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span>
+<span class="normal">92</span>
+<span class="normal">93</span>
+<span class="normal">94</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_sup_joints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">,</span> <span class="n">end_frame</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get list of supporting joints between two frames in kinematic chain.</span>
 
 <span class="sd">    Finds all joints that contribute to relative motion between start_frame and</span>
@@ -14153,15 +13800,7 @@ print(params['NbMarkers'])
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 89</span>
-<span class="normal"> 90</span>
-<span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 97</span>
 <span class="normal"> 98</span>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
@@ -14342,7 +13981,19 @@ print(params['NbMarkers'])
 <span class="normal">275</span>
 <span class="normal">276</span>
 <span class="normal">277</span>
-<span class="normal">278</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse calibration parameters from YAML configuration file.</span>
 
 <span class="sd">    Processes robot and calibration data to build a parameter dictionary containing</span>
@@ -14385,6 +14036,10 @@ print(params['NbMarkers'])
 <span class="sd">        &gt;&gt;&gt; print(params[&#39;NbMarkers&#39;])</span>
 <span class="sd">        2</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">_LEGACY_CONFIG_DEPRECATION_MESSAGE</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+        <span class="s2">&quot;Loading legacy config format — consider migrating (see DeprecationWarning).&quot;</span>
+    <span class="p">)</span>
     <span class="c1"># NOTE: since joint 0 is universe and it is trivial,</span>
     <span class="c1"># indices of joints are different from indices of joint configuration,</span>
     <span class="c1"># different from indices of joint velocities</span>
@@ -14674,19 +14329,7 @@ legacy_config = unified_to_legacy_config(robot, unified_config)</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">281</span>
-<span class="normal">282</span>
-<span class="normal">283</span>
-<span class="normal">284</span>
-<span class="normal">285</span>
-<span class="normal">286</span>
-<span class="normal">287</span>
-<span class="normal">288</span>
-<span class="normal">289</span>
-<span class="normal">290</span>
-<span class="normal">291</span>
-<span class="normal">292</span>
-<span class="normal">293</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">293</span>
 <span class="normal">294</span>
 <span class="normal">295</span>
 <span class="normal">296</span>
@@ -14742,7 +14385,22 @@ legacy_config = unified_to_legacy_config(robot, unified_config)</p>
 <span class="normal">346</span>
 <span class="normal">347</span>
 <span class="normal">348</span>
-<span class="normal">349</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">unified_to_legacy_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_calib_config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">unified_to_legacy_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_calib_config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert unified configuration format to legacy calib_config format.</span>
 
 <span class="sd">    Maps the new unified configuration structure to the exact format expected</span>
@@ -14804,6 +14462,9 @@ legacy_config = unified_to_legacy_config(robot, unified_config)</p>
 
     <span class="c1"># 7. Extract calibration parameters</span>
     <span class="n">_extract_calibration_params</span><span class="p">(</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+
+    <span class="c1"># 7b. Extract eye-hand (camera) calibration frames, if enabled</span>
+    <span class="n">_extract_eye_hand_params</span><span class="p">(</span><span class="n">calib_config</span><span class="p">,</span> <span class="n">unified_calib_config</span><span class="p">)</span>
 
     <span class="c1"># 8. Extract data configuration</span>
     <span class="n">calib_config</span><span class="p">[</span><span class="s2">&quot;NbSample&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;number_of_samples&quot;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
@@ -14903,21 +14564,21 @@ config parser from figaroh.utils.config_parser.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">549</span>
-<span class="normal">550</span>
-<span class="normal">551</span>
-<span class="normal">552</span>
-<span class="normal">553</span>
-<span class="normal">554</span>
-<span class="normal">555</span>
-<span class="normal">556</span>
-<span class="normal">557</span>
-<span class="normal">558</span>
-<span class="normal">559</span>
-<span class="normal">560</span>
-<span class="normal">561</span>
-<span class="normal">562</span>
-<span class="normal">563</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml_legacy</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">593</span>
+<span class="normal">594</span>
+<span class="normal">595</span>
+<span class="normal">596</span>
+<span class="normal">597</span>
+<span class="normal">598</span>
+<span class="normal">599</span>
+<span class="normal">600</span>
+<span class="normal">601</span>
+<span class="normal">602</span>
+<span class="normal">603</span>
+<span class="normal">604</span>
+<span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml_legacy</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Legacy calibration parameter parser - kept for backward compatibility.</span>
 
 <span class="sd">    This is the original implementation. New code should use the unified</span>
@@ -15024,31 +14685,31 @@ unified configuration parser when possible.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">573</span>
-<span class="normal">574</span>
-<span class="normal">575</span>
-<span class="normal">576</span>
-<span class="normal">577</span>
-<span class="normal">578</span>
-<span class="normal">579</span>
-<span class="normal">580</span>
-<span class="normal">581</span>
-<span class="normal">582</span>
-<span class="normal">583</span>
-<span class="normal">584</span>
-<span class="normal">585</span>
-<span class="normal">586</span>
-<span class="normal">587</span>
-<span class="normal">588</span>
-<span class="normal">589</span>
-<span class="normal">590</span>
-<span class="normal">591</span>
-<span class="normal">592</span>
-<span class="normal">593</span>
-<span class="normal">594</span>
-<span class="normal">595</span>
-<span class="normal">596</span>
-<span class="normal">597</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml_unified</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span>
+<span class="normal">627</span>
+<span class="normal">628</span>
+<span class="normal">629</span>
+<span class="normal">630</span>
+<span class="normal">631</span>
+<span class="normal">632</span>
+<span class="normal">633</span>
+<span class="normal">634</span>
+<span class="normal">635</span>
+<span class="normal">636</span>
+<span class="normal">637</span>
+<span class="normal">638</span>
+<span class="normal">639</span>
+<span class="normal">640</span>
+<span class="normal">641</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml_unified</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Enhanced parameter parser using unified configuration system.</span>
 
 <span class="sd">    This function provides backward compatibility while using the new</span>
@@ -15095,18 +14756,18 @@ unified configuration parser when possible.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/calibration/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">600</span>
-<span class="normal">601</span>
-<span class="normal">602</span>
-<span class="normal">603</span>
-<span class="normal">604</span>
-<span class="normal">605</span>
-<span class="normal">606</span>
-<span class="normal">607</span>
-<span class="normal">608</span>
-<span class="normal">609</span>
-<span class="normal">610</span>
-<span class="normal">611</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml_with_warning</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">644</span>
+<span class="normal">645</span>
+<span class="normal">646</span>
+<span class="normal">647</span>
+<span class="normal">648</span>
+<span class="normal">649</span>
+<span class="normal">650</span>
+<span class="normal">651</span>
+<span class="normal">652</span>
+<span class="normal">653</span>
+<span class="normal">654</span>
+<span class="normal">655</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml_with_warning</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Original function with deprecation notice.&quot;&quot;&quot;</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
@@ -16668,7 +16329,7 @@ Defaults to [].</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "content.code.copy", "content.action.edit", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

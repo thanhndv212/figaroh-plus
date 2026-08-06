@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1660,6 +1660,34 @@
     
   
     Configuration System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config_parameters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Parameter Reference
   
 
     
@@ -3968,15 +3996,26 @@ resolves <code>package://</code> mesh URIs by searching <code>ROS_PACKAGE_PATH</
 <p><strong>Key Functions:</strong></p>
 <p><strong>Forward Kinematics Update:</strong>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calc_updated_fkm</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q_measured</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">poses</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update FK with calibration parameters&quot;&quot;&quot;</span>
-    <span class="c1"># 1. Update joint placements</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update FK with calibration parameters. Composes wMf = wMo * oMee * eeMf:</span>
+<span class="sd">    wMo (world/measurement frame -&gt; chain start; unknown-baseframe or</span>
+<span class="sd">    known camera/ref-frame anchor), oMee (geometric joint-placement errors,</span>
+<span class="sd">    optionally with per-joint gravity-torque-driven elasticity when</span>
+<span class="sd">    calib_config[&quot;non_geom&quot;] is set), eeMf (end frame -&gt; marker frame).&quot;&quot;&quot;</span>
+    <span class="c1"># 1. Update joint placements (full_params / joint_offset)</span>
     <span class="n">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">)</span>
-    <span class="c1"># 2. Compute forward kinematics</span>
+    <span class="c1"># 2. Compute forward kinematics (re-run after any elastic perturbation --</span>
+    <span class="c1">#    get_rel_transform reads the cached data.oMf, not live state)</span>
     <span class="n">pin</span><span class="o">.</span><span class="n">framesForwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
     <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-    <span class="c1"># 3. Extract end-effector poses</span>
+    <span class="c1"># 3. Extract end-effector poses, composed with wMo and eeMf</span>
     <span class="k">return</span> <span class="n">get_frame_poses</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">frame_ids</span><span class="p">)</span>
 </code></pre></div></p>
+<p>This is the single FK-update function for calibration — it previously had a
+sibling, <code>update_forward_kinematics</code>, which supported elasticity and
+camera-ref-frame composition but had accumulated several correctness
+regressions and had no callers anywhere in <code>figaroh</code>/<code>figaroh-examples</code>; its
+capabilities were merged into <code>calc_updated_fkm</code> and the dead function was
+removed.</p>
 <p><strong>Jacobian &amp; Regressor:</strong>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_rel_jac</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">start_frameId</span><span class="p">,</span> <span class="n">end_frameId</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">J_rel</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute relative Jacobian&quot;&quot;&quot;</span>
@@ -4977,7 +5016,7 @@ long-term paths to resolution.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "content.code.copy", "content.action.edit", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
