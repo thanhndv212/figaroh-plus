@@ -440,6 +440,7 @@ def generate_identification_report(
         base_names,
         std_dev_abs,
         std_relative or [],
+        list(phi_base) if phi_base is not None else None,
     )}</div>
   </section>
 

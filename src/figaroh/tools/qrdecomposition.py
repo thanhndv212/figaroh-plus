@@ -831,3 +831,60 @@ def cond_num(W_b: np.ndarray, norm_type: str = None) -> float:
         return np.linalg.cond(W_b, 2) / np.linalg.cond(W_b, -2)
     else:
         return np.linalg.cond(W_b)
+
+
+def redistribute_min_norm(M: np.ndarray, phi_base: np.ndarray) -> np.ndarray:
+    r"""Minimum-norm redistribution of base-parameter values onto the full
+    standard-parameter set, via the Moore-Penrose pseudoinverse of ``M``.
+
+    Given $\phi_{base} = M\,\theta_r$, returns
+    $\hat\theta_r = M^+\,\phi_{base}$: the minimum-L2-norm $\theta_r$
+    consistent with the identified $\phi_{base}$, i.e. each redundant
+    group's fitted value is spread across its members instead of being
+    concentrated on one arbitrary representative (the effective default
+    when only the base subset is reported and everything else is left at
+    its nominal value). Round-trips exactly:
+    ``M @ redistribute_min_norm(M, phi_base) == phi_base`` (up to floating
+    point), so predictions built from the redistributed vector are
+    unchanged from those built from the base-only fit.
+
+    This does not add information: non-identifiable directions stay
+    non-identifiable. It only picks a less arbitrary point among the
+    (infinite) equally-valid ways to split an identified combination back
+    onto its individually non-identifiable members.
+
+    Args:
+        M: Base-mapping matrix, shape ``(rank, n_params)``, such that
+            ``phi_base = M @ theta_r``.
+        phi_base: Fitted base-parameter values, shape ``(rank,)``.
+
+    Returns:
+        ``theta_r_hat``, shape ``(n_params,)``.
+    """
+    return np.linalg.pinv(M) @ phi_base
+
+
+def propagate_covariance_min_norm(M: np.ndarray, C_base: np.ndarray) -> np.ndarray:
+    r"""Propagate base-parameter covariance through the minimum-norm map.
+
+    Returns $C_{full} = M^+\,C_{base}\,(M^+)^T$ — the covariance of the
+    minimum-norm *estimator* (:func:`redistribute_min_norm`), conditional
+    on having committed to that redistribution choice. It is **not** the
+    true uncertainty of each individual standard parameter: along
+    directions ``M`` cannot see, the data provides literally zero
+    information, and this propagation reports a finite number reflecting
+    the estimator's own sensitivity to noise in ``phi_base``, not an
+    unconditional physical uncertainty. Callers surfacing this to users
+    must label it as such.
+
+    Args:
+        M: Base-mapping matrix, shape ``(rank, n_params)``, such that
+            ``phi_base = M @ theta_r``.
+        C_base: Covariance of the fitted base parameters, shape
+            ``(rank, rank)``.
+
+    Returns:
+        ``C_full``, shape ``(n_params, n_params)``.
+    """
+    M_pinv = np.linalg.pinv(M)
+    return M_pinv @ C_base @ M_pinv.T

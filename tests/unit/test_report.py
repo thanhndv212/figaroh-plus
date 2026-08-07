@@ -34,10 +34,22 @@ from figaroh.tools.report import (
 class FakeCalibrator:
     """Stand-in for BaseCalibration exposing only what the report reads."""
 
-    def __init__(self, evaluation_metrics, calib_config, results_data=None):
+    def __init__(
+        self, evaluation_metrics, calib_config, results_data=None,
+        redistributed=None,
+    ):
         self.evaluation_metrics = evaluation_metrics
         self.calib_config = calib_config
         self.results_data = results_data or {}
+        self._redistributed = redistributed
+
+    def redistribute_parameters(self):
+        """Mirrors BaseCalibration.redistribute_parameters: raises when
+        unavailable (the default, matching a calibrator that never
+        populated the base-mapping), returns a fixed dict otherwise."""
+        if self._redistributed is None:
+            raise AttributeError("redistribute_parameters not available")
+        return self._redistributed
 
 
 def _base_eval(**overrides):
@@ -198,6 +210,23 @@ class TestGenerateCalibrationReport:
         assert "<script>alert" not in doc
         assert "&lt;script&gt;" in doc
 
+    def test_parameter_uncertainty_table_shows_values(self):
+        eval_ = _base_eval(param_values=[0.012345, -0.02, 0.5])
+        calibrator = FakeCalibrator(eval_, _base_config())
+        doc = generate_calibration_report(calibrator)
+        assert "<th>Value</th>" in doc
+        assert "0.012345" in doc
+
+    def test_parameter_uncertainty_table_handles_missing_values(self):
+        """param_values omitted entirely (e.g. an older cached
+        evaluation_metrics dict) -- must render '—', not crash."""
+        eval_ = _base_eval()
+        assert "param_values" not in eval_
+        calibrator = FakeCalibrator(eval_, _base_config())
+        doc = generate_calibration_report(calibrator)
+        assert "<th>Value</th>" in doc
+        assert "—" in doc
+
     def test_writes_to_output_path(self, tmp_path):
         calibrator = FakeCalibrator(_base_eval(), _base_config())
         out_file = tmp_path / "report.html"
@@ -300,6 +329,39 @@ class TestGenerateCalibrationReport:
         doc = generate_calibration_report(calibrator)
         assert "http://" not in doc
         assert "https://" not in doc
+
+
+class TestRedistributedSection:
+    """The 'Redistributed standard parameters' section, driven by
+    calibrator.redistribute_parameters()."""
+
+    def test_not_available_message_when_missing(self):
+        calibrator = FakeCalibrator(_base_eval(), _base_config())
+        doc = generate_calibration_report(calibrator)
+        assert "Redistribution not available for this run" in doc
+
+    def test_renders_values_when_available(self):
+        redistributed = {
+            "d_px_arm_1_joint": {"value": 0.0123, "std_dev": 0.0005},
+            "d_py_arm_1_joint": {"value": 0.0123, "std_dev": 0.0005},
+        }
+        calibrator = FakeCalibrator(
+            _base_eval(), _base_config(), redistributed=redistributed
+        )
+        doc = generate_calibration_report(calibrator)
+        assert "Redistributed standard parameters" in doc
+        assert "d_px_arm_1_joint" in doc
+        assert "d_py_arm_1_joint" in doc
+        assert "0.0123" in doc
+        assert "Redistribution not available" not in doc
+
+    def test_handles_zero_value_without_crashing(self):
+        redistributed = {"d_pz_arm_2_joint": {"value": 0.0, "std_dev": 0.0002}}
+        calibrator = FakeCalibrator(
+            _base_eval(), _base_config(), redistributed=redistributed
+        )
+        doc = generate_calibration_report(calibrator)
+        assert "d_pz_arm_2_joint" in doc
 
 
 if __name__ == "__main__":

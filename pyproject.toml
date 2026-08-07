@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "figaroh"
-version = "0.4.6"
+version = "0.4.7"
 description = "A Python toolbox for dynamics identification and geometric calibration of robots and humans"
 readme = "README.md"
 requires-python = ">=3.8"

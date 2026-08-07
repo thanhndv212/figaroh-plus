@@ -270,6 +270,24 @@ class TestGenerateIdentificationReport:
         doc = generate_identification_report(identifier)
         assert "p3" in doc
 
+    def test_base_parameter_table_shows_values(self):
+        identifier = FakeIdentifier(
+            _base_result(),
+            std_relative=np.array([5.0, 15.0, 45.0]),
+            phi_base=np.array([1.234, 2.0, 3.0]),
+        )
+        doc = generate_identification_report(identifier)
+        assert "<th>Value</th>" in doc
+        assert "1.234" in doc
+
+    def test_base_parameter_table_handles_missing_phi_base(self):
+        identifier = FakeIdentifier(
+            _base_result(), std_relative=np.array([5.0, 15.0, 45.0])
+        )
+        doc = generate_identification_report(identifier)
+        assert "<th>Value</th>" in doc
+        assert "—" in doc
+
     def test_writes_to_output_path(self, tmp_path):
         identifier = FakeIdentifier(_base_result())
         out_file = tmp_path / "report.html"

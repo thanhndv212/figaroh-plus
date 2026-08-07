@@ -63,13 +63,21 @@ def _insights_section(insights: List[Dict[str, str]]) -> str:
 
 
 def _param_uncertainty_section(
-    param_names: List[str], std_dev: List[float], std_pctg: List[float]
+    param_names: List[str],
+    std_dev: List[float],
+    std_pctg: List[float],
+    values: Optional[List[float]] = None,
 ) -> str:
     """Table + confidence-tier bar per parameter, sorted worst-first.
 
     Shared verbatim between calibration (per calibration parameter) and
     identification (per base parameter) — both express uncertainty as a
     relative standard deviation percentage.
+
+    ``values`` (the identified parameter values themselves) is optional
+    for backward compatibility — omitted or too-short entries render as
+    "—" rather than raising, since some callers only ever tracked the
+    uncertainty, not the value.
     """
     if not std_pctg or not param_names:
         return '<p class="muted">No parameter uncertainty data available.</p>'
@@ -86,11 +94,14 @@ def _param_uncertainty_section(
     for i in ranked:
         sp = std_pctg[i]
         sd = std_dev[i] if i < len(std_dev) else float("nan")
+        val = values[i] if values is not None and i < len(values) else None
+        val_str = "—" if val is None or math.isnan(val) else f"{val:.6g}"
         tier = _uncertainty_tier(sp)
         bar_pct = 0.0 if math.isnan(sp) else min(sp, 100.0)
         rows.append(f"""
         <tr class="tier-{tier}">
           <td>{_esc(param_names[i])}</td>
+          <td class="num">{val_str}</td>
           <td class="num">{sd:.6g}</td>
           <td class="num">{sp:.1f}%</td>
           <td class="bar-cell">
@@ -105,7 +116,7 @@ def _param_uncertainty_section(
     return f"""
     <table class="data">
       <thead>
-        <tr><th>Parameter</th><th>±σ</th>
+        <tr><th>Parameter</th><th>Value</th><th>±σ</th>
             <th>σ/|val|</th><th>Confidence</th></tr>
       </thead>
       <tbody>{"".join(rows)}</tbody>

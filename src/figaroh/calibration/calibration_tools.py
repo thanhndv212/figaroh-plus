@@ -33,8 +33,7 @@ logger.addHandler(logging.NullHandler())
 
 from ..tools.regressor import eliminate_non_dynaffect
 from ..tools.qrdecomposition import (
-    get_baseParams,
-    get_baseIndex,
+    QRDecomposer,
     build_baseRegressor,
 )
 
@@ -811,24 +810,47 @@ def calculate_base_kinematics_regressor(
         Rrand_sel, geo_params_sel, tol_e=1e-6
     )
 
-    # indices of independent columns (base param) w.r.t to reduced regressor
-    idx_base = get_baseIndex(Rrand_e, paramsrand_e, tol_qr=tol_qr)
+    # indices of independent columns (base param) w.r.t the reduced
+    # regressor, and the base-mapping matrix M s.t. phi_base = M @ theta_r
+    # (theta_r ordered as paramsrand_e) -- one QR pass on the structural
+    # (random-config) regressor covers both, since the base/dependent
+    # column split is a property of the kinematic chain, not of any
+    # particular dataset.
+    decomposer = QRDecomposer(tolerance=tol_qr)
+    M, paramsrand_base, idx_base, _ = decomposer.get_base_mapping_matrix_double(
+        Rrand_e, paramsrand_e
+    )
 
-    # get base regressor and base params from random data
-    Rrand_b, paramsrand_base, _ = get_baseParams(Rrand_e, paramsrand_e, tol_qr=tol_qr)
+    # get base regressor from random data
+    Rrand_b = build_baseRegressor(Rrand_e, idx_base)
 
     # remove non affect columns from GIVEN data
-    R_e, params_e = eliminate_non_dynaffect(R_sel, geo_params_sel, tol_e=1e-6)
-
-    # get base param from given data
-    # idx_gbase = get_baseIndex(R_e, params_e, tol_qr=tol_qr)
-    R_gb, params_gbase, _ = get_baseParams(R_e, params_e, tol_qr=tol_qr)
+    R_e, _ = eliminate_non_dynaffect(R_sel, geo_params_sel, tol_e=1e-6)
 
     # get base regressor from GIVEN data
     R_b = build_baseRegressor(R_e, idx_base)
 
     # update calibrating calib_config['param_name']/calibrating parameters
+    # -- record the slice these base entries land at (param_name may
+    # already carry earlier entries, e.g. elastic-gain params) so callers
+    # can locate the corresponding values in a solved variable vector
+    # (which is built one-to-one, in order, from param_name) regardless of
+    # any later in-place renaming (add_base_name) or appending (add_pee_name).
+    _base_slice_start = len(calib_config["param_name"])
     for j in idx_base:
         calib_config["param_name"].append(paramsrand_e[j])
+    _base_slice_end = len(calib_config["param_name"])
+
+    # Structural base-mapping, stashed for optional downstream
+    # redistribution (see figaroh.tools.qrdecomposition.redistribute_min_norm
+    # and BaseCalibration.redistribute_parameters). base_mapping_row_names
+    # is a snapshot of the base-parameter name order *before*
+    # add_base_name/add_pee_name may rename/prepend entries in
+    # calib_config["param_name"], so callers should locate fitted values by
+    # base_mapping_slice (positional), not by re-looking-up these names.
+    calib_config["base_mapping_matrix"] = M
+    calib_config["base_mapping_param_names"] = list(paramsrand_e)
+    calib_config["base_mapping_row_names"] = [paramsrand_e[j] for j in idx_base]
+    calib_config["base_mapping_slice"] = (_base_slice_start, _base_slice_end)
 
     return Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e
