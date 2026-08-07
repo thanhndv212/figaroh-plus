@@ -2779,6 +2779,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#figaroh.tools.qrdecomposition.redistribute_min_norm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        redistribute_min_norm
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.tools.qrdecomposition.propagate_covariance_min_norm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        propagate_covariance_min_norm
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#robot-ipopt" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3181,6 +3203,50 @@
     <span class="md-ellipsis">
       
         export_urdf
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#geometric-calibration-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Geometric Calibration Export
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.tools.geometric_calibration_export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        geometric_calibration_export
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.tools.geometric_calibration_export.build_geometric_calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build_geometric_calibration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.tools.geometric_calibration_export.export_geometric_calibration_yaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        export_geometric_calibration_yaml
       
     </span>
   </a>
@@ -4955,6 +5021,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#figaroh.tools.qrdecomposition.redistribute_min_norm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        redistribute_min_norm
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.tools.qrdecomposition.propagate_covariance_min_norm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        propagate_covariance_min_norm
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#robot-ipopt" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5364,6 +5452,50 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#geometric-calibration-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Geometric Calibration Export
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.tools.geometric_calibration_export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        geometric_calibration_export
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.tools.geometric_calibration_export.build_geometric_calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build_geometric_calibration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#figaroh.tools.geometric_calibration_export.export_geometric_calibration_yaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        export_geometric_calibration_yaml
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#export-validation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5726,47 +5858,7 @@ populated).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/tools/report.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">344</span>
-<span class="normal">345</span>
-<span class="normal">346</span>
-<span class="normal">347</span>
-<span class="normal">348</span>
-<span class="normal">349</span>
-<span class="normal">350</span>
-<span class="normal">351</span>
-<span class="normal">352</span>
-<span class="normal">353</span>
-<span class="normal">354</span>
-<span class="normal">355</span>
-<span class="normal">356</span>
-<span class="normal">357</span>
-<span class="normal">358</span>
-<span class="normal">359</span>
-<span class="normal">360</span>
-<span class="normal">361</span>
-<span class="normal">362</span>
-<span class="normal">363</span>
-<span class="normal">364</span>
-<span class="normal">365</span>
-<span class="normal">366</span>
-<span class="normal">367</span>
-<span class="normal">368</span>
-<span class="normal">369</span>
-<span class="normal">370</span>
-<span class="normal">371</span>
-<span class="normal">372</span>
-<span class="normal">373</span>
-<span class="normal">374</span>
-<span class="normal">375</span>
-<span class="normal">376</span>
-<span class="normal">377</span>
-<span class="normal">378</span>
-<span class="normal">379</span>
-<span class="normal">380</span>
-<span class="normal">381</span>
-<span class="normal">382</span>
-<span class="normal">383</span>
-<span class="normal">384</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">384</span>
 <span class="normal">385</span>
 <span class="normal">386</span>
 <span class="normal">387</span>
@@ -5838,7 +5930,59 @@ populated).</p>
 <span class="normal">453</span>
 <span class="normal">454</span>
 <span class="normal">455</span>
-<span class="normal">456</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_calibration_report</span><span class="p">(</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_calibration_report</span><span class="p">(</span>
     <span class="n">calibrator</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Render a self-contained HTML diagnostic report for a calibration run.</span>
@@ -5871,6 +6015,12 @@ populated).</p>
         <span class="n">validation</span> <span class="o">=</span> <span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;validation_metrics&quot;</span><span class="p">]</span>
 
     <span class="n">insights</span> <span class="o">=</span> <span class="n">_build_insights</span><span class="p">(</span><span class="n">eval_</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">param_names</span><span class="p">,</span> <span class="n">validation</span><span class="p">)</span>
+
+    <span class="n">redistributed</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">redistributed</span> <span class="o">=</span> <span class="n">calibrator</span><span class="o">.</span><span class="n">redistribute_parameters</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;redistribute_parameters unavailable for report: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
 
     <span class="n">provenance</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">calibrator</span><span class="p">,</span> <span class="s2">&quot;_run_provenance&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">report_title</span> <span class="o">=</span> <span class="n">title</span> <span class="ow">or</span> <span class="p">(</span>
@@ -5930,7 +6080,13 @@ populated).</p>
 <span class="w">        </span><span class="n">param_names</span><span class="p">,</span>
 <span class="w">        </span><span class="n">eval_</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;param_stdev&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">[]),</span>
 <span class="w">        </span><span class="n">eval_</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;param_stddev_percentage&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">[]),</span>
+<span class="w">        </span><span class="n">eval_</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;param_values&quot;</span><span class="p">),</span>
 <span class="w">    </span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/div&gt;</span>
+<span class="s2">  &lt;/section&gt;</span>
+
+<span class="s2">  &lt;section&gt;</span>
+<span class="s2">    &lt;h2&gt;Redistributed standard parameters&lt;/h2&gt;</span>
+<span class="s2">    &lt;div class=&quot;card&quot;&gt;</span><span class="si">{</span><span class="n">_redistributed_section</span><span class="p">(</span><span class="n">redistributed</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/div&gt;</span>
 <span class="s2">  &lt;/section&gt;</span>
 
 <span class="s2">  &lt;section&gt;</span>
@@ -6266,7 +6422,8 @@ has been called (i.e. <code>result</code> is populated).</p>
 <span class="normal">458</span>
 <span class="normal">459</span>
 <span class="normal">460</span>
-<span class="normal">461</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_identification_report</span><span class="p">(</span>
+<span class="normal">461</span>
+<span class="normal">462</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_identification_report</span><span class="p">(</span>
     <span class="n">identifier</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Render a self-contained HTML diagnostic report for an</span>
@@ -6376,6 +6533,7 @@ has been called (i.e. <code>result</code> is populated).</p>
 <span class="w">        </span><span class="n">base_names</span><span class="p">,</span>
 <span class="w">        </span><span class="n">std_dev_abs</span><span class="p">,</span>
 <span class="w">        </span><span class="n">std_relative</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">        </span><span class="nb">list</span><span class="p">(</span><span class="n">phi_base</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">phi_base</span><span class="w"> </span><span class="ow">is</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="kc">None</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="kc">None</span><span class="p">,</span>
 <span class="w">    </span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/div&gt;</span>
 <span class="s2">  &lt;/section&gt;</span>
 
@@ -6963,18 +7121,7 @@ nothing to fail on.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/tools/_report_common.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">465</span>
-<span class="normal">466</span>
-<span class="normal">467</span>
-<span class="normal">468</span>
-<span class="normal">469</span>
-<span class="normal">470</span>
-<span class="normal">471</span>
-<span class="normal">472</span>
-<span class="normal">473</span>
-<span class="normal">474</span>
-<span class="normal">475</span>
-<span class="normal">476</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">476</span>
 <span class="normal">477</span>
 <span class="normal">478</span>
 <span class="normal">479</span>
@@ -7005,7 +7152,18 @@ nothing to fail on.</p>
 <span class="normal">504</span>
 <span class="normal">505</span>
 <span class="normal">506</span>
-<span class="normal">507</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">evaluate_thresholds</span><span class="p">(</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">evaluate_thresholds</span><span class="p">(</span>
     <span class="n">metrics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">thresholds</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VerificationVerdict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check each metric named in ``thresholds`` against its threshold.</span>
@@ -7071,17 +7229,17 @@ nothing to fail on.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/tools/_report_common.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">539</span>
-<span class="normal">540</span>
-<span class="normal">541</span>
-<span class="normal">542</span>
-<span class="normal">543</span>
-<span class="normal">544</span>
-<span class="normal">545</span>
-<span class="normal">546</span>
-<span class="normal">547</span>
-<span class="normal">548</span>
-<span class="normal">549</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">build_provenance_metadata</span><span class="p">(</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">build_provenance_metadata</span><span class="p">(</span>
     <span class="n">config_file_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">robot_name</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Git commit, config file hash, timestamp, robot name — for a</span>
@@ -15711,6 +15869,321 @@ missing from full_param_names.</p>
 
 </div>
 
+<div class="doc doc-object doc-function">
+
+
+<h2 id="figaroh.tools.qrdecomposition.redistribute_min_norm" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">redistribute_min_norm</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">phi_base</span><span class="p">)</span></code>
+
+<a href="#figaroh.tools.qrdecomposition.redistribute_min_norm" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Minimum-norm redistribution of base-parameter values onto the full
+standard-parameter set, via the Moore-Penrose pseudoinverse of <code>M</code>.</p>
+<p>Given $\phi_{base} = M\,\theta_r$, returns
+$\hat\theta_r = M^+\,\phi_{base}$: the minimum-L2-norm $\theta_r$
+consistent with the identified $\phi_{base}$, i.e. each redundant
+group's fitted value is spread across its members instead of being
+concentrated on one arbitrary representative (the effective default
+when only the base subset is reported and everything else is left at
+its nominal value). Round-trips exactly:
+<code>M @ redistribute_min_norm(M, phi_base) == phi_base</code> (up to floating
+point), so predictions built from the redistributed vector are
+unchanged from those built from the base-only fit.</p>
+<p>This does not add information: non-identifiable directions stay
+non-identifiable. It only picks a less arbitrary point among the
+(infinite) equally-valid ways to split an identified combination back
+onto its individually non-identifiable members.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>M</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Base-mapping matrix, shape <code>(rank, n_params)</code>, such that
+<code>phi_base = M @ theta_r</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>phi_base</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Fitted base-parameter values, shape <code>(rank,)</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>theta_r_hat</code>, shape <code>(n_params,)</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/figaroh/tools/qrdecomposition.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">836</span>
+<span class="normal">837</span>
+<span class="normal">838</span>
+<span class="normal">839</span>
+<span class="normal">840</span>
+<span class="normal">841</span>
+<span class="normal">842</span>
+<span class="normal">843</span>
+<span class="normal">844</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span>
+<span class="normal">853</span>
+<span class="normal">854</span>
+<span class="normal">855</span>
+<span class="normal">856</span>
+<span class="normal">857</span>
+<span class="normal">858</span>
+<span class="normal">859</span>
+<span class="normal">860</span>
+<span class="normal">861</span>
+<span class="normal">862</span>
+<span class="normal">863</span>
+<span class="normal">864</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">redistribute_min_norm</span><span class="p">(</span><span class="n">M</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">phi_base</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Minimum-norm redistribution of base-parameter values onto the full</span>
+<span class="sd">    standard-parameter set, via the Moore-Penrose pseudoinverse of ``M``.</span>
+
+<span class="sd">    Given $\phi_{base} = M\,\theta_r$, returns</span>
+<span class="sd">    $\hat\theta_r = M^+\,\phi_{base}$: the minimum-L2-norm $\theta_r$</span>
+<span class="sd">    consistent with the identified $\phi_{base}$, i.e. each redundant</span>
+<span class="sd">    group&#39;s fitted value is spread across its members instead of being</span>
+<span class="sd">    concentrated on one arbitrary representative (the effective default</span>
+<span class="sd">    when only the base subset is reported and everything else is left at</span>
+<span class="sd">    its nominal value). Round-trips exactly:</span>
+<span class="sd">    ``M @ redistribute_min_norm(M, phi_base) == phi_base`` (up to floating</span>
+<span class="sd">    point), so predictions built from the redistributed vector are</span>
+<span class="sd">    unchanged from those built from the base-only fit.</span>
+
+<span class="sd">    This does not add information: non-identifiable directions stay</span>
+<span class="sd">    non-identifiable. It only picks a less arbitrary point among the</span>
+<span class="sd">    (infinite) equally-valid ways to split an identified combination back</span>
+<span class="sd">    onto its individually non-identifiable members.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        M: Base-mapping matrix, shape ``(rank, n_params)``, such that</span>
+<span class="sd">            ``phi_base = M @ theta_r``.</span>
+<span class="sd">        phi_base: Fitted base-parameter values, shape ``(rank,)``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``theta_r_hat``, shape ``(n_params,)``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">M</span><span class="p">)</span> <span class="o">@</span> <span class="n">phi_base</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="figaroh.tools.qrdecomposition.propagate_covariance_min_norm" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">propagate_covariance_min_norm</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">C_base</span><span class="p">)</span></code>
+
+<a href="#figaroh.tools.qrdecomposition.propagate_covariance_min_norm" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Propagate base-parameter covariance through the minimum-norm map.</p>
+<p>Returns $C_{full} = M^+\,C_{base}\,(M^+)^T$ — the covariance of the
+minimum-norm <em>estimator</em> (:func:<code>redistribute_min_norm</code>), conditional
+on having committed to that redistribution choice. It is <strong>not</strong> the
+true uncertainty of each individual standard parameter: along
+directions <code>M</code> cannot see, the data provides literally zero
+information, and this propagation reports a finite number reflecting
+the estimator's own sensitivity to noise in <code>phi_base</code>, not an
+unconditional physical uncertainty. Callers surfacing this to users
+must label it as such.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>M</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Base-mapping matrix, shape <code>(rank, n_params)</code>, such that
+<code>phi_base = M @ theta_r</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>C_base</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Covariance of the fitted base parameters, shape
+<code>(rank, rank)</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>C_full</code>, shape <code>(n_params, n_params)</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/figaroh/tools/qrdecomposition.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">867</span>
+<span class="normal">868</span>
+<span class="normal">869</span>
+<span class="normal">870</span>
+<span class="normal">871</span>
+<span class="normal">872</span>
+<span class="normal">873</span>
+<span class="normal">874</span>
+<span class="normal">875</span>
+<span class="normal">876</span>
+<span class="normal">877</span>
+<span class="normal">878</span>
+<span class="normal">879</span>
+<span class="normal">880</span>
+<span class="normal">881</span>
+<span class="normal">882</span>
+<span class="normal">883</span>
+<span class="normal">884</span>
+<span class="normal">885</span>
+<span class="normal">886</span>
+<span class="normal">887</span>
+<span class="normal">888</span>
+<span class="normal">889</span>
+<span class="normal">890</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">propagate_covariance_min_norm</span><span class="p">(</span><span class="n">M</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">C_base</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Propagate base-parameter covariance through the minimum-norm map.</span>
+
+<span class="sd">    Returns $C_{full} = M^+\,C_{base}\,(M^+)^T$ — the covariance of the</span>
+<span class="sd">    minimum-norm *estimator* (:func:`redistribute_min_norm`), conditional</span>
+<span class="sd">    on having committed to that redistribution choice. It is **not** the</span>
+<span class="sd">    true uncertainty of each individual standard parameter: along</span>
+<span class="sd">    directions ``M`` cannot see, the data provides literally zero</span>
+<span class="sd">    information, and this propagation reports a finite number reflecting</span>
+<span class="sd">    the estimator&#39;s own sensitivity to noise in ``phi_base``, not an</span>
+<span class="sd">    unconditional physical uncertainty. Callers surfacing this to users</span>
+<span class="sd">    must label it as such.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        M: Base-mapping matrix, shape ``(rank, n_params)``, such that</span>
+<span class="sd">            ``phi_base = M @ theta_r``.</span>
+<span class="sd">        C_base: Covariance of the fitted base parameters, shape</span>
+<span class="sd">            ``(rank, rank)``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``C_full``, shape ``(n_params, n_params)``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">M_pinv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">M_pinv</span> <span class="o">@</span> <span class="n">C_base</span> <span class="o">@</span> <span class="n">M_pinv</span><span class="o">.</span><span class="n">T</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
 
 
   </div>
@@ -20366,6 +20839,540 @@ writes to <code>&lt;stem&gt;_modified.urdf</code> beside the nominal URDF.</p>
         <span class="p">)</span>
 
     <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">output_path</span><span class="o">.</span><span class="n">resolve</span><span class="p">())</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="geometric-calibration-export">Geometric Calibration Export<a class="headerlink" href="#geometric-calibration-export" title="Permanent link">&para;</a></h2>
+<p>Produces the PAL Robotics <code>robot_state_publisher.geometric_calibration</code>
+runtime-correction YAML (e.g. <code>/etc/calibration/master_calibration.yaml</code>)
+from a solved calibrator's redistributed parameters — a different deploy
+target from URDF Export above (a small runtime overlay applied on top of
+the original URDF, not a modified URDF file).</p>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="figaroh.tools.geometric_calibration_export"></a>
+    <div class="doc doc-contents first">
+
+        <p>PAL Robotics <code>robot_state_publisher</code> geometric-calibration deploy file.</p>
+<p>Produces the runtime joint-correction YAML PAL robots (TIAGo, TIAGo Pro,
+TALOS, ...) read at <code>/etc/calibration/master_calibration.yaml</code> — the
+format hand-curated in <code>figaroh_tiagoPro/data/master_calibration_*.yaml</code>
+to date, generalized here so any <code>BaseCalibration</code>-based robot can
+produce one directly from a solved calibrator.</p>
+<p>This is a different deploy target from
+:mod:<code>figaroh.tools.urdf_exporter</code>: that module bakes corrections into a
+<em>modified URDF file</em>; this one produces a small <em>runtime correction
+overlay</em> PAL's <code>robot_state_publisher</code> applies on top of the original,
+unmodified URDF at startup. Both read the same <code>d_px_{joint}</code>-style
+parameter names — this module reuses
+:func:<code>figaroh.tools.urdf_exporter._parse_param_name</code> rather than
+re-deriving that parsing.</p>
+<p>Built on :meth:<code>~figaroh.calibration.base_calibration.BaseCalibration.redistribute_parameters</code>
+rather than the base-only fit, so joints that would otherwise be silently
+left at nominal (0) in the base-only deploy — because they were
+structurally redundant with another parameter, not because they have no
+real offset — get their share of the identified correction too. See
+<code>TIAGO_CALIBRATION_ANALYSIS.md</code> §8 for why that redistribution exists
+and its limits.</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="figaroh.tools.geometric_calibration_export.build_geometric_calibration" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">build_geometric_calibration</span><span class="p">(</span><span class="n">calibrator</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">min_sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#figaroh.tools.geometric_calibration_export.build_geometric_calibration" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Build a PAL <code>robot_state_publisher.geometric_calibration</code> dict
+from a solved <code>BaseCalibration</code> instance's redistributed parameters.</p>
+<p>Only genuine per-joint placement corrections (<code>d_px_{joint}</code> etc.)
+are included. Excluded, matching every hand-curated
+<code>figaroh_tiagoPro/data/master_calibration_*.yaml</code> to date:</p>
+<ul>
+<li>Any parameter merged with the co-estimated base transform — when
+  <code>calib_config["known_baseframe"]</code> is <code>False</code>, that's whichever
+  joint occupies the first 6 slots of <code>base_mapping_row_names</code>, a
+  mixed mocap/robot quantity, not a pure per-joint correction. Found
+  structurally (via <code>base_mapping_row_names</code>, which is never
+  renamed), not by name pattern — robust regardless of whatever
+  display renaming <code>add_base_name</code>/a subclass override may have
+  applied to <code>calib_config["param_name"]</code>.</li>
+<li>Marker/tip parameters (<code>pEE*</code>/<code>phiEE*</code>) and anything from a
+  non-<code>full_params</code> candidate set (e.g. joint-offset/elasticity
+  parameters) — neither is a <code>joint_placement</code> entry in
+  :func:<code>~figaroh.tools.urdf_exporter._parse_param_name</code>'s registry,
+  so both are dropped by the category check below without needing
+  special-casing.</li>
+</ul>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>calibrator</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A solved <code>BaseCalibration</code> instance (<code>solve()</code>
+already called).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>min_sigma</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If given, only include parameters with
+<code>|value| / std_dev &gt;= min_sigma</code> — the "conservative"
+variant (see <code>master_calibration_20260805_conservative.yaml</code>
+and <code>TIAGO_CALIBRATION_ANALYSIS.md</code> §7.5/§7.6, which found
+this generalizes measurably better than deploying every
+identified value regardless of statistical significance).
+<code>None</code> (default) includes every joint-placement parameter.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="float">float</span>]]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>{"robot_state_publisher": {"geometric_calibration": {key: value}}}</code></p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="CalibrationError">CalibrationError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Propagated from <code>redistribute_parameters()</code> if
+<code>solve()</code>/<code>create_param_list()</code> haven't run.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/figaroh/tools/geometric_calibration_export.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">build_geometric_calibration</span><span class="p">(</span>
+    <span class="n">calibrator</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">min_sigma</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a PAL ``robot_state_publisher.geometric_calibration`` dict</span>
+<span class="sd">    from a solved ``BaseCalibration`` instance&#39;s redistributed parameters.</span>
+
+<span class="sd">    Only genuine per-joint placement corrections (``d_px_{joint}`` etc.)</span>
+<span class="sd">    are included. Excluded, matching every hand-curated</span>
+<span class="sd">    ``figaroh_tiagoPro/data/master_calibration_*.yaml`` to date:</span>
+
+<span class="sd">    - Any parameter merged with the co-estimated base transform — when</span>
+<span class="sd">      ``calib_config[&quot;known_baseframe&quot;]`` is ``False``, that&#39;s whichever</span>
+<span class="sd">      joint occupies the first 6 slots of ``base_mapping_row_names``, a</span>
+<span class="sd">      mixed mocap/robot quantity, not a pure per-joint correction. Found</span>
+<span class="sd">      structurally (via ``base_mapping_row_names``, which is never</span>
+<span class="sd">      renamed), not by name pattern — robust regardless of whatever</span>
+<span class="sd">      display renaming ``add_base_name``/a subclass override may have</span>
+<span class="sd">      applied to ``calib_config[&quot;param_name&quot;]``.</span>
+<span class="sd">    - Marker/tip parameters (``pEE*``/``phiEE*``) and anything from a</span>
+<span class="sd">      non-``full_params`` candidate set (e.g. joint-offset/elasticity</span>
+<span class="sd">      parameters) — neither is a ``joint_placement`` entry in</span>
+<span class="sd">      :func:`~figaroh.tools.urdf_exporter._parse_param_name`&#39;s registry,</span>
+<span class="sd">      so both are dropped by the category check below without needing</span>
+<span class="sd">      special-casing.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        calibrator: A solved ``BaseCalibration`` instance (``solve()``</span>
+<span class="sd">            already called).</span>
+<span class="sd">        min_sigma: If given, only include parameters with</span>
+<span class="sd">            ``|value| / std_dev &gt;= min_sigma`` — the &quot;conservative&quot;</span>
+<span class="sd">            variant (see ``master_calibration_20260805_conservative.yaml``</span>
+<span class="sd">            and ``TIAGO_CALIBRATION_ANALYSIS.md`` §7.5/§7.6, which found</span>
+<span class="sd">            this generalizes measurably better than deploying every</span>
+<span class="sd">            identified value regardless of statistical significance).</span>
+<span class="sd">            ``None`` (default) includes every joint-placement parameter.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``{&quot;robot_state_publisher&quot;: {&quot;geometric_calibration&quot;: {key: value}}}``</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        CalibrationError: Propagated from ``redistribute_parameters()`` if</span>
+<span class="sd">            ``solve()``/``create_param_list()`` haven&#39;t run.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">redistributed</span> <span class="o">=</span> <span class="n">calibrator</span><span class="o">.</span><span class="n">redistribute_parameters</span><span class="p">()</span>
+
+    <span class="n">exclude</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">calibrator</span><span class="o">.</span><span class="n">calib_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;known_baseframe&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="n">row_names</span> <span class="o">=</span> <span class="n">calibrator</span><span class="o">.</span><span class="n">calib_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;base_mapping_row_names&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">exclude</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">row_names</span><span class="p">[:</span><span class="mi">6</span><span class="p">])</span>
+
+    <span class="n">geometric_calibration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">redistributed</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">exclude</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="n">_parse_param_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">parsed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">parsed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;joint_placement&quot;</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">sub_idx</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">parsed</span>
+
+        <span class="n">value</span><span class="p">,</span> <span class="n">std_dev</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;std_dev&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">min_sigma</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sigma</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">/</span> <span class="n">std_dev</span> <span class="k">if</span> <span class="n">std_dev</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sigma</span> <span class="o">&lt;</span> <span class="n">min_sigma</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+        <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_pal_joint_name</span><span class="p">(</span><span class="n">target</span><span class="p">)</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">_AXIS_SUFFIX</span><span class="p">[</span><span class="n">sub_idx</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">geometric_calibration</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;robot_state_publisher&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;geometric_calibration&quot;</span><span class="p">:</span> <span class="n">geometric_calibration</span><span class="p">}}</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="figaroh.tools.geometric_calibration_export.export_geometric_calibration_yaml" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">export_geometric_calibration_yaml</span><span class="p">(</span><span class="n">calibrator</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">min_sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">header_comment</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#figaroh.tools.geometric_calibration_export.export_geometric_calibration_yaml" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>:func:<code>build_geometric_calibration</code> + write as YAML, PAL deploy-ready.</p>
+<p>Matches <code>figaroh_tiagoPro/data/master_calibration_*.yaml</code>'s format
+exactly (same nesting, same key style), so the output drops in at
+<code>/etc/calibration/master_calibration.yaml</code> on a PAL robot unchanged.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>calibrator</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A solved <code>BaseCalibration</code> instance.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>output_path</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Destination YAML file path.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>min_sigma</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>See :func:<code>build_geometric_calibration</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>header_comment</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional single-line comment written above the
+YAML document (e.g. source data file, sample count, RMSE) —
+matches the one-line provenance header every hand-curated
+<code>master_calibration_*.yaml</code> carries today.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>output_path</code>, unchanged, for chaining.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/figaroh/tools/geometric_calibration_export.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">export_geometric_calibration_yaml</span><span class="p">(</span>
+    <span class="n">calibrator</span><span class="p">,</span>
+    <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">min_sigma</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">header_comment</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;:func:`build_geometric_calibration` + write as YAML, PAL deploy-ready.</span>
+
+<span class="sd">    Matches ``figaroh_tiagoPro/data/master_calibration_*.yaml``&#39;s format</span>
+<span class="sd">    exactly (same nesting, same key style), so the output drops in at</span>
+<span class="sd">    ``/etc/calibration/master_calibration.yaml`` on a PAL robot unchanged.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        calibrator: A solved ``BaseCalibration`` instance.</span>
+<span class="sd">        output_path: Destination YAML file path.</span>
+<span class="sd">        min_sigma: See :func:`build_geometric_calibration`.</span>
+<span class="sd">        header_comment: Optional single-line comment written above the</span>
+<span class="sd">            YAML document (e.g. source data file, sample count, RMSE) —</span>
+<span class="sd">            matches the one-line provenance header every hand-curated</span>
+<span class="sd">            ``master_calibration_*.yaml`` carries today.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``output_path``, unchanged, for chaining.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">build_geometric_calibration</span><span class="p">(</span><span class="n">calibrator</span><span class="p">,</span> <span class="n">min_sigma</span><span class="o">=</span><span class="n">min_sigma</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">header_comment</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">header_comment</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Geometric calibration written to </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output_path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output_path</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
