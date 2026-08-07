@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.7] - 2026-08-07
+
 ### Added
 
 - `feat(calibration)`: `BaseCalibration.redistribute_parameters()` —
