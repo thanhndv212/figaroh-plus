@@ -24,6 +24,7 @@ not, and an auto-generated "insights" list flagging things worth a
 second look.
 """
 
+import logging
 import math
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -43,6 +44,9 @@ from figaroh.tools._report_common import (
     _series_panel_section,
     _uncertainty_tier,
 )
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 OUTLIER_WARN_PCT = 10.0
 
@@ -341,6 +345,42 @@ def _validation_section(validation: Optional[Dict[str, Any]]) -> str:
     """
 
 
+def _redistributed_section(redistributed: Optional[Dict[str, Dict[str, float]]]) -> str:
+    """Render the minimum-norm-redistributed standard-parameter table.
+
+    Shares ``_param_uncertainty_section`` verbatim with the base-only
+    "Parameter uncertainty" section above it — same table/tier-bar
+    rendering, different (larger, redistributed) parameter set.
+    """
+    if not redistributed:
+        return (
+            '<p class="muted">Redistribution not available for this run '
+            "(requires create_param_list() to have populated the "
+            "base-mapping; see BaseCalibration.redistribute_parameters).</p>"
+        )
+
+    names = list(redistributed.keys())
+    values = [redistributed[n]["value"] for n in names]
+    std_dev = [redistributed[n]["std_dev"] for n in names]
+    std_pctg = [
+        100.0 * sd / abs(v) if v != 0 else float("nan")
+        for v, sd in zip(values, std_dev)
+    ]
+    intro = (
+        '<p class="muted">Minimum-norm redistribution of the fitted base '
+        "parameters onto the full standard-parameter set (see "
+        "TIAGO_CALIBRATION_ANALYSIS.md §8) — includes parameters silently "
+        "left at their nominal value (0) in the base-only fit above, "
+        "because they were structurally redundant with another parameter "
+        "rather than independently identifiable. Does not change what the "
+        "model predicts; only the standard-error column here reflects the "
+        "minimum-norm estimator's own sensitivity to noise, not an "
+        "unconditional physical uncertainty for that individual "
+        "parameter.</p>"
+    )
+    return intro + _param_uncertainty_section(names, std_dev, std_pctg, values)
+
+
 def generate_calibration_report(
     calibrator, output_path: Optional[str] = None, title: Optional[str] = None
 ) -> str:
@@ -374,6 +414,12 @@ def generate_calibration_report(
         validation = results_data["validation_metrics"]
 
     insights = _build_insights(eval_, n_samples, param_names, validation)
+
+    redistributed = None
+    try:
+        redistributed = calibrator.redistribute_parameters()
+    except Exception as e:
+        logger.debug("redistribute_parameters unavailable for report: %s", e)
 
     provenance = getattr(calibrator, "_run_provenance", None)
     report_title = title or (
@@ -433,7 +479,13 @@ def generate_calibration_report(
         param_names,
         eval_.get("param_stdev", []),
         eval_.get("param_stddev_percentage", []),
+        eval_.get("param_values"),
     )}</div>
+  </section>
+
+  <section>
+    <h2>Redistributed standard parameters</h2>
+    <div class="card">{_redistributed_section(redistributed)}</div>
   </section>
 
   <section>

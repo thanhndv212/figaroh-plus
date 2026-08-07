@@ -7,6 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `feat(calibration)`: `BaseCalibration.redistribute_parameters()` —
+  minimum-norm redistribution of fitted base-parameter values (and their
+  covariance) onto the full standard-parameter set, via
+  `figaroh.tools.qrdecomposition.redistribute_min_norm`/
+  `propagate_covariance_min_norm` (Moore-Penrose pseudoinverse of the
+  base-mapping matrix `M`, `phi_base = M @ theta_r`). Previously,
+  `calculate_base_kinematics_regressor` already computed this combination
+  internally but discarded it, deploying each fitted value under one
+  arbitrary representative parameter name with the rest of its redundant
+  group implicitly left at 0 — this is one choice among infinitely many
+  that reproduce the same fit. Redistribution spreads the fitted value
+  across the whole group instead (round-trips exactly to the same
+  predictions), and the propagated covariance flags which directions are
+  genuinely underdetermined rather than reporting false precision. Opt-in;
+  no change to existing `solve()`/report behavior. See
+  `TIAGO_CALIBRATION_ANALYSIS.md` §8 for the full motivation and literature
+  context.
+- `feat(report)`: the HTML calibration report now includes a
+  "Redistributed standard parameters" section, calling the above
+  `redistribute_parameters()` on the live calibrator and rendering it
+  through the same `_param_uncertainty_section` table used for the
+  base-only fit — degrades to a muted "not available" message rather than
+  failing when redistribution isn't possible for a given run.
+- `feat(tools)`: `figaroh.tools.geometric_calibration_export` —
+  `build_geometric_calibration()`/`export_geometric_calibration_yaml()`
+  produce the PAL Robotics `robot_state_publisher.geometric_calibration`
+  runtime-correction YAML (the format hand-curated to date in
+  `figaroh_tiagoPro/data/master_calibration_*.yaml`) directly from a
+  solved `BaseCalibration` instance's redistributed parameters, with an
+  optional `min_sigma` threshold reproducing the "conservative" (≥2σ)
+  deploy variant. Reuses `urdf_exporter._parse_param_name` for
+  joint/axis parsing; excludes the co-estimated-base-merged parameter
+  block structurally (via `base_mapping_row_names`) rather than by name
+  pattern, so it's robust to whatever display renaming a `BaseCalibration`
+  subclass applies to `calib_config["param_name"]`.
+- `feat(examples)`: `tiago`, `tiago_pro`, `ur10`, and `talos` example
+  calibration scripts now export `master_calibration.yaml` (full) and
+  `master_calibration_conservative.yaml` (≥2σ) to the run directory by
+  default alongside `report.html`, via the new
+  `geometric_calibration_export` module — new `--geometric-calibration-yaml`
+  CLI flag (default on) to opt out, mirroring the existing `--html-report`
+  flag.
+- `feat(report)`: both the "Parameter uncertainty" table (base-only fit)
+  and the new "Redistributed standard parameters" table now show each
+  parameter's actual identified **value**, not just its standard error —
+  `_param_uncertainty_section` gained an optional `values` column, and
+  `BaseCalibration`'s stored evaluation metrics gained `param_values`
+  (`result.x`) alongside the existing `param_stdev`/`param_stddev_percentage`
+  so the report has a value to show. The identification report's
+  base-parameter table picks up the same column for free (`phi_base` was
+  already computed there, just not threaded through to the table).
+  Backward compatible: a caller/older run without `param_values` renders
+  "—" instead of failing.
+
 ## [0.4.6] - 2026-08-06
 
 ### Fixed

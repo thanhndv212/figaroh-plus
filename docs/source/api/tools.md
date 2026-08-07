@@ -118,6 +118,18 @@ Applies calibrated joint parameters back onto a URDF file.
     options:
       show_root_heading: false
 
+## Geometric Calibration Export
+
+Produces the PAL Robotics `robot_state_publisher.geometric_calibration`
+runtime-correction YAML (e.g. `/etc/calibration/master_calibration.yaml`)
+from a solved calibrator's redistributed parameters — a different deploy
+target from URDF Export above (a small runtime overlay applied on top of
+the original URDF, not a modified URDF file).
+
+::: figaroh.tools.geometric_calibration_export
+    options:
+      show_root_heading: false
+
 ## Export Validation
 
 FK consistency checks and interactive viser visualization for a

@@ -30,7 +30,9 @@ from figaroh.calibration.calibration_tools import (
     calc_updated_fkm,
     update_joint_placement,
     get_rel_transform,
+    calculate_base_kinematics_regressor,
 )
+from figaroh.tools.qrdecomposition import redistribute_min_norm
 
 
 def _base_calib_config(**overrides):
@@ -286,3 +288,85 @@ class TestMultiMarkerGuard:
 
         with pytest.raises(NotImplementedError):
             calc_updated_fkm(model, data, np.zeros(1), q, calib_config)
+
+
+def _two_joint_full_params_config(model, **overrides):
+    j1 = model.getJointId("joint1")
+    j2 = model.getJointId("joint2")
+    config = _base_calib_config(
+        start_frame="base_link",
+        end_frame="link2",
+        actJoint_idx=[j1, j2],
+        measurability=[True] * 6,
+        calibration_index=6,
+        free_flyer=False,
+        NbSample=8,
+        q0=np.zeros(model.nq),
+        config_idx=np.arange(model.nq),
+        param_name=[],
+    )
+    config.update(overrides)
+    return config
+
+
+class TestBaseMappingSideChannel:
+    """calculate_base_kinematics_regressor stashes the structural
+    base-mapping matrix (phi_base = M @ theta_r) into calib_config so
+    callers can redistribute a fitted base-parameter vector back onto the
+    full standard-parameter set instead of leaving eliminated members
+    implicitly at 0 -- see BaseCalibration.redistribute_parameters and
+    qrdecomposition.redistribute_min_norm.
+
+    two_joint_urdf's joint2 (axis Y) sits on a pure X-offset from joint1
+    (axis X), with nothing decoupling their X-translation/X-rotation: this
+    reliably reduces 12 candidate params (6/joint) to 10 base params,
+    eliminating d_px_joint2/d_phix_joint2 as *exact* duplicates of
+    d_px_joint1/d_phix_joint1 (coefficient 1.0) -- a small, deterministic,
+    real instance of the redistribution problem, not a synthetic stand-in.
+    """
+
+    def test_base_mapping_keys_present_with_consistent_shapes(self, two_joint_urdf):
+        model = pin.buildModelFromUrdf(two_joint_urdf)
+        data = model.createData()
+        calib_config = _two_joint_full_params_config(model)
+
+        calculate_base_kinematics_regressor([], model, data, calib_config)
+
+        M = calib_config["base_mapping_matrix"]
+        full_names = calib_config["base_mapping_param_names"]
+        row_names = calib_config["base_mapping_row_names"]
+        start, end = calib_config["base_mapping_slice"]
+
+        assert M.shape == (len(row_names), len(full_names))
+        assert end - start == len(row_names)
+        assert calib_config["param_name"][start:end] == row_names
+        # This fixture is known to have a genuine reduction (not full rank).
+        assert M.shape[0] < M.shape[1]
+
+    def test_redistribution_recovers_the_known_duplicate_pair(self, two_joint_urdf):
+        model = pin.buildModelFromUrdf(two_joint_urdf)
+        data = model.createData()
+        calib_config = _two_joint_full_params_config(model)
+
+        calculate_base_kinematics_regressor([], model, data, calib_config)
+        M = calib_config["base_mapping_matrix"]
+        full_names = calib_config["base_mapping_param_names"]
+
+        # d_px_joint2/d_phix_joint2 are eliminated -- absent from param_name,
+        # implicitly 0 under today's deploy.
+        assert "d_px_joint2" not in calib_config["param_name"]
+        assert "d_phix_joint2" not in calib_config["param_name"]
+
+        rng = np.random.default_rng(42)
+        phi_base = rng.normal(size=M.shape[0])
+        theta_full = redistribute_min_norm(M, phi_base)
+        values = dict(zip(full_names, theta_full))
+
+        # Round-trips exactly: same predictions as the base-only fit.
+        np.testing.assert_allclose(M @ theta_full, phi_base, rtol=1e-8, atol=1e-10)
+
+        # The known exact duplicates get equal (not one-hot: 100%/0%) credit.
+        assert values["d_px_joint2"] != 0.0
+        assert values["d_px_joint2"] == pytest.approx(values["d_px_joint1"])
+        assert values["d_phix_joint2"] != 0.0
+        assert values["d_phix_joint2"] == pytest.approx(values["d_phix_joint1"])

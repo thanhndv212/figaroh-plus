@@ -9,7 +9,13 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
 try:
-    from figaroh.tools.qrdecomposition import QRDecomposer, QR_pivoting, double_QR
+    from figaroh.tools.qrdecomposition import (
+        QRDecomposer,
+        QR_pivoting,
+        double_QR,
+        redistribute_min_norm,
+        propagate_covariance_min_norm,
+    )
 except ImportError as e:
     print(f"Import error: {e}")
     print("Make sure the figaroh package is installed or the path is correct")
@@ -451,6 +457,91 @@ class TestNumericalImprovements:
         assert not np.allclose(
             beta_flat, rounded_flat, atol=0
         ), "beta appears to be rounded to 6dp; expected full precision"
+
+
+class TestRedistribution:
+    """Tests for redistribute_min_norm / propagate_covariance_min_norm."""
+
+    def test_round_trip_property(self):
+        """M @ redistribute_min_norm(M, phi_base) reproduces phi_base."""
+        rng = np.random.default_rng(10)
+        A = rng.normal(size=(30, 3))
+        W = np.column_stack([A, A @ rng.normal(size=(3, 2))])
+        params = [f"p{i}" for i in range(W.shape[1])]
+        tau = rng.normal(size=W.shape[0])
+
+        dec = QRDecomposer(tolerance=1e-7)
+        dec.double_decomposition(tau, W, params)
+        M = dec.get_M()
+
+        phi_base = rng.normal(size=M.shape[0])
+        theta_r_hat = redistribute_min_norm(M, phi_base)
+
+        assert theta_r_hat.shape == (M.shape[1],)
+        np.testing.assert_allclose(M @ theta_r_hat, phi_base, rtol=1e-6, atol=1e-9)
+
+    def test_minimum_norm_splits_equal_coefficients_evenly(self):
+        """Two standard params with equal coefficients in the same base
+        combination get an equal (not one-hot) share of the fitted value."""
+        # phi_base = 1*theta_0 + 1*theta_1 -- exactly redundant, equal weight.
+        M = np.array([[1.0, 1.0]])
+        phi_base = np.array([10.0])
+
+        theta_r_hat = redistribute_min_norm(M, phi_base)
+
+        np.testing.assert_allclose(theta_r_hat, [5.0, 5.0], atol=1e-10)
+        # Still round-trips to the original fitted combination.
+        np.testing.assert_allclose(M @ theta_r_hat, phi_base, atol=1e-10)
+
+    def test_minimum_norm_weights_by_coefficient_magnitude(self):
+        """Unequal coefficients (phi_base = theta_0 + 2*theta_1) split
+        unevenly, favoring the parameter with the larger coefficient."""
+        M = np.array([[1.0, 2.0]])
+        phi_base = np.array([10.0])
+
+        theta_r_hat = redistribute_min_norm(M, phi_base)
+
+        np.testing.assert_allclose(theta_r_hat, [2.0, 4.0], atol=1e-10)
+        np.testing.assert_allclose(M @ theta_r_hat, phi_base, atol=1e-10)
+
+    def test_redistribution_matches_one_hot_when_no_redundancy(self):
+        """A full-rank (square) M has a unique inverse -- redistribution
+        reduces to the ordinary (not merely minimum-norm) solution, and
+        there is no group to spread credit across."""
+        rng = np.random.default_rng(11)
+        M = rng.normal(size=(4, 4))
+        while abs(np.linalg.det(M)) < 1e-3:
+            M = rng.normal(size=(4, 4))
+        phi_base = rng.normal(size=4)
+
+        theta_r_hat = redistribute_min_norm(M, phi_base)
+        expected = np.linalg.solve(M, phi_base)
+
+        np.testing.assert_allclose(theta_r_hat, expected, rtol=1e-6)
+
+    def test_propagate_covariance_shape_and_symmetry(self):
+        """C_full is symmetric, correctly shaped, and positive semidefinite
+        (guaranteed since M+ @ C_base @ M+.T with PSD C_base is PSD)."""
+        rng = np.random.default_rng(12)
+        A = rng.normal(size=(30, 3))
+        W = np.column_stack([A, A @ rng.normal(size=(3, 2))])
+        params = [f"p{i}" for i in range(W.shape[1])]
+        tau = rng.normal(size=W.shape[0])
+
+        dec = QRDecomposer(tolerance=1e-7)
+        dec.double_decomposition(tau, W, params)
+        M = dec.get_M()
+
+        rank = M.shape[0]
+        L = rng.normal(size=(rank, rank))
+        C_base = L @ L.T  # guaranteed PSD
+
+        C_full = propagate_covariance_min_norm(M, C_base)
+
+        assert C_full.shape == (M.shape[1], M.shape[1])
+        np.testing.assert_allclose(C_full, C_full.T, rtol=1e-8, atol=1e-12)
+        eigvals = np.linalg.eigvalsh(C_full)
+        assert np.all(eigvals >= -1e-8), f"C_full has negative eigenvalues: {eigvals}"
 
 
 if __name__ == "__main__":

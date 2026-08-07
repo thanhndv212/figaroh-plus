@@ -43,6 +43,10 @@ from figaroh.calibration.calibration_tools import (
     calc_updated_fkm,
     initialize_variables,
 )
+from figaroh.tools.qrdecomposition import (
+    redistribute_min_norm,
+    propagate_covariance_min_norm,
+)
 from figaroh.utils.config_parser import (
     UnifiedConfigParser,
     create_task_config,
@@ -1103,6 +1107,7 @@ class BaseCalibration(ABC):
             "max_error": max_error,
             "mean_sample_rms": mean_sample_rms,
             "std_sample_rms": std_sample_rms,
+            "param_values": list(result.x),
             "param_stdev": self.std_dev,
             "param_stddev_percentage": self.std_pctg,
             "n_outliers": len(outlier_indices),
@@ -1538,6 +1543,81 @@ class BaseCalibration(ABC):
             self.std_pctg = std_pctg
         except Exception as e:
             raise CalibrationError(f"Standard deviation calculation failed: {e}")
+
+    def redistribute_parameters(self) -> dict:
+        """Minimum-norm redistribution of fitted base-parameter values (and
+        their covariance) onto the full standard-parameter set.
+
+        `create_param_list()`'s QR reduction keeps only a maximal
+        linearly-independent subset of the 6-per-joint candidate
+        parameters (the "base" parameters actually solved for); every
+        other candidate is an exact linear combination of that subset and
+        is implicitly left at its nominal value (0) when only
+        `calib_config["param_name"]` is deployed. This method instead
+        spreads each fitted base-parameter value across its full
+        redundant group via the Moore-Penrose pseudoinverse of the
+        base-mapping matrix `M` (`phi_base = M @ theta_r`), plus the
+        corresponding covariance propagation — see
+        :func:`figaroh.tools.qrdecomposition.redistribute_min_norm` /
+        :func:`~figaroh.tools.qrdecomposition.propagate_covariance_min_norm`.
+
+        This does not change what the model predicts (the redistributed
+        vector round-trips exactly through `M` back to the original fitted
+        base values) — only how the identified correction is distributed
+        across individual joint parameters. It does not add information:
+        non-identifiable directions remain non-identifiable, and the
+        reported `std_dev` for a redistributed parameter reflects the
+        minimum-norm estimator's own sensitivity, not an unconditional
+        physical uncertainty. See `TIAGO_CALIBRATION_ANALYSIS.md` §8 for
+        the full discussion and literature context.
+
+        Only covers parameters that went through the
+        `eliminate_non_dynaffect`/QR reduction (per-joint DH offsets);
+        marker/tip parameters added afterward by `add_pee_name` are
+        already individually free-standing (not part of a redundant
+        group) and are not included here.
+
+        Returns:
+            dict: ``{name: {"value": float, "std_dev": float}}`` for every
+            standard parameter in
+            ``calib_config["base_mapping_param_names"]`` — a strict
+            superset of ``calib_config["param_name"]``.
+
+        Raises:
+            CalibrationError: If `solve()` hasn't run yet (no `_C_param`/
+                `self.var_`), or `create_param_list()` didn't populate the
+                base-mapping keys in `calib_config`.
+        """
+        C_param = getattr(self, "_C_param", None)
+        var_ = getattr(self, "var_", None)
+        if C_param is None or var_ is None:
+            raise CalibrationError(
+                "redistribute_parameters requires solve() to have run first"
+            )
+        M = self.calib_config.get("base_mapping_matrix")
+        full_names = self.calib_config.get("base_mapping_param_names")
+        base_slice = self.calib_config.get("base_mapping_slice")
+        if M is None or full_names is None or base_slice is None:
+            raise CalibrationError(
+                "base mapping matrix not available in calib_config -- "
+                "was create_param_list() run?"
+            )
+
+        # base_slice locates the fitted base-parameter values by position
+        # in self.var_ (built one-to-one, in order, from calib_config
+        # ["param_name"] -- see initialize_variables), NOT by name: the
+        # names at these positions may have been overwritten in place by
+        # add_base_name since create_param_list() ran.
+        start, end = base_slice
+        phi_base = np.asarray(var_[start:end])
+        theta_full = redistribute_min_norm(M, phi_base)
+        C_full = propagate_covariance_min_norm(M, C_param[start:end, start:end])
+        std_full = np.sqrt(np.abs(np.diag(C_full)))
+
+        return {
+            name: {"value": float(theta_full[i]), "std_dev": float(std_full[i])}
+            for i, name in enumerate(full_names)
+        }
 
     def plot_errors_distribution(self):
         """Plot error distribution analysis for calibration assessment.
