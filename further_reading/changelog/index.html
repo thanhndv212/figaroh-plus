@@ -1638,6 +1638,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="[Unreleased]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1781,7 +1798,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#changed" class="md-nav__link">
+  <a href="#changed_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Changed
@@ -1831,7 +1848,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#changed_1" class="md-nav__link">
+  <a href="#changed_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         Changed
@@ -1959,7 +1976,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#changed_2" class="md-nav__link">
+  <a href="#changed_3" class="md-nav__link">
     <span class="md-ellipsis">
       
         Changed
@@ -2059,7 +2076,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#changed_3" class="md-nav__link">
+  <a href="#changed_4" class="md-nav__link">
     <span class="md-ellipsis">
       
         Changed
@@ -2447,6 +2464,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="[Unreleased]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -2590,7 +2624,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#changed" class="md-nav__link">
+  <a href="#changed_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Changed
@@ -2640,7 +2674,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#changed_1" class="md-nav__link">
+  <a href="#changed_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         Changed
@@ -2768,7 +2802,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#changed_2" class="md-nav__link">
+  <a href="#changed_3" class="md-nav__link">
     <span class="md-ellipsis">
       
         Changed
@@ -2868,7 +2902,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#changed_3" class="md-nav__link">
+  <a href="#changed_4" class="md-nav__link">
     <span class="md-ellipsis">
       
         Changed
@@ -3173,6 +3207,53 @@ copy to keep in sync.</p>
 <p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
 and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
 <h3 id="unreleased">[Unreleased]<a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h3>
+<h4 id="changed">Changed<a class="headerlink" href="#changed" title="Permanent link">&para;</a></h4>
+<ul>
+<li><code>docs</code>: Consolidated <code>docs/decisions/</code> from 8 documents to 6 by merging
+  related comparisons/analyses/reviews into single multi-part documents,
+  each carrying its own verified implementation-status section rather than
+  trusting the original "no implementation yet"/status-line claims:</li>
+<li><code>external-tool-comparisons.md</code> — Part A (<code>robot_calibration</code> comparison<ul>
+<li>calibration-composability adaptation roadmap), Part B (MuJoCo <code>sysid</code>
+comparison), Part C (the full reporting/verification infrastructure
+build-out that Part B's comparison produced).</li>
+</ul>
+</li>
+<li><code>tiago-calibration-and-port-review.md</code> — Part A (TIAGo/TIAGo Pro
+    structural &amp; statistical calibration analysis, redistribution
+    rationale), Part B (eye-hand + suspension identification port review).</li>
+<li>Remaining decision docs renamed to consistent kebab-case filenames
+    (<code>figaroh-examples-improvement_plan.md</code>, <code>urdf_exporter.md</code>,
+    <code>validation-quality-report.md</code>), with stale status markers corrected
+    against the current codebase (e.g. <code>IMPROVEMENT_PLAN.md</code>'s Phase 7 was
+    falsely marked all-complete; only 1 of 4 items actually was).</li>
+<li><code>docs</code>: Rewrote <code>ROADMAP.md</code> (v2.0 → v2.1) as a single coherent document:
+  added a table of contents, a References section linking every roadmap
+  track to its source <code>docs/decisions/</code> document, and a consolidated
+  Estimated Timeline spanning all tracks. Added three tracks that
+  previously existed only as detailed decision docs with no roadmap-level
+  rollup — <strong>Track C</strong> (Reporting, Verification &amp; Quality Infrastructure),
+  <strong>Track D</strong> (Calibration Layer Composability, <code>robot_calibration</code>-inspired),
+  <strong>Track E</strong> (Example Ecosystem Parity &amp; Robot Ports). Re-verified every
+  Track A/B status marker against the codebase and test suite rather than
+  carrying the prior draft forward; corrected one stale claim
+  (<code>integration/api.py</code>/<code>RobotIdentificationSystem</code> is implemented, was
+  marked "not started"). Removed the old per-version "Revision History"
+  section, which had drifted into duplicating this changelog, in favor of
+  a short roadmap-document-only history.</li>
+<li><code>docs</code>: Added <strong>Track F — Deployment &amp; Sim-to-Real Integration</strong> to
+  <code>ROADMAP.md</code>, explicitly marked as ongoing research rather than a
+  committed track. Sourced from a new
+  <code>docs/decisions/sim2real-modelbased-deployment.md</code> positioning document
+  (moved in from a working draft), which proposes a model-based
+  deployment/control layer for RL/IL policies as FIGAROH's headline value
+  proposition alongside its existing identification/calibration role.
+  Cross-referenced its phase-level overlaps with existing tracks (backend
+  cross-validation, online identification, URDF/friction export) so they
+  supersede rather than duplicate the corresponding Track A/B/D/E items,
+  and flagged ecosystem-integration questions (e.g. mjlab, motion-retargeting
+  libraries) as open research, not yet scoped into any phase.</li>
+</ul>
 <h3 id="047-2026-08-07">[0.4.7] - 2026-08-07<a class="headerlink" href="#047-2026-08-07" title="Permanent link">&para;</a></h3>
 <h4 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h4>
 <ul>
@@ -3488,7 +3569,7 @@ Part C.</p>
   Coriolis matrix (finite-difference Jacobian/2), mass matrix (adds missing
   <code>mj_forward</code> call).</li>
 </ul>
-<h4 id="changed">Changed<a class="headerlink" href="#changed" title="Permanent link">&para;</a></h4>
+<h4 id="changed_1">Changed<a class="headerlink" href="#changed_1" title="Permanent link">&para;</a></h4>
 <ul>
 <li><code>breaking(export_validation)</code>: Rename <code>trajectory_errors()</code> → <code>fk_consistency_check()</code>
   and <code>TrajectoryErrors</code> → <code>FkConsistencyResult</code> — clarifies this is a file-integrity
@@ -3535,7 +3616,7 @@ Part C.</p>
 <li>Example YAML comment block for <code>cad_constraints</code> in
   <code>figaroh-examples/examples/templates/manipulator_robot.yaml</code>.</li>
 </ul>
-<h4 id="changed_1">Changed<a class="headerlink" href="#changed_1" title="Permanent link">&para;</a></h4>
+<h4 id="changed_2">Changed<a class="headerlink" href="#changed_2" title="Permanent link">&para;</a></h4>
 <ul>
 <li>All new parameters are optional with safe defaults — fully backward-compatible.</li>
 </ul>
@@ -3654,7 +3735,7 @@ Part C.</p>
 <li><code>fix(reconstruction)</code>: add missing <code>run_option_a_reconstruction</code> alias that
   blocked package-level import</li>
 </ul>
-<h4 id="changed_2">Changed<a class="headerlink" href="#changed_2" title="Permanent link">&para;</a></h4>
+<h4 id="changed_3">Changed<a class="headerlink" href="#changed_3" title="Permanent link">&para;</a></h4>
 <ul>
 <li><code>refactor(qrdecomposition)</code>: replace non-pivoted <code>numpy.linalg.qr</code> with
   <code>scipy.linalg.qr(..., pivoting=True)</code> in <code>_identify_base_parameters</code> —
@@ -3753,7 +3834,7 @@ Part C.</p>
 <li><strong>Test Coverage</strong>: All 18 new solver tests passing</li>
 </ul>
 <h3 id="024-2025-09-08">[0.2.4] - 2025-09-08<a class="headerlink" href="#024-2025-09-08" title="Permanent link">&para;</a></h3>
-<h4 id="changed_3">Changed<a class="headerlink" href="#changed_3" title="Permanent link">&para;</a></h4>
+<h4 id="changed_4">Changed<a class="headerlink" href="#changed_4" title="Permanent link">&para;</a></h4>
 <ul>
 <li><strong>Optional Dependencies</strong>: Removed <code>cyipopt</code> from required dependencies</li>
 <li>cyipopt is now truly optional and loaded only when IPOPT optimization is used</li>
