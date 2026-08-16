@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `docs`: Consolidated `docs/decisions/` from 8 documents to 6 by merging
+  related comparisons/analyses/reviews into single multi-part documents,
+  each carrying its own verified implementation-status section rather than
+  trusting the original "no implementation yet"/status-line claims:
+  - `external-tool-comparisons.md` — Part A (`robot_calibration` comparison
+    + calibration-composability adaptation roadmap), Part B (MuJoCo `sysid`
+    comparison), Part C (the full reporting/verification infrastructure
+    build-out that Part B's comparison produced).
+  - `tiago-calibration-and-port-review.md` — Part A (TIAGo/TIAGo Pro
+    structural & statistical calibration analysis, redistribution
+    rationale), Part B (eye-hand + suspension identification port review).
+  - Remaining decision docs renamed to consistent kebab-case filenames
+    (`figaroh-examples-improvement_plan.md`, `urdf_exporter.md`,
+    `validation-quality-report.md`), with stale status markers corrected
+    against the current codebase (e.g. `IMPROVEMENT_PLAN.md`'s Phase 7 was
+    falsely marked all-complete; only 1 of 4 items actually was).
+- `docs`: Rewrote `ROADMAP.md` (v2.0 → v2.1) as a single coherent document:
+  added a table of contents, a References section linking every roadmap
+  track to its source `docs/decisions/` document, and a consolidated
+  Estimated Timeline spanning all tracks. Added three tracks that
+  previously existed only as detailed decision docs with no roadmap-level
+  rollup — **Track C** (Reporting, Verification & Quality Infrastructure),
+  **Track D** (Calibration Layer Composability, `robot_calibration`-inspired),
+  **Track E** (Example Ecosystem Parity & Robot Ports). Re-verified every
+  Track A/B status marker against the codebase and test suite rather than
+  carrying the prior draft forward; corrected one stale claim
+  (`integration/api.py`/`RobotIdentificationSystem` is implemented, was
+  marked "not started"). Removed the old per-version "Revision History"
+  section, which had drifted into duplicating this changelog, in favor of
+  a short roadmap-document-only history.
+- `docs`: Added **Track F — Deployment & Sim-to-Real Integration** to
+  `ROADMAP.md`, explicitly marked as ongoing research rather than a
+  committed track. Sourced from a new
+  `docs/decisions/sim2real-modelbased-deployment.md` positioning document
+  (moved in from a working draft), which proposes a model-based
+  deployment/control layer for RL/IL policies as FIGAROH's headline value
+  proposition alongside its existing identification/calibration role.
+  Cross-referenced its phase-level overlaps with existing tracks (backend
+  cross-validation, online identification, URDF/friction export) so they
+  supersede rather than duplicate the corresponding Track A/B/D/E items,
+  and flagged ecosystem-integration questions (e.g. mjlab, motion-retargeting
+  libraries) as open research, not yet scoped into any phase.
+
 ## [0.4.7] - 2026-08-07
 
 ### Added
