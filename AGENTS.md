@@ -93,3 +93,21 @@ repo (`figaroh-examples`) and are excluded from this package's sdist.
   in library code.
 - `.github/skills/` and `ROADMAP_PRIVATE.md` are **gitignored** — local-only, not
   shipped. Do not treat them as committed repo content.
+
+## Before every push
+
+Docs here live in several places that don't auto-sync: `README.md`,
+`CHANGELOG.md`, `ARCHITECTURE.md`, `ROADMAP.md`, `docs/decisions/` (design
+rationale, not built into the site), `docs/source/` (the built MkDocs site).
+A change in one often leaves another stale — a renamed/merged decision doc
+breaks links elsewhere; a shipped feature leaves `ROADMAP.md`'s status
+marker wrong. Before `git push`:
+1. Grep for stale references to anything renamed/moved/merged this session:
+   `grep -rln "<old-name>" docs/ CHANGELOG.md README.md ARCHITECTURE.md ROADMAP.md`.
+2. Add a `CHANGELOG.md` `[Unreleased]` entry — this project logs doc-only
+   reorganizations too (`git log --grep "^docs"` for precedent), not just code.
+3. If a `ROADMAP.md`-tracked item's status changed, fix its marker rather
+   than leaving it stale.
+See the `figaroh-devops` skill's "Pre-Push Documentation Sync" section for
+the full checklist; its "Release Procedure" is the separate, heavier
+version-bump case.
