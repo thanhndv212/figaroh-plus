@@ -1,4 +1,670 @@
-# Roadmap: FIGAROH Quality & Reporting Infrastructure
+# FIGAROH vs External Calibration/Identification Tools
+
+**Status:** Active reference + adaptation roadmap
+**Scope:** Three documents combined here: two independent comparisons of
+FIGAROH against tools that solve adjacent problems — `robot_calibration`
+(ROS 2 kinematic/sensor calibration) and MuJoCo `sysid` (black-box
+simulation-based system identification) — plus the build-out roadmap that
+Part B's comparison directly produced. Parts A and B both exist to answer
+the same question from different angles: *what is FIGAROH's regressor/
+LM-based approach missing relative to tools built on a different
+paradigm?* Part C is where Part B's answer actually got implemented.
+
+- Part A source: `ROBOT_CALIBRATION_COMPARISON.md` (2026-08-16)
+- Part B source: `sysid-comparison-mujoco-vs-figaroh.md` (2026-07-10)
+- Part C source: `roadmap-mujoco-sysid-inspired-features.md`
+  (2026-07-10, consolidated 2026-07-11/12)
+
+---
+
+## 0. Cross-cutting takeaway
+
+Both comparisons converge on the same structural observation from opposite
+directions:
+
+- **`robot_calibration`** wins on *composability* — models × error blocks ×
+  multi-step × regularizer, all wired from config rather than code. FIGAROH's
+  `BaseCalibration` is one hard-coded SE3-pose residual, one solve.
+- **MuJoCo `sysid`** wins on *generality* — anything settable on an `MjSpec`
+  is identifiable, because it treats the simulator as a black box and pays
+  for that with a full rollout per iteration.
+- **FIGAROH** wins on both comparisons for the same reasons: exact
+  linear-in-parameters regressors (no iteration needed to evaluate a
+  candidate), closed-form physical consistency (SDP/LMI projection),
+  optimal experiment design (IPOPT exciting trajectories), and a proper
+  verification/reporting suite. Neither external tool attempts OED; neither
+  produces a machine-readable pass/fail report.
+
+The adaptation lesson is the same in both cases: **FIGAROH's analytic core
+is not the problem — its calibration layer's rigidity is.** Composable
+residuals (from `robot_calibration`) and a black-box rollout fallback (from
+MuJoCo sysid, for parameters with no clean regressor) are complementary,
+not competing, extensions to the same `BaseCalibration`/`BaseOptimalCalibration`
+template-method structure.
+
+**Part C is the one place any of this actually got built.** Of Part A's
+seven adaptation steps and Part B's four "Later" features (Features 2–4),
+none have landed. What *has* shipped — five full steps of real, tested
+code — is the reporting/verification infrastructure Part C tracks, which
+exists because verifying Part B's Feature 1b against a real UR10 example
+surfaced bugs bigger than that one feature. So the honest read of "what did
+this comparison exercise actually produce" is: not composable residuals,
+not camera intrinsics, not a rollout-refinement stage — but a
+machine-readable verification verdict, HTML diagnostic reports for both
+calibration and identification, and a static two-run compare page.
+
+---
+
+## Implementation status (verified 2026-08-16, against current `main`)
+
+### Part A — robot_calibration adaptation roadmap (§A.8): nothing has landed
+
+| Step | Description | Status |
+|---|---|---|
+| 1 | `Residual`/`ErrorBlock` abstraction | ⬜ Not started — no `calibration/residuals.py` or `error_blocks.py` in `src/figaroh` |
+| 2 | Multi-step calibration (`calibration_steps`) | ⬜ Not started — no `calibration_steps` config key anywhere in `src/figaroh` |
+| 3 | Prior/regularization residual (`PriorResidual`) | ⬜ Not started — no `PriorResidual`/`prior_params` |
+| 4 | Camera intrinsic model | ⬜ Not started — no `camera3d`/`ReprojectionResidual`/`fx,fy,cx,cy` free params |
+| 5 | Feature-finder / measurement ingestion layer | ⬜ Not started — `measurements/` is still just `measurement.py`, unchanged |
+| 6 | Export convention parity (`<calibration rising>` + camera YAML) | 🟡 Partial — `rising` tag export **exists** (`tools/urdf_exporter.py`); camera-intrinsics YAML exporter does **not** |
+| 7 | Mobile base + magnetometer (example-level) | ⬜ Not started — no such example in `figaroh-examples` |
+
+None of the four risks/decisions in §A.9 have been formally settled either —
+there's no registry-decorator pattern, distortion-model choice, etc. to
+point to yet.
+
+### Part B — MuJoCo sysid comparison: reference note, nothing to implement directly
+
+Part B proposes no roadmap of its own (it self-declares "not a decision") —
+its downstream build-out is Part C, below.
+
+### Part C — reporting/verification roadmap: partially implemented
+
+| Item | Status |
+|---|---|
+| Feature 1 — HTML diagnostic report (calibration) | ✅ Implemented |
+| Feature 1b — Terminal + HTML quality report (`BaseIdentification`) | ✅ Implemented |
+| Step 1 — Reshape bug fix + fallback-plotting dedup | ✅ Implemented |
+| Step 2 — Machine-readable `VerificationVerdict` | ✅ Implemented |
+| Step 3 — `series`/`compat` export extension | ✅ Implemented |
+| Step 4 — Before/after interactive panel | ✅ Implemented |
+| Step 5 — Static two-run compare page | ✅ Implemented |
+| Step 6 — Terminal + HTML reports for optimal-* tasks | ⬜ Proposed, not started — confirmed no `optimal_calibration_report.py`/`optimal_trajectory_report.py` in `src/figaroh/tools/` |
+| Step 7 — Unified report schema (spike) | ⬜ Not started |
+| Feature 2 — Generic `Parameter` + modifier abstraction | ⬜ Not started |
+| Feature 3 — Log-Cholesky pseudo-inertia parameterization | ⬜ Not started |
+| Feature 4 — Black-box rollout refinement stage | ⬜ Not started |
+
+⚠️ Known-unfixed bug still present, flagged in Part C's Feature 1b findings:
+`range(nq - 1)` ddq-indexing bug at
+`identification/identification_tools.py:245,254`, confirmed still in the
+code as of this verification pass.
+
+---
+
+# Part A — FIGAROH vs `robot_calibration`
+
+**Sources:** `robot_calibration` README + full source (indexed via
+`.codegraph/`), `figaroh` tree, `ARCHITECTURE.md`, `ROADMAP.md`.
+
+## A.1 Executive summary
+
+`robot_calibration` and FIGAROH are both "robot calibration" tools, but they
+solve **almost disjoint problems**:
+
+| | `robot_calibration` | FIGAROH |
+|---|---|---|
+| **Primary target** | Extrinsic/intrinsic **sensor & kinematic** calibration of a *live* robot | **Dynamics (inertial) identification** + **geometric** calibration of a *model* |
+| **What it estimates** | Joint offsets, frame/link offsets (6-DOF), camera intrinsics (pinhole), base/wheel/gyro, magnetometer bias | Per-link inertial parameters (mass, CoM, inertia), geometric DH/joint-offset parameters |
+| **Runtime** | Online — captures live sensor data (ROS 2 topics) | Offline — consumes recorded data files (CSV/trajectories) |
+| **Solver** | Ceres Solver (general nonlinear least squares, composable error blocks) | scipy `least_squares` (geometric) + regressor/QR linear solvers (identification) |
+| **Language** | C++17, ROS 2 | Python, backend-agnostic (Pinocchio / MuJoCo) |
+
+The single most valuable lesson from `robot_calibration` is its **"models ×
+error blocks" composable residual architecture** — a small set of
+reprojection models and residual types that combine arbitrarily, plus a
+**multi-step** and **regularization** mechanism. FIGAROH's calibration layer
+is comparatively monolithic (one `cost_function` per subclass, single
+solve). Several of these ideas map cleanly onto FIGAROH's existing
+structure.
+
+The comparison is **not** one-sided: FIGAROH is decisively stronger on
+dynamics identification, physical consistency, optimal experiment design,
+verification/reporting, and export breadth. Those are directions
+`robot_calibration` doesn't even attempt.
+
+## A.2 What `robot_calibration` actually is
+
+A ROS 2 metapackage (C++17) from Michael Ferguson / Fetch Robotics. Three
+nodes:
+
+- **`calibrate`** — the main node: capture data, optimize parameters,
+  export updated URDF + camera YAML.
+- **`base_calibration_node`** — mobile-base scaling factors (wheel
+  diameter, track width, gyro gain).
+- **`magnetometer_calibration`** — magnetometer hard-iron offset (soft-iron
+  TODO'd).
+
+### A.2.1 Core concepts
+
+**Two-phase workflow** (capture then optimize):
+
+1. **Capture.** A `CaptureManager` drives robot **chains** (via
+   `FollowJointTrajectory` action, or MoveIt `MoveGroup` for
+   collision-aware planning) through a set of **poses** (from YAML or a
+   rosbag). At each pose, **feature finders** produce **observations** —
+   collections of 3D/2D points detected by a "sensor."
+2. **Optimize.** A `CalibrationData` message (per sample: joint positions +
+   one observation per finder) is fed to an `Optimizer`, which builds Ceres
+   cost functions from **models** × **error blocks** and solves for **free
+   parameters** (offsets).
+
+### A.2.2 The three-plugin system
+
+Everything user-configurable is loaded by *type name* from ROS parameters
+(pluginlib-style):
+
+**Models** (reproject observation points into a common frame):
+- `chain3d` — KDL forward kinematics from `base_link` to a `frame` (tip).
+- `camera3d` — chain **plus pinhole camera model** (`cx, cy, fx, fy`).
+- `camera2d` — 2D image reprojection (for `CheckerboardFinder2d`).
+
+**Finders** (feature detectors producing observations):
+- `CheckerboardFinder` (3D point cloud), `CheckerboardFinder2d` (image).
+- `LedFinder` — actively toggles gripper LEDs, uses cloud-difference
+  tracking to locate them (checkerboard-free alternative).
+- `PlaneFinder` — RANSAC plane extraction (ground/wall alignment,
+  orientation-constrained).
+- `ScanFinder` — laser scan → repeated vertically (align laser vs camera).
+- `RobotFinder` — points on the robot's own mesh (body-frame alignment).
+
+**Error blocks** (cost functions / residuals):
+- `chain3d_to_chain3d` — reprojection distance between two 3D "sensors"
+  (the workhorse; ex-`camera3d_to_arm`).
+- `chain3d_to_camera2d` — pixel-space reprojection error.
+- `chain3d_to_plane` — point-to-plane distance (ground alignment).
+- `chain3d_to_mesh` — point-to-mesh distance (robot-body alignment).
+- `plane_to_plane` — normal + offset difference between two planes.
+- `outrageous` — **regularizer**: penalizes a free parameter leaving its
+  expected magnitude (joint/position/rotation scales).
+
+### A.2.3 Free parameter model (`OptimizationParams` / `OptimizationOffsets`)
+
+- **`free_params`** — single scalars: joint offsets, camera focal length,
+  driver offsets.
+- **`free_frames`** — 6-DOF transforms with **per-axis freedom** (x/y/z/
+  roll/pitch/yaw independently toggleable; angle-axis representation).
+  `free_frames_initial_values` seed the checkerboard pose.
+- **`calibration_steps`** — a **list of named steps**, each with its own
+  `models`, `free_params`, `free_frames`, `error_blocks`. Multi-step
+  calibration (e.g. first solve the checkerboard pose alone, then the joint
+  offsets, then the camera) is a first-class feature.
+
+### A.2.4 Export
+
+- **URDF:** `free_frames` → applied as **joint-origin offsets**;
+  `free_params` (joint offsets) → emitted as `<calibration rising="…">`
+  tags that drivers apply before/after the joint value.
+- **Camera YAML:** updated intrinsics for the camera driver.
+
+### A.2.5 Other nodes
+
+- **`base_calibration_node`** — `spin` / `rollout` motion steps; fits
+  `track_width_scale`, `imu_scale` (gyro gain), `rollout_scale` using
+  laser-scans of a wall + odom + IMU.
+- **`magnetometer_calibration`** — 4-parameter sphere fit (field strength +
+  3 hard-iron biases), Ceres auto-diff.
+- **Helpers:** `to_rpy` (axis-angle→RPY), `viz` / `viz_mesh` (debug
+  visualization), `capture_poses` (manual pose collection).
+
+### A.2.6 Solver details
+
+Ceres nonlinear least squares. Error blocks mostly use
+`DynamicNumericDiffCostFunction` (numeric Jacobians — no analytical
+derivatives), `outrageous` uses central differences, magnetometer uses
+`AutoDiffCostFunction`. A `max_num_iterations` default of 1000.
+
+## A.3 What FIGAROH is (ground truth, current tree)
+
+Verified against `figaroh/src/figaroh/` (Aug 2026), not just docs:
+
+| Layer | Modules | Highlights |
+|---|---|---|
+| **Workflow** | `calibration/`, `identification/`, `optimal/` | `Base*` abstract classes; users subclass `cost_function` etc. |
+| **Tools** | `tools/` | `RegressorBuilder`, `LinearSolver` (10+ methods: lstsq/qr/svd/ridge/lasso/elastic_net/tikhonov/constrained/robust/weighted), `QRDecomposer`, `CollisionManager`, `RobotIPOPTSolver`, `urdf_exporter`, `export_validation`, reporting |
+| **Backends** | `backends/` | `DynamicsBackend` (abstract) + `pinocchio.py` + `mujoco.py` |
+| **Integration** | `integration/api.py` | High-level API |
+| **Measurements** | `measurements/measurement.py` | ~70 lines — a thin data holder |
+
+**Calibration layer** (`calibration/base_calibration.py`, 2166 lines):
+- Template-method `BaseCalibration`: `initialize → solve → evaluate →
+  quality report → plot`.
+- `scipy.optimize.least_squares` (Levenberg-Marquardt) minimizing SE(3)
+  log-map residuals between measured and predicted end-effector/marker
+  poses.
+- Two calibration models: `full_params` (all geometric: DH, joint offsets)
+  and `joint_offset` (encoder offsets only).
+- Validation data, per-DOF stats, condition number, parameter correlation,
+  outlier removal.
+- **Eye-hand (camera) extrinsic** support exists in `config.py`
+  (`base_to_ref_frame`, `camera_frame`) — a camera *pose* as a free frame,
+  **not** pinhole intrinsics.
+
+**Identification layer**: regressor → zero-column elimination → decimation
+→ QR base parameters → solve (10+ methods) → physical-consistency
+validation → quality metrics. Plus `physical_consistency` (LMI/SDP),
+`reconstruction` (base→full), `cad_constraints`, friction/actuator-inertia/
+**joint-offset** additional parameters.
+
+**Optimal layer**: `BaseOptimalCalibration` (minimum-configuration
+selection for observability), `BaseOptimalTrajectory` (Fourier/B-spline
+exciting trajectories, condition-number minimization, collision avoidance,
+IPOPT).
+
+## A.4 Side-by-side comparison
+
+| Capability | `robot_calibration` | FIGAROH | Verdict |
+|---|---|---|---|
+| Inertial parameter identification (regressor/QR) | ❌ | ✅ (mature) | **FIGAROH** |
+| Physical consistency (LMI/SDP), reconstruction, CAD constraints | ❌ | ✅ | **FIGAROH** |
+| Geometric (kinematic) calibration — DH/joint offsets | ✅ (joint offsets, frames) | ✅ (`full_params`/`joint_offset`) | Tie (different param sets) |
+| Joint **zero-offset** calibration | ✅ `free_params` | ✅ `joint_offset` + `offset` in identification | Tie |
+| Camera **extrinsics** (sensor pose) | ✅ `free_frames` | ✅ eye-hand `camera_frame` | Tie |
+| Camera **intrinsics** (pinhole fx/fy/cx/cy, distortion) | ✅ `camera3d` model | ❌ | **`robot_calibration`** |
+| Live sensor data capture (ROS topics, bag) | ✅ | ❌ (offline files only) | **`robot_calibration`** |
+| Feature finders (checkerboard / LED / plane / scan / mesh) | ✅ (5+ plugins) | ❌ | **`robot_calibration`** |
+| Composable error blocks (sensor↔sensor, ↔plane, ↔mesh, plane↔plane) | ✅ | ❌ (single SE3 residual) | **`robot_calibration`** |
+| Multi-step / staged calibration | ✅ `calibration_steps` | ❌ (single solve) | **`robot_calibration`** |
+| Explicit regularization ("outrageous" prior/bounds) | ✅ | ⚠️ partial (solver bounds; ridge/tikhonov only in *identification*) | **`robot_calibration`** |
+| Mobile-base calibration (wheel/track/gyro) | ✅ | ❌ | **`robot_calibration`** |
+| Magnetometer / IMU calibration | ✅ | ❌ | **`robot_calibration`** |
+| Optimal experiment design (OED) | ⚠️ `capture_poses` (manual), `base_calibration` steps | ✅ (optimal postures + trajectories) | **FIGAROH** |
+| Collision-aware motion | ✅ MoveIt planning to capture pose | ✅ `CollisionManager` in trajectory opt | Tie |
+| General NLS solver with composable cost | ✅ Ceres | ⚠️ scipy `least_squares`, fixed residual | **`robot_calibration`** |
+| Dynamics backend abstraction (multi-simulator) | ❌ (KDL only) | ✅ Pinocchio + MuJoCo (+ Genesis/IsaacSim planned) | **FIGAROH** |
+| Verification & reporting (HTML, verdicts, compare) | ❌ (stdout logs only) | ✅ (V&V suite) | **FIGAROH** |
+| Export breadth | URDF + camera YAML | URDF (+ SDF/MJCF/USD via `figaroh-examples`) | **FIGAROH** (minus camera YAML) |
+| Export of joint offsets | ✅ joint-origin + `calibration rising` tags | ✅ joint-origin offsets | Tie (FIGAROH lacks `rising` tag convention) |
+
+## A.5 The key design insight: "models × error blocks"
+
+`robot_calibration`'s architecture decomposes into three **orthogonal,
+runtime-composable** layers:
+
+```
+[free params] ──► offsets ──► models (chain3d / camera3d / camera2d)
+                                  │ project(observation) → points in common frame
+                                  ▼
+                    error blocks (chain3d_to_chain3d, chain3d_to_plane, …)
+                                  │ residual vector → Ceres
+                                  ▼
+                              solve → offsets → export
+```
+
+Because models and error blocks are named in YAML and loaded by type, a
+user can calibrate *any* combination without writing code: "align my
+arm-held checkerboard to my head camera AND to the ground plane AND keep
+the joint offsets small" is a config change, not a new subclass.
+
+FIGAROH's `BaseCalibration` is the opposite: one abstract
+`cost_function(var) -> residuals`, one residual type (SE3 pose error), one
+solve. The ideas map directly onto FIGAROH's layer-1/template-method
+design, which makes adaptation low-risk.
+
+## A.6 Gap analysis — what FIGAROH is missing
+
+Ranked by (value × fit-to-FIGAROH):
+
+### High value / high fit
+
+1. **Composable "models × error blocks" calibration framework.** FIGAROH's
+   single SE3-pose residual cannot express sensor↔sensor, sensor↔plane, or
+   sensor↔mesh residuals. This is the highest-leverage generalization:
+   introduce a `Residual`/`ErrorBlock` abstraction and let `BaseCalibration`
+   stack several of them with per-block weights (mirroring `error_blocks` +
+   `scale` params).
+
+2. **Multi-step / staged calibration.** `calibration_steps` (solve the
+   checkerboard/end-frame pose first, freeze it, then solve joint offsets,
+   then camera). FIGAROH currently solves everything at once, which is
+   harder to initialize and diagnose. Fits naturally since `BaseCalibration`
+   + `BaseOptimalCalibration` already separate "select params" from
+   "solve."
+
+3. **Explicit prior / "stay near nominal" regularization for geometric
+   calibration.** The `outrageous` error block is a clean, well-documented
+   pattern (per-param `joint_scale` / `position_scale` / `rotation_scale`).
+   FIGAROH's `least_squares` bounds are blunt; a Tikhonov-to-prior residual
+   block is more expressive and matches FIGAROH's existing `tikhonov`
+   solver style.
+
+### Medium value / medium fit
+
+4. **Camera intrinsic calibration (pinhole + distortion).** FIGAROH has
+   eye-hand extrinsics already, so a `camera3d`-style reprojection model
+   with `fx, fy, cx, cy` free params is a natural, bounded extension.
+   Requires deciding on a distortion model and a 3D↔2D residual
+   (`chain3d_to_camera2d` analog).
+
+5. **Feature-finder abstraction for offline data.** FIGAROH's
+   `measurements/measurement.py` is 70 lines and assumes pre-processed
+   poses. A `FeatureFinder`-like layer (checkerboard corner extraction,
+   plane fit, point-cloud ingestion from CSV/rosbag) would let FIGAROH
+   consume *raw* sensor data instead of requiring users to pre-extract
+   poses — the biggest practical gap for real-robot use.
+
+6. **URDF `<calibration rising>` export + camera-YAML export.** FIGAROH's
+   `urdf_exporter` already writes joint offsets but applies them to joint
+   origins. Adding (or at least documenting) the `rising` tag convention,
+   and emitting camera-intrinsics YAML, would match real robot-driver
+   conventions.
+
+### Lower value / lower fit (niche)
+
+7. **Mobile-base calibration** (wheel diameter, track width, gyro gain).
+   FIGAROH is arm/dynamics-focused; this is better as an example-level or
+   plugin-level feature than core.
+
+8. **Magnetometer/IMU hard-iron calibration.** A self-contained 4-param
+   sphere fit — tiny to implement but out of FIGAROH's stated scope;
+   candidate for `figaroh-examples`.
+
+9. **Live ROS 2 capture pipeline.** FIGAROH is deliberately offline and
+   simulator-agnostic; a full ROS capture node conflicts with the
+   backend-abstraction vision. The right adaptation is **data ingestion
+   adapters** (read rosbag2 → FIGAROH data format), not a ROS node inside
+   FIGAROH.
+
+## A.7 What FIGAROH does better (adoption is bidirectional)
+
+`robot_calibration` could learn from FIGAROH in these directions — worth
+noting so the adaptation isn't framed as "FIGAROH is behind":
+
+- **Dynamics identification** (inertial params, regressor + QR base
+  params, 10+ solvers) — entirely absent in `robot_calibration`.
+- **Physical consistency** (pseudo-inertia feasibility, SDP projection,
+  CAD-informed constraints) — absent.
+- **Optimal experiment design** (minimum-configuration observability
+  analysis, exciting-trajectory synthesis with condition-number objective)
+  — `robot_calibration` only has manual `capture_poses`.
+- **Verification & reporting** (HTML diagnostic reports, machine-readable
+  pass/fail verdicts, before/after compare) — `robot_calibration` prints to
+  stdout only.
+- **Backend abstraction** (Pinocchio / MuJoCo / future Genesis & IsaacSim)
+  — `robot_calibration` is KDL-only and ROS-locked.
+- **Export breadth** (URDF + SDF + MJCF + USD via
+  `figaroh-examples/shared/exporters.py`) — `robot_calibration` exports
+  URDF + camera YAML only.
+
+## A.8 Adaptation roadmap
+
+Concrete, incremental, mapped to FIGAROH's architecture and skills.
+Ordered so each step is independently useful.
+
+### Step 1 — `Residual` / `ErrorBlock` abstraction (calibration layer)
+- Add `calibration/residuals.py` (or `error_blocks.py`): a `BaseResidual`
+  ABC with `compute(var) -> (residual_vector, jacobian_or_none)`, plus
+  concrete types:
+  - `PoseResidual` (existing SE3 log-map — refactor out of
+    `BaseCalibration.cost_function`),
+  - `PointToPointResidual` (sensor↔sensor, the `chain3d_to_chain3d`
+    analog),
+  - `PointToPlaneResidual` (ground/wall alignment),
+  - `PointToMeshResidual` (body-frame alignment, reuses
+    `CollisionManager`/mesh loading),
+  - `PlaneToPlaneResidual`,
+  - `PriorResidual` (the "outrageous" regularizer, per-param scale).
+- Extend `BaseCalibration` to accumulate a **weighted sum of residuals**
+  from config (`error_blocks: [name, …]` + per-block `scale`), while
+  keeping the default single-`PoseResidual` path backward-compatible.
+- **Skill:** `figaroh-maintenance` / `figaroh-algo-dev`. **Tests:**
+  unit-test each residual's numerical Jacobian against finite differences.
+
+### Step 2 — Multi-step calibration
+- Add `calibration_steps: [step_a, step_b, …]` where each step declares
+  its own `free_params`/`calib_params` (and later `error_blocks`),
+  freezing the rest. Reuse the already-existing `del_list` /
+  `calibration_index` mechanisms.
+- **Skill:** `figaroh-maintenance`. **Tests:** a two-step example where
+  step A solves a known transform exactly, step B solves offsets on top.
+
+### Step 3 — Prior regularization for geometric calibration
+- `PriorResidual` in the optimizer with per-parameter `joint_scale`/
+  `position_scale`/`rotation_scale` (angle-axis magnitude, matching
+  `robot_calibration`'s semantics), exposed as `prior_params` config.
+- **Skill:** `figaroh-optimization` (numerical stability). **Tests:**
+  verify an ill-conditioned problem stays bounded.
+
+### Step 4 — Camera intrinsic model
+- Add a `camera3d`-style reprojection model + `ReprojectionResidual`
+  (3D↔2D pixel error) with `fx, fy, cx, cy` as free params; a `camera2d`
+  path for checkerboard-image finders. Decide on a distortion model (start
+  with none or radial k1/k2).
+- **Skill:** `figaroh-algo-dev` + `figaroh-research` (literature on
+  pinhole+distortion in NLS). **Tests:** synthetic pinhole with known
+  intrinsics recovered.
+
+### Step 5 — Feature-finder / measurement ingestion layer
+- Expand `measurements/` into a finder abstraction that turns raw
+  observations (point clouds, images, checkerboards, planes) into the
+  structured observations FIGAROH already consumes. Start offline:
+  CSV/rosbag2/NPZ readers → `Measurement` objects. This is the "data
+  contract" work already foreseen by `figaroh-sim2real`.
+- **Skill:** `figaroh-sim2real` (data contracts + log/stream adapters).
+  **Tests:** round-trip a synthetic checkerboard cloud → corners →
+  calibration.
+
+### Step 6 — Export convention parity
+- Extend `tools/urdf_exporter.py` with an option to emit `<calibration
+  rising>` tags (instead of only joint-origin offsets), and add a
+  camera-intrinsics YAML exporter.
+- **Skill:** `figaroh-maintenance`. **Tests:** golden-file URDF/YAML
+  comparisons.
+
+### Step 7 (optional, example-level) — mobile base + magnetometer
+- Prototype wheel/track/gyro scaling and hard-iron sphere-fit as
+  standalone utilities in `figaroh-examples`, promoting to core only if
+  demand appears.
+- **Skill:** `figaroh-examples-workflow`.
+
+## A.9 Risks & decisions to make before adapting
+
+1. **Backend neutrality vs sensor models.** A pinhole/camera model is
+   orthogonal to the dynamics backend; it should live in the calibration
+   layer, not the backend abstraction. Don't force cameras into
+   `DynamicsBackend`.
+2. **Distortion model choice.** Scope creep risk — settle on radial-only
+   (or none) for the first cut; keep it a free-param toggle.
+3. **Plugin loading style.** `robot_calibration` uses runtime pluginlib;
+   FIGAROH uses Python ABC subclassing, which is already *more* flexible.
+   Prefer a **registry decorator** (`@register_residual("point_to_plane")`)
+   over a YAML→class-name loader, to stay Pythonic and testable.
+4. **Don't over-generalize.** The value is the specific residual types +
+   multi-step + prior, not a generic Ceres clone. Keep `BaseCalibration`'s
+   template method intact; add residuals as *options*.
+
+## A.10 Part A conclusion
+
+`robot_calibration` is not a competitor so much as a **complementary
+blueprint**. Its "models × error blocks × multi-step × regularizer"
+decomposition is the single most transferable idea, and it fills four
+concrete FIGAROH gaps (camera intrinsics, composable residuals, staged
+calibration, prior regularization) without disturbing FIGAROH's core
+strengths (dynamics identification, physical consistency, OED, reporting,
+backend abstraction). The recommended order is **residual abstraction →
+multi-step → prior → camera intrinsics → data ingestion**, each
+independently shippable and testable.
+
+---
+
+# Part B — FIGAROH vs MuJoCo `sysid`
+
+**Sources:** `python/mujoco/sysid/{README.md, _src/*.py, report/*}` in the
+MuJoCo repo (`robot-irl/mujoco`), and
+`figaroh/src/figaroh/{identification,calibration,tools,optimal}` plus
+`figaroh-examples/examples/*/utils/*_tools.py` in this workspace.
+
+## B.1 Summary
+
+MuJoCo's `sysid` module and FIGAROH solve the same problem — turning logged
+motion into trustworthy model parameters — from opposite ends of the method
+space: one treats the simulator as a black box and fits a trajectory
+rollout, the other treats the robot as a linear-in-parameters equation and
+solves it in closed form.
+
+## B.2 At a glance
+
+| Dimension | MuJoCo sysid | FIGAROH |
+|---|---|---|
+| Paradigm | Black-box, simulate-and-compare | Analytic, regressor-based least squares |
+| Objective built from | Full forward-dynamics rollout vs. measured sensors | Linear regressor `W(q,q̇,q̈)·φ = τ` from RNEA |
+| Solver | Nonlinear least squares (Gauss-Newton / trust-region) | Closed-form / IRLS linear least squares |
+| Gradients | Finite differences, batched across threads | Not needed — regressor is exact and linear |
+| Physical consistency | By construction (log-Cholesky pseudo-inertia) | Convex SDP/LMI projection onto PSD cone (optional) |
+| Excitation design | Not addressed — user supplies trajectories | IPOPT trajectory optimization minimizing regressor condition number |
+| Kinematic calibration | Out of scope | Separate nonlinear LM pipeline on SE3 pose error |
+| What it can identify | Anything settable on an `MjSpec` (inertia, friction, gains, sensor delay/bias…) | Standard/base inertial parameters, joint friction, actuator inertia, geometric calibration |
+
+## B.3 Pipeline shape
+
+The regressor approach is a straight line from data to answer; the
+simulation approach is a loop that re-runs the physics engine every
+iteration.
+
+**MuJoCo sysid:**
+`Log data (control + sensor TimeSeries)` → `Guess φ (modifier rebuilds
+MjModel)` → `Roll out (mujoco.rollout, full sim)` → `Compare (resample +
+weighted residual)` → `Step φ (FD Jacobian, GN/LM update)` → loop back to
+rollout.
+
+**FIGAROH:**
+`Log data (q, τ, filter + differentiate)` → `Build W (RNEA regressor, per
+sample)` → `Reduce (QR → base parameter set)` → `Solve ((weighted) least
+squares, closed form)` → `Project (SDP onto physical-consistency cone)`.
+
+## B.4 Where they diverge
+
+### B.4.1 What can actually be identified
+
+**MuJoCo — anything the spec exposes.** A `Parameter` is generic: a value
+plus a `modifier(MjSpec, Parameter)` callback, so anything settable on the
+MJCF spec is fair game — contact friction, joint damping, `armature`, PD
+gains, even sensor delay/gain/bias applied post-rollout. Rigid-body inertia
+gets special treatment via `InertiaType.Pseudo`: a 10-D pseudo-inertia is
+parameterized through the Rucker & Wensing log-Cholesky encoding, so every
+candidate decodes back to a valid `m, h, I` automatically.
+
+**FIGAROH — the classical 10+ per link.** Standard inertial parameters per
+link (`m, mx, my, mz, Ixx, Ixy, Ixz, Iyy, Iyz, Izz`), reordered to
+Pinocchio convention, plus optional per-joint viscous/Coulomb friction,
+rotor inertia, and torque offset columns. Because the full standard set is
+usually structurally unidentifiable, a QR-based base parameter extraction
+(Gautier/Khalil style) reduces it to a minimal, full-rank basis before
+solving — identical in spirit to MuJoCo's identifiability handling in
+`optimize.py`, but performed analytically up front rather than diagnosed
+after the fact via `cond(JᵀJ)`.
+
+### B.4.2 How the objective function is built
+
+**MuJoCo** (`_src/residual.py`, `_src/trajectory.py`): `model_residual`
+rebuilds a full `MjModel` for every candidate parameter vector and calls
+`sysid_rollout`, which wraps MuJoCo's batched forward-dynamics `rollout` —
+a genuine multi-step simulation from a shared initial state. Predicted
+sensor traces are resampled to measurement timestamps, differenced
+(measured − predicted), and normalized per-sensor so mixed units contribute
+comparably.
+
+**FIGAROH** (`tools/regressor.py`): `RegressorBuilder` calls Pinocchio's
+`computeJointTorqueRegressor` (RNEA-derived) at each sample to build
+`W(q,q̇,q̈)`, giving an exact linear relationship `τ = W·φ` — no
+integration, no simulation, no iteration needed to evaluate the model at a
+candidate. The residual is simply `τ_measured − W·φ`, which is why the
+whole dynamic-identification problem collapses to one linear solve.
+
+### B.4.3 Optimization mechanics
+
+**MuJoCo — nonlinear, derivative-free.** `optimize()` dispatches to
+`mujoco.minimize.least_squares` (trust-region Gauss-Newton/LM), or SciPy's
+trust-region-reflective solver, box-constrained by parameter bounds. No
+autodiff, no MJX/JAX anywhere in the module — gradients come from
+finite-difference Jacobians, one rollout per perturbed parameter,
+parallelized across threads rather than through the physics itself.
+
+**FIGAROH — linear, closed-form.** Ordinary or iteratively-reweighted
+least squares (Gautier 1997) on the base regressor — solved via
+QR/pseudo-inverse, not iterated against a simulator. A pluggable
+`LinearSolver` also supports ridge/lasso/constrained variants. Kinematic
+(geometric) calibration is the one place FIGAROH goes nonlinear: SE3 pose
+residuals solved with Levenberg-Marquardt plus an iterative
+outlier-removal loop — methodologically closer to what MuJoCo sysid does
+everywhere.
+
+### B.4.4 Physical consistency & uncertainty
+
+**MuJoCo — consistency by parameterization.** The log-Cholesky
+pseudo-inertia encoding makes `J = UUᵀ ⪰ 0` true by construction — no
+separate feasibility constraint is needed for mass/inertia validity, only
+box bounds around the unconstrained encoding. Uncertainty comes from the
+classical linearized covariance `Σ = s²(JᵀJ)⁻¹` at the optimum, with an
+eigen-based pseudo-inverse that suppresses unobservable directions instead
+of blowing up.
+
+**FIGAROH — consistency by projection.** An optional convex SDP/LMI step
+(`identification/physical_consistency.py`, via `picos`) projects each
+link's pseudo-inertia matrix onto the PSD cone — a proper
+Traversaro/Wensing-style physical-consistency guarantee, applied as
+post-processing after the linear solve, optionally bounded by CAD priors.
+Uncertainty via `relative_stdev` (Pressé & Gautier 1991): %-relative
+parameter std-dev from residual covariance `σ²(WᵀW)⁻¹` — the
+regressor-based sibling of MuJoCo's rollout-Jacobian covariance.
+
+## B.5 Full comparison matrix
+
+| Dimension | MuJoCo sysid | FIGAROH |
+|---|---|---|
+| Model source | Compiled `MjModel` from `MjSpec`, rebuilt every iteration | Pinocchio rigid-body model, static across the solve |
+| Dynamics engine | MuJoCo C engine (forward dynamics + integration) | Pinocchio RNEA (analytic inverse dynamics) |
+| Data needed | Control + sensor time series, any sensors defined in the model | Joint position (+ torque); velocity/acceleration numerically differentiated if absent |
+| Signal processing | Resampling, delay/gain/bias as optimizable `SignalTransform`s | Butterworth low-pass + median filtering, central-difference differentiation, decimation |
+| Excitation trajectories | Not generated by the tool | IPOPT + cubic B-splines, minimizing base-regressor condition number under joint/torque limits |
+| Friction modeling | Whatever the MJCF exposes (joint/contact friction as spec parameters) | Explicit viscous + Coulomb columns appended to the regressor |
+| Kinematic calibration | Not a focus | Dedicated module: DH-like geometric errors via LM on SE3 log-map pose error |
+| Reporting | Interactive HTML: covariance heatmap, optimization trace, bound-hit insights, rollout video | Base-parameter table (symbolic combinations), RMSE, condition number, relative std-dev%, consistency report |
+| Differentiation method | Finite differences over rollouts (no autodiff / no MJX) | Not applicable — regressor is symbolic/analytic, exact |
+| Cost per iteration | High — one (or many, batched) full trajectory simulation | Low — one linear solve, or none after the regressor is built |
+
+## B.6 Which one fits the job
+
+Reach for **FIGAROH** when the model is linear-in-parameters and the plant
+is a serial manipulator. If the goal is classical inertial/friction
+identification on an articulated robot arm with joint torque sensing,
+FIGAROH's regressor approach is faster, cheaper, and gives closed-form
+uncertainty and a physically-consistent result with an SDP guarantee — plus
+it can design the excitation trajectory that makes the identification
+well-conditioned in the first place, which MuJoCo sysid leaves entirely to
+the user.
+
+Reach for **MuJoCo sysid** when the thing you're fitting doesn't have a
+clean analytic regressor: contact/friction parameters in a manipulation
+task, actuator gains, sensor calibration, or any quantity that only shows
+up through the simulator's forward dynamics and contact solver. Its cost is
+a full rollout per evaluation; its payoff is that it can identify literally
+anything expressible in an MJCF, with no need to derive a regressor by
+hand.
+
+The two are complementary rather than competing: a regressor-based
+base-parameter identification (FIGAROH) is a natural warm start for a
+black-box rollout refinement (MuJoCo sysid) when contact or actuator
+nonlinearities need to be folded in afterward.
+
+---
+
+# Part C — Roadmap: FIGAROH Quality & Reporting Infrastructure
+
+**Source:** `roadmap-mujoco-sysid-inspired-features.md` (2026-07-10,
+consolidated 2026-07-11/12) — moved in here in full since it is the direct
+build-out of Part B's comparison (Features 1–4 below originate from Part
+B's §B.4/§B.6 gap analysis), rather than kept as a separately-linked file.
 
 ## Date
 2026-07-10 (originated) / 2026-07-11 (consolidated into one document, reordered to match
@@ -17,16 +683,15 @@ modeling work (2–4) checkable as it's built.
 
 ## Context
 
-[`sysid-comparison-mujoco-vs-figaroh.md`](sysid-comparison-mujoco-vs-figaroh.md)
-compared FIGAROH's regressor-based identification/calibration against MuJoCo's
-black-box rollout `sysid` module. Four ideas from that comparison (Features 1–4) were
-worth adopting, independently of each other. Verifying Feature 1b against a real UR10
-example then surfaced a real bug and several gaps in FIGAROH's reporting/plotting stack
-that were bigger than Feature 1b's own scope — those became Feature 5 (reporting
-infrastructure consolidation) and, after a design discussion and self-critique, Feature 6
-(a deliberately cut-down interactive V&V MVP).
+Part B above (the MuJoCo `sysid` vs. FIGAROH comparison) surfaced four ideas
+worth adopting, independently of each other, as Features 1–4 below.
+Verifying Feature 1b against a real UR10 example then surfaced a real bug
+and several gaps in FIGAROH's reporting/plotting stack that were bigger
+than Feature 1b's own scope — those became Feature 5 (reporting
+infrastructure consolidation) and, after a design discussion and
+self-critique, Feature 6 (a deliberately cut-down interactive V&V MVP).
 
-This single document tracks all six. It went through two prior structural changes, both on
+This section tracks all six. It went through two prior structural changes, both on
 request, both preserved in spirit here:
 
 1. Originally split across four files (this roadmap plus two standalone implementation
@@ -1164,3 +1829,4 @@ before Features 2 and 3 land, since it depends on having generic parameters
   task breakdowns will be filled in immediately before each is started,
   once the design questions above are resolved, and only after Steps 1–7
   land per the recommended order.
+

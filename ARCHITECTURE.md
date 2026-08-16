@@ -981,8 +981,7 @@ compatibility check on their `compat` blocks (domain, joint/DOF names,
 `decimate`, sample count), renders a metric diff table and an overlaid
 before/after chart entirely in the browser. No backend, no run history —
 deliberately cut down from a broader "V&V dashboard" concept; see
-`docs/decisions/roadmap-mujoco-sysid-inspired-features.md` (Feature 6) for
-why.
+`docs/decisions/external-tool-comparisons.md` Part C (Feature 6) for why.
 
 ---
 

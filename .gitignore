@@ -10,6 +10,7 @@ cmake/*
 .vscode/*
 .github/skills
 .codegraph/
+.slim/deepwork/
 
 # Python packaging
 dist/

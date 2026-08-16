@@ -179,9 +179,9 @@ warning banner while forced.
 
 This is deliberately a static, no-backend artifact, not a run library or
 dashboard — see the design rationale in
-[`docs/decisions/roadmap-mujoco-sysid-inspired-features.md`](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/roadmap-mujoco-sysid-inspired-features.md)
-if you're curious why (short version: no validated need yet for a run
-history/backend, and comparing incompatible runs silently was judged
+[`docs/decisions/external-tool-comparisons.md`](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/external-tool-comparisons.md)
+Part C if you're curious why (short version: no validated need yet for a
+run history/backend, and comparing incompatible runs silently was judged
 actively dangerous).
 
 ## CI integration example

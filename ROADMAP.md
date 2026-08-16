@@ -1,21 +1,50 @@
-# FIGAROH Combined Roadmap
+# FIGAROH Roadmap
 
-**Document Version:** 1.4 (Track B Step 5 complete — core algorithm path migrated)
-**Date:** June 19, 2026
-**Current Release:** `figaroh` 0.4.3 (PyPI)
-**Status:** v0.4.x algorithmic features largely landed; Track B Phase 1 backend abstraction functional and core algorithm path migrated (identification + calibration route through PinocchioBackend)
+**Roadmap version:** 2.1 — restructured (adds Tracks C/D/E, deduplicates
+change-log detail out to `CHANGELOG.md`, adds a consolidated timeline and a
+references section) + Track F added as ongoing research (deployment &
+sim-to-real positioning, not yet committed)
+**Date:** August 16, 2026
+**Current release:** `figaroh` 0.4.7 (PyPI, 2026-08-07)
+**Test health (verified 2026-08-16):** 451 collected, 442 passed, 4 failed
+(pre-existing, unrelated `cyipopt`/IPOPT solver tests), 5 skipped
 
-> **Single source of truth.** This document merges the private algorithmic roadmap
-> (version-tracked features: physical consistency, reconstruction, online ID, etc.)
-> with the public multi-simulator integration roadmap (backend abstraction,
-> Pinocchio/MuJoCo/Genesis/IsaacSim). The two tracks are orthogonal but intersect
-> at v1.0 (API stabilization requires the backend abstraction to be real) and at
-> `figaroh-examples` (both tracks need examples).
+> **Single source of truth.** This document is the strategic view — vision,
+> tracks, status, timeline. It intentionally does **not** duplicate two
+> other documents that already do their jobs well:
+> - **`CHANGELOG.md`** — the authoritative, dated record of what shipped in
+>   each release. If you want to know exactly what changed in 0.4.6, look
+>   there, not here.
+> - **`docs/decisions/`** — the design-rationale layer: why a feature looks
+>   the way it does, what alternatives were considered, what's proposed but
+>   not yet built. Each track below links to its source document(s).
 >
-> **Accuracy note:** Status markers below are reconciled against the actual codebase
-> as of June 2026, not the aspirational claims in the former `ARCHITECTURE.md` /
-> `IMPLEMENTATION_ROADMAP.md`. Where a prior doc claimed "✅ completed" but the
-> code does not exist, this document marks it ❌ or 🔄.
+> **Accuracy note:** every status marker below was checked against the
+> actual codebase and test suite on 2026-08-16 (file existence, `grep`,
+> `pytest`), not carried forward from a prior draft. Where a track wasn't
+> independently re-verified this pass (noted inline), that's flagged rather
+> than silently assumed current.
+
+---
+
+## Table of Contents
+
+1. [Vision](#1-vision)
+2. [Strategic Principles](#2-strategic-principles)
+3. [Current State Snapshot](#3-current-state-snapshot-2026-08-16)
+4. [Track A — Algorithmic Core](#4-track-a--algorithmic-core-identification--calibration)
+5. [Track B — Multi-Simulator Backend Integration](#5-track-b--multi-simulator-backend-integration)
+6. [Track C — Reporting, Verification & Quality Infrastructure](#6-track-c--reporting-verification--quality-infrastructure)
+7. [Track D — Calibration Layer Composability](#7-track-d--calibration-layer-composability)
+8. [Track E — Example Ecosystem Parity & Robot Ports](#8-track-e--example-ecosystem-parity--robot-ports)
+9. [Track F — Deployment & Sim-to-Real Integration (ongoing research)](#9-track-f--deployment--sim-to-real-integration-ongoing-research)
+10. [Cross-Cutting Work](#10-cross-cutting-work)
+11. [Estimated Timeline](#11-estimated-timeline)
+12. [Resource Planning](#12-resource-planning)
+13. [Success Metrics](#13-success-metrics)
+14. [Risk Management](#14-risk-management)
+15. [References](#15-references)
+16. [Roadmap Document History](#16-roadmap-document-history)
 
 ---
 
@@ -24,694 +53,676 @@
 **Transform FIGAROH into a universal, simulator-agnostic calibration and
 identification toolbox** that enables researchers and engineers to:
 
-- Identify **physically feasible** full per-link inertial parameters — not just
-  reduced base-parameter sets — suitable for URDF export, simulation, and control.
-- Switch between dynamics backends (Pinocchio, MuJoCo, Genesis, IsaacSim) with
-  minimal code changes, leveraging each simulator's strengths while maintaining
-  consistent algorithms.
-- Integrate seamlessly into existing workflows with straightforward, step-by-step
-  APIs and comprehensive documentation.
-- Achieve production-grade reliability with comprehensive tests, CI, and examples.
+- Identify **physically feasible** full per-link inertial parameters — not
+  just reduced base-parameter sets — suitable for URDF export, simulation,
+  and control.
+- Switch between dynamics backends (Pinocchio, MuJoCo, Genesis, IsaacSim)
+  with minimal code changes, leveraging each simulator's strengths while
+  maintaining consistent algorithms.
+- Trust every run's output without reading source code: a machine-readable
+  verification verdict, an HTML report, and a redistribution of fitted
+  parameters onto the full standard set (not an arbitrary one-hot pick)
+  accompany every calibration/identification.
+- Integrate seamlessly into existing workflows with straightforward,
+  step-by-step APIs and comprehensive documentation.
+- Achieve production-grade reliability with comprehensive tests, CI, and
+  examples across a growing family of real robots (UR10, TIAGo, TIAGo Pro,
+  TALOS, Staubli TX40).
 
 ---
 
 ## 2. Strategic Principles
 
 1. **Leverage, Don't Reinvent**
-   - Use existing simulator converters instead of building custom ones.
-   - Build on FIGAROH's mature algorithms; extend, don't fork.
-   - Integrate shared infrastructure from `figaroh-examples` where it belongs.
+   Use existing simulator converters instead of building custom ones.
+   Build on FIGAROH's mature algorithms; extend, don't fork. Adopt proven
+   ideas from adjacent tools (`robot_calibration`, MuJoCo `sysid`) rather
+   than reinventing them from scratch — Tracks C and D exist because of
+   this principle.
 
 2. **Abstraction Over Implementation**
-   - Define clean interfaces for dynamics backends.
-   - Enable pluggable simulator implementations.
-   - Maintain algorithm consistency across backends.
+   Define clean interfaces for dynamics backends. Enable pluggable
+   simulator implementations. Maintain algorithm consistency across
+   backends.
 
 3. **Do Not Break Existing Workflows**
-   - New functionality is **opt-in** through config flags and/or new classes until v1.0.
-   - Separate concerns: (A) identify parameters, (B) enforce physical feasibility,
-     (C) export back to URDF/YAML + visualize/validate.
-   - Prefer small, testable building blocks over monolithic drops.
+   New functionality is **opt-in** through config flags and/or new classes
+   until v1.0. Separate concerns: (A) identify parameters, (B) enforce
+   physical feasibility, (C) export back to URDF/YAML + visualize/validate.
+   Prefer small, testable building blocks over monolithic drops.
 
 4. **User Experience First**
-   - Prioritize ease of use and clear documentation.
-   - Provide step-by-step workflows; getting started in <5 minutes.
-   - Minimize learning curve for new users and new simulators.
+   Prioritize ease of use and clear documentation. Provide step-by-step
+   workflows; getting started in <5 minutes. Minimize learning curve for
+   new users and new simulators.
 
 5. **Incremental, Validated Progress**
-   - Deliver working features incrementally.
-   - Validate each backend and feature thoroughly.
-   - Maintain backward compatibility.
+   Deliver working features incrementally. Validate each backend and
+   feature thoroughly — against real robot data, not just unit tests where
+   possible (Track C's V&V suite exists specifically to make this cheap).
+   Maintain backward compatibility.
 
 ---
 
-## 3. Current State (Verified Snapshot, June 19, 2026)
+## 3. Current State Snapshot (2026-08-16)
 
-> Status below is verified against the actual codebase (file existence, test runs,
-> grep checks), not prior doc claims. Test run: `pytest --co` = 214 collected;
-> `pytest` = 208 passed, 4 failed, 2 skipped.
+### 3.1 Release & test health
 
-### 3.1 FIGAROH Core (`figaroh/`, v0.4.3)
+- **PyPI release:** 0.4.7 (2026-08-07). Five releases have shipped since
+  the last roadmap pass (0.4.3 → 0.4.7, 2026-06-02 → 2026-08-07) — see
+  `CHANGELOG.md` for the full per-release detail.
+- **Test suite:** 451 tests collected (up from 259 in June), 442 passed, 4
+  failed (all in `test_robotipopt.py`, a pre-existing `cyipopt`-dependency
+  gap, not a regression), 5 skipped.
+- **New test modules since June:** `test_backends.py`,
+  `test_base_calibration_redistribution.py`, `test_compare_report.py`,
+  `test_config_deprecation.py`, `test_config_migration.py`,
+  `test_geometric_calibration_export.py`, `test_identification_report.py`,
+  `test_integration.py`, `test_report.py`, `test_results_manager.py`,
+  `test_urdf_exporter.py`, `test_verification.py`.
+- **CI:** `figaroh` core still runs docs-only CI (`.github/workflows/docs.yml`)
+  — no test/lint workflow. `figaroh-examples` (the sibling repo) does have
+  one (`.github/workflows/ci.yml`). This asymmetry is a real, unresolved
+  gap — see §10 and §14.
 
-**Algorithmic features — solid and actively developed:**
-- Mature identification (regressor-based, QR base parameters, 10+ linear solver methods)
-- Geometric calibration (multi-sensor, optimal postures)
-- Optimal trajectory generation (IPOPT)
-- **v0.4.1** LMI physical-consistency projection ✅ (`identification/physical_consistency.py`, tested)
-- **v0.4.2** Base → full parameter reconstruction ✅ (`identification/reconstruction.py`, nullspace + SDP)
-- **v0.4.3** CAD-informed constraints ✅ (`identification/cad_constraints.py`, released 2026-06-02)
-- **Reporting & verification (V&V) suite** ✅ — HTML diagnostic reports, machine-readable
-  pass/fail verdicts (`verify()`/`export_verification_report()`), an interactive
-  before/after panel, and a static two-run compare page
-  (`tools/compare_report.py`). Tracked separately from this roadmap's Track A/B —
-  full design history and status in
-  [`docs/decisions/roadmap-mujoco-sysid-inspired-features.md`](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/roadmap-mujoco-sysid-inspired-features.md).
+### 3.2 Track summary
 
-**Test suite (verified by running `pytest`):**
-- 259 tests collected across 11 files in `tests/unit/`:
-  `test_solver.py`, `test_qr_decomposition.py`, `test_reconstruction.py`,
-  `test_physical_consistency.py`, `test_cad_constraints.py`, `test_regressor.py`,
-  `test_robotvisualization.py`, `test_robotcollisions.py`, `test_robotipopt.py`,
-  `test_backends.py` (45 tests: 32 Pinocchio + 13 MuJoCo)
-- **253 passed, 4 failed, 2 skipped.**
-- The 4 failures are all in `test_robotipopt.py` (IPOPT solver tests) — pre-existing.
-- ⚠️ Prior docs claimed "198/198 pass" — inaccurate on both counts (count and pass rate).
-- `test_cad_constraints.py` exists but was not mentioned in the old roadmap checklist.
-
-**Backend abstraction — functional (PinocchioBackend + MuJoCoBackend implemented):**
-- `DynamicsBackend` abstract interface (`backends/base.py`): ✅ exists, extended with 6 optional model-introspection methods (`get_inertias`, `get_frame_id`, `compute_difference`, `compute_integrate`, `random_configuration`, `get_model_object`)
-- `PinocchioBackend` (`backends/pinocchio.py`): ✅ **implemented** (371 lines) — wraps `pin.crba`, `pin.computeCoriolisMatrix`, `pin.computeGeneralizedGravity`, `pin.rnea`, `pin.aba`, `pin.computeJointTorqueRegressor`, `pin.computeFrameJacobian`, FK, plus all optional Lie group methods. Includes `from_model()` classmethod for wrapping existing `pin.Model`/`pin.Data` without URDF re-loading. Factory `get_backend("pinocchio")` now works.
-- `MuJoCoBackend` (`backends/mujoco.py`): ✅ implemented and functional — dynamics (mass matrix, Coriolis, gravity, inverse/forward dynamics), kinematics (FK, Jacobian), regressor. ⚠️ Regressor delegates to Pinocchio's analytical `computeJointTorqueRegressor` (MuJoCo doesn't support runtime inertial parameter perturbation for finite differences). Coriolis matrix uses finite-difference Jacobian/2 approach (Euler's theorem for quadratic homogeneous functions). Mass matrix fixed to call `mj_forward` before `mj_crb`.
-- `GenesisBackend`: ❌ not started
-- `IsaacSimBackend`: ❌ not started
-- `integration/` directory: ❌ does not exist (high-level API not started)
-- `cli/` directory: ❌ does not exist (CLI tool not started)
-- Backend test suite (`tests/unit/test_backends.py`): ✅ 45 tests (32 Pinocchio + 13 MuJoCo) covering factory, initialization, numerical correctness, kinematics, regressor self-consistency, Coriolis consistency, optional methods, interface conformance.
-- **Core module migration (Step 5):** `Robot` class has lazy `backend` property (wraps existing model via `PinocchioBackend.from_model()`). Full algorithm path migrated:
-  - **Identification:** `RegressorBuilder` routes through `robot.backend.compute_regressor()`; `identification_tools.py` accepts optional `backend` for `compute_difference()`; `randomdata.py` routes through `robot.backend.compute_inverse_dynamics()`.
-  - **Calibration:** `calibration_tools.py` — 7 functions migrated (`get_rel_kinreg`, `get_rel_jac`, `update_forward_kinematics`, `calc_updated_fkm`, `calculate_kinematics_model`, `calculate_identifiable_kinematics_model`, `calculate_base_kinematics_regressor`) with optional `backend=None` parameter routing FK, Jacobian, gravity, and random-configuration through backend. `computeFrameKinematicRegressor` uses `get_model_object()` escape hatch (no backend equivalent yet).
-  - All changes are "strangler fig" pattern — new path when backend available, old `pin.*` path as fallback. 6 files modified, +268/-79 lines.
-
-**Tooling/infra:**
-- `robot_format_converter`: deprecated (notice + migration guide done; GitHub
-  archiving pending July 1, 2026)
-- `figaroh-mujoco`: deprecated & merged into core as `backends/mujoco.py`
-  (archiving pending July 1, 2026)
-- CI builds docs only (`.github/workflows/docs.yml`); **no test/lint CI workflow**.
-  Quality gate = `pre-commit run --all-files`.
-- Dev branch: `devel`; release branch: `main`.
-
-### 3.2 FIGAROH-Examples (`figaroh-examples/`)
-
-**Robot examples (verified real-vs-partial):**
-
-| Example | Status | Scripts present | Notes |
+| Track | Covers | Status | Detail |
 |---|---|---|---|
-| `ur10/` | ✅ Full | calibration, identification, optimal_config, optimal_trajectory, update_model | All real (52–122 lines each); utils ~1656 lines; 6 config YAMLs; 4 data CSVs |
-| `tiago/` | ✅ Full | calibration, identification, optimal_config, optimal_trajectory | No `update_model.py`; utils ~7482 lines (incl. 7242-line collision model); 8 config YAMLs; 7 URDF variants; rich data |
-| `talos/` | ⚠️ Partial | calibration_upperbody, update_model | Missing identification, optimal_config, optimal_trajectory; utils ~3876 lines |
-| `staubli_tx40/` | ⚠️ Partial | identification | Missing calibration, optimal_config, optimal_trajectory, update_model; utils ~20306 lines; 2 large data CSVs (2.1–2.3MB) |
-| `templates/` | ⚠️ Scaffold | — | `base_robot_config.yaml` (221L), `manipulator_robot.yaml` (43L), `humanoid_robot.yaml` (71L). Starter templates only, not exercised examples. |
+| A — Algorithmic Core | Inertial ID, physical consistency, reconstruction, CAD constraints, redistribution | v0.4.1–v0.4.7 shipped; v0.5–v1.0 planned | [§4](#4-track-a--algorithmic-core-identification--calibration) |
+| B — Backend Integration | Pinocchio/MuJoCo/Genesis/IsaacSim, high-level API, CLI | Phase 1 substantially complete; Phases 2–4 not started | [§5](#5-track-b--multi-simulator-backend-integration) |
+| C — Reporting & Verification | HTML reports, machine-readable verdicts, before/after panel, compare page | 7 of 12 items shipped; optimal-* reports and 3 research features remain | [§6](#6-track-c--reporting-verification--quality-infrastructure) |
+| D — Calibration Composability | Residual abstraction, multi-step calibration, camera intrinsics (`robot_calibration`-inspired) | Proposed roadmap only; 0 of 7 steps started (1 partial) | [§7](#7-track-d--calibration-layer-composability) |
+| E — Example Ecosystem & Ports | TALOS/Staubli script parity, TIAGo eye-hand + suspension ports, URDF exporter gaps | Mixed — some done, most open | [§8](#8-track-e--example-ecosystem-parity--robot-ports) |
+| F — Deployment & Sim-to-Real | Model-based control layer for RL/IL deployment, sim-grounding, retargeting | 🔬 **Ongoing research — plan iteration, nothing built** | [§9](#9-track-f--deployment--sim-to-real-integration-ongoing-research) |
 
-**`examples/shared/` — ❌ DOES NOT EXIST.**
-The former `FIGAROH_ECOSYSTEM_ANALYSIS.md` described 9 shared files in detail
-(base_calibration.py, base_identification.py, config_manager.py, etc.) but this
-directory is absent. Each robot example has its own `utils/` folder instead.
-All references to `shared/` infrastructure in prior docs are stale.
-
-**`web-interface/` — ✅ REAL WORKING APP (not a scaffold).**
-- Built on **Viser** (3D web framework), not the React/Three.js stack the old
-  Phase 4 plan described.
-- 21 Python files, ~20K+ lines total:
-  - `app.py` (206L), `main.py` (58L, CLI entry with argparse)
-  - `components/` (8 files, ~4209L): setup_panel, robot_panel, task_panel, data_panel,
-    config_panel, results_panel, visualization_panel, streamlined_task_panel
-    (results_panel and visualization_panel are thin stubs; rest substantial)
-  - `core/` (6 files): interface.py (744L), streamlined_interface.py (11448L),
-    robot_manager.py (378L), task_manager.py, example_loader.py (95L), session_manager.py
-  - `utils/file_utils.py` (3919L)
-- Features: interactive 3D viz, multiple robot loaders (figaroh/robot_description/yourdfpy),
-  task management with threading, progress tracking, session management.
-- Marked "⚠️ Under development" in its README.
-
-**Simulator integration examples — ❌ ALL MISSING.**
-`examples/mujoco_integration/`, `genesis_integration/`, `isaacsim_integration/`
-do not exist.
-
-**End-to-end example (ID → projection → reconstruction → URDF export) — ❌ MISSING.**
-No single script chains these steps. Individual scripts exist per robot, and
-`update_model.py` (ur10, talos) handles URDF/xacro updating, but no script
-combines identification output → physical projection → reconstruction → URDF export.
-
-**CAD-constraints example — ❌ MISSING.**
-Grep across all of `figaroh-examples` for `cad_constraint`, `physical_consistency`,
-`reconstruction` returns **zero matches**. The v0.4.3 CHANGELOG claim "Example YAML
-comment block for cad_constraints in figaroh-examples/examples/templates/manipulator_robot.yaml"
-is **false** — that file is 43 lines with no CAD block. No config anywhere exercises
-CAD constraints, physical consistency, or reconstruction.
-
-**`tests/` — ✅ REAL.**
-9 files, ~3684 lines: `run_tests.py`, `test_backward_compatibility.py` (634L),
-`test_robot_configs.py` (659L), `test_robot_integration.py` (536L),
-`test_config_integration.py` (391L), `test_unified_config_parser.py` (470L),
-`test_error_handling.py` (209L), `test_ur10_backward_compatibility.py` (259L),
-`test_tiago_backward_compatibility.py` (302L), `conftest.py`.
-
-**`create_example.sh` — ✅ REAL (934 lines).**
-Scaffolds a new robot example folder from the TIAGO template.
+Tracks A and B are the original roadmap tracks (algorithmic features and
+backend abstraction). **Tracks C, D, and E are new in this revision** —
+they formalize work that already had detailed design docs in
+`docs/decisions/` but had never been rolled up into the top-level roadmap.
+**Track F is a proposed strategic direction, not yet committed** — see §9.
 
 ---
 
-## 4. Track A — Algorithmic Features
+## 4. Track A — Algorithmic Core (Identification & Calibration)
 
-> Source: former `ROADMAP_PRIVATE.md`. Version-tracked, opt-in, non-breaking until v1.0.
-> Problem context: classic inverse-dynamics identification yields a reduced/base
-> parameter set because the regressor is rank-deficient; users want full per-link
-> physical parameters (mass, CoM, inertia) that are **physically feasible**
-> ($m>0$, valid/PSD inertia). Promising direction: Lee et al. (2020)-style convex
-> identification using spatial inertia + convex feasibility (SDP/LMI).
+> Problem context: classic inverse-dynamics identification yields a
+> reduced/base parameter set because the regressor is rank-deficient; users
+> want full per-link physical parameters (mass, CoM, inertia) that are
+> **physically feasible** ($m>0$, valid/PSD inertia), and a defensible way
+> to deploy them.
 
-### v0.4 (Current Minor) — Physical Consistency & Reconstruction
+### Shipped (v0.4.1 – v0.4.7)
 
-#### v0.4.1 — LMI Physical-Consistency Projection ✅ DONE
+| Version | Date | Headline | Module |
+|---|---|---|---|
+| 0.4.1 | — | LMI physical-consistency projection | `identification/physical_consistency.py` |
+| 0.4.2 | — | Base → full parameter reconstruction (nullspace / SDP) | `identification/reconstruction.py` |
+| 0.4.3 | 2026-06-02 | CAD-informed constraints (mass/CoM bounds, symmetry) | `identification/cad_constraints.py` |
+| 0.4.4 | 2026-06-27 | `urdf_exporter`, `export_validation`, backend architecture (Pinocchio+MuJoCo), SE3 log-map orientation residual fix | `tools/urdf_exporter.py`, `tools/export_validation.py`, `backends/` |
+| 0.4.5 | 2026-07-13 | Weighted least squares, provenance/run-archive tooling, held-out validation fallback — **plus the bulk of Track C** (see §6) | `tools/provenance.py`, `tools/run_archive.py` |
+| 0.4.6 | 2026-08-06 | `calc_updated_fkm` correctness fixes (elasticity, camera-frame composition, multi-marker now raises instead of silently degrading), legacy-config deprecation + migration tool, RMSE/MAE convention unification | `calibration/calibration_tools.py`, `utils/config_migration.py` |
+| 0.4.7 | 2026-08-07 | Base-parameter **redistribution** (`redistribute_parameters()`), `geometric_calibration_export` (PAL runtime-correction YAML) | `tools/qrdecomposition.py`, `tools/geometric_calibration_export.py` |
 
-Opt-in post-processing stage: given a full per-link inertial set (10D `p10` per
-link), return the closest physically feasible set.
+Full per-item detail for every release above lives in `CHANGELOG.md` — not
+repeated here. Design rationale for the redistribution work specifically
+is in
+[`docs/decisions/tiago-calibration-and-port-review.md`](docs/decisions/tiago-calibration-and-port-review.md)
+Part A §A.8.
 
-- **Module:** `figaroh.identification.physical_consistency`
-- **API:**
-  - `is_feasible_link(p10, ...) -> FeasibilityReport` (alias of `check_p10_feasibility`)
-  - `project_link(p10, weights, mass_min, solver, tol) -> (p10_proj, ProjectionReport)` (alias of `project_p10_lmi`)
-  - `project_robot_p10_lmi(params_by_link, ...) -> (projected_by_link, RobotProjectionReport)`
-- **Constraints (per-link convex SDP):**
-  - C1: $m \ge m_{\min}$ (linear)
-  - C2: $P(p_i) \succeq 0$ (pseudo-inertia 4×4 PSD, via `pinocchio.PseudoInertia.FromDynamicParameters`)
-- **Objective:** $\min_{p_i} \| W(p_i - \hat{p}_i) \|_2^2$ s.t. C1, C2
-- **Config:** `identification.physical_consistency.{enabled, method, per_link, mass_min, weights.{mode,manual}, solver.{backend,verbose,max_seconds}, tolerances.psd_eig}`
-- **Solver:** `picos` + CVXOPT (open-source) or MOSEK (preferred). Clear `ImportError` when backend missing.
-- **Tests:** TC-1 through TC-6 pass in `test_physical_consistency.py` (feasible-unchanged, Pinocchio round-trip, negative-mass corrected, indefinite-inertia corrected, weighting sanity, backend-missing error).
-- **Minor gaps:** `solver.max_seconds` not yet mapped from YAML; export-to-URDF path not yet using projected inertials.
+### v0.4.x — Remaining gates before calling this minor "closed"
 
-#### v0.4.2 — Base → Full Parameter Reconstruction ✅ DONE
+Re-verified 2026-08-16 (not just carried forward):
 
-Given identified base parameters, return a specific full-parameter set by selecting
-a point in the equivalence class.
-
-- **Module:** `figaroh.identification.reconstruction`
-- **Entry point:** `reconstruct_full_parameters(base_result, *, method="nullspace"|"sdp"|"auto", prior="urdf"|"yaml"|dict, config) -> (parameter_dict_full, report)`
-- **Base mapping:** $\phi_{\text{base}} \approx M\,\theta_{\text{full}}$; $M$ retrieved via `QRDecomposer.get_M()` / `get_M_labels()`. `BaseResult` frozen dataclass carries $(M, \phi_{\text{base}}, \text{params}_r)$.
-- **Option A (nullspace, fast):** $\hat\theta_0 = \arg\min \|M\theta - \phi_{\text{base}}\|^2$; parameterize via nullspace $N$; regularize toward prior $\theta_{\text{prior}}$. Alternating loop with v0.4.1 projection for feasibility.
-- **Option B (SDP, convex):** $\min \|W(\theta - \theta_{\text{prior}})\|^2$ s.t. $M\theta = \phi_{\text{base}}$ and per-joint $P(p_{10,j}) \succeq 0$ via Schur-complement epigraph. Feasibility by construction.
-- **`method: "auto"`:** tries SDP when picos available, falls back silently to nullspace.
-- **Report:** `ReconstructionResult` with `status` (`ok|solver_missing|error`), `base_residual_norm`, `objective`, `theta_r_dict`, `params_r`.
-- **Config:** `identification.reconstruction.{enabled, method, prior.source, tolerances.{base_residual,psd_eig}, nullspace.{lambda,max_iters}, sdp.{solver,max_seconds,verbose}}`
-- **Pipeline:** `_apply_reconstruction_if_enabled()` hook in `BaseIdentification._store_results()` after physical-consistency step.
-- **Tests:** 17 tests in `test_reconstruction.py` (prior labels, dict output, prior propagation, BaseResult, residual norm, YAML prior, p10 indices, nullspace end-to-end, auto fallback, unsupported method error). Total suite: 214 collected, 208 passed, 4 failed (IPOPT), 2 skipped.
-
-#### v0.4.3 — CAD-Informed Constraints ✅ DONE (released 2026-06-02)
-
-Convex CAD-informed constraints for inertial parameter identification.
-
-- **Module:** `figaroh.identification.cad_constraints`
-- **API:**
-  - `CADConstraints` dataclass — per-link mass bounds, first-moment (CoM) bounds, symmetry equalities
-  - `add_mass_bounds(cad, joint, *, m_min, m_max)`
-  - `add_com_bounds(cad, joint, *, axis, h_min, h_max)`
-  - `add_symmetry_constraints(cad, joint_a, joint_b, *, keys)`
-  - `bounds_from_urdf(model, ...)` — derive bounds from Pinocchio model URDF inertials
-  - `build_cad_constraints_from_config(cfg, *, model)` — from YAML; `None` when empty (safe default-off)
-  - `apply_cad_constraints_to_problem(problem, theta, params_r, cad)` — inject into picos `Problem`
-- **Integration:** `project_p10_lmi` / `project_robot_p10_lmi` / `_reconstruct_sdp` / `reconstruct_full_parameters` all accept optional `cad_constraints` kwarg. Both `_apply_physical_consistency_if_enabled` and `_apply_reconstruction_if_enabled` parse CAD config.
-- **Tests:** `tests/unit/test_cad_constraints.py` exists and passes.
-- **All new params optional with safe defaults — fully backward-compatible.**
-- ⚠️ **Example gap:** The v0.4.3 CHANGELOG claims "Example YAML comment block for
-  cad_constraints in figaroh-examples/examples/templates/manipulator_robot.yaml" —
-  this is **false** (file is 43 lines, no CAD block; grep confirms zero matches
-  across all of figaroh-examples). No example config exercises CAD constraints.
-
-#### v0.4.x — Cross-Cutting Gates (REMAINING)
-
-- [ ] **One end-to-end example** in `figaroh-examples`: classic ID → physical projection → (optional) reconstruction → URDF export
-- [ ] **Docs**: Sphinx page for `physical_consistency` and `reconstruction` APIs with config reference
-- [ ] **CHANGELOG entry** for 0.4.x summarizing all new public APIs
-- [ ] `picos` backend availability documented in `README.md` and install guide (solver requirements + graceful error when missing)
-- [ ] **CI**: test matrix runs with and without optional `picos`/`cvxopt` to verify lazy-import errors surface cleanly
-- [ ] `solver.max_seconds` forwarded from config (field exists, not mapped from YAML)
-- [ ] Export-to-URDF/YAML path uses projected inertials when enabled (currently overwrites in-place; raw should be preserved alongside projected)
-
----
+- [ ] **One end-to-end example** in `figaroh-examples`: classic ID →
+  physical projection → (optional) reconstruction → URDF export. Still
+  **missing** — a fresh grep across `figaroh-examples/examples/**/*.py`
+  for `cad_constraint`/`physical_consistency`/`reconstruct_full_parameters`
+  returns zero matches in source (only in generated report HTML, which
+  just means the report *template* has a section for it, not that any
+  example exercises it).
+- [x] `picos` backend availability documented — `README.md` lines 131 and
+  244 both cover it now.
+- [ ] CI test matrix with/without optional `picos`/`cvxopt` — no test/lint
+  CI exists yet at all (see §10), so this is blocked on that gap first.
+- [ ] `solver.max_seconds` forwarded from config (field exists, still not
+  mapped from YAML).
+- [ ] Export-to-URDF/YAML path uses *projected* inertials when physical
+  consistency is enabled (currently overwrites in place; raw should be
+  preserved alongside projected).
 
 ### v0.5 — Modular Refactor & Visualization
 
-#### 0.5.1 Modular refactor (internal, no public API break)
-Goal: make later convex ID integration clean.
-- Extract "identification pipeline stages" into internal helpers:
-  - regressor prep / decimation / column elimination
-  - "base parameter computation"
-  - "parameter packaging (per-link mapping)"
-- Keep `BaseIdentification.solve()` behavior unchanged.
-
-#### 0.5.2 Docs & examples
-- One focused example: "classic ID → physical projection → URDF export".
-- Document solver setup for `picos` backends and graceful fallback when not installed.
-
-#### 0.5.3 Major visualization update (inspection of physicality)
-Deliverables:
-- Inertia ellipsoid / principal axes visualization
-- CoM overlay vs link geometry
-- Before/after comparison (raw ID vs projected/reconstructed)
-
-Essential because convex feasibility can still produce surprising inertias without good priors — visual QA is critical.
-
----
+- **0.5.1** Extract identification pipeline stages (regressor prep,
+  decimation/elimination, base-parameter computation, per-link packaging)
+  into internal helpers, behavior-preserving, to make future convex-ID
+  integration clean.
+- **0.5.2** Docs + one focused "classic ID → physical projection → URDF
+  export" example (closes the v0.4.x gate above, formally, if not already
+  closed sooner).
+- **0.5.3** Visualization: inertia ellipsoid/principal-axes overlay, CoM
+  vs. link geometry, before/after (raw vs. projected/reconstructed)
+  comparison. Convex feasibility can still produce surprising inertias
+  without good priors — visual QA matters here.
 
 ### v0.6 — Online Identification, Friction, FIM-OED
 
-#### 0.6.1 Online identification
-- `figaroh.identification.online` with at least one robust baseline:
-  - RLS (with forgetting factor)
-  - optional sliding-window LS
-  - (later) EKF/UKF for combined state+parameter estimation
-- Must reuse the same regressor interface already used by offline ID.
-
-#### 0.6.2 New friction models
-Behind a clean interface:
-- Stribeck (nonlinear)
-- dead-zone/backlash as experimental
-- keep existing viscous/Coulomb intact
-
-#### 0.6.3 OED refactor: Fisher Information Metrics
-- FIM computation utilities and metrics: $\log\det(\text{FIM})$, A-/E-optimality
-- Keep existing condition-number objective available for backward compatibility.
-
----
+- **0.6.1** `identification.online` — RLS with forgetting factor at
+  minimum, optional sliding-window LS, EKF/UKF later. Reuses the existing
+  regressor interface. **Track F's Phase 5 (§9, ongoing research) has a
+  more detailed spec for this item** (RLS + EKF + LuGre actuator friction)
+  — if that track's plan firms up, its spec should supersede this one
+  rather than the two diverging.
+- **0.6.2** New friction models (Stribeck, dead-zone/backlash as
+  experimental) behind a clean interface; existing viscous/Coulomb stays.
+- **0.6.3** OED refactor: Fisher Information Metrics ($\log\det(\text{FIM})$,
+  A-/E-optimality) alongside the existing condition-number objective.
 
 ### v0.7 — Multi-Sensor Calibration & Round-Tripping
 
-#### 0.7.1 Multi-sensor calibration
-- Sensor-agnostic residual + Jacobian interface
-- At least one new sensor type end-to-end (IMU or AprilTag-based camera) as reference implementation
-
-#### 0.7.2 URDF↔YAML round-tripping
-- Export identified parameters to a diff-friendly YAML "model delta"
-- Regenerate URDF inertials from YAML with version tagging + provenance metadata
-
-#### 0.7.3 Test suite (real gates, not just examples)
-- Unit tests: physical feasibility checks, projection/reconstruction invariants, regressor assembly sanity
-- Integration tests: at least one small robot model fixture
-- CI matrix (pragmatic): Python 3.10–3.12, macOS+Linux first
-
----
+- **0.7.1** Sensor-agnostic residual + Jacobian interface, one new sensor
+  type (IMU or AprilTag camera) as reference implementation. This is
+  conceptually the same direction as Track D's residual-abstraction work
+  (§7) — the two should converge on one design, not diverge.
+- **0.7.2** URDF↔YAML round-tripping: diff-friendly "model delta" export,
+  regenerate URDF inertials from YAML with version/provenance metadata.
+- **0.7.3** Real test gates: physical-feasibility unit tests, projection/
+  reconstruction invariants, at least one integration-test robot fixture,
+  a pragmatic CI matrix (Python 3.10–3.12, macOS+Linux).
 
 ### v1.0 — API Stabilization & Convex ID
 
-#### 1.0.1 Architecture consolidation (breaking changes allowed)
-- Stabilize public APIs: `BaseCalibration`, `BaseIdentification`, OED class(es)
-- Move "experimental" features behind clear namespaces
-- Migration guide v0.7 → v1.0
-- **Backend abstraction must be real by this point** (see Track B) — PinocchioBackend
-  wrapping existing direct Pinocchio calls is the minimum gate.
-
-#### 1.0.2 Physically consistent pipeline as first-class
-- Users choose: "classic ID (fast)" vs "physically consistent ID (recommended for export)"
-- Consistent outputs for URDF export
-- Full Lee et al.-style convex identification backend becomes "official" — but only
-  after v0.4–v0.7 deliver the necessary primitives (feasibility/projection/reconstruction,
-  QA, tests, solver story).
+- **1.0.1** Stabilize public APIs (`BaseCalibration`, `BaseIdentification`,
+  OED classes), move experimental features behind clear namespaces,
+  publish a v0.7→v1.0 migration guide. **Gate: backend abstraction must be
+  real by this point** (Track B) — PinocchioBackend wrapping direct
+  Pinocchio calls is the minimum bar, and that part is already done.
+- **1.0.2** Physically-consistent pipeline as first-class: users choose
+  "classic ID (fast)" vs. "physically consistent ID (recommended for
+  export)"; full Lee et al.-style convex identification becomes official
+  once v0.4–v0.7's primitives (feasibility, projection, reconstruction, QA,
+  tests, solver story) are all in place.
 
 ---
 
 ## 5. Track B — Multi-Simulator Backend Integration
 
-> Source: former `IMPLEMENTATION_ROADMAP.md`. Phase-based, quarterly timeline.
-> **Reality check:** Phase 1 was claimed "✅ COMPLETED" in the prior doc but is
-> only partially done — the PinocchioBackend file does not exist and Pinocchio is
-> used directly throughout core. Status below is reconciled to actual code.
+> **Re-verification note:** unlike Tracks C/D/E, this track wasn't the
+> subject of the recent `docs/decisions` work — but every claim below was
+> spot-checked against the filesystem on 2026-08-16 (not blindly carried
+> forward), and one real change surfaced: the integration API, previously
+> marked "not started," now exists.
 
-### Phase 1: Foundation (Q2 2026) — 🔄 MOSTLY COMPLETE
+### Phase 1: Foundation — 🔄 substantially complete
 
-**Objective:** Establish core architecture for multi-simulator support.
+| Deliverable | Status |
+|---|---|
+| `DynamicsBackend` abstract interface (`backends/base.py`) | ✅ Done — 9 abstract + 9 optional methods |
+| `PinocchioBackend` (`backends/pinocchio.py`) | ✅ Done — 371 lines, 32 tests, numerically verified vs. direct `pin.*` calls at atol=1e-10 |
+| `MuJoCoBackend` (`backends/mujoco.py`) | ✅ Done, with known limitations (regressor delegates to Pinocchio's analytical regressor since MuJoCo 3.9 doesn't support runtime inertial-parameter perturbation; Coriolis via finite-difference Jacobian/2) |
+| Backend factory `get_backend()` | ✅ Done |
+| Backend test suite (`test_backends.py`) | ✅ Done — 45 tests (32 Pinocchio + 13 MuJoCo) |
+| Core module migration (identification + calibration algorithm path) | ✅ Done — "strangler fig" pattern, `Robot.backend` lazy property, both `RegressorBuilder` and 7 `calibration_tools.py` functions route through it when available |
+| High-level integration API (`integration/api.py`) | ✅ **Newly confirmed done** — `RobotIdentificationSystem` with `from_urdf()`/`from_mjcf()` classmethods and `identify_parameters()`, 413 lines, covered by `test_integration.py`. Previous roadmap draft marked this "❌ not started" — that was stale. |
+| Deprecate `robot_format_converter` / merge `figaroh-mujoco` | ✅ Notice + migration guide done; GitHub archiving still pending |
+| Performance benchmarks (Pinocchio vs. MuJoCo) | ❌ Not started |
+| Migrate existing `figaroh-examples` scripts to backend abstraction | ❌ Not started — examples still call Pinocchio directly |
+| CLI tool (`figaroh/cli/`) | ❌ Not started — directory doesn't exist |
+| `GenesisBackend` / `IsaacSimBackend` | ❌ Not started — no `backends/genesis.py` or `backends/isaacsim.py` |
 
-| Deliverable | Prior claim | Actual status |
+**Intentionally not migrated to the backend abstraction** (Pinocchio-specific
+by design, not a gap): `calibration/parameter.py`'s SE3/Frame/Inertia data
+construction, `measurements/measurement.py`, Meshcat/Gepetto visualization,
+hppfcl/coal collision detection. These would need a parallel math/type
+layer to abstract — deferred, not forgotten.
+
+### Phase 2: MuJoCo & Genesis Backends — not started
+
+- MuJoCo: interface tests, performance benchmarks (target 2–3× vs.
+  Pinocchio), a format-conversion guide, and three worked examples
+  (identification, humanoid calibration, contact identification).
+- Genesis: `backends/genesis.py` does not exist yet. GPU acceleration,
+  native Python API, USD/MJCF/URDF support; three worked examples.
+- Cross-backend validation: dynamics consistency (<0.1% tolerance),
+  identification consistency (<1% tolerance), performance benchmarks,
+  automated CI dashboard. **Track F's Phase 3 (§9) has a more detailed spec
+  for this exact deliverable** (`backends/validation.py`,
+  `BackendConsistencyReport`) — use that spec if/when this item is picked
+  up, rather than re-deriving one.
+
+### Phase 3: IsaacSim Backend & Ecosystem — not started
+
+- `backends/isaacsim.py`, USD-based workflow, Isaac Lab integration.
+- Unified documentation restructure (`getting-started/`, per-simulator
+  guides, migration guides).
+- CLI tool (`figaroh identify`, `optimize-trajectory`, `calibrate`,
+  `backends list/info`, `convert`).
+
+### Phase 4: Ecosystem & Advanced Features (2027+) — not started
+
+- Web interface hardening — note: `figaroh-examples/web-interface/` is
+  **already a real, working Viser-based app** (21 files, ~20K lines,
+  interactive 3D viz, task management), just marked "under development."
+  Phase 4 here means hardening and completing stub panels, not greenfield
+  work — and it settled on Viser, not the originally-planned
+  FastAPI+React/Three.js stack.
+- ROS 2 integration, ML-enhanced identification, cloud deployment — all
+  still at the "not started, 2027+" horizon.
+
+---
+
+## 6. Track C — Reporting, Verification & Quality Infrastructure
+
+**Origin:** verifying an early reporting feature against a real UR10
+example surfaced bugs bigger than that feature's own scope, which became a
+seven-step build-out. Full design rationale, every implementation
+deviation, and the bugs found along the way are documented in
+[`docs/decisions/external-tool-comparisons.md`](docs/decisions/external-tool-comparisons.md)
+Part C.
+
+| Item | Status |
+|---|---|
+| Feature 1 — HTML diagnostic report (calibration) | ✅ Shipped (0.4.5) |
+| Feature 1b — Terminal + HTML quality report (identification) + held-out validation | ✅ Shipped (0.4.5) |
+| Step 1 — Reshape-bug fix + fallback-plotting dedup | ✅ Shipped (0.4.5) |
+| Step 2 — Machine-readable `VerificationVerdict` (`verify()`) | ✅ Shipped (0.4.5) |
+| Step 3 — `series`/`compat` export extension | ✅ Shipped (0.4.5) |
+| Step 4 — Before/after interactive panel (embedded SVG chart) | ✅ Shipped (0.4.5) |
+| Step 5 — Static two-run compare page (`compare_report.py`) | ✅ Shipped (0.4.5) |
+| Step 6 — Terminal + HTML reports for optimal-* tasks | ⬜ Proposed, not started |
+| Step 7 — Unified report schema (feasibility spike only) | ⬜ Not started |
+| Feature 2 — Generic `Parameter` + modifier abstraction | ⬜ Not started |
+| Feature 3 — Log-Cholesky pseudo-inertia parameterization | ⬜ Not started — overlaps Track A's physical-consistency work; if pursued, coordinate rather than duplicate |
+| Feature 4 — Black-box rollout-refinement stage (MuJoCo backend) | ⬜ Not started — depends on Feature 2, and on Track B's MuJoCo backend being validated (Phase 2) |
+
+**Known, deliberately-unfixed bug:** `calculate_first_second_order_differentiation()`
+in `identification/identification_tools.py` (lines 245, 254) loops
+`range(nq - 1)` when computing `ddq`, silently zeroing the last active
+joint's acceleration for any robot without continuous/spherical joints.
+Confirmed still present 2026-08-16. Flagged, not yet scheduled — broad
+blast radius (every identification example), tracked here so it isn't
+lost.
+
+---
+
+## 7. Track D — Calibration Layer Composability
+
+**Origin:** a comparison against `robot_calibration` (ROS 2, Ceres-based
+kinematic/sensor calibration) found FIGAROH's calibration layer is
+comparatively monolithic — one hard-coded SE3-pose residual, one solve —
+against `robot_calibration`'s composable "models × error blocks ×
+multi-step × regularizer" architecture. FIGAROH wins decisively on
+dynamics identification, physical consistency, OED, and reporting (Tracks
+A and C); this track is about closing the calibration-layer gap in the
+other direction. Full comparison and gap analysis:
+[`docs/decisions/external-tool-comparisons.md`](docs/decisions/external-tool-comparisons.md)
+Part A.
+
+| Step | Description | Status |
 |---|---|---|
-| `DynamicsBackend` abstract interface (`backends/base.py`) | ✅ | ✅ exists + 6 optional methods added |
-| `PinocchioBackend` (`backends/pinocchio.py`) | ✅ mostly | ✅ **implemented** (371 lines, 32 tests pass) |
-| `MuJoCoBackend` (`backends/mujoco.py`) | ✅ mostly | ✅ functional (regressor delegates to Pinocchio analytical; Coriolis via FD Jacobian/2; mass matrix fixed) |
-| Backend factory `get_backend()` | ✅ | ✅ works (`pinocchio` + `mujoco` available) |
-| Backend test suite (`tests/unit/test_backends.py`) | 🔄 | ✅ 32 tests, all pass |
-| Deprecate `robot_format_converter` | ✅ | ✅ notice+guide done; ⏳ GitHub archive pending Jul 1, 2026 |
-| Merge `figaroh-mujoco` into core | ✅ | ✅ merged; ⏳ GitHub archive pending Jul 1, 2026 |
-| Architecture docs (`ARCHITECTURE.md`) | ✅ | ⚠️ partly aspirational/out of date (per `AGENTS.md`) |
-| High-level integration API (`integration/api.py`) | — | ❌ not started |
-| Performance benchmarks (Pinocchio vs MuJoCo) | 🔄 | ❌ not started |
-| Migrate existing examples to backend abstraction | 🔄 | ❌ not started |
-| Migrate core modules to use backend abstraction | — | ✅ done (identification + calibration algorithm path migrated; visualization/collisions/data-types remain Pinocchio-specific by design) |
+| 1 | `Residual`/`ErrorBlock` abstraction — decompose `BaseCalibration.cost_function` into stackable residual types | ⬜ Not started |
+| 2 | Multi-step calibration (`calibration_steps` config) — solve in stages, freezing earlier results | ⬜ Not started |
+| 3 | Prior/regularization residual (`PriorResidual`, "stay near nominal") | ⬜ Not started |
+| 4 | Camera intrinsic model (pinhole `fx,fy,cx,cy` + optional distortion) | ⬜ Not started |
+| 5 | Feature-finder / measurement ingestion layer (raw sensor data → `Measurement`, not just pre-extracted poses) | ⬜ Not started — biggest practical gap for real-robot use, per the source doc |
+| 6 | Export convention parity — `<calibration rising>` tag export + camera-intrinsics YAML | 🟡 **Half done** — `rising` tag export already shipped in `tools/urdf_exporter.py`; camera-YAML export is the only remaining piece (bundle with Track E's URDF-exporter work, §8) |
+| 7 | Mobile-base + magnetometer calibration (example-level, niche) | ⬜ Not started, low priority — candidate for `figaroh-examples`, not core |
 
-**Highest-leverage next step:** Implement `PinocchioBackend` by wrapping the
-Pinocchio calls already scattered through `tools/`, `calibration/`,
-`identification/`. This is the default backend the roadmap claims is done but
-isn't, and it's the prerequisite for making the abstraction meaningful.
-
-#### Task 1.2.1: DynamicsBackend Interface — ✅ DONE
-- `backends/base.py`: abstract class, 9 abstract methods (mass matrix, Coriolis,
-  gravity, FK, Jacobian, regressor, inverse dynamics, forward dynamics),
-  3 properties (`nq`, `nv`, `model_format`), context manager support.
-- 9 optional methods: `compute_dynamics_derivatives`, `get_joint_names`,
-  `get_frame_names`, `get_inertias`, `get_frame_id`, `compute_difference`,
-  `compute_integrate`, `random_configuration`, `get_model_object`.
-
-#### Task 1.2.2: PinocchioBackend — ✅ DONE
-- **Location:** `figaroh/backends/pinocchio.py` (371 lines)
-- Wraps `pin.crba`, `pin.computeCoriolisMatrix`, `pin.computeGeneralizedGravity`,
-  `pin.rnea`, `pin.aba`, `pin.computeJointTorqueRegressor`, `pin.computeFrameJacobian`,
-  `pin.forwardKinematics`/`pin.updateFramePlacements`, `pin.difference`, `pin.integrate`,
-  `pin.randomConfiguration`.
-- Supports free-flyer root joint via `free_flyer`/`isFext` kwargs.
-- All return values `.copy()`'d to prevent shared-memory mutations.
-- 32 tests in `test_backends.py` — numerical correctness verified against direct
-  `pin.*` calls at atol=1e-10.
-- **Remaining:** Core modules still use direct `pin.*` calls in calibration, visualization, collisions, and model loading (Step 5 — partial migration done, calibration pending).
-
-#### Task 1.2.3: Core Module Migration — ✅ DONE (Algorithm Path)
-
-**Strategy:** "Strangler fig" pattern — `Robot` class gains lazy `backend` property (wraps existing `pin.Model`/`pin.Data` via `PinocchioBackend.from_model()`). Core modules route through `robot.backend` when available, fall back to direct `pin.*` calls otherwise. Fully backward-compatible.
-
-**Migrated (✅ — full algorithm path):**
-- `tools/regressor.py` — `RegressorBuilder` uses `robot.backend.compute_regressor()`, `robot.backend.nv`, `robot.backend.get_inertias()` when backend available
-- `identification/identification_tools.py` — `calculate_first_second_order_differentiation` accepts optional `backend` parameter for `compute_difference()`
-- `tools/randomdata.py` — `get_torque_rand` uses `robot.backend.compute_inverse_dynamics()`, `generate_waypoints`/`generate_waypoints_fext` use backend-aware `nq`/`nv`
-- `calibration/calibration_tools.py` — 7 functions migrated with optional `backend=None`: `get_rel_kinreg`, `get_rel_jac`, `update_forward_kinematics`, `calc_updated_fkm`, `calculate_kinematics_model`, `calculate_identifiable_kinematics_model`, `calculate_base_kinematics_regressor`. Routes FK, Jacobian, gravity, random-configuration through backend. `computeFrameKinematicRegressor` uses `get_model_object()` escape hatch.
-
-**Intentionally not migrated (Pinocchio-specific by design):**
-- `calibration/parameter.py` — `pin.SE3`, `pin.Frame`, `pin.Inertia.Zero()`, `pin.rpy.rpyToMatrix` data type construction + model introspection (`joint.shortname()`). Would require parallel type system.
-- `measurements/measurement.py` — `pin.SE3`, `pin.Force`, `pin.Frame` data type construction. No callers in active codebase.
-- `tools/robotvisualization.py` — Meshcat/Gepetto visualization is inherently Pinocchio-coupled. Out of scope for backend track.
-- `tools/robotcollisions.py` — hppfcl/coal collision detection is Pinocchio-specific. No other simulator has equivalent collision interface.
-- `utils/cubic_spline.py` — `pin.rnea` + FK for visualization. Deferred to v0.5.
-- Data type construction (`pin.SE3`, `pin.Quaternion`, `pin.Force`, `pin.rpy.rpyToMatrix`, `pin.rpy.matrixToRpy`) — used throughout calibration. Would require a common math library layer (e.g., `scipy.spatial.transform.Rotation`) — under investigation for future backend track expansion.
-
-#### Task 1.3.1: High-Level Integration API — ❌ NOT STARTED
-- **Location:** `figaroh/integration/api.py`
-- `RobotIdentificationSystem(backend="pinocchio"|"mujoco"|"genesis"|"isaacsim")`
-- `from_urdf()` / `from_mjcf()` classmethods
-- `identify_parameters(data_path, **config) -> Results` one-line API
-- Tutorial notebook + API docs
+**Recommended build order** (per the source doc, unchanged): residual
+abstraction → multi-step → prior → camera intrinsics → data ingestion.
+Steps 4–5 also overlap Track A's v0.7.1 (multi-sensor calibration) — these
+should converge on one residual/sensor-abstraction design, not ship two
+competing ones.
 
 ---
 
-### Phase 2: MuJoCo & Genesis Backends (Q3 2026)
+## 8. Track E — Example Ecosystem Parity & Robot Ports
 
-**Objective:** Implement and validate MuJoCo and Genesis backends.
+Three previously-separate audits, none fully closed, rolled up here
+because they're all "make the example/tooling surface match what core
+already supports" work rather than new algorithmic capability.
 
-#### 2.1 MuJoCo Backend — 🔄 IMPLEMENTED, VALIDATION PENDING
-- `backends/mujoco.py`: ✅ core methods (mass matrix, inverse dynamics, FK, Jacobian, regressor, URDF→MJCF auto-conversion)
-- **Remaining:**
-  - [ ] All interface tests passing
-  - [ ] Performance benchmarks (target: 2-3x faster than Pinocchio)
-  - [ ] Format conversion guide (URDF → MJCF)
-- **Examples** (`figaroh-examples/examples/mujoco_integration/`):
-  1. UR10 identification with MuJoCo (load URDF → MJCF → identify → compare with Pinocchio)
-  2. Humanoid calibration with MuJoCo (TALOS, geometric calibration, optimal trajectories)
-  3. Contact identification (unique to MuJoCo's contact solver)
+### 8.1 `figaroh-examples` script parity (Phase 7 of the examples audit)
 
-#### 2.2 Genesis Backend — ❌ NOT STARTED
-- **Location:** `figaroh/backends/genesis.py` (does not exist)
-- **Dependencies:** `genesis-world>=0.1.0`
-- GPU acceleration, native Python API, USD/MJCF/URDF support
-- **Examples** (`figaroh-examples/examples/genesis_integration/`):
-  1. Humanoid identification with Genesis (TALOS USD, GPU-accelerated, batch trajectories)
-  2. Mobile manipulator calibration (TIAGo, mobile base + arm, Genesis rendering)
-  3. Large-scale parallel identification (multiple robots, GPU batch, benchmarks)
+Source: [`docs/decisions/figaroh-examples-improvement_plan.md`](docs/decisions/figaroh-examples-improvement_plan.md).
+Phases 1–6 of that audit (35 items — argparse/CLI, logging, error handling,
+config cleanup, dead-code removal, CI, smoke tests) are fully done. Phase 7
+is not:
 
-#### 2.3 Cross-Backend Validation (Week 21-24)
-- **Dynamics consistency:** same robot/config, compare M, C, g across backends; tolerance <0.1%
-- **Identification consistency:** same trajectory data/algorithm, compare parameters; tolerance <1%
-- **Performance benchmarks:** mass matrix (1000 samples), regressor (1000 samples), full ID (10000 samples)
-  - Target: MuJoCo 2-3x, Genesis 5-10x (GPU), IsaacSim 3-5x (GPU) vs Pinocchio
-- Automated CI/CD integration, benchmark dashboard, validation report
+| Item | Status |
+|---|---|
+| 7.1 — Add `identification.py`, `optimal_config.py`, `optimal_trajectory.py` to TALOS | ⬜ Not started |
+| 7.2 — Add `calibration.py`, `optimal_config.py`, `optimal_trajectory.py`, `update_model.py` to Staubli TX40 | ⬜ Not started |
+| 7.3 — Add `update_model.py` to TIAGo | ✅ Done |
+| 7.4 — Rename TALOS `calibration_upperbody.py` → `calibration.py` | ⬜ Not started |
 
----
+### 8.2 TIAGo feature ports (eye-hand calibration + suspension identification)
 
-### Phase 3: IsaacSim Backend & Ecosystem (Q4 2026)
+Source: [`docs/decisions/tiago-calibration-and-port-review.md`](docs/decisions/tiago-calibration-and-port-review.md)
+Part B. Two features sitting on old, pre-architecture-split branches,
+never ported forward. Neither has landed — no `eye_hand_calibration.py`,
+`suspension_identification.py`, `vicon_utils.py`, or `suspension_utils.py`
+exist in `figaroh-examples/examples/tiago/` as of 2026-08-16.
 
-**Objective:** Complete simulator coverage and build ecosystem tools.
+| Feature | Risk | Status |
+|---|---|---|
+| Eye-hand (camera) calibration | Low — no core changes needed, style-only port | ⬜ Not started; 8 open decisions (which gripper variants, XACRO vs. `update_model.py` output, standalone vs. `BaseCalibration` subclass, …) |
+| Mobile-base / suspension identification | Medium–High — needs an architecture decision (standalone script vs. `BaseIdentification` subclass vs. documented research example) and a 1068-line monolith refactored into focused modules | ⬜ Not started |
 
-#### 3.1 IsaacSim Backend — ❌ NOT STARTED
-- **Location:** `figaroh/backends/isaacsim.py` (does not exist)
-- **Dependencies:** `isaacsim>=2023.1.0`
-- USD-based workflow, NVIDIA GPU acceleration, Isaac Lab integration, photorealistic rendering
-- **Challenges:** USD format requirement (conversion needed), licensing/installation, Omniverse API paradigm
-- **Examples** (`figaroh-examples/examples/isaacsim_integration/`):
-  1. Industrial manipulator identification (UR10 USD, URDF→USD converter, photorealistic)
-  2. Mobile manipulator in Isaac Lab (TIAGo, RL integration, sim-to-real)
-  3. Multi-robot scenario (shared environment, parallel identification, GPU dynamics)
+When eye-hand calibration is ported, its deploy step should reuse Track A's
+`redistribute_parameters()` + `geometric_calibration_export()` (already
+shipped, §4) rather than reintroducing the old branch's one-hot
+`write_to_xacro` output — it hits the exact same base-parameter
+redistribution ambiguity Track A's work already solved.
 
-#### 3.2 Unified Documentation (Week 33-36)
-- **Location:** `figaroh/docs/`
-- Structure: `getting-started/`, `simulators/{pinocchio,mujoco,genesis,isaacsim}.md`, `tutorials/{industrial,humanoid,mobile,custom}.md`, `api-reference/{backends,identification,calibration,optimal}.md`, `migration/{from-pinocchio-only,choosing-simulator,performance-guide}.md`
-- Sphinx or MkDocs, auto-generated API reference, tutorials with code, migration guides
+### 8.3 URDF exporter gaps
 
-#### 3.3 Tooling & Developer Experience (Week 37-40)
-- **CLI** (`figaroh/cli/`, Click): `figaroh identify`, `optimize-trajectory`, `calibrate`, `backends list/info`, `convert`
-- **VS Code extension** (optional, P3): syntax highlighting, IntelliSense, integrated terminal, result visualization
+Source: [`docs/decisions/urdf_exporter.md`](docs/decisions/urdf_exporter.md).
+`export_urdf()` shipped in 0.4.4 and is tested (18 unit tests + pendulum
+fixture + viser visual tests), but with real deviations from its original
+spec:
+
+| Gap | Status |
+|---|---|
+| Inertia-tensor handler (`Ixx_*` etc.) | 🟡 Registered but a no-op stub — silently accepts and discards these params |
+| Camera-YAML export | ⬜ Not started — same deliverable as Track D Step 6, bundle the two |
+| Multi-format export (MJCF/SDF/USD) | ⬜ Deferred as planned, demand-driven, no fixed date |
+| `base_*`/`pEE*`/`phiEE*` auto-apply | Deliberate design deviation, not a gap — surfaced via `frame_settings_doc()` for the caller instead of auto-applied; documented behavior, not a bug |
 
 ---
 
-### Phase 4: Ecosystem & Advanced Features (2027+)
+## 9. Track F — Deployment & Sim-to-Real Integration (ongoing research)
 
-#### 4.1 Web Interface (Q1 2027)
-- Drag-and-drop robot models, interactive trajectory design, real-time identification progress, result dashboard, report export
-- **Note:** `figaroh-examples/web-interface/` is already a **real working Viser-based app**
-  (21 files, ~20K lines, 3D visualization, task management, multiple robot loaders) —
-  see §3.2. Marked "under development" but substantially built. Phase 4 work is
-  hardening, completing stub panels (results/visualization), and productionizing
-  rather than greenfield.
-- Original plan called for FastAPI + React/Three.js; actual implementation uses
-  **Viser**. Reconcile the tech-stack decision.
+**Status: 🔬 Ongoing research — plan iteration, nothing built.** Unlike
+Tracks A–E, this track is not yet a committed roadmap item. It's tracked
+here so it's visible and cross-referenced against the rest of the roadmap
+while the plan is still being iterated — not as a promise of what ships
+next.
 
-#### 4.2 ROS 2 Integration (Q1-Q2 2027)
-- Real-time identification nodes, service interfaces, topic-based data streaming, launch files, MoveIt 2 integration
+**Full plan, research citations, and open decisions:**
+[`docs/decisions/sim2real-modelbased-deployment.md`](docs/decisions/sim2real-modelbased-deployment.md).
 
-#### 4.3 ML-Enhanced Identification (Q3-Q4 2027)
-- Neural network regressors, physics-informed neural networks, hybrid models (physics + ML), uncertainty quantification, transfer learning across robots
+### What it proposes
 
-#### 4.4 Cloud Deployment (Q4 2027)
-- AWS/GCP/Azure, Kubernetes orchestration, distributed identification, multi-tenant, API management
+A reframing of FIGAROH's headline value proposition: not just "a toolbox
+that *produces* an identified model," but a toolbox that also **runs that
+model under a deployed RL/IL policy** — gravity compensation, computed
+torque, and a residual-policy interface so a learned policy only has to
+learn what the identified model doesn't already predict. Secondary goals:
+grounding training simulators with identified parameters, and whole-body
+QP-based motion retargeting.
+
+This is a materially larger scope commitment than Tracks A–E — it adds a
+new `application/` namespace and a new optional dependency (Crocoddyl, for
+MPC/whole-body control) that don't exist in FIGAROH today.
+
+### Where it overlaps existing tracks (by design — not duplication)
+
+| This track's phase | Overlaps | Resolution |
+|---|---|---|
+| Phase 3 — cross-backend dynamics validation | Track B Phase 2.3 (already scoped: M/C/g <0.1%, regressor <1%) | This phase's spec **supersedes** Track B 2.3's description — one deliverable, not two |
+| Phase 5 — online ID + LuGre friction | Track A v0.6.1 ("online identification") | This phase's spec (RLS + EKF + LuGre) **supersedes** v0.6.1's original scope |
+| Phase 2 — friction/armature URDF export | Track D Step 6 + Track E §8.3 (camera-YAML/URDF exporter gaps) | Same underlying deliverable — implement once, reuse across all three |
+| Phase 2 — covariance export | Track A v0.4.7 (`redistribute_parameters()`/`propagate_covariance_min_norm`, already shipped) | **Corrected in the source doc** — covariance export already exists; this phase should *consume* it, not rebuild it |
+
+### What's genuinely new (no existing home)
+
+- **Phase 1** — the deployment control layer itself (`application/control.py`,
+  `application/estimator.py`, `RobotDeploymentSystem`). The core of the pivot.
+- **Phase 4** — real-robot data-plane adapters (`integration/adapters/`,
+  canonical `TrajectoryData` contract). Anticipated conceptually by the
+  existing `figaroh-sim2real` skill, but never built.
+- **Phase 6** — end-to-end sim2real loop + whole-body QP retargeting
+  interface.
+
+### Open research flagged, not yet scoped into any phase
+
+How FIGAROH actually integrates with the tools practitioners already use
+for the real use case — e.g. **mjlab** and existing **motion-retargeting
+libraries** — rather than only exposing its own API in isolation. Is
+FIGAROH an adapter *into* those tools, or a library they import *from*?
+This shapes Phase 1's API surface and should be answered before that
+surface is treated as final. See the source doc's "Open decisions to
+iterate," item 8.
+
+### Naming collision to resolve before any of this ships
+
+"Residual" currently means three different things across the roadmap:
+Track D's calibration measurement residual, Track A v0.7.1's sensor
+residual, and this track's control-torque/policy residual. They'll need
+distinct names in code.
 
 ---
 
-## 6. Cross-Cutting Work
+## 10. Cross-Cutting Work
 
 ### Documentation
-- [ ] Sphinx docs site (Phase 3, but `physical_consistency`/`reconstruction` pages needed sooner — v0.4.x gate)
-- [ ] API reference auto-generation
-- [ ] 10+ comprehensive tutorials
-- [ ] Migration guides (from Pinocchio-only, choosing simulator, performance)
-- [ ] `picos` solver-availability docs in README + install guide (v0.4.x gate)
+- [ ] Sphinx docs pages for `physical_consistency`/`reconstruction` APIs
+  (v0.4.x gate, §4)
+- [ ] API reference auto-generation, 10+ tutorials, migration guides
+  (Track B Phase 3)
+- [x] `picos` solver-availability docs in `README.md` (done, verified)
 
 ### Examples (`figaroh-examples`)
-- [ ] v0.4.x end-to-end example: classic ID → projection → reconstruction → URDF export (❌ missing)
-- [ ] CAD-constraints example config (❌ missing — v0.4.3 CHANGELOG claim of a template comment block is false)
-- [ ] Physical-consistency / reconstruction example configs (❌ zero matches in figaroh-examples)
-- [ ] Complete `talos/` example (⚠️ partial — missing identification, optimal_config, optimal_trajectory)
-- [ ] Complete `staubli_tx40/` example (⚠️ partial — missing calibration, optimal_config, optimal_trajectory, update_model)
-- [ ] MuJoCo integration examples (3, Phase 2)
-- [ ] Genesis integration examples (3, Phase 2)
-- [ ] IsaacSim integration examples (3, Phase 3)
-- [ ] Example gallery & showcase (Phase 3)
-- ✅ `ur10/` and `tiago/` are full real examples
-- ✅ `tests/` is real (9 files, ~3684 lines)
-- ✅ `create_example.sh` is real (934 lines)
-- ❌ `examples/shared/` does not exist (prior docs described it in detail — stale)
+- [ ] v0.4.x end-to-end example: ID → projection → reconstruction → URDF
+  export (still missing, §4)
+- [ ] Complete TALOS / Staubli TX40 script parity (§8.1)
+- [ ] TIAGo eye-hand + suspension ports (§8.2)
+- [ ] MuJoCo / Genesis / IsaacSim integration examples (Track B Phase 2–3)
+- [x] `ur10/` and `tiago/` are full, real examples
+- [x] `redistribute_parameters()`/`geometric_calibration_export` already
+  wired into `ur10`, `tiago`, and `talos` calibration scripts
 
 ### CI / Testing
-- [ ] **Test/lint CI workflow** (currently only docs CI exists — this is a gap for both tracks)
-- [ ] CI matrix: Python 3.10–3.12, macOS+Linux (v0.7.3, but pragmatic to start sooner)
+- [ ] **Test/lint CI workflow for `figaroh` core** — still the single
+  biggest cross-cutting gap. `figaroh-examples` has one; `figaroh` core
+  doesn't. Every gate above that says "CI matrix" is blocked on this
+  existing first.
+- [ ] CI matrix: Python 3.10–3.12, macOS+Linux
 - [ ] CI matrix with/without optional `picos`/`cvxopt` (v0.4.x gate)
-- [ ] Cross-backend validation suite (Phase 2.3)
-- [ ] Performance benchmark dashboard (Phase 2.3)
+- [ ] Cross-backend validation suite + performance benchmark dashboard
+  (Track B Phase 2)
 
 ### Deprecation / Archiving
-- [ ] Archive `robot_format_converter` on GitHub (July 1, 2026)
-- [ ] Archive `figaroh-mujoco` on GitHub (July 1, 2026)
-- [ ] Mark PyPI packages deprecated (December 31, 2026)
+- [ ] Archive `robot_format_converter` and `figaroh-mujoco` on GitHub
+  (notice already shipped; archiving itself still pending)
+- [ ] Mark PyPI packages deprecated on schedule
 
 ---
 
-## 7. Resource Planning
+## 11. Estimated Timeline
 
-### Team Structure
+These are engineering estimates based on effort/priority ordering already
+established in each track's source document — not committed dates. Tracks
+run in parallel; a row's quarter is when that item is *targeted to start or
+land*, not a hard deadline.
+
+| When | Track | Item |
+|---|---|---|
+| **Q3 2026 (now)** | A | Close remaining v0.4.x gates: end-to-end CAD/physical-consistency example, `solver.max_seconds` config wiring |
+| Q3 2026 | E | TALOS/Staubli script parity (7.1, 7.2, 7.4) — mechanical, low-effort, matches existing patterns |
+| Q3 2026 | E / D | Camera-YAML URDF export (closes Track D Step 6 + Track E §8.3 together — same deliverable) |
+| Q3–Q4 2026 | B | Finish Phase 1 spillover: performance benchmarks, migrate `figaroh-examples` scripts to backend abstraction, CLI scaffold |
+| **Q4 2026** | A | v0.5 — modular refactor + visualization (inertia ellipsoids, CoM overlay, before/after) |
+| Q4 2026 | C | Steps 6–7 — optimal-* task reports, unified-schema feasibility spike |
+| Q4 2026 | E | TIAGo eye-hand calibration port (§8.2, low risk) |
+| Q4 2026 | Cross-cutting | Stand up test/lint CI for `figaroh` core (§10) — unblocks several other gated items |
+| Q3–Q4 2026 | F | Ecosystem-integration research pass (mjlab, retargeting libraries — §9's flagged open decision) before any Track F API surface is treated as final |
+| **Q1 2027** | A | v0.6 — online identification, new friction models, FIM-OED |
+| Q1 2027 | D | Steps 1–3 — residual/error-block abstraction, multi-step calibration, prior regularization |
+| Q1–Q2 2027 | B | Phase 2 — MuJoCo validation + benchmarks, Genesis backend, cross-backend suite |
+| Q1–Q2 2027 | E | TIAGo suspension/mobile-base identification port (§8.2, needs an architecture decision first) |
+| **Q2 2027** | D | Steps 4–5 — camera intrinsics, feature-finder/measurement ingestion (coordinate with Track A's v0.7.1, don't duplicate) |
+| **H2 2027** | A | v0.7 — multi-sensor calibration, URDF↔YAML round-trip, real test gates |
+| H2 2027 | B | Phase 3 — IsaacSim backend, unified docs, CLI tool |
+| **2027+** | A | v1.0 — API stabilization, convex ID first-class (gated on Track B's backend abstraction being real, already true today for the minimum bar) |
+| 2027+ | B | Phase 4 — web interface hardening, ROS 2, ML-enhanced ID, cloud |
+| 2027+ | C | Features 2–4 — generic parameter abstraction, log-Cholesky reparameterization (coordinate with Track A), black-box rollout refinement (needs Track B's MuJoCo backend validated) |
+| Opportunistic | D | Step 7 — mobile-base/magnetometer (example-level, no fixed date) |
+| Opportunistic | E | URDF multi-format export (MJCF/SDF/USD) — demand-driven |
+| **No committed date** | F | Phases 1–6 (§9) — deliberately excluded from the schedule above. This track is still plan iteration, not a committed body of work; it gets a date once the plan is finalized and the ecosystem-integration research above has answered what Phase 1's API actually needs to look like. |
+
+---
+
+## 12. Resource Planning
+
+### Team structure (unchanged from prior planning)
 **Core Team (4):** Project Lead (1), Core Developers (2), QA Engineer (1)
-**Specialist Teams (2-3 each):** MuJoCo (2), Genesis (2), IsaacSim (2), Documentation (2), Examples (2)
-**Total:** 14-16 people
+**Specialist Teams (2–3 each):** MuJoCo (2), Genesis (2), IsaacSim (2),
+Documentation (2), Examples (2)
+**Total:** 14–16 people
 
-### Timeline Summary
-
-| Track | Milestone | Target | Key Deliverables |
-|---|---|---|---|
-| A | v0.4.x gates | imminent | End-to-end example, docs, CI matrix, CHANGELOG |
-| A | v0.5 | next | Modular refactor, viz update (inertia ellipsoids, CoM overlay) |
-| A | v0.6 | — | Online ID, friction models, FIM-OED |
-| A | v0.7 | — | Multi-sensor calibration, URDF↔YAML round-trip, test suite |
-| A | v1.0 | — | API stabilization, convex ID first-class, migration guide |
-| B | Phase 1 | Q2 2026 | PinocchioBackend (❌ critical gap), integration API, tests, benchmarks |
-| B | Phase 2 | Q3 2026 | MuJoCo validation, Genesis backend, cross-backend suite |
-| B | Phase 3 | Q4 2026 | IsaacSim backend, unified docs, CLI tool |
-| B | Phase 4 | 2027+ | Web interface, ROS 2, ML-enhanced, cloud |
-
-### Budget Estimate (Rough, Phase 1-3)
-- Personnel: 14-16 people × 9 months × $10K/month = $1.26M - $1.44M
+### Budget estimate (rough, Track B Phases 1–3)
+- Personnel: 14–16 people × 9 months × $10K/month ≈ $1.26M–$1.44M
 - Infrastructure: GPU compute $45K + CI/CD $18K + docs hosting $9K = $72K
-- **Total Phase 1-3:** ~$1.35M - $1.55M
+- **Total:** ~$1.35M–$1.55M
+
+This estimate covers Track B only (the resource-heavy multi-simulator
+work). Tracks A, C, D, and E are comparatively small, incremental efforts
+that have historically shipped with much smaller footprints — e.g. Track
+C's five shipped steps landed across roughly one month of focused work.
 
 ---
 
-## 8. Success Metrics
+## 13. Success Metrics
 
 ### Technical
 - [ ] All backends pass 100% of interface tests
 - [ ] <1% difference in identified parameters across backends
 - [ ] <0.1% difference in dynamics computations across backends
-- [ ] MuJoCo 2-3x faster than Pinocchio; Genesis (GPU) 5-10x; IsaacSim (GPU) 3-5x
-- [ ] 95%+ test coverage; zero critical bugs; CI/CD passing on all PRs
-- [ ] All projected link inertias satisfy $m \ge m_{\min}$ and `min_eig(P) >= -psd_eig_tol`
+- [ ] MuJoCo 2–3× faster than Pinocchio; Genesis (GPU) 5–10×; IsaacSim
+  (GPU) 3–5×
+- [ ] Test/lint CI passing on every PR (currently: no such CI exists)
+- [ ] All projected link inertias satisfy $m \ge m_{\min}$ and
+  `min_eig(P) >= -psd_eig_tol`
+- [x] Every calibration/identification run produces a machine-readable
+  pass/fail verdict (Track C, shipped)
 
 ### User Experience
 - [ ] Getting started in <5 minutes for any simulator
-- [ ] Single-line integration for common workflows
+- [ ] Single-line integration for common workflows (Track B's
+  `RobotIdentificationSystem.identify_parameters()` is a first step, done)
 - [ ] <10 lines of code for complete identification
 - [ ] 100% API coverage in docs; 10+ tutorials; video demos per simulator
 
 ### Community
-- [ ] 1000+ GitHub stars (combined repos); 100+ active users; 10+ external contributors
+- [ ] 1000+ GitHub stars (combined repos); 100+ active users; 10+ external
+  contributors
 
 ---
 
-## 9. Risk Management
+## 14. Risk Management
 
-### High-Risk
-1. **Simulator API changes** — version pinning, automated testing, regular updates
-2. **Performance regressions from abstraction layer** — continuous benchmarking, profiling, optimization
-3. **Format conversion inconsistencies** — validation tests, user guides, fallback options
-4. **PinocchioBackend debt** — the abstraction is claimed done but isn't; every day core uses direct `pin.*` calls makes the eventual refactor harder. Prioritize wrapping.
+### High-risk
+1. **Simulator API changes** — version pinning, automated testing, regular
+   updates.
+2. **Performance regressions from the abstraction layer** — continuous
+   benchmarking, profiling, optimization.
+3. **No test/lint CI on `figaroh` core** — every commit to core algorithms
+   (Tracks A, C, D) currently lands without an automated correctness gate
+   beyond `pre-commit run --all-files`. This is the highest-leverage
+   process risk in the whole roadmap; closing it (§10) unblocks several
+   other gated items too.
+4. **Format conversion inconsistencies** — validation tests, user guides,
+   fallback options.
 
-### Medium-Risk
-1. **Team availability** — cross-training, documentation, external contractors
-2. **Dependency conflicts** (simulators require conflicting deps) — optional dependencies, separate environments, Docker
-3. **SDP solver availability** (`picos`/`cvxopt`/`mosek`) — lazy imports, graceful errors, documented requirements
+### Medium-risk
+1. **Known-unfixed `ddq` indexing bug** (Track C) — silently under-models
+   the last active joint's acceleration-dependent terms for any robot
+   without continuous/spherical joints, on the default `dt=None` path.
+   Broad blast radius (every identification example); not yet scheduled.
+2. **Track A/C/D/F convergent-but-separate residual-abstraction work** — v0.7.1
+   (multi-sensor calibration), Track D Steps 1 & 4–5 (residual abstraction,
+   camera intrinsics), Track C Feature 3 (log-Cholesky), and Track F's
+   control-torque/policy residual (§9) are all variations on "generalize
+   how a residual/parameter is represented" — four candidates, three
+   different domains (measurement, physical consistency, control). Left
+   unmanaged, these could ship as incompatible abstractions with clashing
+   names instead of one coherent design. Flagged in §4, §7, and §9; needs
+   an explicit design decision before more than one of them starts.
+3. **Team availability** — cross-training, documentation, external
+   contractors.
+4. **Dependency conflicts** (simulators require conflicting deps) —
+   optional dependencies, separate environments, Docker.
+5. **SDP solver availability** (`picos`/`cvxopt`/`mosek`) — lazy imports,
+   graceful errors, documented requirements (mostly done — see §4).
 
-### Low-Risk
-1. **Licensing issues** — clear documentation, open-source alternatives
-
----
-
-## 10. Revision History
-
-### Version 1.5 (June 19, 2026) — Track B Step 4 Implemented (MuJoCo Backend Fixed)
-- **`MuJoCoBackend.compute_regressor()`** fixed — replaced identity placeholder with
-  Pinocchio's analytical `computeJointTorqueRegressor` (delegated via lazy-loaded
-  `pin.Model`). MuJoCo 3.9.0 doesn't support runtime inertial parameter perturbation,
-  making finite-difference approach infeasible. Pinocchio is always available as a
-  FIGAROH dependency, so this is a pragmatic solution.
-- **`MuJoCoBackend.compute_coriolis_matrix()`** fixed — replaced incorrect outer-product
-  approximation with proper finite-difference Jacobian/2 approach. Uses Euler's theorem
-  for quadratic homogeneous functions: since Coriolis forces f(v) = C(q,v)*v are
-  quadratic in v, the Jacobian df/dv = 2*C (Christoffel symbols are symmetric).
-- **`MuJoCoBackend.compute_mass_matrix()`** fixed — added `mj_forward` call before
-  `mj_crb` (required in MuJoCo 3.x; without it, mass matrix returns zeros).
-- **`__init__.py` availability check fixed** — `list_backends()` now checks
-  `MUJOCO_AVAILABLE`/`PINOCCHIO_AVAILABLE` flags, not just whether the class imports.
-  Previously reported `mujoco: True` even when mujoco wasn't installed.
-- **13 new MuJoCo tests** added to `test_backends.py`: initialization, dynamics,
-  regressor (self-consistency + cross-backend match with Pinocchio), Coriolis
-  (shape + zero-velocity + consistency), kinematics.
-- **Test suite:** 253 passed, 4 failed (pre-existing IPOPT), 2 skipped. Zero regressions.
-- **Key finding:** MuJoCo's model parameters (body_mass, body_inertia, body_ipos) are
-  NOT mutable at runtime in 3.9.0 — changes don't affect `mj_inverse` output. This is
-  the same class of limitation as the calibration model manipulation blocker.
-
-### Version 1.4 (June 19, 2026) — Track B Step 5 Complete (Core Algorithm Path Migrated)
-- **`calibration/calibration_tools.py`** migrated — 7 functions with dynamics computation now accept
-  optional `backend=None` parameter: `get_rel_kinreg`, `get_rel_jac`, `update_forward_kinematics`,
-  `calc_updated_fkm`, `calculate_kinematics_model`, `calculate_identifiable_kinematics_model`,
-  `calculate_base_kinematics_regressor`. Routes FK, Jacobian, gravity, random-configuration through
-  backend. `computeFrameKinematicRegressor` uses `get_model_object()` escape hatch (no backend equiv).
-- **Step 5 marked complete** — the full algorithm path (identification + calibration) now routes
-  through `PinocchioBackend` when a backend is available. 6 files modified, +268/-79 lines total.
-- **Remaining Pinocchio coupling** explicitly categorized as "by design": data type construction
-  (`SE3`, `Quaternion`, `Force`, `Frame`), model manipulation (`jointPlacements`), visualization
-  (Meshcat/Gepetto), collision detection (hppfcl/coal). These require parallel type systems or
-  simulator-specific APIs — out of scope for current backend track, under investigation.
-- **Test suite:** 240 passed, 4 failed (pre-existing IPOPT), 2 skipped. Zero regressions.
-- **MuJoCo equivalents research** launched (librarian, background) — investigating whether
-  SE3/transforms, frame management, kinematic regressor, model manipulation, collision detection,
-  and visualization can be abstracted across simulators for future full migration.
-
-### Version 1.3 (June 19, 2026) — Track B Step 5 Implemented (Partial Core Migration)
-- **`PinocchioBackend.from_model()`** classmethod added — wraps existing `pin.Model`/`pin.Data`
-  without URDF re-loading, enabling model sharing with `Robot`/`RobotWrapper` instances.
-- **`Robot.backend`** lazy property added — creates `PinocchioBackend.from_model(self.model, self.data)`
-  on first access. This is the integration seam for the "strangler fig" migration.
-- **`RegressorBuilder`** migrated — routes through `robot.backend.compute_regressor()`,
-  `robot.backend.nv`, `robot.backend.get_inertias()` when backend available. Backward-compatible
-  `hasattr(robot, 'backend')` fallback to direct `pin.*` calls.
-- **`identification_tools.py`** migrated — `calculate_first_second_order_differentiation` accepts
-  optional `backend` parameter for `compute_difference()`.
-- **`randomdata.py`** migrated — `get_torque_rand` uses `robot.backend.compute_inverse_dynamics()`,
-  `generate_waypoints`/`generate_waypoints_fext` use backend-aware `nq`/`nv`.
-- **Smoke test confirmed:** `Robot` → `backend` → `PinocchioBackend` → `RegressorBuilder` exercises
-  the backend path (not the fallback). Regressor results identical to direct `pin.*` calls.
-- **Test suite:** 240 passed, 4 failed (pre-existing IPOPT), 2 skipped. Zero regressions.
-- **5 files modified:** pinocchio.py (+from_model), robot.py (+backend property), regressor.py
-  (backend-aware), identification_tools.py (+backend param), randomdata.py (backend-aware).
-- **Remaining migration:** calibration, visualization, collisions, model loading, data types.
-
-### Version 1.2 (June 19, 2026) — Track B Steps 1-3 Implemented
-- **PinocchioBackend** implemented (`backends/pinocchio.py`, 371 lines) — wraps all
-  Pinocchio dynamics/kinematics/regressor calls + Lie group ops. `get_backend("pinocchio")`
-  now works (was raising ValueError).
-- **DynamicsBackend interface extended** (`base.py`) — 6 new optional methods:
-  `get_inertias`, `get_frame_id`, `compute_difference`, `compute_integrate`,
-  `random_configuration`, `get_model_object`.
-- **Backend test suite** created (`tests/unit/test_backends.py`, 32 tests) — factory,
-  initialization, numerical correctness vs direct `pin.*` (atol=1e-10), kinematics,
-  optional methods, interface conformance. All pass.
-- **Test suite updated:** 246 collected, 240 passed, 4 failed (pre-existing IPOPT),
-  2 skipped. Zero regressions.
-- Phase 1 upgraded from "🔄 PARTIALLY COMPLETE" to "🔄 MOSTLY COMPLETE".
-- Remaining Phase 1 gaps: core module migration (Step 5), integration API (Step 6),
-  MuJoCo regressor fix (Step 4), performance benchmarks.
-
-### Version 1.1 (June 19, 2026) — Implementation State Verification
-- Ran `pytest` and verified file/directory existence against actual codebase.
-- **Test suite corrected:** 214 collected, 208 passed, 4 failed (test_robotipopt.py),
-  2 skipped — not "198/198 pass" as prior docs claimed.
-- **`test_cad_constraints.py`** added to v0.4.3 inventory (was missing from checklist).
-- **`examples/shared/`** marked ❌ — does not exist; prior ecosystem analysis described
-  9 files in detail but the directory is absent. All references removed/corrected.
-- **`web-interface/`** upgraded from "scaffolded early" to "real working Viser app"
-  (21 files, ~20K lines). Tech stack corrected from React/Three.js to Viser.
-- **Robot examples verified real-vs-partial:** ur10 ✅ full, tiago ✅ full,
-  talos ⚠️ partial, staubli_tx40 ⚠️ partial, templates ⚠️ scaffold only.
-- **CAD-constraints example claim retracted:** v0.4.3 CHANGELOG claim of a YAML
-  comment block in `manipulator_robot.yaml` is false (grep confirms zero matches
-  across all of figaroh-examples).
-- **`integration/` and `cli/` directories** confirmed absent (not just "not started").
-- Phase 4 web interface section updated to reflect existing Viser implementation.
-
-### Version 1.0 (June 19, 2026) — Combined Roadmap
-- Merged `ROADMAP_PRIVATE.md` (algorithmic features, v0.4–v1.0) and `IMPLEMENTATION_ROADMAP.md` (multi-simulator backends, Phase 1–4) into a single document.
-- Reconciled status markers against actual codebase: PinocchioBackend marked ❌ (file does not exist); Phase 1 downgraded from "✅ COMPLETED" to "🔄 PARTIALLY COMPLETE".
-- Identified PinocchioBackend implementation as the highest-leverage next step for Track B.
-- Preserved detailed design specs (v0.4.1–v0.4.3) and phase plans as engineering reference.
-- Added cross-cutting work section consolidating docs/examples/CI/deprecation items from both tracks.
-
-### Prior documents (superseded, moved to `deprecated/`)
-- `deprecated/ROADMAP_PRIVATE.md` (v0.4 design specs, was gitignored in `figaroh/`) — content folded into Track A
-- `deprecated/IMPLEMENTATION_ROADMAP.md` v2.0 (June 3, 2026, was workspace root) — content folded into Track B
-- `deprecated/FIGAROH_ECOSYSTEM_ANALYSIS.md` v1.0 (June 3, 2026) — analysis input, not a roadmap; findings incorporated
-- `deprecated/TASK_1.1_IMPLEMENTATION_SUMMARY.md` (June 3, 2026) — deprecation task summary; status folded into §3 and §6
+### Low-risk
+1. **Licensing issues** — clear documentation, open-source alternatives.
+2. **Doc/reality drift** — mitigated going forward by this roadmap's
+   practice of verifying every status marker against the codebase rather
+   than trusting a prior draft; the same practice should apply to future
+   revisions.
 
 ---
 
-**End of Combined Roadmap**
+## 15. References
+
+**Root-level docs:**
+- [`CHANGELOG.md`](CHANGELOG.md) — authoritative per-release change record
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — system architecture (per `AGENTS.md`,
+  partly aspirational/out of date in places — cross-check against code)
+- [`README.md`](README.md) — install/quickstart, optional-dependency matrix
+
+**`docs/decisions/` (design rationale, working documents for contributors):**
+
+| Document | Covers | Referenced from |
+|---|---|---|
+| [`external-tool-comparisons.md`](docs/decisions/external-tool-comparisons.md) | Part A: `robot_calibration` comparison (Track D's source). Part B: MuJoCo `sysid` comparison. Part C: the full reporting/verification build-out (Track C's source) | §6, §7 |
+| [`tiago-calibration-and-port-review.md`](docs/decisions/tiago-calibration-and-port-review.md) | Part A: TIAGo/TIAGo Pro structural & statistical calibration analysis, redistribution rationale (Track A). Part B: eye-hand + suspension port review (Track E's source) | §4, §8.2 |
+| [`figaroh-examples-improvement_plan.md`](docs/decisions/figaroh-examples-improvement_plan.md) | Cross-example audit of UR10/TIAGo/TALOS/Staubli (Track E's source) | §8.1 |
+| [`urdf_exporter.md`](docs/decisions/urdf_exporter.md) | URDF exporter plan & spec, implementation deviations (Track E's source) | §8.3 |
+| [`validation-quality-report.md`](docs/decisions/validation-quality-report.md) | FK validation + statistical quality matrix — fully implemented, superseded in practice by Track C's reporting suite | §6 |
+| [`sim2real-modelbased-deployment.md`](docs/decisions/sim2real-modelbased-deployment.md) | Positioning research: FIGAROH as a sim-to-real deployment/model-based-control toolbox for RL/IL policies and motion retargeting (Track F's source — ongoing research, not yet committed) | §9 |
+
+See also `docs/source/further_reading/decisions.md` for the same index,
+rendered into the built docs site.
+
+---
+
+## 16. Roadmap Document History
+
+This section tracks changes to the **roadmap document itself**. For
+software changes, see `CHANGELOG.md`.
+
+- **v2.1 (2026-08-16)** — added Track F (Deployment & Sim-to-Real
+  Integration), sourced from
+  `docs/decisions/sim2real-modelbased-deployment.md` (moved into
+  `docs/decisions/` from a working `.slim/deepwork/` draft in this same
+  pass). Marked explicitly as ongoing research, not a committed track —
+  distinct from Tracks A–E. Cross-referenced its phase-level overlaps with
+  existing tracks rather than letting them exist as separate,
+  potentially-diverging items: Phase 3 supersedes Track B's cross-backend
+  validation item, Phase 5 supersedes Track A's v0.6.1 online-ID item, and
+  Phase 2's URDF/friction export shares a deliverable with Track D Step 6
+  and Track E §8.3. Corrected a stale claim in the source doc itself
+  (covariance export was described as not-yet-built; it shipped in 0.4.7).
+  Flagged an added open question — how FIGAROH integrates with ecosystem
+  tools practitioners actually use (mjlab, motion-retargeting libraries) —
+  as a prerequisite research pass before Track F's API surface is treated
+  as final. Track F is deliberately excluded from the committed timeline
+  (§11) pending that research and plan finalization.
+- **v2.0 (2026-08-16)** — this revision. Added Tracks C (Reporting &
+  Verification), D (Calibration Composability), and E (Example Ecosystem &
+  Ports), formalizing work that previously only existed as detailed
+  `docs/decisions/` documents with no roadmap-level rollup. Removed the
+  old per-version "Revision History" section (it had drifted into
+  duplicating `CHANGELOG.md`'s job) in favor of this shorter document-only
+  history plus a References section. Added a Table of Contents and a
+  single consolidated Estimated Timeline spanning all five tracks.
+  Re-verified every Track A/B status marker against the codebase rather
+  than carrying the June draft forward; one real correction surfaced
+  (`integration/api.py` is implemented, previously marked "not started").
+  Updated current release to 0.4.7 and test counts to 451/442/4/5.
+- **v1.0–v1.5 (June 2026)** — original merge of `ROADMAP_PRIVATE.md`
+  (algorithmic features) and `IMPLEMENTATION_ROADMAP.md` (multi-simulator
+  backends) into one document, followed by five incremental verification
+  passes reconciling status markers against the actual codebase. Superseded
+  prior documents: `deprecated/ROADMAP_PRIVATE.md`,
+  `deprecated/IMPLEMENTATION_ROADMAP.md`,
+  `deprecated/FIGAROH_ECOSYSTEM_ANALYSIS.md`,
+  `deprecated/TASK_1.1_IMPLEMENTATION_SUMMARY.md`.
+
+---
+
+**End of Roadmap**

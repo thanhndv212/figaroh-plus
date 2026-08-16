@@ -26,8 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   predictions), and the propagated covariance flags which directions are
   genuinely underdetermined rather than reporting false precision. Opt-in;
   no change to existing `solve()`/report behavior. See
-  `TIAGO_CALIBRATION_ANALYSIS.md` §8 for the full motivation and literature
-  context.
+  `docs/decisions/tiago-calibration-and-port-review.md` Part A §A.8 for the
+  full motivation and literature context.
 - `feat(report)`: the HTML calibration report now includes a
   "Redistributed standard parameters" section, calling the above
   `redistribute_parameters()` on the live calibrator and rendering it
@@ -277,7 +277,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `.target`, not `.value` directly.
 
 Full design history and rationale:
-[`docs/decisions/roadmap-mujoco-sysid-inspired-features.md`](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/roadmap-mujoco-sysid-inspired-features.md).
+[`docs/decisions/external-tool-comparisons.md`](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/external-tool-comparisons.md)
+Part C.
 
 ## [0.4.4] - 2026-06-27
 
