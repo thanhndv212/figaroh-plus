@@ -227,7 +227,7 @@ class BaseOptimalCalibration(ABC):
         self.calculate_regressor()
         self.calculate_detroot_whole()
 
-    def solve(self, save_file=False):
+    def solve(self, save_file=False, selection_method="threshold", **selection_kwargs):
         """Solve the optimal configuration selection problem.
 
         This is the main entry point that orchestrates the complete optimal
@@ -245,6 +245,12 @@ class BaseOptimalCalibration(ABC):
         Args:
             save_file (bool): Whether to save optimal configurations to YAML
                             file in results directory. Default False.
+            selection_method (str): "threshold" (default) or "iroc" -- see
+                            calculate_optimal_configurations for what each
+                            one does.
+            **selection_kwargs: Forwarded to calculate_optimal_configurations
+                            (e.g. iroc_rel_tol, iroc_patience when
+                            selection_method="iroc").
 
         Side Effects:
             - Updates self.optimal_configurations with selected configs
@@ -272,7 +278,9 @@ class BaseOptimalCalibration(ABC):
         """
         if not hasattr(self, "R_rearr"):
             self.initialize()
-        self.calculate_optimal_configurations()
+        self.calculate_optimal_configurations(
+            selection_method=selection_method, **selection_kwargs
+        )
         if save_file:
             try:
                 self.save_results()
@@ -537,7 +545,12 @@ class BaseOptimalCalibration(ABC):
         )
         return subX_list, subX_dict
 
-    def calculate_optimal_configurations(self):
+    def calculate_optimal_configurations(
+        self,
+        selection_method="threshold",
+        iroc_rel_tol=1e-3,
+        iroc_patience=3,
+    ):
         """Solve SOCP optimization to find optimal configuration subset.
 
         This is the core optimization method that solves the D-optimal
@@ -552,14 +565,44 @@ class BaseOptimalCalibration(ABC):
             Where Xᵢ are information matrices and wᵢ are configuration weights.
 
         Selection Process:
-            1. Solve SOCP optimization for optimal weights
-            2. Select configurations with weights > eps_opt (1e-5)
+            1. Solve SOCP optimization for optimal (continuous-relaxation)
+               weights
+            2. Select a discrete subset from the weight ranking, via one of
+               two interchangeable strategies (``selection_method``):
+
+               - ``"threshold"`` (default, original behavior): keep every
+                 configuration whose weight exceeds ``eps_opt`` (1e-5).
+                 Simple, but says nothing about *how many* configurations
+                 are actually enough -- it only discards the ones the SOCP
+                 relaxation assigned essentially zero weight.
+               - ``"iroc"``: rank-and-incrementally-test against the
+                 normalized D-optimality criterion (the same quantity
+                 :meth:`plot` already computes for visualization, here used
+                 as a stopping rule instead): grow the selected subset one
+                 configuration at a time in weight-rank order and stop at
+                 the first point where the criterion's relative gain stays
+                 below ``iroc_rel_tol`` for ``iroc_patience`` consecutive
+                 configurations in a row (a plateau) -- i.e. an automatic,
+                 data-driven minimal configuration count, rather than a
+                 fixed threshold on individual weights. See
+                 :meth:`_select_by_iroc`.
             3. Verify minimum configuration requirement is met
             4. Store selected configurations and weights
+
+        Args:
+            selection_method (str): "threshold" or "iroc" (see above).
+            iroc_rel_tol (float): Relative-gain plateau tolerance, only
+                used when ``selection_method="iroc"``.
+            iroc_patience (int): Number of consecutive sub-tolerance gains
+                required to declare a plateau, only used when
+                ``selection_method="iroc"``.
 
         Side Effects:
             - Sets self.w_list with optimization solution weights
             - Sets self.w_dict_sort with sorted weight dictionary
+            - Sets self.o1_history with the incremental D-optimality
+              criterion trace when selection_method="iroc" (for
+              inspection/plotting)
             - Sets self.optimal_configurations with selected configs
             - Sets self.optimal_weights with final weight values
             - Sets self.nb_chosen with number of selected configurations
@@ -571,15 +614,21 @@ class BaseOptimalCalibration(ABC):
         Raises:
             AssertionError: If regressor not calculated or if insufficient
                           configurations selected (infeasible design)
+            ValueError: If selection_method is not "threshold" or "iroc"
 
         Example:
             >>> opt_calib.calculate_optimal_configurations()
             solve time of socp: 2.35 seconds
             12 configs are chosen: [0, 5, 12, 18, 23, ...]
+            >>> opt_calib.calculate_optimal_configurations(
+            ...     selection_method="iroc"
+            ... )
+            9 configs are chosen: [0, 5, 12, 18, 23, 7, 14, 2, 9]
 
         See Also:
             SOCPOptimizer: The optimization solver implementation
             calculate_regressor: Required prerequisite computation
+            _select_by_iroc: The O1-plateau automatic count selection
         """
         import time
 
@@ -592,12 +641,15 @@ class BaseOptimalCalibration(ABC):
         solve_time = time.time() - prev_time
         logger.info(f"solve time of socp: {solve_time}")
 
-        # Select optimal config based on values of weight
-        self.eps_opt = 1e-5
-        chosen_config = []
-        for i in list(self.w_dict_sort.keys()):
-            if self.w_dict_sort[i] > self.eps_opt:
-                chosen_config.append(i)
+        if selection_method == "threshold":
+            chosen_config = self._select_by_threshold()
+        elif selection_method == "iroc":
+            chosen_config = self._select_by_iroc(iroc_rel_tol, iroc_patience)
+        else:
+            raise ValueError(
+                "selection_method must be 'threshold' or 'iroc', got "
+                f"{selection_method!r}."
+            )
 
         assert (
             len(chosen_config) >= self.minNbChosen
@@ -619,6 +671,88 @@ class BaseOptimalCalibration(ABC):
         )
         self.optimal_weights = self.w_list
         return True
+
+    def _select_by_threshold(self):
+        """Original selection rule: keep every ranked configuration whose
+        SOCP weight exceeds ``eps_opt``. Sets ``self.eps_opt``."""
+        self.eps_opt = 1e-5
+        return [i for i in self.w_dict_sort if self.w_dict_sort[i] > self.eps_opt]
+
+    def _select_by_iroc(self, rel_tol=1e-3, patience=3):
+        """Automatic minimal-configuration-count selection via incremental
+        D-optimality plateau detection ("IROC": Information Ranking for
+        Optimal Calibration).
+
+        The SOCP relaxation (:class:`SOCPOptimizer`) already ranks every
+        candidate configuration by weight in ``self.w_dict_sort``. Instead
+        of thresholding those weights individually (:meth:`_select_by_threshold`),
+        this walks down the ranking and, at each candidate count ``k``,
+        evaluates the same normalized D-optimality criterion
+        :meth:`plot` uses for its diagnostic curve::
+
+            O1(k) = det(Σ_{i in top-k} w_i · X_i)^(1/n) / sqrt(k)
+
+        Since the ranking already orders configurations from most to least
+        informative, ``O1(k)`` increases quickly at first and flattens out
+        once further configurations stop adding meaningfully independent
+        information. This stops at the first ``k`` after which the
+        relative gain in ``O1`` stays below ``rel_tol`` for ``patience``
+        consecutive steps in a row (so a single small dip doesn't trigger
+        an early, spurious stop), and backs off to the count just before
+        that plateau began -- i.e. it picks the elbow of the curve
+        automatically, rather than requiring a hand-picked configuration
+        count or per-weight threshold.
+
+        Args:
+            rel_tol (float): Minimum relative gain in O1(k) (vs. O1(k-1))
+                that still counts as "still improving".
+            patience (int): Number of consecutive sub-``rel_tol`` gains
+                required before declaring a plateau and stopping.
+
+        Returns:
+            list: Chosen configuration indices (top-``k`` of the ranking,
+            for the selected ``k``).
+
+        Side Effects:
+            - Sets self.o1_history: the O1(k) trace, k = minNbChosen..k_stop,
+              for inspection/plotting.
+
+        See Also:
+            calculate_optimal_configurations: entry point (selection_method="iroc")
+            plot: uses the same O1 criterion for its diagnostic curve
+        """
+        import picos as pc
+
+        ranked = list(self.w_dict_sort.keys())
+        max_k = len(ranked)
+        o1_history = []
+        flat_run = 0
+        chosen_k = min(self.minNbChosen, max_k)
+
+        for k in range(self.minNbChosen, max_k + 1):
+            keys_k = ranked[:k]
+            M_k = pc.sum(self.w_dict_sort[i] * self._subX_list[i] for i in keys_k)
+            o1 = float(pc.DetRootN(M_k)) / np.sqrt(k)
+            o1_history.append(o1)
+            chosen_k = k
+
+            if len(o1_history) > 1:
+                prev = o1_history[-2]
+                rel_gain = (o1 - prev) / prev if prev > 1e-12 else float("inf")
+                if rel_gain < rel_tol:
+                    flat_run += 1
+                    if flat_run >= patience:
+                        chosen_k = max(self.minNbChosen, k - patience)
+                        break
+                else:
+                    flat_run = 0
+
+        self.o1_history = o1_history
+        logger.info(
+            f"IROC selection: stopped at {chosen_k}/{max_k} configs "
+            f"(O1 plateau, rel_tol={rel_tol}, patience={patience})"
+        )
+        return ranked[:chosen_k]
 
     def plot(self):
         """Generate comprehensive visualization of optimization results.
