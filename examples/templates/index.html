@@ -1874,13 +1874,13 @@ how to author a new robot config against them.</p>
 </ul>
 <h2 id="writing-a-new-robot-config">Writing a new robot config<a class="headerlink" href="#writing-a-new-robot-config" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="c1"># examples/my_robot/config/my_robot_unified_config.yaml</span>
-<span class="nt">extends</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;../../templates/manipulator_robot.yaml&quot;</span>
+<span class="nt">extends</span><span class="p">:</span><span class="w"> </span><span class="s">"../../templates/manipulator_robot.yaml"</span>
 
 <span class="nt">robot</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my_robot&quot;</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"my_robot"</span>
 <span class="w">  </span><span class="nt">properties</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">joints</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">active_joints</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;joint_1&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;joint_2&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;...&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">active_joints</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"joint_1"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"joint_2"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"..."</span><span class="p p-Indicator">]</span>
 <span class="w">  </span><span class="c1"># override only what differs from the template</span>
 </code></pre></div>
 <ol>
@@ -1906,9 +1906,9 @@ how to author a new robot config against them.</p>
 </ul>
 <h2 id="verifying-a-config-parses">Verifying a config parses<a class="headerlink" href="#verifying-a-config-parses" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.utils.config_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">UnifiedConfigParser</span>
-<span class="n">parser</span> <span class="o">=</span> <span class="n">UnifiedConfigParser</span><span class="p">(</span><span class="s2">&quot;config/my_robot_unified_config.yaml&quot;</span><span class="p">)</span>
+<span class="n">parser</span> <span class="o">=</span> <span class="n">UnifiedConfigParser</span><span class="p">(</span><span class="s2">"config/my_robot_unified_config.yaml"</span><span class="p">)</span>
 <span class="n">config</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;robot&quot;</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">"robot"</span><span class="p">][</span><span class="s2">"name"</span><span class="p">])</span>
 </code></pre></div>
 <h2 id="see-also">See also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>

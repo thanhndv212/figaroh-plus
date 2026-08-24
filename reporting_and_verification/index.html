@@ -1942,11 +1942,11 @@ reconstruction status.</p>
 <h2 id="self-contained-html-reports">Self-contained HTML reports<a class="headerlink" href="#self-contained-html-reports" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">calibrator</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">html_report</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="c1"># or, after the fact:</span>
-<span class="n">calibrator</span><span class="o">.</span><span class="n">export_html_report</span><span class="p">(</span><span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;results/calibration_report.html&quot;</span><span class="p">)</span>
+<span class="n">calibrator</span><span class="o">.</span><span class="n">export_html_report</span><span class="p">(</span><span class="n">output_path</span><span class="o">=</span><span class="s2">"results/calibration_report.html"</span><span class="p">)</span>
 </code></pre></div>
 <p>The identification side is the same shape:</p>
 <div class="highlight"><pre><span></span><code><span class="n">identifier</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">html_report</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">identifier</span><span class="o">.</span><span class="n">export_html_report</span><span class="p">(</span><span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;results/identification_report.html&quot;</span><span class="p">)</span>
+<span class="n">identifier</span><span class="o">.</span><span class="n">export_html_report</span><span class="p">(</span><span class="n">output_path</span><span class="o">=</span><span class="s2">"results/identification_report.html"</span><span class="p">)</span>
 </code></pre></div>
 <p>Each report is a single self-contained HTML file — no external requests,
 no CDN dependency, inline CSS/JS only, light/dark theme aware — so it opens
@@ -2035,14 +2035,14 @@ and returns a <code>VerificationVerdict</code> — this is the piece that turns 
 empty check list counts as passed, since there's nothing to fail on.</p>
 <p>Override thresholds per call:</p>
 <div class="highlight"><pre><span></span><code><span class="n">verdict</span> <span class="o">=</span> <span class="n">calibrator</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span><span class="n">thresholds</span><span class="o">=</span><span class="p">{</span>
-    <span class="s2">&quot;condition_number&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;threshold&quot;</span><span class="p">:</span> <span class="mf">500.0</span><span class="p">,</span> <span class="s2">&quot;comparison&quot;</span><span class="p">:</span> <span class="s2">&quot;max&quot;</span><span class="p">},</span>
+    <span class="s2">"condition_number"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"threshold"</span><span class="p">:</span> <span class="mf">500.0</span><span class="p">,</span> <span class="s2">"comparison"</span><span class="p">:</span> <span class="s2">"max"</span><span class="p">},</span>
 <span class="p">})</span>
 </code></pre></div>
 <p>Write the verdict to disk as JSON (numpy-safe, includes git commit / config
 hash / timestamp provenance):</p>
 <div class="highlight"><pre><span></span><code><span class="n">path</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">export_verification_report</span><span class="p">(</span>
     <span class="n">output_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>       <span class="c1"># defaults to {output_dir}/identification_verification.json</span>
-    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;results&quot;</span><span class="p">,</span>
+    <span class="n">output_dir</span><span class="o">=</span><span class="s2">"results"</span><span class="p">,</span>
     <span class="n">thresholds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>        <span class="c1"># defaults, same as verify()</span>
 <span class="p">)</span>
 </code></pre></div>
@@ -2052,11 +2052,11 @@ hash / timestamp provenance):</p>
 <p>This is the pattern already used by the <code>identification.py</code> entry points in
 <a href="https://github.com/thanhndv212/figaroh-examples">figaroh-examples</a>:</p>
 <div class="highlight"><pre><span></span><code><span class="n">verdict</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
-<span class="n">identifier</span><span class="o">.</span><span class="n">export_verification_report</span><span class="p">(</span><span class="n">output_path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">run_dir</span> <span class="o">/</span> <span class="s2">&quot;verdict.json&quot;</span><span class="p">))</span>
+<span class="n">identifier</span><span class="o">.</span><span class="n">export_verification_report</span><span class="p">(</span><span class="n">output_path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">run_dir</span> <span class="o">/</span> <span class="s2">"verdict.json"</span><span class="p">))</span>
 
 <span class="k">for</span> <span class="n">check</span> <span class="ow">in</span> <span class="n">verdict</span><span class="o">.</span><span class="n">checks</span><span class="p">:</span>
-    <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;PASS&quot;</span> <span class="k">if</span> <span class="n">check</span><span class="o">.</span><span class="n">passed</span> <span class="k">else</span> <span class="s2">&quot;FAIL&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">check</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">check</span><span class="o">.</span><span class="n">value</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">check</span><span class="o">.</span><span class="n">comparison</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">check</span><span class="o">.</span><span class="n">threshold</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="s2">"PASS"</span> <span class="k">if</span> <span class="n">check</span><span class="o">.</span><span class="n">passed</span> <span class="k">else</span> <span class="s2">"FAIL"</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  [</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">check</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">check</span><span class="o">.</span><span class="n">value</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">check</span><span class="o">.</span><span class="n">comparison</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">check</span><span class="o">.</span><span class="n">threshold</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 
 <span class="k">if</span> <span class="ow">not</span> <span class="n">verdict</span><span class="o">.</span><span class="n">passed</span><span class="p">:</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -2071,7 +2071,7 @@ pass a compatibility check, shows a per-metric diff table and an overlaid
 before/after series chart with a per-run visibility toggle:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.compare_report</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_compare_page</span>
 
-<span class="n">generate_compare_page</span><span class="p">(</span><span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;results/compare.html&quot;</span><span class="p">)</span>
+<span class="n">generate_compare_page</span><span class="p">(</span><span class="n">output_path</span><span class="o">=</span><span class="s2">"results/compare.html"</span><span class="p">)</span>
 </code></pre></div>
 <p>Open <code>results/compare.html</code> in a browser and load two verdict JSON files —
 everything after that runs entirely client-side; there's no server, no
@@ -2100,11 +2100,11 @@ actively dangerous).</p>
 <p>A minimal build-gate recipe combining the pieces above:</p>
 <div class="highlight"><pre><span></span><code><span class="n">identifier</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">html_report</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">verdict</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
-<span class="n">identifier</span><span class="o">.</span><span class="n">export_verification_report</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;results&quot;</span><span class="p">)</span>
+<span class="n">identifier</span><span class="o">.</span><span class="n">export_verification_report</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="s2">"results"</span><span class="p">)</span>
 
 <span class="k">if</span> <span class="ow">not</span> <span class="n">verdict</span><span class="o">.</span><span class="n">passed</span><span class="p">:</span>
     <span class="n">failed</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">verdict</span><span class="o">.</span><span class="n">checks</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">passed</span><span class="p">]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Verification failed: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">failed</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Verification failed: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">failed</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </code></pre></div>
 <p>Point your CI at <code>results/*_verification.json</code> as a build artifact, and at

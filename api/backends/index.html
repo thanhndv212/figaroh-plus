@@ -3381,13 +3381,13 @@ wrap specific simulators (Pinocchio, MuJoCo, Genesis, Isaac Sim).</p>
 <span class="normal">36</span>
 <span class="normal">37</span>
 <span class="normal">38</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Initialize dynamics backend with robot model.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model_path: Path to robot model file (format depends on backend)</span>
 <span class="sd">        **kwargs: Backend-specific configuration options</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_model_path</span> <span class="o">=</span> <span class="n">model_path</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">kwargs</span>
 </code></pre></div></td></tr></table></div>
@@ -3637,7 +3637,7 @@ wrap specific simulators (Pinocchio, MuJoCo, Genesis, Isaac Sim).</p>
 <span class="normal">53</span>
 <span class="normal">54</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_mass_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute mass/inertia matrix M(q).</span>
 
 <span class="sd">    The mass matrix appears in the equation of motion:</span>
@@ -3648,7 +3648,7 @@ wrap specific simulators (Pinocchio, MuJoCo, Genesis, Isaac Sim).</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        M: Mass matrix [nv x nv], symmetric positive definite</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">pass</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3765,7 +3765,7 @@ Coriolis forces, while others use different conventions.</p>
 <span class="normal">70</span>
 <span class="normal">71</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_coriolis_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute Coriolis and centrifugal effects matrix C(q, qd).</span>
 
 <span class="sd">    Note: Some simulators compute C such that C(q, qd) * qd represents</span>
@@ -3777,7 +3777,7 @@ Coriolis forces, while others use different conventions.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        C: Coriolis matrix [nv x nv]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">pass</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3872,7 +3872,7 @@ Coriolis forces, while others use different conventions.</p>
 <span class="normal">83</span>
 <span class="normal">84</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_gravity_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute gravity effects vector g(q).</span>
 
 <span class="sd">    Args:</span>
@@ -3880,7 +3880,7 @@ Coriolis forces, while others use different conventions.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        g: Gravity vector [nv]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">pass</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4007,7 +4007,7 @@ Coriolis forces, while others use different conventions.</p>
 <span class="normal">103</span>
 <span class="normal">104</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_forward_kinematics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute forward kinematics for all frames.</span>
 
 <span class="sd">    Args:</span>
@@ -4016,13 +4016,13 @@ Coriolis forces, while others use different conventions.</p>
 <span class="sd">    Returns:</span>
 <span class="sd">        Dictionary mapping frame names to transformations:</span>
 <span class="sd">        {</span>
-<span class="sd">            &#39;frame_name&#39;: {</span>
-<span class="sd">                &#39;position&#39;: np.ndarray [3],</span>
-<span class="sd">                &#39;orientation&#39;: np.ndarray [3, 3] or [4] (quat),</span>
-<span class="sd">                &#39;transformation&#39;: np.ndarray [4, 4] (optional)</span>
+<span class="sd">            'frame_name': {</span>
+<span class="sd">                'position': np.ndarray [3],</span>
+<span class="sd">                'orientation': np.ndarray [3, 3] or [4] (quat),</span>
+<span class="sd">                'transformation': np.ndarray [4, 4] (optional)</span>
 <span class="sd">            }</span>
 <span class="sd">        }</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">pass</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4136,7 +4136,7 @@ Stacked as [linear_velocity; angular_velocity]</p>
 <span class="normal">118</span>
 <span class="normal">119</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute geometric Jacobian for a specific frame.</span>
 
 <span class="sd">    Args:</span>
@@ -4146,7 +4146,7 @@ Stacked as [linear_velocity; angular_velocity]</p>
 <span class="sd">    Returns:</span>
 <span class="sd">        J: Geometric Jacobian [6 x nv]</span>
 <span class="sd">           Stacked as [linear_velocity; angular_velocity]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">pass</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4287,7 +4287,7 @@ where theta is the parameter vector.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_regressor</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute observation regressor matrix W(q, v, a).</span>
 
 <span class="sd">    The regressor satisfies: tau = W(q, v, a) * theta</span>
@@ -4302,7 +4302,7 @@ where theta is the parameter vector.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        W: Regressor matrix [nv x n_params]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">pass</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4438,7 +4438,7 @@ where theta is the parameter vector.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_inverse_dynamics</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute inverse dynamics (RNEA).</span>
 
 <span class="sd">    Given q, qd, qdd, compute required torques tau.</span>
@@ -4450,7 +4450,7 @@ where theta is the parameter vector.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        tau: Joint torques [nv]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">pass</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4586,7 +4586,7 @@ where theta is the parameter vector.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_forward_dynamics</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">tau</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute forward dynamics (ABA).</span>
 
 <span class="sd">    Given q, qd, tau, compute resulting accelerations qdd.</span>
@@ -4598,7 +4598,7 @@ where theta is the parameter vector.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        a: Joint accelerations [nv]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">pass</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4740,7 +4740,7 @@ where theta is the parameter vector.</p>
 <span class="normal">239</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_dynamics_derivatives</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute derivatives of dynamics (optional, for advanced algorithms).</span>
 
 <span class="sd">    Args:</span>
@@ -4750,14 +4750,14 @@ where theta is the parameter vector.</p>
 <span class="sd">    Returns:</span>
 <span class="sd">        Dictionary with derivatives:</span>
 <span class="sd">        {</span>
-<span class="sd">            &#39;dM_dq&#39;: [nv x nv x nq],  # Jacobian of M w.r.t. q</span>
-<span class="sd">            &#39;dC_dq&#39;: [nv x nv x nq],  # Jacobian of C w.r.t. q</span>
-<span class="sd">            &#39;dC_dv&#39;: [nv x nv x nv],  # Jacobian of C w.r.t. v</span>
-<span class="sd">            &#39;dg_dq&#39;: [nv x nq]        # Jacobian of g w.r.t. q</span>
+<span class="sd">            'dM_dq': [nv x nv x nq],  # Jacobian of M w.r.t. q</span>
+<span class="sd">            'dC_dq': [nv x nv x nq],  # Jacobian of C w.r.t. q</span>
+<span class="sd">            'dC_dv': [nv x nv x nv],  # Jacobian of C w.r.t. v</span>
+<span class="sd">            'dg_dq': [nv x nq]        # Jacobian of g w.r.t. q</span>
 <span class="sd">        }</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not implement dynamics derivatives&quot;</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not implement dynamics derivatives"</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4814,14 +4814,14 @@ where theta is the parameter vector.</p>
 <span class="normal">248</span>
 <span class="normal">249</span>
 <span class="normal">250</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_joint_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get list of joint names.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        List of joint names in order</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not implement get_joint_names&quot;</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not implement get_joint_names"</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4878,14 +4878,14 @@ where theta is the parameter vector.</p>
 <span class="normal">259</span>
 <span class="normal">260</span>
 <span class="normal">261</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_frame_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get list of frame names.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        List of frame names available for FK/Jacobian</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not implement get_frame_names&quot;</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not implement get_frame_names"</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4945,16 +4945,16 @@ where theta is the parameter vector.</p>
 <span class="normal">272</span>
 <span class="normal">273</span>
 <span class="normal">274</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_inertias</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get per-body inertia objects.</span>
 
 <span class="sd">    Used for nonzero-inertia filtering in regressor computation.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        List of inertia objects (backend-specific type).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not implement get_inertias&quot;</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not implement get_inertias"</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -5048,7 +5048,7 @@ where theta is the parameter vector.</p>
 <span class="normal">288</span>
 <span class="normal">289</span>
 <span class="normal">290</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_frame_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get frame ID by name.</span>
 
 <span class="sd">    Used for frame-based Jacobian/calibration computations.</span>
@@ -5058,9 +5058,9 @@ where theta is the parameter vector.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Frame ID (integer)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not implement get_frame_id&quot;</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not implement get_frame_id"</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -5171,10 +5171,10 @@ where theta is the parameter vector.</p>
 <span class="normal">305</span>
 <span class="normal">306</span>
 <span class="normal">307</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_difference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">q2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute Lie group difference between two configurations (q2 ⊖ q1).</span>
 
-<span class="sd">    For revolute joints this is simple subtraction; for free-flyer it&#39;s SE3 log.</span>
+<span class="sd">    For revolute joints this is simple subtraction; for free-flyer it's SE3 log.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        q1: First configuration [nq]</span>
@@ -5182,9 +5182,9 @@ where theta is the parameter vector.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Difference vector [nv]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not implement compute_difference&quot;</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not implement compute_difference"</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -5292,7 +5292,7 @@ where theta is the parameter vector.</p>
 <span class="normal">320</span>
 <span class="normal">321</span>
 <span class="normal">322</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_integrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Integrate configuration by velocity (q ⊕ v).</span>
 
 <span class="sd">    Args:</span>
@@ -5301,9 +5301,9 @@ where theta is the parameter vector.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        New configuration [nq]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not implement compute_integrate&quot;</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not implement compute_integrate"</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -5360,14 +5360,14 @@ where theta is the parameter vector.</p>
 <span class="normal">331</span>
 <span class="normal">332</span>
 <span class="normal">333</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">random_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Generate a random configuration within joint limits.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Random configuration [nq]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not implement random_configuration&quot;</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not implement random_configuration"</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -5431,18 +5431,18 @@ backend-specific types not yet abstracted.</p>
 <span class="normal">346</span>
 <span class="normal">347</span>
 <span class="normal">348</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_model_object</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Escape hatch: return the underlying simulator model object.</span>
 
-<span class="sd">    For Pinocchio this is the pin.Model; for MuJoCo it&#39;s mj.MjModel.</span>
+<span class="sd">    For Pinocchio this is the pin.Model; for MuJoCo it's mj.MjModel.</span>
 <span class="sd">    Used by advanced features (PseudoInertia, collision model, etc.) that need</span>
 <span class="sd">    backend-specific types not yet abstracted.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Backend-specific model object</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not implement get_model_object&quot;</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not implement get_model_object"</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -5469,7 +5469,7 @@ backend-specific types not yet abstracted.</p>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">352</span>
 <span class="normal">353</span>
 <span class="normal">354</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enter context manager (for resource management).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Enter context manager (for resource management)."""</span>
     <span class="k">return</span> <span class="bp">self</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -5496,7 +5496,7 @@ backend-specific types not yet abstracted.</p>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">356</span>
 <span class="normal">357</span>
 <span class="normal">358</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Exit context manager (for cleanup).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Exit context manager (for cleanup)."""</span>
     <span class="k">pass</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -5696,7 +5696,7 @@ M = backend.compute_mass_matrix(q)</p>
 <span class="normal">83</span>
 <span class="normal">84</span>
 <span class="normal">85</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Initialize Pinocchio backend.</span>
 
 <span class="sd">    Args:</span>
@@ -5706,21 +5706,21 @@ M = backend.compute_mass_matrix(q)</p>
 <span class="sd">            - isFext: Alias for free_flyer (default: False)</span>
 <span class="sd">            - package_dirs: Directories for mesh resolution (default: None)</span>
 <span class="sd">            - verbose: Enable verbose output (default: False)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">PINOCCHIO_AVAILABLE</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
-            <span class="s2">&quot;Pinocchio is not installed. Install with: pip install pin&quot;</span>
+            <span class="s2">"Pinocchio is not installed. Install with: pip install pin"</span>
         <span class="p">)</span>
 
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="c1"># Optional free-flyer root joint</span>
     <span class="n">root_joint</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;free_flyer&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="ow">or</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;isFext&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"free_flyer"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="ow">or</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"isFext"</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
         <span class="n">root_joint</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">JointModelFreeFlyer</span><span class="p">()</span>
 
     <span class="c1"># Package dirs for mesh files</span>
-    <span class="n">package_dirs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;package_dirs&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">package_dirs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"package_dirs"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="c1"># Build model from URDF</span>
     <span class="k">try</span><span class="p">:</span>
@@ -5733,11 +5733,11 @@ M = backend.compute_mass_matrix(q)</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">createData</span><span class="p">()</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Failed to load model &#39;</span><span class="si">{</span><span class="n">model_path</span><span class="si">}</span><span class="s2">&#39; with Pinocchio: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;Ensure the file is a valid URDF.&quot;</span>
+            <span class="sa">f</span><span class="s2">"Failed to load model '</span><span class="si">{</span><span class="n">model_path</span><span class="si">}</span><span class="s2">' with Pinocchio: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="sa">f</span><span class="s2">"Ensure the file is a valid URDF."</span>
         <span class="p">)</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"verbose"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
                   </details>
 
@@ -5979,7 +5979,7 @@ as an existing Robot/RobotWrapper instance.</p>
 <span class="normal">116</span>
 <span class="normal">117</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_model</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Create PinocchioBackend from an existing pin.Model.</span>
 
 <span class="sd">    This avoids re-loading the URDF and shares the same model/data pair</span>
@@ -5995,10 +5995,10 @@ as an existing Robot/RobotWrapper instance.</p>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ImportError: If Pinocchio is not installed</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">PINOCCHIO_AVAILABLE</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
-            <span class="s2">&quot;Pinocchio is not installed. Install with: pip install pin&quot;</span>
+            <span class="s2">"Pinocchio is not installed. Install with: pip install pin"</span>
         <span class="p">)</span>
 
     <span class="c1"># Create instance without calling __init__ (which loads from URDF)</span>
@@ -6006,7 +6006,7 @@ as an existing Robot/RobotWrapper instance.</p>
     <span class="n">DynamicsBackend</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">backend</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
     <span class="n">backend</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span> <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">createData</span><span class="p">()</span>
-    <span class="n">backend</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">backend</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"verbose"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">backend</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -6095,15 +6095,15 @@ as an existing Robot/RobotWrapper instance.</p>
 <span class="normal">127</span>
 <span class="normal">128</span>
 <span class="normal">129</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_mass_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute mass matrix using Pinocchio&#39;s CRBA (Composite Rigid Body Algorithm).</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compute mass matrix using Pinocchio's CRBA (Composite Rigid Body Algorithm).</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        q: Joint positions [nq]</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        M: Mass matrix [nv x nv], symmetric positive definite</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">pin</span><span class="o">.</span><span class="n">crba</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -6212,10 +6212,10 @@ as an existing Robot/RobotWrapper instance.</p>
 <span class="normal">142</span>
 <span class="normal">143</span>
 <span class="normal">144</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_coriolis_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute Coriolis and centrifugal effects matrix C(q, qd).</span>
 
-<span class="sd">    Uses Pinocchio&#39;s computeCoriolisMatrix algorithm.</span>
+<span class="sd">    Uses Pinocchio's computeCoriolisMatrix algorithm.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        q: Joint positions [nq]</span>
@@ -6223,7 +6223,7 @@ as an existing Robot/RobotWrapper instance.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        C: Coriolis matrix [nv x nv]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeCoriolisMatrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -6312,15 +6312,15 @@ as an existing Robot/RobotWrapper instance.</p>
 <span class="normal">154</span>
 <span class="normal">155</span>
 <span class="normal">156</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_gravity_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute gravity effects vector using Pinocchio&#39;s generalized gravity.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compute gravity effects vector using Pinocchio's generalized gravity.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        q: Joint positions [nq]</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        g: Gravity vector [nv]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeGeneralizedGravity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -6465,7 +6465,7 @@ frame placements via updateFramePlacements.</p>
 <span class="normal">195</span>
 <span class="normal">196</span>
 <span class="normal">197</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_forward_kinematics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute forward kinematics for all frames.</span>
 
 <span class="sd">    Computes joint placements via forwardKinematics and updates all</span>
@@ -6477,13 +6477,13 @@ frame placements via updateFramePlacements.</p>
 <span class="sd">    Returns:</span>
 <span class="sd">        Dictionary mapping frame names to transformations:</span>
 <span class="sd">        {</span>
-<span class="sd">            &#39;frame_name&#39;: {</span>
-<span class="sd">                &#39;position&#39;: np.ndarray [3],</span>
-<span class="sd">                &#39;orientation&#39;: np.ndarray [3, 3],</span>
-<span class="sd">                &#39;transformation&#39;: np.ndarray [4, 4]</span>
+<span class="sd">            'frame_name': {</span>
+<span class="sd">                'position': np.ndarray [3],</span>
+<span class="sd">                'orientation': np.ndarray [3, 3],</span>
+<span class="sd">                'transformation': np.ndarray [4, 4]</span>
 <span class="sd">            }</span>
 <span class="sd">        }</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Compute joint placements</span>
     <span class="n">pin</span><span class="o">.</span><span class="n">forwardKinematics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
 
@@ -6498,9 +6498,9 @@ frame placements via updateFramePlacements.</p>
         <span class="n">placement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">oMf</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
         <span class="n">fk_results</span><span class="p">[</span><span class="n">frame</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="n">placement</span><span class="o">.</span><span class="n">translation</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
-            <span class="s2">&quot;orientation&quot;</span><span class="p">:</span> <span class="n">placement</span><span class="o">.</span><span class="n">rotation</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
-            <span class="s2">&quot;transformation&quot;</span><span class="p">:</span> <span class="n">placement</span><span class="o">.</span><span class="n">homogeneous</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+            <span class="s2">"position"</span><span class="p">:</span> <span class="n">placement</span><span class="o">.</span><span class="n">translation</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+            <span class="s2">"orientation"</span><span class="p">:</span> <span class="n">placement</span><span class="o">.</span><span class="n">rotation</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+            <span class="s2">"transformation"</span><span class="p">:</span> <span class="n">placement</span><span class="o">.</span><span class="n">homogeneous</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
         <span class="p">}</span>
 
     <span class="k">return</span> <span class="n">fk_results</span>
@@ -6647,7 +6647,7 @@ Stacked as [linear_velocity; angular_velocity]</p>
 <span class="normal">223</span>
 <span class="normal">224</span>
 <span class="normal">225</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute geometric Jacobian for a specific frame.</span>
 
 <span class="sd">    Args:</span>
@@ -6660,13 +6660,13 @@ Stacked as [linear_velocity; angular_velocity]</p>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If frame is not found in the model</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Look up frame ID</span>
     <span class="n">frame_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">getFrameId</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">frame_id</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Frame &#39;</span><span class="si">{</span><span class="n">frame</span><span class="si">}</span><span class="s2">&#39; not found in model. &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;Available frames: </span><span class="si">{</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"Frame '</span><span class="si">{</span><span class="n">frame</span><span class="si">}</span><span class="s2">' not found in model. "</span>
+            <span class="sa">f</span><span class="s2">"Available frames: </span><span class="si">{</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
 
     <span class="c1"># Compute frame Jacobian (ensure [6, nv] shape)</span>
@@ -6812,13 +6812,13 @@ the regressor for all 10 standard inertial parameters per body.</p>
 <span class="normal">251</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_regressor</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute observation regressor matrix W(q, v, a).</span>
 
 <span class="sd">    The regressor satisfies: tau = W(q, v, a) * theta</span>
 <span class="sd">    where theta is the parameter vector.</span>
 
-<span class="sd">    Uses Pinocchio&#39;s computeJointTorqueRegressor, which computes</span>
+<span class="sd">    Uses Pinocchio's computeJointTorqueRegressor, which computes</span>
 <span class="sd">    the regressor for all 10 standard inertial parameters per body.</span>
 
 <span class="sd">    Args:</span>
@@ -6828,7 +6828,7 @@ the regressor for all 10 standard inertial parameters per body.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        W: Regressor matrix [nv x (10 * nbody)]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">W</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeJointTorqueRegressor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
     <span class="c1"># Ensure 2D shape [nv, n_params] (Pinocchio may return 1D for nv=1)</span>
     <span class="k">if</span> <span class="n">W</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -6959,8 +6959,8 @@ the regressor for all 10 standard inertial parameters per body.</p>
 <span class="normal">267</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_inverse_dynamics</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute inverse dynamics (RNEA) using Pinocchio&#39;s rnea.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compute inverse dynamics (RNEA) using Pinocchio's rnea.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        q: Joint positions [nq]</span>
@@ -6969,7 +6969,7 @@ the regressor for all 10 standard inertial parameters per body.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        tau: Joint torques [nv]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">pin</span><span class="o">.</span><span class="n">rnea</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -7096,8 +7096,8 @@ the regressor for all 10 standard inertial parameters per body.</p>
 <span class="normal">283</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_forward_dynamics</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">tau</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute forward dynamics (ABA) using Pinocchio&#39;s aba.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compute forward dynamics (ABA) using Pinocchio's aba.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        q: Joint positions [nq]</span>
@@ -7106,7 +7106,7 @@ the regressor for all 10 standard inertial parameters per body.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        a: Joint accelerations [nv]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">pin</span><span class="o">.</span><span class="n">aba</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">tau</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -7161,12 +7161,12 @@ the regressor for all 10 standard inertial parameters per body.</p>
 <span class="normal">309</span>
 <span class="normal">310</span>
 <span class="normal">311</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_joint_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get list of joint names.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        List of joint names in order (skipping universe)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -7221,12 +7221,12 @@ the regressor for all 10 standard inertial parameters per body.</p>
 <span class="normal">318</span>
 <span class="normal">319</span>
 <span class="normal">320</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_frame_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get list of frame names.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        List of frame names available for FK/Jacobian (skipping universe)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -7281,12 +7281,12 @@ the regressor for all 10 standard inertial parameters per body.</p>
 <span class="normal">327</span>
 <span class="normal">328</span>
 <span class="normal">329</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_inertias</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get per-body inertia objects.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        List of inertia objects (includes universe at index 0 with zero inertia)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">inertias</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -7407,7 +7407,7 @@ the regressor for all 10 standard inertial parameters per body.</p>
 <span class="normal">348</span>
 <span class="normal">349</span>
 <span class="normal">350</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_frame_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get frame ID by name.</span>
 
 <span class="sd">    Args:</span>
@@ -7418,12 +7418,12 @@ the regressor for all 10 standard inertial parameters per body.</p>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If frame is not found in the model</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">frame_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">getFrameId</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">frame_id</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Frame &#39;</span><span class="si">{</span><span class="n">frame</span><span class="si">}</span><span class="s2">&#39; not found in model. &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;Available frames: </span><span class="si">{</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"Frame '</span><span class="si">{</span><span class="n">frame</span><span class="si">}</span><span class="s2">' not found in model. "</span>
+            <span class="sa">f</span><span class="s2">"Available frames: </span><span class="si">{</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
     <span class="k">return</span> <span class="n">frame_id</span>
 </code></pre></div></td></tr></table></div>
@@ -7530,7 +7530,7 @@ the regressor for all 10 standard inertial parameters per body.</p>
 <span class="normal">361</span>
 <span class="normal">362</span>
 <span class="normal">363</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_difference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">q2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute Lie group difference between two configurations (q2 ⊖ q1).</span>
 
 <span class="sd">    Args:</span>
@@ -7539,7 +7539,7 @@ the regressor for all 10 standard inertial parameters per body.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Difference vector [nv]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">pin</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -7645,7 +7645,7 @@ the regressor for all 10 standard inertial parameters per body.</p>
 <span class="normal">374</span>
 <span class="normal">375</span>
 <span class="normal">376</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_integrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Integrate configuration by velocity (q ⊕ v).</span>
 
 <span class="sd">    Args:</span>
@@ -7654,7 +7654,7 @@ the regressor for all 10 standard inertial parameters per body.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        New configuration [nq]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">pin</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -7709,12 +7709,12 @@ the regressor for all 10 standard inertial parameters per body.</p>
 <span class="normal">383</span>
 <span class="normal">384</span>
 <span class="normal">385</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">random_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Generate a random configuration within joint limits.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Random configuration [nq]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">pin</span><span class="o">.</span><span class="n">randomConfiguration</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -7769,12 +7769,12 @@ the regressor for all 10 standard inertial parameters per body.</p>
 <span class="normal">392</span>
 <span class="normal">393</span>
 <span class="normal">394</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_model_object</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Escape hatch: return the underlying Pinocchio model.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        pin.Model object</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -7975,17 +7975,17 @@ M = backend.compute_mass_matrix(q)</p>
 <span class="normal">92</span>
 <span class="normal">93</span>
 <span class="normal">94</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Initialize MuJoCo backend.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model_path: Path to URDF or MJCF file</span>
 <span class="sd">        **kwargs: Additional configuration</span>
 <span class="sd">            - verbose: Enable verbose output (default: False)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">MUJOCO_AVAILABLE</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
-            <span class="s2">&quot;MuJoCo is not installed. Install with: pip install mujoco&gt;=3.0.0&quot;</span>
+            <span class="s2">"MuJoCo is not installed. Install with: pip install mujoco&gt;=3.0.0"</span>
         <span class="p">)</span>
 
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -7996,14 +7996,14 @@ M = backend.compute_mass_matrix(q)</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">mj</span><span class="o">.</span><span class="n">MjData</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Failed to load model &#39;</span><span class="si">{</span><span class="n">model_path</span><span class="si">}</span><span class="s2">&#39; with MuJoCo: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;Ensure the file is valid URDF or MJCF format.&quot;</span>
+            <span class="sa">f</span><span class="s2">"Failed to load model '</span><span class="si">{</span><span class="n">model_path</span><span class="si">}</span><span class="s2">' with MuJoCo: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="sa">f</span><span class="s2">"Ensure the file is valid URDF or MJCF format."</span>
         <span class="p">)</span>
 
     <span class="c1"># Pre-allocate matrices for performance</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nv</span><span class="p">))</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_temp_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nv</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"verbose"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
     <span class="c1"># Lazy-loaded Pinocchio model for analytical regressor computation</span>
     <span class="c1"># (MuJoCo does not support runtime inertial parameter perturbation)</span>
@@ -8012,7 +8012,7 @@ M = backend.compute_mass_matrix(q)</p>
 
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;MuJoCo model loaded: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nq</span><span class="si">}</span><span class="s2"> positions, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nv</span><span class="si">}</span><span class="s2"> velocities&quot;</span>
+            <span class="sa">f</span><span class="s2">"MuJoCo model loaded: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nq</span><span class="si">}</span><span class="s2"> positions, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nv</span><span class="si">}</span><span class="s2"> velocities"</span>
         <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
                   </details>
@@ -8189,15 +8189,15 @@ M = backend.compute_mass_matrix(q)</p>
 <span class="normal">116</span>
 <span class="normal">117</span>
 <span class="normal">118</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_mass_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute mass matrix using MuJoCo&#39;s mj_crb (Composite Rigid Body) algorithm.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compute mass matrix using MuJoCo's mj_crb (Composite Rigid Body) algorithm.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        q: Joint positions [nq]</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        M: Mass matrix [nv x nv], symmetric positive definite</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Set joint positions</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">qpos</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">q</span>
 
@@ -8366,11 +8366,11 @@ df/dv = 2</em>C, so C = (1/2) * df/dv.</p>
 <span class="normal">177</span>
 <span class="normal">178</span>
 <span class="normal">179</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_coriolis_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute Coriolis matrix C(q,v) via finite differences.</span>
 
 <span class="sd">    Uses the property that Coriolis forces f(v) = C(q,v)*v are quadratic in v.</span>
-<span class="sd">    By Euler&#39;s theorem and Christoffel symbol symmetry, the Jacobian</span>
+<span class="sd">    By Euler's theorem and Christoffel symbol symmetry, the Jacobian</span>
 <span class="sd">    df/dv = 2*C, so C = (1/2) * df/dv.</span>
 
 <span class="sd">    Args:</span>
@@ -8379,7 +8379,7 @@ df/dv = 2</em>C, so C = (1/2) * df/dv.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        C: Coriolis matrix [nv x nv]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nv</span>
 
     <span class="c1"># Handle zero velocity: C(q, 0) = 0</span>
@@ -8520,7 +8520,7 @@ df/dv = 2</em>C, so C = (1/2) * df/dv.</p>
 <span class="normal">197</span>
 <span class="normal">198</span>
 <span class="normal">199</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_gravity_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute gravity vector.</span>
 
 <span class="sd">    Args:</span>
@@ -8528,7 +8528,7 @@ df/dv = 2</em>C, so C = (1/2) * df/dv.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        g: Gravity vector [nv]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Set position and zero velocity/acceleration</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">qpos</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">q</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">qvel</span><span class="p">[:]</span> <span class="o">=</span> <span class="mi">0</span>
@@ -8657,7 +8657,7 @@ df/dv = 2</em>C, so C = (1/2) * df/dv.</p>
 <span class="normal">241</span>
 <span class="normal">242</span>
 <span class="normal">243</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_forward_kinematics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute forward kinematics for all bodies.</span>
 
 <span class="sd">    Args:</span>
@@ -8665,7 +8665,7 @@ df/dv = 2</em>C, so C = (1/2) * df/dv.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dictionary mapping body names to transformations</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">qpos</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">q</span>
     <span class="n">mj</span><span class="o">.</span><span class="n">mj_forward</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
@@ -8675,7 +8675,7 @@ df/dv = 2</em>C, so C = (1/2) * df/dv.</p>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nbody</span><span class="p">):</span>
         <span class="n">body_name</span> <span class="o">=</span> <span class="n">mj</span><span class="o">.</span><span class="n">mj_id2name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">mj</span><span class="o">.</span><span class="n">mjtObj</span><span class="o">.</span><span class="n">mjOBJ_BODY</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">body_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">body_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;body_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">body_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"body_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span>
 
         <span class="c1"># Get body position and orientation</span>
         <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">xpos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -8692,10 +8692,10 @@ df/dv = 2</em>C, so C = (1/2) * df/dv.</p>
         <span class="n">T</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">pos</span>
 
         <span class="n">fk_results</span><span class="p">[</span><span class="n">body_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="n">pos</span><span class="p">,</span>
-            <span class="s2">&quot;orientation&quot;</span><span class="p">:</span> <span class="n">rot_mat</span><span class="p">,</span>
-            <span class="s2">&quot;quaternion&quot;</span><span class="p">:</span> <span class="n">quat</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
-            <span class="s2">&quot;transformation&quot;</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
+            <span class="s2">"position"</span><span class="p">:</span> <span class="n">pos</span><span class="p">,</span>
+            <span class="s2">"orientation"</span><span class="p">:</span> <span class="n">rot_mat</span><span class="p">,</span>
+            <span class="s2">"quaternion"</span><span class="p">:</span> <span class="n">quat</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+            <span class="s2">"transformation"</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
         <span class="p">}</span>
 
     <span class="k">return</span> <span class="n">fk_results</span>
@@ -8833,7 +8833,7 @@ df/dv = 2</em>C, so C = (1/2) * df/dv.</p>
 <span class="normal">284</span>
 <span class="normal">285</span>
 <span class="normal">286</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute geometric Jacobian for a specific body/site.</span>
 
 <span class="sd">    Args:</span>
@@ -8842,7 +8842,7 @@ df/dv = 2</em>C, so C = (1/2) * df/dv.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        J: Geometric Jacobian [6 x nv], stacked as [linear; angular]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">qpos</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">q</span>
     <span class="n">mj</span><span class="o">.</span><span class="n">mj_forward</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
@@ -8853,7 +8853,7 @@ df/dv = 2</em>C, so C = (1/2) * df/dv.</p>
         <span class="c1"># Try site</span>
         <span class="n">body_id</span> <span class="o">=</span> <span class="n">mj</span><span class="o">.</span><span class="n">mj_name2id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">mj</span><span class="o">.</span><span class="n">mjtObj</span><span class="o">.</span><span class="n">mjOBJ_SITE</span><span class="p">,</span> <span class="n">frame</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">body_id</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Frame &#39;</span><span class="si">{</span><span class="n">frame</span><span class="si">}</span><span class="s2">&#39; not found in model&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Frame '</span><span class="si">{</span><span class="n">frame</span><span class="si">}</span><span class="s2">' not found in model"</span><span class="p">)</span>
         <span class="n">use_site</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">use_site</span> <span class="o">=</span> <span class="kc">False</span>
@@ -9019,14 +9019,14 @@ support runtime inertial parameter perturbation for finite differences).</p>
 <span class="normal">335</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_regressor</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute observation regressor matrix W(q, v, a).</span>
 
 <span class="sd">    The regressor satisfies: tau = W @ theta where theta is the 10D inertial</span>
 <span class="sd">    parameter vector per body in Pinocchio convention:</span>
 <span class="sd">    [m, mx, my, mz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz].</span>
 
-<span class="sd">    Uses Pinocchio&#39;s analytical computeJointTorqueRegressor (MuJoCo does not</span>
+<span class="sd">    Uses Pinocchio's analytical computeJointTorqueRegressor (MuJoCo does not</span>
 <span class="sd">    support runtime inertial parameter perturbation for finite differences).</span>
 
 <span class="sd">    Args:</span>
@@ -9036,7 +9036,7 @@ support runtime inertial parameter perturbation for finite differences).</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        W: Regressor matrix [nv, 10*(nbody-1)]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">pin_model</span><span class="p">,</span> <span class="n">pin_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_pin_model</span><span class="p">()</span>
 
     <span class="n">W</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeJointTorqueRegressor</span><span class="p">(</span><span class="n">pin_model</span><span class="p">,</span> <span class="n">pin_data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
@@ -9177,7 +9177,7 @@ support runtime inertial parameter perturbation for finite differences).</p>
 <span class="normal">357</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_inverse_dynamics</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute inverse dynamics (RNEA) using mj_inverse.</span>
 
 <span class="sd">    Args:</span>
@@ -9187,7 +9187,7 @@ support runtime inertial parameter perturbation for finite differences).</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        tau: Joint torques [nv]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">qpos</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">q</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">qvel</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">v</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">qacc</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">a</span>
@@ -9333,7 +9333,7 @@ ctrl (which goes through actuators, which may not exist in URDF models).</p>
 <span class="normal">384</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_forward_dynamics</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">tau</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute forward dynamics (ABA) using mj_forward.</span>
 
 <span class="sd">    Applies joint torques via qfrc_applied (applied forces) rather than</span>
@@ -9346,7 +9346,7 @@ ctrl (which goes through actuators, which may not exist in URDF models).</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        a: Joint accelerations [nv]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">qpos</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">q</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">qvel</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">v</span>
     <span class="c1"># Zero out any previous applied forces</span>
@@ -9387,12 +9387,12 @@ ctrl (which goes through actuators, which may not exist in URDF models).</p>
 <span class="normal">411</span>
 <span class="normal">412</span>
 <span class="normal">413</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_joint_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get list of joint names.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Get list of joint names."""</span>
     <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">njnt</span><span class="p">):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">mj</span><span class="o">.</span><span class="n">mj_id2name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">mj</span><span class="o">.</span><span class="n">mjtObj</span><span class="o">.</span><span class="n">mjOBJ_JOINT</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;joint_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"joint_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span>
         <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">names</span>
 </code></pre></div></td></tr></table></div>
@@ -9436,21 +9436,21 @@ ctrl (which goes through actuators, which may not exist in URDF models).</p>
 <span class="normal">431</span>
 <span class="normal">432</span>
 <span class="normal">433</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_frame_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get list of body and site names.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Get list of body and site names."""</span>
     <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="c1"># Add body names</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nbody</span><span class="p">):</span>  <span class="c1"># Skip world</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">mj</span><span class="o">.</span><span class="n">mj_id2name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">mj</span><span class="o">.</span><span class="n">mjtObj</span><span class="o">.</span><span class="n">mjOBJ_BODY</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;body_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"body_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span>
         <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="c1"># Add site names</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nsite</span><span class="p">):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">mj</span><span class="o">.</span><span class="n">mj_id2name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">mj</span><span class="o">.</span><span class="n">mjtObj</span><span class="o">.</span><span class="n">mjOBJ_SITE</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;site_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"site_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span>
         <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">names</span>
@@ -9480,7 +9480,7 @@ ctrl (which goes through actuators, which may not exist in URDF models).</p>
 <span class="normal">436</span>
 <span class="normal">437</span>
 <span class="normal">438</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cleanup MuJoCo resources.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Cleanup MuJoCo resources."""</span>
     <span class="c1"># MuJoCo handles cleanup automatically</span>
     <span class="k">pass</span>
 </code></pre></div></td></tr></table></div>

@@ -1817,19 +1817,19 @@ full examples use instead).</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.integration</span><span class="w"> </span><span class="kn">import</span> <span class="n">RobotIdentificationSystem</span>
 
 <span class="c1"># Create from URDF, defaulting to the Pinocchio backend</span>
-<span class="n">system</span> <span class="o">=</span> <span class="n">RobotIdentificationSystem</span><span class="o">.</span><span class="n">from_urdf</span><span class="p">(</span><span class="s2">&quot;robot.urdf&quot;</span><span class="p">)</span>
+<span class="n">system</span> <span class="o">=</span> <span class="n">RobotIdentificationSystem</span><span class="o">.</span><span class="n">from_urdf</span><span class="p">(</span><span class="s2">"robot.urdf"</span><span class="p">)</span>
 
 <span class="c1"># Or pick a backend explicitly</span>
-<span class="n">system</span> <span class="o">=</span> <span class="n">RobotIdentificationSystem</span><span class="o">.</span><span class="n">from_urdf</span><span class="p">(</span><span class="s2">&quot;robot.urdf&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;mujoco&quot;</span><span class="p">)</span>
+<span class="n">system</span> <span class="o">=</span> <span class="n">RobotIdentificationSystem</span><span class="o">.</span><span class="n">from_urdf</span><span class="p">(</span><span class="s2">"robot.urdf"</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">"mujoco"</span><span class="p">)</span>
 
 <span class="c1"># Run identification against CSV trajectory data</span>
 <span class="n">results</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">identify_parameters</span><span class="p">(</span>
-    <span class="n">config</span><span class="o">=</span><span class="s2">&quot;config/robot_config.yaml&quot;</span><span class="p">,</span>
-    <span class="n">data_dir</span><span class="o">=</span><span class="s2">&quot;data/&quot;</span><span class="p">,</span>
+    <span class="n">config</span><span class="o">=</span><span class="s2">"config/robot_config.yaml"</span><span class="p">,</span>
+    <span class="n">data_dir</span><span class="o">=</span><span class="s2">"data/"</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Identified </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">phi_base</span><span class="p">)</span><span class="si">}</span><span class="s2"> base parameters&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RMS error: </span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">rms_error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Identified </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">phi_base</span><span class="p">)</span><span class="si">}</span><span class="s2"> base parameters"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"RMS error: </span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">rms_error</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="robotidentificationsystem"><code>RobotIdentificationSystem</code><a class="headerlink" href="#robotidentificationsystem" title="Permanent link">&para;</a></h2>
 <ul>

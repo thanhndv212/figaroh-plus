@@ -1989,7 +1989,7 @@
 <span class="normal">45</span>
 <span class="normal">46</span>
 <span class="normal">47</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">joint</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize measurement.</span>
+<span class="w">    </span><span class="sd">"""Initialize measurement.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        name: Name of measurement</span>
@@ -1997,22 +1997,22 @@
 <span class="sd">        frame: Closest frame from measurement</span>
 <span class="sd">        type: Type of measurement (SE3, wrench, current)</span>
 <span class="sd">        value: 6D measurement value wrt joint placement</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">joint</span> <span class="o">=</span> <span class="n">joint</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">type</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;SE3&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"SE3"</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">SE3_value</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">SE3</span><span class="p">(</span>
             <span class="n">pin</span><span class="o">.</span><span class="n">rpyToMatrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">value</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="mi">5</span><span class="p">]])),</span>
             <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="mi">2</span><span class="p">]]),</span>
         <span class="p">)</span>
-    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;wrench&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"wrench"</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wrench_value</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">Force</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;current&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"current"</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_value</span> <span class="o">=</span> <span class="n">value</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The type of your measurement is not valid&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"The type of your measurement is not valid"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
                   </details>
 
@@ -2119,15 +2119,15 @@
 <span class="normal">68</span>
 <span class="normal">69</span>
 <span class="normal">70</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_SE3_measurement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add SE3 measurement to model.</span>
+<span class="w">    </span><span class="sd">"""Add SE3 measurement to model.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model: Pinocchio model to add measurement to</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        tuple: Updated model and data</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;SE3&quot;</span><span class="p">:</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"SE3"</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">frame_index</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">addFrame</span><span class="p">(</span>
             <span class="n">pin</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
@@ -2136,7 +2136,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">SE3_value</span><span class="p">,</span>
                 <span class="n">pin</span><span class="o">.</span><span class="n">OP_FRAME</span><span class="p">,</span>
             <span class="p">),</span>
-            <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+            <span class="s2">"False"</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">createData</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span>

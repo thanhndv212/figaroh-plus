@@ -1909,8 +1909,8 @@ same for every robot:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">examples.tiago.utils.tiago_tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">TiagoCalibration</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.robot</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_robot</span>
 
-<span class="n">robot</span> <span class="o">=</span> <span class="n">load_robot</span><span class="p">(</span><span class="s2">&quot;path/to/robot.urdf&quot;</span><span class="p">,</span> <span class="n">load_by_urdf</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">calibrator</span> <span class="o">=</span> <span class="n">TiagoCalibration</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s2">&quot;config/tiago_unified_config.yaml&quot;</span><span class="p">)</span>
+<span class="n">robot</span> <span class="o">=</span> <span class="n">load_robot</span><span class="p">(</span><span class="s2">"path/to/robot.urdf"</span><span class="p">,</span> <span class="n">load_by_urdf</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">calibrator</span> <span class="o">=</span> <span class="n">TiagoCalibration</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s2">"config/tiago_unified_config.yaml"</span><span class="p">)</span>
 <span class="n">calibrator</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">calibrator</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">plotting</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">html_report</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>

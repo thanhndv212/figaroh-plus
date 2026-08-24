@@ -1873,9 +1873,9 @@ is a config change, not a rewrite.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_backend</span><span class="p">,</span> <span class="n">list_backends</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">list_backends</span><span class="p">())</span>
-<span class="c1"># {&#39;pinocchio&#39;: True, &#39;mujoco&#39;: True, &#39;genesis&#39;: False, &#39;isaacsim&#39;: False}</span>
+<span class="c1"># {'pinocchio': True, 'mujoco': True, 'genesis': False, 'isaacsim': False}</span>
 
-<span class="n">backend</span> <span class="o">=</span> <span class="n">get_backend</span><span class="p">(</span><span class="s2">&quot;mujoco&quot;</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;robot.urdf&quot;</span><span class="p">)</span>
+<span class="n">backend</span> <span class="o">=</span> <span class="n">get_backend</span><span class="p">(</span><span class="s2">"mujoco"</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">"robot.urdf"</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="the-dynamicsbackend-interface">The <code>DynamicsBackend</code> interface<a class="headerlink" href="#the-dynamicsbackend-interface" title="Permanent link">&para;</a></h2>
 <p>Every backend implements the same set of rigid-body dynamics primitives, so

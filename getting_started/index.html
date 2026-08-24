@@ -1934,8 +1934,8 @@ shape every subclass follows.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">examples.tiago.utils.tiago_tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">TiagoCalibration</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.robot</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_robot</span>
 
-<span class="n">robot</span> <span class="o">=</span> <span class="n">load_robot</span><span class="p">(</span><span class="s2">&quot;path/to/robot.urdf&quot;</span><span class="p">,</span> <span class="n">load_by_urdf</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">calibrator</span> <span class="o">=</span> <span class="n">TiagoCalibration</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s2">&quot;config/calibration_config.yaml&quot;</span><span class="p">)</span>
+<span class="n">robot</span> <span class="o">=</span> <span class="n">load_robot</span><span class="p">(</span><span class="s2">"path/to/robot.urdf"</span><span class="p">,</span> <span class="n">load_by_urdf</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">calibrator</span> <span class="o">=</span> <span class="n">TiagoCalibration</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s2">"config/calibration_config.yaml"</span><span class="p">)</span>
 <span class="n">calibrator</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">calibrator</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">plotting</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">html_report</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
@@ -1947,13 +1947,13 @@ full report/verdict/compare-page suite.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">examples.tiago.utils.tiago_tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">TiagoIdentification</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.robot</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_robot</span>
 
-<span class="n">robot</span> <span class="o">=</span> <span class="n">load_robot</span><span class="p">(</span><span class="s2">&quot;path/to/robot.urdf&quot;</span><span class="p">,</span> <span class="n">load_by_urdf</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">identifier</span> <span class="o">=</span> <span class="n">TiagoIdentification</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s2">&quot;config/identification_config.yaml&quot;</span><span class="p">)</span>
+<span class="n">robot</span> <span class="o">=</span> <span class="n">load_robot</span><span class="p">(</span><span class="s2">"path/to/robot.urdf"</span><span class="p">,</span> <span class="n">load_by_urdf</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">identifier</span> <span class="o">=</span> <span class="n">TiagoIdentification</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s2">"config/identification_config.yaml"</span><span class="p">)</span>
 <span class="n">identifier</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">decimate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">html_report</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">verdict</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;PASS&quot;</span> <span class="k">if</span> <span class="n">verdict</span><span class="o">.</span><span class="n">passed</span> <span class="k">else</span> <span class="s2">&quot;FAIL&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"PASS"</span> <span class="k">if</span> <span class="n">verdict</span><span class="o">.</span><span class="n">passed</span> <span class="k">else</span> <span class="s2">"FAIL"</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="advanced-regressor-building">Advanced Regressor Building<a class="headerlink" href="#advanced-regressor-building" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.regressor</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegressorBuilder</span><span class="p">,</span> <span class="n">RegressorConfig</span>
@@ -1975,29 +1975,29 @@ full report/verdict/compare-page suite.</p>
 <span class="c1"># Basic usage with convenience function</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">solve_linear_system</span><span class="p">(</span>
     <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span>
-    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ridge&#39;</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">'ridge'</span><span class="p">,</span>
     <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span>
 <span class="p">)</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;solution&#39;</span><span class="p">]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s1">'solution'</span><span class="p">]</span>
 
 <span class="c1"># Advanced usage with constraints</span>
 <span class="n">solver</span> <span class="o">=</span> <span class="n">LinearSolver</span><span class="p">()</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span>
     <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span>
-    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;constrained&#39;</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">'constrained'</span><span class="p">,</span>
     <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>  <span class="c1"># Positive constraints</span>
     <span class="n">A_eq</span><span class="o">=</span><span class="n">A_eq</span><span class="p">,</span> <span class="n">b_eq</span><span class="o">=</span><span class="n">b_eq</span><span class="p">,</span>  <span class="c1"># Equality constraints</span>
     <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span>  <span class="c1"># Regularization</span>
 <span class="p">)</span>
 
 <span class="c1"># Access quality metrics</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RMSE: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;rmse&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;R²: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;r_squared&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Condition number: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;condition_number&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"RMSE: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'rmse'</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"R²: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'r_squared'</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Condition number: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'condition_number'</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># Use in identification workflow</span>
 <span class="n">params</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">solve_with_custom_solver</span><span class="p">(</span>
-    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;elastic_net&#39;</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">'elastic_net'</span><span class="p">,</span>
     <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
     <span class="n">l1_ratio</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
     <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># Physical constraints</span>

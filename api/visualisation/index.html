@@ -1985,7 +1985,7 @@
 <span class="normal">91</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">collision_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">visual_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize visualizer.</span>
+<span class="w">    </span><span class="sd">"""Initialize visualizer.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        robot: Robot object</span>
@@ -1993,16 +1993,16 @@
 <span class="sd">        collision_model: Collision model</span>
 <span class="sd">        visual_model: Visual model</span>
 <span class="sd">        url: Server URL for visualization</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">robot</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">PMV</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">robot</span><span class="o">.</span><span class="n">collision_model</span><span class="p">,</span> <span class="n">robot</span><span class="o">.</span><span class="n">visual_model</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">PMV</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">collision_model</span><span class="p">,</span> <span class="n">visual_model</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">url</span> <span class="o">==</span> <span class="s2">&quot;classical&quot;</span><span class="p">:</span>
-            <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;tcp://127.0.0.1:6000&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Wrapper tries to connect to server &lt;</span><span class="si">%s</span><span class="s2">&gt;&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">url</span> <span class="o">==</span> <span class="s2">"classical"</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="s2">"tcp://127.0.0.1:6000"</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Wrapper tries to connect to server &lt;</span><span class="si">%s</span><span class="s2">&gt;"</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
         <span class="n">server</span> <span class="o">=</span> <span class="n">meshcat</span><span class="o">.</span><span class="n">Visualizer</span><span class="p">(</span><span class="n">zmq_url</span><span class="o">=</span><span class="n">url</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">server</span> <span class="o">=</span> <span class="kc">None</span>
@@ -2134,14 +2134,14 @@
 <span class="normal">55</span>
 <span class="normal">56</span>
 <span class="normal">57</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">materialFromColor</span><span class="p">(</span><span class="n">color</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert color to Material.</span>
+<span class="w">    </span><span class="sd">"""Convert color to Material.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        color: Color specification (Material, string, list, or None)</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        meshcat.geometry.Material: Material object</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="n">meshcat</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">Material</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">color</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>

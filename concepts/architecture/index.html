@@ -3495,19 +3495,19 @@ see <a href="#4-module-details">§4.6</a>)</p>
 - Backend → Data: Load robot models and measurements</p>
 <h4 id="detailed-mermaid-diagram">Detailed Mermaid Diagram<a class="headerlink" href="#detailed-mermaid-diagram" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code>graph TB
-    subgraph UserInterface[&quot;User Interface&quot;]
+    subgraph UserInterface["User Interface"]
         UI[User Scripts/Examples]
         Config[YAML Configuration]
     end
 
-    subgraph WorkflowLayer[&quot;Workflow Layer&quot;]
+    subgraph WorkflowLayer["Workflow Layer"]
         BC[BaseCalibration]
         BI[BaseIdentification]
         BOT[BaseOptimalTrajectory]
         BOC[BaseOptimalCalibration]
     end
 
-    subgraph ToolsLayer[&quot;Tools Layer&quot;]
+    subgraph ToolsLayer["Tools Layer"]
         Robot[Robot Model]
         Regressor[RegressorBuilder]
         Solver[LinearSolver/IPOPTSolver]
@@ -3516,7 +3516,7 @@ see <a href="#4-module-details">§4.6</a>)</p>
         RM[ResultsManager]
     end
 
-    subgraph BackendLayer[&quot;Backend Layer&quot;]
+    subgraph BackendLayer["Backend Layer"]
         Backend[DynamicsBackend Abstract Interface]
         Pin[PinocchioBackend]
         Muj[MuJoCoBackend]
@@ -3524,7 +3524,7 @@ see <a href="#4-module-details">§4.6</a>)</p>
         Isaac[IsaacSimBackend]
     end
 
-    subgraph DataLayer[&quot;Data Layer&quot;]
+    subgraph DataLayer["Data Layer"]
         URDF[URDF Files]
         Meas[Measurement Data]
         Params[Parameter Files]
@@ -3615,13 +3615,13 @@ see <a href="#4-module-details">§4.6</a>)</p>
 - <code>export_validation.py</code> - FK comparison and interactive viser visualization</p>
 <p><strong>Key Classes:</strong>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RegressorBuilder</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build observation regressor W(q,v,a) for identification&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Build observation regressor W(q,v,a) for identification"""</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">build_basic_regressor</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">build_reduced_regressor</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">zero_tolerance</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">LinearSolver</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Solve Ax=b with regularization and constraints&quot;&quot;&quot;</span>
-    <span class="n">METHODS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lstsq&quot;</span><span class="p">,</span> <span class="s2">&quot;qr&quot;</span><span class="p">,</span> <span class="s2">&quot;svd&quot;</span><span class="p">,</span> <span class="s2">&quot;ridge&quot;</span><span class="p">,</span> <span class="s2">&quot;lasso&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">"""Solve Ax=b with regularization and constraints"""</span>
+    <span class="n">METHODS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"lstsq"</span><span class="p">,</span> <span class="s2">"qr"</span><span class="p">,</span> <span class="s2">"svd"</span><span class="p">,</span> <span class="s2">"ridge"</span><span class="p">,</span> <span class="s2">"lasso"</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span>
 </code></pre></div></p>
 <h4 id="layer-3-workflow-layer">Layer 3: Workflow Layer<a class="headerlink" href="#layer-3-workflow-layer" title="Permanent link">&para;</a></h4>
@@ -3866,8 +3866,8 @@ see <a href="#4-module-details">§4.6</a>)</p>
 <p><strong>Class:</strong> <code>LinearSolver</code></p>
 <p><strong>Purpose:</strong> Solve overdetermined system Ax = b with regularization</p>
 <p><strong>Methods:</strong>
-<div class="highlight"><pre><span></span><code><span class="n">METHODS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lstsq&quot;</span><span class="p">,</span> <span class="s2">&quot;qr&quot;</span><span class="p">,</span> <span class="s2">&quot;svd&quot;</span><span class="p">,</span> <span class="s2">&quot;ridge&quot;</span><span class="p">,</span> <span class="s2">&quot;lasso&quot;</span><span class="p">,</span> <span class="s2">&quot;elastic_net&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;tikhonov&quot;</span><span class="p">,</span> <span class="s2">&quot;constrained&quot;</span><span class="p">,</span> <span class="s2">&quot;robust&quot;</span><span class="p">,</span> <span class="s2">&quot;weighted&quot;</span><span class="p">]</span>
+<div class="highlight"><pre><span></span><code><span class="n">METHODS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"lstsq"</span><span class="p">,</span> <span class="s2">"qr"</span><span class="p">,</span> <span class="s2">"svd"</span><span class="p">,</span> <span class="s2">"ridge"</span><span class="p">,</span> <span class="s2">"lasso"</span><span class="p">,</span> <span class="s2">"elastic_net"</span><span class="p">,</span>
+           <span class="s2">"tikhonov"</span><span class="p">,</span> <span class="s2">"constrained"</span><span class="p">,</span> <span class="s2">"robust"</span><span class="p">,</span> <span class="s2">"weighted"</span><span class="p">]</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">x</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_solve_lstsq</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">x</span>
@@ -3900,10 +3900,10 @@ see <a href="#4-module-details">§4.6</a>)</p>
 <p><strong>Cost Function (uses SE3 log-map, geometrically correct):</strong>
 <div class="highlight"><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">cost_function</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">residuals</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Robot-specific implementation&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Robot-specific implementation"""</span>
     <span class="n">PEEe</span> <span class="o">=</span> <span class="n">calc_updated_fkm</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q_measured</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">)</span>
     <span class="n">residuals</span> <span class="o">=</span> <span class="n">_compute_logmap_residuals</span><span class="p">(</span><span class="n">PEE_measured</span><span class="p">,</span> <span class="n">PEEe</span><span class="p">,</span>
-                                          <span class="n">position_frame</span><span class="o">=</span><span class="s2">&quot;body&quot;</span><span class="o">|</span><span class="s2">&quot;world&quot;</span><span class="p">)</span>
+                                          <span class="n">position_frame</span><span class="o">=</span><span class="s2">"body"</span><span class="o">|</span><span class="s2">"world"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">apply_measurement_weighting</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span>
 </code></pre></div></p>
 <p><strong>Validation Data Support:</strong>
@@ -3951,14 +3951,14 @@ compared against ground truth to measure improvement.</p>
     <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply calibrated joint parameters to a URDF file.</span>
+<span class="w">    </span><span class="sd">"""Apply calibrated joint parameters to a URDF file.</span>
 
 <span class="sd">    Handles 12 joint-level categories: xyz offsets, rpy orientations,</span>
 <span class="sd">    and joint-axis corrections. Automatically separates metrology</span>
 <span class="sd">    frame parameters (base/pEE/phiEE) which are NOT applied to URDF.</span>
 
 <span class="sd">    Returns path to the modified URDF.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 </code></pre></div></p>
 <p><strong>Parameter categories auto-detected via registry:</strong>
 - Joint: <code>{joint}_x</code>, <code>{joint}_y</code>, <code>{joint}_z</code>, <code>{joint}_rx</code>, <code>{joint}_ry</code>, <code>{joint}_rz</code>
@@ -3967,7 +3967,7 @@ compared against ground truth to measure improvement.</p>
 <h5 id="export-validation-toolsexport_validationpy">Export Validation (<code>tools/export_validation.py</code>)<a class="headerlink" href="#export-validation-toolsexport_validationpy" title="Permanent link">&para;</a></h5>
 <p><strong>Key Classes:</strong></p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">URDFComparison</span><span class="p">(</span><span class="n">nominal_urdf</span><span class="p">,</span> <span class="n">modified_urdf</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compare two URDF models via FK + viser visualization.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Compare two URDF models via FK + viser visualization."""</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">fk_consistency_check</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FkConsistencyResult</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">static_poses</span><span class="p">(</span><span class="n">poses</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">PoseError</span><span class="p">]</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">show_interactive_validation</span><span class="p">(</span><span class="n">n_trajectory</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">)</span>
@@ -3976,7 +3976,7 @@ compared against ground truth to measure improvement.</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">show_overlay</span><span class="p">(</span><span class="n">server</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">FkConsistencyResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Aggregated FK consistency check.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Aggregated FK consistency check."""</span>
     <span class="n">rmse_position</span><span class="p">:</span> <span class="nb">float</span>         <span class="c1"># meters</span>
     <span class="n">rmse_orientation</span><span class="p">:</span> <span class="nb">float</span>      <span class="c1"># radians</span>
     <span class="n">max_position</span><span class="p">:</span> <span class="nb">float</span>
@@ -3996,11 +3996,11 @@ resolves <code>package://</code> mesh URIs by searching <code>ROS_PACKAGE_PATH</
 <p><strong>Key Functions:</strong></p>
 <p><strong>Forward Kinematics Update:</strong>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calc_updated_fkm</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q_measured</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">poses</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update FK with calibration parameters. Composes wMf = wMo * oMee * eeMf:</span>
+<span class="w">    </span><span class="sd">"""Update FK with calibration parameters. Composes wMf = wMo * oMee * eeMf:</span>
 <span class="sd">    wMo (world/measurement frame -&gt; chain start; unknown-baseframe or</span>
 <span class="sd">    known camera/ref-frame anchor), oMee (geometric joint-placement errors,</span>
 <span class="sd">    optionally with per-joint gravity-torque-driven elasticity when</span>
-<span class="sd">    calib_config[&quot;non_geom&quot;] is set), eeMf (end frame -&gt; marker frame).&quot;&quot;&quot;</span>
+<span class="sd">    calib_config["non_geom"] is set), eeMf (end frame -&gt; marker frame)."""</span>
     <span class="c1"># 1. Update joint placements (full_params / joint_offset)</span>
     <span class="n">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">)</span>
     <span class="c1"># 2. Compute forward kinematics (re-run after any elastic perturbation --</span>
@@ -4018,13 +4018,13 @@ capabilities were merged into <code>calc_updated_fkm</code> and the dead functio
 removed.</p>
 <p><strong>Jacobian &amp; Regressor:</strong>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_rel_jac</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">start_frameId</span><span class="p">,</span> <span class="n">end_frameId</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">J_rel</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute relative Jacobian&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Compute relative Jacobian"""</span>
     <span class="n">J_start</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeFrameJacobian</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">start_frameId</span><span class="p">,</span> <span class="n">pin</span><span class="o">.</span><span class="n">LOCAL</span><span class="p">)</span>
     <span class="n">J_end</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeFrameJacobian</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">end_frameId</span><span class="p">,</span> <span class="n">pin</span><span class="o">.</span><span class="n">LOCAL</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">J_end</span> <span class="o">-</span> <span class="n">J_start</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">calculate_base_kinematics_regressor</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">q_data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">W_base</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate base kinematic regressor via QR&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Calculate base kinematic regressor via QR"""</span>
     <span class="n">W</span> <span class="o">=</span> <span class="n">calculate_kinematics_model</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">q_data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">)</span>
     <span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="n">qr_decomposition</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">extract_base_regressor</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
@@ -4070,7 +4070,7 @@ removed.</p>
 </code></pre></div></p>
 <p><strong>Data Processing:</strong>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_data</span><span class="p">(</span><span class="n">truncate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load and filter trajectory data&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Load and filter trajectory data"""</span>
     <span class="c1"># Load: q, v, a, tau from files</span>
     <span class="c1"># Filter: Butterworth, median filter</span>
     <span class="c1"># Differentiate: gradient or finite difference</span>
@@ -4086,17 +4086,17 @@ removed.</p>
 <p><strong>Key Functions:</strong></p>
 <p><strong>Parameter Reordering:</strong>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reorder_inertial_parameters</span><span class="p">(</span><span class="n">p10</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reorder from Pinocchio format to standard format</span>
+<span class="w">    </span><span class="sd">"""Reorder from Pinocchio format to standard format</span>
 
 <span class="sd">    Pinocchio: [m, mx, my, mz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz]</span>
 <span class="sd">    Standard:  [Ixx, Ixy, Ixz, Iyy, Iyz, Izz, mx, my, mz, m]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">param_order</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">p10</span><span class="p">[</span><span class="n">param_order</span><span class="p">]</span>
 </code></pre></div></p>
 <p><strong>Additional Parameters:</strong>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_standard_additional_parameters</span><span class="p">(</span><span class="n">phi_std</span><span class="p">,</span> <span class="n">identif_config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">phi_full</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add friction, actuator inertia, joint offset&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Add friction, actuator inertia, joint offset"""</span>
     <span class="c1"># Append: fv (viscous friction)</span>
     <span class="c1"># Append: fs (static friction)</span>
     <span class="c1"># Append: ia (actuator inertia)</span>
@@ -4107,20 +4107,20 @@ removed.</p>
 <p><strong>Key Functions:</strong></p>
 <p><strong>Feasibility Checking:</strong>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">check_p10_feasibility</span><span class="p">(</span><span class="n">p10</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if inertial parameters are physically feasible</span>
+<span class="w">    </span><span class="sd">"""Check if inertial parameters are physically feasible</span>
 
 <span class="sd">    Conditions:</span>
 <span class="sd">    1. Mass m &gt; 0</span>
 <span class="sd">    2. Pseudo-inertia matrix P is positive semi-definite</span>
 <span class="sd">    3. Triangle inequalities for inertia tensor</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">P</span> <span class="o">=</span> <span class="n">pseudo_inertia_matrix_from_p10</span><span class="p">(</span><span class="n">p10</span><span class="p">)</span>
     <span class="n">eigenvalues</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvalsh</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">eigenvalues</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="mf">1e-10</span><span class="p">)</span>  <span class="c1"># Allow small numerical errors</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">pseudo_inertia_matrix_from_p10</span><span class="p">(</span><span class="n">p10</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build 4×4 pseudo-inertia matrix from 10D parameters&quot;&quot;&quot;</span>
-    <span class="c1"># Use Pinocchio&#39;s PseudoInertia class</span>
+<span class="w">    </span><span class="sd">"""Build 4×4 pseudo-inertia matrix from 10D parameters"""</span>
+    <span class="c1"># Use Pinocchio's PseudoInertia class</span>
     <span class="n">pseudo_inertia</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">PseudoInertia</span><span class="o">.</span><span class="n">FromDynamicParameters</span><span class="p">(</span><span class="n">p10</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">pseudo_inertia</span><span class="o">.</span><span class="n">toMatrix</span><span class="p">()</span>
 </code></pre></div></p>
@@ -4157,7 +4157,7 @@ used by both domains:</p>
 <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ThresholdCheck</span><span class="p">:</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">;</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">;</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">comparison</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># &quot;max&quot; or &quot;min&quot;</span>
+    <span class="n">comparison</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># "max" or "min"</span>
     <span class="n">passed</span><span class="p">:</span> <span class="nb">bool</span>
 
 <span class="nd">@dataclass</span>
@@ -4203,17 +4203,17 @@ different diagnostics:</p>
 <p><strong>Verification methods, added to both <code>BaseCalibration</code> and
 <code>BaseIdentification</code>:</strong></p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">verify</span><span class="p">(</span><span class="n">thresholds</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VerificationVerdict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check self.evaluation_metrics / self.result against pass/fail</span>
+<span class="w">    </span><span class="sd">"""Check self.evaluation_metrics / self.result against pass/fail</span>
 <span class="sd">    thresholds (default: condition_number ≤ 1000, plus domain-specific</span>
-<span class="sd">    validation-set thresholds). A threshold whose metric wasn&#39;t computed</span>
-<span class="sd">    (no validation data configured) is skipped, not failed.&quot;&quot;&quot;</span>
+<span class="sd">    validation-set thresholds). A threshold whose metric wasn't computed</span>
+<span class="sd">    (no validation data configured) is skipped, not failed."""</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">export_verification_report</span><span class="p">(</span>
-    <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;results&quot;</span><span class="p">,</span>
+    <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"results"</span><span class="p">,</span>
     <span class="n">thresholds</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;verify() + write the verdict as numpy-safe JSON</span>
-<span class="sd">    ({output_dir}/{calibration,identification}_verification.json).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""verify() + write the verdict as numpy-safe JSON</span>
+<span class="sd">    ({output_dir}/{calibration,identification}_verification.json)."""</span>
 </code></pre></div>
 <p>Called explicitly (not from inside <code>solve()</code>) — verification is opt-in
 output computed from already-stored results, not a new gate that could
@@ -4384,17 +4384,17 @@ deliberately cut down from a broader "V&amp;V dashboard" concept; see
 </table>
 <h4 id="backend-mapping-strategy">Backend Mapping Strategy<a class="headerlink" href="#backend-mapping-strategy" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code>graph LR
-    subgraph &quot;FIGAROH Code&quot;
+    subgraph "FIGAROH Code"
         Tools[Tools Layer]
         Calib[Calibration]
         Identif[Identification]
     end
 
-    subgraph &quot;Backend Abstraction&quot;
+    subgraph "Backend Abstraction"
         API[Backend API]
     end
 
-    subgraph &quot;Implementations&quot;
+    subgraph "Implementations"
         Pin[Pinocchio]
         Muj[MuJoCo]
         Gen[Genesis]
@@ -4500,57 +4500,57 @@ deliberately cut down from a broader "V&amp;V dashboard" concept; see
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_backend</span>
 
 <span class="c1"># Option 1: From URDF (auto-detect format)</span>
-<span class="n">backend</span> <span class="o">=</span> <span class="n">get_backend</span><span class="p">(</span><span class="s2">&quot;pinocchio&quot;</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;robot.urdf&quot;</span><span class="p">)</span>
-<span class="n">backend</span> <span class="o">=</span> <span class="n">get_backend</span><span class="p">(</span><span class="s2">&quot;mujoco&quot;</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;robot.urdf&quot;</span><span class="p">)</span>  <span class="c1"># Auto-converts to MJCF</span>
+<span class="n">backend</span> <span class="o">=</span> <span class="n">get_backend</span><span class="p">(</span><span class="s2">"pinocchio"</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">"robot.urdf"</span><span class="p">)</span>
+<span class="n">backend</span> <span class="o">=</span> <span class="n">get_backend</span><span class="p">(</span><span class="s2">"mujoco"</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">"robot.urdf"</span><span class="p">)</span>  <span class="c1"># Auto-converts to MJCF</span>
 
 <span class="c1"># Option 2: Explicit format</span>
-<span class="n">backend</span> <span class="o">=</span> <span class="n">get_backend</span><span class="p">(</span><span class="s2">&quot;mujoco&quot;</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;robot.xml&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;mjcf&quot;</span><span class="p">)</span>
+<span class="n">backend</span> <span class="o">=</span> <span class="n">get_backend</span><span class="p">(</span><span class="s2">"mujoco"</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">"robot.xml"</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"mjcf"</span><span class="p">)</span>
 
 <span class="c1"># Option 3: With options</span>
-<span class="n">backend</span> <span class="o">=</span> <span class="n">get_backend</span><span class="p">(</span><span class="s2">&quot;pinocchio&quot;</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;robot.urdf&quot;</span><span class="p">,</span>
-                     <span class="n">package_dirs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;.&quot;</span><span class="p">],</span> <span class="n">root_joint</span><span class="o">=</span><span class="s2">&quot;free_flyer&quot;</span><span class="p">)</span>
+<span class="n">backend</span> <span class="o">=</span> <span class="n">get_backend</span><span class="p">(</span><span class="s2">"pinocchio"</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">"robot.urdf"</span><span class="p">,</span>
+                     <span class="n">package_dirs</span><span class="o">=</span><span class="p">[</span><span class="s2">"."</span><span class="p">],</span> <span class="n">root_joint</span><span class="o">=</span><span class="s2">"free_flyer"</span><span class="p">)</span>
 </code></pre></div>
 <h4 id="backend-interface-contract">Backend Interface Contract<a class="headerlink" href="#backend-interface-contract" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DynamicsBackend</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract interface for dynamics computation&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Abstract interface for dynamics computation"""</span>
 
     <span class="c1"># === Core Dynamics (abstract) ===</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_mass_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;M(q) ∈ ℝ^(nv×nv)&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""M(q) ∈ ℝ^(nv×nv)"""</span>
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_coriolis_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;C(q,v) ∈ ℝ^(nv×nv)&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""C(q,v) ∈ ℝ^(nv×nv)"""</span>
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_gravity_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;g(q) ∈ ℝ^nv&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""g(q) ∈ ℝ^nv"""</span>
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_inverse_dynamics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                  <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;τ = RNEA(q,v,a) ∈ ℝ^nv&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""τ = RNEA(q,v,a) ∈ ℝ^nv"""</span>
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_forward_dynamics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                  <span class="n">tau</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;qdd = ABA(q,v,τ) ∈ ℝ^nv&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""qdd = ABA(q,v,τ) ∈ ℝ^nv"""</span>
 
     <span class="c1"># === Kinematics (abstract) ===</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_forward_kinematics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns: {frame_name: {position, orientation, transformation}}&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Returns: {frame_name: {position, orientation, transformation}}"""</span>
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;J(q, frame) ∈ ℝ^(6×nv)&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""J(q, frame) ∈ ℝ^(6×nv)"""</span>
 
     <span class="c1"># === Identification (abstract) ===</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_regressor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                          <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;W(q,v,a) ∈ ℝ^(nv × 10*nv)&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""W(q,v,a) ∈ ℝ^(nv × 10*nv)"""</span>
 
     <span class="c1"># === Properties (abstract) ===</span>
     <span class="nd">@property</span>
@@ -4567,16 +4567,16 @@ deliberately cut down from a broader "V&amp;V dashboard" concept; see
     <span class="k">def</span><span class="w"> </span><span class="nf">get_joint_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span> <span class="o">...</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_frame_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span> <span class="o">...</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_inertias</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span> <span class="o">...</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Per-body inertia objects (for nonzero-inertia filtering)&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Per-body inertia objects (for nonzero-inertia filtering)"""</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_frame_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_difference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span> <span class="o">...</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lie group difference (q2 ⊖ q1) → [nv]&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Lie group difference (q2 ⊖ q1) → [nv]"""</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_integrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span> <span class="o">...</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lie group integration (q ⊕ v) → [nq]&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Lie group integration (q ⊕ v) → [nq]"""</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">random_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span> <span class="o">...</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_model_object</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span> <span class="o">...</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Escape hatch: return underlying simulator model (pin.Model, mj.MjModel, ...)</span>
-<span class="sd">        for advanced features not yet abstracted (PseudoInertia, collision model, etc.)&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Escape hatch: return underlying simulator model (pin.Model, mj.MjModel, ...)</span>
+<span class="sd">        for advanced features not yet abstracted (PseudoInertia, collision model, etc.)"""</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_dynamics_derivatives</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span> <span class="o">...</span>
 </code></pre></div>
 <h4 id="implementation-comparison">Implementation Comparison<a class="headerlink" href="#implementation-comparison" title="Permanent link">&para;</a></h4>
@@ -4694,7 +4694,7 @@ deliberately cut down from a broader "V&amp;V dashboard" concept; see
 </ol>
 <div class="highlight"><pre><span></span><code><span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.my_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">MyBackend</span>
-    <span class="n">_AVAILABLE_BACKENDS</span><span class="p">[</span><span class="s2">&quot;my_simulator&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MyBackend</span>
+    <span class="n">_AVAILABLE_BACKENDS</span><span class="p">[</span><span class="s2">"my_simulator"</span><span class="p">]</span> <span class="o">=</span> <span class="n">MyBackend</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="k">pass</span>
 </code></pre></div>
@@ -4711,7 +4711,7 @@ deliberately cut down from a broader "V&amp;V dashboard" concept; see
 <li><strong>Add method to <code>LinearSolver</code>:</strong></li>
 </ol>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_solve_my_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;My custom solving method&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""My custom solving method"""</span>
     <span class="c1"># Implementation</span>
     <span class="k">return</span> <span class="n">x</span>
 </code></pre></div>

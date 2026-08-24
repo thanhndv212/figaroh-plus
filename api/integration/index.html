@@ -2081,7 +2081,7 @@ one-line API.</p>
 
 
 <h2 id="figaroh.integration.api.IdentificationResult" class="doc doc-heading">
-              <code class="highlight language-python"><span class="n">IdentificationResult</span><span class="p">(</span><span class="n">phi_base</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">params_base</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">phi_standard</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rms_error</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">correlation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+              <code class="highlight language-python"><span class="n">IdentificationResult</span><span class="p">(</span><span class="n">phi_base</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">params_base</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">phi_standard</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rms_error</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">correlation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
@@ -2243,7 +2243,7 @@ one-line API.</p>
 
 
 <h2 id="figaroh.integration.api.RobotIdentificationSystem" class="doc doc-heading">
-              <code class="highlight language-python"><span class="n">RobotIdentificationSystem</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">backend_name</span><span class="o">=</span><span class="s1">&#39;pinocchio&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+              <code class="highlight language-python"><span class="n">RobotIdentificationSystem</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">backend_name</span><span class="o">=</span><span class="s1">'pinocchio'</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 <a href="#figaroh.integration.api.RobotIdentificationSystem" class="headerlink" title="Permanent link">&para;</a></h2>
 
@@ -2363,14 +2363,14 @@ print(f"RMS error: {results.rms_error}")</p>
 <span class="normal">192</span>
 <span class="normal">193</span>
 <span class="normal">194</span>
-<span class="normal">195</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">backend_name</span><span class="o">=</span><span class="s2">&quot;pinocchio&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize identification system.</span>
+<span class="normal">195</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">backend_name</span><span class="o">=</span><span class="s2">"pinocchio"</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Initialize identification system.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        robot: Robot model (figaroh.tools.robot.Robot or RobotWrapper)</span>
-<span class="sd">        backend_name: Name of the dynamics backend (&#39;pinocchio&#39;, &#39;mujoco&#39;)</span>
+<span class="sd">        backend_name: Name of the dynamics backend ('pinocchio', 'mujoco')</span>
 <span class="sd">        **kwargs: Additional configuration</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">robot</span> <span class="o">=</span> <span class="n">robot</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">backend_name</span> <span class="o">=</span> <span class="n">backend_name</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_identification</span> <span class="o">=</span> <span class="kc">None</span>
@@ -2461,7 +2461,7 @@ print(f"RMS error: {results.rms_error}")</p>
 
 
 <h3 id="figaroh.integration.api.RobotIdentificationSystem.from_urdf" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">from_urdf</span><span class="p">(</span><span class="n">urdf_path</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">&#39;pinocchio&#39;</span><span class="p">,</span> <span class="n">package_dirs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">free_flyer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">from_urdf</span><span class="p">(</span><span class="n">urdf_path</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">'pinocchio'</span><span class="p">,</span> <span class="n">package_dirs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">free_flyer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
@@ -2623,30 +2623,30 @@ print(f"RMS error: {results.rms_error}")</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_urdf</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">urdf_path</span><span class="p">,</span>
-    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;pinocchio&quot;</span><span class="p">,</span>
+    <span class="n">backend</span><span class="o">=</span><span class="s2">"pinocchio"</span><span class="p">,</span>
     <span class="n">package_dirs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">free_flyer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create identification system from URDF file.</span>
+<span class="w">    </span><span class="sd">"""Create identification system from URDF file.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        urdf_path: Path to URDF file</span>
-<span class="sd">        backend: Backend name (&#39;pinocchio&#39;, &#39;mujoco&#39;)</span>
+<span class="sd">        backend: Backend name ('pinocchio', 'mujoco')</span>
 <span class="sd">        package_dirs: Package directories for mesh files</span>
 <span class="sd">        free_flyer: Whether to add free-flyer joint</span>
 <span class="sd">        **kwargs: Additional arguments for load_robot</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        RobotIdentificationSystem instance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">..tools.load_robot</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_robot</span>
 
     <span class="n">robot</span> <span class="o">=</span> <span class="n">load_robot</span><span class="p">(</span>
         <span class="n">urdf_path</span><span class="p">,</span>
         <span class="n">package_dirs</span><span class="o">=</span><span class="n">package_dirs</span><span class="p">,</span>
         <span class="n">isFext</span><span class="o">=</span><span class="n">free_flyer</span><span class="p">,</span>
-        <span class="n">loader</span><span class="o">=</span><span class="s2">&quot;figaroh&quot;</span><span class="p">,</span>
+        <span class="n">loader</span><span class="o">=</span><span class="s2">"figaroh"</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">backend_name</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -2660,7 +2660,7 @@ print(f"RMS error: {results.rms_error}")</p>
 
 
 <h3 id="figaroh.integration.api.RobotIdentificationSystem.from_mjcf" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">from_mjcf</span><span class="p">(</span><span class="n">mjcf_path</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">&#39;mujoco&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">from_mjcf</span><span class="p">(</span><span class="n">mjcf_path</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">'mujoco'</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
@@ -2788,8 +2788,8 @@ print(f"RMS error: {results.rms_error}")</p>
 <span class="normal">250</span>
 <span class="normal">251</span>
 <span class="normal">252</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">from_mjcf</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">mjcf_path</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;mujoco&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create identification system from MJCF file.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">from_mjcf</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">mjcf_path</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">"mujoco"</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Create identification system from MJCF file.</span>
 
 <span class="sd">    .. note::</span>
 <span class="sd">        MJCF support is not yet implemented. The identification workflow</span>
@@ -2799,17 +2799,17 @@ print(f"RMS error: {results.rms_error}")</p>
 
 <span class="sd">    Args:</span>
 <span class="sd">        mjcf_path: Path to MJCF file</span>
-<span class="sd">        backend: Backend name (defaults to &#39;mujoco&#39; for MJCF)</span>
+<span class="sd">        backend: Backend name (defaults to 'mujoco' for MJCF)</span>
 <span class="sd">        **kwargs: Additional arguments</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        NotImplementedError: Always raised — MJCF not yet supported</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-        <span class="s2">&quot;from_mjcf is not yet supported. The identification workflow &quot;</span>
-        <span class="s2">&quot;requires a Robot object (URDF-based). Use from_urdf instead. &quot;</span>
-        <span class="s2">&quot;Full MJCF support requires refactoring BaseIdentification to &quot;</span>
-        <span class="s2">&quot;accept a DynamicsBackend directly — planned for a future release.&quot;</span>
+        <span class="s2">"from_mjcf is not yet supported. The identification workflow "</span>
+        <span class="s2">"requires a Robot object (URDF-based). Use from_urdf instead. "</span>
+        <span class="s2">"Full MJCF support requires refactoring BaseIdentification to "</span>
+        <span class="s2">"accept a DynamicsBackend directly — planned for a future release."</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3194,7 +3194,7 @@ print(f"RMS error: {results.rms_error}")</p>
     <span class="n">save_results</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run parameter identification.</span>
+<span class="w">    </span><span class="sd">"""Run parameter identification.</span>
 
 <span class="sd">    This is the main entry point. It:</span>
 <span class="sd">    1. Creates a BaseIdentification subclass instance</span>
@@ -3221,7 +3221,7 @@ print(f"RMS error: {results.rms_error}")</p>
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If no data source is configured</span>
 <span class="sd">        FileNotFoundError: If config or data files not found</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Override data_dir in config if provided</span>
     <span class="n">_created_temp_config</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="n">data_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -3230,27 +3230,27 @@ print(f"RMS error: {results.rms_error}")</p>
 
         <span class="c1"># Read existing config and add/override data_dir</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="n">cfg</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">cfg</span> <span class="o">=</span> <span class="n">config</span>
 
         <span class="c1"># Inject data_dir into the config</span>
-        <span class="k">if</span> <span class="s2">&quot;identification&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;identification&quot;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
-                <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;identification&quot;</span><span class="p">][</span><span class="s2">&quot;data_dir&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_dir</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;identification&quot;</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;identification&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;data_dir&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_dir</span>
-        <span class="k">elif</span> <span class="s2">&quot;calibration&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;calibration&quot;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
-                <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;calibration&quot;</span><span class="p">][</span><span class="s2">&quot;data_dir&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_dir</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;calibration&quot;</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;calibration&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;data_dir&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_dir</span>
+        <span class="k">if</span> <span class="s2">"identification"</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s2">"identification"</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">cfg</span><span class="p">[</span><span class="s2">"identification"</span><span class="p">][</span><span class="s2">"data_dir"</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_dir</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s2">"identification"</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">cfg</span><span class="p">[</span><span class="s2">"identification"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">"data_dir"</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_dir</span>
+        <span class="k">elif</span> <span class="s2">"calibration"</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s2">"calibration"</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">cfg</span><span class="p">[</span><span class="s2">"calibration"</span><span class="p">][</span><span class="s2">"data_dir"</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_dir</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s2">"calibration"</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">cfg</span><span class="p">[</span><span class="s2">"calibration"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">"data_dir"</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_dir</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;data_dir&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_dir</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="s2">"data_dir"</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_dir</span>
 
         <span class="c1"># Write modified config to a temp file</span>
-        <span class="n">tmp</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.yaml&quot;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">"w"</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s2">".yaml"</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">tmp</span><span class="p">)</span>
         <span class="n">tmp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="n">config_file</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">name</span>
@@ -3259,8 +3259,8 @@ print(f"RMS error: {results.rms_error}")</p>
         <span class="n">config_file</span> <span class="o">=</span> <span class="n">config</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;config must be a file path (string). &quot;</span>
-            <span class="s2">&quot;Use data_dir= to specify the trajectory data directory.&quot;</span>
+            <span class="s2">"config must be a file path (string). "</span>
+            <span class="s2">"Use data_dir= to specify the trajectory data directory."</span>
         <span class="p">)</span>
 
     <span class="c1"># Extract data_dir from config if not passed explicitly</span>
@@ -3268,18 +3268,18 @@ print(f"RMS error: {results.rms_error}")</p>
         <span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="n">cfg</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;identification&quot;</span><span class="p">,</span> <span class="s2">&quot;calibration&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"identification"</span><span class="p">,</span> <span class="s2">"calibration"</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">cfg</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="n">section</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
-                    <span class="n">data_dir</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="n">section</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data_dir&quot;</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
+                    <span class="n">data_dir</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="n">section</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"data_dir"</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">pass</span>
     <span class="k">elif</span> <span class="n">data_dir</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;identification&quot;</span><span class="p">,</span> <span class="s2">&quot;calibration&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"identification"</span><span class="p">,</span> <span class="s2">"calibration"</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">config</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="n">section</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
-                    <span class="n">data_dir</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">section</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data_dir&quot;</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
+                    <span class="n">data_dir</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">section</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"data_dir"</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
 
     <span class="c1"># Create the concrete identification instance</span>
     <span class="n">identification</span> <span class="o">=</span> <span class="n">_SimpleIdentification</span><span class="p">(</span>
@@ -3304,12 +3304,12 @@ print(f"RMS error: {results.rms_error}")</p>
 
         <span class="k">return</span> <span class="n">IdentificationResult</span><span class="p">(</span>
             <span class="n">phi_base</span><span class="o">=</span><span class="n">phi_base</span><span class="p">,</span>
-            <span class="n">params_base</span><span class="o">=</span><span class="n">result_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;params_base&quot;</span><span class="p">),</span>
-            <span class="n">phi_standard</span><span class="o">=</span><span class="n">result_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;phi_standard&quot;</span><span class="p">),</span>
+            <span class="n">params_base</span><span class="o">=</span><span class="n">result_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"params_base"</span><span class="p">),</span>
+            <span class="n">phi_standard</span><span class="o">=</span><span class="n">result_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"phi_standard"</span><span class="p">),</span>
             <span class="n">rms_error</span><span class="o">=</span><span class="n">identification</span><span class="o">.</span><span class="n">rms_error</span><span class="p">,</span>
             <span class="n">correlation</span><span class="o">=</span><span class="n">identification</span><span class="o">.</span><span class="n">correlation</span><span class="p">,</span>
             <span class="n">backend</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">backend_name</span><span class="p">,</span>
-            <span class="n">model_path</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> <span class="s2">&quot;robot_urdf&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="n">model_path</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> <span class="s2">"robot_urdf"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
             <span class="n">config</span><span class="o">=</span><span class="n">identification</span><span class="o">.</span><span class="n">identif_config</span><span class="p">,</span>
             <span class="n">raw</span><span class="o">=</span><span class="n">result_dict</span><span class="p">,</span>
         <span class="p">)</span>

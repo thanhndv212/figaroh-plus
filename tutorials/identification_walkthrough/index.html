@@ -1939,13 +1939,13 @@ linear least squares.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">examples.tiago.utils.tiago_tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">TiagoIdentification</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.robot</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_robot</span>
 
-<span class="n">robot</span> <span class="o">=</span> <span class="n">load_robot</span><span class="p">(</span><span class="s2">&quot;path/to/robot.urdf&quot;</span><span class="p">,</span> <span class="n">load_by_urdf</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">identifier</span> <span class="o">=</span> <span class="n">TiagoIdentification</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s2">&quot;config/tiago_unified_config.yaml&quot;</span><span class="p">)</span>
+<span class="n">robot</span> <span class="o">=</span> <span class="n">load_robot</span><span class="p">(</span><span class="s2">"path/to/robot.urdf"</span><span class="p">,</span> <span class="n">load_by_urdf</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">identifier</span> <span class="o">=</span> <span class="n">TiagoIdentification</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s2">"config/tiago_unified_config.yaml"</span><span class="p">)</span>
 <span class="n">identifier</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">decimate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">html_report</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">verdict</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;PASS&quot;</span> <span class="k">if</span> <span class="n">verdict</span><span class="o">.</span><span class="n">passed</span> <span class="k">else</span> <span class="s2">&quot;FAIL&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"PASS"</span> <span class="k">if</span> <span class="n">verdict</span><span class="o">.</span><span class="n">passed</span> <span class="k">else</span> <span class="s2">"FAIL"</span><span class="p">)</span>
 </code></pre></div>
 <p><code>decimate=True</code> downsamples the regressor to reduce redundant, highly
 correlated rows before the solve — cheaper and often better-conditioned
