@@ -3566,10 +3566,16 @@ is not:</p>
 </table>
 <h4 id="82-tiago-feature-ports-eye-hand-calibration-suspension-identification">8.2 TIAGo feature ports (eye-hand calibration + suspension identification)<a class="headerlink" href="#82-tiago-feature-ports-eye-hand-calibration-suspension-identification" title="Permanent link">&para;</a></h4>
 <p>Source: <a href="../../decisions/tiago-calibration-and-port-review.md"><code>docs/decisions/tiago-calibration-and-port-review.md</code></a>
-Part B. Two features sitting on old, pre-architecture-split branches,
-never ported forward. Neither has landed — no <code>eye_hand_calibration.py</code>,
-<code>suspension_identification.py</code>, <code>vicon_utils.py</code>, or <code>suspension_utils.py</code>
-exist in <code>figaroh-examples/examples/tiago/</code> as of 2026-08-16.</p>
+Part B for eye-hand calibration (still not started). The suspension/backlash
+half of Part B has been superseded by a more detailed follow-up plan,
+<a href="../../decisions/tiago-suspension-backlash-examples.md"><code>docs/decisions/tiago-suspension-backlash-examples.md</code></a>,
+and is now <strong>done</strong> — <code>suspension_identification.py</code> and
+<code>backlash_empirical_surface.py</code> both exist and are tested in
+<code>figaroh-examples/examples/tiago/</code> as of 2026-08-31 (shipped via
+<code>figaroh-examples</code> PR
+<a href="https://github.com/thanhndv212/figaroh-examples/pull/9">#9</a>, pending merge).
+Eye-hand calibration has not landed — no <code>eye_hand_calibration.py</code> or
+<code>vicon_utils.py</code> exist.</p>
 <table>
 <thead>
 <tr>
@@ -3587,7 +3593,7 @@ exist in <code>figaroh-examples/examples/tiago/</code> as of 2026-08-16.</p>
 <tr>
 <td>Mobile-base / suspension identification</td>
 <td>Medium–High — needs an architecture decision (standalone script vs. <code>BaseIdentification</code> subclass vs. documented research example) and a 1068-line monolith refactored into focused modules</td>
-<td>⬜ Not started</td>
+<td>✅ <strong>Done</strong> — shipped as a standalone example (documented research example, not a <code>BaseIdentification</code> subclass), plus an empirical backlash-surface example that wasn't originally scoped here. Physical/stateful backlash and any core promotion remain future work, see <a href="../../decisions/modular-linear-residual-terms-plan.md"><code>docs/decisions/modular-linear-residual-terms-plan.md</code></a>.</td>
 </tr>
 </tbody>
 </table>
@@ -3982,8 +3988,18 @@ C's five shipped steps landed across roughly one month of focused work.</p>
 </tr>
 <tr>
 <td><a href="../../decisions/tiago-calibration-and-port-review.md"><code>tiago-calibration-and-port-review.md</code></a></td>
-<td>Part A: TIAGo/TIAGo Pro structural &amp; statistical calibration analysis, redistribution rationale (Track A). Part B: eye-hand + suspension port review (Track E's source)</td>
+<td>Part A: TIAGo/TIAGo Pro structural &amp; statistical calibration analysis, redistribution rationale (Track A). Part B: eye-hand port review, still open (Track E's source) — its suspension-identification half is superseded by <code>tiago-suspension-backlash-examples.md</code> below</td>
 <td>§4, §8.2</td>
+</tr>
+<tr>
+<td><a href="../../decisions/tiago-suspension-backlash-examples.md"><code>tiago-suspension-backlash-examples.md</code></a></td>
+<td>TIAGo suspension-identification and empirical-backlash-surface examples — <strong>done</strong>, shipped in <code>figaroh-examples</code> (Track E's source)</td>
+<td>§8.2</td>
+</tr>
+<tr>
+<td><a href="../../decisions/modular-linear-residual-terms-plan.md"><code>modular-linear-residual-terms-plan.md</code></a></td>
+<td>Proposed <code>LinearRegressorTerm</code>/<code>ResidualTerm</code>/<code>WeightPolicy</code> composition architecture for the identification layer, plus the still-unbuilt physical/stateful backlash model — not started</td>
+<td>§8.2 (related, not a numbered step there yet)</td>
 </tr>
 <tr>
 <td><a href="../../decisions/figaroh-examples-improvement_plan.md"><code>figaroh-examples-improvement_plan.md</code></a></td>

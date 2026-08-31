@@ -1701,13 +1701,15 @@ intentionally <strong>not</strong> part of this built site (kept as a sibling of
 working documents for contributors, not user-facing reference — but they're
 worth knowing about if you want the reasoning behind a feature, not just
 its usage docs.</p>
-<p>As of 2026-08-16 this directory holds six documents. Several previously
+<p>As of 2026-08-31 this directory holds eight documents. Several previously
 separate files (a <code>robot_calibration</code> comparison, a MuJoCo <code>sysid</code>
 comparison, the quality/reporting roadmap that comparison produced, a TIAGo
-calibration analysis, and a TIAGo port review) have since been merged into
-two combined documents rather than kept as cross-linked siblings — the
-table below reflects the current, post-merge state, not the historical
-filenames referenced by older commits.</p>
+calibration analysis, and a TIAGo port review) were merged into two combined
+documents rather than kept as cross-linked siblings; a later TIAGo
+suspension/backlash port-review follow-up was split back into two focused
+documents (one done, one still proposed) rather than left as one growing
+combined file — the table below reflects the current state, not the
+historical filenames referenced by older commits.</p>
 <table>
 <thead>
 <tr>
@@ -1722,7 +1724,15 @@ filenames referenced by older commits.</p>
 </tr>
 <tr>
 <td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/tiago-calibration-and-port-review.md"><code>tiago-calibration-and-port-review.md</code></a></td>
-<td>Two parts: <strong>Part A</strong> — deep structural/statistical analysis of the TIAGo/TIAGo Pro mocap calibration pipelines, including the base-parameter redistribution work now shipped in core. <strong>Part B</strong> — review of porting eye-hand calibration and mobile-base/suspension identification from old branches (not yet started).</td>
+<td>Two parts: <strong>Part A</strong> — deep structural/statistical analysis of the TIAGo/TIAGo Pro mocap calibration pipelines, including the base-parameter redistribution work now shipped in core. <strong>Part B</strong> — review of porting eye-hand calibration (still not started) and mobile-base/suspension identification (superseded by <code>tiago-suspension-backlash-examples.md</code> below, now done) from old branches.</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/tiago-suspension-backlash-examples.md"><code>tiago-suspension-backlash-examples.md</code></a></td>
+<td>✅ <strong>Done.</strong> TIAGo generalized-base suspension identification and empirical backlash-surface examples, shipped as standalone research examples in <code>figaroh-examples</code> — what was ported, corrections made versus the historical prototype (gravity torque feature, polynomial degree, structurally-zero column handling), and known remaining gaps (no held-out train/validation split yet).</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/modular-linear-residual-terms-plan.md"><code>modular-linear-residual-terms-plan.md</code></a></td>
+<td>🔬 <strong>Proposed, not started.</strong> Generic <code>LinearRegressorTerm</code>/<code>ResidualTerm</code>/<code>WeightPolicy</code> composition architecture for the identification layer (motivated by, but not required by, the suspension/backlash examples above), plus the still-unbuilt physical/stateful backlash model and its core-promotion gates.</td>
 </tr>
 <tr>
 <td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/figaroh-examples-improvement_plan.md"><code>figaroh-examples-improvement_plan.md</code></a></td>

@@ -3215,6 +3215,20 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
   whole-body calibration (no longer "to be released" — it shipped), and
   TIAGo's new experimental suspension-identification and
   empirical-backlash-surface examples.</li>
+<li><code>docs</code>: Split <code>docs/decisions/tiago-suspension-backlash-and-modular-terms-plan.md</code>
+  (an uncommitted working draft) into two focused documents reflecting
+  their different implementation status:
+  <code>tiago-suspension-backlash-examples.md</code> (<strong>done</strong> — the TIAGo
+  suspension-identification and empirical-backlash-surface examples
+  shipped in <code>figaroh-examples</code> PR #9, with an implementation summary,
+  concrete real-data results, and known gaps against the original plan)
+  and <code>modular-linear-residual-terms-plan.md</code> (still <strong>proposed</strong> —
+  the generic <code>LinearRegressorTerm</code>/<code>ResidualTerm</code>/<code>WeightPolicy</code>
+  architecture and the unbuilt physical/stateful backlash model). Also
+  corrected <code>ROADMAP.md</code> §8.2's stale "not started" status for the
+  suspension port (superseded by the new document) and added both new
+  documents to <code>ROADMAP.md</code>'s References table and
+  <code>docs/source/further_reading/decisions.md</code>'s index.</li>
 <li><code>docs</code>: Consolidated <code>docs/decisions/</code> from 8 documents to 6 by merging
   related comparisons/analyses/reviews into single multi-part documents,
   each carrying its own verified implementation-status section rather than
