@@ -15,6 +15,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   whole-body calibration (no longer "to be released" — it shipped), and
   TIAGo's new experimental suspension-identification and
   empirical-backlash-surface examples.
+- `docs`: Split `docs/decisions/tiago-suspension-backlash-and-modular-terms-plan.md`
+  (an uncommitted working draft) into two focused documents reflecting
+  their different implementation status:
+  `tiago-suspension-backlash-examples.md` (**done** — the TIAGo
+  suspension-identification and empirical-backlash-surface examples
+  shipped in `figaroh-examples` PR #9, with an implementation summary,
+  concrete real-data results, and known gaps against the original plan)
+  and `modular-linear-residual-terms-plan.md` (still **proposed** —
+  the generic `LinearRegressorTerm`/`ResidualTerm`/`WeightPolicy`
+  architecture and the unbuilt physical/stateful backlash model). Also
+  corrected `ROADMAP.md` §8.2's stale "not started" status for the
+  suspension port (superseded by the new document) and added both new
+  documents to `ROADMAP.md`'s References table and
+  `docs/source/further_reading/decisions.md`'s index.
 - `docs`: Consolidated `docs/decisions/` from 8 documents to 6 by merging
   related comparisons/analyses/reviews into single multi-part documents,
   each carrying its own verified implementation-status section rather than

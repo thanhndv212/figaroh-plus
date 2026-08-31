@@ -399,15 +399,21 @@ is not:
 ### 8.2 TIAGo feature ports (eye-hand calibration + suspension identification)
 
 Source: [`docs/decisions/tiago-calibration-and-port-review.md`](docs/decisions/tiago-calibration-and-port-review.md)
-Part B. Two features sitting on old, pre-architecture-split branches,
-never ported forward. Neither has landed — no `eye_hand_calibration.py`,
-`suspension_identification.py`, `vicon_utils.py`, or `suspension_utils.py`
-exist in `figaroh-examples/examples/tiago/` as of 2026-08-16.
+Part B for eye-hand calibration (still not started). The suspension/backlash
+half of Part B has been superseded by a more detailed follow-up plan,
+[`docs/decisions/tiago-suspension-backlash-examples.md`](docs/decisions/tiago-suspension-backlash-examples.md),
+and is now **done** — `suspension_identification.py` and
+`backlash_empirical_surface.py` both exist and are tested in
+`figaroh-examples/examples/tiago/` as of 2026-08-31 (shipped via
+`figaroh-examples` PR
+[#9](https://github.com/thanhndv212/figaroh-examples/pull/9), pending merge).
+Eye-hand calibration has not landed — no `eye_hand_calibration.py` or
+`vicon_utils.py` exist.
 
 | Feature | Risk | Status |
 |---|---|---|
 | Eye-hand (camera) calibration | Low — no core changes needed, style-only port | ⬜ Not started; 8 open decisions (which gripper variants, XACRO vs. `update_model.py` output, standalone vs. `BaseCalibration` subclass, …) |
-| Mobile-base / suspension identification | Medium–High — needs an architecture decision (standalone script vs. `BaseIdentification` subclass vs. documented research example) and a 1068-line monolith refactored into focused modules | ⬜ Not started |
+| Mobile-base / suspension identification | Medium–High — needs an architecture decision (standalone script vs. `BaseIdentification` subclass vs. documented research example) and a 1068-line monolith refactored into focused modules | ✅ **Done** — shipped as a standalone example (documented research example, not a `BaseIdentification` subclass), plus an empirical backlash-surface example that wasn't originally scoped here. Physical/stateful backlash and any core promotion remain future work, see [`docs/decisions/modular-linear-residual-terms-plan.md`](docs/decisions/modular-linear-residual-terms-plan.md). |
 
 When eye-hand calibration is ported, its deploy step should reuse Track A's
 `redistribute_parameters()` + `geometric_calibration_export()` (already
@@ -669,7 +675,9 @@ C's five shipped steps landed across roughly one month of focused work.
 | Document | Covers | Referenced from |
 |---|---|---|
 | [`external-tool-comparisons.md`](docs/decisions/external-tool-comparisons.md) | Part A: `robot_calibration` comparison (Track D's source). Part B: MuJoCo `sysid` comparison. Part C: the full reporting/verification build-out (Track C's source) | §6, §7 |
-| [`tiago-calibration-and-port-review.md`](docs/decisions/tiago-calibration-and-port-review.md) | Part A: TIAGo/TIAGo Pro structural & statistical calibration analysis, redistribution rationale (Track A). Part B: eye-hand + suspension port review (Track E's source) | §4, §8.2 |
+| [`tiago-calibration-and-port-review.md`](docs/decisions/tiago-calibration-and-port-review.md) | Part A: TIAGo/TIAGo Pro structural & statistical calibration analysis, redistribution rationale (Track A). Part B: eye-hand port review, still open (Track E's source) — its suspension-identification half is superseded by `tiago-suspension-backlash-examples.md` below | §4, §8.2 |
+| [`tiago-suspension-backlash-examples.md`](docs/decisions/tiago-suspension-backlash-examples.md) | TIAGo suspension-identification and empirical-backlash-surface examples — **done**, shipped in `figaroh-examples` (Track E's source) | §8.2 |
+| [`modular-linear-residual-terms-plan.md`](docs/decisions/modular-linear-residual-terms-plan.md) | Proposed `LinearRegressorTerm`/`ResidualTerm`/`WeightPolicy` composition architecture for the identification layer, plus the still-unbuilt physical/stateful backlash model — not started | §8.2 (related, not a numbered step there yet) |
 | [`figaroh-examples-improvement_plan.md`](docs/decisions/figaroh-examples-improvement_plan.md) | Cross-example audit of UR10/TIAGo/TALOS/Staubli (Track E's source) | §8.1 |
 | [`urdf_exporter.md`](docs/decisions/urdf_exporter.md) | URDF exporter plan & spec, implementation deviations (Track E's source) | §8.3 |
 | [`validation-quality-report.md`](docs/decisions/validation-quality-report.md) | FK validation + statistical quality matrix — fully implemented, superseded in practice by Track C's reporting suite | §6 |
