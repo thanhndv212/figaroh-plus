@@ -57,8 +57,9 @@ cd figaroh-examples && pip install -r requirements.txt
 |-------|-------|
 | **Staubli TX40** | Dynamic identification |
 | **Universal UR10** | Geometric calibration (RealSense camera) |
-| **TIAGo** | Full workflow: identification + calibration |
-| **TALOS Humanoid** | Torso-arm calibration, whole-body calibration (to be released) |
+| **TIAGo** | Full workflow: identification + calibration, plus experimental suspension identification and empirical backlash-surface examples |
+| **TIAGo Pro** | Right-arm geometric calibration (contributed by [Clement Pene](https://github.com/clementPene)) |
+| **TALOS Humanoid** | Torso-arm calibration; whole-body leg-torso-arm calibration from single-plane table contact (no external metrology) |
 
 ---
 

@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `docs`: Updated README's Examples Repository table with recent
+  `figaroh-examples` additions: TIAGo Pro right-arm geometric calibration
+  (contributed by Clement Pene), TALOS's single-plane table-contact
+  whole-body calibration (no longer "to be released" — it shipped), and
+  TIAGo's new experimental suspension-identification and
+  empirical-backlash-surface examples.
 - `docs`: Consolidated `docs/decisions/` from 8 documents to 6 by merging
   related comparisons/analyses/reviews into single multi-part documents,
   each carrying its own verified implementation-status section rather than
