@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `skills`: New `skills/` directory shipping six agent skills that take a
+  user from a fresh clone to a running task, so an AI coding agent can set
+  each task up without first re-deriving the workspace layout. Mirrored in
+  `figaroh-examples/skills/` (same content, paths resolved against
+  `$FIGAROH_WS`, the directory holding both repos side by side):
+  - `figaroh-start` — the router. Maps the workspace (which of the sibling
+    repos owns what), carries a robot x task x config matrix, states the two path
+    rules every example script depends on (run from `examples/<robot>/`;
+    `package_dirs="../../models"`), and dispatches to the skill below.
+  - `figaroh-setup-env` — environment bootstrap, with an executable
+    `scripts/doctor.sh`: read-only, exits 0/1, locates the workspace root on
+    its own, and prints a specific remedy per failure. It checks the failure
+    that is otherwise invisible — whether `import figaroh` resolves to the
+    local `src/` tree or to a shadowing site-packages copy.
+  - `figaroh-setup-calibration`, `figaroh-setup-identification`,
+    `figaroh-setup-optimal` — one per task: required inputs, the exact
+    config block, the real CLI flag surface, how to read the run archive,
+    and a failure/cause/fix table. The data contracts are documented from
+    `calibration/data_loader.py` and each robot's `load_trajectory_data()`
+    rather than from prose, because both are derived rather than fixed:
+    calibration CSV columns follow each marker's `measurable_dof`, and
+    identification has no single schema at all.
+  - `figaroh-setup-new-robot` — onboarding a robot with no example folder,
+    from description package to `validate.py --robot <robot>` exiting 0.
+  The set is self-contained by design: it assumes only `figaroh` and
+  `figaroh-examples`, references no other package or checkout, and points at
+  repo directories rather than at skills outside the set.
+- `docs`: README now points at `skills/` for agent-assisted setup.
+
 ### Changed
 
 - `docs`: Updated README's Examples Repository table with recent

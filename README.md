@@ -15,6 +15,8 @@ FIGAROH is a Python toolbox providing efficient and highly flexible frameworks f
 
 > Note: This repo is a fork from [gitlab repo](https://gitlab.laas.fr/gepetto/figaroh) of which the author is no longer a contributor.
 
+Working with an AI coding agent? [`skills/`](skills/) holds agent skills that set up a FIGAROH task end to end — start with [`skills/figaroh-start`](skills/figaroh-start/SKILL.md), which routes to the right package and directory, and [`skills/figaroh-setup-env`](skills/figaroh-setup-env/SKILL.md), which ships a `doctor.sh` that verifies your environment before anything runs.
+
 ---
 
 ## Installation
