@@ -64,20 +64,17 @@ preserved, not title-cased).
 It also stubs `README.md`, `SETUP_GUIDE.md`, `data/*/README.md`, `utils/__init__.py`,
 `utils/<robot>_tools.py`, and `utils/simplified_collision_model.py`.
 
-Three things about the output, all verified by running it — take the tree and the
-naming, and replace the rest:
+What it gives you, verified by running it:
 
 - **All four generated scripts are placeholders** (`calibration.py`,
   `identification.py`, `optimal_config.py`, `optimal_trajectory.py`). Each prints
-  "not yet implemented" and exits. Replace them wholesale in Step 5.
-- **Their "Please refer to examples/<robot>/…" pointer is self-referential and
-  useless.** The template pointed at TIAGo, but the scaffold's `tiago` → `<robot>`
-  substitution rewrites the pointer along with everything else. Ignore it; the real
-  reference is `examples/ur10/`.
-- **The generated config is legacy flat format** — named `config/<robot>_config.yaml`,
-  with no `extends:` and no `tasks:` block. That contradicts the repo's own convention.
-  Do not build on it: write `config/<robot>_unified_config.yaml` per Step 4 instead,
-  and delete the generated one once yours works.
+  "not yet implemented" and exits, and points you at the corresponding
+  `examples/ur10/` file. Replace them wholesale in Step 5.
+- **The generated config is a real unified config** — `config/<robot>_unified_config.yaml`
+  with `extends: "../../templates/manipulator_robot.yaml"` and all four task blocks,
+  pre-filled with TODO markers and the URDF-probe command from Step 3. Edit it in
+  place rather than starting over; swap the template for `humanoid_robot.yaml` if the
+  robot has a mobile or floating base.
 
 Or do it by hand:
 
@@ -256,9 +253,9 @@ Done means: `validate.py --robot <robot>` exits 0, and a run archive appeared un
 - `tiago_pro` keeps its config at the robot root, not in `config/` — an exception, not
   the pattern to copy.
 - `create_example.sh` derives from TIAGo and substitutes `tiago` → `<robot>`
-  everywhere, which both leaves occasional misses (grep for `tiago` in generated
-  files) and over-applies: it rewrites the "refer to examples/tiago/…" pointers into
-  self-references. Neither is a problem if you replace the generated Python anyway.
+  throughout, so grep generated files for a stray `tiago` before trusting them.
+  Pointers to the reference example are protected by a `REF_EXAMPLE` token and
+  correctly resolve to `examples/ur10/`.
 - Pre-commit enforces a 100 MB file limit (`models/` excluded). Large meshes elsewhere
   will be rejected.
 - `devel` is the development branch, `main` the release branch — matching the core

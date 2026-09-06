@@ -38,6 +38,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   repo directories rather than at skills outside the set.
 - `docs`: README now points at `skills/` for agent-assisted setup.
 
+### Fixed
+
+- `optimal`: `BaseOptimalCalibration.save_results` reported
+  `configuration_count` as `len(self.optimal_configurations)`, which counts the
+  dict's keys (always 2) rather than the selected configurations. A UR10 run
+  wrote `configuration_count: 2` to the summary CSV while printing "Selected 73"
+  to stdout. Added `count_optimal_configurations()` and used it, so the saved
+  summary now matches what the run reports.
+- `optimal`: the D-optimality determinant root was saved under the key
+  `condition_number`, which is a different quantity entirely and made the CSV
+  actively misleading. Renamed to `d_optimality_detroot`. **Breaking** for
+  anything reading that column out of a saved optimal-calibration CSV/YAML.
+- `optimal`: `tasks.optimal_configuration.output.output_file` was silently
+  ignored — `load_param` only ever loads the `calibration` task, so the optimal
+  task's own `output` block never reached the object, and `save_results`
+  hardcoded `results/`. The configured directory is now honoured (the filename
+  stays managed/timestamped), falling back to `results/` when unset, so existing
+  behaviour is unchanged for configs that do not set it.
+
+### Tests
+
+- `tests/unit/test_optimal_results.py`: 17 new tests covering the three fixes
+  above — configuration counting, output-directory resolution, and reading the
+  optimal task's output block (including the YAML `None`-as-string trap, legacy
+  configs, and missing files). `save_results` previously had no coverage.
+
 ### Changed
 
 - `docs`: Updated README's Examples Repository table with recent

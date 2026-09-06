@@ -132,38 +132,39 @@ minutes, while `optimal_config.py` on UR10 (500 candidates) finished in ~35 s. I
 `validate.py` output, an IPOPT **timeout is reported separately from a failure and is
 expected** — do not treat it as a regression.
 
-With `sample_configurations_file` unset, `optimal_config.py` prints `Failed to load
-candidate configurations: Unsupported file format: None` and then `Generating random
-configurations instead`. That is the normal path when you have no candidate pool — it
-is a fallback notice, not an error.
+With `sample_configurations_file` empty, `optimal_config.py` prints `Generating random
+configurations instead`. That is the normal path when you have no candidate pool — a
+fallback notice, not an error. Set the key to `""`, never to a bare `None`: YAML parses
+`None` as the *string* "None", which is then treated as a filename and produces a
+confusing `Unsupported file format: None`.
 
 ## Step 4 — Use the output
 
-**Find the file before wiring anything to it.** `optimal_config.py` does **not** honour
-the config's `optimal_configuration.output.output_file`. On UR10 it wrote to
-`results/` instead, as a timestamped triple:
+`optimal_config.py` writes a timestamped triple into the directory named by
+`optimal_configuration.output.output_file` (only the directory part is used — the
+filenames are managed), falling back to `results/` when that is unset:
 
 ```
-results/<robot>_optimal_calibration_<timestamp>.yaml            # the configurations
-results/<robot>_optimal_calibration_<timestamp>.csv             # one-row summary
-results/<robot>_optimal_calibration_<timestamp>_metadata.yaml   # mostly empty
+<dir>/<robot>_optimal_calibration_<timestamp>.yaml            # the configurations
+<dir>/<robot>_optimal_calibration_<timestamp>.csv             # one-row summary
+<dir>/<robot>_optimal_calibration_<timestamp>_metadata.yaml
 ```
 
-So treat `output_file` as aspirational, `ls results/` after the run, and point the
-calibration config at the path that actually appeared:
+The script prints the directory it used; point the calibration config at the YAML:
 
 ```yaml
 tasks:
   calibration:
     data:
-      sample_configurations_file: "results/<robot>_optimal_calibration_<timestamp>.yaml"
+      sample_configurations_file: "data/optimal_configs/<robot>_optimal_calibration_<timestamp>.yaml"
 ```
 
-Two further mismatches seen on the same run, so verify rather than assume:
-`parameters.number_of_samples: 50` did not fix the selected count (the run reported 73
-selected from 500 candidates), and the summary CSV's `configuration_count` (2)
-disagreed with the count printed to stdout (73). Trust the YAML's contents over either
-number, and count the configurations you actually got.
+**The selected count is emergent, not requested.** Selection is threshold-based on the
+SOCP weights, so you get however many configurations clear the threshold — a UR10 run
+selected 70 of 500 candidates. There is no key that fixes the count: the
+`optimal_configuration.parameters` block is inert and the shipped configs comment it
+out. The summary CSV's `configuration_count` and the count printed to stdout now agree;
+if they ever diverge, trust the YAML's contents.
 
 A hand-maintained candidate pool works too, and is what TIAGo uses — see
 `data/calibration/optimal_configurations/tiago_calibration_joint_configurations_500_pmb2_hey5.yaml`.
