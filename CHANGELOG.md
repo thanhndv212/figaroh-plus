@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.4.8] - 2026-09-07
 
 ### Added
 
@@ -71,9 +71,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   above — configuration counting, output-directory resolution, and reading the
   optimal task's output block (including the YAML `None`-as-string trap, legacy
   configs, and missing files). `save_results` previously had no coverage.
+- `tests/unit/test_regressor_wrench.py`: 7 new tests calling
+  `build_total_regressor_wrench` for real — output shapes, finiteness,
+  `mass_load` scaling, and `which_body_loaded` block selection. Verified to
+  fail with the original `NameError` if the fix is reverted.
 
 ### Changed
 
+- `build`: Pinned the build backend to `hatchling<1.32`. 1.32.0 emits
+  `Metadata-Version: 2.5`, which the current release toolchain rejects --
+  `twine check` fails with "'2.5' is not a valid metadata version" because
+  `packaging` 25.0 recognises only up to 2.4. Every hatchling through 1.31
+  emits 2.4. `requires` was previously unpinned, so each build silently took
+  whatever was newest; this also makes release builds reproducible.
 - `docs`: Updated README's Examples Repository table with recent
   `figaroh-examples` additions: TIAGo Pro right-arm geometric calibration
   (contributed by Clement Pene), TALOS's single-plane table-contact

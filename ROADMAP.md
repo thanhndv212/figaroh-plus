@@ -5,9 +5,9 @@ change-log detail out to `CHANGELOG.md`, adds a consolidated timeline and a
 references section) + Track F added as ongoing research (deployment &
 sim-to-real positioning, not yet committed)
 **Date:** August 16, 2026
-**Current release:** `figaroh` 0.4.7 (PyPI, 2026-08-07)
-**Test health (verified 2026-08-16):** 451 collected, 442 passed, 4 failed
-(pre-existing, unrelated `cyipopt`/IPOPT solver tests), 5 skipped
+**Current release:** `figaroh` 0.4.8 (PyPI, 2026-09-07)
+**Test health (verified 2026-09-07):** 503 collected, 483 passed, 0 failed,
+20 skipped
 
 > **Single source of truth.** This document is the strategic view — vision,
 > tracks, status, timeline. It intentionally does **not** duplicate two
@@ -108,8 +108,8 @@ identification toolbox** that enables researchers and engineers to:
 
 ### 3.1 Release & test health
 
-- **PyPI release:** 0.4.7 (2026-08-07). Five releases have shipped since
-  the last roadmap pass (0.4.3 → 0.4.7, 2026-06-02 → 2026-08-07) — see
+- **PyPI release:** 0.4.8 (2026-09-07). Six releases have shipped since
+  the last roadmap pass (0.4.3 → 0.4.8, 2026-06-02 → 2026-09-07) — see
   `CHANGELOG.md` for the full per-release detail.
 - **Test suite:** 451 tests collected (up from 259 in June), 442 passed, 4
   failed (all in `test_robotipopt.py`, a pre-existing `cyipopt`-dependency
@@ -129,7 +129,7 @@ identification toolbox** that enables researchers and engineers to:
 
 | Track | Covers | Status | Detail |
 |---|---|---|---|
-| A — Algorithmic Core | Inertial ID, physical consistency, reconstruction, CAD constraints, redistribution | v0.4.1–v0.4.7 shipped; v0.5–v1.0 planned | [§4](#4-track-a--algorithmic-core-identification--calibration) |
+| A — Algorithmic Core | Inertial ID, physical consistency, reconstruction, CAD constraints, redistribution | v0.4.1–v0.4.8 shipped; v0.5–v1.0 planned | [§4](#4-track-a--algorithmic-core-identification--calibration) |
 | B — Backend Integration | Pinocchio/MuJoCo/Genesis/IsaacSim, high-level API, CLI | Phase 1 substantially complete; Phases 2–4 not started | [§5](#5-track-b--multi-simulator-backend-integration) |
 | C — Reporting & Verification | HTML reports, machine-readable verdicts, before/after panel, compare page | 7 of 12 items shipped; optimal-* reports and 3 research features remain | [§6](#6-track-c--reporting-verification--quality-infrastructure) |
 | D — Calibration Composability | Residual abstraction, multi-step calibration, camera intrinsics (`robot_calibration`-inspired) | Proposed roadmap only; 0 of 7 steps started (1 partial) | [§7](#7-track-d--calibration-layer-composability) |
@@ -152,7 +152,7 @@ they formalize work that already had detailed design docs in
 > **physically feasible** ($m>0$, valid/PSD inertia), and a defensible way
 > to deploy them.
 
-### Shipped (v0.4.1 – v0.4.7)
+### Shipped (v0.4.1 – v0.4.8)
 
 | Version | Date | Headline | Module |
 |---|---|---|---|
@@ -163,6 +163,7 @@ they formalize work that already had detailed design docs in
 | 0.4.5 | 2026-07-13 | Weighted least squares, provenance/run-archive tooling, held-out validation fallback — **plus the bulk of Track C** (see §6) | `tools/provenance.py`, `tools/run_archive.py` |
 | 0.4.6 | 2026-08-06 | `calc_updated_fkm` correctness fixes (elasticity, camera-frame composition, multi-marker now raises instead of silently degrading), legacy-config deprecation + migration tool, RMSE/MAE convention unification | `calibration/calibration_tools.py`, `utils/config_migration.py` |
 | 0.4.7 | 2026-08-07 | Base-parameter **redistribution** (`redistribute_parameters()`), `geometric_calibration_export` (PAL runtime-correction YAML) | `tools/qrdecomposition.py`, `tools/geometric_calibration_export.py` |
+| 0.4.8 | 2026-09-07 | Agent `skills/` set; optimal-calibration result reporting fixed (config count, metric naming, honouring the configured output dir); `build_total_regressor_wrench` `NameError` repaired | `optimal/base_optimal_calibration.py`, `tools/regressor.py`, `skills/` |
 
 Full per-item detail for every release above lives in `CHANGELOG.md` — not
 repeated here. Design rationale for the redistribution work specifically
