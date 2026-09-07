@@ -20,6 +20,7 @@ generation that can be inherited by any robot type (TIAGo, UR10, MATE, etc.).
 """
 
 import logging
+import os
 import yaml
 import numpy as np
 import pandas as pd
@@ -164,12 +165,16 @@ class BaseOptimalCalibration(ABC):
         self.robot = robot
         self.model = robot.model
         self.data = robot.data
+        self._config_file = config_file
         self.load_param(config_file)
 
         # Initialize attributes for optimal calibration
         self.optimal_configurations = None
         self.optimal_weights = None
         self._sampleConfigs_file = self.calib_config.get("sample_configs_file")
+        # load_param() only reads the "calibration" task, so the optimal task's
+        # own output settings are picked up separately here.
+        self._optimal_output_file = self._load_optimal_output_file(config_file)
 
         # Calculate minimum number of configurations needed
         if self.calib_config["calib_model"] == "full_params":
@@ -897,8 +902,82 @@ class BaseOptimalCalibration(ABC):
 
         plot_with_fallback(_managed_plot, _basic_plots, logger, "optimal_calibration")
 
-    def save_results(self, output_dir="results"):
-        """Save optimal configuration results using unified results manager."""
+    @staticmethod
+    def _load_optimal_output_file(config_file):
+        """Read ``tasks.optimal_configuration.output.output_file`` if present.
+
+        ``load_param`` deliberately loads only the ``calibration`` task, so this
+        reads the optimal task's output setting separately. Best-effort: legacy
+        configs, a missing block, or an unreadable file all yield ``None`` and
+        leave the default output location in place.
+
+        Args:
+            config_file (str): Path to the configuration file.
+
+        Returns:
+            str or None: Configured output file path, or None when unset.
+        """
+        try:
+            if not is_unified_config(config_file):
+                return None
+            with open(config_file, "r") as f:
+                raw = yaml.load(f, Loader=SafeLoader) or {}
+            output = (
+                raw.get("tasks", {}).get("optimal_configuration", {}).get("output", {})
+            )
+            path = output.get("output_file")
+            # Guard the YAML `None`/`""` trap: a bare `None` in YAML parses as
+            # the *string* "None", which is not a usable path.
+            if not path or str(path).strip() in ("None", "null", "~"):
+                return None
+            return str(path)
+        except Exception as e:  # pragma: no cover - defensive
+            logger.debug("Could not read optimal output_file: %s", e)
+            return None
+
+    def get_optimal_output_dir(self, default="results"):
+        """Return the directory optimal-configuration results are written to.
+
+        Honours the directory component of the configured
+        ``tasks.optimal_configuration.output.output_file``. The *filename* is
+        managed by :class:`ResultsManager` (timestamped, one file per format),
+        so only the directory part of that setting is used.
+
+        Args:
+            default (str): Directory to use when nothing is configured.
+
+        Returns:
+            str: Output directory path.
+        """
+        configured = getattr(self, "_optimal_output_file", None)
+        if not configured:
+            return default
+        return os.path.dirname(configured) or default
+
+    def count_optimal_configurations(self):
+        """Return the number of selected configurations.
+
+        ``optimal_configurations`` is a *dict* holding the joint names alongside
+        the selected joint configurations, so ``len()`` on it counts keys (2),
+        not configurations. Always go through this helper.
+
+        Returns:
+            int: Number of selected joint configurations, 0 if none.
+        """
+        configs = getattr(self, "optimal_configurations", None)
+        if not configs:
+            return 0
+        return len(configs.get("calibration_joint_configurations", []))
+
+    def save_results(self, output_dir=None):
+        """Save optimal configuration results using unified results manager.
+
+        Args:
+            output_dir (str, optional): Directory to write results into. When
+                omitted, the directory configured under the unified config's
+                ``tasks.optimal_configuration.output.output_file`` is used, and
+                failing that ``"results"``.
+        """
         if (
             not hasattr(self, "optimal_configurations")
             or self.optimal_configurations is None
@@ -907,6 +986,9 @@ class BaseOptimalCalibration(ABC):
                 "No optimal configuration results to save. Run solve() first."
             )
             return
+
+        if output_dir is None:
+            output_dir = self.get_optimal_output_dir()
 
         try:
             # Initialize results manager
@@ -920,13 +1002,14 @@ class BaseOptimalCalibration(ABC):
                     self.w_dict_sort if hasattr(self, "w_dict_sort") else {}
                 ),
                 "minimum_configurations": getattr(self, "minNbChosen", 0),
-                "configuration_count": len(self.optimal_configurations),
+                "configuration_count": self.count_optimal_configurations(),
                 "calibration_config": self.calib_config,
             }
 
-            # Add condition number if available
+            # D-optimality determinant root of the full information matrix.
+            # Named after what it is: this is NOT a condition number.
             if hasattr(self, "detroot_whole"):
-                results_dict["condition_number"] = float(self.detroot_whole)
+                results_dict["d_optimality_detroot"] = float(self.detroot_whole)
 
             # Save using unified manager
             saved_files = results_manager.save_results(

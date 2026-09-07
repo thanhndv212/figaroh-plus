@@ -7,6 +7,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `skills`: New `skills/` directory shipping six agent skills that take a
+  user from a fresh clone to a running task, so an AI coding agent can set
+  each task up without first re-deriving the workspace layout. Mirrored in
+  `figaroh-examples/skills/` (same content, paths resolved against
+  `$FIGAROH_WS`, the directory holding both repos side by side):
+  - `figaroh-start` — the router. Maps the workspace (which of the sibling
+    repos owns what), carries a robot x task x config matrix, states the two path
+    rules every example script depends on (run from `examples/<robot>/`;
+    `package_dirs="../../models"`), and dispatches to the skill below.
+  - `figaroh-setup-env` — environment bootstrap, with an executable
+    `scripts/doctor.sh`: read-only, exits 0/1, locates the workspace root on
+    its own, and prints a specific remedy per failure. It checks the failure
+    that is otherwise invisible — whether `import figaroh` resolves to the
+    local `src/` tree or to a shadowing site-packages copy.
+  - `figaroh-setup-calibration`, `figaroh-setup-identification`,
+    `figaroh-setup-optimal` — one per task: required inputs, the exact
+    config block, the real CLI flag surface, how to read the run archive,
+    and a failure/cause/fix table. The data contracts are documented from
+    `calibration/data_loader.py` and each robot's `load_trajectory_data()`
+    rather than from prose, because both are derived rather than fixed:
+    calibration CSV columns follow each marker's `measurable_dof`, and
+    identification has no single schema at all.
+  - `figaroh-setup-new-robot` — onboarding a robot with no example folder,
+    from description package to `validate.py --robot <robot>` exiting 0.
+  The set is self-contained by design: it assumes only `figaroh` and
+  `figaroh-examples`, references no other package or checkout, and points at
+  repo directories rather than at skills outside the set.
+- `docs`: README now points at `skills/` for agent-assisted setup.
+
+### Fixed
+
+- `tools`: `build_total_regressor_wrench` raised `NameError` on every call.
+  Its signature named the settings dict `param` while the body read
+  `identif_config` three times -- an incomplete rename that made the exported
+  function unusable. Renamed the parameter to `identif_config`, matching both
+  the body and the sibling `build_total_regressor_current`. Nothing called it
+  and nothing tested it, which is how a fully broken public function went
+  unnoticed; `tests/unit/test_regressor_wrench.py` now covers it (7 tests,
+  verified to fail if the rename is reverted).
+- `optimal`: `BaseOptimalCalibration.save_results` reported
+  `configuration_count` as `len(self.optimal_configurations)`, which counts the
+  dict's keys (always 2) rather than the selected configurations. A UR10 run
+  wrote `configuration_count: 2` to the summary CSV while printing "Selected 73"
+  to stdout. Added `count_optimal_configurations()` and used it, so the saved
+  summary now matches what the run reports.
+- `optimal`: the D-optimality determinant root was saved under the key
+  `condition_number`, which is a different quantity entirely and made the CSV
+  actively misleading. Renamed to `d_optimality_detroot`. **Breaking** for
+  anything reading that column out of a saved optimal-calibration CSV/YAML.
+- `optimal`: `tasks.optimal_configuration.output.output_file` was silently
+  ignored — `load_param` only ever loads the `calibration` task, so the optimal
+  task's own `output` block never reached the object, and `save_results`
+  hardcoded `results/`. The configured directory is now honoured (the filename
+  stays managed/timestamped), falling back to `results/` when unset, so existing
+  behaviour is unchanged for configs that do not set it.
+
+### Tests
+
+- `tests/unit/test_optimal_results.py`: 17 new tests covering the three fixes
+  above — configuration counting, output-directory resolution, and reading the
+  optimal task's output block (including the YAML `None`-as-string trap, legacy
+  configs, and missing files). `save_results` previously had no coverage.
+
 ### Changed
 
 - `docs`: Updated README's Examples Repository table with recent
