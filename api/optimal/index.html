@@ -1557,6 +1557,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#figaroh.optimal.BaseOptimalCalibration.get_optimal_output_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_optimal_output_dir
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#figaroh.optimal.BaseOptimalCalibration.count_optimal_configurations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        count_optimal_configurations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#figaroh.optimal.BaseOptimalCalibration.save_results" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1882,6 +1904,28 @@
     <span class="md-ellipsis">
       
         plot_results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.get_optimal_output_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_optimal_output_dir
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.count_optimal_configurations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        count_optimal_configurations
       
     </span>
   </a>
@@ -2801,6 +2845,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#figaroh.optimal.BaseOptimalCalibration.get_optimal_output_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_optimal_output_dir
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#figaroh.optimal.BaseOptimalCalibration.count_optimal_configurations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        count_optimal_configurations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#figaroh.optimal.BaseOptimalCalibration.save_results" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3126,6 +3192,28 @@
     <span class="md-ellipsis">
       
         plot_results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.get_optimal_output_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_optimal_output_dir
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.count_optimal_configurations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        count_optimal_configurations
       
     </span>
   </a>
@@ -3851,8 +3939,7 @@ TiagoOptimalCalibration initialized</p>
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">129</span>
-<span class="normal">130</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">130</span>
 <span class="normal">131</span>
 <span class="normal">132</span>
 <span class="normal">133</span>
@@ -3915,7 +4002,12 @@ TiagoOptimalCalibration initialized</p>
 <span class="normal">190</span>
 <span class="normal">191</span>
 <span class="normal">192</span>
-<span class="normal">193</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">config_file</span><span class="o">=</span><span class="s2">"config/robot_config.yaml"</span><span class="p">):</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">config_file</span><span class="o">=</span><span class="s2">"config/robot_config.yaml"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Initialize optimal calibration with robot model and configuration.</span>
 
 <span class="sd">    Sets up the optimal calibration framework by loading robot parameters,</span>
@@ -3953,12 +4045,16 @@ TiagoOptimalCalibration initialized</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">robot</span> <span class="o">=</span> <span class="n">robot</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">data</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_config_file</span> <span class="o">=</span> <span class="n">config_file</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">load_param</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
 
     <span class="c1"># Initialize attributes for optimal calibration</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">optimal_configurations</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">optimal_weights</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_sampleConfigs_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sample_configs_file"</span><span class="p">)</span>
+    <span class="c1"># load_param() only reads the "calibration" task, so the optimal task's</span>
+    <span class="c1"># own output settings are picked up separately here.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_optimal_output_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_optimal_output_file</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
 
     <span class="c1"># Calculate minimum number of configurations needed</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">"calib_model"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"full_params"</span><span class="p">:</span>
@@ -4077,12 +4173,7 @@ calculate_detroot_whole: Information matrix analysis</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">200</span>
 <span class="normal">201</span>
 <span class="normal">202</span>
 <span class="normal">203</span>
@@ -4110,7 +4201,12 @@ calculate_detroot_whole: Information matrix analysis</p>
 <span class="normal">225</span>
 <span class="normal">226</span>
 <span class="normal">227</span>
-<span class="normal">228</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Initialize the optimization process by preparing all required data.</span>
 
 <span class="sd">    This method orchestrates the initialization sequence required before</span>
@@ -4319,12 +4415,7 @@ save_results: File output management</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">235</span>
 <span class="normal">236</span>
 <span class="normal">237</span>
 <span class="normal">238</span>
@@ -4379,7 +4470,12 @@ save_results: File output management</p>
 <span class="normal">287</span>
 <span class="normal">288</span>
 <span class="normal">289</span>
-<span class="normal">290</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">selection_method</span><span class="o">=</span><span class="s2">"threshold"</span><span class="p">,</span> <span class="o">**</span><span class="n">selection_kwargs</span><span class="p">):</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">selection_method</span><span class="o">=</span><span class="s2">"threshold"</span><span class="p">,</span> <span class="o">**</span><span class="n">selection_kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Solve the optimal configuration selection problem.</span>
 
 <span class="sd">    This is the main entry point that orchestrates the complete optimal</span>
@@ -4512,12 +4608,7 @@ and applies the appropriate parser.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">292</span>
-<span class="normal">293</span>
-<span class="normal">294</span>
-<span class="normal">295</span>
-<span class="normal">296</span>
-<span class="normal">297</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">297</span>
 <span class="normal">298</span>
 <span class="normal">299</span>
 <span class="normal">300</span>
@@ -4554,7 +4645,12 @@ and applies the appropriate parser.</p>
 <span class="normal">331</span>
 <span class="normal">332</span>
 <span class="normal">333</span>
-<span class="normal">334</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">setting_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"calibration"</span><span class="p">):</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">setting_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"calibration"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Load calibration parameters from YAML configuration file.</span>
 
 <span class="sd">    This method supports both legacy YAML format and the new unified</span>
@@ -4685,12 +4781,7 @@ print(opt_calib.q_measured.shape)  # (1000, 7) for TIAGo</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">341</span>
 <span class="normal">342</span>
 <span class="normal">343</span>
 <span class="normal">344</span>
@@ -4747,7 +4838,12 @@ print(opt_calib.q_measured.shape)  # (1000, 7) for TIAGo</p>
 <span class="normal">395</span>
 <span class="normal">396</span>
 <span class="normal">397</span>
-<span class="normal">398</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_candidate_configurations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_candidate_configurations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Load candidate joint configurations from external data files.</span>
 
 <span class="sd">    Reads robot joint configurations from CSV or YAML files that serve</span>
@@ -4895,12 +4991,7 @@ sub_info_matrix: Information matrix decomposition</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">400</span>
-<span class="normal">401</span>
-<span class="normal">402</span>
-<span class="normal">403</span>
-<span class="normal">404</span>
-<span class="normal">405</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">405</span>
 <span class="normal">406</span>
 <span class="normal">407</span>
 <span class="normal">408</span>
@@ -4948,7 +5039,12 @@ sub_info_matrix: Information matrix decomposition</p>
 <span class="normal">450</span>
 <span class="normal">451</span>
 <span class="normal">452</span>
-<span class="normal">453</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_regressor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_regressor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Calculate kinematic regressors and information matrices.</span>
 
 <span class="sd">    Computes the kinematic regressor matrices that relate kinematic</span>
@@ -5091,12 +5187,7 @@ plot: Uses this value for performance comparison</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">455</span>
-<span class="normal">456</span>
-<span class="normal">457</span>
-<span class="normal">458</span>
-<span class="normal">459</span>
-<span class="normal">460</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">460</span>
 <span class="normal">461</span>
 <span class="normal">462</span>
 <span class="normal">463</span>
@@ -5127,7 +5218,12 @@ plot: Uses this value for performance comparison</p>
 <span class="normal">488</span>
 <span class="normal">489</span>
 <span class="normal">490</span>
-<span class="normal">491</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_detroot_whole</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_detroot_whole</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Calculate determinant root of complete information matrix.</span>
 
 <span class="sd">    Computes the determinant root of the full Fisher Information Matrix</span>
@@ -5186,15 +5282,15 @@ plot: Uses this value for performance comparison</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">493</span>
-<span class="normal">494</span>
-<span class="normal">495</span>
-<span class="normal">496</span>
-<span class="normal">497</span>
-<span class="normal">498</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">498</span>
 <span class="normal">499</span>
 <span class="normal">500</span>
-<span class="normal">501</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">rearrange_rb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R_b</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">):</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">rearrange_rb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R_b</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""rearrange the kinematic regressor by sample numbered order"""</span>
     <span class="n">Rb_rearr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">R_b</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">"calibration_index"</span><span class="p">]):</span>
@@ -5322,12 +5418,7 @@ print(subX_dict[0].shape)  # (42, 42)</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">503</span>
-<span class="normal">504</span>
-<span class="normal">505</span>
-<span class="normal">506</span>
-<span class="normal">507</span>
-<span class="normal">508</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">508</span>
 <span class="normal">509</span>
 <span class="normal">510</span>
 <span class="normal">511</span>
@@ -5365,7 +5456,12 @@ print(subX_dict[0].shape)  # (42, 42)</p>
 <span class="normal">543</span>
 <span class="normal">544</span>
 <span class="normal">545</span>
-<span class="normal">546</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sub_info_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">):</span>
+<span class="normal">546</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sub_info_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Decompose regressor into individual configuration info matrices.</span>
 
 <span class="sd">    Creates separate information matrices for each configuration by</span>
@@ -5635,12 +5731,7 @@ _select_by_iroc: The O1-plateau automatic count selection</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">548</span>
-<span class="normal">549</span>
-<span class="normal">550</span>
-<span class="normal">551</span>
-<span class="normal">552</span>
-<span class="normal">553</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">553</span>
 <span class="normal">554</span>
 <span class="normal">555</span>
 <span class="normal">556</span>
@@ -5760,7 +5851,12 @@ _select_by_iroc: The O1-plateau automatic count selection</p>
 <span class="normal">670</span>
 <span class="normal">671</span>
 <span class="normal">672</span>
-<span class="normal">673</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_optimal_configurations</span><span class="p">(</span>
+<span class="normal">673</span>
+<span class="normal">674</span>
+<span class="normal">675</span>
+<span class="normal">676</span>
+<span class="normal">677</span>
+<span class="normal">678</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_optimal_configurations</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">selection_method</span><span class="o">=</span><span class="s2">"threshold"</span><span class="p">,</span>
     <span class="n">iroc_rel_tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
@@ -5987,12 +6083,7 @@ calculate_detroot_whole: Provides normalization reference</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">757</span>
-<span class="normal">758</span>
-<span class="normal">759</span>
-<span class="normal">760</span>
-<span class="normal">761</span>
-<span class="normal">762</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">762</span>
 <span class="normal">763</span>
 <span class="normal">764</span>
 <span class="normal">765</span>
@@ -6077,7 +6168,12 @@ calculate_detroot_whole: Provides normalization reference</p>
 <span class="normal">844</span>
 <span class="normal">845</span>
 <span class="normal">846</span>
-<span class="normal">847</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Generate comprehensive visualization of optimization results.</span>
 
 <span class="sd">    Creates dual-panel plots that provide insight into the optimization</span>
@@ -6190,12 +6286,7 @@ calculate_detroot_whole: Provides normalization reference</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">849</span>
-<span class="normal">850</span>
-<span class="normal">851</span>
-<span class="normal">852</span>
-<span class="normal">853</span>
-<span class="normal">854</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">854</span>
 <span class="normal">855</span>
 <span class="normal">856</span>
 <span class="normal">857</span>
@@ -6239,7 +6330,12 @@ calculate_detroot_whole: Provides normalization reference</p>
 <span class="normal">895</span>
 <span class="normal">896</span>
 <span class="normal">897</span>
-<span class="normal">898</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">898</span>
+<span class="normal">899</span>
+<span class="normal">900</span>
+<span class="normal">901</span>
+<span class="normal">902</span>
+<span class="normal">903</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Plot optimal calibration results using unified results manager."""</span>
     <span class="k">if</span> <span class="p">(</span>
         <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"optimal_configurations"</span><span class="p">)</span>
@@ -6298,58 +6394,77 @@ calculate_detroot_whole: Provides normalization reference</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="figaroh.optimal.BaseOptimalCalibration.save_results" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">save_results</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="s1">'results'</span><span class="p">)</span></code>
+<h3 id="figaroh.optimal.BaseOptimalCalibration.get_optimal_output_dir" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_optimal_output_dir</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">'results'</span><span class="p">)</span></code>
 
-<a href="#figaroh.optimal.BaseOptimalCalibration.save_results" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#figaroh.optimal.BaseOptimalCalibration.get_optimal_output_dir" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents ">
 
-        <p>Save optimal configuration results using unified results manager.</p>
+        <p>Return the directory optimal-configuration results are written to.</p>
+<p>Honours the directory component of the configured
+<code>tasks.optimal_configuration.output.output_file</code>. The <em>filename</em> is
+managed by :class:<code>ResultsManager</code> (timestamped, one file per format),
+so only the directory part of that setting is used.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>default</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Directory to use when nothing is configured.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;results&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>str</code></td>            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Output directory path.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">900</span>
-<span class="normal">901</span>
-<span class="normal">902</span>
-<span class="normal">903</span>
-<span class="normal">904</span>
-<span class="normal">905</span>
-<span class="normal">906</span>
-<span class="normal">907</span>
-<span class="normal">908</span>
-<span class="normal">909</span>
-<span class="normal">910</span>
-<span class="normal">911</span>
-<span class="normal">912</span>
-<span class="normal">913</span>
-<span class="normal">914</span>
-<span class="normal">915</span>
-<span class="normal">916</span>
-<span class="normal">917</span>
-<span class="normal">918</span>
-<span class="normal">919</span>
-<span class="normal">920</span>
-<span class="normal">921</span>
-<span class="normal">922</span>
-<span class="normal">923</span>
-<span class="normal">924</span>
-<span class="normal">925</span>
-<span class="normal">926</span>
-<span class="normal">927</span>
-<span class="normal">928</span>
-<span class="normal">929</span>
-<span class="normal">930</span>
-<span class="normal">931</span>
-<span class="normal">932</span>
-<span class="normal">933</span>
-<span class="normal">934</span>
-<span class="normal">935</span>
-<span class="normal">936</span>
-<span class="normal">937</span>
-<span class="normal">938</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">938</span>
 <span class="normal">939</span>
 <span class="normal">940</span>
 <span class="normal">941</span>
@@ -6366,13 +6481,234 @@ calculate_detroot_whole: Provides normalization reference</p>
 <span class="normal">952</span>
 <span class="normal">953</span>
 <span class="normal">954</span>
-<span class="normal">955</span>
-<span class="normal">956</span>
-<span class="normal">957</span>
+<span class="normal">955</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_optimal_output_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"results"</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return the directory optimal-configuration results are written to.</span>
+
+<span class="sd">    Honours the directory component of the configured</span>
+<span class="sd">    ``tasks.optimal_configuration.output.output_file``. The *filename* is</span>
+<span class="sd">    managed by :class:`ResultsManager` (timestamped, one file per format),</span>
+<span class="sd">    so only the directory part of that setting is used.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        default (str): Directory to use when nothing is configured.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Output directory path.</span>
+<span class="sd">    """</span>
+    <span class="n">configured</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_optimal_output_file"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">configured</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">default</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">configured</span><span class="p">)</span> <span class="ow">or</span> <span class="n">default</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="figaroh.optimal.BaseOptimalCalibration.count_optimal_configurations" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">count_optimal_configurations</span><span class="p">()</span></code>
+
+<a href="#figaroh.optimal.BaseOptimalCalibration.count_optimal_configurations" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the number of selected configurations.</p>
+<p><code>optimal_configurations</code> is a <em>dict</em> holding the joint names alongside
+the selected joint configurations, so <code>len()</code> on it counts keys (2),
+not configurations. Always go through this helper.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>int</code></td>            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of selected joint configurations, 0 if none.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">957</span>
 <span class="normal">958</span>
 <span class="normal">959</span>
-<span class="normal">960</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s2">"results"</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Save optimal configuration results using unified results manager."""</span>
+<span class="normal">960</span>
+<span class="normal">961</span>
+<span class="normal">962</span>
+<span class="normal">963</span>
+<span class="normal">964</span>
+<span class="normal">965</span>
+<span class="normal">966</span>
+<span class="normal">967</span>
+<span class="normal">968</span>
+<span class="normal">969</span>
+<span class="normal">970</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">count_optimal_configurations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return the number of selected configurations.</span>
+
+<span class="sd">    ``optimal_configurations`` is a *dict* holding the joint names alongside</span>
+<span class="sd">    the selected joint configurations, so ``len()`` on it counts keys (2),</span>
+<span class="sd">    not configurations. Always go through this helper.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        int: Number of selected joint configurations, 0 if none.</span>
+<span class="sd">    """</span>
+    <span class="n">configs</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"optimal_configurations"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">configs</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"calibration_joint_configurations"</span><span class="p">,</span> <span class="p">[]))</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="figaroh.optimal.BaseOptimalCalibration.save_results" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">save_results</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#figaroh.optimal.BaseOptimalCalibration.save_results" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Save optimal configuration results using unified results manager.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>output_dir</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Directory to write results into. When
+omitted, the directory configured under the unified config's
+<code>tasks.optimal_configuration.output.output_file</code> is used, and
+failing that <code>"results"</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 972</span>
+<span class="normal"> 973</span>
+<span class="normal"> 974</span>
+<span class="normal"> 975</span>
+<span class="normal"> 976</span>
+<span class="normal"> 977</span>
+<span class="normal"> 978</span>
+<span class="normal"> 979</span>
+<span class="normal"> 980</span>
+<span class="normal"> 981</span>
+<span class="normal"> 982</span>
+<span class="normal"> 983</span>
+<span class="normal"> 984</span>
+<span class="normal"> 985</span>
+<span class="normal"> 986</span>
+<span class="normal"> 987</span>
+<span class="normal"> 988</span>
+<span class="normal"> 989</span>
+<span class="normal"> 990</span>
+<span class="normal"> 991</span>
+<span class="normal"> 992</span>
+<span class="normal"> 993</span>
+<span class="normal"> 994</span>
+<span class="normal"> 995</span>
+<span class="normal"> 996</span>
+<span class="normal"> 997</span>
+<span class="normal"> 998</span>
+<span class="normal"> 999</span>
+<span class="normal">1000</span>
+<span class="normal">1001</span>
+<span class="normal">1002</span>
+<span class="normal">1003</span>
+<span class="normal">1004</span>
+<span class="normal">1005</span>
+<span class="normal">1006</span>
+<span class="normal">1007</span>
+<span class="normal">1008</span>
+<span class="normal">1009</span>
+<span class="normal">1010</span>
+<span class="normal">1011</span>
+<span class="normal">1012</span>
+<span class="normal">1013</span>
+<span class="normal">1014</span>
+<span class="normal">1015</span>
+<span class="normal">1016</span>
+<span class="normal">1017</span>
+<span class="normal">1018</span>
+<span class="normal">1019</span>
+<span class="normal">1020</span>
+<span class="normal">1021</span>
+<span class="normal">1022</span>
+<span class="normal">1023</span>
+<span class="normal">1024</span>
+<span class="normal">1025</span>
+<span class="normal">1026</span>
+<span class="normal">1027</span>
+<span class="normal">1028</span>
+<span class="normal">1029</span>
+<span class="normal">1030</span>
+<span class="normal">1031</span>
+<span class="normal">1032</span>
+<span class="normal">1033</span>
+<span class="normal">1034</span>
+<span class="normal">1035</span>
+<span class="normal">1036</span>
+<span class="normal">1037</span>
+<span class="normal">1038</span>
+<span class="normal">1039</span>
+<span class="normal">1040</span>
+<span class="normal">1041</span>
+<span class="normal">1042</span>
+<span class="normal">1043</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Save optimal configuration results using unified results manager.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        output_dir (str, optional): Directory to write results into. When</span>
+<span class="sd">            omitted, the directory configured under the unified config's</span>
+<span class="sd">            ``tasks.optimal_configuration.output.output_file`` is used, and</span>
+<span class="sd">            failing that ``"results"``.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="p">(</span>
         <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"optimal_configurations"</span><span class="p">)</span>
         <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimal_configurations</span> <span class="ow">is</span> <span class="kc">None</span>
@@ -6381,6 +6717,9 @@ calculate_detroot_whole: Provides normalization reference</p>
             <span class="s2">"No optimal configuration results to save. Run solve() first."</span>
         <span class="p">)</span>
         <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">output_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">output_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_optimal_output_dir</span><span class="p">()</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># Initialize results manager</span>
@@ -6394,13 +6733,14 @@ calculate_detroot_whole: Provides normalization reference</p>
                 <span class="bp">self</span><span class="o">.</span><span class="n">w_dict_sort</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"w_dict_sort"</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
             <span class="p">),</span>
             <span class="s2">"minimum_configurations"</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"minNbChosen"</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-            <span class="s2">"configuration_count"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimal_configurations</span><span class="p">),</span>
+            <span class="s2">"configuration_count"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">count_optimal_configurations</span><span class="p">(),</span>
             <span class="s2">"calibration_config"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">,</span>
         <span class="p">}</span>
 
-        <span class="c1"># Add condition number if available</span>
+        <span class="c1"># D-optimality determinant root of the full information matrix.</span>
+        <span class="c1"># Named after what it is: this is NOT a condition number.</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"detroot_whole"</span><span class="p">):</span>
-            <span class="n">results_dict</span><span class="p">[</span><span class="s2">"condition_number"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detroot_whole</span><span class="p">)</span>
+            <span class="n">results_dict</span><span class="p">[</span><span class="s2">"d_optimality_detroot"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detroot_whole</span><span class="p">)</span>
 
         <span class="c1"># Save using unified manager</span>
         <span class="n">saved_files</span> <span class="o">=</span> <span class="n">results_manager</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span>
@@ -7757,8 +8097,7 @@ TiagoOptimalCalibration initialized</p>
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">129</span>
-<span class="normal">130</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">130</span>
 <span class="normal">131</span>
 <span class="normal">132</span>
 <span class="normal">133</span>
@@ -7821,7 +8160,12 @@ TiagoOptimalCalibration initialized</p>
 <span class="normal">190</span>
 <span class="normal">191</span>
 <span class="normal">192</span>
-<span class="normal">193</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">config_file</span><span class="o">=</span><span class="s2">"config/robot_config.yaml"</span><span class="p">):</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">config_file</span><span class="o">=</span><span class="s2">"config/robot_config.yaml"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Initialize optimal calibration with robot model and configuration.</span>
 
 <span class="sd">    Sets up the optimal calibration framework by loading robot parameters,</span>
@@ -7859,12 +8203,16 @@ TiagoOptimalCalibration initialized</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">robot</span> <span class="o">=</span> <span class="n">robot</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">data</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_config_file</span> <span class="o">=</span> <span class="n">config_file</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">load_param</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
 
     <span class="c1"># Initialize attributes for optimal calibration</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">optimal_configurations</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">optimal_weights</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_sampleConfigs_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sample_configs_file"</span><span class="p">)</span>
+    <span class="c1"># load_param() only reads the "calibration" task, so the optimal task's</span>
+    <span class="c1"># own output settings are picked up separately here.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_optimal_output_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_optimal_output_file</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
 
     <span class="c1"># Calculate minimum number of configurations needed</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">"calib_model"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"full_params"</span><span class="p">:</span>
@@ -7983,12 +8331,7 @@ calculate_detroot_whole: Information matrix analysis</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">200</span>
 <span class="normal">201</span>
 <span class="normal">202</span>
 <span class="normal">203</span>
@@ -8016,7 +8359,12 @@ calculate_detroot_whole: Information matrix analysis</p>
 <span class="normal">225</span>
 <span class="normal">226</span>
 <span class="normal">227</span>
-<span class="normal">228</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Initialize the optimization process by preparing all required data.</span>
 
 <span class="sd">    This method orchestrates the initialization sequence required before</span>
@@ -8225,12 +8573,7 @@ save_results: File output management</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">235</span>
 <span class="normal">236</span>
 <span class="normal">237</span>
 <span class="normal">238</span>
@@ -8285,7 +8628,12 @@ save_results: File output management</p>
 <span class="normal">287</span>
 <span class="normal">288</span>
 <span class="normal">289</span>
-<span class="normal">290</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">selection_method</span><span class="o">=</span><span class="s2">"threshold"</span><span class="p">,</span> <span class="o">**</span><span class="n">selection_kwargs</span><span class="p">):</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">selection_method</span><span class="o">=</span><span class="s2">"threshold"</span><span class="p">,</span> <span class="o">**</span><span class="n">selection_kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Solve the optimal configuration selection problem.</span>
 
 <span class="sd">    This is the main entry point that orchestrates the complete optimal</span>
@@ -8418,12 +8766,7 @@ and applies the appropriate parser.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">292</span>
-<span class="normal">293</span>
-<span class="normal">294</span>
-<span class="normal">295</span>
-<span class="normal">296</span>
-<span class="normal">297</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">297</span>
 <span class="normal">298</span>
 <span class="normal">299</span>
 <span class="normal">300</span>
@@ -8460,7 +8803,12 @@ and applies the appropriate parser.</p>
 <span class="normal">331</span>
 <span class="normal">332</span>
 <span class="normal">333</span>
-<span class="normal">334</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">setting_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"calibration"</span><span class="p">):</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">setting_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"calibration"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Load calibration parameters from YAML configuration file.</span>
 
 <span class="sd">    This method supports both legacy YAML format and the new unified</span>
@@ -8591,12 +8939,7 @@ print(opt_calib.q_measured.shape)  # (1000, 7) for TIAGo</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">341</span>
 <span class="normal">342</span>
 <span class="normal">343</span>
 <span class="normal">344</span>
@@ -8653,7 +8996,12 @@ print(opt_calib.q_measured.shape)  # (1000, 7) for TIAGo</p>
 <span class="normal">395</span>
 <span class="normal">396</span>
 <span class="normal">397</span>
-<span class="normal">398</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_candidate_configurations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_candidate_configurations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Load candidate joint configurations from external data files.</span>
 
 <span class="sd">    Reads robot joint configurations from CSV or YAML files that serve</span>
@@ -8801,12 +9149,7 @@ sub_info_matrix: Information matrix decomposition</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">400</span>
-<span class="normal">401</span>
-<span class="normal">402</span>
-<span class="normal">403</span>
-<span class="normal">404</span>
-<span class="normal">405</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">405</span>
 <span class="normal">406</span>
 <span class="normal">407</span>
 <span class="normal">408</span>
@@ -8854,7 +9197,12 @@ sub_info_matrix: Information matrix decomposition</p>
 <span class="normal">450</span>
 <span class="normal">451</span>
 <span class="normal">452</span>
-<span class="normal">453</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_regressor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_regressor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Calculate kinematic regressors and information matrices.</span>
 
 <span class="sd">    Computes the kinematic regressor matrices that relate kinematic</span>
@@ -8997,12 +9345,7 @@ plot: Uses this value for performance comparison</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">455</span>
-<span class="normal">456</span>
-<span class="normal">457</span>
-<span class="normal">458</span>
-<span class="normal">459</span>
-<span class="normal">460</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">460</span>
 <span class="normal">461</span>
 <span class="normal">462</span>
 <span class="normal">463</span>
@@ -9033,7 +9376,12 @@ plot: Uses this value for performance comparison</p>
 <span class="normal">488</span>
 <span class="normal">489</span>
 <span class="normal">490</span>
-<span class="normal">491</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_detroot_whole</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_detroot_whole</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Calculate determinant root of complete information matrix.</span>
 
 <span class="sd">    Computes the determinant root of the full Fisher Information Matrix</span>
@@ -9092,15 +9440,15 @@ plot: Uses this value for performance comparison</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">493</span>
-<span class="normal">494</span>
-<span class="normal">495</span>
-<span class="normal">496</span>
-<span class="normal">497</span>
-<span class="normal">498</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">498</span>
 <span class="normal">499</span>
 <span class="normal">500</span>
-<span class="normal">501</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">rearrange_rb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R_b</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">):</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">rearrange_rb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R_b</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""rearrange the kinematic regressor by sample numbered order"""</span>
     <span class="n">Rb_rearr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">R_b</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">calib_config</span><span class="p">[</span><span class="s2">"calibration_index"</span><span class="p">]):</span>
@@ -9228,12 +9576,7 @@ print(subX_dict[0].shape)  # (42, 42)</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">503</span>
-<span class="normal">504</span>
-<span class="normal">505</span>
-<span class="normal">506</span>
-<span class="normal">507</span>
-<span class="normal">508</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">508</span>
 <span class="normal">509</span>
 <span class="normal">510</span>
 <span class="normal">511</span>
@@ -9271,7 +9614,12 @@ print(subX_dict[0].shape)  # (42, 42)</p>
 <span class="normal">543</span>
 <span class="normal">544</span>
 <span class="normal">545</span>
-<span class="normal">546</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sub_info_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">):</span>
+<span class="normal">546</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sub_info_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Decompose regressor into individual configuration info matrices.</span>
 
 <span class="sd">    Creates separate information matrices for each configuration by</span>
@@ -9541,12 +9889,7 @@ _select_by_iroc: The O1-plateau automatic count selection</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">548</span>
-<span class="normal">549</span>
-<span class="normal">550</span>
-<span class="normal">551</span>
-<span class="normal">552</span>
-<span class="normal">553</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">553</span>
 <span class="normal">554</span>
 <span class="normal">555</span>
 <span class="normal">556</span>
@@ -9666,7 +10009,12 @@ _select_by_iroc: The O1-plateau automatic count selection</p>
 <span class="normal">670</span>
 <span class="normal">671</span>
 <span class="normal">672</span>
-<span class="normal">673</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_optimal_configurations</span><span class="p">(</span>
+<span class="normal">673</span>
+<span class="normal">674</span>
+<span class="normal">675</span>
+<span class="normal">676</span>
+<span class="normal">677</span>
+<span class="normal">678</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_optimal_configurations</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">selection_method</span><span class="o">=</span><span class="s2">"threshold"</span><span class="p">,</span>
     <span class="n">iroc_rel_tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
@@ -9893,12 +10241,7 @@ calculate_detroot_whole: Provides normalization reference</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">757</span>
-<span class="normal">758</span>
-<span class="normal">759</span>
-<span class="normal">760</span>
-<span class="normal">761</span>
-<span class="normal">762</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">762</span>
 <span class="normal">763</span>
 <span class="normal">764</span>
 <span class="normal">765</span>
@@ -9983,7 +10326,12 @@ calculate_detroot_whole: Provides normalization reference</p>
 <span class="normal">844</span>
 <span class="normal">845</span>
 <span class="normal">846</span>
-<span class="normal">847</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Generate comprehensive visualization of optimization results.</span>
 
 <span class="sd">    Creates dual-panel plots that provide insight into the optimization</span>
@@ -10096,12 +10444,7 @@ calculate_detroot_whole: Provides normalization reference</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">849</span>
-<span class="normal">850</span>
-<span class="normal">851</span>
-<span class="normal">852</span>
-<span class="normal">853</span>
-<span class="normal">854</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">854</span>
 <span class="normal">855</span>
 <span class="normal">856</span>
 <span class="normal">857</span>
@@ -10145,7 +10488,12 @@ calculate_detroot_whole: Provides normalization reference</p>
 <span class="normal">895</span>
 <span class="normal">896</span>
 <span class="normal">897</span>
-<span class="normal">898</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">898</span>
+<span class="normal">899</span>
+<span class="normal">900</span>
+<span class="normal">901</span>
+<span class="normal">902</span>
+<span class="normal">903</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Plot optimal calibration results using unified results manager."""</span>
     <span class="k">if</span> <span class="p">(</span>
         <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"optimal_configurations"</span><span class="p">)</span>
@@ -10204,58 +10552,77 @@ calculate_detroot_whole: Provides normalization reference</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.save_results" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">save_results</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="s1">'results'</span><span class="p">)</span></code>
+<h3 id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.get_optimal_output_dir" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_optimal_output_dir</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">'results'</span><span class="p">)</span></code>
 
-<a href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.save_results" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.get_optimal_output_dir" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents ">
 
-        <p>Save optimal configuration results using unified results manager.</p>
+        <p>Return the directory optimal-configuration results are written to.</p>
+<p>Honours the directory component of the configured
+<code>tasks.optimal_configuration.output.output_file</code>. The <em>filename</em> is
+managed by :class:<code>ResultsManager</code> (timestamped, one file per format),
+so only the directory part of that setting is used.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>default</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Directory to use when nothing is configured.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;results&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>str</code></td>            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Output directory path.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">900</span>
-<span class="normal">901</span>
-<span class="normal">902</span>
-<span class="normal">903</span>
-<span class="normal">904</span>
-<span class="normal">905</span>
-<span class="normal">906</span>
-<span class="normal">907</span>
-<span class="normal">908</span>
-<span class="normal">909</span>
-<span class="normal">910</span>
-<span class="normal">911</span>
-<span class="normal">912</span>
-<span class="normal">913</span>
-<span class="normal">914</span>
-<span class="normal">915</span>
-<span class="normal">916</span>
-<span class="normal">917</span>
-<span class="normal">918</span>
-<span class="normal">919</span>
-<span class="normal">920</span>
-<span class="normal">921</span>
-<span class="normal">922</span>
-<span class="normal">923</span>
-<span class="normal">924</span>
-<span class="normal">925</span>
-<span class="normal">926</span>
-<span class="normal">927</span>
-<span class="normal">928</span>
-<span class="normal">929</span>
-<span class="normal">930</span>
-<span class="normal">931</span>
-<span class="normal">932</span>
-<span class="normal">933</span>
-<span class="normal">934</span>
-<span class="normal">935</span>
-<span class="normal">936</span>
-<span class="normal">937</span>
-<span class="normal">938</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">938</span>
 <span class="normal">939</span>
 <span class="normal">940</span>
 <span class="normal">941</span>
@@ -10272,13 +10639,234 @@ calculate_detroot_whole: Provides normalization reference</p>
 <span class="normal">952</span>
 <span class="normal">953</span>
 <span class="normal">954</span>
-<span class="normal">955</span>
-<span class="normal">956</span>
-<span class="normal">957</span>
+<span class="normal">955</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_optimal_output_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"results"</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return the directory optimal-configuration results are written to.</span>
+
+<span class="sd">    Honours the directory component of the configured</span>
+<span class="sd">    ``tasks.optimal_configuration.output.output_file``. The *filename* is</span>
+<span class="sd">    managed by :class:`ResultsManager` (timestamped, one file per format),</span>
+<span class="sd">    so only the directory part of that setting is used.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        default (str): Directory to use when nothing is configured.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Output directory path.</span>
+<span class="sd">    """</span>
+    <span class="n">configured</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_optimal_output_file"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">configured</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">default</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">configured</span><span class="p">)</span> <span class="ow">or</span> <span class="n">default</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.count_optimal_configurations" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">count_optimal_configurations</span><span class="p">()</span></code>
+
+<a href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.count_optimal_configurations" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the number of selected configurations.</p>
+<p><code>optimal_configurations</code> is a <em>dict</em> holding the joint names alongside
+the selected joint configurations, so <code>len()</code> on it counts keys (2),
+not configurations. Always go through this helper.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>int</code></td>            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of selected joint configurations, 0 if none.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">957</span>
 <span class="normal">958</span>
 <span class="normal">959</span>
-<span class="normal">960</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s2">"results"</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Save optimal configuration results using unified results manager."""</span>
+<span class="normal">960</span>
+<span class="normal">961</span>
+<span class="normal">962</span>
+<span class="normal">963</span>
+<span class="normal">964</span>
+<span class="normal">965</span>
+<span class="normal">966</span>
+<span class="normal">967</span>
+<span class="normal">968</span>
+<span class="normal">969</span>
+<span class="normal">970</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">count_optimal_configurations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return the number of selected configurations.</span>
+
+<span class="sd">    ``optimal_configurations`` is a *dict* holding the joint names alongside</span>
+<span class="sd">    the selected joint configurations, so ``len()`` on it counts keys (2),</span>
+<span class="sd">    not configurations. Always go through this helper.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        int: Number of selected joint configurations, 0 if none.</span>
+<span class="sd">    """</span>
+    <span class="n">configs</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"optimal_configurations"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">configs</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"calibration_joint_configurations"</span><span class="p">,</span> <span class="p">[]))</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.save_results" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">save_results</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#figaroh.optimal.base_optimal_calibration.BaseOptimalCalibration.save_results" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Save optimal configuration results using unified results manager.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>output_dir</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Directory to write results into. When
+omitted, the directory configured under the unified config's
+<code>tasks.optimal_configuration.output.output_file</code> is used, and
+failing that <code>"results"</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 972</span>
+<span class="normal"> 973</span>
+<span class="normal"> 974</span>
+<span class="normal"> 975</span>
+<span class="normal"> 976</span>
+<span class="normal"> 977</span>
+<span class="normal"> 978</span>
+<span class="normal"> 979</span>
+<span class="normal"> 980</span>
+<span class="normal"> 981</span>
+<span class="normal"> 982</span>
+<span class="normal"> 983</span>
+<span class="normal"> 984</span>
+<span class="normal"> 985</span>
+<span class="normal"> 986</span>
+<span class="normal"> 987</span>
+<span class="normal"> 988</span>
+<span class="normal"> 989</span>
+<span class="normal"> 990</span>
+<span class="normal"> 991</span>
+<span class="normal"> 992</span>
+<span class="normal"> 993</span>
+<span class="normal"> 994</span>
+<span class="normal"> 995</span>
+<span class="normal"> 996</span>
+<span class="normal"> 997</span>
+<span class="normal"> 998</span>
+<span class="normal"> 999</span>
+<span class="normal">1000</span>
+<span class="normal">1001</span>
+<span class="normal">1002</span>
+<span class="normal">1003</span>
+<span class="normal">1004</span>
+<span class="normal">1005</span>
+<span class="normal">1006</span>
+<span class="normal">1007</span>
+<span class="normal">1008</span>
+<span class="normal">1009</span>
+<span class="normal">1010</span>
+<span class="normal">1011</span>
+<span class="normal">1012</span>
+<span class="normal">1013</span>
+<span class="normal">1014</span>
+<span class="normal">1015</span>
+<span class="normal">1016</span>
+<span class="normal">1017</span>
+<span class="normal">1018</span>
+<span class="normal">1019</span>
+<span class="normal">1020</span>
+<span class="normal">1021</span>
+<span class="normal">1022</span>
+<span class="normal">1023</span>
+<span class="normal">1024</span>
+<span class="normal">1025</span>
+<span class="normal">1026</span>
+<span class="normal">1027</span>
+<span class="normal">1028</span>
+<span class="normal">1029</span>
+<span class="normal">1030</span>
+<span class="normal">1031</span>
+<span class="normal">1032</span>
+<span class="normal">1033</span>
+<span class="normal">1034</span>
+<span class="normal">1035</span>
+<span class="normal">1036</span>
+<span class="normal">1037</span>
+<span class="normal">1038</span>
+<span class="normal">1039</span>
+<span class="normal">1040</span>
+<span class="normal">1041</span>
+<span class="normal">1042</span>
+<span class="normal">1043</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Save optimal configuration results using unified results manager.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        output_dir (str, optional): Directory to write results into. When</span>
+<span class="sd">            omitted, the directory configured under the unified config's</span>
+<span class="sd">            ``tasks.optimal_configuration.output.output_file`` is used, and</span>
+<span class="sd">            failing that ``"results"``.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="p">(</span>
         <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"optimal_configurations"</span><span class="p">)</span>
         <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimal_configurations</span> <span class="ow">is</span> <span class="kc">None</span>
@@ -10287,6 +10875,9 @@ calculate_detroot_whole: Provides normalization reference</p>
             <span class="s2">"No optimal configuration results to save. Run solve() first."</span>
         <span class="p">)</span>
         <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">output_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">output_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_optimal_output_dir</span><span class="p">()</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># Initialize results manager</span>
@@ -10300,13 +10891,14 @@ calculate_detroot_whole: Provides normalization reference</p>
                 <span class="bp">self</span><span class="o">.</span><span class="n">w_dict_sort</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"w_dict_sort"</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
             <span class="p">),</span>
             <span class="s2">"minimum_configurations"</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"minNbChosen"</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-            <span class="s2">"configuration_count"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimal_configurations</span><span class="p">),</span>
+            <span class="s2">"configuration_count"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">count_optimal_configurations</span><span class="p">(),</span>
             <span class="s2">"calibration_config"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib_config</span><span class="p">,</span>
         <span class="p">}</span>
 
-        <span class="c1"># Add condition number if available</span>
+        <span class="c1"># D-optimality determinant root of the full information matrix.</span>
+        <span class="c1"># Named after what it is: this is NOT a condition number.</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"detroot_whole"</span><span class="p">):</span>
-            <span class="n">results_dict</span><span class="p">[</span><span class="s2">"condition_number"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detroot_whole</span><span class="p">)</span>
+            <span class="n">results_dict</span><span class="p">[</span><span class="s2">"d_optimality_detroot"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detroot_whole</span><span class="p">)</span>
 
         <span class="c1"># Save using unified manager</span>
         <span class="n">saved_files</span> <span class="o">=</span> <span class="n">results_manager</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span>
@@ -10484,14 +11076,14 @@ print(f"Optimization status: {optimizer.solution.status}")</p>
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1000</span>
-<span class="normal">1001</span>
-<span class="normal">1002</span>
-<span class="normal">1003</span>
-<span class="normal">1004</span>
-<span class="normal">1005</span>
-<span class="normal">1006</span>
-<span class="normal">1007</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subX_dict</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">):</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1083</span>
+<span class="normal">1084</span>
+<span class="normal">1085</span>
+<span class="normal">1086</span>
+<span class="normal">1087</span>
+<span class="normal">1088</span>
+<span class="normal">1089</span>
+<span class="normal">1090</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subX_dict</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">):</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">picos</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pc</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">subX_dict</span>
@@ -10809,41 +11401,41 @@ optimizer = Detmax(info_matrices, NbChosen=10)</p>
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1103</span>
-<span class="normal">1104</span>
-<span class="normal">1105</span>
-<span class="normal">1106</span>
-<span class="normal">1107</span>
-<span class="normal">1108</span>
-<span class="normal">1109</span>
-<span class="normal">1110</span>
-<span class="normal">1111</span>
-<span class="normal">1112</span>
-<span class="normal">1113</span>
-<span class="normal">1114</span>
-<span class="normal">1115</span>
-<span class="normal">1116</span>
-<span class="normal">1117</span>
-<span class="normal">1118</span>
-<span class="normal">1119</span>
-<span class="normal">1120</span>
-<span class="normal">1121</span>
-<span class="normal">1122</span>
-<span class="normal">1123</span>
-<span class="normal">1124</span>
-<span class="normal">1125</span>
-<span class="normal">1126</span>
-<span class="normal">1127</span>
-<span class="normal">1128</span>
-<span class="normal">1129</span>
-<span class="normal">1130</span>
-<span class="normal">1131</span>
-<span class="normal">1132</span>
-<span class="normal">1133</span>
-<span class="normal">1134</span>
-<span class="normal">1135</span>
-<span class="normal">1136</span>
-<span class="normal">1137</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">candidate_pool</span><span class="p">,</span> <span class="n">NbChosen</span><span class="p">):</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1186</span>
+<span class="normal">1187</span>
+<span class="normal">1188</span>
+<span class="normal">1189</span>
+<span class="normal">1190</span>
+<span class="normal">1191</span>
+<span class="normal">1192</span>
+<span class="normal">1193</span>
+<span class="normal">1194</span>
+<span class="normal">1195</span>
+<span class="normal">1196</span>
+<span class="normal">1197</span>
+<span class="normal">1198</span>
+<span class="normal">1199</span>
+<span class="normal">1200</span>
+<span class="normal">1201</span>
+<span class="normal">1202</span>
+<span class="normal">1203</span>
+<span class="normal">1204</span>
+<span class="normal">1205</span>
+<span class="normal">1206</span>
+<span class="normal">1207</span>
+<span class="normal">1208</span>
+<span class="normal">1209</span>
+<span class="normal">1210</span>
+<span class="normal">1211</span>
+<span class="normal">1212</span>
+<span class="normal">1213</span>
+<span class="normal">1214</span>
+<span class="normal">1215</span>
+<span class="normal">1216</span>
+<span class="normal">1217</span>
+<span class="normal">1218</span>
+<span class="normal">1219</span>
+<span class="normal">1220</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">candidate_pool</span><span class="p">,</span> <span class="n">NbChosen</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Initialize DetMax optimizer with candidate pool and target size.</span>
 
 <span class="sd">    Sets up the determinant maximization optimizer with the candidate</span>
@@ -11011,41 +11603,41 @@ print(f"D-optimality: {criterion:.6f}")</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1139</span>
-<span class="normal">1140</span>
-<span class="normal">1141</span>
-<span class="normal">1142</span>
-<span class="normal">1143</span>
-<span class="normal">1144</span>
-<span class="normal">1145</span>
-<span class="normal">1146</span>
-<span class="normal">1147</span>
-<span class="normal">1148</span>
-<span class="normal">1149</span>
-<span class="normal">1150</span>
-<span class="normal">1151</span>
-<span class="normal">1152</span>
-<span class="normal">1153</span>
-<span class="normal">1154</span>
-<span class="normal">1155</span>
-<span class="normal">1156</span>
-<span class="normal">1157</span>
-<span class="normal">1158</span>
-<span class="normal">1159</span>
-<span class="normal">1160</span>
-<span class="normal">1161</span>
-<span class="normal">1162</span>
-<span class="normal">1163</span>
-<span class="normal">1164</span>
-<span class="normal">1165</span>
-<span class="normal">1166</span>
-<span class="normal">1167</span>
-<span class="normal">1168</span>
-<span class="normal">1169</span>
-<span class="normal">1170</span>
-<span class="normal">1171</span>
-<span class="normal">1172</span>
-<span class="normal">1173</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_critD</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">set</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1222</span>
+<span class="normal">1223</span>
+<span class="normal">1224</span>
+<span class="normal">1225</span>
+<span class="normal">1226</span>
+<span class="normal">1227</span>
+<span class="normal">1228</span>
+<span class="normal">1229</span>
+<span class="normal">1230</span>
+<span class="normal">1231</span>
+<span class="normal">1232</span>
+<span class="normal">1233</span>
+<span class="normal">1234</span>
+<span class="normal">1235</span>
+<span class="normal">1236</span>
+<span class="normal">1237</span>
+<span class="normal">1238</span>
+<span class="normal">1239</span>
+<span class="normal">1240</span>
+<span class="normal">1241</span>
+<span class="normal">1242</span>
+<span class="normal">1243</span>
+<span class="normal">1244</span>
+<span class="normal">1245</span>
+<span class="normal">1246</span>
+<span class="normal">1247</span>
+<span class="normal">1248</span>
+<span class="normal">1249</span>
+<span class="normal">1250</span>
+<span class="normal">1251</span>
+<span class="normal">1252</span>
+<span class="normal">1253</span>
+<span class="normal">1254</span>
+<span class="normal">1255</span>
+<span class="normal">1256</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_critD</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">set</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Calculate D-optimality criterion for configuration subset.</span>
 
 <span class="sd">    Computes the determinant root of the Fisher Information Matrix</span>
@@ -11182,90 +11774,7 @@ running multiple times with different seeds.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1175</span>
-<span class="normal">1176</span>
-<span class="normal">1177</span>
-<span class="normal">1178</span>
-<span class="normal">1179</span>
-<span class="normal">1180</span>
-<span class="normal">1181</span>
-<span class="normal">1182</span>
-<span class="normal">1183</span>
-<span class="normal">1184</span>
-<span class="normal">1185</span>
-<span class="normal">1186</span>
-<span class="normal">1187</span>
-<span class="normal">1188</span>
-<span class="normal">1189</span>
-<span class="normal">1190</span>
-<span class="normal">1191</span>
-<span class="normal">1192</span>
-<span class="normal">1193</span>
-<span class="normal">1194</span>
-<span class="normal">1195</span>
-<span class="normal">1196</span>
-<span class="normal">1197</span>
-<span class="normal">1198</span>
-<span class="normal">1199</span>
-<span class="normal">1200</span>
-<span class="normal">1201</span>
-<span class="normal">1202</span>
-<span class="normal">1203</span>
-<span class="normal">1204</span>
-<span class="normal">1205</span>
-<span class="normal">1206</span>
-<span class="normal">1207</span>
-<span class="normal">1208</span>
-<span class="normal">1209</span>
-<span class="normal">1210</span>
-<span class="normal">1211</span>
-<span class="normal">1212</span>
-<span class="normal">1213</span>
-<span class="normal">1214</span>
-<span class="normal">1215</span>
-<span class="normal">1216</span>
-<span class="normal">1217</span>
-<span class="normal">1218</span>
-<span class="normal">1219</span>
-<span class="normal">1220</span>
-<span class="normal">1221</span>
-<span class="normal">1222</span>
-<span class="normal">1223</span>
-<span class="normal">1224</span>
-<span class="normal">1225</span>
-<span class="normal">1226</span>
-<span class="normal">1227</span>
-<span class="normal">1228</span>
-<span class="normal">1229</span>
-<span class="normal">1230</span>
-<span class="normal">1231</span>
-<span class="normal">1232</span>
-<span class="normal">1233</span>
-<span class="normal">1234</span>
-<span class="normal">1235</span>
-<span class="normal">1236</span>
-<span class="normal">1237</span>
-<span class="normal">1238</span>
-<span class="normal">1239</span>
-<span class="normal">1240</span>
-<span class="normal">1241</span>
-<span class="normal">1242</span>
-<span class="normal">1243</span>
-<span class="normal">1244</span>
-<span class="normal">1245</span>
-<span class="normal">1246</span>
-<span class="normal">1247</span>
-<span class="normal">1248</span>
-<span class="normal">1249</span>
-<span class="normal">1250</span>
-<span class="normal">1251</span>
-<span class="normal">1252</span>
-<span class="normal">1253</span>
-<span class="normal">1254</span>
-<span class="normal">1255</span>
-<span class="normal">1256</span>
-<span class="normal">1257</span>
-<span class="normal">1258</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1258</span>
 <span class="normal">1259</span>
 <span class="normal">1260</span>
 <span class="normal">1261</span>
@@ -11275,7 +11784,90 @@ running multiple times with different seeds.</p>
 <span class="normal">1265</span>
 <span class="normal">1266</span>
 <span class="normal">1267</span>
-<span class="normal">1268</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main_algo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">1268</span>
+<span class="normal">1269</span>
+<span class="normal">1270</span>
+<span class="normal">1271</span>
+<span class="normal">1272</span>
+<span class="normal">1273</span>
+<span class="normal">1274</span>
+<span class="normal">1275</span>
+<span class="normal">1276</span>
+<span class="normal">1277</span>
+<span class="normal">1278</span>
+<span class="normal">1279</span>
+<span class="normal">1280</span>
+<span class="normal">1281</span>
+<span class="normal">1282</span>
+<span class="normal">1283</span>
+<span class="normal">1284</span>
+<span class="normal">1285</span>
+<span class="normal">1286</span>
+<span class="normal">1287</span>
+<span class="normal">1288</span>
+<span class="normal">1289</span>
+<span class="normal">1290</span>
+<span class="normal">1291</span>
+<span class="normal">1292</span>
+<span class="normal">1293</span>
+<span class="normal">1294</span>
+<span class="normal">1295</span>
+<span class="normal">1296</span>
+<span class="normal">1297</span>
+<span class="normal">1298</span>
+<span class="normal">1299</span>
+<span class="normal">1300</span>
+<span class="normal">1301</span>
+<span class="normal">1302</span>
+<span class="normal">1303</span>
+<span class="normal">1304</span>
+<span class="normal">1305</span>
+<span class="normal">1306</span>
+<span class="normal">1307</span>
+<span class="normal">1308</span>
+<span class="normal">1309</span>
+<span class="normal">1310</span>
+<span class="normal">1311</span>
+<span class="normal">1312</span>
+<span class="normal">1313</span>
+<span class="normal">1314</span>
+<span class="normal">1315</span>
+<span class="normal">1316</span>
+<span class="normal">1317</span>
+<span class="normal">1318</span>
+<span class="normal">1319</span>
+<span class="normal">1320</span>
+<span class="normal">1321</span>
+<span class="normal">1322</span>
+<span class="normal">1323</span>
+<span class="normal">1324</span>
+<span class="normal">1325</span>
+<span class="normal">1326</span>
+<span class="normal">1327</span>
+<span class="normal">1328</span>
+<span class="normal">1329</span>
+<span class="normal">1330</span>
+<span class="normal">1331</span>
+<span class="normal">1332</span>
+<span class="normal">1333</span>
+<span class="normal">1334</span>
+<span class="normal">1335</span>
+<span class="normal">1336</span>
+<span class="normal">1337</span>
+<span class="normal">1338</span>
+<span class="normal">1339</span>
+<span class="normal">1340</span>
+<span class="normal">1341</span>
+<span class="normal">1342</span>
+<span class="normal">1343</span>
+<span class="normal">1344</span>
+<span class="normal">1345</span>
+<span class="normal">1346</span>
+<span class="normal">1347</span>
+<span class="normal">1348</span>
+<span class="normal">1349</span>
+<span class="normal">1350</span>
+<span class="normal">1351</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main_algo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Execute the main determinant maximization algorithm.</span>
 
 <span class="sd">    Implements the greedy exchange algorithm for D-optimal experimental</span>

@@ -1686,10 +1686,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#shipped-v041-v047" class="md-nav__link">
+  <a href="#shipped-v041-v048" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Shipped (v0.4.1 – v0.4.7)
+        Shipped (v0.4.1 – v0.4.8)
       
     </span>
   </a>
@@ -2422,10 +2422,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#shipped-v041-v047" class="md-nav__link">
+  <a href="#shipped-v041-v048" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Shipped (v0.4.1 – v0.4.7)
+        Shipped (v0.4.1 – v0.4.8)
       
     </span>
   </a>
@@ -2972,9 +2972,9 @@ change-log detail out to <code>CHANGELOG.md</code>, adds a consolidated timeline
 references section) + Track F added as ongoing research (deployment &amp;
 sim-to-real positioning, not yet committed)
 <strong>Date:</strong> August 16, 2026
-<strong>Current release:</strong> <code>figaroh</code> 0.4.7 (PyPI, 2026-08-07)
-<strong>Test health (verified 2026-08-16):</strong> 451 collected, 442 passed, 4 failed
-(pre-existing, unrelated <code>cyipopt</code>/IPOPT solver tests), 5 skipped</p>
+<strong>Current release:</strong> <code>figaroh</code> 0.4.8 (PyPI, 2026-09-07)
+<strong>Test health (verified 2026-09-07):</strong> 503 collected, 483 passed, 0 failed,
+20 skipped</p>
 <blockquote>
 <p><strong>Single source of truth.</strong> This document is the strategic view — vision,
 tracks, status, timeline. It intentionally does <strong>not</strong> duplicate two
@@ -3074,8 +3074,8 @@ identification toolbox</strong> that enables researchers and engineers to:</p>
 <h3 id="3-current-state-snapshot-2026-08-16">3. Current State Snapshot (2026-08-16)<a class="headerlink" href="#3-current-state-snapshot-2026-08-16" title="Permanent link">&para;</a></h3>
 <h4 id="31-release-test-health">3.1 Release &amp; test health<a class="headerlink" href="#31-release-test-health" title="Permanent link">&para;</a></h4>
 <ul>
-<li><strong>PyPI release:</strong> 0.4.7 (2026-08-07). Five releases have shipped since
-  the last roadmap pass (0.4.3 → 0.4.7, 2026-06-02 → 2026-08-07) — see
+<li><strong>PyPI release:</strong> 0.4.8 (2026-09-07). Six releases have shipped since
+  the last roadmap pass (0.4.3 → 0.4.8, 2026-06-02 → 2026-09-07) — see
   <code>CHANGELOG.md</code> for the full per-release detail.</li>
 <li><strong>Test suite:</strong> 451 tests collected (up from 259 in June), 442 passed, 4
   failed (all in <code>test_robotipopt.py</code>, a pre-existing <code>cyipopt</code>-dependency
@@ -3105,7 +3105,7 @@ identification toolbox</strong> that enables researchers and engineers to:</p>
 <tr>
 <td>A — Algorithmic Core</td>
 <td>Inertial ID, physical consistency, reconstruction, CAD constraints, redistribution</td>
-<td>v0.4.1–v0.4.7 shipped; v0.5–v1.0 planned</td>
+<td>v0.4.1–v0.4.8 shipped; v0.5–v1.0 planned</td>
 <td><a href="#4-track-a--algorithmic-core-identification--calibration">§4</a></td>
 </tr>
 <tr>
@@ -3154,7 +3154,7 @@ want full per-link physical parameters (mass, CoM, inertia) that are
 <strong>physically feasible</strong> ($m&gt;0$, valid/PSD inertia), and a defensible way
 to deploy them.</p>
 </blockquote>
-<h4 id="shipped-v041-v047">Shipped (v0.4.1 – v0.4.7)<a class="headerlink" href="#shipped-v041-v047" title="Permanent link">&para;</a></h4>
+<h4 id="shipped-v041-v048">Shipped (v0.4.1 – v0.4.8)<a class="headerlink" href="#shipped-v041-v048" title="Permanent link">&para;</a></h4>
 <table>
 <thead>
 <tr>
@@ -3206,6 +3206,12 @@ to deploy them.</p>
 <td>2026-08-07</td>
 <td>Base-parameter <strong>redistribution</strong> (<code>redistribute_parameters()</code>), <code>geometric_calibration_export</code> (PAL runtime-correction YAML)</td>
 <td><code>tools/qrdecomposition.py</code>, <code>tools/geometric_calibration_export.py</code></td>
+</tr>
+<tr>
+<td>0.4.8</td>
+<td>2026-09-07</td>
+<td>Agent <code>skills/</code> set; optimal-calibration result reporting fixed (config count, metric naming, honouring the configured output dir); <code>build_total_regressor_wrench</code> <code>NameError</code> repaired</td>
+<td><code>optimal/base_optimal_calibration.py</code>, <code>tools/regressor.py</code>, <code>skills/</code></td>
 </tr>
 </tbody>
 </table>

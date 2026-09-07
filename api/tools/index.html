@@ -11376,7 +11376,7 @@ parameter server.
 
 
 <h2 id="figaroh.tools.regressor.build_total_regressor_wrench" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">build_total_regressor_wrench</span><span class="p">(</span><span class="n">W_b_u</span><span class="p">,</span> <span class="n">W_b_l</span><span class="p">,</span> <span class="n">W_l</span><span class="p">,</span> <span class="n">tau_u</span><span class="p">,</span> <span class="n">tau_l</span><span class="p">,</span> <span class="n">param_standard_l</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">build_total_regressor_wrench</span><span class="p">(</span><span class="n">W_b_u</span><span class="p">,</span> <span class="n">W_b_l</span><span class="p">,</span> <span class="n">W_l</span><span class="p">,</span> <span class="n">tau_u</span><span class="p">,</span> <span class="n">tau_l</span><span class="p">,</span> <span class="n">param_standard_l</span><span class="p">,</span> <span class="n">identif_config</span><span class="p">)</span></code>
 
 <a href="#figaroh.tools.regressor.build_total_regressor_wrench" class="headerlink" title="Permanent link">&para;</a></h2>
 
@@ -11489,13 +11489,14 @@ parameter server.
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>param</code>
+                <code>identif_config</code>
             </td>
             <td>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Dictionary of settings</p>
+                <p>Dictionary of settings. Must provide
+<code>which_body_loaded</code> and <code>mass_load</code>.</p>
               </div>
             </td>
             <td>
@@ -11632,8 +11633,9 @@ parameter server.
 <span class="normal">542</span>
 <span class="normal">543</span>
 <span class="normal">544</span>
-<span class="normal">545</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">build_total_regressor_wrench</span><span class="p">(</span>
-    <span class="n">W_b_u</span><span class="p">,</span> <span class="n">W_b_l</span><span class="p">,</span> <span class="n">W_l</span><span class="p">,</span> <span class="n">tau_u</span><span class="p">,</span> <span class="n">tau_l</span><span class="p">,</span> <span class="n">param_standard_l</span><span class="p">,</span> <span class="n">param</span>
+<span class="normal">545</span>
+<span class="normal">546</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">build_total_regressor_wrench</span><span class="p">(</span>
+    <span class="n">W_b_u</span><span class="p">,</span> <span class="n">W_b_l</span><span class="p">,</span> <span class="n">W_l</span><span class="p">,</span> <span class="n">tau_u</span><span class="p">,</span> <span class="n">tau_l</span><span class="p">,</span> <span class="n">param_standard_l</span><span class="p">,</span> <span class="n">identif_config</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Build regressor for total least squares with external wrench measurements.</span>
 
@@ -11644,7 +11646,8 @@ parameter server.
 <span class="sd">        tau_u: External wrench in unloaded case</span>
 <span class="sd">        tau_l: External wrench in loaded case</span>
 <span class="sd">        param_standard_l: Standard parameters in loaded case</span>
-<span class="sd">        param: Dictionary of settings</span>
+<span class="sd">        identif_config: Dictionary of settings. Must provide</span>
+<span class="sd">            ``which_body_loaded`` and ``mass_load``.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        tuple:</span>
