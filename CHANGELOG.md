@@ -40,6 +40,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `tools`: `build_total_regressor_wrench` raised `NameError` on every call.
+  Its signature named the settings dict `param` while the body read
+  `identif_config` three times -- an incomplete rename that made the exported
+  function unusable. Renamed the parameter to `identif_config`, matching both
+  the body and the sibling `build_total_regressor_current`. Nothing called it
+  and nothing tested it, which is how a fully broken public function went
+  unnoticed; `tests/unit/test_regressor_wrench.py` now covers it (7 tests,
+  verified to fail if the rename is reverted).
 - `optimal`: `BaseOptimalCalibration.save_results` reported
   `configuration_count` as `len(self.optimal_configurations)`, which counts the
   dict's keys (always 2) rather than the selected configurations. A UR10 run
