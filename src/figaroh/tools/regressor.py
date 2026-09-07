@@ -445,7 +445,7 @@ def build_total_regressor_current(
 
 
 def build_total_regressor_wrench(
-    W_b_u, W_b_l, W_l, tau_u, tau_l, param_standard_l, param
+    W_b_u, W_b_l, W_l, tau_u, tau_l, param_standard_l, identif_config
 ):
     """Build regressor for total least squares with external wrench measurements.
 
@@ -456,7 +456,8 @@ def build_total_regressor_wrench(
         tau_u: External wrench in unloaded case
         tau_l: External wrench in loaded case
         param_standard_l: Standard parameters in loaded case
-        param: Dictionary of settings
+        identif_config: Dictionary of settings. Must provide
+            ``which_body_loaded`` and ``mass_load``.
 
     Returns:
         tuple:

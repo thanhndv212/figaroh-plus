@@ -29,5 +29,8 @@ repos:
     rev: 6.1.0  # Updated to latest stable version
     hooks:
     -   id: flake8
-        args: ['--ignore=E501']
+        # --extend-ignore, not --ignore: the latter REPLACES flake8's default
+        # ignore list, which switches on E226/W503 -- both of which black
+        # itself produces, so the two tools then fight over the same lines.
+        args: ['--extend-ignore=E501,E203']
         additional_dependencies: ['importlib-metadata<7.0']

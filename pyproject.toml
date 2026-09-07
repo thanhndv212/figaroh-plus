@@ -1,10 +1,15 @@
 [build-system]
-requires = ["hatchling"]
+# Upper bound is deliberate: hatchling 1.32.0 emits `Metadata-Version: 2.5`,
+# which the current release toolchain rejects -- `twine check` fails with
+# "'2.5' is not a valid metadata version" because packaging 25.0 recognises
+# up to 2.4. Every hatchling through 1.31 emits 2.4. Revisit once packaging
+# (and PyPI's own validation) accept 2.5.
+requires = ["hatchling<1.32"]
 build-backend = "hatchling.build"
 
 [project]
 name = "figaroh"
-version = "0.4.7"
+version = "0.4.8"
 description = "A Python toolbox for dynamics identification and geometric calibration of robots and humans"
 readme = "README.md"
 requires-python = ">=3.8"

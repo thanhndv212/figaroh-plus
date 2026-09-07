@@ -5,7 +5,147 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.4.8] - 2026-09-07
+
+### Added
+
+- `skills`: New `skills/` directory shipping six agent skills that take a
+  user from a fresh clone to a running task, so an AI coding agent can set
+  each task up without first re-deriving the workspace layout. Mirrored in
+  `figaroh-examples/skills/` (same content, paths resolved against
+  `$FIGAROH_WS`, the directory holding both repos side by side):
+  - `figaroh-start` — the router. Maps the workspace (which of the sibling
+    repos owns what), carries a robot x task x config matrix, states the two path
+    rules every example script depends on (run from `examples/<robot>/`;
+    `package_dirs="../../models"`), and dispatches to the skill below.
+  - `figaroh-setup-env` — environment bootstrap, with an executable
+    `scripts/doctor.sh`: read-only, exits 0/1, locates the workspace root on
+    its own, and prints a specific remedy per failure. It checks the failure
+    that is otherwise invisible — whether `import figaroh` resolves to the
+    local `src/` tree or to a shadowing site-packages copy.
+  - `figaroh-setup-calibration`, `figaroh-setup-identification`,
+    `figaroh-setup-optimal` — one per task: required inputs, the exact
+    config block, the real CLI flag surface, how to read the run archive,
+    and a failure/cause/fix table. The data contracts are documented from
+    `calibration/data_loader.py` and each robot's `load_trajectory_data()`
+    rather than from prose, because both are derived rather than fixed:
+    calibration CSV columns follow each marker's `measurable_dof`, and
+    identification has no single schema at all.
+  - `figaroh-setup-new-robot` — onboarding a robot with no example folder,
+    from description package to `validate.py --robot <robot>` exiting 0.
+  The set is self-contained by design: it assumes only `figaroh` and
+  `figaroh-examples`, references no other package or checkout, and points at
+  repo directories rather than at skills outside the set.
+- `docs`: README now points at `skills/` for agent-assisted setup.
+
+### Fixed
+
+- `tools`: `build_total_regressor_wrench` raised `NameError` on every call.
+  Its signature named the settings dict `param` while the body read
+  `identif_config` three times -- an incomplete rename that made the exported
+  function unusable. Renamed the parameter to `identif_config`, matching both
+  the body and the sibling `build_total_regressor_current`. Nothing called it
+  and nothing tested it, which is how a fully broken public function went
+  unnoticed; `tests/unit/test_regressor_wrench.py` now covers it (7 tests,
+  verified to fail if the rename is reverted).
+- `optimal`: `BaseOptimalCalibration.save_results` reported
+  `configuration_count` as `len(self.optimal_configurations)`, which counts the
+  dict's keys (always 2) rather than the selected configurations. A UR10 run
+  wrote `configuration_count: 2` to the summary CSV while printing "Selected 73"
+  to stdout. Added `count_optimal_configurations()` and used it, so the saved
+  summary now matches what the run reports.
+- `optimal`: the D-optimality determinant root was saved under the key
+  `condition_number`, which is a different quantity entirely and made the CSV
+  actively misleading. Renamed to `d_optimality_detroot`. **Breaking** for
+  anything reading that column out of a saved optimal-calibration CSV/YAML.
+- `optimal`: `tasks.optimal_configuration.output.output_file` was silently
+  ignored — `load_param` only ever loads the `calibration` task, so the optimal
+  task's own `output` block never reached the object, and `save_results`
+  hardcoded `results/`. The configured directory is now honoured (the filename
+  stays managed/timestamped), falling back to `results/` when unset, so existing
+  behaviour is unchanged for configs that do not set it.
+
+### Tests
+
+- `tests/unit/test_optimal_results.py`: 17 new tests covering the three fixes
+  above — configuration counting, output-directory resolution, and reading the
+  optimal task's output block (including the YAML `None`-as-string trap, legacy
+  configs, and missing files). `save_results` previously had no coverage.
+- `tests/unit/test_regressor_wrench.py`: 7 new tests calling
+  `build_total_regressor_wrench` for real — output shapes, finiteness,
+  `mass_load` scaling, and `which_body_loaded` block selection. Verified to
+  fail with the original `NameError` if the fix is reverted.
+
+### Changed
+
+- `build`: Pinned the build backend to `hatchling<1.32`. 1.32.0 emits
+  `Metadata-Version: 2.5`, which the current release toolchain rejects --
+  `twine check` fails with "'2.5' is not a valid metadata version" because
+  `packaging` 25.0 recognises only up to 2.4. Every hatchling through 1.31
+  emits 2.4. `requires` was previously unpinned, so each build silently took
+  whatever was newest; this also makes release builds reproducible.
+- `docs`: Updated README's Examples Repository table with recent
+  `figaroh-examples` additions: TIAGo Pro right-arm geometric calibration
+  (contributed by Clement Pene), TALOS's single-plane table-contact
+  whole-body calibration (no longer "to be released" — it shipped), and
+  TIAGo's new experimental suspension-identification and
+  empirical-backlash-surface examples.
+- `docs`: Split `docs/decisions/tiago-suspension-backlash-and-modular-terms-plan.md`
+  (an uncommitted working draft) into two focused documents reflecting
+  their different implementation status:
+  `tiago-suspension-backlash-examples.md` (**done** — the TIAGo
+  suspension-identification and empirical-backlash-surface examples
+  shipped in `figaroh-examples` PR #9, with an implementation summary,
+  concrete real-data results, and known gaps against the original plan)
+  and `modular-linear-residual-terms-plan.md` (still **proposed** —
+  the generic `LinearRegressorTerm`/`ResidualTerm`/`WeightPolicy`
+  architecture and the unbuilt physical/stateful backlash model). Also
+  corrected `ROADMAP.md` §8.2's stale "not started" status for the
+  suspension port (superseded by the new document) and added both new
+  documents to `ROADMAP.md`'s References table and
+  `docs/source/further_reading/decisions.md`'s index.
+- `docs`: Consolidated `docs/decisions/` from 8 documents to 6 by merging
+  related comparisons/analyses/reviews into single multi-part documents,
+  each carrying its own verified implementation-status section rather than
+  trusting the original "no implementation yet"/status-line claims:
+  - `external-tool-comparisons.md` — Part A (`robot_calibration` comparison
+    + calibration-composability adaptation roadmap), Part B (MuJoCo `sysid`
+    comparison), Part C (the full reporting/verification infrastructure
+    build-out that Part B's comparison produced).
+  - `tiago-calibration-and-port-review.md` — Part A (TIAGo/TIAGo Pro
+    structural & statistical calibration analysis, redistribution
+    rationale), Part B (eye-hand + suspension identification port review).
+  - Remaining decision docs renamed to consistent kebab-case filenames
+    (`figaroh-examples-improvement_plan.md`, `urdf_exporter.md`,
+    `validation-quality-report.md`), with stale status markers corrected
+    against the current codebase (e.g. `IMPROVEMENT_PLAN.md`'s Phase 7 was
+    falsely marked all-complete; only 1 of 4 items actually was).
+- `docs`: Rewrote `ROADMAP.md` (v2.0 → v2.1) as a single coherent document:
+  added a table of contents, a References section linking every roadmap
+  track to its source `docs/decisions/` document, and a consolidated
+  Estimated Timeline spanning all tracks. Added three tracks that
+  previously existed only as detailed decision docs with no roadmap-level
+  rollup — **Track C** (Reporting, Verification & Quality Infrastructure),
+  **Track D** (Calibration Layer Composability, `robot_calibration`-inspired),
+  **Track E** (Example Ecosystem Parity & Robot Ports). Re-verified every
+  Track A/B status marker against the codebase and test suite rather than
+  carrying the prior draft forward; corrected one stale claim
+  (`integration/api.py`/`RobotIdentificationSystem` is implemented, was
+  marked "not started"). Removed the old per-version "Revision History"
+  section, which had drifted into duplicating this changelog, in favor of
+  a short roadmap-document-only history.
+- `docs`: Added **Track F — Deployment & Sim-to-Real Integration** to
+  `ROADMAP.md`, explicitly marked as ongoing research rather than a
+  committed track. Sourced from a new
+  `docs/decisions/sim2real-modelbased-deployment.md` positioning document
+  (moved in from a working draft), which proposes a model-based
+  deployment/control layer for RL/IL policies as FIGAROH's headline value
+  proposition alongside its existing identification/calibration role.
+  Cross-referenced its phase-level overlaps with existing tracks (backend
+  cross-validation, online identification, URDF/friction export) so they
+  supersede rather than duplicate the corresponding Track A/B/D/E items,
+  and flagged ecosystem-integration questions (e.g. mjlab, motion-retargeting
+  libraries) as open research, not yet scoped into any phase.
 
 ## [0.4.7] - 2026-08-07
 
@@ -26,8 +166,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   predictions), and the propagated covariance flags which directions are
   genuinely underdetermined rather than reporting false precision. Opt-in;
   no change to existing `solve()`/report behavior. See
-  `TIAGO_CALIBRATION_ANALYSIS.md` §8 for the full motivation and literature
-  context.
+  `docs/decisions/tiago-calibration-and-port-review.md` Part A §A.8 for the
+  full motivation and literature context.
 - `feat(report)`: the HTML calibration report now includes a
   "Redistributed standard parameters" section, calling the above
   `redistribute_parameters()` on the live calibrator and rendering it
@@ -277,7 +417,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `.target`, not `.value` directly.
 
 Full design history and rationale:
-[`docs/decisions/roadmap-mujoco-sysid-inspired-features.md`](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/roadmap-mujoco-sysid-inspired-features.md).
+[`docs/decisions/external-tool-comparisons.md`](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/external-tool-comparisons.md)
+Part C.
 
 ## [0.4.4] - 2026-06-27
 
