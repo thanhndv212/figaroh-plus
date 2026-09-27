@@ -120,31 +120,31 @@ def add_standard_additional_parameters(model, identif_config):
     ]
 
     for param_def in additional_params:
+        # Disabled blocks get no columns in the regressor, so they get no
+        # keys here either; keys and regressor columns must line up.
+        if not identif_config.get(param_def["enabled_key"], False):
+            continue
         for link_idx, jname in enumerate(model.names[1:]):  # Skip world link
             param_name = f"{param_def['name']}_{jname}"
             params.append(param_name)
 
             # Get parameter value
-            if identif_config.get(param_def["enabled_key"], False):
-                try:
-                    values_list = identif_config.get(param_def["values_key"], [])
-                    if len(values_list) >= link_idx + 1:
-                        value = values_list[link_idx]
-                    else:
-                        value = param_def["default"]
-                        logger.warning(
-                            f"Missing {param_def['description']} "
-                            f"for joint {jname}, using default: {value}"
-                        )
-                except (KeyError, IndexError, TypeError) as e:
+            try:
+                values_list = identif_config.get(param_def["values_key"], [])
+                if len(values_list) >= link_idx + 1:
+                    value = values_list[link_idx]
+                else:
                     value = param_def["default"]
                     logger.warning(
-                        f"Error getting {param_def['description']} "
-                        f"for joint {jname}: {e}, using default: {value}"
+                        f"Missing {param_def['description']} "
+                        f"for joint {jname}, using default: {value}"
                     )
-            else:
+            except (KeyError, IndexError, TypeError) as e:
                 value = param_def["default"]
-
+                logger.warning(
+                    f"Error getting {param_def['description']} "
+                    f"for joint {jname}: {e}, using default: {value}"
+                )
             phi.append(value)
 
     return dict(zip(params, phi))

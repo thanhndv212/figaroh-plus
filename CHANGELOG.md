@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   before it (`model.inertias[i]` instead of `[i + 1]`), so `tau_ref`, the
   nominal validation torque/`improvement_pct` and the reconstruction prior
   were all off by one body. Base parameters were unaffected. (#11)
+- Regressor extra columns (`fv`, `fs`, `Ia`, `off`) are now laid out from the
+  enabled flags instead of fixed offsets. Previously any combination other
+  than "friction only" or "all three" raised `IndexError`.
+  `add_standard_additional_parameters` now only emits enabled blocks, so
+  parameter keys always line up with regressor columns. With friction only,
+  the parameter dict no longer carries unused `Ia_*`/`off_*` keys. (#12)
 
 ## [0.4.8] - 2026-09-07
 

@@ -1,8 +1,10 @@
-"""Regression tests for identification bugs #11.
+"""Regression tests for identification bugs #11-#12.
 
 #11 get_standard_parameters paired each joint with the previous body.
+#12 regressor extra-column layout assumed every extra block was enabled.
 """
 
+import itertools
 import types
 
 import numpy as np
@@ -69,4 +71,50 @@ def test_standard_parameters_reproduce_rnea(arm):
     phi = np.array(list(get_standard_parameters(model, cfg).values()))
     tau = np.stack([pin.rnea(model, robot.data, q[i], v[i], a[i]) for i in range(len(q))])
     # Regressor rows are joint-major: row j * N + i is joint j, sample i.
+    np.testing.assert_allclose(W @ phi, tau.T.ravel(), atol=1e-9)
+
+
+# -- #12 ---------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "friction, actuator_inertia, joint_offset",
+    list(itertools.product([False, True], repeat=3)),
+)
+def test_regressor_extra_columns_match_parameter_keys(
+    arm, friction, actuator_inertia, joint_offset
+):
+    robot, q, v, a = arm
+    model = robot.model
+    nv = model.nv
+    cfg = {
+        "has_friction": friction,
+        "has_actuator_inertia": actuator_inertia,
+        "has_joint_offset": joint_offset,
+        "is_joint_torques": True,
+        "act_idxv": list(range(nv)),
+        "fv": [0.3] * nv,
+        "fs": [0.2] * nv,
+        "Ia": [0.05] * nv,
+        "off": [0.1] * nv,
+    }
+    W = build_regressor_basic(robot, q, v, a, cfg)
+    params = _params(model, cfg)
+    n_extra = 2 * friction + actuator_inertia + joint_offset
+    assert W.shape[1] == len(params) == (10 + n_extra) * nv
+
+    # Disabled blocks contribute no keys.
+    assert any(k.startswith("fv_") for k in params) == friction
+    assert any(k.startswith("Ia_") for k in params) == actuator_inertia
+    assert any(k.startswith("off_") for k in params) == joint_offset
+
+    # Each column is labelled with the parameter it multiplies.
+    tau = np.stack([pin.rnea(model, robot.data, q[i], v[i], a[i]) for i in range(len(q))])
+    if friction:
+        tau = tau + 0.3 * v + 0.2 * np.sign(v)
+    if actuator_inertia:
+        tau = tau + 0.05 * a
+    if joint_offset:
+        tau = tau + 0.1
+    phi = np.array(list(params.values()))
     np.testing.assert_allclose(W @ phi, tau.T.ravel(), atol=1e-9)
