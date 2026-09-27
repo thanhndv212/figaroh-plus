@@ -1,7 +1,8 @@
-"""Regression tests for identification bugs #11-#12.
+"""Regression tests for identification bugs #11-#13.
 
 #11 get_standard_parameters paired each joint with the previous body.
 #12 regressor extra-column layout assumed every extra block was enabled.
+#13 unified signal_processing rates never reached the filters.
 """
 
 import itertools
@@ -15,11 +16,22 @@ try:
 except ImportError:
     pytest.skip("Pinocchio not available", allow_module_level=True)
 
+from figaroh.identification.base_identification import BaseIdentification
+from figaroh.identification.config import (
+    _extract_signal_processing_params,
+)
 from figaroh.identification.parameter import (
     add_standard_additional_parameters,
     get_standard_parameters,
 )
 from figaroh.tools.regressor import build_regressor_basic
+
+
+class _Ident(BaseIdentification):
+    """Concrete stand-in; tests set only the attributes they need."""
+
+    def load_trajectory_data(self, data_source=None):
+        raise NotImplementedError
 
 
 @pytest.fixture(scope="module")
@@ -118,3 +130,61 @@ def test_regressor_extra_columns_match_parameter_keys(
         tau = tau + 0.1
     phi = np.array(list(params.values()))
     np.testing.assert_allclose(W @ phi, tau.T.ravel(), atol=1e-9)
+
+
+# -- #13 ---------------------------------------------------------------------
+
+
+def test_signal_processing_rates_reach_filter_params():
+    cfg = {}
+    _extract_signal_processing_params(
+        cfg,
+        {"sampling_frequency": 50.0, "cutoff_frequency": 4.0, "filter_order": 3},
+    )
+    fp = cfg["filter_config"]["filter_params"]
+    assert fp["f_sample"] == 50.0
+    assert fp["f_butter"] == 4.0
+    assert fp["nbutter"] == 3
+
+
+def test_signal_processing_explicit_filter_params_win():
+    cfg = {}
+    _extract_signal_processing_params(
+        cfg,
+        {
+            "sampling_frequency": 500.0,
+            "cutoff_frequency": 50.0,
+            "filter_params": {"f_butter": 10, "med_fil": 3},
+        },
+    )
+    fp = cfg["filter_config"]["filter_params"]
+    assert fp == {"f_butter": 10, "med_fil": 3, "f_sample": 500.0, "nbutter": 4}
+
+
+def test_signal_processing_rejects_cutoff_above_nyquist():
+    with pytest.raises(ValueError, match="Nyquist"):
+        _extract_signal_processing_params(
+            {}, {"sampling_frequency": 50.0, "cutoff_frequency": 30.0}
+        )
+
+
+def test_filter_uses_configured_rate():
+    """The filter must attenuate by the configured rate, not a 100 Hz default."""
+    fs, fc = 50.0, 4.0
+    cfg = {}
+    _extract_signal_processing_params(
+        cfg, {"sampling_frequency": fs, "cutoff_frequency": fc}
+    )
+    t = np.arange(0, 20, 1 / fs)
+    x = np.sin(2 * np.pi * 2.0 * t)  # 2 Hz: well inside the 4 Hz band
+    ident = object.__new__(_Ident)
+    mid = slice(len(t) // 4, 3 * len(t) // 4)
+
+    def gain(filter_params):
+        y = ident._apply_filters(x, **filter_params).ravel()
+        return np.ptp(y[mid]) / np.ptp(x[mid])
+
+    assert gain(cfg["filter_config"]["filter_params"]) > 0.95
+    # The pre-fix behaviour (f_sample left at 100 Hz) halves the cutoff and
+    # visibly attenuates the same signal.
+    assert gain({"f_butter": fc}) < 0.7

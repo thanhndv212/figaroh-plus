@@ -116,6 +116,7 @@ the layout differs.
 |---|---|---|
 | `cut_off_frequency_butterworth` | Low-pass Butterworth filter cutoff frequency (Hz) applied to position/velocity/acceleration/torque signals before regression | `signal_processing.cutoff_frequency` |
 | `ts` | Sample period (**seconds**) of the recorded data | `signal_processing.sampling_frequency` *(unified format specifies the rate directly, in Hz, rather than the period)* |
+| `filter_config.filter_params` | Arguments of the median + Butterworth filter (`f_sample`, `f_butter`, `nbutter`, `med_fil`). In the unified format, `f_sample`, `f_butter` and `nbutter` default to `sampling_frequency`, `cutoff_frequency` and `filter_order` (4); an explicit `signal_processing.filter_params` entry overrides them | `signal_processing.filter_params` |
 
 !!! warning "`ts` → `nb_samples` is a rate, not a count"
     Despite the name, the legacy parser computes

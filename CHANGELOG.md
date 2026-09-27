@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `add_standard_additional_parameters` now only emits enabled blocks, so
   parameter keys always line up with regressor columns. With friction only,
   the parameter dict no longer carries unused `Ia_*`/`off_*` keys. (#12)
+- Unified config: `signal_processing.sampling_frequency`,
+  `cutoff_frequency` and `filter_order` now default the filter's
+  `f_sample`/`f_butter`/`nbutter`, which were stuck at 100 Hz / 2 Hz / 4.
+  Explicit `filter_params` still win. A cutoff at or above Nyquist raises
+  `ValueError`. (#13)
 
 ## [0.4.8] - 2026-09-07
 
