@@ -25,6 +25,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Explicit `filter_params` still win. A cutoff at or above Nyquist raises
   `ValueError`. (#13)
 
+### Added
+
+- `tasks.identification.problem.qr_relative_tolerance`: QR rank threshold as
+  a fraction of the largest pivot. Default unset (unchanged behaviour). A
+  warning suggests it when the base regressor's condition number exceeds
+  1e6. (#14)
+
 ## [0.4.8] - 2026-09-07
 
 ### Added

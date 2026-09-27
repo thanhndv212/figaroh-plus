@@ -1,11 +1,13 @@
-"""Regression tests for identification bugs #11-#13.
+"""Regression tests for identification bugs #11-#14.
 
 #11 get_standard_parameters paired each joint with the previous body.
 #12 regressor extra-column layout assumed every extra block was enabled.
 #13 unified signal_processing rates never reached the filters.
+#14 no way to set a relative QR rank threshold.
 """
 
 import itertools
+import logging
 import types
 
 import numpy as np
@@ -18,6 +20,7 @@ except ImportError:
 
 from figaroh.identification.base_identification import BaseIdentification
 from figaroh.identification.config import (
+    _extract_problem_config,
     _extract_signal_processing_params,
 )
 from figaroh.identification.parameter import (
@@ -188,3 +191,45 @@ def test_filter_uses_configured_rate():
     # The pre-fix behaviour (f_sample left at 100 Hz) halves the cutoff and
     # visibly attenuates the same signal.
     assert gain({"f_butter": fc}) < 0.7
+
+
+# -- #14 ---------------------------------------------------------------------
+
+
+def test_qr_relative_tolerance_read_from_problem():
+    cfg = {}
+    _extract_problem_config(cfg, {"qr_relative_tolerance": 1e-4})
+    assert cfg["qr_relative_tolerance"] == 1e-4
+    cfg = {}
+    _extract_problem_config(cfg, {})
+    assert cfg["qr_relative_tolerance"] is None
+
+
+def _base_identification(tol):
+    ident = object.__new__(_Ident)
+    ident.identif_config = {"qr_relative_tolerance": tol}
+    ident.standard_parameter = {"p0": 1.0, "p1": 1.0, "p2": 1.0}
+    return ident
+
+
+def test_qr_relative_tolerance_drops_barely_excited_column(caplog):
+    rng = np.random.default_rng(1)
+    W = rng.standard_normal((300, 3))
+    W[:, 2] *= 2e-7  # pivot ~3e-6: above the absolute 1e-6 floor, but tiny
+    tau = W @ np.array([1.0, 2.0, 3.0]) + 1e-3 * rng.standard_normal(300)
+    params = ["p0", "p1", "p2"]
+
+    with caplog.at_level(logging.WARNING):
+        default = _base_identification(None)._calculate_base_parameters(
+            tau, W, params
+        )
+    assert len(default["phi_base"]) == 3
+    assert "ill-conditioned" in caplog.text
+
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        relative = _base_identification(1e-4)._calculate_base_parameters(
+            tau, W, params
+        )
+    assert len(relative["phi_base"]) == 2
+    assert "ill-conditioned" not in caplog.text

@@ -296,6 +296,9 @@ def _extract_problem_config(identif_config, problem):
     # Solver: weighted least squares refinement (see BaseIdentification.solve)
     identif_config["wls"] = problem.get("wls", False)
 
+    # QR rank threshold relative to the largest pivot (None: absolute only)
+    identif_config["qr_relative_tolerance"] = problem.get("qr_relative_tolerance")
+
 
 def _extract_mechanical_params(identif_config, mechanics):
     """Extract mechanical parameters (friction, inertia, ratios).

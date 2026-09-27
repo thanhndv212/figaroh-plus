@@ -1139,7 +1139,13 @@ class BaseIdentification(ABC):
         from figaroh.tools.qrdecomposition import QRDecomposer
 
         # Perform QR decomposition using explicit decomposer to access M matrix
-        decomposer = QRDecomposer(tolerance=getattr(self, "tol_qr", 1e-6))
+        # Rank threshold: absolute ``tol_qr``, or, when
+        # ``qr_relative_tolerance`` is set, that fraction of the largest
+        # pivot (scale-independent; the absolute value stays as a floor).
+        decomposer = QRDecomposer(
+            tolerance=getattr(self, "tol_qr", 1e-6),
+            relative_tolerance=self.identif_config.get("qr_relative_tolerance"),
+        )
         W_base, base_param_dict, base_parameters, phi_base, phi_std = (
             decomposer.double_decomposition(
                 tau_processed,
@@ -1148,6 +1154,16 @@ class BaseIdentification(ABC):
                 self.standard_parameter,
             )
         )
+
+        cond_base = decomposer.get_diagnostics()["cond_R1"]
+        if cond_base > 1e6:
+            logger.warning(
+                "Base regressor is ill-conditioned (cond = %.1e): some base "
+                "parameters are barely excited and will fit noise. Set "
+                "tasks.identification.problem.qr_relative_tolerance "
+                "(e.g. 1e-4) to drop them, or improve the excitation.",
+                cond_base,
+            )
 
         # Store M matrix and params_r for optional reconstruction
         self._M_matrix = decomposer.get_M()
