@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- `get_standard_parameters` read each joint's CAD inertia from the body
+  before it (`model.inertias[i]` instead of `[i + 1]`), so `tau_ref`, the
+  nominal validation torque/`improvement_pct` and the reconstruction prior
+  were all off by one body. Base parameters were unaffected. (#11)
+
 ## [0.4.8] - 2026-09-07
 
 ### Added

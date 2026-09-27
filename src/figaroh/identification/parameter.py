@@ -266,7 +266,7 @@ def get_standard_parameters(model, identif_config=None):
         # barycenter and 𝑆(𝑐) is the the skew matrix representation of the
         # cross product operator from Vector of spatial inertias supported by
         # each joint.
-        pinocchio_params = model.inertias[link_idx].toDynamicParameters()
+        pinocchio_params = model.inertias[link_idx + 1].toDynamicParameters()
 
         # Rearrange from Pinocchio order [m, mx, my, mz, Ixx, Ixy, Iyy, Ixz,
         # Iyz, Izz] to desired order [Ixx, Ixy, Ixz, Iyy, Iyz, Izz, mx, my,
