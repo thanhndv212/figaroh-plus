@@ -2218,6 +2218,11 @@ template never defines — fixed the same way.)</p>
 <td><em>(no unified equivalent found)</em></td>
 </tr>
 <tr>
+<td><code>qr_relative_tolerance</code></td>
+<td><em>(optional)</em> QR rank threshold as a fraction of the largest pivot. Columns whose pivot falls below it are treated as unidentifiable instead of fitting noise. Unset: only the absolute <code>1e-6</code> threshold applies. <code>1e-4</code> is a reasonable start when the log warns about an ill-conditioned base regressor</td>
+<td><code>problem.qr_relative_tolerance</code></td>
+</tr>
+<tr>
 <td><code>active_joints</code></td>
 <td><em>(optional)</em> Restrict identification to this explicit subset of joint names, instead of every active joint in the chain</td>
 <td><code>joints.active_joints</code></td>
@@ -2243,6 +2248,11 @@ template never defines — fixed the same way.)</p>
 <td><code>ts</code></td>
 <td>Sample period (<strong>seconds</strong>) of the recorded data</td>
 <td><code>signal_processing.sampling_frequency</code> <em>(unified format specifies the rate directly, in Hz, rather than the period)</em></td>
+</tr>
+<tr>
+<td><code>filter_config.filter_params</code></td>
+<td>Arguments of the median + Butterworth filter (<code>f_sample</code>, <code>f_butter</code>, <code>nbutter</code>, <code>med_fil</code>). In the unified format, <code>f_sample</code>, <code>f_butter</code> and <code>nbutter</code> default to <code>sampling_frequency</code>, <code>cutoff_frequency</code> and <code>filter_order</code> (4); an explicit <code>signal_processing.filter_params</code> entry overrides them</td>
+<td><code>signal_processing.filter_params</code></td>
 </tr>
 </tbody>
 </table>
