@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- `get_standard_parameters` read each joint's CAD inertia from the body
+  before it (`model.inertias[i]` instead of `[i + 1]`), so `tau_ref`, the
+  nominal validation torque/`improvement_pct` and the reconstruction prior
+  were all off by one body. Base parameters were unaffected. (#11)
+- Regressor extra columns (`fv`, `fs`, `Ia`, `off`) are now laid out from the
+  enabled flags instead of fixed offsets. Previously any combination other
+  than "friction only" or "all three" raised `IndexError`.
+  `add_standard_additional_parameters` now only emits enabled blocks, so
+  parameter keys always line up with regressor columns. With friction only,
+  the parameter dict no longer carries unused `Ia_*`/`off_*` keys. (#12)
+- Unified config: `signal_processing.sampling_frequency`,
+  `cutoff_frequency` and `filter_order` now default the filter's
+  `f_sample`/`f_butter`/`nbutter`, which were stuck at 100 Hz / 2 Hz / 4.
+  Explicit `filter_params` still win. A cutoff at or above Nyquist raises
+  `ValueError`. (#13)
+
+### Added
+
+- `tasks.identification.problem.qr_relative_tolerance`: QR rank threshold as
+  a fraction of the largest pivot. Default unset (unchanged behaviour). A
+  warning suggests it when the base regressor's condition number exceeds
+  1e6. (#14)
+
 ## [0.4.8] - 2026-09-07
 
 ### Added

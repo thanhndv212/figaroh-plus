@@ -108,6 +108,7 @@ the layout differs.
 | `is_inertia_regressor` | Include the rigid-body inertial-parameter regressor block | *(no unified equivalent found — always derived)* |
 | `has_coupled_wrist` | Last two wrist joints share differential actuation → adds the `Iam6`/`fvm6`/`fsm6` terms and a coupling transform to the regressor | `coupling.has_coupled_wrist` |
 | `embedded_forces` | Express the external wrench in a body-embedded (tool) frame rather than a fixed/world frame | *(no unified equivalent found)* |
+| `qr_relative_tolerance` | *(optional)* QR rank threshold as a fraction of the largest pivot. Columns whose pivot falls below it are treated as unidentifiable instead of fitting noise. Unset: only the absolute `1e-6` threshold applies. `1e-4` is a reasonable start when the log warns about an ill-conditioned base regressor | `problem.qr_relative_tolerance` |
 | `active_joints` | *(optional)* Restrict identification to this explicit subset of joint names, instead of every active joint in the chain | `joints.active_joints` |
 
 ### `processing_params`
@@ -116,6 +117,7 @@ the layout differs.
 |---|---|---|
 | `cut_off_frequency_butterworth` | Low-pass Butterworth filter cutoff frequency (Hz) applied to position/velocity/acceleration/torque signals before regression | `signal_processing.cutoff_frequency` |
 | `ts` | Sample period (**seconds**) of the recorded data | `signal_processing.sampling_frequency` *(unified format specifies the rate directly, in Hz, rather than the period)* |
+| `filter_config.filter_params` | Arguments of the median + Butterworth filter (`f_sample`, `f_butter`, `nbutter`, `med_fil`). In the unified format, `f_sample`, `f_butter` and `nbutter` default to `sampling_frequency`, `cutoff_frequency` and `filter_order` (4); an explicit `signal_processing.filter_params` entry overrides them | `signal_processing.filter_params` |
 
 !!! warning "`ts` → `nb_samples` is a rate, not a count"
     Despite the name, the legacy parser computes
