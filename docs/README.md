@@ -12,10 +12,11 @@ a sibling directory, so `decisions/` is never read or copied.
 
 ## Building and viewing locally
 
-1. Install the docs dependencies (from the repo root):
+1. Activate `figaroh-dev` and install the docs dependencies (from the repo root):
 
 ```bash
-pip install -r docs/requirements.txt
+conda activate figaroh-dev
+python -m pip install -e '.[docs]'
 ```
 
 2. Live-reloading local preview:
@@ -73,7 +74,8 @@ docstrings — no manual member lists to maintain.
 ## Deployment
 
 `.github/workflows/docs.yml` builds and deploys the site to the `gh-pages`
-branch automatically on every push to `main` (and on PRs, as a build-only
-check). No manual deployment step is needed; the workflow installs
-`docs/requirements.txt`, runs `mkdocs build`, and pushes `site/` via
-`JamesIves/github-pages-deploy-action`.
+branch after a successful build on pushes to `main` only. PRs and pushes to
+`devel` build without deployment. The build uses the conda environment plus
+the `docs` extra; an install/build error fails the job. The separate deploy job
+consumes the built artifact with write permission. See [CONTRIBUTING](../CONTRIBUTING.md)
+for branch rules and required checks.

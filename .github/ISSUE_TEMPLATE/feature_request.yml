@@ -1,0 +1,32 @@
+name: Feature or roadmap task
+description: Scope one deliverable with measurable acceptance criteria.
+title: "feat: "
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Problem and outcome
+      description: Who needs this and what should they be able to do? Include the affected area and roadmap milestone/track, or mark it unscheduled.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and dependencies
+      description: Core versus examples changes, prerequisites, linked issues and design decision if needed. List exclusions.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Testable behavior, numerical tolerances or artifact requirements. Separate simulation from physical evidence.
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation and documentation
+      description: Required V0–V3 levels from the validation guide, datasets, optional dependencies, API/config/docs and changelog impact.
+    validations:
+      required: true

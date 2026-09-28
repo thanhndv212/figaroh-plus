@@ -1,113 +1,72 @@
-# AGENTS.md
+# Agent guidance for FIGAROH
 
-Compact guidance for OpenCode sessions working in this repo. Read before editing.
-Every line here is something an agent would likely get wrong without it.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution/branch/release
+workflow. Root workspace instructions also apply. This file holds execution
+constraints and pitfalls; current architecture belongs in
+[ARCHITECTURE.md](ARCHITECTURE.md), priorities in [ROADMAP.md](ROADMAP.md).
 
-## What this is
+## Environment and commands
 
-FIGAROH — Python toolbox for robot/human dynamics identification and geometric
-calibration, URDF-based, built on Pinocchio. Published to PyPI as `figaroh` (0.4.3).
-Forked from the LAAS gitlab repo. Examples and robot models live in a **separate**
-repo (`figaroh-examples`) and are excluded from this package's sdist.
+- All FIGAROH development, tests, lint and docs builds use `figaroh-dev`:
+  `conda activate figaroh-dev` or `conda run -n figaroh-dev ...`.
+- Create it with `conda env create -f environment.yml`; install contributor tools
+  using `python -m pip install -e '.[dev,docs]'`. Use conda for `cyipopt`/IPOPT.
+- Python development/initial CI baseline is 3.12. Package metadata still declares
+  Python >=3.8; this is not a claim that every supported version is CI-tested.
+- Tests: `python -m pytest -q -rs`; one file:
+  `python -m pytest tests/unit/test_identification_regressions.py -q -rs`.
+- Hooks: `pre-commit run --files <changed-files>` (new files must be staged for
+  hooks to see them); whole-tree audit: `pre-commit run --all-files`.
+  Hooks can modify files. Inspect and rerun after formatting.
+- Docs: `python -m mkdocs build` from the repository root. This is MkDocs,
+  not Sphinx. Generated `site/` is ignored.
+- Consult [validation.md](docs/development/validation.md) for the critical lint
+  command, known legacy debt, optional backend checks and evidence requirements.
 
-## Setup
+## Source navigation
 
-- **Core dev install:** `pip install -e .` (src layout, hatchling backend). Required
-  before any `import figaroh` works.
-- **Need IPOPT?** Use conda: `conda env create -f environment.yml` then
-  `conda activate figaroh-dev`. This is the only supported way to get `cyipopt`
-  (Python 3.12, conda-forge), which `figaroh.optimal` / `tools/robotipopt.py` require
-  for trajectory optimization. `cyipopt` is not pip-installable in practice — that is
-  the whole reason the conda env exists.
-- `requires-python >= 3.8`, but the dev/conda env pins 3.12.
+When `.codegraph/` exists, use `codegraph explore` or `codegraph node` before
+text searches for code understanding. It may not index Markdown/config files;
+read those directly. Re-check source when a document claims a feature is absent
+or complete. Do not use an old test count as present-day validation evidence.
 
-## Commands
+## Repository boundaries
 
-- **Tests:** `pytest` from repo root. There is **no pytest config** (no `[tool.pytest]`,
-  no `pytest.ini`/`setup.cfg`/`tox.ini`) — defaults apply and discovery picks up `tests/`.
-  - Single file: `pytest tests/unit/test_solver.py`
-  - Single test: `pytest tests/unit/test_solver.py::TestLinearSolver::test_name`
-  - Shared fixtures in `tests/conftest.py`: `temp_urdf`, `sample_robot_data`,
-    `regressor_params`.
-  - Tests import submodules directly, e.g. `from figaroh.tools.solver import LinearSolver`.
-    Tests needing Pinocchio/meshcat/robot models (collisions, ipopt, visualization) will
-    fail or skip without those deps + model files.
-- **Lint/format:** `pre-commit run --all-files` — this is the real quality gate.
-- **Docs:** `cd docs && make html` (Sphinx).
+- `src/figaroh/` is the installable library. Robots, models and user scripts live
+  in sibling `figaroh-examples`; keep robot-specific logic there.
+- Normal core PRs target `devel`; release PRs target `main`. Examples PRs target
+  that repository's `main`. See CONTRIBUTING for hotfixes and back-merges.
+- Core CI now has tests and lint in addition to docs. Hosted check results and
+  branch protection must be verified independently; a workflow file is not proof
+  of a green run or an enforced rule.
 
-## Quality gate = pre-commit, not CI
+## Implementation pitfalls
 
-- CI (`.github/workflows/docs.yml`) **only builds docs** on push/PR to `main`. There is
-  **no test or lint CI workflow** — do not assume CI will catch type/test errors.
-- Pre-commit hooks: `flake8` (ignores E501 line length), `clang-format --style=Google`,
-  `trailing-whitespace`, `check-yaml`, `check-ast`, `check-merge-conflict`,
-  `check-added-large-files` (100 MB, excludes `models/`).
-- `pre-commit` `ci.autoupdate_branch` is `devel` → **`devel` is the dev branch, `main`
-  is the release branch.** PRs target `main`.
+- `backends/pinocchio.py` and `backends/mujoco.py` both exist. `Robot.backend`
+  lazily wraps its Pinocchio model; direct Pinocchio calls and model mutation
+  still exist. Full backend independence is not implemented.
+- `RobotIdentificationSystem.from_mjcf()` raises `NotImplementedError`.
+  The `backend=` name in `from_urdf()` does not itself switch the Robot backend.
+- Use the parameter conversion helpers: Pinocchio and FIGAROH inertial parameter
+  ordering differs. Regressor rows are joint-major; enabled extra blocks and
+  parameter keys must stay aligned.
+- Projection/reconstruction are opt-in at runtime. Projection keeps raw and
+  projected result dictionaries; choose the intended result stage explicitly.
+  `picos` is currently a package dependency even when projection is disabled.
+- URDF first-moment/inertia handlers are currently stubs. A successful write is
+  not proof of a physically complete exported model; require reload checks.
+- Library logging uses module loggers/NullHandler. Do not introduce root logging
+  configuration or `print` into library workflows.
+- Tests needing GUI or optional dependencies can skip. Report why; do not hide
+  a failing regression by turning it into a skip.
 
-## Architecture — trust the code, not ARCHITECTURE.md
+## Documentation updates
 
-`ARCHITECTURE.md` is partly aspirational and out of date. Verify against the actual tree:
+Update canonical root documents; docs-site roadmap/architecture pages embed
+those files. `docs/decisions/` owns design rationale and is linked from the site.
+Keep acceptance criteria/task status in issues and release history in CHANGELOG.
+Check references when files move; update the roadmap only when its outcome or
+priority changes. Preserve historical decisions with explicit status/supersession.
 
-- **The "Pinocchio backend" does not exist as a backend module.** `src/figaroh/backends/`
-  contains only `base.py` (abstract `DynamicsBackend`) and `mujoco.py`.
-  `backends/__init__.py` tries to import `pinocchio.py`, `genesis.py`, `isaacsim.py` —
-  those files do not exist, so the imports silently fail and `get_backend("pinocchio")`
-  raises `ValueError: ... not available`. Ignore ARCHITECTURE.md's "✅ Implemented
-  (Default)" claim for PinocchioBackend.
-- **Pinocchio is used directly**, imported as `import pinocchio as pin` throughout
-  `tools/`, `calibration/`, `identification/` (e.g. `pin.computeJointTorqueRegressor`,
-  `RobotWrapper`). It is **not** routed through the backend abstraction.
-- **Real `tools/` filenames** (ARCHITECTURE.md gets some wrong): `qrdecomposition.py`
-  (not `qr_decomposer.py`), `robotcollisions.py`, `robotipopt.py`,
-  `robotvisualization.py`, `randomdata.py`, `load_robot.py`, `regressor.py`, `robot.py`,
-  `solver.py`.
-- `tools/__init__.py` eagerly imports `robot, randomdata, regressor, qrdecomposition,
-  robotvisualization, robotcollisions, robotipopt` — but **not** `solver` or
-  `load_robot`. Import those by full path (`figaroh.tools.solver`).
-- `figaroh/__init__.py` eagerly imports all subpackages, so `import figaroh` pulls
-  Pinocchio immediately.
-
-## Three layers (real)
-
-1. **Workflow** (`calibration/`, `identification/`, `optimal/`) — `Base*` abstract
-   classes; users subclass and implement `cost_function` etc.
-2. **Tools** (`tools/`) — `RegressorBuilder`, `LinearSolver` (10+ methods: lstsq, qr,
-   svd, ridge, lasso, elastic_net, tikhonov, constrained, robust, weighted),
-   `QRDecomposer`, `CollisionManager`, `RobotIPOPTSolver`.
-3. **Backends** (`backends/`) — abstract `DynamicsBackend`; only MuJoCo implemented.
-   Treat as WIP.
-
-## Conventions / gotchas
-
-- **Inertial parameter ordering differs** between Pinocchio
-  (`[m, mx, my, mz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz]`) and the "standard" format used by
-  solvers. Use `reorder_inertial_parameters` in `identification/parameter.py` — do not
-  hand-roll the permutation.
-- **Physical consistency (SDP projection) is optional and default-off.** Enable via
-  `identification.physical_consistency.enabled: true`. Needs `picos` + an SDP solver
-  (e.g. `cvxopt`).
-- **Config:** YAML with template inheritance via `utils.UnifiedConfigParser`; legacy
-  formats are auto-detected.
-- **Logging:** library uses the NullHandler pattern — do not add `print` or root logging
-  in library code.
-- `.github/skills/` and `ROADMAP_PRIVATE.md` are **gitignored** — local-only, not
-  shipped. Do not treat them as committed repo content.
-
-## Before every push
-
-Docs here live in several places that don't auto-sync: `README.md`,
-`CHANGELOG.md`, `ARCHITECTURE.md`, `ROADMAP.md`, `docs/decisions/` (design
-rationale, not built into the site), `docs/source/` (the built MkDocs site).
-A change in one often leaves another stale — a renamed/merged decision doc
-breaks links elsewhere; a shipped feature leaves `ROADMAP.md`'s status
-marker wrong. Before `git push`:
-1. Grep for stale references to anything renamed/moved/merged this session:
-   `grep -rln "<old-name>" docs/ CHANGELOG.md README.md ARCHITECTURE.md ROADMAP.md`.
-2. Add a `CHANGELOG.md` `[Unreleased]` entry — this project logs doc-only
-   reorganizations too (`git log --grep "^docs"` for precedent), not just code.
-3. If a `ROADMAP.md`-tracked item's status changed, fix its marker rather
-   than leaving it stale.
-See the `figaroh-devops` skill's "Pre-Push Documentation Sync" section for
-the full checklist; its "Release Procedure" is the separate, heavier
-version-bump case.
+`.github/skills/` and `ROADMAP_PRIVATE.md` are ignored local material.
+`site/`, `dist/` and `.codegraph/` are generated; do not commit them.
