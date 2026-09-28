@@ -1,52 +1,58 @@
-name: Build and Deploy Docs
+name: Documentation
 
 on:
   push:
-    branches: [ main ]
+    branches: [main, devel]
   pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 
-# These permissions are needed for deployment
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  docs:
+    name: Docs
     runs-on: ubuntu-latest
-    # Remove environment specification to avoid protection rules
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash -el {0}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v7
+      - uses: conda-incubator/setup-miniconda@v4
         with:
-          python-version: '3.x'
-
-      - name: Install dependencies
+          miniforge-version: latest
+          environment-file: environment.yml
+          activate-environment: figaroh-dev
+      - run: python -m pip install -e '.[docs]'
+      - name: Build documentation
+        # Existing docstring/link warnings are tracked separately; build errors fail.
         run: |
-          sudo apt-get update
-          sudo apt-get install -y pkg-config coinor-libipopt-dev libblas-dev liblapack-dev
-          python -m pip install --upgrade pip
-          pip install -r docs/requirements.txt
-          # Install only essential dependencies for docs build
-          pip install numpy scipy matplotlib pyyaml
-          # Try to install the package, but don't fail if it errors
-          pip install -e . || echo "Package install failed, continuing with docs build"
-
-      - name: Build Documentation
-        run: |
-          # Docstrings across the codebase predate mkdocstrings/griffe's
-          # stricter checks (missing type annotations, etc.) — same
-          # tolerance the previous Sphinx build had (warnings, not errors).
-          mkdocs build
-          # Create .nojekyll file for GitHub Pages
+          python -m mkdocs build
           touch site/.nojekyll
-          # Verify build output
-          ls -la site/ || echo "Build output check"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: documentation
+          path: site/
+          include-hidden-files: true
 
+  deploy:
+    name: Deploy docs
+    needs: docs
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: documentation
+          path: site
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:

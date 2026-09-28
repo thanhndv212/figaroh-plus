@@ -69,13 +69,42 @@ unbounded backend dependency.
 
 ## CI rollout and limits
 
+The first hosted Linux run passed lint and docs but found two previously hidden
+test-portability problems: TIAGo mesh symlinks require the sibling examples repo,
+and the QR precision assertion used NumPy's default relative tolerance, masking
+six-decimal rounding differences for order-one entries. CI now fetches the pinned
+mesh subtree; the precision assertion uses `rtol=0, atol=1e-12`. The empty-matrix
+test also asserts its returned shape/mapping instead of discarding the result.
+No numerical algorithm or failing-test selection was changed to obtain green.
+
 The added workflows declare tests, changed-file hooks, critical lint, an
 advisory full-tree lint audit, docs build and artifacts. Solver imports are
 checked before tests so solver coverage cannot silently disappear. Docs build
 and deployment are separate jobs; only a push to main can deploy. The old
 unconditional PR deployment path and ignored package-install failures are removed.
 
-Local results do not establish hosted Linux results. Hosted checks and branch
-protection must be verified after publication. No release, PyPI publication or
-physical hardware validation is part of this change. M0 remains open until
-hosted checks pass; the broader lint and warning cleanup is tracked follow-up.
+## Hosted validation
+
+Commit `556f070124ff6f3fb5dea81265cb7a96ec6b24ce` passed the
+[Linux Core CI run](https://github.com/thanhndv212/figaroh-plus/actions/runs/36441865400)
+and [docs run](https://github.com/thanhndv212/figaroh-plus/actions/runs/36441865407)
+on 2026-09-28, using Python 3.12 and the examples revision pinned above.
+
+| Hosted check | Result |
+|---|---|
+| Core full suite, without MuJoCo | 499 passed, 21 skipped |
+| MuJoCo 3.9.0 full suite | 527 passed, 6 skipped |
+| MuJoCo 3.14.0 full suite | 527 passed, 6 skipped |
+| Critical lint and all changed-file hooks | Passed |
+| Docs build | Passed; deployment correctly skipped for the PR |
+| Full-tree lint backlog | Existing debt reported in the advisory artifact |
+
+The extra core-only skips cover absent MuJoCo, including the new regression
+module. With MuJoCo installed, the remaining six skips are the same four GUI
+checks and two obsolete regressor mocks recorded above. Each test job archives
+JUnit, installed dependency versions and the exact examples revision.
+
+M0's implementation is validated in draft PRs #17–#19 and awaits integration
+into `devel`. Server-side branch protection is not established by these runs.
+No release, PyPI publication or physical hardware validation is part of this
+change; broader lint and warning cleanup remains follow-up work.

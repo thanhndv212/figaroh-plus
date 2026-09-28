@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   inventory with a source-audited description of current contracts and limits.
 - Document the `devel` integration / `main` release workflow in CONTRIBUTING,
   refresh agent guidance, and add issue/PR templates and a design-decision index.
+- Add Python 3.12 core and MuJoCo 3.9/3.14 test jobs, critical whole-tree lint,
+  changed-file pre-commit checks, and an advisory report of existing lint debt.
+  Documentation builds now check PRs to both development and release branches;
+  installation failures propagate, and deployment only runs on pushes to `main`.
+  CI fetches the pinned examples mesh fixtures required by the full suite and
+  fixes a platform-sensitive QR precision assertion to use absolute tolerance.
 
 ### Fixed
 

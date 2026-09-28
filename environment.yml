@@ -1,9 +1,10 @@
 name: figaroh-dev
 channels:
   - conda-forge
-  - defaults
+  - nodefaults
 dependencies:
   - python==3.12
   - cyipopt
+  - pip
   - pip:
     - -e .

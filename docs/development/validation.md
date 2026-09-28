@@ -4,6 +4,14 @@ Run local commands from the core repository in `figaroh-dev` (Python 3.12).
 Tests should establish numerical or user-visible behavior rather than merely
 mirror implementation. Dataset/model provenance is part of validation evidence.
 
+The TIAGo fixture mesh symlinks require the sibling `figaroh-examples` checkout.
+CI fetches only its mesh subtree at commit
+`3a2c8e9b07e10b397cda79dbb04a5e88469bcc22` and archives the revision. For a new
+local workspace, clone that repository next to `figaroh` before the full suite;
+keep an existing examples checkout intact and record its revision. Kinematic
+models/data are already tracked in core. Do not replace missing geometry with
+empty directories or skip its existence test.
+
 ## Levels
 
 | Level | Required for | Evidence |
