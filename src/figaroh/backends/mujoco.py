@@ -12,7 +12,7 @@ Features:
 """
 
 import numpy as np
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from .base import DynamicsBackend
 
 try:
@@ -113,7 +113,13 @@ class MuJoCoBackend(DynamicsBackend):
         mj.mj_crb(self.model, self.data)
 
         # Extract full mass matrix from sparse representation
-        mj.mj_fullM(self.model, self._M, self.data.qM)
+        # MuJoCo 3.10 changed mj_fullM from (model, dst, qM) to
+        # (model, data, dst); newer releases also remove data.qM.
+        try:
+            mj.mj_fullM(self.model, self.data, self._M)
+        except TypeError:
+            # The older Python binding rejects the new argument types.
+            mj.mj_fullM(self.model, self._M, self.data.qM)
 
         return self._M.copy()
 
