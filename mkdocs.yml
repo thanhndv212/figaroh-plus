@@ -98,6 +98,7 @@ nav:
       - Utils: api/utils.md
       - Visualisation: api/visualisation.md
   - Further Reading:
+      - Contributing: further_reading/contributing.md
       - Roadmap: further_reading/roadmap.md
       - Changelog: further_reading/changelog.md
       - FAQ: further_reading/faq.md

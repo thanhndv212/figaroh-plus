@@ -4,7 +4,9 @@
 2026-06-27
 
 ## Status
-In Progress
+Historical implementation plan. See the [decision index](README.md) and
+[current reporting guide](../source/reporting_and_verification.md) for scope and
+current usage; the checklist below preserves the original implementation plan.
 
 ## Context
 

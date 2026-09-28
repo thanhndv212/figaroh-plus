@@ -13,9 +13,13 @@ FIGAROH is a Python toolbox providing efficient and highly flexible frameworks f
 **📦 Available on PyPI:** `pip install figaroh`
 **📖 Version:** 0.4.8
 
+For contributors: [Roadmap](https://github.com/thanhndv212/figaroh-plus/blob/main/ROADMAP.md), [Architecture](https://github.com/thanhndv212/figaroh-plus/blob/main/ARCHITECTURE.md),
+[Contribution workflow](https://github.com/thanhndv212/figaroh-plus/blob/main/CONTRIBUTING.md), and
+[validation guide](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/development/validation.md).
+
 > Note: This repo is a fork from [gitlab repo](https://gitlab.laas.fr/gepetto/figaroh) of which the author is no longer a contributor.
 
-Working with an AI coding agent? [`skills/`](skills/) holds agent skills that set up a FIGAROH task end to end — start with [`skills/figaroh-start`](skills/figaroh-start/SKILL.md), which routes to the right package and directory, and [`skills/figaroh-setup-env`](skills/figaroh-setup-env/SKILL.md), which ships a `doctor.sh` that verifies your environment before anything runs.
+Working with an AI coding agent? [`skills/`](https://github.com/thanhndv212/figaroh-plus/blob/main/skills/) holds agent skills that set up a FIGAROH task end to end — start with [`skills/figaroh-start`](https://github.com/thanhndv212/figaroh-plus/blob/main/skills/figaroh-start/SKILL.md), which routes to the right package and directory, and [`skills/figaroh-setup-env`](https://github.com/thanhndv212/figaroh-plus/blob/main/skills/figaroh-setup-env/SKILL.md), which ships a `doctor.sh` that verifies your environment before anything runs.
 
 ---
 
@@ -103,7 +107,7 @@ cd figaroh-examples && pip install -r requirements.txt
   for the full walkthrough
 ---
 
-## Core Modules (See more at [ARCHITECTURE](ARCHITECTURE))
+## Core Modules (See more at [Architecture](https://github.com/thanhndv212/figaroh-plus/blob/main/ARCHITECTURE.md))
 
 ### `figaroh.calibration` — Geometric Calibration
 
@@ -289,4 +293,4 @@ If you use FIGAROH in your research, please cite the following papers:
 
 ## License
 
-Please refer to the [LICENSE](LICENSE) file for licensing information.
+Please refer to the [LICENSE](https://github.com/thanhndv212/figaroh-plus/blob/main/LICENSE) file for licensing information.

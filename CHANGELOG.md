@@ -7,12 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Reorganize the roadmap around delivery outcomes and exit gates, preserve its
+  previous detailed planning snapshot in an archive, and replace the architecture
+  inventory with a source-audited description of current contracts and limits.
+- Document the `devel` integration / `main` release workflow in CONTRIBUTING,
+  refresh agent guidance, and add issue/PR templates and a design-decision index.
+
 ### Fixed
 
 - MuJoCo mass-matrix evaluation now supports both `mj_fullM` signatures: the
   pre-3.10 `(model, destination, qM)` form and the newer `(model, data, destination)`
   form. This fixes failures with recent MuJoCo versions that removed `data.qM`.
-
 
 - `get_standard_parameters` read each joint's CAD inertia from the body
   before it (`model.inertias[i]` instead of `[i + 1]`), so `tau_ref`, the
