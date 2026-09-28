@@ -18,6 +18,21 @@ class RegressorConfig:
     force_torque: Optional[List[str]] = None
     additional_columns: int = 0
 
+    def extra_blocks(self) -> List[str]:
+        """Enabled per-joint extra parameter blocks, in column order.
+
+        The order matches ``add_standard_additional_parameters``:
+        viscous friction, static friction, actuator inertia, joint offset.
+        """
+        blocks = []
+        if self.has_friction:
+            blocks += ["fv", "fs"]
+        if self.has_actuator_inertia:
+            blocks.append("ia")
+        if self.has_joint_offset:
+            blocks.append("off")
+        return blocks
+
 
 class RegressorBuilder:
     """Enhanced regressor builder with better organization."""
@@ -29,6 +44,16 @@ class RegressorBuilder:
         self._has_backend = hasattr(robot, "backend")
         self.nv = robot.backend.nv if self._has_backend else robot.model.nv
         self.nonzero_inertias = self._get_nonzero_inertias()
+        # Start of each enabled extra block, in units of blocks after the
+        # 10 inertial columns per body; disabled blocks take no columns.
+        self._extra_block_index = {
+            name: k for k, name in enumerate(self.config.extra_blocks())
+        }
+        self._n_extra_columns = len(self._extra_block_index)
+
+    def _extra_col(self, block: str, n: int, j: int) -> int:
+        """Column of extra parameter ``block`` for joint ``j`` (n per block)."""
+        return 10 * n + self._extra_block_index[block] * n + j
 
     def build_basic_regressor(
         self, q: np.ndarray, v: np.ndarray, a: np.ndarray, identif_config=None
@@ -86,7 +111,7 @@ class RegressorBuilder:
         self, Q, V, A, N, identif_config=None
     ) -> np.ndarray:
         """Build regressor for joint torque identification."""
-        W_ = np.zeros([N * self.nv, (10 + self.config.additional_columns) * self.nv])
+        W_ = np.zeros([N * self.nv, (10 + self._n_extra_columns) * self.nv])
 
         for i in range(N):
             if self._has_backend:
@@ -111,7 +136,7 @@ class RegressorBuilder:
             nb_bodies = len(self.robot.model.inertias) - 1
         ft_components = self.config.force_torque or []
 
-        W_ = np.zeros([N * 6, (10 + self.config.additional_columns) * nb_bodies])
+        W_ = np.zeros([N * 6, (10 + self._n_extra_columns) * nb_bodies])
 
         for i in range(N):
             if self._has_backend:
@@ -136,21 +161,18 @@ class RegressorBuilder:
             base_idx = j * N + sample_idx
             W[base_idx, : 10 * self.nv] = W_temp[j, :]
 
-            # Additional parameters
-            param_start = 10 * self.nv
-
             if j in identif_config["act_idxv"]:
                 if self.config.has_friction:
-                    W[base_idx, param_start + j] = V[sample_idx, j]  # fv
-                    W[base_idx, param_start + self.nv + j] = np.sign(
+                    W[base_idx, self._extra_col("fv", self.nv, j)] = V[sample_idx, j]
+                    W[base_idx, self._extra_col("fs", self.nv, j)] = np.sign(
                         V[sample_idx, j]
-                    )  # fs
+                    )
 
                 if self.config.has_actuator_inertia:
-                    W[base_idx, param_start + 2 * self.nv + j] = A[sample_idx, j]  # ia
+                    W[base_idx, self._extra_col("ia", self.nv, j)] = A[sample_idx, j]
 
                 if self.config.has_joint_offset:
-                    W[base_idx, param_start + 2 * self.nv + self.nv + j] = 1.0  # offset
+                    W[base_idx, self._extra_col("off", self.nv, j)] = 1.0
 
     def _fill_wrench_regressor_sample(
         self,
@@ -175,20 +197,16 @@ class RegressorBuilder:
 
             if identif_config and j in identif_config["act_idxv"]:
                 if self.config.has_friction:
-                    W[base_idx, 10 * nb_bodies + j] = V[sample_idx, j]  # fv
-                    W[base_idx, 10 * nb_bodies + nb_bodies + j] = np.sign(
+                    W[base_idx, self._extra_col("fv", nb_bodies, j)] = V[sample_idx, j]
+                    W[base_idx, self._extra_col("fs", nb_bodies, j)] = np.sign(
                         V[sample_idx, j]
-                    )  # fs
+                    )
 
                 if self.config.has_actuator_inertia:
-                    W[base_idx, 10 * nb_bodies + 2 * nb_bodies + j] = A[
-                        sample_idx, j
-                    ]  # ia
+                    W[base_idx, self._extra_col("ia", nb_bodies, j)] = A[sample_idx, j]
 
                 if self.config.has_joint_offset:
-                    W[base_idx, 10 * nb_bodies + 2 * nb_bodies + nb_bodies + j] = (
-                        1  # offset
-                    )
+                    W[base_idx, self._extra_col("off", nb_bodies, j)] = 1
 
     def _reorder_parameters(self, W: np.ndarray, num_params: int) -> np.ndarray:
         """Reorder parameters to standard format."""

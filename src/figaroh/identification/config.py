@@ -231,7 +231,20 @@ def _extract_signal_processing_params(identif_config, signal_processing):
     filter_config_["differentiation_method"] = signal_processing.get(
         "differentiation_method", "gradient"
     )
-    filter_config_["filter_params"] = signal_processing.get("filter_params", {})
+    # _apply_filters takes f_sample/f_butter/nbutter; default them from the
+    # section so the configured rates reach the Butterworth filter.
+    # Explicit filter_params entries still win.
+    filter_params = dict(signal_processing.get("filter_params") or {})
+    filter_params.setdefault("f_sample", sampling_freq)
+    filter_params.setdefault("f_butter", cutoff_freq)
+    filter_params.setdefault("nbutter", signal_processing.get("filter_order", 4))
+    if not 0 < filter_params["f_butter"] < filter_params["f_sample"] / 2:
+        raise ValueError(
+            f"signal_processing cutoff ({filter_params['f_butter']} Hz) must be "
+            f"between 0 and the Nyquist frequency "
+            f"({filter_params['f_sample'] / 2} Hz)"
+        )
+    filter_config_["filter_params"] = filter_params
 
     identif_config["filter_config"] = filter_config_
 
@@ -282,6 +295,9 @@ def _extract_problem_config(identif_config, problem):
 
     # Solver: weighted least squares refinement (see BaseIdentification.solve)
     identif_config["wls"] = problem.get("wls", False)
+
+    # QR rank threshold relative to the largest pivot (None: absolute only)
+    identif_config["qr_relative_tolerance"] = problem.get("qr_relative_tolerance")
 
 
 def _extract_mechanical_params(identif_config, mechanics):
