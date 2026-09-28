@@ -123,7 +123,8 @@ class TestQRDecomposer:
         W_empty = np.array([]).reshape(0, 0)
         tau_empty = np.array([])
         result = decomposer.decompose_with_pivoting(tau_empty, W_empty, [])
-        # Add assertions about what the expected result should be
+        assert result[0].shape == (0, 0)
+        assert result[1] == {}
 
         # Mismatched dimensions
         W = np.random.randn(10, 3)
@@ -451,11 +452,12 @@ class TestNumericalImprovements:
 
         dec = QRDecomposer(tolerance=1e-7)
         result = dec.decompose(W, params, method="double")
-        # At least one beta entry should differ from its 6dp rounded version
+        # Use an absolute threshold: the default relative tolerance hides the
+        # rounding error for order-one entries on some BLAS implementations.
         beta_flat = result.beta.ravel()
         rounded_flat = np.round(beta_flat, 6)
         assert not np.allclose(
-            beta_flat, rounded_flat, atol=0
+            beta_flat, rounded_flat, rtol=0, atol=1e-12
         ), "beta appears to be rounded to 6dp; expected full precision"
 
 

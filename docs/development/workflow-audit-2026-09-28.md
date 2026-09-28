@@ -69,6 +69,14 @@ unbounded backend dependency.
 
 ## CI rollout and limits
 
+The first hosted Linux run passed lint and docs but found two previously hidden
+test-portability problems: TIAGo mesh symlinks require the sibling examples repo,
+and the QR precision assertion used NumPy's default relative tolerance, masking
+six-decimal rounding differences for order-one entries. CI now fetches the pinned
+mesh subtree; the precision assertion uses `rtol=0, atol=1e-12`. The empty-matrix
+test also asserts its returned shape/mapping instead of discarding the result.
+No numerical algorithm or failing-test selection was changed to obtain green.
+
 The added workflows declare tests, changed-file hooks, critical lint, an
 advisory full-tree lint audit, docs build and artifacts. Solver imports are
 checked before tests so solver coverage cannot silently disappear. Docs build

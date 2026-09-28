@@ -16,6 +16,7 @@ concurrency:
 
 env:
   MPLBACKEND: Agg
+  EXAMPLES_REVISION: 3a2c8e9b07e10b397cda79dbb04a5e88469bcc22
 
 jobs:
   tests:
@@ -37,6 +38,16 @@ jobs:
         shell: bash -el {0}
     steps:
       - uses: actions/checkout@v7
+      - name: Fetch pinned TIAGo mesh fixtures
+        # The tracked fixture symlinks resolve into this sibling repository.
+        run: |
+          git init ../figaroh-examples
+          git -C ../figaroh-examples remote add origin https://github.com/thanhndv212/figaroh-examples.git
+          git -C ../figaroh-examples sparse-checkout init --cone
+          git -C ../figaroh-examples sparse-checkout set models/tiago_description/meshes
+          git -C ../figaroh-examples fetch --depth=1 --filter=blob:none origin "$EXAMPLES_REVISION"
+          git -C ../figaroh-examples checkout --detach FETCH_HEAD
+          git -C ../figaroh-examples rev-parse HEAD > examples-revision.txt
       - uses: conda-incubator/setup-miniconda@v4
         with:
           miniforge-version: latest
@@ -66,6 +77,7 @@ jobs:
           path: |
             test-results.xml
             installed-versions.txt
+            examples-revision.txt
 
   lint:
     name: Lint

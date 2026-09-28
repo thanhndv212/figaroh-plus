@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   changed-file pre-commit checks, and an advisory report of existing lint debt.
   Documentation builds now check PRs to both development and release branches;
   installation failures propagate, and deployment only runs on pushes to `main`.
+  CI fetches the pinned examples mesh fixtures required by the full suite and
+  fixes a platform-sensitive QR precision assertion to use absolute tolerance.
 
 ### Fixed
 
