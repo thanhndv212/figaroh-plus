@@ -49,8 +49,9 @@ linked validation evidence, not just the presence of a module.
 | M2 — Composable calibration and identification | Later, after M1 | Smaller pipeline stages and reusable residual/regressor terms | One accepted interface decision; existing examples retain numerical behavior; one new composed example passes held-out validation |
 | M3 — Backend parity and broader examples | Later, after M1 | Supported backend operations have measured parity | Capability matrix backed by tests; public API selects the actual backend; representative examples and same-environment accuracy/runtime comparisons; unsupported paths fail explicitly |
 
-M0 is being implemented on this branch. It remains open until hosted checks
-pass. M1–M3 describe delivery outcomes, not promised release versions or dates.
+M0's implementation has passed hosted checks in the draft PR stack and awaits
+integration into `devel`; see the audit record for dated results. M1–M3 describe
+delivery outcomes, not promised release versions or dates.
 Select a version when the scope and compatibility impact are known.
 
 ## Work to split into issues
