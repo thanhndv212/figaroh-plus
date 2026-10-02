@@ -1,0 +1,46 @@
+name: 'Delivery package tracker'
+description: 'Maintainers only — one per delivery package; groups its work issues across both repositories.'
+title: "<package ID> — <plain-language name> (delivery tracker)"
+labels: ["type:tracking", "delivery"]
+body:
+  - type: input
+    id: roadmap
+    attributes:
+      label: 'Roadmap milestone and gate'
+      description: 'e.g. "M1: trustworthy physical-model workflow, gate M1.3 (export)".'
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: 'Why this package exists'
+      description: 'The user-facing gap it closes, and what can proceed now vs. what waits.'
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: 'Done when'
+      description: 'Package-level acceptance, including the integration evidence recorded at closure.'
+    validations:
+      required: true
+  - type: textarea
+    id: work
+    attributes:
+      label: 'Work issues'
+      description: 'Attach them as sub-issues of this tracker; list them here as repo-qualified references with status.'
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: 'Dependencies'
+      value: |
+        - Blocked by: nothing
+        - Unblocks:
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        Close a tracker last, following the [package closure rules](https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/plans/identification-calibration-delivery.md#work-package-milestone-rules).

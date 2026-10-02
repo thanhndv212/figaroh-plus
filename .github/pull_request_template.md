@@ -1,22 +1,36 @@
-## Problem and resulting behavior
+<!-- Base: `devel` for normal work; `main` only for a release PR from devel or a hotfix.
+     Title: Conventional Commits, e.g. "fix(identification): preserve joint ordering".
+     It becomes the squash commit's subject. -->
 
-Link the issue and milestone/track. Describe the concrete before/after outcome.
-Normal core PRs target `devel`; release/hotfix PRs target `main`.
+Closes figaroh-plus#
+<!-- Merging into devel does not auto-close: close the issue after merge. Paired change? Link figaroh-examples#… -->
 
-## Validation evidence
+## Why
 
-Record commands, environment/revisions, pass/fail/skip counts and relevant
-before/after metrics. State the V0–V3 levels run and explain missing coverage.
-For core/examples changes, identify the tested revision pair and artifacts.
+<!-- The problem, with evidence (numbers, logs, a failing test). -->
 
-## Review checklist
+## What
 
-- [ ] Acceptance criteria met; regression or behavioral coverage included
-- [ ] Required checks pass on the current head; skips explained
-- [ ] CHANGELOG entry and affected user docs updated
-- [ ] Architecture/roadmap/decision record updated when their facts change
-- [ ] No unrelated code or generated artifacts included
-- [ ] Maintainer review and explicit approval received before merging
+<!-- The change, by module. Call out behaviour or default changes explicitly. -->
 
-After merging into `devel`, close the linked issue explicitly if GitHub does not
-close it automatically; update milestone status only after its exit gate passes.
+## Validation
+
+<!-- Levels from docs/development/validation.md. Tick what you ran and paste results.
+     For a level you skipped, say which and why. -->
+
+- [ ] V0 local: changed-file hooks, critical lint (+ `mkdocs build` for docs)
+- [ ] V1 core suite: pass/fail/skip counts, regression test for a fix
+- [ ] V2 example workflow: figaroh-examples commit, command, before/after metrics on the same data
+- [ ] V3 milestone/release: exit criteria from ROADMAP
+- [ ] CI green on the latest commit
+
+## Docs and changelog
+
+- [ ] `CHANGELOG.md` `[Unreleased]` entry, or not user-visible (reason: …)
+- [ ] Docs / ARCHITECTURE / ROADMAP / decision record updated, or not needed
+
+## Found along the way / limits
+
+<!-- Issues noticed but not fixed here (open issues for them), and what this does not establish. -->
+
+- [ ] Maintainer approval received before merging

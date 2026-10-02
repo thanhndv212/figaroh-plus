@@ -1,0 +1,33 @@
+name: 'Bug report'
+description: 'A crash, wrong numerical result or broken install.'
+title: "fix(<area>): "
+labels: ["type:bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: 'What happened'
+      description: 'Expected vs. actual behaviour, and the impact (wrong result, crash, silent skip).'
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 'How to reproduce'
+      description: 'Exact commands and config. Name the model/data, units, joint order and seeds; prefer synthetic or shareable data.'
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 'Logs'
+      description: 'Traceback or the relevant output.'
+      render: text
+  - type: textarea
+    id: environment
+    attributes:
+      label: 'Environment'
+      description: 'figaroh-plus and figaroh-examples commits, Python, OS, `conda list | grep -i -E "pinocchio|cyipopt|mujoco"`.'
+    validations:
+      required: true

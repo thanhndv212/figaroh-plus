@@ -1,0 +1,77 @@
+name: 'Feature / work item'
+description: 'One deliverable — a feature, design fix, audit or docs task — with checkable acceptance.'
+title: "<plain-language outcome> (<package ID, if any>)"
+labels: ["type:feature"]
+body:
+  - type: input
+    id: package
+    attributes:
+      label: 'Delivery package and roadmap milestone'
+      description: 'e.g. "D6 — Inertial URDF export (figaroh-plus#41) · M1". Write "unscheduled" if none.'
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: 'Problem'
+      description: 'What is wrong or missing today, for a reader with no local context. Point to code (file/function) and evidence.'
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: 'Goal'
+      description: 'One or two sentences — the state of the world when this is done.'
+    validations:
+      required: true
+  - type: textarea
+    id: approach
+    attributes:
+      label: 'What needs to be decided and done'
+      description: 'Open design questions, conventions, affected modules. Link a decision record for design-level changes.'
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 'Acceptance criteria'
+      description: 'Testable conditions, with numerical tolerances where relevant. Keep simulation and hardware evidence separate.'
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+    validations:
+      required: true
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: 'Out of scope'
+      description: 'Related work this issue does not cover, with links to where it lives.'
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: 'Dependencies'
+      description: 'Use repo-qualified references (figaroh-plus#N, figaroh-examples#N) and say why. Also set GitHub''s "blocked by" relationship.'
+      value: |
+        - Blocked by: nothing
+        - Unblocks:
+    validations:
+      required: true
+  - type: dropdown
+    id: validation
+    attributes:
+      label: 'Validation level required'
+      description: 'See docs/development/validation.md.'
+      options:
+        - V0 — local checks (every PR)
+        - V1 — core suite
+        - V2 — example workflow (paired core/examples revisions)
+        - V3 — milestone/release
+    validations:
+      required: true
+  - type: checkboxes
+    id: impact
+    attributes:
+      label: 'Impact'
+      options:
+        - label: 'User-visible (CHANGELOG entry)'
+        - label: 'Public API, config schema or docs change'
+        - label: 'Needs a decision record'
+        - label: 'Needs a paired change in the other repository'
