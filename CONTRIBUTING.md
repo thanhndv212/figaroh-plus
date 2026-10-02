@@ -22,6 +22,15 @@ The site includes root roadmap/architecture documents directly. Update their
 canonical files rather than creating another copy. Keep detailed historical
 planning in the archive with an explicit historical banner.
 
+## Planning discussion
+
+The [identification/calibration delivery plan](docs/source/further_reading/plans.md)
+is a **draft for discussion**, not an implementation mandate. Its proposed
+workflow amendments are reviewed alongside the roadmap before being adopted.
+Current issue/PR/merge rules below continue to apply. Keep new API contracts
+in focused decision records and avoid placing unreviewed proposals in the
+current architecture description.
+
 ## Issue → branch → PR
 
 1. Select an existing issue or open one using the feature/bug template. Link its

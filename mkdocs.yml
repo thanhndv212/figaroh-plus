@@ -100,6 +100,7 @@ nav:
   - Further Reading:
       - Contributing: further_reading/contributing.md
       - Roadmap: further_reading/roadmap.md
+      - Delivery Plans: further_reading/plans.md
       - Changelog: further_reading/changelog.md
       - FAQ: further_reading/faq.md
       - Design Decisions: further_reading/decisions.md
