@@ -14,6 +14,13 @@ read the walkthrough for the workflow you need.
 | [Identification Walkthrough](identification_walkthrough.md) | Dynamic parameter identification | How does FIGAROH turn a torque/motion log into a validated dynamic model? |
 | [Optimal Experiment Design](optimal_design.md) | Optimal configurations & trajectories | How does FIGAROH decide *which* poses/motions to measure, instead of guessing? |
 
+## Starting with a new robot or dataset
+
+Begin with [Plan, Fit and Validate](../example_workflow.md) to inventory data,
+choose the model/methods, design acquisition, process measurements and establish
+independent validation. These task walkthroughs start after those decisions;
+the examples repository supplies a reusable experiment brief and integration guide.
+
 ## Prerequisites
 
 - FIGAROH installed (see [Getting Started](../getting_started.md))
@@ -21,8 +28,8 @@ read the walkthrough for the workflow you need.
   — or clone [figaroh-examples](https://github.com/thanhndv212/figaroh-examples)
   and use one of the shipped robot folders directly
 - Basic familiarity with the linear-in-parameters formulation
-  `τ = W(q, q̇, q̈) · φ` used throughout (both calibration and identification
-  reduce to a regressor + a least-squares solve over this equation)
+  `τ = W(q, q̇, q̈) · φ` for dynamics; geometric calibration instead fits
+  pose/contact residuals and analyzes their parameter Jacobian
 
 ## The four workflows, at a glance
 
@@ -31,12 +38,11 @@ Optimal Configuration Generation ──▶ (collect calibration data) ──▶ 
 Optimal Trajectory Generation    ──▶ (collect identification data) ──▶ Dynamic Identification
 ```
 
-The two "optimal" steps are optional but recommended — they replace ad-hoc
-pose/trajectory selection with a mathematically justified minimum-data
-design (see [Optimal Experiment Design](optimal_design.md)). Once you have
-data, calibration and identification are independent of *how* the data was
-collected.
+The two design steps are optional tools for choosing informative, feasible
+experiments (see [Optimal Experiment Design](optimal_design.md)). Acquisition
+coverage, synchronization and sensor quality still limit the resulting fit.
 
-Every workflow ends the same way: call `.verify()` for a pass/fail verdict
-and `.export_html_report()` for a shareable diagnostic — see
-[Reporting & Verification](../reporting_and_verification.md).
+Use verification and HTML reports where supported by the selected workflow —
+see [Reporting & Verification](../reporting_and_verification.md). Inspect skipped
+checks and actual held-out data; a passing verdict alone is not proof of a
+validated model.

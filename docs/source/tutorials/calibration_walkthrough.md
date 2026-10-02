@@ -18,7 +18,7 @@ joint configurations.
 P_measured = forward_kinematics(q, θ_nominal + Δθ) + ε
 ```
 
-- `q` — commanded joint angles (known)
+- `q` — measured joint configurations (document any use of commanded substitutes)
 - `θ_nominal` — nominal kinematic parameters from the URDF
 - `Δθ` — parameter corrections FIGAROH solves for
 - `P_measured` — external sensor measurement of the end-effector (or
@@ -74,12 +74,18 @@ declares:
   isn't always better — see [Optimal Experiment Design](optimal_design.md)
   for how to pick the *best* set instead of the largest)
 
-## Expected results
+## Interpreting results
 
-A well-conditioned calibration (condition number well below the default
-1000.0 threshold — see [verification thresholds](../reporting_and_verification.md))
-typically takes end-effector position error from 5-10mm down to under 1mm,
-validated on a held-out set of configurations not used to fit `Δθ`.
+Compare nominal and calibrated prediction on unused configurations. Report
+translation and rotation components in explicit units; position-only or contact
+measurements cannot establish full pose accuracy. Analyze gauge, identifiable
+corrections and prior sensitivity before interpreting individual parameters.
+
+Verification defaults are task checks, not guaranteed accuracy. Inspect which
+validation metrics were available, and reload any exported model to check FK
+against the selected calibrated stage. See
+[Plan, Fit and Validate](../example_workflow.md) for acquisition, split design,
+residual interpretation and acceptance evidence.
 
 ## Next steps
 
