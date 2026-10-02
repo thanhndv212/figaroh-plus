@@ -16,6 +16,16 @@ All four read from data `solve()` already computed — none of them re-run
 the calibration/identification, and none of them require network access or
 a backend.
 
+## Interpreting a verdict
+
+Use [Plan, Fit and Validate](example_workflow.md) to establish input correctness,
+parameter scope and independent validation before interpreting these reports.
+Inspect computed and skipped checks: a passing verdict with unavailable
+validation metrics does not establish held-out accuracy. Keep solver termination,
+physical feasibility, prediction quality and export/reload parity as separate
+conclusions. The compare page's compatibility checks do not establish matching
+raw inputs, processing, objectives or absence of leakage; retain that provenance.
+
 ## Terminal quality reports
 
 `print_quality_report()` runs automatically at the end of `solve()`; call

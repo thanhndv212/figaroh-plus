@@ -67,6 +67,7 @@ nav:
   - Home: index.md
   - User Guide:
       - Getting Started: getting_started.md
+      - Plan, Fit & Validate: example_workflow.md
       - Reporting & Verification: reporting_and_verification.md
       - Tutorials:
           - Overview: tutorials/index.md

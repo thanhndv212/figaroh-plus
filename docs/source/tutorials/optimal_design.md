@@ -4,10 +4,11 @@ Both [calibration](calibration_walkthrough.md) and
 [identification](identification_walkthrough.md) need measurement data — but
 *which* poses to measure and *which* trajectory to execute has a huge
 effect on how much data you need and how good the resulting parameters are.
-Ad-hoc configurations (grid patterns, random poses, engineering intuition)
-typically need 100-500 measurements and still leave some parameters poorly
-observed. FIGAROH replaces guesswork with two optimization-based design
-steps.
+Measurement count alone does not establish observability. FIGAROH provides
+optimization-based configuration and trajectory design tools; their benefit
+must be assessed for the selected parameter scope, constraints and sensor model.
+Use [Plan, Fit and Validate](../example_workflow.md) to plan acquisition and
+independent validation together.
 
 ## Optimal configuration generation (for calibration)
 
@@ -24,9 +25,10 @@ subject to: Σ w_i ≤ 1,  w_i ≥ 0,  kinematic feasibility
 ```
 
 Solved as a Second-Order Cone Program (SOCP) over candidate weights `w_i`
-for a large pool (1,000-10,000) of feasible candidate poses. In practice
-this cuts required measurements from 100+ down to 15-30, with a
-mathematical observability guarantee instead of a hope.
+for a pool of feasible candidate poses. Inspect the selected set's rank and
+information spectrum under the chosen
+model. Numerical design quality does not guarantee real measurement accuracy
+or recovery of parameters outside the observable subspace.
 
 ```bash
 cd examples/tiago
@@ -50,27 +52,26 @@ subject to: joint position/velocity/acceleration limits
             C² trajectory smoothness
 ```
 
-Solved with IPOPT (interior-point). A well-optimized trajectory typically
-improves regressor conditioning by 10-100x over a hand-designed one, which
-directly tightens the uncertainty on the identified parameters.
+Solved with IPOPT (interior-point). Record convergence and verify which
+constraints the selected implementation enforces. Compare the candidate with a
+feasible baseline under the same scaling and assess the acquired data's held-out
+prediction; improved conditioning alone is insufficient evidence.
 
 ```bash
 cd examples/tiago
 python optimal_trajectory.py
-# → an exciting joint-space trajectory, ready to execute and log
+# → candidate trajectory; check actual robot/acquisition constraints before execution
 ```
 
 ## Why this matters
 
 Both problems reduce to the same idea: the [regressor](identification_walkthrough.md)
-`W` (kinematic or dynamic) determines how much information a measurement
-set carries about the parameters you want. A poorly chosen measurement set
-can be numerically singular even with hundreds of samples; a well-designed
-one is well-conditioned with a fraction of the data. FIGAROH's condition
-number check in [`verify()`](../reporting_and_verification.md)
-(default threshold: 1000.0) is the same metric these two steps are
-optimizing — it exists precisely to catch a bad experiment design *before*
-you trust the identified parameters.
+or parameter Jacobian determines which directions the sampled model observes,
+under the declared measurement assumptions. A poorly chosen measurement set can remain rank-deficient despite many
+samples. Inspect conditioning alongside rank, scaling and the chosen design
+objective; D-optimal information and condition number are different criteria.
+The condition-number check in [`verify()`](../reporting_and_verification.md)
+is one diagnostic, not a complete experiment-quality or accuracy certificate.
 
 ## Next steps
 
