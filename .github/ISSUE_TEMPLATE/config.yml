@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 'How to read FIGAROH delivery issues'
+    url: https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/plans/README.md
+    about: 'Package IDs (W/D/C/S/U/B), roadmap milestones M0–M3 and status labels explained.'
+  - name: 'Roadmap'
+    url: https://github.com/thanhndv212/figaroh-plus/blob/devel/ROADMAP.md
+    about: 'Check whether your idea is already planned before opening an issue.'
+  - name: 'Robot examples (figaroh-examples)'
+    url: https://github.com/thanhndv212/figaroh-examples/issues
+    about: 'Problems with a specific robot example, dataset or validate.py belong there.'
