@@ -43,11 +43,18 @@ planning in the archive with an explicit historical banner.
 5. Run the [required validation](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/development/validation.md). Record commands,
    environment, pass/fail/skip counts and relevant domain metrics. Fix failures;
    do not hide them with test exclusions or new skip markers.
-6. Open a PR **against `devel`** using the template. Include a changelog entry
+6. When one issue's implementation and local validation are complete, commit
+   and push its focused branch and open a PR **against `devel`** using the template.
+   Keep each completed issue in its own PR; independent work may continue on a
+   separate branch. Include a changelog entry
    under `[Unreleased]` (including documentation reorganizations), user docs for
    changed behavior, and architecture/roadmap updates when their facts change.
-7. Review the final diff, wait for required checks on the current head, address
-   review comments, then squash-merge the focused feature/fix PR. Use a
+7. The maintainer reviews each PR. Agents must wait for the maintainer's explicit
+   approval before merging; passing checks or a request to implement/open a PR
+   does not authorize a merge. Address review comments and rerun affected checks.
+   After approval and required checks pass on the current head, squash-merge the
+   focused feature/fix PR. If the approved scope changes materially, obtain a
+   renewed review before merging. Use a
    Conventional Commit title, e.g. `fix(identification): preserve joint ordering`.
 8. Close the issue with the merged PR linked. Because `main` is the default
    branch, `Closes #N` may not close it when merging into `devel`. Mark roadmap

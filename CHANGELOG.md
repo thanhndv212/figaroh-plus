@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and add explicit Pinocchio 3.7.0 / 4.1.0 CI profiles with compatible ndcurves
   versions. Constraints apply before environment creation; CI checks native
   imports, installed versions and dependency consistency.
+- Require one focused PR per completed issue and explicit maintainer approval
+  before agents merge, with the policy recorded in CONTRIBUTING, AGENTS and
+  the PR review checklist.
 
 - Reorganize the roadmap around delivery outcomes and exit gates, preserve its
   previous detailed planning snapshot in an archive, and replace the architecture
