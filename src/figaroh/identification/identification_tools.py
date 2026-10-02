@@ -199,68 +199,77 @@ def weigthed_least_squares(robot, phi_b, W_b, tau_meas, tau_est, identif_config)
 def calculate_first_second_order_differentiation(
     model, q, identif_config, dt=None, backend=None
 ):
-    """Calculate joint velocities and accelerations from positions.
+    """Estimate interval tangent velocities and their coordinate derivatives.
 
-    Computes first and second order derivatives of joint positions using central
-    differences. Handles both constant and variable timesteps.
+    Configuration differences use the model/backend Lie-group operation, so
+    positions have width ``nq`` and velocities/accelerations have width ``nv``.
+    Effort-selection flags do not determine these dimensions.
 
     Args:
-        model (pin.Model): Robot model (used when backend is None)
-        q (ndarray): Joint position matrix (n_samples, n_joints)
-        param (dict): Parameters containing:
-            - is_joint_torques: Whether using joint torques
-            - is_external_wrench: Whether using external wrench
-            - ts: Timestep if constant
-        dt (ndarray, optional): Variable timesteps between samples.
-        backend (DynamicsBackend, optional): If provided, uses backend.compute_difference
-            instead of pin.difference for Lie group operations.
+        model (pin.Model): Robot model; unused when backend is supplied.
+        q (ndarray): Finite configurations of shape (n_samples, nq), with at
+            least three samples. Manifold configurations must be valid for
+            the selected model (e.g. normalized quaternions).
+        identif_config (dict): Contains positive finite ``ts`` when dt is None.
+        dt (float or ndarray, optional): Positive finite sample interval, or
+            one interval per consecutive configuration pair (n_samples - 1).
+            Pass timestamp differences, not absolute timestamps.
+        backend (DynamicsBackend, optional): Supplies nq, nv and
+            compute_difference instead of the Pinocchio model.
 
     Returns:
-        tuple:
-            - q (ndarray): Trimmed position matrix
-            - dq (ndarray): Joint velocity matrix
-            - ddq (ndarray): Joint acceleration matrix
+        tuple: Positions (n_samples - 2, nq), velocities and accelerations
+        (n_samples - 2, nv). All tangent coordinates are differentiated.
+
+    Raises:
+        ValueError: Invalid configurations, sample count or timesteps.
 
     Note:
-        Two samples are removed from start/end due to central differences
+        Preserves the historical alignment: q[:-2] and the first n_samples-2
+        forward interval velocities. Velocities represent interval midpoints,
+        not the returned position timestamps. Acceleration is the gradient of
+        those tangent components at the midpoint times (one-sided at endpoints).
+        No interpolation to position timestamps or moving-frame transport is
+        performed. Both discarded position samples are at the end.
     """
     nq = backend.nq if backend is not None else model.nq
+    nv = backend.nv if backend is not None else model.nv
+    q = np.asarray(q, dtype=float)
+    if q.ndim != 2 or q.shape[1] != nq:
+        raise ValueError(f"q must have shape (n_samples, {nq})")
+    if q.shape[0] < 3:
+        raise ValueError("q must contain at least three samples")
+    if not np.all(np.isfinite(q)):
+        raise ValueError("q must contain only finite configurations")
 
-    if identif_config["is_joint_torques"]:
-        dq = np.zeros([q.shape[0] - 1, q.shape[1]])
-        ddq = np.zeros([q.shape[0] - 1, q.shape[1]])
+    intervals = np.asarray(identif_config["ts"] if dt is None else dt, dtype=float)
+    constant_dt = intervals.ndim == 0
+    if constant_dt:
+        intervals = np.full(q.shape[0] - 1, float(intervals))
+    if intervals.shape != (q.shape[0] - 1,):
+        raise ValueError("dt must be scalar or have one timestep per sample pair")
+    if not np.all(np.isfinite(intervals)) or np.any(intervals <= 0):
+        raise ValueError("Every timestep must be finite and strictly positive")
 
-    if identif_config["is_external_wrench"]:
-        dq = np.zeros([q.shape[0] - 1, q.shape[1] - 1])
-        ddq = np.zeros([q.shape[0] - 1, q.shape[1] - 1])
+    dq = np.empty((q.shape[0] - 1, nv))
+    for ii, timestep in enumerate(intervals):
+        if backend is not None:
+            difference = backend.compute_difference(q[ii], q[ii + 1])
+        else:
+            difference = pin.difference(model, q[ii], q[ii + 1])
+        dq[ii] = difference / timestep
 
-    if dt is None:
-        dt = identif_config["ts"]
-        for ii in range(q.shape[0] - 1):
-            if backend is not None:
-                dq[ii, :] = backend.compute_difference(q[ii, :], q[ii + 1, :]) / dt
-            else:
-                dq[ii, :] = pin.difference(model, q[ii, :], q[ii + 1, :]) / dt
-
-        for jj in range(nq - 1):
-            ddq[:, jj] = np.gradient(dq[:, jj], edge_order=1) / dt
+    if constant_dt:
+        ddq = np.gradient(dq, axis=0, edge_order=1) / intervals[0]
     else:
-        for ii in range(q.shape[0] - 1):
-            if backend is not None:
-                dq[ii, :] = backend.compute_difference(q[ii, :], q[ii + 1, :]) / dt[ii]
-            else:
-                dq[ii, :] = pin.difference(model, q[ii, :], q[ii + 1, :]) / dt[ii]
+        midpoint_times = np.cumsum(intervals) - 0.5 * intervals
+        if not np.all(np.isfinite(midpoint_times)) or np.any(
+            np.diff(midpoint_times) <= 0
+        ):
+            raise ValueError("dt produces invalid interval midpoint times")
+        ddq = np.gradient(dq, midpoint_times, axis=0, edge_order=1)
 
-        for jj in range(nq - 1):
-            ddq[:, jj] = np.gradient(dq[:, jj], edge_order=1) / dt
-
-    q = np.delete(q, len(q) - 1, 0)
-    q = np.delete(q, len(q) - 1, 0)
-
-    dq = np.delete(dq, len(dq) - 1, 0)
-    ddq = np.delete(ddq, len(ddq) - 1, 0)
-
-    return q, dq, ddq
+    return q[:-2].copy(), dq[:-1], ddq[:-1]
 
 
 def low_pass_filter_data(data, identif_config, nbutter=5):
