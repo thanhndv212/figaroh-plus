@@ -13,8 +13,10 @@ belongs in GitHub issues and design contracts in `docs/decisions/`.
 
 FIGAROH work spans two repositories, [figaroh-plus](https://github.com/thanhndv212/figaroh-plus/issues)
 (core library) and [figaroh-examples](https://github.com/thanhndv212/figaroh-examples/issues)
-(robot examples and datasets). Issue numbers repeat across them, so issues and PRs
-refer to each other as `figaroh-plus#N` or `figaroh-examples#N`.
+(robot examples and datasets). Issue numbers repeat across them, so a reference to
+the other repository is written `thanhndv212/figaroh-examples#N` or
+`thanhndv212/figaroh-plus#N`; plain `#N` means the same repository. GitHub links
+both forms, and `Closes …` only closes issues written this way.
 
 **Roadmap milestones** (M0–M3) are the outcomes in the [roadmap](../../ROADMAP.md):
 M0 engineering baseline, M1 trustworthy physical-model workflow, M2 composable
