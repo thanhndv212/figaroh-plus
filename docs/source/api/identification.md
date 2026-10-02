@@ -29,3 +29,23 @@ identification of robots, including the
 ::: figaroh.identification.parameter
     options:
       show_root_heading: false
+
+## Physical inertial conventions
+
+Physical-consistency utilities use Pinocchio dynamic-parameter order:
+`[m, mx, my, mz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz]`. The first moments are
+`h = m*c`; the six tensor entries describe rotational inertia `I_O` about
+the link-frame origin. They are distinct from inertia `I_C` about the centre
+of mass: `I_O = I_C + m * ((c.T*c)*eye(3) - c*c.T)`.
+
+The physical constraint is positive semidefiniteness of the pseudo-inertia
+`P = [[Sigma, h], [h.T, m]]`, with
+`Sigma = 0.5*trace(I_O)*eye(3) - I_O`. Projection uses this second-moment
+block as its decision variable and converts back using
+`I_O = trace(Sigma)*eye(3) - Sigma`. Its objective and weights apply to the
+ten dynamic parameters. SDP reconstruction imposes the same pseudo-inertia
+constraint while preserving its base-parameter equalities.
+
+The existing CAD `com_bounds` option bounds first moments `h`, in kg*m,
+rather than CoM coordinates in metres. Physical feasibility does not establish
+identifiability or complete inertial URDF export.

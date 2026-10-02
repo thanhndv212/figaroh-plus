@@ -23,6 +23,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Physical-consistency fallback, SDP projection and SDP reconstruction now
+  distinguish link-origin rotational inertia from the second-moment block
+  of pseudo-inertia. Projection weights and returned p10 entries remain in
+  dynamic-parameter coordinates; reconstruction enforces inertia triangle
+  inequalities as well as positive mass. Previously SDP fits could accept
+  physically invalid inertias. First-moment projection weights now penalize
+  each component independently instead of only a weighted sum, preventing
+  changes to feasible nonzero-CoM inputs. URDF reconstruction priors now use
+  link-origin tensor entries via Pinocchio's dynamic-parameter conversion,
+  including the parallel-axis contribution of a nonzero CoM. (#21)
+
 - MuJoCo mass-matrix evaluation now supports both `mj_fullM` signatures: the
   pre-3.10 `(model, destination, qM)` form and the newer `(model, data, destination)`
   form. This fixes failures with recent MuJoCo versions that removed `data.qM`.
