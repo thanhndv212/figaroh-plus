@@ -9,6 +9,7 @@ Historical checklists and counts inside older documents are dated evidence.
 
 | Document | Kind / scope |
 |---|---|
+| [Pinocchio version support](pinocchio-version-support.md) | Accepted dependency range and explicit 3.7/4.1 compatibility profiles; native dependency alignment and validation policy. |
 | [External tool comparisons](external-tool-comparisons.md) | Research and mixed implementation history: calibration composition, dynamics refinement and reporting. Reporting code exists; individual remaining proposals need issue-level acceptance criteria. |
 | [TIAGo calibration and port review](tiago-calibration-and-port-review.md) | Historical analysis and port proposals; some redistribution/export work shipped. Suspension follow-up below supersedes that portion of the port plan. |
 | [TIAGo suspension/backlash examples](tiago-suspension-backlash-examples.md) | Implemented example design and limitations; generic core promotion remains separate. |

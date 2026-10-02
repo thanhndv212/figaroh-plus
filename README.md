@@ -92,7 +92,7 @@ cd figaroh-examples && pip install -r requirements.txt
 ### 🛠️ Modern Architecture
 - **Proper logging** (NullHandler pattern for libraries)
 - **Abstract base classes** for extensibility
-- **Pinocchio 3.x compatibility**
+- **Pinocchio 3.7 and 4.1 compatibility checks**
 - **Cross-platform**: Linux, macOS, Windows
 
 ### 📊 Reporting & Verification (V&V)
@@ -246,9 +246,16 @@ Export calibrated/identified parameters to URDF or YAML.
 | Category | Packages |
 |----------|----------|
 | **Scientific** | numpy, scipy, matplotlib, pandas, numdifftools |
-| **Robotics** | pinocchio (pin), ndcurves, meshcat |
+| **Robotics** | pinocchio (`pin>=3.7,<5`), ndcurves, meshcat |
 | **Config** | pyyaml, rospkg |
 | **Optimization** | cyipopt (conda), picos |
+
+The Pinocchio compatibility matrix pins 3.7.0 with ndcurves 2.0.0.1 and
+4.1.0 with ndcurves 2.3.0 on Python 3.12. Install Pinocchio and ndcurves
+together so their native dependencies agree. Other versions inside the
+declared range are eligible for dependency resolution but have no separate
+CI profile. See the [version support decision](docs/decisions/pinocchio-version-support.md)
+and [validation guide](docs/development/validation.md).
 
 ---
 

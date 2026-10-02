@@ -74,7 +74,7 @@ robot-specific code into core just to avoid a second PR.
 
 ## Merge and release gates
 
-Required core checks are `Tests (core)`, `Tests (mujoco-3.9)`,
+Required core checks are `Tests (core)`, `Tests (pinocchio-4.1)`, `Tests (mujoco-3.9)`,
 `Tests (mujoco-current)`, `Lint`, and `Docs`.
 `Lint backlog` reports legacy full-tree debt and is advisory until that debt is
 resolved. These names describe workflow jobs; a maintainer must select them in
