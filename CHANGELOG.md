@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Record the log-Cholesky feasibility spike with frozen synthetic trajectories,
+  independent physical/Jacobian checks and machine-readable Pinocchio 3.7/4.1
+  results. The decision is revise: convergence/scaling must improve before a
+  production solver is approved. (#22)
+
 ### Fixed
 
 - Optimal-trajectory plots work for robots whose position and velocity
