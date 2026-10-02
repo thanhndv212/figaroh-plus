@@ -39,6 +39,10 @@ or complete. Do not use an old test count as present-day validation evidence.
 - Core CI now has tests and lint in addition to docs. Hosted check results and
   branch protection must be verified independently; a workflow file is not proof
   of a green run or an enforced rule.
+- Complete and validate one issue, then commit/push its focused branch and open
+  a PR for maintainer review. Keep independent issues in separate PRs. Merge
+  only after explicit maintainer approval and required checks pass on the
+  current head; implementation authorization or green CI alone is insufficient.
 
 ## Implementation pitfalls
 

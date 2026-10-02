@@ -16,6 +16,7 @@ For core/examples changes, identify the tested revision pair and artifacts.
 - [ ] CHANGELOG entry and affected user docs updated
 - [ ] Architecture/roadmap/decision record updated when their facts change
 - [ ] No unrelated code or generated artifacts included
+- [ ] Maintainer review and explicit approval received before merging
 
 After merging into `devel`, close the linked issue explicitly if GitHub does not
 close it automatically; update milestone status only after its exit gate passes.
