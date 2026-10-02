@@ -31,6 +31,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Configuration differentiation now estimates acceleration for every tangent
+  coordinate, including the last fixed-base joint. Derivative widths use `nv`
+  rather than `nq` or effort-selection flags, supporting quaternion/continuous
+  joints through model/backend differences. Uneven intervals use velocity
+  midpoint times; malformed/nonpositive/nonfinite intervals fail explicitly.
+  The legacy trailing-two-sample trim and interval velocity alignment remain.
+  Older UR10 dataset fits remain preprocessing-limited until torque-generation
+  provenance and sampling/filter assumptions are audited separately. (#32)
+
 - Physical-consistency fallback, SDP projection and SDP reconstruction now
   distinguish link-origin rotational inertia from the second-moment block
   of pseudo-inertia. Projection weights and returned p10 entries remain in
