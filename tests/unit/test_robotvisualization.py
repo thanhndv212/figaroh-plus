@@ -4,7 +4,7 @@ import pytest
 import numpy as np
 import sys
 import os
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 # Add the src directory to the path if needed
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
@@ -21,7 +21,6 @@ try:
         display_bounding_boxes,
         display_joints,
     )
-    import pinocchio as pin
 except ImportError as e:
     print(f"Import error: {e}")
     pytest.skip("Required modules not available", allow_module_level=True)
@@ -85,9 +84,9 @@ class TestRobotVisualizer:
 
         # Mock frames
         frame1 = Mock()
-        frame1.parent = 1
+        frame1.parentJoint = 1
         frame2 = Mock()
-        frame2.parent = 2
+        frame2.parentJoint = 2
         model.frames = [None, frame1, frame2]  # Index 0 unused
 
         # Mock data
@@ -356,6 +355,7 @@ class TestBackwardCompatibilityFunctions:
         mock_visualizer_class.return_value = mock_visualizer
 
         result = rotation_matrix_from_vectors(vec1, vec2)
+        np.testing.assert_allclose(result, np.eye(3))
 
         mock_visualizer_class.assert_called_once_with(None, None, None)
         mock_visualizer._rotation_from_vectors.assert_called_once_with(vec1, vec2)

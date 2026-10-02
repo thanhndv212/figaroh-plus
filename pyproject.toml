@@ -48,7 +48,7 @@ classifiers = [
 dependencies = [
     "numpy",
     "scipy",
-    "pin",
+    "pin>=3.7,<5",
     "matplotlib",
     "pyyaml",
     "meshcat",

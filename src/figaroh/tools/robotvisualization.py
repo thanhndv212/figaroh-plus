@@ -15,7 +15,7 @@
 
 """Enhanced robot visualization utilities with better performance."""
 
-from typing import List, Optional, Union
+from typing import List, Optional
 import numpy as np
 import pinocchio as pin
 from dataclasses import dataclass
@@ -89,7 +89,7 @@ class RobotVisualizer:
 
             # COM placement
             placement = self.data.oMf[frame_idx].copy()
-            parent_id = self.model.frames[frame_idx].parent - 1
+            parent_id = self.model.frames[frame_idx].parentJoint - 1
             if parent_id >= 0:
                 placement.translation = self.data.com[parent_id]
 
@@ -173,7 +173,7 @@ class RobotVisualizer:
 
             # Box placement at COM location
             placement = self.data.oMf[frame_idx].copy()
-            parent_id = self.model.frames[frame_idx].parent - 1
+            parent_id = self.model.frames[frame_idx].parentJoint - 1
             if parent_id >= 0:
                 placement.translation = self.data.com[parent_id]
 

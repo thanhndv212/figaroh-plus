@@ -48,7 +48,14 @@ Physical projection/reconstruction and IPOPT coverage run in the core suite.
 CI verifies that `cyipopt`, `picos` and `cvxopt` actually import before running it;
 the MuJoCo jobs add versions 3.9.0 and 3.14.0 respectively and execute the
 same full suite. These pins cover both mass-matrix APIs; update them deliberately
-when refreshing backend support. Package
+when refreshing backend support. The `core` and `mujoco-3.9` profiles use
+Pinocchio 3.7.0 / ndcurves 2.0.0.1; `pinocchio-4.1` and `mujoco-current`
+use Pinocchio 4.1.0 / ndcurves 2.3.0. CI writes `ci-constraints.txt` and
+sets `PIP_CONSTRAINT` before creating `figaroh-dev`, preventing an initial
+unconstrained install followed by incompatible native-package downgrades.
+Native imports, exact robotics versions and `pip check` are required.
+See the [support decision](../decisions/pinocchio-version-support.md).
+Package
 metadata currently installs `picos`, so a no-PICOS install matrix needs a separate
 packaging decision; runtime missing-dependency behavior has mocked unit coverage.
 

@@ -21,6 +21,8 @@ env:
 jobs:
   tests:
     name: Tests (${{ matrix.profile }})
+    env:
+      PIP_CONSTRAINT: ${{ github.workspace }}/ci-constraints.txt
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -28,16 +30,31 @@ jobs:
       matrix:
         include:
           - profile: core
+            pinocchio: '3.7.0'
+            ndcurves: '2.0.0.1'
+            mujoco: ''
+          - profile: pinocchio-4.1
+            pinocchio: '4.1.0'
+            ndcurves: '2.3.0'
             mujoco: ''
           - profile: mujoco-3.9
+            pinocchio: '3.7.0'
+            ndcurves: '2.0.0.1'
             mujoco: 'mujoco==3.9.0'
           - profile: mujoco-current
+            pinocchio: '4.1.0'
+            ndcurves: '2.3.0'
             mujoco: 'mujoco==3.14.0'
     defaults:
       run:
         shell: bash -el {0}
     steps:
       - uses: actions/checkout@v7
+      - name: Constrain robotics dependencies before environment creation
+        env:
+          PINOCCHIO_VERSION: ${{ matrix.pinocchio }}
+        run: |
+          cp "ci/pinocchio-${PINOCCHIO_VERSION}.txt" "$PIP_CONSTRAINT"
       - name: Fetch pinned TIAGo mesh fixtures
         # The tracked fixture symlinks resolve into this sibling repository.
         run: |
@@ -62,6 +79,22 @@ jobs:
         run: python -m pip install "$MUJOCO_SPEC"
       - name: Verify solver coverage
         run: python -c "import cyipopt, picos, cvxopt; print(cyipopt.__version__, picos.__version__, cvxopt.__version__)"
+      - name: Verify pinned robotics versions and dependency consistency
+        env:
+          EXPECTED_PINOCCHIO: ${{ matrix.pinocchio }}
+          EXPECTED_NDCURVES: ${{ matrix.ndcurves }}
+        run: |
+          python - <<'PY'
+          import os
+          from importlib.metadata import version
+          import pinocchio
+          import ndcurves
+          assert pinocchio.__version__ == os.environ["EXPECTED_PINOCCHIO"]
+          assert version("pin") == os.environ["EXPECTED_PINOCCHIO"]
+          assert version("ndcurves") == os.environ["EXPECTED_NDCURVES"]
+          print("Pinocchio", pinocchio.__version__, "ndcurves", version("ndcurves"))
+          PY
+          python -m pip check
       - name: Verify optional backend import
         if: matrix.mujoco != ''
         run: python -c "import mujoco; print(mujoco.__version__)"
@@ -78,6 +111,7 @@ jobs:
             test-results.xml
             installed-versions.txt
             examples-revision.txt
+            ci-constraints.txt
 
   lint:
     name: Lint
