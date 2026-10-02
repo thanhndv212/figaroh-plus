@@ -108,8 +108,8 @@ flowchart TD
 ```
 
 
-Log-Cholesky #30 can use the independent analytic core fixture while D1 is
-being repaired. Its real-dataset conclusions wait for D1/D2. Inertial export
+Log-Cholesky #30 can use the independent analytic core fixture. D1 is fixed
+(#69, merged 2026-10-02); real-dataset conclusions still wait for D2. Inertial export
 can be tested with known feasible parameters independently of solver success.
 Calibration need not wait for dynamic optimization, but changes to shared
 export/report code require paired regression coverage and serial integration.
@@ -221,9 +221,9 @@ for core #23–#25 and examples #11. D5 owns research #22/#30; its accepted go
 decision is a dependency, not completion of those production issues. LC1 is
 outside baseline M1 closure and introduces no additional production scope.
 
-Initial queue: D1 / core #32 is a ready correctness fix. W1 asset reproduction,
-W2 / examples #14 and individual signal/contract audits are also ready to
-investigate. Later packages remain blocked or planned as labeled. Select one
+Initial queue: D1 / core #32 was the first ready correctness fix and is
+delivered by #69 (merged 2026-10-02). W1 asset reproduction, W2 / examples #14
+and individual signal/contract audits are ready to investigate. Later packages remain blocked or planned as labeled. Select one
 issue, validate its focused change, open its PR, then await review/merge approval.
 
 ## Experimental design decisions to review before coding
@@ -395,7 +395,7 @@ narrow ADRs and the benchmark protocol before approving implementation.
 
 ### Round 3 — first delivery batch
 
-Select only ready work: existing core #32; reproducible example asset fixes;
+Select only ready work: existing core #32 (delivered by #69); reproducible example asset fixes;
 existing examples #14; separate robot sampling audits. Calibration frame audit
 can proceed in parallel. Open focused issues for the approved missing work.
 Each completed issue produces a PR for review; dependent work waits or uses an

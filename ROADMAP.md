@@ -45,9 +45,10 @@ and then `main`. The docs site embeds this file directly.
 
 ### October findings
 
-- [Core #32](https://github.com/thanhndv212/figaroh-plus/issues/32) tracks the
-  reproduced final-joint acceleration defect. UR10/TIAGo signal-rate assumptions
-  require separate examples audits before new scientific benchmark claims.
+- The reproduced final-joint acceleration defect ([core #32](https://github.com/thanhndv212/figaroh-plus/issues/32),
+  package D1) is fixed by [PR #69](https://github.com/thanhndv212/figaroh-plus/pull/69),
+  merged into `devel` on 2026-10-02. UR10/TIAGo signal-rate assumptions still
+  require separate examples audits (D2) before new scientific benchmark claims.
 - [Core PR #31](https://github.com/thanhndv212/figaroh-plus/pull/31) is open with
   passing hosted checks and a **revise** feasibility decision. The private
   experiment is not a production solver. [#30](https://github.com/thanhndv212/figaroh-plus/issues/30)
@@ -152,7 +153,6 @@ issues/PRs in `figaroh-examples`, with the tested commit pair recorded.
 |---|---|---|
 | Legacy lint and formatting cleanup | M0 follow-up | Full pre-commit currently fails; remove the recorded debt by module before promoting the advisory full-tree audit to a required gate |
 | Regressor tests that skip on incompatible mocks | M0 follow-up | Replace obsolete fixtures with meaningful assertions; two baseline tests currently skip on `TypeError` |
-| Differentiate every active velocity coordinate | M1 correctness / existing #32 | `calculate_first_second_order_differentiation()` still loops over `range(nq - 1)`; reproduce for a fixed-base final joint and assess `nq != nv` and variable sample times before fixing |
 | Signal-rate/provenance audits and fresh UR10 truth data | M1.1/M1.2 | Validate timestamps, filters and derivative source; preserve raw files; independent analytic truth and validation trajectories |
 | Physical estimator comparison and convergence revision | M1.2 | Reuse #30; distinguish exact reconstruction, direct constrained effort fitting, per-link projection and log-Cholesky; freeze metrics/extra-column policies before measurement |
 | Calibration held-out reference and export parity | Parallel M1.1–M1.4 | Reuse TIAGo redistribution/export; diagnose TALOS #14; independent posture validation and reloaded-model FK checks |
