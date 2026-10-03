@@ -8,6 +8,7 @@ Historical checklists and counts inside older documents are dated evidence.
 ## Index
 
 | Document | Kind / scope |
+| [Scoped acceptance policy](acceptance-policy.md) | Accepted numerical execution versus prediction scope; explicit evidence, limits and incomplete states. |
 |---|---|
 | [Pinocchio version support](pinocchio-version-support.md) | Accepted dependency range and explicit 3.7/4.1 compatibility profiles; native dependency alignment and validation policy. |
 | [External tool comparisons](external-tool-comparisons.md) | Research and mixed implementation history: calibration composition, dynamics refinement and reporting. Reporting code exists; individual remaining proposals need issue-level acceptance criteria. |

@@ -136,7 +136,11 @@ of automatically applied to robot geometry. PAL runtime correction YAML uses
 
 Calibration and identification HTML reports, two-run comparison, provenance and
 run archives live in `tools/`; workflow verification methods attach verdicts to
-results. Use the [reporting and verification guide](docs/source/reporting_and_verification.md)
+results. Example CLIs explicitly verify numerical execution; library verification defaults
+to prediction acceptance. Independent prediction
+acceptance requires explicit per-output error limits and separate validation.
+Physical/export and general acquisition-provenance certification remain separate;
+missing required evidence is not a successful check. Use the [reporting and verification guide](docs/source/reporting_and_verification.md)
 for user-facing behavior. Store metrics with the model/config/data provenance;
 report whether validation is held-out, training-only, simulated or physical.
 

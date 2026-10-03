@@ -83,7 +83,9 @@ class TestBuildInsights:
     def test_healthy_fit_reports_no_issues(self):
         result = _base_result()
         insights = _build_insights(
-            result, [5.0, 8.0, 9.0], result["base parameters names"],
+            result,
+            [5.0, 8.0, 9.0],
+            result["base parameters names"],
             validation={"correlation": 0.99, "improvement_pct": 90.0},
         )
         assert any("No issues detected" in i["text"] for i in insights)
@@ -99,7 +101,9 @@ class TestBuildInsights:
     def test_flags_poorly_identified_parameters(self):
         result = _base_result()
         insights = _build_insights(
-            result, [5.0, 15.0, 45.0], result["base parameters names"],
+            result,
+            [5.0, 15.0, 45.0],
+            result["base parameters names"],
             validation=None,
         )
         assert any("p3" in i["text"] for i in insights)
@@ -114,23 +118,25 @@ class TestBuildInsights:
     def test_flags_low_correlation_validation(self):
         result = _base_result()
         insights = _build_insights(
-            result, None, result["base parameters names"],
+            result,
+            None,
+            result["base parameters names"],
             validation={"correlation": 0.5, "improvement_pct": 90.0},
         )
         assert any("correlation is only" in i["text"] for i in insights)
 
-    def test_flags_weak_validation_improvement(self):
+    def test_good_nominal_does_not_trigger_an_improvement_warning(self):
         result = _base_result()
         insights = _build_insights(
-            result, None, result["base parameters names"],
+            result,
+            None,
+            result["base parameters names"],
             validation={"correlation": 0.99, "improvement_pct": 10.0},
         )
-        assert any("improved by only" in i["text"] for i in insights)
+        assert not any("improved by only" in i["text"] for i in insights)
 
     def test_flags_physical_consistency_error(self):
-        result = _base_result(
-            **{"physical consistency": {"status": "error"}}
-        )
+        result = _base_result(**{"physical consistency": {"status": "error"}})
         insights = _build_insights(
             result, None, result["base parameters names"], validation=None
         )
@@ -208,13 +214,16 @@ class TestGenerateIdentificationReport:
                 "correlation": 0.98,
                 "joint_names": ["joint_1", "joint_2"],
                 "tau_nominal_per_joint": {
-                    "joint_1": [1.0, 2.0], "joint_2": [3.0, 4.0],
+                    "joint_1": [1.0, 2.0],
+                    "joint_2": [3.0, 4.0],
                 },
                 "tau_identified_per_joint": {
-                    "joint_1": [1.1, 2.1], "joint_2": [3.1, 4.1],
+                    "joint_1": [1.1, 2.1],
+                    "joint_2": [3.1, 4.1],
                 },
                 "tau_measured_per_joint": {
-                    "joint_1": [1.2, 2.2], "joint_2": [3.2, 4.2],
+                    "joint_1": [1.2, 2.2],
+                    "joint_2": [3.2, 4.2],
                 },
             }
         )
@@ -247,9 +256,7 @@ class TestGenerateIdentificationReport:
         assert "joint_1" in doc and "joint_2" in doc
 
     def test_escapes_param_names(self):
-        result = _base_result(
-            **{"base parameters names": ["<script>", "p2", "p3"]}
-        )
+        result = _base_result(**{"base parameters names": ["<script>", "p2", "p3"]})
         identifier = FakeIdentifier(
             result,
             std_relative=np.array([5.0, 15.0, 45.0]),
@@ -291,9 +298,7 @@ class TestGenerateIdentificationReport:
     def test_writes_to_output_path(self, tmp_path):
         identifier = FakeIdentifier(_base_result())
         out_file = tmp_path / "report.html"
-        doc = generate_identification_report(
-            identifier, output_path=str(out_file)
-        )
+        doc = generate_identification_report(identifier, output_path=str(out_file))
         assert out_file.exists()
         assert out_file.read_text(encoding="utf-8") == doc
 
@@ -307,7 +312,7 @@ class TestGenerateIdentificationReport:
         identifier = FakeIdentifier(result)
         doc = generate_identification_report(identifier)
         assert "Condition number" in doc
-        assert "<div class=\"stat-value\">unavailable</div>" in doc
+        assert '<div class="stat-value">unavailable</div>' in doc
 
     def test_renders_consistency_section_when_present(self):
         result = _base_result(

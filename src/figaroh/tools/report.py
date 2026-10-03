@@ -32,9 +32,7 @@ from typing import Any, Dict, List, Optional
 from figaroh.tools._report_common import (
     _SERIES_CHART_SCRIPT,
     _STYLE,
-    UNCERTAINTY_CAUTION_PCT,
     UNCERTAINTY_WARN_PCT,
-    VALIDATION_IMPROVEMENT_WARN_PCT,
     _correlation_section,
     _esc,
     _insights_section,
@@ -42,13 +40,17 @@ from figaroh.tools._report_common import (
     _provenance_section,
     _run_title,
     _series_panel_section,
-    _uncertainty_tier,
 )
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 OUTLIER_WARN_PCT = 10.0
+
+
+# Retain legacy report imports used by downstream report consumers.
+from figaroh.tools._report_common import UNCERTAINTY_CAUTION_PCT  # noqa: F401
+from figaroh.tools._report_common import _uncertainty_tier  # noqa: F401
 
 
 def _build_insights(
@@ -62,37 +64,45 @@ def _build_insights(
     insights: List[Dict[str, str]] = []
 
     if not eval_.get("optimization_success", True):
-        insights.append({
-            "level": "warn",
-            "text": "Optimization did not report success — treat "
-                    "results with caution.",
-        })
+        insights.append(
+            {
+                "level": "warn",
+                "text": "Optimization did not report success — treat "
+                "results with caution.",
+            }
+        )
 
     cond_label = eval_.get("condition_label", "unavailable")
     cond_num = eval_.get("condition_number", float("nan"))
     if cond_label == "ill-conditioned":
-        insights.append({
-            "level": "warn",
-            "text": f"Condition number {cond_num:.1f} is ill-conditioned "
-                    "— consider a richer excitation trajectory or fewer "
-                    "simultaneously identified parameters.",
-        })
+        insights.append(
+            {
+                "level": "warn",
+                "text": f"Condition number {cond_num:.1f} is ill-conditioned "
+                "— consider a richer excitation trajectory or fewer "
+                "simultaneously identified parameters.",
+            }
+        )
     elif cond_label == "moderately conditioned":
-        insights.append({
-            "level": "info",
-            "text": f"Condition number {cond_num:.1f} is moderately "
-                    "conditioned — usable, but not optimal.",
-        })
+        insights.append(
+            {
+                "level": "info",
+                "text": f"Condition number {cond_num:.1f} is moderately "
+                "conditioned — usable, but not optimal.",
+            }
+        )
 
     outlier_pct = eval_.get("outlier_percentage", 0.0)
     n_outliers = eval_.get("n_outliers", 0)
     if outlier_pct > OUTLIER_WARN_PCT:
-        insights.append({
-            "level": "warn",
-            "text": f"{n_outliers} outliers removed "
-                    f"({outlier_pct:.1f}% of {n_samples} samples) — "
-                    "check data quality if this seems high.",
-        })
+        insights.append(
+            {
+                "level": "warn",
+                "text": f"{n_outliers} outliers removed "
+                f"({outlier_pct:.1f}% of {n_samples} samples) — "
+                "check data quality if this seems high.",
+            }
+        )
 
     std_pctg = eval_.get("param_stddev_percentage", [])
     poor = [
@@ -102,55 +112,55 @@ def _build_insights(
     ]
     if poor:
         names = ", ".join(poor[:6]) + (", ..." if len(poor) > 6 else "")
-        insights.append({
-            "level": "warn",
-            "text": f"{len(poor)} parameter(s) have >"
-                    f"{UNCERTAINTY_WARN_PCT:.0f}% relative uncertainty "
-                    f"and are poorly identified: {names}.",
-        })
+        insights.append(
+            {
+                "level": "warn",
+                "text": f"{len(poor)} parameter(s) have >"
+                f"{UNCERTAINTY_WARN_PCT:.0f}% relative uncertainty "
+                f"and are poorly identified: {names}.",
+            }
+        )
 
     corr_pairs = eval_.get("correlated_pairs", [])
     if corr_pairs:
-        insights.append({
-            "level": "warn",
-            "text": f"{len(corr_pairs)} parameter pair(s) are strongly "
-                    "correlated (|ρ| > 0.8) — the excitation "
-                    "trajectory may not separate them; consider fixing "
-                    "one or redesigning the trajectory.",
-        })
+        insights.append(
+            {
+                "level": "warn",
+                "text": f"{len(corr_pairs)} parameter pair(s) are strongly "
+                "correlated (|ρ| > 0.8) — the excitation "
+                "trajectory may not separate them; consider fixing "
+                "one or redesigning the trajectory.",
+            }
+        )
 
     if validation is None:
-        insights.append({
-            "level": "info",
-            "text": "No held-out validation data provided — these "
-                    "metrics reflect fit quality on the training set "
-                    "only, not generalization.",
-        })
+        insights.append(
+            {
+                "level": "info",
+                "text": "No held-out validation data provided — these "
+                "metrics reflect fit quality on the training set "
+                "only, not generalization.",
+            }
+        )
     else:
         if validation.get("validation_source") == "calibration_data_fallback":
-            insights.append({
-                "level": "warn",
-                "text": "No separate validation data provided — "
-                        "validation metrics fall back to the "
-                        "calibration data itself and do NOT test "
-                        "generalization to new configurations.",
-            })
-        if validation.get("pos_improvement_pct", 100.0) < (
-            VALIDATION_IMPROVEMENT_WARN_PCT
-        ):
-            insights.append({
-                "level": "warn",
-                "text": "Validation position RMSE improved by only "
-                        f"{validation['pos_improvement_pct']:.1f}% over "
-                        "nominal — check model assumptions or "
-                        "configuration.",
-            })
+            insights.append(
+                {
+                    "level": "warn",
+                    "text": "No separate validation data provided — "
+                    "validation metrics fall back to the "
+                    "calibration data itself and do NOT test "
+                    "generalization to new configurations.",
+                }
+            )
 
     if not insights:
-        insights.append({
-            "level": "info",
-            "text": "No issues detected — fit looks healthy.",
-        })
+        insights.append(
+            {
+                "level": "info",
+                "text": "No issues detected by these diagnostics; this is not an acceptance verdict.",
+            }
+        )
 
     return insights
 
@@ -200,10 +210,11 @@ def _summary_section(eval_: Dict[str, Any], n_samples: int) -> str:
 def _per_dof_section(per_dof: Dict[str, Any]) -> str:
     names = per_dof.get("dof_names", [])
     if not names:
-        return "<p class=\"muted\">No per-DOF residual data available.</p>"
+        return '<p class="muted">No per-DOF residual data available.</p>'
 
     rows = []
     for i, name in enumerate(names):
+
         def _at(key):
             arr = per_dof.get(key, [])
             return arr[i] if i < len(arr) else float("nan")
@@ -281,9 +292,9 @@ def _validation_section(validation: Optional[Dict[str, Any]]) -> str:
         return (
             "<tr>"
             f"<td>{_esc(label)}</td>"
-            f"<td class=\"num\">{nominal:.2f} {unit}</td>"
-            f"<td class=\"num\">{calibrated:.2f} {unit}</td>"
-            f"<td class=\"num\">{improvement:.1f}% {arrow}</td>"
+            f'<td class="num">{nominal:.2f} {unit}</td>'
+            f'<td class="num">{calibrated:.2f} {unit}</td>'
+            f'<td class="num">{improvement:.1f}% {arrow}</td>'
             "</tr>"
         )
 
