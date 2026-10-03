@@ -15,3 +15,5 @@
 
 from . import colors
 from .visualizer import MeshcatVisualizer
+
+__all__ = ["colors", "MeshcatVisualizer"]
