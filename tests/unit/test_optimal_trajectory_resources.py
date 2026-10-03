@@ -14,6 +14,7 @@ import pinocchio as pin
 import pytest
 from scipy import linalg as scipy_linalg
 
+from figaroh.optimal.base_optimal_trajectory import BaseTrajectoryIPOPTProblem
 from figaroh.tools import qrdecomposition
 from figaroh.tools.qrdecomposition import QR_pivoting, QRDecomposer, get_baseIndex
 from figaroh.utils.cubic_spline import calc_torque
@@ -88,3 +89,24 @@ def test_calc_torque_matches_per_joint_rnea():
         for j in range(model.nv):
             expected[j * N + i] = tau_i[j]
     np.testing.assert_allclose(tau, expected)
+
+
+def test_trajectory_gradient_uses_forward_differences():
+    calls = []
+
+    def objective_function(X, *args):
+        calls.append(np.array(X))
+        X = np.asarray(X)
+        return float(X @ X + 3.0 * X[0])
+
+    opt_traj = SimpleNamespace(objective_function=objective_function)
+    problem = BaseTrajectoryIPOPTProblem(
+        opt_traj, 2, 3, 10, None, None, None, None, None, None, None
+    )
+    X = np.array([0.5, -1.0, 2.0, 0.25])
+
+    grad = problem.gradient(X)
+
+    np.testing.assert_allclose(grad, 2 * X + np.array([3.0, 0, 0, 0]), atol=1e-4)
+    # One base evaluation plus one per variable: no extrapolation sweep.
+    assert len(calls) == len(X) + 1
