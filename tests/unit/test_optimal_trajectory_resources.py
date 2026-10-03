@@ -10,11 +10,13 @@ large.
 from types import SimpleNamespace
 
 import numpy as np
+import pinocchio as pin
 import pytest
 from scipy import linalg as scipy_linalg
 
 from figaroh.tools import qrdecomposition
 from figaroh.tools.qrdecomposition import QR_pivoting, QRDecomposer, get_baseIndex
+from figaroh.utils.cubic_spline import calc_torque
 
 
 def _rank_deficient_regressor(m=60, seed=0):
@@ -66,3 +68,23 @@ def test_base_index_matches_full_mode_qr():
 
     assert get_baseIndex(W, params) == expected
     assert len(expected) == 5
+
+
+def test_calc_torque_matches_per_joint_rnea():
+    model = pin.buildSampleModelManipulator()
+    data = model.createData()
+    robot = SimpleNamespace(model=model, data=data)
+    rng = np.random.default_rng(1)
+    N = 7
+    q = np.array([pin.randomConfiguration(model) for _ in range(N)])
+    v = rng.standard_normal((N, model.nv))
+    a = rng.standard_normal((N, model.nv))
+
+    tau = calc_torque(N, robot, q, v, a)
+
+    expected = np.zeros(model.nv * N)
+    for i in range(N):
+        tau_i = pin.rnea(model, data, q[i], v[i], a[i])
+        for j in range(model.nv):
+            expected[j * N + i] = tau_i[j]
+    np.testing.assert_allclose(tau, expected)
