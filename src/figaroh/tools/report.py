@@ -42,15 +42,16 @@ from figaroh.tools._report_common import (
     _series_panel_section,
 )
 
+# Re-exported for downstream report consumers that import them from here.
+from figaroh.tools._report_common import (  # noqa: F401
+    UNCERTAINTY_CAUTION_PCT,
+    _uncertainty_tier,
+)
+
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 OUTLIER_WARN_PCT = 10.0
-
-
-# Retain legacy report imports used by downstream report consumers.
-from figaroh.tools._report_common import UNCERTAINTY_CAUTION_PCT  # noqa: F401
-from figaroh.tools._report_common import _uncertainty_tier  # noqa: F401
 
 
 def _build_insights(
