@@ -112,7 +112,7 @@ class UnifiedConfigParser:
 
             if not isinstance(content, dict):
                 raise ConfigurationError(
-                    f"Configuration file must contain a YAML dictionary"
+                    "Configuration file must contain a YAML dictionary"
                 )
 
             return content
@@ -273,20 +273,22 @@ class UnifiedConfigParser:
             )
 
         variant_config = deepcopy(variants[variant_name])
+        result_config = deepcopy(config)
 
-        # Handle variant inheritance from existing tasks/sections
         if "extends" in variant_config:
+            # The variant overrides the section it extends (e.g.
+            # "tasks.calibration"), not the root of the configuration.
             extends_path = variant_config.pop("extends")
             base_config = self._get_nested_value(config, extends_path)
             if base_config is None:
                 raise ConfigurationError(
                     f"Variant extension path not found: {extends_path}"
                 )
-            variant_config = self._deep_merge(deepcopy(base_config), variant_config)
-
-        # Apply variant as override to the entire configuration
-        result_config = deepcopy(config)
-        result_config = self._deep_merge(result_config, variant_config)
+            merged = self._deep_merge(deepcopy(base_config), variant_config)
+            self._set_nested_value(result_config, extends_path, merged)
+        else:
+            # Without "extends", the variant overrides the whole configuration
+            result_config = self._deep_merge(result_config, variant_config)
 
         # Remove variants section from final config
         result_config.pop("variants", None)
@@ -338,6 +340,14 @@ class UnifiedConfigParser:
                 return None
 
         return current
+
+    def _set_nested_value(self, data: Dict[str, Any], path: str, value: Any) -> None:
+        """Set a nested value using dot notation; parents must already exist."""
+        *parents, last = path.split(".")
+        current = data
+        for key in parents:
+            current = current[key]
+        current[last] = value
 
     def _expand_variables(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Expand ${VARIABLE} references in configuration."""
@@ -423,7 +433,7 @@ class UnifiedConfigParser:
         try:
             major, minor = map(int, version.split(".")[:2])
             return major <= 2  # Accept versions 1.x and 2.x
-        except:
+        except (AttributeError, TypeError, ValueError):
             return False
 
     def _validate_robot_section(self, robot_config: Dict[str, Any]) -> None:
@@ -630,7 +640,26 @@ def get_param_from_yaml(
 def _parse_legacy_format(
     robot, config_data: Dict[str, Any], task_type: str
 ) -> Dict[str, Any]:
-    """Parse legacy configuration format using existing parsers."""
+    """Parse legacy configuration format using existing parsers.
+
+    Accepts either one flat task section or a whole legacy file whose tasks
+    are nested under ``calibration:`` / ``identification:`` keys.
+    """
+    sections = [
+        name
+        for name in ("calibration", "identification")
+        if isinstance(config_data.get(name), dict)
+    ]
+    if task_type == "auto" and len(sections) > 1:
+        raise ConfigurationError(
+            "Both calibration and identification sections found. "
+            "Please specify task_type explicitly."
+        )
+    if task_type == "auto" and len(sections) == 1:
+        task_type = sections[0]
+    if task_type in sections:
+        config_data = config_data[task_type]
+
     # Import existing parsers for backward compatibility
     calibration_indicators = ["markers", "calib_level", "base_frame", "tool_frame"]
     identification_indicators = ["robot_params", "problem_params", "processing_params"]
