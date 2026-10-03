@@ -110,3 +110,29 @@ def test_trajectory_gradient_uses_forward_differences():
     np.testing.assert_allclose(grad, 2 * X + np.array([3.0, 0, 0, 0]), atol=1e-4)
     # One base evaluation plus one per variable: no extrapolation sweep.
     assert len(calls) == len(X) + 1
+
+
+def test_waypoint_steps_respect_velocity_limits():
+    from figaroh.optimal.base_optimal_trajectory import BaseOptimalTrajectory
+
+    t_s = 2.0
+    v_max = np.array([0.07, 2.0])  # slow prismatic torso, fast arm joint
+    stub = SimpleNamespace(
+        trajectory_config={"t_s": t_s}, CB=SimpleNamespace(upper_dq=v_max)
+    )
+    wps = np.array(
+        [
+            [0.0, 0.3, -0.1, 0.25, 0.26],  # far beyond 0.07 m/s per 2 s
+            [0.0, 0.5, 1.0, 0.8, 0.9],  # already feasible: unchanged
+        ]
+    )
+
+    out = BaseOptimalTrajectory._limit_waypoint_steps(stub, wps)
+
+    # A rest-to-rest cubic peaks at 1.5 * step / T.
+    peak_v = 1.5 * np.abs(np.diff(out, axis=1)) / t_s
+    assert np.all(peak_v <= v_max[:, None] + 1e-12)
+    np.testing.assert_array_equal(out[1], wps[1])
+    np.testing.assert_array_equal(out[:, 0], wps[:, 0])
+    # Clamped waypoints move toward their predecessor, so stay in range.
+    assert out[0].min() >= wps[0].min() and out[0].max() <= wps[0].max()

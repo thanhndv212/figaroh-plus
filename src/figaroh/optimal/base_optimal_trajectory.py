@@ -253,6 +253,23 @@ class BaseOptimalTrajectory:
             self.logger.error(f"Error building base regressor: {e}")
             raise
 
+    def _limit_waypoint_steps(self, wps: np.ndarray) -> np.ndarray:
+        """Clamp waypoint-to-waypoint steps to what the velocity limits allow.
+
+        Waypoints are sampled independently over the joint range, but a
+        rest-to-rest cubic segment of duration T peaks at 1.5 * dq / T.
+        Bounding each step by (2/3) * T * v_max (with a 10% margin) makes
+        the sampled guess velocity-feasible by construction; clamped
+        waypoints move towards their predecessor, so they stay in range.
+        """
+        wps = np.array(wps, dtype=float)  # (n_joints, n_wps)
+        max_step = 0.9 * (2.0 / 3.0) * self.trajectory_config["t_s"]
+        max_step = max_step * np.abs(np.asarray(self.CB.upper_dq, dtype=float))
+        for k in range(1, wps.shape[1]):
+            step = np.clip(wps[:, k] - wps[:, k - 1], -max_step, max_step)
+            wps[:, k] = wps[:, k - 1] + step
+        return wps
+
     def _generate_feasible_initial_guess(self, wp_init, vel_wp_init, acc_wp_init):
         """Generate a feasible initial guess for optimization."""
         self.logger.info("Generating feasible initial trajectory...")
@@ -272,6 +289,7 @@ class BaseOptimalTrajectory:
                 wps, vel_wps, acc_wps = self.WP.gen_rand_wp(
                     wp_init, vel_wp_init, acc_wp_init
                 )
+                wps = self._limit_waypoint_steps(wps)
 
                 # Generate time points
                 tps = np.matrix(
