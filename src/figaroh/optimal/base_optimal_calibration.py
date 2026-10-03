@@ -28,10 +28,6 @@ import matplotlib.pyplot as plt
 from abc import ABC
 from yaml.loader import SafeLoader
 
-# Setup logger for this module
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
-
 # FIGAROH imports
 from figaroh.calibration.calibration_tools import (
     load_data,
@@ -51,6 +47,10 @@ from figaroh.utils.error_handling import (
     CalibrationError,
 )
 from figaroh.utils.results_manager import ResultsManager, plot_with_fallback
+
+# Setup logger for this module
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class BaseOptimalCalibration(ABC):
@@ -1095,8 +1095,8 @@ class SOCPOptimizer:
         Mw = pc.sum(
             self.w[i] * self.pool[i] for i in range(self.calib_config["NbSample"])
         )
-        wgt_cons = self.problem.add_constraint(1 | self.w <= 1)
-        det_root_cons = self.problem.add_constraint(self.t <= pc.DetRootN(Mw))
+        self.problem.add_constraint(1 | self.w <= 1)
+        self.problem.add_constraint(self.t <= pc.DetRootN(Mw))
 
     def set_objective(self):
         self.problem.set_objective("max", self.t)
@@ -1315,8 +1315,6 @@ class Detmax:
         # adding samples from remaining pool: k = 1
         opt_k = updated_pool[0]
         opt_critD = self.get_critD(cur_set)
-        init_set = set(cur_set)
-        fin_set = set([])
         rm_j = cur_set[0]
 
         while opt_k != rm_j:
@@ -1345,7 +1343,6 @@ class Detmax:
                     rm_j = j
             cur_set.remove(rm_j)
             opt_critD = self.get_critD(cur_set)
-            fin_set = set(cur_set)
 
             self.opt_critD.append(opt_critD)
         return self.opt_critD
