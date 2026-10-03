@@ -40,6 +40,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Optimal trajectory generation no longer exhausts memory or the time budget
+  (figaroh-examples#50). Pivoted QR in `qrdecomposition` uses economic mode
+  instead of building a full m×m Q (13.7 GB for UR10 at setup; TIAGo was
+  killed). The trajectory problem uses forward-difference objective gradients
+  instead of numdifftools, `calc_torque` calls RNEA once per sample instead
+  of once per joint, and initial waypoint steps are clamped to the velocity
+  limits so the feasibility search succeeds. Per-sample constraint-check
+  messages are DEBUG, not WARNING.
+- `RobotIPOPTSolver` no longer reports IPOPT status -1 (maximum iterations
+  exceeded) as success. **Behaviour change:** a trajectory segment that stops
+  at the iteration limit is kept only if its final iterate is feasible; it is
+  then marked `converged: False` with a warning. The iteration cap is
+  configurable as `problem.max_iterations` (default 200).
 - Configuration variants that `extends` a section (e.g. `tasks.calibration`)
   now override that section. They were merged into the configuration root, so
   the selected task silently kept its base values (#76).
