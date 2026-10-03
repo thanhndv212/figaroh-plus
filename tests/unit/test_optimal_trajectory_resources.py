@@ -219,3 +219,50 @@ def test_waypoint_steps_respect_velocity_limits():
     np.testing.assert_array_equal(out[:, 0], wps[:, 0])
     # Clamped waypoints move toward their predecessor, so stay in range.
     assert out[0].min() >= wps[0].min() and out[0].max() <= wps[0].max()
+
+
+def _segment_stub(attempts, outcomes):
+    """Stand-in for BaseOptimalTrajectory with scripted attempt outcomes."""
+    import logging
+
+    calls = []
+
+    def attempt_segment(*args):
+        calls.append(args)
+        ok = outcomes[len(calls) - 1]
+        if not ok:
+            return None
+        return {"t_f": "t", "p_f": "p", "v_f": "v", "a_f": "a", "iter_data": {}}
+
+    config = {} if attempts is None else {"segment_attempts": attempts}
+    stub = SimpleNamespace(
+        trajectory_config=config,
+        results={"T_F": [], "P_F": [], "V_F": [], "A_F": [], "iteration_data": []},
+        logger=logging.getLogger("test"),
+        _attempt_segment=attempt_segment,
+    )
+    return stub, calls
+
+
+@pytest.mark.parametrize(
+    "attempts, outcomes, solved, n_calls",
+    [
+        (None, [False, True], False, 1),  # default: no retry
+        (2, [False, True], True, 2),  # retry recovers the segment
+        (3, [False, False, False], False, 3),  # every attempt fails
+        (3, [True], True, 1),  # first attempt succeeds: no extra solves
+    ],
+    ids=["default-no-retry", "retry-recovers", "all-fail", "first-ok"],
+)
+def test_segment_retries_from_new_initial_guess(attempts, outcomes, solved, n_calls):
+    from figaroh.optimal.base_optimal_trajectory import BaseOptimalTrajectory
+
+    stub, calls = _segment_stub(attempts, outcomes)
+
+    ok = BaseOptimalTrajectory._solve_segment(stub, 0, None, None, None, None)
+
+    assert ok is solved
+    assert len(calls) == n_calls
+    assert len(stub.results["T_F"]) == (1 if solved else 0)
+    if solved:
+        assert stub.results["iteration_data"][0]["attempt"] == n_calls
