@@ -489,7 +489,7 @@ class TestRobotIPOPTSolver:
         problem = SimpleTestProblem()
         solver = RobotIPOPTSolver(problem)
 
-        # Mock IPOPT solve failure (status not in [-1, 0, 1])
+        # Mock IPOPT solve failure (status not in [0, 1])
         mock_nlp = Mock()
         mock_ipopt.return_value = mock_nlp
         mock_nlp.solve.return_value = (
@@ -501,6 +501,31 @@ class TestRobotIPOPTSolver:
 
         assert success is False
         assert results["status"] == -2
+
+    @patch("cyipopt.Problem")
+    def test_solve_iteration_limit_is_not_success(self, mock_ipopt):
+        """Status -1 (Maximum_Iterations_Exceeded) is not convergence."""
+        problem = SimpleTestProblem()
+        solver = RobotIPOPTSolver(problem)
+
+        mock_nlp = Mock()
+        mock_ipopt.return_value = mock_nlp
+        mock_nlp.solve.return_value = (
+            np.array([0.1, 0.2]),
+            {
+                "status": -1,
+                "status_msg": "Maximum number of iterations exceeded",
+                "obj_val": 3.0,
+            },
+        )
+
+        success, results = solver.solve()
+
+        assert success is False
+        assert results["success"] is False
+        assert results["status"] == -1
+        # The last iterate is still available to the caller.
+        assert np.allclose(results["x_opt"], [0.1, 0.2])
 
     @patch("cyipopt.Problem")
     def test_solve_exception(self, mock_ipopt):
