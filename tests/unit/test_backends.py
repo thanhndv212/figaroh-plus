@@ -10,7 +10,7 @@ import numpy as np
 import pinocchio as pin
 from figaroh.backends import get_backend, list_backends, get_backend_info
 from figaroh.backends.base import DynamicsBackend
-from figaroh.backends.pinocchio import PinocchioBackend, PINOCCHIO_AVAILABLE
+from figaroh.backends.pinocchio import PinocchioBackend
 from figaroh.backends.mujoco import MuJoCoBackend, MUJOCO_AVAILABLE
 
 # ============================================================================
@@ -426,15 +426,20 @@ class TestMuJoCoRegressor:
         W_mj = self.mj_backend.compute_regressor(self.q, self.v, self.a)
         W_pin = self.pin_backend.compute_regressor(self.q, self.v, self.a)
 
-        # Pinocchio and MuJoCo may have different body counts (MuJoCo absorbs
-        # fixed base into world), so regressor dimensions may differ.
-        # Compare only the torque reconstruction: tau = W @ theta_actual.
-        # Use the Pinocchio regressor to compute expected torques via
-        # Pinocchio's full regressor, which includes the base_link.
+        # The MuJoCo backend computes its regressor with Pinocchio on a model
+        # built from the same URDF, so the two must agree exactly.
+        assert W_mj.shape == W_pin.shape
+        np.testing.assert_allclose(W_mj, W_pin, atol=1e-12)
+
+        # Independent check: W @ theta reproduces each backend's dynamics,
+        # with theta the model's own inertial parameters (Pinocchio order).
+        model = self.pin_backend.model
+        theta = np.concatenate(
+            [model.inertias[j].toDynamicParameters() for j in range(1, model.njoints)]
+        )
         tau_mj = self.mj_backend.compute_inverse_dynamics(self.q, self.v, self.a)
         tau_pin = self.pin_backend.compute_inverse_dynamics(self.q, self.v, self.a)
-
-        # Both backends should produce matching torques for the same URDF
+        np.testing.assert_allclose(W_pin @ theta, tau_pin, atol=1e-8)
         np.testing.assert_allclose(tau_mj, tau_pin, atol=1e-8)
 
 
