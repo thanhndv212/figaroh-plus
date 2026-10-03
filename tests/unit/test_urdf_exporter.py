@@ -302,3 +302,18 @@ class TestURDFExporterVisual:
         modified = export_urdf(self.nominal, self.params, output_path=self.output)
         comp = URDFComparison(self.nominal, modified)
         comp.show_static_grid(duration=15.0)
+
+
+@pytest.mark.parametrize(
+    "calibration_type, frame",
+    [("mocap", "arm_7_link"), ("eye_hand", "head_2_link"), (None, "<frame_name>")],
+)
+def test_frame_settings_doc_names_the_ee_parameter(caplog, calibration_type, frame):
+    """The customisation hint names a real EE parameter, not a literal "%s"."""
+    from figaroh.tools.urdf_exporter import frame_settings_doc
+
+    with caplog.at_level("INFO", logger="figaroh.tools.urdf_exporter"):
+        frame_settings_doc(calibration_type=calibration_type, verbose=True)
+
+    assert f"pass e.g. pEEx_{frame} = <value>" in caplog.text
+    assert "%s" not in caplog.text
