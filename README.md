@@ -11,7 +11,7 @@
 FIGAROH is a Python toolbox providing efficient and highly flexible frameworks for dynamics identification and geometric calibration of rigid multi-body systems based on the URDF modeling convention. It supports both serial (industrial manipulators) and tree-structure systems (humanoids, mobile manipulators).
 
 **📦 Available on PyPI:** `pip install figaroh`
-**📖 Version:** 0.4.8
+**📖 Version:** 0.5.0
 
 For contributors: [Roadmap](https://github.com/thanhndv212/figaroh-plus/blob/main/ROADMAP.md), [Architecture](https://github.com/thanhndv212/figaroh-plus/blob/main/ARCHITECTURE.md),
 [Contribution workflow](https://github.com/thanhndv212/figaroh-plus/blob/main/CONTRIBUTING.md), and
