@@ -9,11 +9,12 @@ import pytest
 import numpy as np
 import time
 
+# Imports below need mujoco, so they follow the skip.
 pytest.importorskip("mujoco")
 
-from figaroh.backends.pinocchio import PinocchioBackend
-from figaroh.backends.mujoco import MuJoCoBackend
-from figaroh.backends import list_backends
+from figaroh.backends.pinocchio import PinocchioBackend  # noqa: E402
+from figaroh.backends.mujoco import MuJoCoBackend  # noqa: E402
+from figaroh.backends import list_backends  # noqa: E402
 
 # ============================================================================
 # Shared fixtures

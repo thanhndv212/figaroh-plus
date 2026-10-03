@@ -28,8 +28,6 @@ from __future__ import annotations
 
 import dataclasses
 import sys
-import types
-from typing import Dict
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -41,7 +39,6 @@ from figaroh.identification.physical_consistency import (
     check_p10_feasibility,
     is_feasible_link,
     p10_by_joint_from_param_dict,
-    param_dict_with_p10_by_joint,
     project_link,
     project_p10_lmi,
     project_robot_p10_lmi,
