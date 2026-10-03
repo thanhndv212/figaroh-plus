@@ -155,9 +155,7 @@ def _model_identity(obj: Any) -> Dict[str, Any]:
     # _store_optimization_results() already use when naming the
     # ResultsManager, so a subclass (or test double) that sets it
     # directly is honored consistently everywhere.
-    robot_name = getattr(obj, "robot_name", None) or getattr(
-        model, "name", None
-    )
+    robot_name = getattr(obj, "robot_name", None) or getattr(model, "name", None)
     return {
         "robot_name": robot_name or "unknown",
         "urdf_path": urdf_path or "unavailable",
@@ -192,9 +190,7 @@ def _data_files_provenance(config: Dict[str, Any]) -> Dict[str, Any]:
             files[key] = {"path": path, "status": "not_found"}
             continue
         try:
-            mtime = datetime.fromtimestamp(
-                getmtime(path), tz=timezone.utc
-            ).isoformat()
+            mtime = datetime.fromtimestamp(getmtime(path), tz=timezone.utc).isoformat()
         except OSError:
             mtime = "unavailable"
         files[key] = {
@@ -224,9 +220,7 @@ def collect_run_provenance(obj: Any, task: str) -> Dict[str, Any]:
         four consumers). Never raises: every sub-lookup is best-effort.
     """
     config = (
-        getattr(obj, "identif_config", None)
-        or getattr(obj, "calib_config", None)
-        or {}
+        getattr(obj, "identif_config", None) or getattr(obj, "calib_config", None) or {}
     )
     config_keys = (
         _IDENTIFICATION_CONFIG_KEYS
