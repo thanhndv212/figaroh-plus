@@ -28,7 +28,7 @@ Note:
 The resulting row ordering matches the returned base-parameter expressions.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 from scipy import linalg
