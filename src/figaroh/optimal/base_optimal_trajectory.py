@@ -27,10 +27,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from typing import Dict, List, Tuple, Any
 
-# Setup logger for this module
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
-
 from figaroh.tools.regressor import (
     build_regressor_basic,
     build_regressor_reduced,
@@ -50,6 +46,10 @@ from figaroh.optimal.config import load_param
 from figaroh.optimal.base_parameter import BaseParameterComputer
 from figaroh.optimal.contraints import TrajectoryConstraintManager
 from figaroh.utils.results_manager import ResultsManager, plot_with_fallback
+
+# Setup logger for this module
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class BaseOptimalTrajectory:
@@ -530,7 +530,7 @@ class BaseOptimalTrajectory:
                 results_dict, output_dir, save_formats=["yaml", "npz"]
             )
 
-            self.logger.info(f"Trajectory results saved successfully")
+            self.logger.info("Trajectory results saved successfully")
             return saved_files
 
         except ImportError:

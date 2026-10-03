@@ -15,12 +15,7 @@
 
 import logging
 import yaml
-from typing import Dict, List, Tuple, Any
-from yaml.loader import SafeLoader
-
-# Setup logger for this module
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+from typing import Dict, Tuple, Any
 
 from figaroh.identification.identification_tools import (
     get_param_from_yaml as get_identification_param_from_yaml,
@@ -31,6 +26,10 @@ from figaroh.utils.config_parser import (
     create_task_config,
     is_unified_config,
 )
+
+# Setup logger for this module
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class ConfigurationManager:
@@ -95,8 +94,6 @@ def create_config(unified_traj_config) -> dict:
 
     problem_params = unified_traj_config.get("problem", {})
     traj_params = unified_traj_config.get("trajectory", {})
-    constraint_params = unified_traj_config.get("constraints", {})
-    output_params = unified_traj_config.get("output", {})
     trajectory_config = {
         "n_wps": traj_params.get("waypoints", 5),
         "freq": traj_params.get("frequency", 100),
