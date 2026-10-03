@@ -15,7 +15,7 @@
 
 import logging
 import numpy as np
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List, Tuple
 
 from figaroh.tools.robotcollisions import CollisionWrapper
 from figaroh.utils.cubic_spline import calc_torque

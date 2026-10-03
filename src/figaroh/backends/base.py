@@ -7,7 +7,7 @@ while maintaining consistent algorithms and APIs.
 """
 
 from abc import ABC, abstractmethod
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 import numpy as np
 
 

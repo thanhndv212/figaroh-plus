@@ -6,7 +6,6 @@ import tempfile
 import os
 
 from figaroh.integration import RobotIdentificationSystem, IdentificationResult
-from figaroh.integration.api import _SimpleIdentification
 
 # ============================================================================
 # Tests for RobotIdentificationSystem

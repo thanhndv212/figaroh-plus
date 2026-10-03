@@ -10,7 +10,6 @@ from figaroh.identification.reconstruction import (
     reconstruct_from_base,
     reconstruct_full_parameters,
     reconstruct_theta_r,
-    run_reconstruction,
     _load_prior_from_yaml,
     _p10_indices_for_joints,
 )
@@ -222,7 +221,6 @@ def test_reconstruct_full_parameters_auto_falls_back_to_nullspace():
     params_r = [f"r{i}" for i in range(3)]
     # Patch picos import to simulate it being absent
     import sys
-    import unittest.mock as mock
 
     orig = sys.modules.get("picos")
     try:

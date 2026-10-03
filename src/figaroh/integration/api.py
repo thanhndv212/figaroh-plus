@@ -9,7 +9,7 @@ one-line API.
 import os
 import logging
 import numpy as np
-from typing import Optional, Dict, Any, Union
+from typing import Optional
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)

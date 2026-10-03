@@ -28,12 +28,15 @@ import logging
 
 import matplotlib
 
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import numpy as np
-import pytest
+matplotlib.use("Agg")  # must precede pyplot and anything importing it
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
+import pytest  # noqa: E402
 
-from figaroh.utils.results_manager import ResultsManager, plot_with_fallback
+from figaroh.utils.results_manager import (  # noqa: E402
+    ResultsManager,
+    plot_with_fallback,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -48,9 +51,7 @@ class TestPlotIdentificationResultsReshape:
         n_per_joint = 5
         joint_values = [10.0, 20.0, 30.0]
         # Joint-major flattened: all samples of joint 0, then joint 1, ...
-        measured = np.concatenate(
-            [np.full(n_per_joint, v) for v in joint_values]
-        )
+        measured = np.concatenate([np.full(n_per_joint, v) for v in joint_values])
         identified = measured - 1.0
 
         result = {
