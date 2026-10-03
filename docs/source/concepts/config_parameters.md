@@ -143,6 +143,7 @@ the layout differs.
 | `t_s` | Time window between waypoints (s) |
 | `soft_lim` | Joint-limit safety margin/discount applied during trajectory search |
 | `max_attempts` | Maximum attempts to find a feasible trajectory before giving up |
+| `max_iterations` | IPOPT iteration cap per trajectory segment (default 200; unified config: `problem.max_iterations`) |
 
 ## Migrating from legacy to unified format
 

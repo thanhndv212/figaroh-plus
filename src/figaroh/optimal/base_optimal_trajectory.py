@@ -690,6 +690,19 @@ class BaseTrajectoryIPOPTProblem(BaseOptimizationProblem):
             jac[:min_dim, :min_dim] = np.eye(min_dim)
             return jac
 
+    def _is_feasible(self, X, tol: float = 1e-6) -> bool:
+        """Check variable and constraint bounds at ``X`` within ``tol``."""
+        X = np.asarray(X, dtype=float)
+        lb, ub = self.get_variable_bounds()
+        cl, cu = self.get_constraint_bounds()
+        c = np.asarray(self.constraints(X), dtype=float)
+        return bool(
+            np.all(X >= np.asarray(lb) - tol)
+            and np.all(X <= np.asarray(ub) + tol)
+            and np.all(c >= np.asarray(cl) - tol)
+            and np.all(c <= np.asarray(cu) + tol)
+        )
+
     def solve_with_waypoints(self, wps) -> Tuple[bool, Dict[str, Any]]:
         """
         Solve the optimization problem with given initial waypoints.
@@ -709,7 +722,9 @@ class BaseTrajectoryIPOPTProblem(BaseOptimizationProblem):
             # Adjust settings for this complex problem
             config.tolerance = 1e-3
             config.acceptable_tolerance = 1e-2
-            config.max_iterations = 200
+            config.max_iterations = self.opt_traj.trajectory_config.get(
+                "max_iterations", 200
+            )
             config.print_level = 3  # Reduce output
             config.custom_options = {
                 b"mu_strategy": b"adaptive",
@@ -718,12 +733,30 @@ class BaseTrajectoryIPOPTProblem(BaseOptimizationProblem):
 
             # Solve the problem
             success, results = solver.solve()
+            converged = success
+
+            # The condition-number objective is non-smooth, so IPOPT often
+            # stalls on dual infeasibility after reaching a feasible plateau.
+            # Keep such an iterate, but only if it satisfies every constraint.
+            if not success and results.get("status") == -1:
+                success = self._is_feasible(results["x_opt"])
+                if success:
+                    self.logger.warning(
+                        "IPOPT reached the iteration limit (%d) without "
+                        "converging; keeping the feasible final iterate "
+                        "(objective %.4g)",
+                        config.max_iterations,
+                        results["obj_val"],
+                    )
 
             if success:
                 # Extract final waypoint for next segment
                 X_opt = results["x_opt"]
                 wps_X = np.reshape(np.array(X_opt), (self.n_wps - 1, self.n_joints))
                 final_waypoint = wps_X[-1, :]
+                # The last callback may have been a finite-difference probe;
+                # rebuild the stored trajectory at the returned solution.
+                self.objective(np.asarray(X_opt))
 
                 # Update results with trajectory-specific data
                 results.update(
@@ -737,6 +770,7 @@ class BaseTrajectoryIPOPTProblem(BaseOptimizationProblem):
                             "obj_values": self.iteration_data["obj_values"],
                             "solve_time": results["solve_time"],
                             "status": results["status"],
+                            "converged": converged,
                             "final_waypoint": final_waypoint,
                         },
                     }

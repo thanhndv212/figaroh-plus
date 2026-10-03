@@ -112,6 +112,89 @@ def test_trajectory_gradient_uses_forward_differences():
     assert len(calls) == len(X) + 1
 
 
+class _StubConstraints:
+    """Two waypoint variables in [-1, 1]; one constraint c = x0 + x1 >= 0."""
+
+    def get_variable_bounds(self):
+        return [-1.0, -1.0], [1.0, 1.0]
+
+    def get_constraint_bounds(self, Ns):
+        return [0.0], [2e19]
+
+    def evaluate_constraints(self, Ns, X, opt_cb, *args):
+        return np.array([X[0] + X[1]])
+
+
+def _stub_problem(max_iterations=None):
+    def objective_function(X, opt_cb, *args):
+        opt_cb.update({"t_f": "t", "p_f": np.asarray(X), "v_f": "v", "a_f": "a"})
+        return float(np.sum(np.asarray(X) ** 2))
+
+    trajectory_config = {}
+    if max_iterations is not None:
+        trajectory_config["max_iterations"] = max_iterations
+    opt_traj = SimpleNamespace(
+        objective_function=objective_function,
+        constraint_manager=_StubConstraints(),
+        trajectory_config=trajectory_config,
+    )
+    # n_joints=1, n_wps=3 -> two decision variables.
+    return BaseTrajectoryIPOPTProblem(
+        opt_traj, 1, 3, 10, None, None, None, None, None, None, None
+    )
+
+
+def _fake_solver(status, x_opt, seen_configs):
+    class FakeSolver:
+        def __init__(self, problem, config):
+            seen_configs.append(config)
+
+        def solve(self):
+            return status in (0, 1), {
+                "x_opt": np.asarray(x_opt),
+                "obj_val": 1.0,
+                "status": status,
+                "solve_time": 0.0,
+            }
+
+    return FakeSolver
+
+
+@pytest.mark.parametrize(
+    "x_opt, accepted",
+    [([0.5, 0.25], True), ([0.5, -0.75], False)],
+    ids=["feasible", "infeasible"],
+)
+def test_iteration_limit_keeps_only_feasible_iterate(monkeypatch, x_opt, accepted):
+    from figaroh.optimal import base_optimal_trajectory as bot
+
+    seen = []
+    monkeypatch.setattr(bot, "RobotIPOPTSolver", _fake_solver(-1, x_opt, seen))
+    problem = _stub_problem(max_iterations=17)
+
+    success, results = problem.solve_with_waypoints(np.zeros((1, 3)))
+
+    assert seen[0].max_iterations == 17
+    assert success is accepted
+    if accepted:
+        assert results["iter_data"]["converged"] is False
+        # Stored trajectory is rebuilt at the returned solution.
+        np.testing.assert_allclose(results["p_f"], x_opt)
+
+
+def test_converged_segment_is_marked_converged(monkeypatch):
+    from figaroh.optimal import base_optimal_trajectory as bot
+
+    seen = []
+    monkeypatch.setattr(bot, "RobotIPOPTSolver", _fake_solver(0, [0.5, 0.25], seen))
+
+    success, results = _stub_problem().solve_with_waypoints(np.zeros((1, 3)))
+
+    assert seen[0].max_iterations == 200
+    assert success is True
+    assert results["iter_data"]["converged"] is True
+
+
 def test_waypoint_steps_respect_velocity_limits():
     from figaroh.optimal.base_optimal_trajectory import BaseOptimalTrajectory
 
