@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Replace universal quality gates with scoped execution/prediction verification;
+  preserve diagnostic metrics, record incomplete required evidence, reject nonfinite
+  results, and require explicit per-output limits for prediction acceptance. (#70)
+  **Behaviour change:** `verify()` without `scope` now means prediction acceptance,
+  so callers that only checked `.passed` get `False` (not evaluated) unless they
+  supply separately loaded validation data and limits; pass `scope="execution"`
+  for numerical-execution checks. The default thresholds are now empty, and
+  training-data fallback metrics are named `training_*`.
+
 - Bound Pinocchio to `pin>=3.7,<5`, replace deprecated frame-parent access,
   and add explicit Pinocchio 3.7.0 / 4.1.0 CI profiles with compatible ndcurves
   versions. Constraints apply before environment creation; CI checks native

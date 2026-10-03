@@ -40,7 +40,6 @@ from figaroh.tools._report_common import (
     _SERIES_CHART_SCRIPT,
     _STYLE,
     UNCERTAINTY_WARN_PCT,
-    VALIDATION_IMPROVEMENT_WARN_PCT,
     _esc,
     _insights_section,
     _param_uncertainty_section,
@@ -77,100 +76,110 @@ def _build_insights(
     cond_num = result.get("condition number", float("nan"))
     cond_label = _condition_label(cond_num)
     if cond_label == "ill-conditioned":
-        insights.append({
-            "level": "warn",
-            "text": f"Condition number {cond_num:.1f} is ill-conditioned "
-                    "— consider a richer excitation trajectory or fewer "
-                    "simultaneously identified base parameters.",
-        })
+        insights.append(
+            {
+                "level": "warn",
+                "text": f"Condition number {cond_num:.1f} is ill-conditioned "
+                "— consider a richer excitation trajectory or fewer "
+                "simultaneously identified base parameters.",
+            }
+        )
     elif cond_label == "moderately conditioned":
-        insights.append({
-            "level": "info",
-            "text": f"Condition number {cond_num:.1f} is moderately "
-                    "conditioned — usable, but not optimal.",
-        })
+        insights.append(
+            {
+                "level": "info",
+                "text": f"Condition number {cond_num:.1f} is moderately "
+                "conditioned — usable, but not optimal.",
+            }
+        )
 
     if std_relative:
         poor = [
             base_names[i] if i < len(base_names) else f"param_{i}"
             for i, sp in enumerate(std_relative)
-            if sp is not None and not math.isnan(sp)
-            and abs(sp) > UNCERTAINTY_WARN_PCT
+            if sp is not None and not math.isnan(sp) and abs(sp) > UNCERTAINTY_WARN_PCT
         ]
         if poor:
             names = ", ".join(poor[:6]) + (", ..." if len(poor) > 6 else "")
-            insights.append({
-                "level": "warn",
-                "text": f"{len(poor)} base parameter(s) have >"
-                        f"{UNCERTAINTY_WARN_PCT:.0f}% relative uncertainty "
-                        f"and are poorly identified: {names}.",
-            })
+            insights.append(
+                {
+                    "level": "warn",
+                    "text": f"{len(poor)} base parameter(s) have >"
+                    f"{UNCERTAINTY_WARN_PCT:.0f}% relative uncertainty "
+                    f"and are poorly identified: {names}.",
+                }
+            )
 
     if validation is None:
-        insights.append({
-            "level": "info",
-            "text": "No held-out validation data provided — these "
-                    "metrics reflect fit quality on the training set "
-                    "only, not generalization. Set "
-                    "validation_data_file in the identification config "
-                    "to enable it.",
-        })
+        insights.append(
+            {
+                "level": "info",
+                "text": "No held-out validation data provided — these "
+                "metrics reflect fit quality on the training set "
+                "only, not generalization. Set "
+                "validation_data_file in the identification config "
+                "to enable it.",
+            }
+        )
     else:
-        if validation.get("validation_source") == (
-            "identification_data_fallback"
-        ):
-            insights.append({
-                "level": "warn",
-                "text": "No separate validation data provided — "
-                        "validation metrics fall back to the "
-                        "identification data itself and do NOT test "
-                        "generalization to new trajectories.",
-            })
+        if validation.get("validation_source") == ("identification_data_fallback"):
+            insights.append(
+                {
+                    "level": "warn",
+                    "text": "No separate validation data provided — "
+                    "validation metrics fall back to the "
+                    "identification data itself and do NOT test "
+                    "generalization to new trajectories.",
+                }
+            )
         corr = validation.get("correlation", 1.0)
         if corr < LOW_CORRELATION_WARN:
-            insights.append({
-                "level": "warn",
-                "text": f"Validation torque correlation is only "
-                        f"{corr:.3f} — the identified model may not "
-                        "generalize well beyond the excitation "
-                        "trajectory used for fitting.",
-            })
-        improvement = validation.get("improvement_pct", 100.0)
-        if improvement < VALIDATION_IMPROVEMENT_WARN_PCT:
-            insights.append({
-                "level": "warn",
-                "text": "Validation torque RMSE improved by only "
-                        f"{improvement:.1f}% over the nominal/CAD "
-                        "parameters — check model assumptions or "
-                        "excitation trajectory coverage.",
-            })
+            insights.append(
+                {
+                    "level": "warn",
+                    "text": f"Validation torque correlation is only "
+                    f"{corr:.3f} — the identified model may not "
+                    "generalize well beyond the excitation "
+                    "trajectory used for fitting.",
+                }
+            )
 
     pc = result.get("physical consistency")
     if isinstance(pc, dict) and pc.get("status") not in (
-        None, "already_feasible", "feasible",
+        None,
+        "already_feasible",
+        "feasible",
     ):
-        insights.append({
-            "level": "warn" if pc.get("status") in ("error", "unavailable")
-            else "info",
-            "text": f"Physical-consistency projection status: "
-                    f"{pc.get('status')}.",
-        })
+        insights.append(
+            {
+                "level": (
+                    "warn" if pc.get("status") in ("error", "unavailable") else "info"
+                ),
+                "text": f"Physical-consistency projection status: "
+                f"{pc.get('status')}.",
+            }
+        )
 
     recon = result.get("reconstruction")
     if isinstance(recon, dict) and recon.get("status") not in (
-        None, "success",
+        None,
+        "success",
     ):
-        insights.append({
-            "level": "warn",
-            "text": f"Full-parameter reconstruction status: "
-                    f"{recon.get('status')}.",
-        })
+        insights.append(
+            {
+                "level": "warn",
+                "text": f"Full-parameter reconstruction status: "
+                f"{recon.get('status')}.",
+            }
+        )
 
     if not insights:
-        insights.append({
-            "level": "info",
-            "text": "No issues detected — fit looks healthy.",
-        })
+        insights.append(
+            {
+                "level": "info",
+                "text": "No issues detected by these diagnostics; this is not an acceptance verdict.",
+            }
+        )
 
     return insights
 
@@ -218,6 +227,7 @@ def _per_joint_section(per_joint: Optional[Dict[str, Any]]) -> str:
     names = per_joint["joint_names"]
     rows = []
     for i, name in enumerate(names):
+
         def _at(key):
             arr = per_joint.get(key, [])
             return arr[i] if i < len(arr) else float("nan")
@@ -268,13 +278,13 @@ def _validation_section(validation: Optional[Dict[str, Any]]) -> str:
         "<td>Torque RMSE</td>"
         f"<td class=\"num\">{validation['rmse_nominal']:.4f}</td>"
         f"<td class=\"num\">{validation['rmse_identified']:.4f}</td>"
-        f"<td class=\"num\">{improvement:.1f}% {arrow}</td>"
+        f'<td class="num">{improvement:.1f}% {arrow}</td>'
         "</tr>"
         "<tr>"
         "<td>Torque max |error|</td>"
         f"<td class=\"num\">{validation['max_nominal']:.4f}</td>"
         f"<td class=\"num\">{validation['max_identified']:.4f}</td>"
-        "<td class=\"num\">—</td>"
+        '<td class="num">—</td>'
         "</tr>"
     )
 
@@ -282,8 +292,7 @@ def _validation_section(validation: Optional[Dict[str, Any]]) -> str:
     val_corr = validation.get("correlation", float("nan"))
     set_label = (
         "identification set (fallback)"
-        if validation.get("validation_source")
-        == "identification_data_fallback"
+        if validation.get("validation_source") == "identification_data_fallback"
         else "held-out set"
     )
     return f"""
@@ -314,17 +323,17 @@ def _consistency_section(result: Dict[str, Any]) -> str:
     if pc is not None:
         pc_status = _esc(pc.get("status", "unknown"))
         parts.append(
-            "<div class=\"stat\">"
-            "<div class=\"stat-label\">Physical consistency</div>"
-            f"<div class=\"stat-value\">{pc_status}</div>"
+            '<div class="stat">'
+            '<div class="stat-label">Physical consistency</div>'
+            f'<div class="stat-value">{pc_status}</div>'
             "</div>"
         )
     if recon is not None:
         recon_status = _esc(recon.get("status", "unknown"))
         parts.append(
-            "<div class=\"stat\">"
-            "<div class=\"stat-label\">Reconstruction</div>"
-            f"<div class=\"stat-value\">{recon_status}</div>"
+            '<div class="stat">'
+            '<div class="stat-label">Reconstruction</div>'
+            f'<div class="stat-value">{recon_status}</div>'
             "</div>"
         )
     return f'<div class="stat-row">{"".join(parts)}</div>'
@@ -354,9 +363,7 @@ def generate_identification_report(
     """
     result = getattr(identifier, "result", None)
     if result is None:
-        raise AttributeError(
-            "No identification results available. Run solve() first."
-        )
+        raise AttributeError("No identification results available. Run solve() first.")
 
     base_names = result.get("base parameters names", [])
     std_relative_raw = getattr(identifier, "std_relative", None)

@@ -590,9 +590,9 @@ class BaseCalibration(ABC):
 
         def _error_stats(arr_2d):
             """arr_2d: (n_dof_group, n_samples) → per-sample norm → stats."""
-            per_sample = np.sqrt(np.sum(arr_2d ** 2, axis=0))
+            per_sample = np.sqrt(np.sum(arr_2d**2, axis=0))
             return {
-                "rmse": float(np.sqrt(np.mean(np.sum(arr_2d ** 2, axis=0)))),
+                "rmse": float(np.sqrt(np.mean(np.sum(arr_2d**2, axis=0)))),
                 "max": float(np.max(per_sample)),
                 "mean": float(np.mean(per_sample)),
             }
@@ -615,19 +615,19 @@ class BaseCalibration(ABC):
         # construction), so it is exposed as the zero reference line
         # nominal/fitted are being compared against.
         dof_names = [
-            "X (mm)", "Y (mm)", "Z (mm)",
-            "rx (deg)", "ry (deg)", "rz (deg)",
+            "X (mm)",
+            "Y (mm)",
+            "Z (mm)",
+            "rx (deg)",
+            "ry (deg)",
+            "rz (deg)",
         ][:n_dofs]
-        scales = np.array(
-            [1000.0 if i < 3 else 180.0 / np.pi for i in range(n_dofs)]
-        )
+        scales = np.array([1000.0 if i < 3 else 180.0 / np.pi for i in range(n_dofs)])
         nom_scaled = resid_nom_2d * scales[:, None]
         cal_scaled = resid_cal_2d * scales[:, None]
 
         def _per_dof(arr_2d):
-            return {
-                dof_names[i]: arr_2d[i].tolist() for i in range(n_dofs)
-            }
+            return {dof_names[i]: arr_2d[i].tolist() for i in range(n_dofs)}
 
         return {
             "n_val_samples": n_val,
@@ -642,18 +642,10 @@ class BaseCalibration(ABC):
             "pos_improvement_pct": _improvement(
                 pos_nom_stats["rmse"], pos_cal_stats["rmse"]
             ),
-            "orient_rmse_nominal_deg": (
-                orient_nom_stats["rmse"] * 180 / np.pi
-            ),
-            "orient_rmse_calibrated_deg": (
-                orient_cal_stats["rmse"] * 180 / np.pi
-            ),
-            "orient_max_nominal_deg": (
-                orient_nom_stats["max"] * 180 / np.pi
-            ),
-            "orient_max_calibrated_deg": (
-                orient_cal_stats["max"] * 180 / np.pi
-            ),
+            "orient_rmse_nominal_deg": (orient_nom_stats["rmse"] * 180 / np.pi),
+            "orient_rmse_calibrated_deg": (orient_cal_stats["rmse"] * 180 / np.pi),
+            "orient_max_nominal_deg": (orient_nom_stats["max"] * 180 / np.pi),
+            "orient_max_calibrated_deg": (orient_cal_stats["max"] * 180 / np.pi),
             "orient_improvement_pct": _improvement(
                 orient_nom_stats["rmse"], orient_cal_stats["rmse"]
             ),
@@ -790,12 +782,8 @@ class BaseCalibration(ABC):
                     meas_6d[dof] = est_6d[dof]
 
                 # Convert to SE3
-                M_meas = pin.SE3(
-                    pin.rpy.rpyToMatrix(meas_6d[3:6]), meas_6d[0:3]
-                )
-                M_est = pin.SE3(
-                    pin.rpy.rpyToMatrix(est_6d[3:6]), est_6d[0:3]
-                )
+                M_meas = pin.SE3(pin.rpy.rpyToMatrix(meas_6d[3:6]), meas_6d[0:3])
+                M_est = pin.SE3(pin.rpy.rpyToMatrix(est_6d[3:6]), est_6d[0:3])
 
                 # Orientation error — always angle-axis from log map
                 delta = M_meas.inverse() * M_est
@@ -804,7 +792,7 @@ class BaseCalibration(ABC):
 
                 # Position error — body-frame or world-frame
                 if position_frame == "body":
-                    se3_errors[marker, :3, s] = motion.linear   # v: body-frame
+                    se3_errors[marker, :3, s] = motion.linear  # v: body-frame
                 else:
                     se3_errors[marker, :3, s] = est_6d[:3] - meas_6d[:3]  # world-frame
 
@@ -1074,7 +1062,7 @@ class BaseCalibration(ABC):
             residuals_2d = None
             per_sample_error = np.abs(residuals)
 
-        rmse = np.sqrt(np.mean(per_sample_error ** 2))
+        rmse = np.sqrt(np.mean(per_sample_error**2))
         mae = np.mean(per_sample_error)
         max_error = np.max(per_sample_error)
 
@@ -1139,15 +1127,23 @@ class BaseCalibration(ABC):
         report. Units: position DOFs=mm, orientation DOFs=deg.
         """
         dof_names = [
-            "X (mm)", "Y (mm)", "Z (mm)",
-            "rx (deg)", "ry (deg)", "rz (deg)",
+            "X (mm)",
+            "Y (mm)",
+            "Z (mm)",
+            "rx (deg)",
+            "ry (deg)",
+            "rz (deg)",
         ]
         dof_names = dof_names[:n_dofs]
 
         if len(residuals) != n_dofs * n_samples:
             return {
-                "dof_names": dof_names, "mean": [], "std": [],
-                "rmse": [], "max_abs": [], "r_squared": [],
+                "dof_names": dof_names,
+                "mean": [],
+                "std": [],
+                "rmse": [],
+                "max_abs": [],
+                "r_squared": [],
             }
 
         residuals_2d = residuals.reshape((n_dofs, n_samples))
@@ -1165,27 +1161,22 @@ class BaseCalibration(ABC):
 
             means.append(float(np.mean(scaled)))
             stds.append(float(np.std(scaled)))
-            rmses.append(float(np.sqrt(np.mean(scaled ** 2))))
+            rmses.append(float(np.sqrt(np.mean(scaled**2))))
             max_abs.append(float(np.max(np.abs(scaled))))
 
             # R² = 1 - SS_res / SS_tot
-            ss_res = np.sum(row ** 2)
+            ss_res = np.sum(row**2)
             ss_tot = np.sum((meas_row - np.mean(meas_row)) ** 2)
             r2 = 1.0 - ss_res / ss_tot if ss_tot > 1e-15 else 1.0
             r_squareds.append(float(r2))
 
         # Overall position/orientation aggregates
-        pos_rows = (
-            residuals_2d[:3, :] if n_dofs >= 3 else residuals_2d
-        )
-        orient_rows = (
-            residuals_2d[3:6, :] if n_dofs >= 6
-            else np.zeros((3, n_samples))
-        )
-        pos_norm = np.sqrt(np.sum(pos_rows ** 2, axis=0))
-        orient_norm = np.sqrt(np.sum(orient_rows ** 2, axis=0))
-        pos_rmse = float(np.sqrt(np.mean(pos_norm ** 2))) * 1000
-        orient_rmse = float(np.sqrt(np.mean(orient_norm ** 2))) * 180 / np.pi
+        pos_rows = residuals_2d[:3, :] if n_dofs >= 3 else residuals_2d
+        orient_rows = residuals_2d[3:6, :] if n_dofs >= 6 else np.zeros((3, n_samples))
+        pos_norm = np.sqrt(np.sum(pos_rows**2, axis=0))
+        orient_norm = np.sqrt(np.sum(orient_rows**2, axis=0))
+        pos_rmse = float(np.sqrt(np.mean(pos_norm**2))) * 1000
+        orient_rmse = float(np.sqrt(np.mean(orient_norm**2))) * 180 / np.pi
         pos_mae = float(np.mean(pos_norm)) * 1000
         orient_mae = float(np.mean(orient_norm)) * 180 / np.pi
         pos_max = float(np.max(pos_norm)) * 1000
@@ -1254,19 +1245,21 @@ class BaseCalibration(ABC):
             for i in range(n):
                 for j in range(i + 1, n):
                     if abs(corr[i, j]) > 0.8:
-                        pairs.append({
-                            "param_i": (
-                                param_names[i]
-                                if i < len(param_names)
-                                else f"param_{i}"
-                            ),
-                            "param_j": (
-                                param_names[j]
-                                if j < len(param_names)
-                                else f"param_{j}"
-                            ),
-                            "correlation": float(corr[i, j]),
-                        })
+                        pairs.append(
+                            {
+                                "param_i": (
+                                    param_names[i]
+                                    if i < len(param_names)
+                                    else f"param_{i}"
+                                ),
+                                "param_j": (
+                                    param_names[j]
+                                    if j < len(param_names)
+                                    else f"param_{j}"
+                                ),
+                                "correlation": float(corr[i, j]),
+                            }
+                        )
             return pairs
         except Exception:
             return []
@@ -1371,9 +1364,7 @@ class BaseCalibration(ABC):
         self.results_data["condition_number"] = evaluation.get(
             "condition_number", float("nan")
         )
-        self.results_data["correlated_pairs"] = evaluation.get(
-            "correlated_pairs", []
-        )
+        self.results_data["correlated_pairs"] = evaluation.get("correlated_pairs", [])
 
         # Compute validation metrics and store if available
         val_metrics = self._compute_validation_metrics()
@@ -1822,9 +1813,7 @@ class BaseCalibration(ABC):
             AttributeError: If called before :meth:`solve`.
         """
         if not hasattr(self, "evaluation_metrics"):
-            raise AttributeError(
-                "No calibration results available. Run solve() first."
-            )
+            raise AttributeError("No calibration results available. Run solve() first.")
 
         from os import makedirs
         from os.path import join
@@ -1838,48 +1827,36 @@ class BaseCalibration(ABC):
         logger.info(f"HTML quality report written to {output_path}")
         return output_path
 
-    def verify(self, thresholds: Optional[Dict[str, Dict[str, Any]]] = None):
-        """Check this calibration's metrics against pass/fail thresholds.
+    def verify(
+        self,
+        thresholds: Optional[Dict[str, Dict[str, Any]]] = None,
+        scope: str = "prediction",
+    ):
+        """Return scoped acceptance evidence with explicit incomplete states.
 
-        Unlike :meth:`print_quality_report`/:meth:`export_html_report`
-        (for a human to read), this returns a machine-checkable
-        :class:`~figaroh.tools._report_common.VerificationVerdict` a CI
-        script can branch on. Computed entirely from data already
-        gathered during :meth:`solve` — never raises after a successful
-        solve, and never gates ``solve()`` itself (opt-in, called
-        whenever the caller wants a verdict).
+        ``scope="execution"`` checks finite numerical fit outputs;
+        it does not certify prediction, physical parameters or export.
+        ``scope="prediction"`` (default) additionally requires independent validation
+        and explicit application error limits. No universal improvement,
+        correlation, conditioning or prediction-error gate is imposed.
 
-        Args:
-            thresholds: Per-metric ``{"threshold": float, "comparison":
-                "max"|"min"}`` overrides. Defaults to
-                ``CALIBRATION_DEFAULT_THRESHOLDS`` (a 6-DOF arm and a
-                30-DOF humanoid don't share the same bar — override per
-                robot as needed).
-
-        Returns:
-            VerificationVerdict: ``passed``, per-metric ``checks``, the
-            raw ``metrics`` dict, human-readable ``insights`` (the same
-            text used by :meth:`export_html_report`), and ``metadata``
-            (git commit, config file hash, timestamp, robot name).
-
-        Raises:
-            AttributeError: If called before :meth:`solve`.
+        ``thresholds`` maps metric names to ``threshold``, ``comparison``
+        (min/max), and optional ``required`` (default True). Missing required
+        evidence produces not_evaluated, not PASS. Nonfinite evidence fails.
+        ``passed`` is True only when all required checks in scope pass.
         """
         if not hasattr(self, "evaluation_metrics"):
-            raise AttributeError(
-                "No calibration results available. Run solve() first."
-            )
+            raise AttributeError("No calibration results available. Run solve() first.")
 
         from figaroh.tools._report_common import (
             CALIBRATION_DEFAULT_THRESHOLDS,
-            evaluate_thresholds,
+            scoped_verification,
         )
         from figaroh.tools.report import _build_insights
         from figaroh.tools.provenance import collect_run_provenance
 
         thresholds = (
-            thresholds if thresholds is not None
-            else CALIBRATION_DEFAULT_THRESHOLDS
+            thresholds if thresholds is not None else CALIBRATION_DEFAULT_THRESHOLDS
         )
 
         eval_ = self.evaluation_metrics
@@ -1891,19 +1868,44 @@ class BaseCalibration(ABC):
         metrics: Dict[str, float] = {
             "condition_number": eval_.get("condition_number", float("nan")),
             "rmse": eval_.get("rmse", float("nan")),
-            "outlier_percentage": eval_.get(
-                "outlier_percentage", float("nan")
-            ),
+            "outlier_percentage": eval_.get("outlier_percentage", float("nan")),
         }
+        independent = (
+            bool(getattr(self, "_val_available", False)) and validation is not None
+        )
         if validation is not None:
-            metrics["position_rmse_mm"] = validation.get(
+            # Training-data fallback stays labelled as training evidence, so
+            # it can never satisfy a validation_* prediction limit.
+            prefix = "" if independent else "training_"
+            metrics[f"{prefix}position_rmse_mm"] = validation.get(
                 "pos_rmse_calibrated_mm", float("nan")
             )
-            metrics["orientation_rmse_deg"] = validation.get(
-                "orient_rmse_calibrated_deg", float("nan")
-            )
-
-        verdict = evaluate_thresholds(metrics, thresholds)
+            if self.calib_config.get("calibration_index", 3) > 3:
+                metrics[f"{prefix}orientation_rmse_deg"] = validation.get(
+                    "orient_rmse_calibrated_deg", float("nan")
+                )
+        prediction_keys = ["position_rmse_mm"]
+        if self.calib_config.get("calibration_index", 3) > 3:
+            prediction_keys.append("orientation_rmse_deg")
+        verdict = scoped_verification(
+            metrics,
+            thresholds,
+            scope,
+            {
+                "finite_fit_rmse": eval_.get("rmse"),
+                "finite_parameters": results_data.get("calibrated parameters values"),
+                "finite_residuals": results_data.get("residuals"),
+            },
+            independent,
+            prediction_keys,
+            solver_success=eval_.get("optimization_success"),
+            facts={
+                "requested_validation_loaded": (
+                    not self.calib_config.get("validation_data_file")
+                    or bool(getattr(self, "_val_available", False))
+                )
+            },
+        )
         verdict.insights = [
             i["text"]
             for i in _build_insights(eval_, n_samples, param_names, validation)
@@ -1914,8 +1916,12 @@ class BaseCalibration(ABC):
 
         n_dofs = self.calib_config.get("calibration_index", 0)
         dof_names = [
-            "X (mm)", "Y (mm)", "Z (mm)",
-            "rx (deg)", "ry (deg)", "rz (deg)",
+            "X (mm)",
+            "Y (mm)",
+            "Z (mm)",
+            "rx (deg)",
+            "ry (deg)",
+            "rz (deg)",
         ][:n_dofs]
         if validation is not None and "error_nominal_per_dof" in validation:
             n_val = validation.get("n_val_samples", 0)
@@ -1939,6 +1945,7 @@ class BaseCalibration(ABC):
         output_path: str = None,
         output_dir: str = "results",
         thresholds: Optional[Dict[str, Dict[str, Any]]] = None,
+        scope: str = "prediction",
     ) -> str:
         """Write this calibration's :meth:`verify` verdict as JSON.
 
@@ -1947,6 +1954,7 @@ class BaseCalibration(ABC):
                 ``{output_dir}/calibration_verification.json``.
             output_dir: Directory used when ``output_path`` is omitted.
             thresholds: Forwarded to :meth:`verify`.
+            scope: Forwarded to :meth:`verify`; default prediction acceptance.
 
         Returns:
             str: The path the JSON verdict was written to.
@@ -1956,21 +1964,23 @@ class BaseCalibration(ABC):
         from os import makedirs
         from os.path import join
 
-        verdict = self.verify(thresholds=thresholds)
+        verdict = self.verify(thresholds=thresholds, scope=scope)
         verdict_dict = dataclasses.asdict(verdict)
 
         results_manager = getattr(self, "results_manager", None)
         if results_manager is not None:
-            verdict_dict = results_manager._convert_for_serialization(
-                verdict_dict
-            )
+            verdict_dict = results_manager._convert_for_serialization(verdict_dict)
 
         if output_path is None:
             makedirs(output_dir, exist_ok=True)
             output_path = join(output_dir, "calibration_verification.json")
 
+        from figaroh.tools._report_common import verification_json_data
+
         with open(output_path, "w") as f:
-            json.dump(verdict_dict, f, indent=2)
+            json.dump(
+                verification_json_data(verdict_dict), f, indent=2, allow_nan=False
+            )
 
         logger.info(f"Verification report written to {output_path}")
         return output_path
@@ -1995,9 +2005,7 @@ class BaseCalibration(ABC):
 
         # ── Convergence ──
         status = (
-            "\u2713 converged"
-            if eval_["optimization_success"]
-            else "\u2717 failed"
+            "\u2713 converged" if eval_["optimization_success"] else "\u2717 failed"
         )
         print(
             f"  Convergence:  {status}    "
@@ -2033,10 +2041,7 @@ class BaseCalibration(ABC):
                 f"  {'DOF':<12s} {'Mean':>10s} {'Std':>10s} "
                 f"{'RMSE':>10s} {'Max':>10s} {'R²':>10s}"
             )
-            print(
-                f"  {'-'*12} {'-'*10} {'-'*10} "
-                f"{'-'*10} {'-'*10} {'-'*10}"
-            )
+            print(f"  {'-'*12} {'-'*10} {'-'*10} " f"{'-'*10} {'-'*10} {'-'*10}")
             for i in range(len(names)):
                 m = f"{means[i]:10.4f}" if i < len(means) else "         -"
                 s = f"{stds[i]:10.4f}" if i < len(stds) else "         -"
@@ -2081,12 +2086,8 @@ class BaseCalibration(ABC):
                 f"{'Calibrated':>12s} {'Improvement':>14s}"
             )
             print(f"  {'-'*20} {'-'*10} {'-'*12} {'-'*14}")
-            arrow_pos = (
-                "\u2193" if val["pos_improvement_pct"] > 0 else "\u2191"
-            )
-            arrow_orient = (
-                "\u2193" if val["orient_improvement_pct"] > 0 else "\u2191"
-            )
+            arrow_pos = "\u2193" if val["pos_improvement_pct"] > 0 else "\u2191"
+            arrow_orient = "\u2193" if val["orient_improvement_pct"] > 0 else "\u2191"
             print(
                 f"  {'Position RMSE':<20s} "
                 f"{val['pos_rmse_nominal_mm']:10.2f} mm"
@@ -2114,8 +2115,7 @@ class BaseCalibration(ABC):
         else:
             print("  Validation: no separate validation data provided.")
             print(
-                "    Collect measurements with random configurations "
-                "for FK testing."
+                "    Collect measurements with random configurations " "for FK testing."
             )
 
         # ── Parameter uncertainty (top 5) ──
@@ -2130,21 +2130,13 @@ class BaseCalibration(ABC):
                 reverse=True,
             )[:5]
             n_show = min(5, len(ranked))
+            print(f"  Parameter Uncertainty (top {n_show} most uncertain)")
             print(
-                f"  Parameter Uncertainty (top {n_show} most uncertain)"
+                f"  {'Parameter':<30s} {'Value':>12s} " f"{'±σ':>12s} {'σ/|val|':>10s}"
             )
-            print(
-                f"  {'Parameter':<30s} {'Value':>12s} "
-                f"{'±σ':>12s} {'σ/|val|':>10s}"
-            )
-            print(
-                f"  {'-'*30} {'-'*12} {'-'*12} {'-'*10}"
-            )
+            print(f"  {'-'*30} {'-'*12} {'-'*12} {'-'*10}")
             for name, sd, sp in ranked:
-                print(
-                    f"  {name:<30s} {'':>12s} "
-                    f"{sd:12.6f} {sp:9.1f}%"
-                )
+                print(f"  {name:<30s} {'':>12s} " f"{sd:12.6f} {sp:9.1f}%")
 
         # ── Correlated pairs ──
         corr_pairs = eval_.get("correlated_pairs", [])
@@ -2158,9 +2150,7 @@ class BaseCalibration(ABC):
                     f"\u03c1 = {cp['correlation']:+.3f}"
                 )
         else:
-            print(
-                "  Parameter correlations: none exceed |\u03c1| > 0.8"
-            )
+            print("  Parameter correlations: none exceed |\u03c1| > 0.8")
 
         print("=" * 70)
         print()

@@ -27,10 +27,6 @@ import dataclasses
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
-# Setup logger for this module
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
-
 # FIGAROH imports
 from figaroh.identification.identification_tools import (
     get_param_from_yaml as get_identification_param_from_yaml,
@@ -53,6 +49,11 @@ from figaroh.identification.parameter import (
 )
 from figaroh.tools.solver import LinearSolver
 from figaroh.utils.results_manager import plot_with_fallback
+
+
+# Setup logger for this module
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class BaseIdentification(ABC):
@@ -639,7 +640,7 @@ class BaseIdentification(ABC):
             :meth:`_decimate_regressor_matrix`.
             """
             return np.concatenate(
-                [vec[idx * n_val:(idx + 1) * n_val] for idx in act_idxv]
+                [vec[idx * n_val : (idx + 1) * n_val] for idx in act_idxv]
             )
 
         phi_std_vec = np.array(list(self.standard_parameter.values()))
@@ -649,9 +650,9 @@ class BaseIdentification(ABC):
         # Joint-major, matching the regressor's row convention (block j
         # occupies rows [j*n_val:(j+1)*n_val]) — torques columns are
         # already restricted to active joints in act_idxv order.
-        tau_val_measured = (
-            np.asarray(val_processed_data["torques"]).T.flatten()[:n_rows]
-        )
+        tau_val_measured = np.asarray(val_processed_data["torques"]).T.flatten()[
+            :n_rows
+        ]
 
         def _stats(estimated):
             residuals = tau_val_measured - estimated
@@ -689,7 +690,7 @@ class BaseIdentification(ABC):
 
         def _per_joint(arr):
             return {
-                joint_names[i]: arr[i * n_val:(i + 1) * n_val].tolist()
+                joint_names[i]: arr[i * n_val : (i + 1) * n_val].tolist()
                 for i in range(n_active)
             }
 
@@ -1790,9 +1791,7 @@ class BaseIdentification(ABC):
             cond_label = (
                 "well-conditioned"
                 if cond_num < 100
-                else "moderately-conditioned"
-                if cond_num < 1000
-                else "ill-conditioned"
+                else "moderately-conditioned" if cond_num < 1000 else "ill-conditioned"
             )
             print(f"  Condition:    {cond_num:.1f} ({cond_label})")
         else:
@@ -1826,9 +1825,7 @@ class BaseIdentification(ABC):
         std_relative = getattr(self, "std_relative", None)
         base_names = result.get("base parameters names", [])
         if std_relative is not None and len(std_relative) == len(base_names):
-            order = sorted(
-                range(len(base_names)), key=lambda i: -abs(std_relative[i])
-            )
+            order = sorted(range(len(base_names)), key=lambda i: -abs(std_relative[i]))
             print("  Base-Parameter Uncertainty (top 5 by relative std-dev)")
             for i in order[:5]:
                 print(f"    {base_names[i]:<50s} {std_relative[i]:8.1f}%")
@@ -1846,8 +1843,7 @@ class BaseIdentification(ABC):
                     "These are NOT an independent generalization test."
                 )
                 print(
-                    f"  Validation (identification set, "
-                    f"n={val['n_val_samples']})"
+                    f"  Validation (identification set, " f"n={val['n_val_samples']})"
                 )
             else:
                 print(f"  Validation (separate set, n={val['n_val_samples']})")
@@ -1916,32 +1912,23 @@ class BaseIdentification(ABC):
         logger.info(f"HTML quality report written to {output_path}")
         return output_path
 
-    def verify(self, thresholds: Optional[Dict[str, Dict[str, Any]]] = None):
-        """Check this identification's metrics against pass/fail thresholds.
+    def verify(
+        self,
+        thresholds: Optional[Dict[str, Dict[str, Any]]] = None,
+        scope: str = "prediction",
+    ):
+        """Return scoped acceptance evidence with explicit incomplete states.
 
-        Unlike :meth:`print_quality_report`/:meth:`export_html_report`
-        (for a human to read), this returns a machine-checkable
-        :class:`~figaroh.tools._report_common.VerificationVerdict` a CI
-        script can branch on. Computed entirely from data already
-        gathered during :meth:`solve` — never raises after a successful
-        solve, and never gates ``solve()`` itself (opt-in, called
-        whenever the caller wants a verdict).
+        ``scope="execution"`` checks finite numerical fit outputs;
+        it does not certify prediction, physical parameters or export.
+        ``scope="prediction"`` (default) additionally requires independent validation
+        and explicit application error limits. No universal improvement,
+        correlation, conditioning or prediction-error gate is imposed.
 
-        Args:
-            thresholds: Per-metric ``{"threshold": float, "comparison":
-                "max"|"min"}`` overrides. Defaults to
-                ``IDENTIFICATION_DEFAULT_THRESHOLDS`` (a 6-DOF arm and a
-                30-DOF humanoid don't share the same bar — override per
-                robot as needed).
-
-        Returns:
-            VerificationVerdict: ``passed``, per-metric ``checks``, the
-            raw ``metrics`` dict, human-readable ``insights`` (the same
-            text used by :meth:`export_html_report`), and ``metadata``
-            (git commit, config file hash, timestamp, robot name).
-
-        Raises:
-            AttributeError: If called before :meth:`solve`.
+        ``thresholds`` maps metric names to ``threshold``, ``comparison``
+        (min/max), and optional ``required`` (default True). Missing required
+        evidence produces not_evaluated, not PASS. Nonfinite evidence fails.
+        ``passed`` is True only when all required checks in scope pass.
         """
         if self.result is None:
             raise AttributeError(
@@ -1950,28 +1937,23 @@ class BaseIdentification(ABC):
 
         from figaroh.tools._report_common import (
             IDENTIFICATION_DEFAULT_THRESHOLDS,
-            evaluate_thresholds,
+            scoped_verification,
         )
         from figaroh.tools.identification_report import _build_insights
         from figaroh.tools.provenance import collect_run_provenance
 
         thresholds = (
-            thresholds if thresholds is not None
-            else IDENTIFICATION_DEFAULT_THRESHOLDS
+            thresholds if thresholds is not None else IDENTIFICATION_DEFAULT_THRESHOLDS
         )
 
         result = self.result
         base_names = result.get("base parameters names", [])
         std_relative_raw = getattr(self, "std_relative", None)
-        std_relative = (
-            list(std_relative_raw) if std_relative_raw is not None else []
-        )
+        std_relative = list(std_relative_raw) if std_relative_raw is not None else []
         validation = result.get("validation_metrics")
 
         metrics: Dict[str, float] = {
-            "condition_number": result.get(
-                "condition number", float("nan")
-            ),
+            "condition_number": result.get("condition number", float("nan")),
             "rmse": result.get("rmse norm (N/m)", float("nan")),
         }
         if validation is not None:
@@ -1982,12 +1964,55 @@ class BaseIdentification(ABC):
                 "improvement_pct", float("nan")
             )
 
-        verdict = evaluate_thresholds(metrics, thresholds)
+        joint_names = (validation or {}).get("joint_names", [])
+        independent = (validation or {}).get("validation_source") == "validation_data"
+        for joint in joint_names:
+            observed = np.asarray(
+                validation.get("tau_measured_per_joint", {}).get(joint, [])
+            )
+            predicted = np.asarray(
+                validation.get("tau_identified_per_joint", {}).get(joint, [])
+            )
+            if observed.size and observed.shape == predicted.shape:
+                prefix = "validation" if independent else "training"
+                metrics[f"{prefix}_rmse:{joint}"] = float(
+                    np.sqrt(np.mean((observed - predicted) ** 2))
+                )
+                metrics[f"{prefix}_abs_bias:{joint}"] = float(
+                    abs(np.mean(observed - predicted))
+                )
+                metrics[f"{prefix}_peak_error:{joint}"] = float(
+                    np.max(np.abs(observed - predicted))
+                )
+        verdict = scoped_verification(
+            metrics,
+            thresholds,
+            scope,
+            {
+                "finite_parameters": result.get("base parameters values"),
+                "finite_prediction": result.get("torque estimated"),
+                "finite_measurements": result.get("torque processed"),
+                "finite_fit_rmse": result.get("rmse norm (N/m)"),
+            },
+            independent,
+            [f"validation_rmse:{j}" for j in joint_names],
+            facts={
+                "requested_validation_loaded": (
+                    not self.identif_config.get("validation_data_file")
+                    or bool(getattr(self, "_val_available", False))
+                ),
+                "matching_torque_shapes": (
+                    np.shape(result["torque estimated"])
+                    == np.shape(result["torque processed"])
+                    if result.get("torque estimated") is not None
+                    and result.get("torque processed") is not None
+                    else None
+                ),
+            },
+        )
         verdict.insights = [
             i["text"]
-            for i in _build_insights(
-                result, std_relative, base_names, validation
-            )
+            for i in _build_insights(result, std_relative, base_names, validation)
         ]
         verdict.metadata = getattr(
             self, "_run_provenance", None
@@ -1998,9 +2023,7 @@ class BaseIdentification(ABC):
             n_val = validation.get("n_val_samples", 0)
             verdict.series = {
                 "time": list(range(n_val)),
-                "joint_names": validation.get(
-                    "joint_names", active_joints
-                ),
+                "joint_names": validation.get("joint_names", active_joints),
                 "nominal": validation["tau_nominal_per_joint"],
                 "fitted": validation["tau_identified_per_joint"],
                 "measured": validation["tau_measured_per_joint"],
@@ -2018,6 +2041,7 @@ class BaseIdentification(ABC):
         output_path: str = None,
         output_dir: str = "results",
         thresholds: Optional[Dict[str, Dict[str, Any]]] = None,
+        scope: str = "prediction",
     ) -> str:
         """Write this identification's :meth:`verify` verdict as JSON.
 
@@ -2026,6 +2050,7 @@ class BaseIdentification(ABC):
                 ``{output_dir}/identification_verification.json``.
             output_dir: Directory used when ``output_path`` is omitted.
             thresholds: Forwarded to :meth:`verify`.
+            scope: Forwarded to :meth:`verify`; default prediction acceptance.
 
         Returns:
             str: The path the JSON verdict was written to.
@@ -2034,21 +2059,23 @@ class BaseIdentification(ABC):
         from os import makedirs
         from os.path import join
 
-        verdict = self.verify(thresholds=thresholds)
+        verdict = self.verify(thresholds=thresholds, scope=scope)
         verdict_dict = dataclasses.asdict(verdict)
 
         results_manager = getattr(self, "results_manager", None)
         if results_manager is not None:
-            verdict_dict = results_manager._convert_for_serialization(
-                verdict_dict
-            )
+            verdict_dict = results_manager._convert_for_serialization(verdict_dict)
 
         if output_path is None:
             makedirs(output_dir, exist_ok=True)
             output_path = join(output_dir, "identification_verification.json")
 
+        from figaroh.tools._report_common import verification_json_data
+
         with open(output_path, "w") as f:
-            json.dump(verdict_dict, f, indent=2)
+            json.dump(
+                verification_json_data(verdict_dict), f, indent=2, allow_nan=False
+            )
 
         logger.info(f"Verification report written to {output_path}")
         return output_path
