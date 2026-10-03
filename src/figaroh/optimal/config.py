@@ -79,6 +79,7 @@ def load_param(robot, config_file: str) -> Tuple[Dict[str, Any], Any]:
                 "t_s": traj_params.get("t_s", 2.0),
                 "soft_lim": traj_params.get("soft_lim", 0.05),
                 "max_attempts": traj_params.get("max_attempts", 1000),
+                "max_iterations": traj_params.get("max_iterations", 200),
             }
         return trajectory_config, identif_config
 
@@ -102,5 +103,6 @@ def create_config(unified_traj_config) -> dict:
         "t_s": traj_params.get("segment_duration", 2.0),
         "soft_lim": problem_params.get("soft_lim", 0.05),
         "max_attempts": problem_params.get("max_attempts", 1000),
+        "max_iterations": problem_params.get("max_iterations", 200),
     }
     return trajectory_config
