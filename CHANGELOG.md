@@ -31,6 +31,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Configuration variants that `extends` a section (e.g. `tasks.calibration`)
+  now override that section. They were merged into the configuration root, so
+  the selected task silently kept its base values (#76).
+- `figaroh.utils.config_parser.get_param_from_yaml()` accepts whole legacy files
+  with `calibration:` / `identification:` sections and dispatches the requested
+  one; `task_type="auto"` selects a single present section and still requires
+  an explicit task when both exist (#76).
 - Configuration differentiation now estimates acceleration for every tangent
   coordinate, including the last fixed-base joint. Derivative widths use `nv`
   rather than `nq` or effort-selection flags, supporting quaternion/continuous
