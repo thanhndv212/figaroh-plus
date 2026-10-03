@@ -330,7 +330,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../further_reading/roadmap/" class="md-tabs__link">
+        <a href="../../further_reading/contributing/" class="md-tabs__link">
           
   
   
@@ -506,6 +506,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../example_workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plan, Fit & Validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reporting_and_verification/" class="md-nav__link">
         
   
@@ -552,10 +580,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" checked>
         
           
-          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="">
             
   
   
@@ -573,8 +601,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -762,10 +790,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#expected-results" class="md-nav__link">
+  <a href="#interpreting-results" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Expected results
+        Interpreting results
       
     </span>
   </a>
@@ -1659,6 +1687,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../further_reading/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../further_reading/roadmap/" class="md-nav__link">
         
   
@@ -1667,6 +1723,34 @@
     
   
     Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../further_reading/plans/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Delivery Plans
   
 
     
@@ -1853,10 +1937,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#expected-results" class="md-nav__link">
+  <a href="#interpreting-results" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Expected results
+        Interpreting results
       
     </span>
   </a>
@@ -1901,13 +1985,14 @@
 
 <h1 id="identification-walkthrough">Identification Walkthrough<a class="headerlink" href="#identification-walkthrough" title="Permanent link">&para;</a></h1>
 <h2 id="the-problem">The problem<a class="headerlink" href="#the-problem" title="Permanent link">&para;</a></h2>
-<p>Dynamic models generated from CAD have 20-50% error in mass, inertia, and
-friction parameters — CAD doesn't know about cables, connectors, paint, or
-assembly tolerances. Accurate dynamic parameters matter for feedforward
+<p>Nominal models can omit cables, connectors, payloads, friction and assembly
+differences. The resulting parameter and prediction errors depend on the robot
+and the operating conditions. Accurate dynamic parameters matter for feedforward
 torque control, energy-efficient trajectory planning, collision detection,
 and any digital-twin/simulation use of the model.</p>
-<p>Dynamic parameter identification recovers the true parameters from logged
-motion + torque data.</p>
+<p>Dynamic identification estimates observable parameter combinations from
+motion and effort data. Individual physical link parameters require additional
+constraints and are not necessarily uniquely recoverable.</p>
 <h2 id="the-model">The model<a class="headerlink" href="#the-model" title="Permanent link">&para;</a></h2>
 <p>The robot's equation of motion:</p>
 <div class="highlight"><pre><span></span><code>τ = M(q) q̈ + C(q, q̇) q̇ + G(q) + F(q̇)
@@ -1922,14 +2007,12 @@ samples from a sufficiently "exciting" trajectory, <code>φ</code> is recovered 
 linear least squares.</p>
 <h2 id="the-pipeline">The pipeline<a class="headerlink" href="#the-pipeline" title="Permanent link">&para;</a></h2>
 <ol>
-<li><strong>Base parameter analysis</strong> — QR decomposition of <code>W</code> finds the minimal
-   set of <em>identifiable</em> linear combinations of <code>φ</code> (many individual
-   parameters aren't observable in isolation; only combinations of them
-   are).</li>
-<li><strong>Signal processing</strong> — filter noisy position/torque logs (median filter
-   for outliers, Butterworth for noise) and estimate velocity/acceleration
-   if not measured directly.</li>
-<li><strong>Regressor construction</strong> — build <code>W</code> from the processed motion data.</li>
+<li><strong>Partition and signal processing</strong> — declare training/validation data,
+   check rates and synchronization, then process each partition independently;
+   estimate velocity/acceleration if not measured directly.</li>
+<li><strong>Regressor construction</strong> — build <code>W</code> from checked motion and effort data.</li>
+<li><strong>Base parameter analysis</strong> — analyze identifiable combinations and dataset
+   excitation; distinguish structural dependencies from weak sample coverage.</li>
 <li><strong>Parameter estimation</strong> — solve the linear least-squares problem for
    the base parameters (FIGAROH's <a href="../../api/tools/">solver</a> supports OLS,
    WLS, ridge, and several constrained/robust variants).</li>
@@ -1963,16 +2046,17 @@ python<span class="w"> </span>identification.py<span class="w"> </span>--no-html
 <code>has_actuator_inertia</code>, <code>has_external_forces</code>, signal-processing
 (<code>sampling_frequency</code>, <code>cutoff_frequency</code>), and joint/velocity/torque
 limits used to sanity-check the logged data.</p>
-<h2 id="expected-results">Expected results<a class="headerlink" href="#expected-results" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Base parameters identified with under ~5% uncertainty</li>
-<li>Torque prediction accuracy above ~95% (<code>validation_correlation</code> above the
-  default 0.9 threshold) on held-out trajectories</li>
-<li>A condition number well under the default 1000.0 threshold — see
-  <a href="../../reporting_and_verification/">verification thresholds</a></li>
-</ul>
-<p>The quality of all three depends heavily on the trajectory used to collect
-data — see <a href="../optimal_design/">Optimal Experiment Design</a>.</p>
+<h2 id="interpreting-results">Interpreting results<a class="headerlink" href="#interpreting-results" title="Permanent link">&para;</a></h2>
+<p>Report per-joint training and held-out effort errors against the nominal model,
+rank/conditioning under declared scaling, and uncertainty assumptions. Default
+verification thresholds are configurable checks, not guarantees of percentage
+accuracy or full-parameter recovery. Record which checks were skipped and whether
+the adapter used genuine held-out data.</p>
+<p>If reconstructing or projecting full inertias, report solver and physical
+verdicts separately and recompute prediction for the selected stage. The private
+log-Cholesky benchmark remains experimental pending convergence review. Follow
+<a href="../../example_workflow/">Plan, Fit and Validate</a> for method selection, comparison
+policy, parameter interpretation and export checks.</p>
 <h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../../reporting_and_verification/">Reporting &amp; Verification</a> — the

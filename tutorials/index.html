@@ -330,7 +330,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../further_reading/roadmap/" class="md-tabs__link">
+        <a href="../further_reading/contributing/" class="md-tabs__link">
           
   
   
@@ -506,6 +506,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../example_workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plan, Fit & Validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../reporting_and_verification/" class="md-nav__link">
         
   
@@ -552,10 +580,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" checked>
         
           
-          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="">
             
   
   
@@ -573,8 +601,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -649,6 +677,17 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#starting-with-a-new-robot-or-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting with a new robot or dataset
+      
+    </span>
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#prerequisites" class="md-nav__link">
@@ -1604,6 +1643,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../further_reading/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../further_reading/roadmap/" class="md-nav__link">
         
   
@@ -1612,6 +1679,34 @@
     
   
     Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../further_reading/plans/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Delivery Plans
   
 
     
@@ -1743,6 +1838,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#starting-with-a-new-robot-or-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting with a new robot or dataset
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1823,6 +1929,11 @@ read the walkthrough for the workflow you need.</p>
 </tr>
 </tbody>
 </table>
+<h2 id="starting-with-a-new-robot-or-dataset">Starting with a new robot or dataset<a class="headerlink" href="#starting-with-a-new-robot-or-dataset" title="Permanent link">&para;</a></h2>
+<p>Begin with <a href="../example_workflow/">Plan, Fit and Validate</a> to inventory data,
+choose the model/methods, design acquisition, process measurements and establish
+independent validation. These task walkthroughs start after those decisions;
+the examples repository supplies a reusable experiment brief and integration guide.</p>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <ul>
 <li>FIGAROH installed (see <a href="../getting_started/">Getting Started</a>)</li>
@@ -1830,21 +1941,20 @@ read the walkthrough for the workflow you need.</p>
   — or clone <a href="https://github.com/thanhndv212/figaroh-examples">figaroh-examples</a>
   and use one of the shipped robot folders directly</li>
 <li>Basic familiarity with the linear-in-parameters formulation
-  <code>τ = W(q, q̇, q̈) · φ</code> used throughout (both calibration and identification
-  reduce to a regressor + a least-squares solve over this equation)</li>
+  <code>τ = W(q, q̇, q̈) · φ</code> for dynamics; geometric calibration instead fits
+  pose/contact residuals and analyzes their parameter Jacobian</li>
 </ul>
 <h2 id="the-four-workflows-at-a-glance">The four workflows, at a glance<a class="headerlink" href="#the-four-workflows-at-a-glance" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>Optimal Configuration Generation ──▶ (collect calibration data) ──▶ Kinematic Calibration
 Optimal Trajectory Generation    ──▶ (collect identification data) ──▶ Dynamic Identification
 </code></pre></div>
-<p>The two "optimal" steps are optional but recommended — they replace ad-hoc
-pose/trajectory selection with a mathematically justified minimum-data
-design (see <a href="optimal_design/">Optimal Experiment Design</a>). Once you have
-data, calibration and identification are independent of <em>how</em> the data was
-collected.</p>
-<p>Every workflow ends the same way: call <code>.verify()</code> for a pass/fail verdict
-and <code>.export_html_report()</code> for a shareable diagnostic — see
-<a href="../reporting_and_verification/">Reporting &amp; Verification</a>.</p>
+<p>The two design steps are optional tools for choosing informative, feasible
+experiments (see <a href="optimal_design/">Optimal Experiment Design</a>). Acquisition
+coverage, synchronization and sensor quality still limit the resulting fit.</p>
+<p>Use verification and HTML reports where supported by the selected workflow —
+see <a href="../reporting_and_verification/">Reporting &amp; Verification</a>. Inspect skipped
+checks and actual held-out data; a passing verdict alone is not proof of a
+validated model.</p>
 
 
 

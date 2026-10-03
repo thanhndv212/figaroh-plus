@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://thanhndv212.github.io/figaroh-plus/reporting_and_verification/">
       
       
-        <link rel="prev" href="../getting_started/">
+        <link rel="prev" href="../example_workflow/">
       
       
         <link rel="next" href="../tutorials/">
@@ -330,7 +330,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../further_reading/roadmap/" class="md-tabs__link">
+        <a href="../further_reading/contributing/" class="md-tabs__link">
           
   
   
@@ -503,6 +503,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../example_workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plan, Fit & Validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -564,6 +592,17 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#interpreting-a-verdict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interpreting a verdict
+      
+    </span>
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#terminal-quality-reports" class="md-nav__link">
@@ -669,10 +708,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
         
           
-          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="">
             
   
   
@@ -690,8 +729,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1652,6 +1691,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../further_reading/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../further_reading/roadmap/" class="md-nav__link">
         
   
@@ -1660,6 +1727,34 @@
     
   
     Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../further_reading/plans/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Delivery Plans
   
 
     
@@ -1789,6 +1884,17 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#interpreting-a-verdict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interpreting a verdict
+      
+    </span>
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#terminal-quality-reports" class="md-nav__link">
@@ -1926,6 +2032,14 @@ ways those metrics get surfaced, and when to reach for each one.</p>
 <p>All four read from data <code>solve()</code> already computed — none of them re-run
 the calibration/identification, and none of them require network access or
 a backend.</p>
+<h2 id="interpreting-a-verdict">Interpreting a verdict<a class="headerlink" href="#interpreting-a-verdict" title="Permanent link">&para;</a></h2>
+<p>Use <a href="../example_workflow/">Plan, Fit and Validate</a> to establish input correctness,
+parameter scope and independent validation before interpreting these reports.
+Inspect computed and skipped checks: a passing verdict with unavailable
+validation metrics does not establish held-out accuracy. Keep solver termination,
+physical feasibility, prediction quality and export/reload parity as separate
+conclusions. The compare page's compatibility checks do not establish matching
+raw inputs, processing, objectives or absence of leakage; retain that provenance.</p>
 <h2 id="terminal-quality-reports">Terminal quality reports<a class="headerlink" href="#terminal-quality-reports" title="Permanent link">&para;</a></h2>
 <p><code>print_quality_report()</code> runs automatically at the end of <code>solve()</code>; call
 it again any time after a successful solve to reprint it:</p>
@@ -1970,80 +2084,71 @@ It contains:</p>
 <p><code>verify()</code> checks the run's metrics against a set of pass/fail thresholds
 and returns a <code>VerificationVerdict</code> — this is the piece that turns a report
 (for a human to read) into something a script can branch on:</p>
-<div class="highlight"><pre><span></span><code><span class="n">verdict</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
+<div class="highlight"><pre><span></span><code><span class="n">verdict</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">"execution"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">verdict</span><span class="o">.</span><span class="n">passed</span><span class="p">)</span>          <span class="c1"># bool</span>
 <span class="k">for</span> <span class="n">check</span> <span class="ow">in</span> <span class="n">verdict</span><span class="o">.</span><span class="n">checks</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">check</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">check</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">check</span><span class="o">.</span><span class="n">comparison</span><span class="p">,</span> <span class="n">check</span><span class="o">.</span><span class="n">threshold</span><span class="p">,</span> <span class="n">check</span><span class="o">.</span><span class="n">passed</span><span class="p">)</span>
 </code></pre></div>
-<p>Default thresholds (every one is overridable per call — see below):</p>
-<p><strong>Calibration:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Metric</th>
-<th>Default</th>
-<th>Comparison</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>position_rmse_mm</code> (validation set)</td>
-<td>2.0</td>
-<td>max</td>
-</tr>
-<tr>
-<td><code>orientation_rmse_deg</code> (validation set)</td>
-<td>0.1</td>
-<td>max</td>
-</tr>
-<tr>
-<td><code>condition_number</code></td>
-<td>1000.0</td>
-<td>max</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Identification:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Metric</th>
-<th>Default</th>
-<th>Comparison</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>validation_correlation</code></td>
-<td>0.9</td>
-<td>min</td>
-</tr>
-<tr>
-<td><code>condition_number</code></td>
-<td>1000.0</td>
-<td>max</td>
-</tr>
-<tr>
-<td><code>validation_improvement_pct</code></td>
-<td>50.0</td>
-<td>min</td>
-</tr>
-</tbody>
-</table>
-<p>A threshold whose metric can't be computed (typically because no
-<code>validation_data_file</code> was configured) is <strong>skipped, not failed</strong> — an
-empty check list counts as passed, since there's nothing to fail on.</p>
-<p>Override thresholds per call:</p>
-<div class="highlight"><pre><span></span><code><span class="n">verdict</span> <span class="o">=</span> <span class="n">calibrator</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span><span class="n">thresholds</span><span class="o">=</span><span class="p">{</span>
-    <span class="s2">"condition_number"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"threshold"</span><span class="p">:</span> <span class="mf">500.0</span><span class="p">,</span> <span class="s2">"comparison"</span><span class="p">:</span> <span class="s2">"max"</span><span class="p">},</span>
-<span class="p">})</span>
+<p>A bare library <code>verify()</code> defaults to <strong>prediction acceptance</strong>, which stays
+incomplete without a validation set and explicit limits. Routine example CLIs
+explicitly request <strong>numerical execution</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">verdict</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">"execution"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">verdict</span><span class="o">.</span><span class="n">scope</span><span class="p">,</span> <span class="n">verdict</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="n">verdict</span><span class="o">.</span><span class="n">stages</span><span class="p">)</span>
 </code></pre></div>
+<p>This checks finite, nonempty fitted parameters, predictions, measurements and
+RMSE, matching effort dimensions, and whether explicitly requested validation
+loaded. Calibration additionally checks its reported optimization success and
+finite parameter/residual outputs. It does not certify data provenance, a full
+physical model or export/reload parity. Those stages remain <code>not_evaluated</code>.</p>
+<p>There are <strong>no universal improvement, correlation, raw condition-number or
+calibration-error gates</strong>. These remain report diagnostics. A good nominal model
+may have little improvement; high correlation can coexist with biased torque;
+raw conditioning changes with parameter units and basis scaling.</p>
+<p>For prediction acceptance, provide independent validation data and explicit
+application limits. For identification, supply an absolute maximum RMSE in Nm
+for <strong>every active validation joint</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">profile</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="sa">f</span><span class="s2">"validation_rmse:</span><span class="si">{</span><span class="n">joint</span><span class="si">}</span><span class="s2">"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"threshold"</span><span class="p">:</span> <span class="n">allowed_error_nm</span><span class="p">[</span><span class="n">joint</span><span class="p">],</span>
+        <span class="s2">"comparison"</span><span class="p">:</span> <span class="s2">"max"</span><span class="p">,</span>
+        <span class="s2">"rationale"</span><span class="p">:</span> <span class="s2">"measurement uncertainty and the application requirement"</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">for</span> <span class="n">joint</span> <span class="ow">in</span> <span class="n">active_joints</span>
+<span class="p">}</span>
+<span class="n">verdict</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">"prediction"</span><span class="p">,</span> <span class="n">thresholds</span><span class="o">=</span><span class="n">profile</span><span class="p">)</span>
+</code></pre></div>
+<p>Identification also exposes <code>validation_abs_bias:&lt;joint&gt;</code> and
+<code>validation_peak_error:&lt;joint&gt;</code> in Nm (or <code>training_…</code> for fallback). Add explicit
+limits where the application needs them; the per-joint RMSE limits remain required.</p>
+<p>For calibration, use <code>position_rmse_mm</code> and, when rotational DOFs are measured,
+<code>orientation_rmse_deg</code>, with application-specific maximum limits. No replacement
+universal error value is supplied. Record units, the requirement behind each
+limit and the validation split before evaluating acceptance. Loading a separate
+file is necessary but does not prove experimental independence: split integrity,
+coverage and acquisition provenance remain the experiment owner's responsibility.</p>
+<p><code>passed</code> remains available for existing consumers and is true only if all
+required checks <strong>in the named scope</strong> pass. Additive <code>status</code>, <code>scope</code>, <code>stages</code>
+and applied <code>policy</code> fields make the meaning explicit:</p>
+<ul>
+<li><code>pass</code>: all required checks in scope succeeded.</li>
+<li><code>fail</code>: a required evaluated check failed, including computed NaN/Inf evidence.</li>
+<li><code>not_evaluated</code>: required evidence or a prediction profile is unavailable.</li>
+</ul>
+<p>Missing checks are retained with their reason, rather than silently skipped.
+An empty threshold-only policy is <code>not_evaluated</code>, never PASS. A spec may set
+<code>required=False</code> for an advisory check; it is still reported. A failed explicitly
+requested validation load prevents execution acceptance. Training fallback can
+support diagnostics but cannot pass prediction acceptance. Physical and export
+acceptance require their own evidence; a scoped prediction PASS is not a full
+physical-model approval. Compare historical verdicts with care: their unscoped
+boolean used the earlier universal gates, not this policy.</p>
 <p>Write the verdict to disk as JSON (numpy-safe, includes git commit / config
 hash / timestamp provenance):</p>
 <div class="highlight"><pre><span></span><code><span class="n">path</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">export_verification_report</span><span class="p">(</span>
     <span class="n">output_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>       <span class="c1"># defaults to {output_dir}/identification_verification.json</span>
     <span class="n">output_dir</span><span class="o">=</span><span class="s2">"results"</span><span class="p">,</span>
-    <span class="n">thresholds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>        <span class="c1"># defaults, same as verify()</span>
+    <span class="n">thresholds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>        <span class="c1"># explicit limits, when evaluating prediction</span>
+    <span class="n">scope</span><span class="o">=</span><span class="s2">"execution"</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 <p>The same call exists on <code>BaseCalibration</code> (writes
@@ -2051,18 +2156,20 @@ hash / timestamp provenance):</p>
 <h3 id="wiring-verify-into-a-cli-script">Wiring <code>--verify</code> into a CLI script<a class="headerlink" href="#wiring-verify-into-a-cli-script" title="Permanent link">&para;</a></h3>
 <p>This is the pattern already used by the <code>identification.py</code> entry points in
 <a href="https://github.com/thanhndv212/figaroh-examples">figaroh-examples</a>:</p>
-<div class="highlight"><pre><span></span><code><span class="n">verdict</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
-<span class="n">identifier</span><span class="o">.</span><span class="n">export_verification_report</span><span class="p">(</span><span class="n">output_path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">run_dir</span> <span class="o">/</span> <span class="s2">"verdict.json"</span><span class="p">))</span>
+<div class="highlight"><pre><span></span><code><span class="n">verdict</span> <span class="o">=</span> <span class="n">identifier</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">"execution"</span><span class="p">)</span>
+<span class="n">identifier</span><span class="o">.</span><span class="n">export_verification_report</span><span class="p">(</span><span class="n">output_path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">run_dir</span> <span class="o">/</span> <span class="s2">"verdict.json"</span><span class="p">),</span> <span class="n">scope</span><span class="o">=</span><span class="s2">"execution"</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">check</span> <span class="ow">in</span> <span class="n">verdict</span><span class="o">.</span><span class="n">checks</span><span class="p">:</span>
-    <span class="n">status</span> <span class="o">=</span> <span class="s2">"PASS"</span> <span class="k">if</span> <span class="n">check</span><span class="o">.</span><span class="n">passed</span> <span class="k">else</span> <span class="s2">"FAIL"</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  [</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">check</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">check</span><span class="o">.</span><span class="n">value</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">check</span><span class="o">.</span><span class="n">comparison</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">check</span><span class="o">.</span><span class="n">threshold</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">check</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  [</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">check</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">check</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">check</span><span class="o">.</span><span class="n">comparison</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">check</span><span class="o">.</span><span class="n">threshold</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 
 <span class="k">if</span> <span class="ow">not</span> <span class="n">verdict</span><span class="o">.</span><span class="n">passed</span><span class="p">:</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </code></pre></div>
-<p>Run it as <code>python identification.py --verify</code>, and the script's exit code
-is a real CI gate — non-zero on a failing run, zero on a passing one.</p>
+<p>Run it as <code>python identification.py --verify</code>. The scope must be printed with
+the verdict: zero means numerical execution passed by default, not that an
+independent prediction or physical model was accepted. Prediction-scoped
+incomplete evidence produces a nonzero exit.</p>
 <h2 id="comparing-two-runs">Comparing two runs<a class="headerlink" href="#comparing-two-runs" title="Permanent link">&para;</a></h2>
 <p><code>figaroh.tools.compare_report.generate_compare_page()</code> renders a static,
 self-contained HTML page that loads <strong>two</strong> <code>export_verification_report()</code>

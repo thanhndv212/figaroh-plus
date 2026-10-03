@@ -1,0 +1,3133 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A Python toolbox for dynamic parameter identification and geometric calibration of robots and humans.">
+      
+      
+      
+        <link rel="canonical" href="https://thanhndv212.github.io/figaroh-plus/further_reading/plans/">
+      
+      
+        <link rel="prev" href="../roadmap/">
+      
+      
+        <link rel="next" href="../changelog/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Delivery Plans - FIGAROH</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#delivery-plan-review" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="FIGAROH" class="md-header__button md-logo" aria-label="FIGAROH" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            FIGAROH
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Delivery Plans
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/thanhndv212/figaroh-plus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    thanhndv212/figaroh-plus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting_started/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../concepts/architecture/" class="md-tabs__link">
+          
+  
+  
+  Concepts
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../examples/" class="md-tabs__link">
+          
+  
+  
+  Examples Gallery
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../contributing/" class="md-tabs__link">
+          
+  
+  
+  Further Reading
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="FIGAROH" class="md-nav__button md-logo" aria-label="FIGAROH" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    FIGAROH
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/thanhndv212/figaroh-plus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    thanhndv212/figaroh-plus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../example_workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plan, Fit & Validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reporting_and_verification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reporting & Verification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/calibration_walkthrough/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration Walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/identification_walkthrough/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identification Walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/optimal_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Optimal Experiment Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concepts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/config_parameters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Parameter Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integration API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples Gallery
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples Gallery
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/ur10/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UR10
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/tiago/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TIAGo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/talos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TALOS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/staubli_tx40/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Staubli TX40
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/templates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config Templates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/calibration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/identification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/optimal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Optimal
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/measurements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Measurements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Utils
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/visualisation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visualisation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Further Reading
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Further Reading
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Delivery Plans
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Delivery Plans
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#identification-and-calibration-delivery-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identification and calibration delivery plan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Identification and calibration delivery plan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#purpose-and-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Purpose and scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#evidence-motivating-the-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evidence motivating the plan
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#111214-and-draft-pr-13-the-examples-dynamic-report-and-supplemental" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11/#12/#14 and draft PR #13. The examples dynamic report and supplemental
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11/#12/#14 and draft PR #13. The examples dynamic report and supplemental">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ownership-within-the-current-repositories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ownership within the current repositories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependency-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependency structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#work-package-milestones-and-pr-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Work-package milestones and PR boundaries
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Work-package milestones and PR boundaries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#work-package-milestone-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Work-package milestone rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#111214-if-one-package-contains-independent-defects-split-them-into" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11/#12/#14. If one package contains independent defects, split them into
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11/#12/#14. If one package contains independent defects, split them into">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#github-delivery-register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub delivery register
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#experimental-design-decisions-to-review-before-coding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Experimental design decisions to review before coding
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Experimental design decisions to review before coding">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dynamic-identification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dynamic identification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Calibration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#general-onboarding-pipeline-alongside-the-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        General onboarding pipeline alongside the references
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#repository-and-documentation-organization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Repository and documentation organization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proposed-development-workflow-improvements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed development workflow improvements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#review-rounds-and-bounded-implementation-batches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Review rounds and bounded implementation batches
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Review rounds and bounded implementation batches">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#round-1-this-proposal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Round 1 — this proposal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#round-2-contracts-and-frozen-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Round 2 — contracts and frozen protocol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#round-3-first-delivery-batch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Round 3 — first delivery batch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#later-batches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Later batches
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decisions-still-open" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisions still open
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#identification-and-calibration-delivery-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identification and calibration delivery plan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Identification and calibration delivery plan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#purpose-and-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Purpose and scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#evidence-motivating-the-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evidence motivating the plan
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#111214-and-draft-pr-13-the-examples-dynamic-report-and-supplemental" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11/#12/#14 and draft PR #13. The examples dynamic report and supplemental
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11/#12/#14 and draft PR #13. The examples dynamic report and supplemental">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ownership-within-the-current-repositories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ownership within the current repositories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependency-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependency structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#work-package-milestones-and-pr-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Work-package milestones and PR boundaries
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Work-package milestones and PR boundaries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#work-package-milestone-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Work-package milestone rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#111214-if-one-package-contains-independent-defects-split-them-into" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11/#12/#14. If one package contains independent defects, split them into
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11/#12/#14. If one package contains independent defects, split them into">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#github-delivery-register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub delivery register
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#experimental-design-decisions-to-review-before-coding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Experimental design decisions to review before coding
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Experimental design decisions to review before coding">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dynamic-identification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dynamic identification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Calibration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#general-onboarding-pipeline-alongside-the-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        General onboarding pipeline alongside the references
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#repository-and-documentation-organization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Repository and documentation organization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proposed-development-workflow-improvements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed development workflow improvements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#review-rounds-and-bounded-implementation-batches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Review rounds and bounded implementation batches
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Review rounds and bounded implementation batches">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#round-1-this-proposal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Round 1 — this proposal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#round-2-contracts-and-frozen-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Round 2 — contracts and frozen protocol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#round-3-first-delivery-batch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Round 3 — first delivery batch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#later-batches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Later batches
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decisions-still-open" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisions still open
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/thanhndv212/figaroh-plus/edit/main/docs/source/further_reading/plans.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="delivery-plan-review">Delivery plan review<a class="headerlink" href="#delivery-plan-review" title="Permanent link">&para;</a></h1>
+<p>The canonical proposal is maintained in <code>docs/plans/</code> and embedded below.
+It is a discussion draft; no new implementation or interface is accepted by
+its publication. The <a href="../roadmap/">roadmap</a> owns priorities and
+<a href="../contributing/">contributing</a> describes the current workflow.</p>
+<h2 id="identification-and-calibration-delivery-plan">Identification and calibration delivery plan<a class="headerlink" href="#identification-and-calibration-delivery-plan" title="Permanent link">&para;</a></h2>
+<p><strong>Status: Tracker setup approved; execution details under review — revision 4, 2026-10-02.</strong>
+Confirmed user preferences: advance calibration alongside dynamic identification;
+TIAGo mocap is the first calibration reference, with TALOS contact as the
+second consumer/regression target. The user authorized GitHub milestone/issue creation on 2026-10-02 and requested
+one-by-one delivery. Tracker setup does not accept unresolved public interfaces,
+change solver defaults, or approve automatic implementation/merges. Review issue
+readiness before selecting implementation work. Existing approved work and open PRs
+retain their own review gates.</p>
+<h3 id="purpose-and-scope">Purpose and scope<a class="headerlink" href="#purpose-and-scope" title="Permanent link">&para;</a></h3>
+<p>Deliver two trustworthy workflows within the existing package structure:</p>
+<ol>
+<li>Measurements → dynamic identification → physical model → held-out effort
+   verification → inertial URDF export/reload → archived report.</li>
+<li>Measurements → geometric calibration → identifiable corrections → held-out
+   pose/contact verification → geometric export/reload → archived report.</li>
+</ol>
+<p>The workstreams proceed in parallel through focused PRs, not simultaneous
+edits to shared workflow classes. Their shared foundations are provenance,
+units/frames, explicit result stages, validation and reproducible artifacts.
+Dynamic and geometric solvers remain mathematically distinct.</p>
+<p>The <a href="../roadmap/">roadmap</a> owns priority and milestone outcomes.
+This document owns the proposed work breakdown, dependencies, alternatives
+and review sequence. Once approved, GitHub issues own changing task status
+and detailed acceptance criteria. <a href="../../concepts/architecture/">Architecture</a> continues
+to describe existing code, not these proposed contracts. Existing design
+records remain authoritative for their scope; this plan does not supersede
+the modular-terms, Pinocchio-support or log-Cholesky decisions.</p>
+<h3 id="evidence-motivating-the-plan">Evidence motivating the plan<a class="headerlink" href="#evidence-motivating-the-plan" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Observation at 2026-10-02</th>
+<th>Consequence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Core #32 reproduces missing final-joint acceleration</td>
+<td>Signal correctness precedes new dataset-based numerical claims</td>
+</tr>
+<tr>
+<td>UR10/TIAGo sampling/filter assumptions disagree</td>
+<td>Add explicit timing and derivative provenance before refitting</td>
+</tr>
+<tr>
+<td>Exact base-preserving SDP returns no accepted model on the three robot datasets</td>
+<td>Diagnose constraints/scaling; distinguish reconstruction from direct constrained estimation</td>
+</tr>
+<tr>
+<td>All dataset log-Cholesky fits exhaust 200 evaluations</td>
+<td>Keep #23–#25 conditional; investigate #30 rather than promote finite candidates</td>
+</tr>
+<tr>
+<td>Per-link projection succeeds on UR10/TX40 but changes the base fit</td>
+<td>Report it as a separate method and select exported stages explicitly</td>
+</tr>
+<tr>
+<td>Inertial URDF first-moment/tensor handlers are stubs</td>
+<td>A file-write success cannot close physical-model delivery</td>
+</tr>
+<tr>
+<td>Examples CI fails on missing Hey5 geometry and TALOS 3.7 held-out regression</td>
+<td>Make assets reproducible and retain numerical regression gates</td>
+</tr>
+<tr>
+<td>Current examples have robot-specific loaders and existing reporting/export helpers</td>
+<td>Improve adapters and reuse primitives before proposing a new framework</td>
+</tr>
+</tbody>
+</table>
+<p>Sources: core issues #20/#22–#25/#30/#32, core PR #31, examples issues</p>
+<h2 id="111214-and-draft-pr-13-the-examples-dynamic-report-and-supplemental">11/#12/#14 and draft PR #13. The examples dynamic report and supplemental<a class="headerlink" href="#111214-and-draft-pr-13-the-examples-dynamic-report-and-supplemental" title="Permanent link">&para;</a></h2>
+<p>analysis are still local additions on the PR branch. Reports include failed
+solver statuses and preprocessing limitations; they are not scientific go
+approval. Current issue/PR status must be checked when work starts.</p>
+<h3 id="ownership-within-the-current-repositories">Ownership within the current repositories<a class="headerlink" href="#ownership-within-the-current-repositories" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Existing owner</th>
+<th>Proposed change boundary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dynamics preprocessing and regression</td>
+<td><code>figaroh/identification/{identification_tools,base_identification,parameter}.py</code> and <code>tools/regressor.py</code></td>
+<td>Fix numerical contracts and expose diagnostics through existing workflow</td>
+</tr>
+<tr>
+<td>Physical checks, projection, reconstruction</td>
+<td><code>identification/{physical_consistency,reconstruction}.py</code></td>
+<td>Keep distinct operations; add a research constrained-fit comparator before production design</td>
+</tr>
+<tr>
+<td>Geometric preprocessing/solving</td>
+<td><code>calibration/{base_calibration,calibration_tools,data_loader,config}.py</code></td>
+<td>Fix proven problems; retain frame conventions and existing subclasses</td>
+</tr>
+<tr>
+<td>Export and export verification</td>
+<td><code>tools/{urdf_exporter,export_validation,geometric_calibration_export}.py</code></td>
+<td>Reuse handlers/checks; complete missing inertial semantics</td>
+</tr>
+<tr>
+<td>Reports and archives</td>
+<td><code>tools/{identification_report,report,compare_report,run_archive}.py</code>, <code>utils/results_manager.py</code></td>
+<td>Reuse output machinery; add explicit stage/provenance fields through an approved contract</td>
+</tr>
+<tr>
+<td>Robot I/O and conversions</td>
+<td><code>figaroh-examples/examples/&lt;robot&gt;/utils/</code></td>
+<td>CSV adapters, current-to-effort mapping and robot-specific assumptions stay here</td>
+</tr>
+<tr>
+<td>Robot models/config/data</td>
+<td><code>examples/&lt;robot&gt;/{urdf,config,data}</code> and shared <code>models/</code></td>
+<td>Preserve originals; document sources, frames, sample rates and redistribution constraints</td>
+</tr>
+<tr>
+<td>Research comparisons</td>
+<td>Core private <code>docs/development/spikes/</code>; examples <code>benchmarks/</code></td>
+<td>Explicit source/commit dependency; never present as supported package API</td>
+</tr>
+<tr>
+<td>Reference user workflows</td>
+<td>Existing robot entry points under <code>examples/&lt;robot&gt;/</code></td>
+<td>Integrate validated primitives after research acceptance; avoid a competing CLI</td>
+</tr>
+</tbody>
+</table>
+<p>No <code>TrajectoryData</code> class was found in the current source audit. A typed data
+contract is a proposal, not an existing API. First inventory existing
+trajectory dictionaries and calibration measurement structures. Extend those
+or introduce one narrow type only after an ADR demonstrates two consumers,
+conversion rules and backward-compatible adapters. Keep dynamic trajectory
+samples and geometric pose/contact observations as separate payloads.</p>
+<h3 id="dependency-structure">Dependency structure<a class="headerlink" href="#dependency-structure" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>flowchart TD
+    R[Scope and contract review] --&gt; W1[W1: Fixtures]
+    R --&gt; W2[W2: TALOS regression]
+    R --&gt; W3[W3: Data/result contracts]
+    R --&gt; W4[W4: Engineering process]
+    W1 --&gt; D2[D2: Signal audit]
+    D1[D1: Acceleration correctness] --&gt; D3[D3: UR10 truth fixture]
+    D2 --&gt; D3
+    D3 --&gt; D4[D4: Physical comparison]
+    D4 --&gt; D5[D5: Convergence research]
+    D6[D6: Inertial export] --&gt; D7[D7: Dynamic reference]
+    D4 --&gt; D7
+    D5 -. optional nonlinear path .-&gt; D7
+    W1 --&gt; C1[C1: Frames/data audit]
+    W2 --&gt; C1
+    C1 --&gt; C2[C2: Calibration truth/holdout]
+    C2 --&gt; C3[C3: Geometric export]
+    C3 --&gt; C4[C4: Calibration reference]
+    W3 --&gt; S1[S1: Minimum reporting contract]
+    S1 --&gt; D7
+    S1 --&gt; C4
+    D7 --&gt; U1[U1: Onboarding acceptance]
+    C4 --&gt; U1
+    D7 --&gt; A[M1 acceptance review]
+    C4 --&gt; A
+    U1 --&gt; A
+    A --&gt; S2[S2: Sensitivity/uncertainty]
+    S2 --&gt; S3[S3: Improved experiment design]
+    A --&gt; S4[S4: Selective composition]
+    W3 --&gt; S4
+    A --&gt; B1[B1: Backend parity]
+</code></pre></div>
+<p>Log-Cholesky #30 can use the independent analytic core fixture. D1 is fixed
+(#69, merged 2026-10-02); real-dataset conclusions still wait for D2. Inertial export
+can be tested with known feasible parameters independently of solver success.
+Calibration need not wait for dynamic optimization, but changes to shared
+export/report code require paired regression coverage and serial integration.</p>
+<h3 id="work-package-milestones-and-pr-boundaries">Work-package milestones and PR boundaries<a class="headerlink" href="#work-package-milestones-and-pr-boundaries" title="Permanent link">&para;</a></h3>
+<h4 id="work-package-milestone-rules">Work-package milestone rules<a class="headerlink" href="#work-package-milestone-rules" title="Permanent link">&para;</a></h4>
+<p>Each work package is a <strong>delivery milestone</strong> beneath a roadmap outcome M0–M3.
+M1.1–M1.4 are acceptance gates, not additional issue containers. Package IDs are
+stable package identifiers, distinct from GitHub issue numbers. GitHub
+milestones use these IDs; existing issues are reused and missing tasks have
+explicit owning packages. The package table below defines their roadmap mapping.</p>
+<p>A package can be marked <strong>Cleared</strong> only when:</p>
+<ol>
+<li>Its reviewed issue roster is complete, including linked core and examples
+   issues. Assign each issue one owning package; link dependencies elsewhere.</li>
+<li><strong>Every included issue is resolved with its acceptance criteria met</strong>, its
+   required PRs reviewed/merged, and evidence linked. Closing an issue as a
+   duplicate, deferred or “not planned” does not satisfy that obligation.</li>
+<li>Package-level integration/acceptance evidence also passes on the declared
+   revision pair. All issue closures alone are insufficient if the combined
+   workflow still fails its gate.</li>
+<li>A maintainer reviews the closure record and confirms the accepted outcome.</li>
+</ol>
+<p>Before Ready, record owner, roadmap gate, issue roster, dependencies, acceptance
+criteria and evidence location. At closure, retain issue/PR links, tested
+revisions, commands, report and any limitations. Status is Draft → Ready → In
+progress → In review → Cleared; blocked work retains its unmet dependencies.
+An empty draft roster cannot be treated as a completed milestone.</p>
+<p>Deferral requires an explicit reviewed scope change: preserve the original
+issue and reason, move it to a named future package, and update the roadmap
+mapping if its exit criteria change. Do not silently remove unresolved issues
+to clear a package. Cross-repository milestones need one canonical roster
+(parent issue/project record) linking both repositories, since their individual
+GitHub milestone views do not provide a combined closure record.</p>
+<p>D5 is a separate research milestone. Its issues must all meet the agreed
+research criteria to clear D5, but D5 is not required for the supported baseline
+M1 scope. Promoting the nonlinear path adds D5 and #23–#25 to that path's reviewed
+roster; none are silently treated as completed by D7. Basic acquisition/design
+guidance is part of U1; S3 is the later algorithmic improvement milestone.</p>
+<table>
+<thead>
+<tr>
+<th>ID / canonical tracker</th>
+<th>Roadmap outcome / gate</th>
+<th>Outcome / justification</th>
+<th>Repository and dependencies</th>
+<th>Acceptance evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/33">W1</a></td>
+<td>M0; enables M1.1</td>
+<td>Reproducible examples environment and fixtures</td>
+<td>Examples; existing PR #13 plus focused asset follow-up</td>
+<td>Clean checkout resolves required geometry; pinned sources/licenses; explicit dependency failures; no reliance on a developer ROS search path</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/34">W2</a></td>
+<td>M0; enables calibration M1.1</td>
+<td>Explain TALOS Linux/3.7 regression</td>
+<td>Examples #14, core companion only if cause is generic</td>
+<td>Capture solver status, seeds, native versions and both chains; reproduce before/after; retain current improvement gate until independently justified</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/35">W3</a></td>
+<td>M1 shared contract; M2 prerequisite</td>
+<td>Working data/result contracts</td>
+<td>Proposed core ADR after inventory of both workflows</td>
+<td>Joint/order/frame/unit/timestamp provenance, observed vs reconstructed effort, masks, split IDs and optional fields; documented adapters preserve old users</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/36">D1</a></td>
+<td>M1.1 dynamic</td>
+<td>Correct every tangent acceleration coordinate</td>
+<td>Core #32</td>
+<td>Analytic final-joint regression, constant/variable dt, invalid timestamps and documented <code>nq != nv</code> policy; affected examples rechecked</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/37">D2</a></td>
+<td>M1.1 dynamic</td>
+<td>Audit robot signal processing</td>
+<td>Separate examples issues for UR10 and TIAGo</td>
+<td>Recorded vs inferred timestamps; explicit filter rates/cutoffs/order; torque/current units/signs; trim/decimation index provenance; immutable raw files</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/38">D3</a></td>
+<td>M1.2 dynamic</td>
+<td>Fresh UR10 truth fixture and benchmark protocol</td>
+<td>Examples; D1/D2</td>
+<td>Save verified true inertias, analytic q/dq/ddq, independent train/validation trajectories and noise seeds; no ground-truth parameter claims from old CSVs</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/39">D4</a></td>
+<td>M1.2 dynamic</td>
+<td>Fair physical-estimation comparator</td>
+<td>Private core spike + linked examples experiment; D3</td>
+<td>Base OLS, exact reconstruction, direct LMI-constrained effort fit, per-link projection and log-Cholesky; common inputs; comparable objectives and extras policy; separate failures</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/40">D5</a></td>
+<td>M1.2 optional nonlinear research</td>
+<td>Convergence/scaling revision</td>
+<td>Core #30; analytic fixture now, robot evaluation after D3/D4</td>
+<td>Objective/gradient histories, scaling/bounds/prior ablations, multiple starts and justified budget; preserve earlier protocol; current #30 acceptance criteria govern go</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/41">D6</a></td>
+<td>M1.3 dynamic</td>
+<td>Complete inertial export</td>
+<td>Core; prior mapping review and known-parameter fixture</td>
+<td>Mass/first moments/CoM, origin vs CoM tensor and inertial rotation handled; export/reload matches intended RNEA and physical verdict; unsupported targets fail explicitly</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/42">D7</a></td>
+<td>M1.4 dynamic</td>
+<td>Accepted dynamic reference workflow</td>
+<td>Core integration + examples; D4/D6/S1; D5 only for optional nonlinear path</td>
+<td>Explicit selected stage, fit and genuine validation splits, per-joint units, physical/solver verdict, exported model and archive; successful supported baseline can ship without nonlinear go</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/43">C1</a></td>
+<td>M1.1 calibration</td>
+<td>Audit geometric data/frames and reproduction</td>
+<td>Examples with focused core fixes; W1/W2</td>
+<td>Named observation frames, translation/rotation units, timestamps, measurement source and split policy; TIAGo and TALOS current behavior captured</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/44">C2</a></td>
+<td>M1.2 calibration</td>
+<td>Calibration synthetic truth + real held-out reference</td>
+<td>Examples; C1</td>
+<td>Known synthetic corrections recovered in identifiable coordinates; held-out pose/contact errors on unused postures; diagnose gauge, priors and solver failures</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/45">C3</a></td>
+<td>M1.3 calibration</td>
+<td>Validate redistribution and geometric export</td>
+<td>Existing core QR/export helpers + examples; C2</td>
+<td>Calibrated-model FK matches exported/reloaded model; parameter/frame semantics retained; PAL runtime YAML checked where relevant; metrology frames are not silently embedded</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/46">C4</a></td>
+<td>M1.4 calibration</td>
+<td>One accepted calibration reference workflow</td>
+<td>Examples TIAGo mocap selected; C2/C3/S1</td>
+<td>One command, training/held-out report, identifiable vs redistributed corrections, export and archive; contact-only evidence labeled separately from full pose metrology</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/47">S1</a></td>
+<td>M1.4 shared reporting prerequisite</td>
+<td>Minimum reporting contract</td>
+<td>Existing core report/archive modules; W3; enables D7/C4</td>
+<td>Separate solver/data/fit/physical/export verdicts, explicit failed/fallback stages, paired revisions/hashes, old result compatibility</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/48">S2</a></td>
+<td>M2 follow-up diagnostics</td>
+<td>Sensitivity and uncertainty</td>
+<td>Core diagnostics + examples; stable D7/C4</td>
+<td>Noise/initialization trials, singular spectrum and parameter correlations; observable combinations reported; no unjustified full-parameter certainty</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/49">S3</a></td>
+<td>M2 follow-up experiment design</td>
+<td>Improved experiment design</td>
+<td>Existing <code>optimal/</code> + examples; S2</td>
+<td>Compare excitation/posture selection with a frozen baseline under declared constraints; improve independent validation evidence rather than only matrix condition</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/50">W4</a></td>
+<td>M0</td>
+<td>Engineering process and regression coverage</td>
+<td>Both repositories; existing validation/contribution rules</td>
+<td>Reviewed workflow changes, focused legacy lint/mock coverage issues, reproducible checks; claimed CI automation verified on hosted runs</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/51">U1</a></td>
+<td>M1.4 shared onboarding</td>
+<td>General robot/dataset guide and worked briefs</td>
+<td>Core docs + examples; draft now, acceptance uses D7/C4</td>
+<td>Fresh dynamic and TIAGo mocap walkthroughs plus missing-data case; supported commands, methods and limitations verified</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/52">S4</a></td>
+<td>M2 composition</td>
+<td>Selective reusable regressor/residual composition</td>
+<td>Core + two examples consumers; W3 and accepted M1 references</td>
+<td>Narrow ADR, two consumers, legacy numerical parity and additive compatibility; no broad refactor prerequisite</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/53">B1</a></td>
+<td>M3</td>
+<td>Backend capability/parity review</td>
+<td>Core <code>backends/</code>/<code>integration/</code>; accepted reference workflow</td>
+<td>Actual backend selection or explicit rejection, supported operations matrix, same model/state comparisons and export/validation parity</td>
+</tr>
+</tbody>
+</table>
+<p>Potential new work must not duplicate #20/#22–#25/#30/#32 or examples</p>
+<h2 id="111214-if-one-package-contains-independent-defects-split-them-into">11/#12/#14. If one package contains independent defects, split them into<a class="headerlink" href="#111214-if-one-package-contains-independent-defects-split-them-into" title="Permanent link">&para;</a></h2>
+<p>individual issues/PRs rather than closing a broad issue with partial evidence.</p>
+<h3 id="github-delivery-register">GitHub delivery register<a class="headerlink" href="#github-delivery-register" title="Permanent link">&para;</a></h3>
+<p>Milestones and their canonical rosters were created on 2026-10-02. Open each
+tracker for its complete issue roster, dependency links and acceptance evidence.
+Core trackers combine both repositories; GitHub milestone percentages are local
+to a repository and do not supersede the closure review. No due dates or
+automatic merging are configured by this setup.</p>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Core milestone</th>
+<th>Examples milestone</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/33">W1</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/1">Open milestone</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-examples/milestone/1">Open milestone</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/34">W2</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/2">Open milestone</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-examples/milestone/2">Open milestone</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/35">W3</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/3">Open milestone</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-examples/milestone/3">Open milestone</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/36">D1</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/4">Open milestone</a></td>
+<td>No examples-owned issues in this roster</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/37">D2</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/5">Open milestone</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-examples/milestone/4">Open milestone</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/38">D3</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/6">Open milestone</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-examples/milestone/5">Open milestone</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/39">D4</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/7">Open milestone</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-examples/milestone/6">Open milestone</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/40">D5</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/8">Open milestone</a></td>
+<td>No examples-owned issues in this roster</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/41">D6</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/9">Open milestone</a></td>
+<td>No examples-owned issues in this roster</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/42">D7</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/10">Open milestone</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-examples/milestone/7">Open milestone</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/43">C1</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/11">Open milestone</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-examples/milestone/8">Open milestone</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/44">C2</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/12">Open milestone</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-examples/milestone/9">Open milestone</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/45">C3</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/13">Open milestone</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-examples/milestone/10">Open milestone</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/46">C4</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/14">Open milestone</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-examples/milestone/11">Open milestone</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/47">S1</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/15">Open milestone</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-examples/milestone/12">Open milestone</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/48">S2</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/16">Open milestone</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-examples/milestone/13">Open milestone</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/49">S3</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/17">Open milestone</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-examples/milestone/14">Open milestone</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/50">W4</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/18">Open milestone</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-examples/milestone/15">Open milestone</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/51">U1</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/19">Open milestone</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-examples/milestone/16">Open milestone</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/52">S4</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/20">Open milestone</a></td>
+<td>No examples-owned issues in this roster</td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/53">B1</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/21">Open milestone</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-examples/milestone/17">Open milestone</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/issues/20">LC1</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/milestone/22">Open milestone</a></td>
+<td><a href="https://github.com/thanhndv212/figaroh-examples/milestone/18">Open milestone</a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>LC1</strong> uses existing core #20 as the canonical conditional-production tracker
+for core #23–#25 and examples #11. D5 owns research #22/#30; its accepted go
+decision is a dependency, not completion of those production issues. LC1 is
+outside baseline M1 closure and introduces no additional production scope.</p>
+<p>Initial queue: D1 / core #32 was the first ready correctness fix and is
+delivered by #69 (merged 2026-10-02). W1 asset reproduction, W2 / examples #14
+and individual signal/contract audits are ready to investigate. Later packages remain blocked or planned as labeled. Select one
+issue, validate its focused change, open its PR, then await review/merge approval.</p>
+<h3 id="experimental-design-decisions-to-review-before-coding">Experimental design decisions to review before coding<a class="headerlink" href="#experimental-design-decisions-to-review-before-coding" title="Permanent link">&para;</a></h3>
+<h4 id="dynamic-identification">Dynamic identification<a class="headerlink" href="#dynamic-identification" title="Permanent link">&para;</a></h4>
+<p>Use two comparison levels. The first holds identical training-estimated extras
+fixed to isolate inertial estimation; the second jointly estimates physical
+extras where supported. Do not rank a joint solver against a frozen-extra
+solver as though only parameterization changed. Define per-joint residual
+scaling from training noise/units if whitening is proposed, and first retain
+an unweighted compatibility baseline. TIAGo force and torque cannot become
+one unlabeled physical RMSE.</p>
+<p>Full SDP equality reconstruction preserves an estimated base vector; direct
+constrained effort fitting may change it; per-link projection may change both
+base fit and effort. Each needs its own objective, success definition and
+stage label. Boundary solutions and massless fixed links need explicit policy.
+No API is chosen just because one research script already contains a function.</p>
+<p>Freeze ranks/tolerances, bounds, noise, initialization, iteration/evaluation
+budget, timeout and quality metrics before measuring. Preserve the old
+protocol. The existing #30 criteria are not relaxed by this plan; any revised
+criterion requires a reasoned decision before new measurements.</p>
+<h4 id="calibration">Calibration<a class="headerlink" href="#calibration" title="Permanent link">&para;</a></h4>
+<p>TIAGo mocap is the user-selected first real reference because existing redistribution
+and runtime-export support can be reused. TALOS table-contact remains a second
+consumer and a regression target, not a substitute for full 6D ground truth.
+Use held-out postures/recordings with no fit-stage leakage. Address gauge/frame
+ambiguity before interpreting individual geometric corrections or covariance.
+Assess translated and rotational residuals separately unless a justified
+measurement covariance defines a common whitened residual.</p>
+<p>New camera/eye-hand, multi-marker or suspension features are candidates for a
+separate reviewed scope after the reference baseline; they are not implicitly
+included in this iteration. Historical port documents must be re-audited.</p>
+<h3 id="general-onboarding-pipeline-alongside-the-references">General onboarding pipeline alongside the references<a class="headerlink" href="#general-onboarding-pipeline-alongside-the-references" title="Permanent link">&para;</a></h3>
+<p>The two reference workflows are demonstrations, not the only supported route
+for users. Add a reusable decision pipeline for any new robot/dataset without
+creating a new runtime orchestration API in this planning phase:</p>
+<ol>
+<li>Inventory available models, sensors, timestamps, measured/derived channels
+   and independent validation; record missing information.</li>
+<li>Define the application, observation model, parameter blocks, fixed quantities,
+   gauge and limits on what the data can identify.</li>
+<li>Select supported baseline/candidate methods by objective, constraints and
+   noise/prior assumptions; label research paths separately.</li>
+<li>Design acquisition and final validation together, reviewing excitation,
+   observation coverage, feasibility and collection constraints.</li>
+<li>Preserve raw measurements; audit clocks, units, frames, synchronization,
+   derivatives/filter rates and raw-to-processed indices.</li>
+<li>Fit under a frozen protocol; interpret training fit, observability, physical
+   feasibility and solver termination separately.</li>
+<li>Evaluate unused data, inspect computed/skipped verification checks, validate
+   exported-model parity and archive reproducible evidence.</li>
+</ol>
+<p>Core <code>docs/source/example_workflow.md</code> owns this scientific decision guide.
+Existing task tutorials link to it and retain task-specific runnable material.
+Examples <code>docs/new-example-guide.md</code> owns repository integration and
+<code>docs/experiment-brief-template.md</code> provides a human-readable record copied into
+<code>examples/&lt;robot&gt;/EXPERIMENT.md</code>. This is not a new YAML schema or an enforced
+runtime contract. Robot README/data notes own actual measurements and commands;
+CONTRIBUTING owns contributor/review rules.</p>
+<p><strong>Work-package milestone U1 — general user onboarding</strong> runs alongside D7/C4.
+Draft the guide now; validate it later by walking through one fresh dynamic
+example and TIAGo mocap, plus a missing-data case. Acceptance means the brief
+leads to an explicit model/method choice, reproducible processing and applicable
+validation without relying on undocumented reference assumptions. Check that
+supported commands/links match the accepted core/examples revisions; label
+unimplemented methods and missing evidence. Do not add an interactive wizard,
+new config keys or generated acquisition code without separate review.</p>
+<p>Round 2 reviews the brief's questions and evidence requirements alongside the
+data/result contracts. Reference delivery PRs provide worked briefs and expose
+where the generic guide needs correction. U1 does not wait for backend expansion
+or a successful research-only log-Cholesky integration.</p>
+<h3 id="repository-and-documentation-organization">Repository and documentation organization<a class="headerlink" href="#repository-and-documentation-organization" title="Permanent link">&para;</a></h3>
+<p>Preserve existing directories and user entry points. Do not move datasets,
+robot helpers or broad packages as a prerequisite to fixing known defects.</p>
+<ul>
+<li>Core <code>ROADMAP.md</code>: milestone order, priorities and exit criteria; one canonical
+  file embedded by the docs site. Stable M0–M3 IDs remain.</li>
+<li>Core <code>docs/plans/</code>: this active execution proposal; <code>archive/</code> keeps old plans.
+  Add an index with explicit Draft/Accepted/Historical status.</li>
+<li>Core <code>docs/decisions/</code>: narrow ADRs for new schemas/interfaces/objectives.
+  Link to existing decisions rather than duplicating their reasoning.</li>
+<li>Core <code>docs/development/</code>: dated audits and validation evidence; private spikes
+  remain marked experimental. Architecture changes only after facts change.</li>
+<li>Examples <code>benchmarks/</code>: research protocol, comparisons, curated small result
+  records and dated reports. Preserve old protocols and source hashes.</li>
+<li>Examples <code>examples/&lt;robot&gt;/</code>: runnable supported recipes and robot data/config
+  notes. Large generated runs remain outside source control or in CI artifacts.</li>
+<li>Each repository <code>CONTRIBUTING.md</code>: its execution/PR instructions. Core owns the
+  shared rules; examples documents exact commands, dependency pairing, fixtures
+  and its <code>main</code> PR target rather than copying the whole core workflow.</li>
+</ul>
+<p>Existing examples <code>.github/</code> ignore rules and local-only CI material need a
+focused tracked-file audit before adding more automation. A local file or
+passing local test is not proof that it is tracked or executed remotely.</p>
+<h3 id="proposed-development-workflow-improvements">Proposed development workflow improvements<a class="headerlink" href="#proposed-development-workflow-improvements" title="Permanent link">&para;</a></h3>
+<p>These amendments are for review; CONTRIBUTING/AGENTS are not silently replaced
+by this draft. Retain the established one-issue/one-PR rule and explicit merge
+approval. Suggested additions:</p>
+<ol>
+<li><strong>Discussion before implementation.</strong> Agree on scope and acceptance evidence;
+   approve public contracts through an ADR. Separate “approve plan,” “implement,”
+   and “merge.” A research revise decision cannot be interpreted as API approval.</li>
+<li><strong>Issue readiness.</strong> Classify numerical bug, asset/dependency problem, research,
+   API feature or maintenance. State core/examples owner, dependencies, current
+   reproducer, immutable inputs, proposed tests and out-of-scope work. Avoid
+   creating all speculative issues at once.</li>
+<li><strong>Focused branches.</strong> Core branches from current <code>devel</code>; examples from <code>main</code>.
+   Keep discussion/report changes out of unrelated numerical PRs. Record tested
+   core/examples commit pairs. Prefer isolated worktrees when an open PR is
+   already using the main checkout.</li>
+<li><strong>Before/after evidence.</strong> Run a reproducer on baseline and changed revisions.
+   Report command/exit code and classify data validity, solver convergence,
+   physical consistency, held-out quality and export fidelity separately.</li>
+<li><strong>Validation tiers.</strong> V0 hooks/docs for documentation; V1 core tests for code;
+   V2 affected examples for data/numerics/API; V3 both reference workflows and
+   export invariants for milestone/release. Examples retains full <code>validate.py</code>
+   phase checks and known-failure evidence. A failure cannot be hidden by a skip.</li>
+<li><strong>CI organization.</strong> Fast core checks plus Pinocchio 3.7/4.1 profiles; examples
+   deterministic fixtures/smokes and dataset jobs with reproducible assets.
+   Slow IPOPT/full workflow checks can be separately scheduled/manual, retaining
+   their failure/timeout statuses. Collect research artifacts on failure without
+   marking a failed regression green. This is a proposed CI split, not deployed.</li>
+<li><strong>Review and merge.</strong> Open each completed issue's focused PR. Maintainer reviews;
+   merge only after explicit approval and required checks on the current head.
+   Material scope changes require renewed review. No automatic merging.</li>
+<li><strong>Post-merge cleanup.</strong> Synchronize base branches; remove that PR's merged
+   remote/local feature branch and worktree after checking for uncommitted or
+   unique commits. Keep main/devel/releases and unrelated ancient branches.</li>
+<li><strong>Release evidence.</strong> An accepted method and passing CI are insufficient:
+   verify supported examples, exported model reloads, archived reports, version
+   metadata and dependency pair. Version/tag/publishing remains separate review.</li>
+</ol>
+<p>Recommended issue metadata: type, area, priority, milestone, dependency links,
+research/production designation and acceptance evidence. Recommended states:
+Draft → Ready → In progress → In review → Done, with Blocked carrying its
+actual dependency. Readiness labels and milestone/issue rosters are established by the approved
+tracker setup. They are maintained manually; GitHub Project automation and
+server-enforced branch rules are not implied.</p>
+<h3 id="review-rounds-and-bounded-implementation-batches">Review rounds and bounded implementation batches<a class="headerlink" href="#review-rounds-and-bounded-implementation-batches" title="Permanent link">&para;</a></h3>
+<h4 id="round-1-this-proposal">Round 1 — this proposal<a class="headerlink" href="#round-1-this-proposal" title="Permanent link">&para;</a></h4>
+<p>Review the two parallel outcomes, package ownership, calibration reference,
+method comparison boundaries and proposed sequence. Revise roadmap/plan locally.
+The subsequent user instruction explicitly authorized tracker creation. No
+code changes, commits/pushes or merges follow merely from accepting the plan.</p>
+<h4 id="round-2-contracts-and-frozen-protocol">Round 2 — contracts and frozen protocol<a class="headerlink" href="#round-2-contracts-and-frozen-protocol" title="Permanent link">&para;</a></h4>
+<p>Inventory current data/results and propose the smallest compatible extension.
+Review each numerical objective, extras/weighting policy, exports and failure
+semantics. Decide what metrics and datasets can actually establish. Update
+narrow ADRs and the benchmark protocol before approving implementation.</p>
+<h4 id="round-3-first-delivery-batch">Round 3 — first delivery batch<a class="headerlink" href="#round-3-first-delivery-batch" title="Permanent link">&para;</a></h4>
+<p>Select only ready work: existing core #32 (delivered by #69); reproducible example asset fixes;
+existing examples #14; separate robot sampling audits. Calibration frame audit
+can proceed in parallel. Open focused issues for the approved missing work.
+Each completed issue produces a PR for review; dependent work waits or uses an
+explicit tested commit pair. Review evidence before expanding the batch.</p>
+<h4 id="later-batches">Later batches<a class="headerlink" href="#later-batches" title="Permanent link">&para;</a></h4>
+<p>Fresh UR10 truth fixture and calibration truth/held-out fixture; physical solver
+comparison and #30; independent inertial/geometric export gates; then dynamic
+and calibration reference integration. Each batch ends with an evidence review,
+not a guessed calendar deadline. Estimates follow a scoped issue audit; no
+release date or package version is promised in this draft.</p>
+<h3 id="decisions-still-open">Decisions still open<a class="headerlink" href="#decisions-still-open" title="Permanent link">&para;</a></h3>
+<p>Calibration order is settled for this draft: TIAGo mocap first, TALOS contact
+second. The following choices still need review:</p>
+<ol>
+<li>Should the first joint physical estimator include bounded/positive friction
+   and actuator parameters, or limit the initial comparison to fixed extras?</li>
+<li>Which independent real recordings are available for final acceptance?</li>
+<li>What is the minimum supported result/data extension after adapter inventory?</li>
+<li>What measured physical boundary policy and export failure behavior should
+   the public API expose?</li>
+</ol>
+<p>Proposed remaining defaults: fixed-extra comparison followed by a separate
+joint-estimation comparison; no claims of independent real validation until
+recordings exist; additive compatibility adapters; failed/nonphysical stages
+cannot silently become the selected exported model.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "content.code.copy", "content.action.edit", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

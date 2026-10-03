@@ -330,7 +330,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../further_reading/roadmap/" class="md-tabs__link">
+        <a href="../../further_reading/contributing/" class="md-tabs__link">
           
   
   
@@ -501,6 +501,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../example_workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plan, Fit & Validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reporting_and_verification/" class="md-nav__link">
         
   
@@ -542,10 +570,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
         
           
-          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
             
   
   
@@ -563,8 +591,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -825,22 +853,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#figaroh-architecture-documentation" class="md-nav__link">
+  <a href="#figaroh-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        FIGAROH Architecture Documentation
+        FIGAROH Architecture
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="FIGAROH Architecture Documentation">
+    <nav class="md-nav" aria-label="FIGAROH Architecture">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#table-of-contents" class="md-nav__link">
+  <a href="#system-boundaries" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Table of Contents
+        System boundaries
       
     </span>
   </a>
@@ -848,22 +876,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#1-executive-summary" class="md-nav__link">
+  <a href="#module-responsibilities" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Executive Summary
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1. Executive Summary">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#key-design-principles" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Key Design Principles
+        Module responsibilities
       
     </span>
   </a>
@@ -871,489 +887,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#package-structure" class="md-nav__link">
+  <a href="#backend-boundary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Package Structure
+        Backend boundary
       
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#figaroh-calibration-geometric-calibration-framework-basecalibration-abstract-base-class-for-kinematic-calibration-calibration_tools-parameter-parsing-regressor-computation-config-configuration-loading-and-validation-data_loader-csv-data-loading-utilities-parameter-kinematic-parameter-management-identification-dynamic-parameter-identification-baseidentification-abstract-base-class-for-dynamic-identification-identification_tools-regressor-utilities-parameter-extraction-config-identification-configuration-parsing-parameter-inertial-parameter-management-friction-inertia-optimal-optimization-based-trajectory-configuration-baseoptimaltrajectory-ipopt-based-trajectory-optimization-baseoptimalcalibration-optimal-calibration-posture-selection-baseparametercomputer-base-parameter-computation-utilities-trajectoryconstraintmanager-constraint-handling-for-optimization-config-optimization-configuration-management-tools-core-robotics-utilities-regressorbuilder-object-oriented-regressor-computation-linearsolver-advanced-linear-solver-ls-ridge-lasso-etc-qrdecomposer-qr-decomposition-for-base-parameters-collisionmanager-collision-detection-and-visualization-robotipoptsolver-ipopt-optimization-wrapper-cubicspline-trajectory-interpolation-utilities-utils-helper-utilities-unifiedconfigparser-yaml-config-with-inheritance-support-resultsmanager-unified-plotting-and-result-export-error_handling-custom-exceptions-and-validation-cubic_spline-spline-trajectory-generation-measurements-data-acquisition-and-processing-visualisation-meshcat-based-3d-visualization" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        figaroh/ ├── calibration/ # Geometric calibration framework │ ├── BaseCalibration # Abstract base class for kinematic calibration │ ├── calibration_tools # Parameter parsing, regressor computation │ ├── config # Configuration loading and validation │ ├── data_loader # CSV data loading utilities │ └── parameter # Kinematic parameter management │ ├── identification/ # Dynamic parameter identification │ ├── BaseIdentification # Abstract base class for dynamic identification │ ├── identification_tools # Regressor utilities, parameter extraction │ ├── config # Identification configuration parsing │ └── parameter # Inertial parameter management (friction, inertia) │ ├── optimal/ # Optimization-based trajectory &amp; configuration │ ├── BaseOptimalTrajectory # IPOPT-based trajectory optimization │ ├── BaseOptimalCalibration # Optimal calibration posture selection │ ├── BaseParameterComputer # Base parameter computation utilities │ ├── TrajectoryConstraintManager # Constraint handling for optimization │ └── config # Optimization configuration management │ ├── tools/ # Core robotics utilities │ ├── RegressorBuilder # Object-oriented regressor computation │ ├── LinearSolver # Advanced linear solver (LS, Ridge, Lasso, etc.) │ ├── QRDecomposer # QR decomposition for base parameters │ ├── CollisionManager # Collision detection and visualization │ ├── RobotIPOPTSolver # IPOPT optimization wrapper │ └── CubicSpline # Trajectory interpolation utilities │ ├── utils/ # Helper utilities │ ├── UnifiedConfigParser # YAML config with inheritance support │ ├── ResultsManager # Unified plotting and result export │ ├── error_handling # Custom exceptions and validation │ └── cubic_spline # Spline trajectory generation │ ├── measurements/ # Data acquisition and processing └── visualisation/ # Meshcat-based 3D visualization
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="figaroh/ ├── calibration/ # Geometric calibration framework │ ├── BaseCalibration # Abstract base class for kinematic calibration │ ├── calibration_tools # Parameter parsing, regressor computation │ ├── config # Configuration loading and validation │ ├── data_loader # CSV data loading utilities │ └── parameter # Kinematic parameter management │ ├── identification/ # Dynamic parameter identification │ ├── BaseIdentification # Abstract base class for dynamic identification │ ├── identification_tools # Regressor utilities, parameter extraction │ ├── config # Identification configuration parsing │ └── parameter # Inertial parameter management (friction, inertia) │ ├── optimal/ # Optimization-based trajectory &amp; configuration │ ├── BaseOptimalTrajectory # IPOPT-based trajectory optimization │ ├── BaseOptimalCalibration # Optimal calibration posture selection │ ├── BaseParameterComputer # Base parameter computation utilities │ ├── TrajectoryConstraintManager # Constraint handling for optimization │ └── config # Optimization configuration management │ ├── tools/ # Core robotics utilities │ ├── RegressorBuilder # Object-oriented regressor computation │ ├── LinearSolver # Advanced linear solver (LS, Ridge, Lasso, etc.) │ ├── QRDecomposer # QR decomposition for base parameters │ ├── CollisionManager # Collision detection and visualization │ ├── RobotIPOPTSolver # IPOPT optimization wrapper │ └── CubicSpline # Trajectory interpolation utilities │ ├── utils/ # Helper utilities │ ├── UnifiedConfigParser # YAML config with inheritance support │ ├── ResultsManager # Unified plotting and result export │ ├── error_handling # Custom exceptions and validation │ └── cubic_spline # Spline trajectory generation │ ├── measurements/ # Data acquisition and processing └── visualisation/ # Meshcat-based 3D visualization">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#2-system-overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. System Overview
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. System Overview">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#ascii-architecture-overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ASCII Architecture Overview
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#detailed-mermaid-diagram" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Detailed Mermaid Diagram
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-layered-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Layered Architecture
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. Layered Architecture">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#layer-1-backend-layer-srcfigarohbackends" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Layer 1: Backend Layer (src/figaroh/backends/)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#layer-2-tools-layer-srcfigarohtools" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Layer 2: Tools Layer (src/figaroh/tools/)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#layer-3-workflow-layer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Layer 3: Workflow Layer
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Layer 3: Workflow Layer">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#calibration-srcfigarohcalibration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Calibration (src/figaroh/calibration/)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#identification-srcfigarohidentification" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Identification (src/figaroh/identification/)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#optimal-trajectory-srcfigarohoptimal" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Optimal Trajectory (src/figaroh/optimal/)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-module-details" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Module Details
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="4. Module Details">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-backend-layer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Backend Layer
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1. Backend Layer">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#pinocchiobackend-backendspinocchiopy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        PinocchioBackend (backends/pinocchio.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mujocobackend-backendsmujocopy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        MuJoCoBackend (backends/mujoco.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-tools-layer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Tools Layer
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Tools Layer">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#robot-toolsrobotpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Robot (tools/robot.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#regressorbuilder-toolsregressorpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        RegressorBuilder (tools/regressor.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#linearsolver-toolssolverpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        LinearSolver (tools/solver.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-calibration-layer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Calibration Layer
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. Calibration Layer">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#basecalibration-calibrationbase_calibrationpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        BaseCalibration (calibration/base_calibration.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#urdf-exporter-toolsurdf_exporterpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        URDF Exporter (tools/urdf_exporter.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#export-validation-toolsexport_validationpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Export Validation (tools/export_validation.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#calibrationtools-calibrationcalibration_toolspy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CalibrationTools (calibration/calibration_tools.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-identification-layer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Identification Layer
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="4. Identification Layer">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#baseidentification-identificationbase_identificationpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        BaseIdentification (identification/base_identification.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#parameter-handling-identificationparameterpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parameter Handling (identification/parameter.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#physical-consistency-identificationphysical_consistencypy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Physical Consistency (identification/physical_consistency.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-optimal-layer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Optimal Layer
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Optimal Layer">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#baseoptimaltrajectory-optimalbase_optimal_trajectorypy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        BaseOptimalTrajectory (optimal/base_optimal_trajectory.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#6-reporting-verification-vv-suite" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Reporting &amp; Verification (V&amp;V) Suite
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-pinocchio-integration-map" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Pinocchio Integration Map
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Pinocchio Integration Map">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#critical-functions-backend-abstracted" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Critical Functions (Backend-abstracted ✅)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pinocchio-specific-functions-not-abstracted" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pinocchio-Specific Functions (Not abstracted ❌)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#backend-mapping-strategy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Backend Mapping Strategy
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#6-data-flow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Data Flow
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Data Flow">
-      <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#identification-data-flow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Identification Data Flow
+        Identification data flow
       
     </span>
   </a>
@@ -1361,38 +909,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#calibration-data-flow" class="md-nav__link">
+  <a href="#calibration-and-experiment-design" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Calibration Data Flow
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#7-backend-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Backend Architecture
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="7. Backend Architecture">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#backend-selection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Backend Selection
+        Calibration and experiment design
       
     </span>
   </a>
@@ -1400,10 +920,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#backend-interface-contract" class="md-nav__link">
+  <a href="#export-and-reporting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Backend Interface Contract
+        Export and reporting
       
     </span>
   </a>
@@ -1411,220 +931,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#implementation-comparison" class="md-nav__link">
+  <a href="#configuration-and-extension-rules" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Implementation Comparison
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#backend-migration-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Backend Migration Status
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#8-extension-points" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Extension Points
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="8. Extension Points">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#adding-a-new-backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Adding a New Backend
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#adding-a-new-solver" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Adding a New Solver
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#adding-a-new-calibration-type" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Adding a New Calibration Type
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#9-backend-migration-limitations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9. Backend Migration Limitations
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="9. Backend Migration Limitations">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#the-core-problem-model-manipulation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The Core Problem: Model Manipulation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#simulator-capabilities-matrix" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Simulator Capabilities Matrix
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#why-mujocogenesis-cant-support-this-pattern" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Why MuJoCo/Genesis Can't Support This Pattern
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#what-this-means-for-the-backend-track" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What This Means for the Backend Track
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#long-term-paths-to-full-portability" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Long-Term Paths to Full Portability
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#current-architecture-decision" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Current Architecture Decision
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#10-performance-considerations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10. Performance Considerations
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="10. Performance Considerations">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#computational-bottlenecks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Computational Bottlenecks
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#memory-considerations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Memory Considerations
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#numerical-stability" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Numerical Stability
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#summary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Summary
+        Configuration and extension rules
       
     </span>
   </a>
@@ -2389,6 +1699,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../further_reading/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../further_reading/roadmap/" class="md-nav__link">
         
   
@@ -2397,6 +1735,34 @@
     
   
     Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../further_reading/plans/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Delivery Plans
   
 
     
@@ -2528,22 +1894,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#figaroh-architecture-documentation" class="md-nav__link">
+  <a href="#figaroh-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        FIGAROH Architecture Documentation
+        FIGAROH Architecture
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="FIGAROH Architecture Documentation">
+    <nav class="md-nav" aria-label="FIGAROH Architecture">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#table-of-contents" class="md-nav__link">
+  <a href="#system-boundaries" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Table of Contents
+        System boundaries
       
     </span>
   </a>
@@ -2551,22 +1917,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#1-executive-summary" class="md-nav__link">
+  <a href="#module-responsibilities" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Executive Summary
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1. Executive Summary">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#key-design-principles" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Key Design Principles
+        Module responsibilities
       
     </span>
   </a>
@@ -2574,489 +1928,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#package-structure" class="md-nav__link">
+  <a href="#backend-boundary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Package Structure
+        Backend boundary
       
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#figaroh-calibration-geometric-calibration-framework-basecalibration-abstract-base-class-for-kinematic-calibration-calibration_tools-parameter-parsing-regressor-computation-config-configuration-loading-and-validation-data_loader-csv-data-loading-utilities-parameter-kinematic-parameter-management-identification-dynamic-parameter-identification-baseidentification-abstract-base-class-for-dynamic-identification-identification_tools-regressor-utilities-parameter-extraction-config-identification-configuration-parsing-parameter-inertial-parameter-management-friction-inertia-optimal-optimization-based-trajectory-configuration-baseoptimaltrajectory-ipopt-based-trajectory-optimization-baseoptimalcalibration-optimal-calibration-posture-selection-baseparametercomputer-base-parameter-computation-utilities-trajectoryconstraintmanager-constraint-handling-for-optimization-config-optimization-configuration-management-tools-core-robotics-utilities-regressorbuilder-object-oriented-regressor-computation-linearsolver-advanced-linear-solver-ls-ridge-lasso-etc-qrdecomposer-qr-decomposition-for-base-parameters-collisionmanager-collision-detection-and-visualization-robotipoptsolver-ipopt-optimization-wrapper-cubicspline-trajectory-interpolation-utilities-utils-helper-utilities-unifiedconfigparser-yaml-config-with-inheritance-support-resultsmanager-unified-plotting-and-result-export-error_handling-custom-exceptions-and-validation-cubic_spline-spline-trajectory-generation-measurements-data-acquisition-and-processing-visualisation-meshcat-based-3d-visualization" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        figaroh/ ├── calibration/ # Geometric calibration framework │ ├── BaseCalibration # Abstract base class for kinematic calibration │ ├── calibration_tools # Parameter parsing, regressor computation │ ├── config # Configuration loading and validation │ ├── data_loader # CSV data loading utilities │ └── parameter # Kinematic parameter management │ ├── identification/ # Dynamic parameter identification │ ├── BaseIdentification # Abstract base class for dynamic identification │ ├── identification_tools # Regressor utilities, parameter extraction │ ├── config # Identification configuration parsing │ └── parameter # Inertial parameter management (friction, inertia) │ ├── optimal/ # Optimization-based trajectory &amp; configuration │ ├── BaseOptimalTrajectory # IPOPT-based trajectory optimization │ ├── BaseOptimalCalibration # Optimal calibration posture selection │ ├── BaseParameterComputer # Base parameter computation utilities │ ├── TrajectoryConstraintManager # Constraint handling for optimization │ └── config # Optimization configuration management │ ├── tools/ # Core robotics utilities │ ├── RegressorBuilder # Object-oriented regressor computation │ ├── LinearSolver # Advanced linear solver (LS, Ridge, Lasso, etc.) │ ├── QRDecomposer # QR decomposition for base parameters │ ├── CollisionManager # Collision detection and visualization │ ├── RobotIPOPTSolver # IPOPT optimization wrapper │ └── CubicSpline # Trajectory interpolation utilities │ ├── utils/ # Helper utilities │ ├── UnifiedConfigParser # YAML config with inheritance support │ ├── ResultsManager # Unified plotting and result export │ ├── error_handling # Custom exceptions and validation │ └── cubic_spline # Spline trajectory generation │ ├── measurements/ # Data acquisition and processing └── visualisation/ # Meshcat-based 3D visualization
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="figaroh/ ├── calibration/ # Geometric calibration framework │ ├── BaseCalibration # Abstract base class for kinematic calibration │ ├── calibration_tools # Parameter parsing, regressor computation │ ├── config # Configuration loading and validation │ ├── data_loader # CSV data loading utilities │ └── parameter # Kinematic parameter management │ ├── identification/ # Dynamic parameter identification │ ├── BaseIdentification # Abstract base class for dynamic identification │ ├── identification_tools # Regressor utilities, parameter extraction │ ├── config # Identification configuration parsing │ └── parameter # Inertial parameter management (friction, inertia) │ ├── optimal/ # Optimization-based trajectory &amp; configuration │ ├── BaseOptimalTrajectory # IPOPT-based trajectory optimization │ ├── BaseOptimalCalibration # Optimal calibration posture selection │ ├── BaseParameterComputer # Base parameter computation utilities │ ├── TrajectoryConstraintManager # Constraint handling for optimization │ └── config # Optimization configuration management │ ├── tools/ # Core robotics utilities │ ├── RegressorBuilder # Object-oriented regressor computation │ ├── LinearSolver # Advanced linear solver (LS, Ridge, Lasso, etc.) │ ├── QRDecomposer # QR decomposition for base parameters │ ├── CollisionManager # Collision detection and visualization │ ├── RobotIPOPTSolver # IPOPT optimization wrapper │ └── CubicSpline # Trajectory interpolation utilities │ ├── utils/ # Helper utilities │ ├── UnifiedConfigParser # YAML config with inheritance support │ ├── ResultsManager # Unified plotting and result export │ ├── error_handling # Custom exceptions and validation │ └── cubic_spline # Spline trajectory generation │ ├── measurements/ # Data acquisition and processing └── visualisation/ # Meshcat-based 3D visualization">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#2-system-overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. System Overview
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. System Overview">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#ascii-architecture-overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ASCII Architecture Overview
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#detailed-mermaid-diagram" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Detailed Mermaid Diagram
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-layered-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Layered Architecture
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. Layered Architecture">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#layer-1-backend-layer-srcfigarohbackends" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Layer 1: Backend Layer (src/figaroh/backends/)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#layer-2-tools-layer-srcfigarohtools" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Layer 2: Tools Layer (src/figaroh/tools/)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#layer-3-workflow-layer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Layer 3: Workflow Layer
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Layer 3: Workflow Layer">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#calibration-srcfigarohcalibration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Calibration (src/figaroh/calibration/)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#identification-srcfigarohidentification" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Identification (src/figaroh/identification/)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#optimal-trajectory-srcfigarohoptimal" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Optimal Trajectory (src/figaroh/optimal/)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-module-details" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Module Details
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="4. Module Details">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-backend-layer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Backend Layer
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1. Backend Layer">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#pinocchiobackend-backendspinocchiopy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        PinocchioBackend (backends/pinocchio.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mujocobackend-backendsmujocopy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        MuJoCoBackend (backends/mujoco.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-tools-layer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Tools Layer
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Tools Layer">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#robot-toolsrobotpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Robot (tools/robot.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#regressorbuilder-toolsregressorpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        RegressorBuilder (tools/regressor.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#linearsolver-toolssolverpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        LinearSolver (tools/solver.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-calibration-layer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Calibration Layer
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. Calibration Layer">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#basecalibration-calibrationbase_calibrationpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        BaseCalibration (calibration/base_calibration.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#urdf-exporter-toolsurdf_exporterpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        URDF Exporter (tools/urdf_exporter.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#export-validation-toolsexport_validationpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Export Validation (tools/export_validation.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#calibrationtools-calibrationcalibration_toolspy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CalibrationTools (calibration/calibration_tools.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-identification-layer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Identification Layer
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="4. Identification Layer">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#baseidentification-identificationbase_identificationpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        BaseIdentification (identification/base_identification.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#parameter-handling-identificationparameterpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parameter Handling (identification/parameter.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#physical-consistency-identificationphysical_consistencypy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Physical Consistency (identification/physical_consistency.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-optimal-layer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Optimal Layer
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Optimal Layer">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#baseoptimaltrajectory-optimalbase_optimal_trajectorypy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        BaseOptimalTrajectory (optimal/base_optimal_trajectory.py)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#6-reporting-verification-vv-suite" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Reporting &amp; Verification (V&amp;V) Suite
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-pinocchio-integration-map" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Pinocchio Integration Map
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Pinocchio Integration Map">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#critical-functions-backend-abstracted" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Critical Functions (Backend-abstracted ✅)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pinocchio-specific-functions-not-abstracted" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pinocchio-Specific Functions (Not abstracted ❌)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#backend-mapping-strategy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Backend Mapping Strategy
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#6-data-flow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Data Flow
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Data Flow">
-      <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#identification-data-flow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Identification Data Flow
+        Identification data flow
       
     </span>
   </a>
@@ -3064,38 +1950,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#calibration-data-flow" class="md-nav__link">
+  <a href="#calibration-and-experiment-design" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Calibration Data Flow
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#7-backend-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Backend Architecture
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="7. Backend Architecture">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#backend-selection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Backend Selection
+        Calibration and experiment design
       
     </span>
   </a>
@@ -3103,10 +1961,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#backend-interface-contract" class="md-nav__link">
+  <a href="#export-and-reporting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Backend Interface Contract
+        Export and reporting
       
     </span>
   </a>
@@ -3114,220 +1972,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#implementation-comparison" class="md-nav__link">
+  <a href="#configuration-and-extension-rules" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Implementation Comparison
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#backend-migration-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Backend Migration Status
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#8-extension-points" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Extension Points
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="8. Extension Points">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#adding-a-new-backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Adding a New Backend
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#adding-a-new-solver" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Adding a New Solver
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#adding-a-new-calibration-type" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Adding a New Calibration Type
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#9-backend-migration-limitations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9. Backend Migration Limitations
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="9. Backend Migration Limitations">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#the-core-problem-model-manipulation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The Core Problem: Model Manipulation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#simulator-capabilities-matrix" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Simulator Capabilities Matrix
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#why-mujocogenesis-cant-support-this-pattern" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Why MuJoCo/Genesis Can't Support This Pattern
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#what-this-means-for-the-backend-track" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What This Means for the Backend Track
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#long-term-paths-to-full-portability" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Long-Term Paths to Full Portability
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#current-architecture-decision" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Current Architecture Decision
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#10-performance-considerations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10. Performance Considerations
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="10. Performance Considerations">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#computational-bottlenecks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Computational Bottlenecks
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#memory-considerations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Memory Considerations
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#numerical-stability" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Numerical Stability
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#summary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Summary
+        Configuration and extension rules
       
     </span>
   </a>
@@ -3370,1593 +2018,189 @@
 so it stays next to the source tree it describes. This page embeds it
 directly so the same content is browsable as part of the docs site,
 without a second copy to keep in sync.</p>
-<h2 id="figaroh-architecture-documentation">FIGAROH Architecture Documentation<a class="headerlink" href="#figaroh-architecture-documentation" title="Permanent link">&para;</a></h2>
-<p><strong>Version:</strong> 3.2
-<strong>Date:</strong> July 12, 2026
-<strong>Status:</strong> v0.4.4 released — calibration validation, quality report, URDF export, interactive
-visualization, plus the reporting &amp; verification (V&amp;V) suite (HTML diagnostic reports,
-machine-readable pass/fail verdicts, before/after panel, static two-run compare page —
-see <a href="#4-module-details">§4.6</a>)</p>
-<hr />
-<h3 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h3>
-<ol>
-<li><a href="#executive-summary">Executive Summary</a></li>
-<li><a href="#system-overview">System Overview</a></li>
-<li><a href="#layered-architecture">Layered Architecture</a></li>
-<li><a href="#module-details">Module Details</a></li>
-<li><a href="#pinocchio-integration-map">Pinocchio Integration Map</a></li>
-<li><a href="#data-flow">Data Flow</a></li>
-<li><a href="#backend-architecture">Backend Architecture</a></li>
-<li><a href="#extension-points">Extension Points</a></li>
-<li><a href="#performance-considerations">Performance Considerations</a></li>
-</ol>
-<hr />
-<h3 id="1-executive-summary">1. Executive Summary<a class="headerlink" href="#1-executive-summary" title="Permanent link">&para;</a></h3>
-<p>FIGAROH (<strong>F</strong>ree dynamics <strong>I</strong>dentification and <strong>G</strong>eometrical c<strong>A</strong>libration of <strong>RO</strong>bot and <strong>H</strong>uman) is a modular framework for robot calibration and parameter identification. The architecture follows a <strong>three-layer design</strong>:</p>
-<ol>
-<li><strong>Backend Layer</strong> - Pluggable dynamics computation (Pinocchio, MuJoCo, Genesis, Isaac Sim)</li>
-<li><strong>Tools Layer</strong> - Core algorithms (regressor computation, solvers, parameter handling)</li>
-<li><strong>Workflow Layer</strong> - High-level orchestration (calibration, identification, optimal trajectory)</li>
-</ol>
-<h4 id="key-design-principles">Key Design Principles<a class="headerlink" href="#key-design-principles" title="Permanent link">&para;</a></h4>
+<h2 id="figaroh-architecture">FIGAROH Architecture<a class="headerlink" href="#figaroh-architecture" title="Permanent link">&para;</a></h2>
+<p><strong>Source audit: 2026-09-28.</strong> This document describes the current source tree.
+Future capabilities belong in the <a href="https://github.com/thanhndv212/figaroh-plus/blob/main/ROADMAP.md">roadmap</a> and
+<a href="https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/README.md">design decisions</a>. The docs site embeds this file;
+API details are generated from docstrings under <code>docs/source/api/</code>.</p>
+<h3 id="system-boundaries">System boundaries<a class="headerlink" href="#system-boundaries" title="Permanent link">&para;</a></h3>
+<p>FIGAROH is a Python library for dynamic identification, geometric calibration
+and experiment design. The installable package is <code>src/figaroh/</code>; robot-specific
+scripts, datasets and models live in the separate
+<a href="https://github.com/thanhndv212/figaroh-examples">figaroh-examples repository</a>.</p>
+<p>The principal user entry points are subclasses of <code>BaseIdentification</code>,
+<code>BaseCalibration</code>, <code>BaseOptimalTrajectory</code> and <code>BaseOptimalCalibration</code>.
+<code>RobotIdentificationSystem</code> provides a smaller CSV/URDF identification wrapper.
+The source currently imports several subpackages eagerly, so installing only a
+single numerical dependency is not sufficient to import the package.</p>
+<div class="highlight"><pre><span></span><code>Robot-specific script + YAML + measurements + URDF
+                     |
+     Workflow classes / integration wrapper
+                     |
+  Regressors, solvers, robot model, result processing
+                     |
+     Backend-aware operations + direct Pinocchio use
+                     |
+       Identified/calibrated results
+                     |
+   Verification / reports / archives / explicit export
+</code></pre></div>
+<h3 id="module-responsibilities">Module responsibilities<a class="headerlink" href="#module-responsibilities" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Owns</th>
+<th>Reference</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>calibration/</code></td>
+<td>Config, measured poses, kinematic residuals, fitting and validation</td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/calibration/base_calibration.py">BaseCalibration</a></td>
+</tr>
+<tr>
+<td><code>identification/</code></td>
+<td>Signal processing, dynamic regressors, identifiable parameters, optional physical projection/reconstruction</td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/identification/base_identification.py">BaseIdentification</a></td>
+</tr>
+<tr>
+<td><code>optimal/</code></td>
+<td>Excitation trajectories and calibration posture selection</td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/optimal/base_optimal_trajectory.py">trajectory workflow</a>, <a href="https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/optimal/base_optimal_calibration.py">configuration workflow</a></td>
+</tr>
+<tr>
+<td><code>backends/</code></td>
+<td>Common dynamics operations and Pinocchio/MuJoCo implementations</td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/backends/base.py">DynamicsBackend</a></td>
+</tr>
+<tr>
+<td><code>tools/</code></td>
+<td>Robot loading, QR/linear solvers, collisions, export, reports and archives</td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/tools/robot.py">Robot</a>, <a href="https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/tools/regressor.py">regressor</a>, <a href="https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/tools/qrdecomposition.py">QR</a></td>
+</tr>
+<tr>
+<td><code>utils/</code></td>
+<td>Config inheritance/migration, result handling and error types</td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/utils/config_parser.py">config parser</a>, <a href="https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/utils/results_manager.py">results</a></td>
+</tr>
+<tr>
+<td><code>integration/</code></td>
+<td>Convenience wrapper around the identification workflow</td>
+<td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/integration/api.py">API</a></td>
+</tr>
+<tr>
+<td><code>measurements/</code>, <code>visualisation/</code></td>
+<td>Measurement and viewer utilities</td>
+<td>Generated API reference</td>
+</tr>
+</tbody>
+</table>
+<p>Generic algorithms stay in core; robot paths, data conventions and experiment
+recipes stay in examples. A change spanning both repos records the tested
+revision pair and expected core dependency in the examples PR.</p>
+<h3 id="backend-boundary">Backend boundary<a class="headerlink" href="#backend-boundary" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Simulator Agnostic</strong>: Backend abstraction enables seamless simulator switching</li>
-<li><strong>Algorithm Consistency</strong>: Same identification/calibration algorithms across all backends</li>
-<li><strong>Modular &amp; Extensible</strong>: Clear separation of concerns enables easy extension</li>
-<li><strong>Production Ready</strong>: Comprehensive error handling, validation, and documentation</li>
+<li><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/backends/pinocchio.py">PinocchioBackend</a> exists and implements
+  dynamics/kinematics operations. <code>Robot.backend</code> lazily wraps the robot's current
+  Pinocchio model and data through <code>PinocchioBackend.from_model()</code>.</li>
+<li><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/backends/mujoco.py">MuJoCoBackend</a> exists. Its analytical regressor
+  delegates to a Pinocchio model loaded from the model path; its Coriolis matrix
+  uses a finite-difference construction. A MuJoCo operation being available does
+  not imply the complete identification/calibration workflow is portable.</li>
+<li>Regressor construction and several calibration helpers use a backend when
+  provided. Direct Pinocchio model/frame/inertia operations remain, especially
+  model mutation during calibration and visualization/collision integration.</li>
+<li>Genesis and IsaacSim implementations are absent. They are roadmap proposals.</li>
+<li><code>RobotIdentificationSystem.from_mjcf()</code> raises <code>NotImplementedError</code>.
+  <code>from_urdf(backend=...)</code> loads the usual Robot and stores the requested name;
+  that name alone does not switch the robot's executing backend. Treat the
+  convenience identification path as Pinocchio/URDF-based until selection is
+  implemented and verified.</li>
 </ul>
-<h4 id="package-structure">Package Structure<a class="headerlink" href="#package-structure" title="Permanent link">&para;</a></h4>
-<h2 id="figaroh-calibration-geometric-calibration-framework-basecalibration-abstract-base-class-for-kinematic-calibration-calibration_tools-parameter-parsing-regressor-computation-config-configuration-loading-and-validation-data_loader-csv-data-loading-utilities-parameter-kinematic-parameter-management-identification-dynamic-parameter-identification-baseidentification-abstract-base-class-for-dynamic-identification-identification_tools-regressor-utilities-parameter-extraction-config-identification-configuration-parsing-parameter-inertial-parameter-management-friction-inertia-optimal-optimization-based-trajectory-configuration-baseoptimaltrajectory-ipopt-based-trajectory-optimization-baseoptimalcalibration-optimal-calibration-posture-selection-baseparametercomputer-base-parameter-computation-utilities-trajectoryconstraintmanager-constraint-handling-for-optimization-config-optimization-configuration-management-tools-core-robotics-utilities-regressorbuilder-object-oriented-regressor-computation-linearsolver-advanced-linear-solver-ls-ridge-lasso-etc-qrdecomposer-qr-decomposition-for-base-parameters-collisionmanager-collision-detection-and-visualization-robotipoptsolver-ipopt-optimization-wrapper-cubicspline-trajectory-interpolation-utilities-utils-helper-utilities-unifiedconfigparser-yaml-config-with-inheritance-support-resultsmanager-unified-plotting-and-result-export-error_handling-custom-exceptions-and-validation-cubic_spline-spline-trajectory-generation-measurements-data-acquisition-and-processing-visualisation-meshcat-based-3d-visualization"><div class="highlight"><pre><span></span><code>figaroh/
-├── calibration/          # Geometric calibration framework
-│   ├── BaseCalibration       # Abstract base class for kinematic calibration
-│   ├── calibration_tools     # Parameter parsing, regressor computation
-│   ├── config                # Configuration loading and validation
-│   ├── data_loader           # CSV data loading utilities
-│   └── parameter             # Kinematic parameter management
-│
-├── identification/       # Dynamic parameter identification
-│   ├── BaseIdentification    # Abstract base class for dynamic identification
-│   ├── identification_tools  # Regressor utilities, parameter extraction
-│   ├── config                # Identification configuration parsing
-│   └── parameter             # Inertial parameter management (friction, inertia)
-│
-├── optimal/              # Optimization-based trajectory &amp; configuration
-│   ├── BaseOptimalTrajectory     # IPOPT-based trajectory optimization
-│   ├── BaseOptimalCalibration    # Optimal calibration posture selection
-│   ├── BaseParameterComputer     # Base parameter computation utilities
-│   ├── TrajectoryConstraintManager # Constraint handling for optimization
-│   └── config                    # Optimization configuration management
-│
-├── tools/                # Core robotics utilities
-│   ├── RegressorBuilder      # Object-oriented regressor computation
-│   ├── LinearSolver          # Advanced linear solver (LS, Ridge, Lasso, etc.)
-│   ├── QRDecomposer          # QR decomposition for base parameters
-│   ├── CollisionManager      # Collision detection and visualization
-│   ├── RobotIPOPTSolver      # IPOPT optimization wrapper
-│   └── CubicSpline           # Trajectory interpolation utilities
-│
-├── utils/                # Helper utilities
-│   ├── UnifiedConfigParser   # YAML config with inheritance support
-│   ├── ResultsManager        # Unified plotting and result export
-│   ├── error_handling        # Custom exceptions and validation
-│   └── cubic_spline          # Spline trajectory generation
-│
-├── measurements/         # Data acquisition and processing
-└── visualisation/        # Meshcat-based 3D visualization
-</code></pre></div><a class="headerlink" href="#figaroh-calibration-geometric-calibration-framework-basecalibration-abstract-base-class-for-kinematic-calibration-calibration_tools-parameter-parsing-regressor-computation-config-configuration-loading-and-validation-data_loader-csv-data-loading-utilities-parameter-kinematic-parameter-management-identification-dynamic-parameter-identification-baseidentification-abstract-base-class-for-dynamic-identification-identification_tools-regressor-utilities-parameter-extraction-config-identification-configuration-parsing-parameter-inertial-parameter-management-friction-inertia-optimal-optimization-based-trajectory-configuration-baseoptimaltrajectory-ipopt-based-trajectory-optimization-baseoptimalcalibration-optimal-calibration-posture-selection-baseparametercomputer-base-parameter-computation-utilities-trajectoryconstraintmanager-constraint-handling-for-optimization-config-optimization-configuration-management-tools-core-robotics-utilities-regressorbuilder-object-oriented-regressor-computation-linearsolver-advanced-linear-solver-ls-ridge-lasso-etc-qrdecomposer-qr-decomposition-for-base-parameters-collisionmanager-collision-detection-and-visualization-robotipoptsolver-ipopt-optimization-wrapper-cubicspline-trajectory-interpolation-utilities-utils-helper-utilities-unifiedconfigparser-yaml-config-with-inheritance-support-resultsmanager-unified-plotting-and-result-export-error_handling-custom-exceptions-and-validation-cubic_spline-spline-trajectory-generation-measurements-data-acquisition-and-processing-visualisation-meshcat-based-3d-visualization" title="Permanent link">&para;</a></h2>
-<h3 id="2-system-overview">2. System Overview<a class="headerlink" href="#2-system-overview" title="Permanent link">&para;</a></h3>
-<blockquote>
-<p><strong>📝 Note</strong>: This document contains Mermaid diagrams. If they don't render:
-1. Install the "Markdown Preview Mermaid Support" extension in VS Code
-2. View the file on GitHub (renders Mermaid natively)
-3. Use the online viewer: https://mermaid.live</p>
-<p>Or see the ASCII version below.</p>
-</blockquote>
-<h4 id="ascii-architecture-overview">ASCII Architecture Overview<a class="headerlink" href="#ascii-architecture-overview" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code>┌─────────────────────────────────────────────────────────────────┐
-│                        FIGAROH ARCHITECTURE                      │
-└─────────────────────────────────────────────────────────────────┘
-
-                    User Scripts/Examples
-                    YAML Configuration
-                            │
-                            ▼
-        ┌───────────────────────────────────────────┐
-        │         WORKFLOW LAYER                    │
-        │  BaseCalibration   BaseIdentification     │
-        │  BaseOptimalTrajectory  BaseOptimalCalib  │
-        └───────────────────┬───────────────────────┘
-                            │
-                            ▼
-        ┌───────────────────────────────────────────┐
-        │           TOOLS LAYER                     │
-        │  Robot  RegressorBuilder  LinearSolver    │
-        │  QRDecomposer  CollisionManager           │
-        │  URDFExporter  URDFComparison             │
-        │  ExportValidation  RobotVisualization     │
-        └───────────────────┬───────────────────────┘
-                            │
-                            ▼
-        ┌───────────────────────────────────────────┐
-        │         BACKEND LAYER                     │
-        │    DynamicsBackend (Abstract)             │
-        │      │       │        │         │         │
-        │  Pinocchio MuJoCo Genesis IsaacSim        │
-        └───────────────────┬───────────────────────┘
-                            │
-                            ▼
-                    URDF/MJCF/USD Files
-                    Measurement Data
-                    Parameter Files
-</code></pre></div>
-<p><strong>Key Relationships:</strong>
-- Workflow → Tools: Use core algorithms
-- Tools → Backend: Delegate dynamics computation
-- Backend → Data: Load robot models and measurements</p>
-<h4 id="detailed-mermaid-diagram">Detailed Mermaid Diagram<a class="headerlink" href="#detailed-mermaid-diagram" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code>graph TB
-    subgraph UserInterface["User Interface"]
-        UI[User Scripts/Examples]
-        Config[YAML Configuration]
-    end
-
-    subgraph WorkflowLayer["Workflow Layer"]
-        BC[BaseCalibration]
-        BI[BaseIdentification]
-        BOT[BaseOptimalTrajectory]
-        BOC[BaseOptimalCalibration]
-    end
-
-    subgraph ToolsLayer["Tools Layer"]
-        Robot[Robot Model]
-        Regressor[RegressorBuilder]
-        Solver[LinearSolver/IPOPTSolver]
-        QR[QRDecomposer]
-        CM[CollisionManager]
-        RM[ResultsManager]
-    end
-
-    subgraph BackendLayer["Backend Layer"]
-        Backend[DynamicsBackend Abstract Interface]
-        Pin[PinocchioBackend]
-        Muj[MuJoCoBackend]
-        Gen[GenesisBackend]
-        Isaac[IsaacSimBackend]
-    end
-
-    subgraph DataLayer["Data Layer"]
-        URDF[URDF Files]
-        Meas[Measurement Data]
-        Params[Parameter Files]
-    end
-
-    UI --&gt;|configure| Config
-    Config --&gt;|parse| BC
-    Config --&gt;|parse| BI
-    Config --&gt;|parse| BOT
-    Config --&gt;|parse| BOC
-
-    BC --&gt;|use| Robot
-    BC --&gt;|use| Regressor
-    BC --&gt;|use| Solver
-    BI --&gt;|use| Robot
-    BI --&gt;|use| Regressor
-    BI --&gt;|use| Solver
-    BI --&gt;|use| QR
-    BOT --&gt;|use| Robot
-    BOT --&gt;|use| Solver
-    BOC --&gt;|use| Robot
-    BOC --&gt;|use| Solver
-
-    Robot --&gt;|delegates to| Backend
-    Regressor --&gt;|requests from| Backend
-
-    Backend -.-&gt;|implements| Pin
-    Backend -.-&gt;|implements| Muj
-    Backend -.-&gt;|implements| Gen
-    Backend -.-&gt;|implements| Isaac
-
-    Pin --&gt;|load| URDF
-    Muj --&gt;|load| URDF
-    Gen --&gt;|load| URDF
-    Isaac --&gt;|load| URDF
-
-    BC --&gt;|load| Meas
-    BI --&gt;|load| Meas
-    BC --&gt;|load| Params
-    BI --&gt;|load| Params
-
-    BC --&gt;|save| RM
-    BI --&gt;|save| RM
-    BOT --&gt;|save| RM
-    BOC --&gt;|save| RM
-
-    style Backend fill:#ffeb3b,stroke:#333,stroke-width:3px
-    style BC fill:#4caf50,stroke:#333,stroke-width:2px
-    style BI fill:#4caf50,stroke:#333,stroke-width:2px
-    style BOT fill:#4caf50,stroke:#333,stroke-width:2px
-    style BOC fill:#4caf50,stroke:#333,stroke-width:2px
-</code></pre></div>
-<hr />
-<h3 id="3-layered-architecture">3. Layered Architecture<a class="headerlink" href="#3-layered-architecture" title="Permanent link">&para;</a></h3>
-<h4 id="layer-1-backend-layer-srcfigarohbackends">Layer 1: Backend Layer (<code>src/figaroh/backends/</code>)<a class="headerlink" href="#layer-1-backend-layer-srcfigarohbackends" title="Permanent link">&para;</a></h4>
-<p><strong>Purpose:</strong> Abstract dynamics computation across simulators</p>
-<p><strong>Components:</strong>
-- <code>base.py</code> - <code>DynamicsBackend</code> abstract interface
-- <code>pinocchio.py</code> - Pinocchio implementation (default)
-- <code>mujoco.py</code> - MuJoCo implementation (high-performance)
-- <code>genesis.py</code> - Genesis implementation (GPU-accelerated) <em>[Future]</em>
-- <code>isaacsim.py</code> - Isaac Sim implementation (sim-to-real) <em>[Future]</em></p>
-<p><strong>Key Interface Methods:</strong>
-<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DynamicsBackend</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_mass_matrix</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_coriolis_matrix</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_gravity_vector</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_forward_kinematics</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_jacobian</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_regressor</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span>
-</code></pre></div></p>
-<h4 id="layer-2-tools-layer-srcfigarohtools">Layer 2: Tools Layer (<code>src/figaroh/tools/</code>)<a class="headerlink" href="#layer-2-tools-layer-srcfigarohtools" title="Permanent link">&para;</a></h4>
-<p><strong>Purpose:</strong> Core algorithms independent of backend</p>
-<p><strong>Components:</strong>
-- <code>robot.py</code> - Enhanced Robot wrapper with free-flyer support
-- <code>regressor.py</code> - Regressor matrix computation
-- <code>solver.py</code> - Linear/nonlinear solvers with regularization
-- <code>qr_decomposer.py</code> - QR decomposition for base parameters
-- <code>robotcollisions.py</code> - Collision detection and management
-- <code>load_robot.py</code> - Multi-backend robot loading
-- <code>urdf_exporter.py</code> - Apply calibrated parameters to URDF files
-- <code>export_validation.py</code> - FK comparison and interactive viser visualization</p>
-<p><strong>Key Classes:</strong>
-<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RegressorBuilder</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Build observation regressor W(q,v,a) for identification"""</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">build_basic_regressor</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">build_reduced_regressor</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">zero_tolerance</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">LinearSolver</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Solve Ax=b with regularization and constraints"""</span>
-    <span class="n">METHODS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"lstsq"</span><span class="p">,</span> <span class="s2">"qr"</span><span class="p">,</span> <span class="s2">"svd"</span><span class="p">,</span> <span class="s2">"ridge"</span><span class="p">,</span> <span class="s2">"lasso"</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span>
-</code></pre></div></p>
-<h4 id="layer-3-workflow-layer">Layer 3: Workflow Layer<a class="headerlink" href="#layer-3-workflow-layer" title="Permanent link">&para;</a></h4>
-<h5 id="calibration-srcfigarohcalibration">Calibration (<code>src/figaroh/calibration/</code>)<a class="headerlink" href="#calibration-srcfigarohcalibration" title="Permanent link">&para;</a></h5>
-<p><strong>Purpose:</strong> Kinematic calibration and geometric parameter identification</p>
-<p><strong>Key Files:</strong>
-- <code>base_calibration.py</code> - Template method pattern for calibration
-- <code>calibration_tools.py</code> - Forward kinematics, Jacobian, regressor utilities
-- <code>parameter.py</code> - Parameter management and frame handling
-- <code>config.py</code> - Unified/legacy config parsing</p>
-<p><strong>Workflow (ASCII):</strong>
-<div class="highlight"><pre><span></span><code>User
-  │
-  ├─► initialize(config) ──► BaseCalibration
-  │                              │
-  │                              ├─► load_data() ──► CalibrationTools
-  │                              │
-  │                              ├─► [_load_validation_data(path)]  ← optional
-  │                              │
-  │                              ├─► calculate_base_kinematics_regressor()
-  │                              │        │
-  │                              │        ├─► get frames ──► Robot ──► Backend
-  │                              │        │                              │
-  │                              │        ◄── frame poses ──────────────┘
-  │                              │        │
-  │                              │        ◄── Jacobian ──► Backend
-  │                              │        │
-  │                              │        └─► regressor W_base
-  │                              │
-  ├─► solve() ──────────────────► Optimization Loop
-  │                              │
-  │                              ├─► cost_function(var)
-  │                              │     │
-  │                              │     ├─► calc_updated_fkm()
-  │                              │     │     │
-  │                              │     │     └─► compute_forward_kinematics() ──► Backend
-  │                              │     │           │
-  │                              │     │           ◄── updated poses
-  │                              │     │
-  │                              │     └─► residuals via _compute_logmap_residuals()
-  │                              │           (SE3 log-map, geometrically correct)
-  │                              │
-  │                              └─► optimize(least_squares)
-  │                                    │
-  ├─► _evaluate_solution() ──────► per-DOF stats, condition number, correlation
-  │                                    │
-  ├─► _compute_validation_metrics()  ← if validation data loaded
-  │     │                              │
-  │     ├─► nominal FK (zeros) ───► calc_updated_fkm() ──► Backend
-  │     ├─► calibrated FK ────────► calc_updated_fkm() ──► Backend
-  │     └─► compare vs ground truth → improvement %
-  │
-  └─► print_quality_report() ────► formatted terminal output
-                                     (convergence, per-DOF residuals,
-                                      condition number, validation,
-                                      param uncertainty, correlations)
-</code></pre></div></p>
-<p><strong>Workflow (Mermaid Sequence Diagram):</strong>
-<div class="highlight"><pre><span></span><code>sequenceDiagram
-    participant User
-    participant BaseCalibration
-    participant CalibrationTools
-    participant Robot
-    participant Backend
-
-    User-&gt;&gt;BaseCalibration: initialize(config)
-    BaseCalibration-&gt;&gt;CalibrationTools: load_data()
-    BaseCalibration-&gt;&gt;CalibrationTools: calculate_base_kinematics_regressor()
-    CalibrationTools-&gt;&gt;Robot: get frames
-    Robot-&gt;&gt;Backend: compute_forward_kinematics()
-    Backend--&gt;&gt;Robot: frame poses
-    Robot--&gt;&gt;CalibrationTools: frame data
-    CalibrationTools-&gt;&gt;Backend: compute_jacobian()
-    Backend--&gt;&gt;CalibrationTools: Jacobian matrix
-    CalibrationTools--&gt;&gt;BaseCalibration: regressor W_base
-
-    User-&gt;&gt;BaseCalibration: solve()
-    BaseCalibration-&gt;&gt;BaseCalibration: cost_function(var)
-    BaseCalibration-&gt;&gt;CalibrationTools: calc_updated_fkm()
-    CalibrationTools-&gt;&gt;Backend: compute_forward_kinematics()
-    Backend--&gt;&gt;CalibrationTools: updated poses
-    CalibrationTools--&gt;&gt;BaseCalibration: residuals
-    BaseCalibration-&gt;&gt;BaseCalibration: optimize (least_squares)
-    BaseCalibration--&gt;&gt;User: calibrated parameters
-</code></pre></div></p>
-<h5 id="identification-srcfigarohidentification">Identification (<code>src/figaroh/identification/</code>)<a class="headerlink" href="#identification-srcfigarohidentification" title="Permanent link">&para;</a></h5>
-<p><strong>Purpose:</strong> Dynamic parameter identification (inertial parameters)</p>
-<p><strong>Key Files:</strong>
-- <code>base_identification.py</code> - Main identification workflow
-- <code>identification_tools.py</code> - Utility functions for identification
-- <code>parameter.py</code> - Parameter ordering and management
-- <code>physical_consistency.py</code> - Feasibility checking
-- <code>cad_constraints.py</code> - CAD-based parameter bounds
-- <code>reconstruction.py</code> - Parameter reconstruction from base parameters</p>
-<p><strong>Workflow (ASCII):</strong>
-<div class="highlight"><pre><span></span><code>User
-  │
-  ├─► initialize() ──────────────► BaseIdentification
-  │                                    │
-  │                                    ├─► process_data()
-  │                                    │    (filter, differentiate)
-  │                                    │
-  │                                    ├─► build_basic_regressor(q,v,a)
-  │                                    │        │
-  │                                    │        └─► compute_regressor() ──► Backend
-  │                                    │              │
-  │                                    │              ◄── W (N×10nv)
-  │                                    │
-  │                                    └─► initialize_standard_parameters()
-  │
-  ├─► solve() ───────────────────────► Main Solving Loop
-  │                                    │
-  │                                    ├─► eliminate_zero_columns()
-  │                                    │     │
-  │                                    │     └─► W_reduced
-  │                                    │
-  │                                    ├─► apply_decimation() [optional]
-  │                                    │     │
-  │                                    │     └─► tau_processed, W_processed
-  │                                    │
-  │                                    ├─► qr_decomposition(W)
-  │                                    │     │
-  │                                    │     └─► W_base, elimination_matrix
-  │                                    │
-  │                                    ├─► solve(W_base, tau) ──► LinearSolver
-  │                                    │     │
-  │                                    │     └─► phi_base
-  │                                    │
-  │                                    ├─► check_feasibility(phi) ──► PhysicalConsistency
-  │                                    │     │
-  │                                    │     └─► validation result
-  │                                    │
-  │                                    └─► compute_quality_metrics()
-  │                                          │
-  ◄──────── identified parameters + metrics ┘
-</code></pre></div></p>
-<p><strong>Workflow (Mermaid Sequence Diagram):</strong>
-<div class="highlight"><pre><span></span><code>sequenceDiagram
-    participant User
-    participant BaseIdentification
-    participant RegressorBuilder
-    participant Backend
-    participant Solver
-    participant QRDecomposer
-    participant PhysicalConsistency
-
-    User-&gt;&gt;BaseIdentification: initialize()
-    BaseIdentification-&gt;&gt;BaseIdentification: process_data()
-    BaseIdentification-&gt;&gt;RegressorBuilder: build_basic_regressor(q,v,a)
-    RegressorBuilder-&gt;&gt;Backend: compute_regressor()
-    Backend--&gt;&gt;RegressorBuilder: W (N×10nv)
-    RegressorBuilder--&gt;&gt;BaseIdentification: full regressor
-
-    User-&gt;&gt;BaseIdentification: solve()
-    BaseIdentification-&gt;&gt;BaseIdentification: eliminate_zero_columns()
-    BaseIdentification-&gt;&gt;BaseIdentification: apply_decimation() [optional]
-    BaseIdentification-&gt;&gt;QRDecomposer: qr_decomposition(W)
-    QRDecomposer--&gt;&gt;BaseIdentification: W_base, elimination matrix
-
-    BaseIdentification-&gt;&gt;Solver: solve(W_base, tau)
-    Solver--&gt;&gt;BaseIdentification: phi_base
-
-    BaseIdentification-&gt;&gt;PhysicalConsistency: check_feasibility(phi)
-    PhysicalConsistency--&gt;&gt;BaseIdentification: validation result
-
-    BaseIdentification--&gt;&gt;User: identified parameters + metrics
-</code></pre></div></p>
-<h5 id="optimal-trajectory-srcfigarohoptimal">Optimal Trajectory (<code>src/figaroh/optimal/</code>)<a class="headerlink" href="#optimal-trajectory-srcfigarohoptimal" title="Permanent link">&para;</a></h5>
-<p><strong>Purpose:</strong> Optimal trajectory generation for identification/calibration</p>
-<p><strong>Key Files:</strong>
-- <code>base_optimal_trajectory.py</code> - Trajectory optimization workflow
-- <code>base_optimal_calibration.py</code> - Optimal calibration trajectories
-- <code>contraints.py</code> - Joint/torque/collision constraints
-- <code>base_parameter.py</code> - OED parameter handling</p>
-<hr />
-<h3 id="4-module-details">4. Module Details<a class="headerlink" href="#4-module-details" title="Permanent link">&para;</a></h3>
-<h4 id="1-backend-layer">1. Backend Layer<a class="headerlink" href="#1-backend-layer" title="Permanent link">&para;</a></h4>
-<h5 id="pinocchiobackend-backendspinocchiopy">PinocchioBackend (<code>backends/pinocchio.py</code>)<a class="headerlink" href="#pinocchiobackend-backendspinocchiopy" title="Permanent link">&para;</a></h5>
-<p><strong>Status:</strong> ✅ Implemented (Default)</p>
-<p><strong>Key Features:</strong>
-- Excellent URDF support
-- CPU-optimized dense operations
-- Mature and stable
-- Full SE(3) Lie group support</p>
-<p><strong>Pinocchio Functions Used:</strong>
-- Model loading: <code>buildModelsFromUrdf()</code>, <code>JointModelFreeFlyer()</code>
-- Dynamics: <code>crba()</code>, <code>nonLinearEffects()</code>, <code>rnea()</code>
-- Kinematics: <code>framesForwardKinematics()</code>, <code>updateFramePlacements()</code>
-- Jacobians: <code>computeFrameJacobian()</code>, <code>computeFrameKinematicRegressor()</code>
-- Regressors: <code>computeJointTorqueRegressor()</code>
-- Transformations: <code>SE3()</code>, <code>Quaternion()</code>, <code>rpy.rpyToMatrix()</code></p>
-<h5 id="mujocobackend-backendsmujocopy">MuJoCoBackend (<code>backends/mujoco.py</code>)<a class="headerlink" href="#mujocobackend-backendsmujocopy" title="Permanent link">&para;</a></h5>
-<p><strong>Status:</strong> ✅ Implemented (Phase 1)</p>
-<p><strong>Key Features:</strong>
-- High-performance sparse operations
-- Built-in URDF → MJCF converter
-- Contact dynamics support
-- 2-3x faster than Pinocchio for large robots</p>
-<p><strong>MuJoCo Functions Used:</strong>
-- Model loading: <code>MjModel.from_xml_path()</code>
-- Dynamics: <code>mj_forward()</code>, <code>mj_fullM()</code>, <code>mj_inverse()</code>
-- Kinematics: <code>mj_kinematics()</code>, <code>mj_comPos()</code>
-- Jacobians: <code>mj_jac()</code>, <code>mj_jacBody()</code></p>
-<h4 id="2-tools-layer">2. Tools Layer<a class="headerlink" href="#2-tools-layer" title="Permanent link">&para;</a></h4>
-<h5 id="robot-toolsrobotpy">Robot (<code>tools/robot.py</code>)<a class="headerlink" href="#robot-toolsrobotpy" title="Permanent link">&para;</a></h5>
-<p><strong>Class:</strong> <code>Robot(RobotWrapper)</code></p>
-<p><strong>Purpose:</strong> Enhanced robot model with free-flyer support</p>
-<p><strong>Key Methods:</strong>
-<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="n">robot_urdf</span><span class="p">,</span> <span class="n">package_dirs</span><span class="p">,</span> <span class="n">isFext</span><span class="p">,</span> <span class="n">freeflyer_ori</span><span class="p">,</span> <span class="n">freeflyer_limits</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_configure_freeflyer</span><span class="p">(</span><span class="n">freeflyer_ori</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_set_freeflyer_limits</span><span class="p">()</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">display_q0</span><span class="p">(</span><span class="n">visualizer_type</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
-</code></pre></div></p>
-<p><strong>Pinocchio Dependencies:</strong>
-- Inherits from <code>pinocchio.robot_wrapper.RobotWrapper</code>
-- Uses <code>pin.JointModelFreeFlyer()</code> for floating base
-- Uses <code>pin.buildModelsFromUrdf()</code> indirectly</p>
-<p><strong>Free-Flyer Configuration:</strong>
-- Position limits: configurable (default: [-1, 1])
-- Quaternion normalization: automatic
-- Orientation matrix: customizable 3×3 rotation</p>
-<h5 id="regressorbuilder-toolsregressorpy">RegressorBuilder (<code>tools/regressor.py</code>)<a class="headerlink" href="#regressorbuilder-toolsregressorpy" title="Permanent link">&para;</a></h5>
-<p><strong>Class:</strong> <code>RegressorBuilder</code></p>
-<p><strong>Purpose:</strong> Compute observation regressor matrix W for identification</p>
-<p><strong>Key Methods:</strong>
-<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">build_basic_regressor</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">identif_config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">W</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_build_joint_torque_regressor</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">W</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_build_external_wrench_regressor</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">W</span>
-</code></pre></div></p>
-<p><strong>Regressor Structure:</strong>
-- <strong>Joint torque mode:</strong> W ∈ ℝ^(N×nv) × ℝ^(10nv)
-- <strong>External wrench mode:</strong> W ∈ ℝ^(N×6) × ℝ^(10×nb_bodies)
-- <strong>Parameters per body:</strong> 10 (m, mx, my, mz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz)
-- <strong>Additional parameters:</strong> friction (fv, fs), actuator inertia (ia), joint offset</p>
-<p><strong>Pinocchio Dependencies:</strong>
-- <code>pin.computeJointTorqueRegressor(model, data, q, v, a)</code> - Core regressor computation</p>
-<p><strong>Backend Integration:</strong>
-<div class="highlight"><pre><span></span><code><span class="c1"># Through backend abstraction:</span>
-<span class="n">W</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">compute_regressor</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
-</code></pre></div></p>
-<h5 id="linearsolver-toolssolverpy">LinearSolver (<code>tools/solver.py</code>)<a class="headerlink" href="#linearsolver-toolssolverpy" title="Permanent link">&para;</a></h5>
-<p><strong>Class:</strong> <code>LinearSolver</code></p>
-<p><strong>Purpose:</strong> Solve overdetermined system Ax = b with regularization</p>
-<p><strong>Methods:</strong>
-<div class="highlight"><pre><span></span><code><span class="n">METHODS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"lstsq"</span><span class="p">,</span> <span class="s2">"qr"</span><span class="p">,</span> <span class="s2">"svd"</span><span class="p">,</span> <span class="s2">"ridge"</span><span class="p">,</span> <span class="s2">"lasso"</span><span class="p">,</span> <span class="s2">"elastic_net"</span><span class="p">,</span>
-           <span class="s2">"tikhonov"</span><span class="p">,</span> <span class="s2">"constrained"</span><span class="p">,</span> <span class="s2">"robust"</span><span class="p">,</span> <span class="s2">"weighted"</span><span class="p">]</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">x</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_solve_lstsq</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">x</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_solve_ridge</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">x</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_solve_constrained</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">x</span>  <span class="c1"># with linear constraints</span>
-</code></pre></div></p>
-<p><strong>Optimization Features:</strong>
-- Regularization: L1, L2, elastic net, Tikhonov
-- Constraints: linear equality/inequality, box bounds
-- Robust methods: iterative reweighting
-- Condition number monitoring</p>
-<p><strong>No Pinocchio Dependencies</strong> - Pure linear algebra</p>
-<h4 id="3-calibration-layer">3. Calibration Layer<a class="headerlink" href="#3-calibration-layer" title="Permanent link">&para;</a></h4>
-<h5 id="basecalibration-calibrationbase_calibrationpy">BaseCalibration (<code>calibration/base_calibration.py</code>)<a class="headerlink" href="#basecalibration-calibrationbase_calibrationpy" title="Permanent link">&para;</a></h5>
-<p><strong>Class:</strong> <code>BaseCalibration(ABC)</code></p>
-<p><strong>Purpose:</strong> Template method pattern for kinematic calibration</p>
-<p><strong>Workflow Methods:</strong>
-<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">config_file</span><span class="p">,</span> <span class="n">del_list</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>                    <span class="c1"># Main optimization + quality report</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_evaluate_solution</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>    <span class="c1"># → dict with per-DOF stats, condition number</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_compute_per_dof_stats</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>        <span class="c1"># → mean, std, RMSE, max, R² per DOF</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_compute_condition_number</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>     <span class="c1"># → cond(J) with well/moderate/ill label</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_compute_parameter_correlation</span><span class="p">()</span>   <span class="c1"># → pairs with |ρ| &gt; 0.8</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_load_validation_data</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>        <span class="c1"># → load separate held-out measurements</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_compute_validation_metrics</span><span class="p">()</span>      <span class="c1"># → nominal vs calibrated FK vs ground truth</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">print_quality_report</span><span class="p">()</span>             <span class="c1"># → formatted terminal output</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">plot_results</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
-</code></pre></div></p>
-<p><strong>Cost Function (uses SE3 log-map, geometrically correct):</strong>
-<div class="highlight"><pre><span></span><code><span class="nd">@abstractmethod</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">cost_function</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">residuals</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Robot-specific implementation"""</span>
-    <span class="n">PEEe</span> <span class="o">=</span> <span class="n">calc_updated_fkm</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q_measured</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">)</span>
-    <span class="n">residuals</span> <span class="o">=</span> <span class="n">_compute_logmap_residuals</span><span class="p">(</span><span class="n">PEE_measured</span><span class="p">,</span> <span class="n">PEEe</span><span class="p">,</span>
-                                          <span class="n">position_frame</span><span class="o">=</span><span class="s2">"body"</span><span class="o">|</span><span class="s2">"world"</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">apply_measurement_weighting</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span>
-</code></pre></div></p>
-<p><strong>Validation Data Support:</strong>
-Separate validation measurements can be provided via config (<code>validation_data_file</code>)
-or CLI (<code>--validation-data</code>). After calibration, FK is computed with both nominal
-(zero params) and calibrated parameters on the validation set, and errors are
-compared against ground truth to measure improvement.</p>
-<p><strong>Quality Report (printed automatically after solve()):</strong>
-<div class="highlight"><pre><span></span><code>  CALIBRATION QUALITY REPORT
-  Convergence: ✓ converged    Iterations: 47    Cost: 0.02345
-  Outliers:     3 / 500 (0.6%)
-  Condition:    42.1 (well-conditioned)
-  Per-DOF Residuals (training set, n=500)
-    DOF        Mean      Std       RMSE      Max       R²
-    X (mm)      0.12     0.85      0.86      3.21     0.9876
-    Y (mm)     -0.34     0.62      0.71      2.45     0.9765
-    Z (mm)      0.08     0.45      0.46      1.89     0.9934
-    rx (deg)    0.002    0.015     0.015     0.034    0.9991
-    ry (deg)   -0.001    0.012     0.012     0.028    0.9987
-    rz (deg)    0.003    0.018     0.018     0.031    0.9989
-  Overall
-    Position RMSE: 0.68 mm    Orientation RMSE: 0.015 deg
-  Validation (separate set, n=100)
-    Metric               Nominal     Calibrated    Improvement
-    Position RMSE        12.34 mm     0.71 mm        94.2% ↓
-    Orientation RMSE      2.15 deg     0.016 deg      99.3% ↓
-  Parameter Uncertainty (top 5)
-  Correlated pairs (|ρ| &gt; 0.8): base_x ↔ pEE_x  ρ = +0.93
-</code></pre></div></p>
-<p><strong>Calibration Models:</strong>
-- <strong>full_params:</strong> All geometric parameters (DH, joint offsets, etc.)
-- <strong>joint_offset:</strong> Joint encoder offsets only</p>
-<p><strong>Key Configuration Keys:</strong>
-- <code>calibration_type</code>: "full_params" or "joint_offset"
-- <code>calib_params</code>: List of parameter names to calibrate
-- <code>base_frame</code>, <code>end_frame</code>: Kinematic chain definition
-- <code>measurement_file</code>: Path to calibration data
-- <code>validation_data_file</code>: Path to separate validation data (optional)
-- <code>position_frame</code>: "body" or "world" — position error reference frame</p>
-<h5 id="urdf-exporter-toolsurdf_exporterpy">URDF Exporter (<code>tools/urdf_exporter.py</code>)<a class="headerlink" href="#urdf-exporter-toolsurdf_exporterpy" title="Permanent link">&para;</a></h5>
-<p><strong>Key Function:</strong>
-<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">export_urdf</span><span class="p">(</span>
-    <span class="n">urdf_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
-    <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Apply calibrated joint parameters to a URDF file.</span>
-
-<span class="sd">    Handles 12 joint-level categories: xyz offsets, rpy orientations,</span>
-<span class="sd">    and joint-axis corrections. Automatically separates metrology</span>
-<span class="sd">    frame parameters (base/pEE/phiEE) which are NOT applied to URDF.</span>
-
-<span class="sd">    Returns path to the modified URDF.</span>
-<span class="sd">    """</span>
-</code></pre></div></p>
-<p><strong>Parameter categories auto-detected via registry:</strong>
-- Joint: <code>{joint}_x</code>, <code>{joint}_y</code>, <code>{joint}_z</code>, <code>{joint}_rx</code>, <code>{joint}_ry</code>, <code>{joint}_rz</code>
-- Axis: <code>{joint}_ax</code>, <code>{joint}_ay</code>, <code>{joint}_az</code>, <code>{joint}_phix</code>, <code>{joint}_phiy</code>, <code>{joint}_phiz</code>
-- Metrology (not applied): <code>base_</code>, <code>pEE</code>, <code>phiEE</code></p>
-<h5 id="export-validation-toolsexport_validationpy">Export Validation (<code>tools/export_validation.py</code>)<a class="headerlink" href="#export-validation-toolsexport_validationpy" title="Permanent link">&para;</a></h5>
-<p><strong>Key Classes:</strong></p>
-<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">URDFComparison</span><span class="p">(</span><span class="n">nominal_urdf</span><span class="p">,</span> <span class="n">modified_urdf</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Compare two URDF models via FK + viser visualization."""</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">fk_consistency_check</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FkConsistencyResult</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">static_poses</span><span class="p">(</span><span class="n">poses</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">PoseError</span><span class="p">]</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">show_interactive_validation</span><span class="p">(</span><span class="n">n_trajectory</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">show_trajectory_animation</span><span class="p">(</span><span class="n">n_configs</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">show_static_grid</span><span class="p">(</span><span class="n">poses</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">show_overlay</span><span class="p">(</span><span class="n">server</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">FkConsistencyResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Aggregated FK consistency check."""</span>
-    <span class="n">rmse_position</span><span class="p">:</span> <span class="nb">float</span>         <span class="c1"># meters</span>
-    <span class="n">rmse_orientation</span><span class="p">:</span> <span class="nb">float</span>      <span class="c1"># radians</span>
-    <span class="n">max_position</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">max_orientation</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">per_sample</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PoseDelta</span><span class="p">]</span>
-</code></pre></div>
-<p><code>show_interactive_validation()</code> renders a combined viser scene with:
-- Trajectory animation (line-segment path traces, replay button, speed slider)
-- Static pose comparison grid (opacity slider for modified model)
-- Error plots (uplot) — position (mm) and orientation (deg) over the trajectory
-- Pose selector to inspect individual configuration errors</p>
-<p>The comparison loads URDFs via <code>yourdfpy</code> with a custom filename handler that
-resolves <code>package://</code> mesh URIs by searching <code>ROS_PACKAGE_PATH</code> and auto-discovered
-<code>models/</code> directories. Pre-loaded <code>yourdfpy.URDF</code> objects are passed directly to
-<code>ViserUrdf</code> to avoid double-loading with the wrong handler.</p>
-<h5 id="calibrationtools-calibrationcalibration_toolspy">CalibrationTools (<code>calibration/calibration_tools.py</code>)<a class="headerlink" href="#calibrationtools-calibrationcalibration_toolspy" title="Permanent link">&para;</a></h5>
-<p><strong>Key Functions:</strong></p>
-<p><strong>Forward Kinematics Update:</strong>
-<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calc_updated_fkm</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">q_measured</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">poses</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Update FK with calibration parameters. Composes wMf = wMo * oMee * eeMf:</span>
-<span class="sd">    wMo (world/measurement frame -&gt; chain start; unknown-baseframe or</span>
-<span class="sd">    known camera/ref-frame anchor), oMee (geometric joint-placement errors,</span>
-<span class="sd">    optionally with per-joint gravity-torque-driven elasticity when</span>
-<span class="sd">    calib_config["non_geom"] is set), eeMf (end frame -&gt; marker frame)."""</span>
-    <span class="c1"># 1. Update joint placements (full_params / joint_offset)</span>
-    <span class="n">update_joint_placement</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">)</span>
-    <span class="c1"># 2. Compute forward kinematics (re-run after any elastic perturbation --</span>
-    <span class="c1">#    get_rel_transform reads the cached data.oMf, not live state)</span>
-    <span class="n">pin</span><span class="o">.</span><span class="n">framesForwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
-    <span class="n">pin</span><span class="o">.</span><span class="n">updateFramePlacements</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-    <span class="c1"># 3. Extract end-effector poses, composed with wMo and eeMf</span>
-    <span class="k">return</span> <span class="n">get_frame_poses</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">frame_ids</span><span class="p">)</span>
-</code></pre></div></p>
-<p>This is the single FK-update function for calibration — it previously had a
-sibling, <code>update_forward_kinematics</code>, which supported elasticity and
-camera-ref-frame composition but had accumulated several correctness
-regressions and had no callers anywhere in <code>figaroh</code>/<code>figaroh-examples</code>; its
-capabilities were merged into <code>calc_updated_fkm</code> and the dead function was
-removed.</p>
-<p><strong>Jacobian &amp; Regressor:</strong>
-<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_rel_jac</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">start_frameId</span><span class="p">,</span> <span class="n">end_frameId</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">J_rel</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Compute relative Jacobian"""</span>
-    <span class="n">J_start</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeFrameJacobian</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">start_frameId</span><span class="p">,</span> <span class="n">pin</span><span class="o">.</span><span class="n">LOCAL</span><span class="p">)</span>
-    <span class="n">J_end</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">computeFrameJacobian</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">end_frameId</span><span class="p">,</span> <span class="n">pin</span><span class="o">.</span><span class="n">LOCAL</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">J_end</span> <span class="o">-</span> <span class="n">J_start</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">calculate_base_kinematics_regressor</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">q_data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">W_base</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Calculate base kinematic regressor via QR"""</span>
-    <span class="n">W</span> <span class="o">=</span> <span class="n">calculate_kinematics_model</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">q_data</span><span class="p">,</span> <span class="n">calib_config</span><span class="p">)</span>
-    <span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="n">qr_decomposition</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">extract_base_regressor</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
-</code></pre></div></p>
-<p><strong>Pinocchio Functions Used (15+ functions):</strong>
-- FK: <code>framesForwardKinematics()</code>, <code>updateFramePlacements()</code>
-- Jacobian: <code>computeFrameJacobian()</code>, <code>computeFrameKinematicRegressor()</code>
-- Transforms: <code>SE3()</code>, <code>SE3.Identity()</code>, <code>rpy.rpyToMatrix()</code>, <code>rpy.matrixToRpy()</code>
-- Dynamics: <code>computeGeneralizedGravity()</code> (for elasticity compensation)
-- Config: <code>randomConfiguration()</code> (for identifiability analysis)</p>
-<h4 id="4-identification-layer">4. Identification Layer<a class="headerlink" href="#4-identification-layer" title="Permanent link">&para;</a></h4>
-<h5 id="baseidentification-identificationbase_identificationpy">BaseIdentification (<code>identification/base_identification.py</code>)<a class="headerlink" href="#baseidentification-identificationbase_identificationpy" title="Permanent link">&para;</a></h5>
-<p><strong>Class:</strong> <code>BaseIdentification(ABC)</code></p>
-<p><strong>Purpose:</strong> Dynamic parameter identification workflow</p>
-<p><strong>Main Workflow:</strong>
-<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">(</span><span class="n">truncate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">process_data</span><span class="p">(</span><span class="n">truncate</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">calculate_full_regressor</span><span class="p">()</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">initialize_standard_parameters</span><span class="p">()</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">compute_reference_torque</span><span class="p">()</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="n">decimate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">decimation_factor</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">zero_tolerance</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
-    <span class="c1"># 1. Eliminate zero columns</span>
-    <span class="n">regressor_reduced</span><span class="p">,</span> <span class="n">active_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eliminate_zero_columns</span><span class="p">()</span>
-
-    <span class="c1"># 2. Apply decimation (optional)</span>
-    <span class="k">if</span> <span class="n">decimate</span><span class="p">:</span>
-        <span class="n">tau_processed</span><span class="p">,</span> <span class="n">W_processed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_decimation</span><span class="p">(</span><span class="n">regressor_reduced</span><span class="p">)</span>
-
-    <span class="c1"># 3. QR decomposition</span>
-    <span class="n">W_base</span><span class="p">,</span> <span class="n">elimination_matrix</span> <span class="o">=</span> <span class="n">qr_decompose</span><span class="p">(</span><span class="n">W_processed</span><span class="p">)</span>
-
-    <span class="c1"># 4. Solve for base parameters</span>
-    <span class="n">phi_base</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">W_base</span><span class="p">,</span> <span class="n">tau_processed</span><span class="p">)</span>
-
-    <span class="c1"># 5. Validate physical consistency</span>
-    <span class="n">validate_parameters</span><span class="p">(</span><span class="n">phi_base</span><span class="p">)</span>
-
-    <span class="c1"># 6. Compute quality metrics</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_compute_quality_metrics</span><span class="p">()</span>
-
-    <span class="k">return</span> <span class="n">phi_base</span>
-</code></pre></div></p>
-<p><strong>Data Processing:</strong>
-<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_data</span><span class="p">(</span><span class="n">truncate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Load and filter trajectory data"""</span>
-    <span class="c1"># Load: q, v, a, tau from files</span>
-    <span class="c1"># Filter: Butterworth, median filter</span>
-    <span class="c1"># Differentiate: gradient or finite difference</span>
-    <span class="c1"># Validate: check shapes, remove outliers</span>
-</code></pre></div></p>
-<p><strong>Quality Metrics:</strong>
-- RMS error
-- Relative RMS error
-- Condition number
-- Parameter correlation matrix
-- Standard deviations</p>
-<h5 id="parameter-handling-identificationparameterpy">Parameter Handling (<code>identification/parameter.py</code>)<a class="headerlink" href="#parameter-handling-identificationparameterpy" title="Permanent link">&para;</a></h5>
-<p><strong>Key Functions:</strong></p>
-<p><strong>Parameter Reordering:</strong>
-<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reorder_inertial_parameters</span><span class="p">(</span><span class="n">p10</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Reorder from Pinocchio format to standard format</span>
-
-<span class="sd">    Pinocchio: [m, mx, my, mz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz]</span>
-<span class="sd">    Standard:  [Ixx, Ixy, Ixz, Iyy, Iyz, Izz, mx, my, mz, m]</span>
-<span class="sd">    """</span>
-    <span class="n">param_order</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">p10</span><span class="p">[</span><span class="n">param_order</span><span class="p">]</span>
-</code></pre></div></p>
-<p><strong>Additional Parameters:</strong>
-<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_standard_additional_parameters</span><span class="p">(</span><span class="n">phi_std</span><span class="p">,</span> <span class="n">identif_config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">phi_full</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Add friction, actuator inertia, joint offset"""</span>
-    <span class="c1"># Append: fv (viscous friction)</span>
-    <span class="c1"># Append: fs (static friction)</span>
-    <span class="c1"># Append: ia (actuator inertia)</span>
-    <span class="c1"># Append: offset (joint zero offset)</span>
-    <span class="k">return</span> <span class="n">phi_full</span>
-</code></pre></div></p>
-<h5 id="physical-consistency-identificationphysical_consistencypy">Physical Consistency (<code>identification/physical_consistency.py</code>)<a class="headerlink" href="#physical-consistency-identificationphysical_consistencypy" title="Permanent link">&para;</a></h5>
-<p><strong>Key Functions:</strong></p>
-<p><strong>Feasibility Checking:</strong>
-<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">check_p10_feasibility</span><span class="p">(</span><span class="n">p10</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Check if inertial parameters are physically feasible</span>
-
-<span class="sd">    Conditions:</span>
-<span class="sd">    1. Mass m &gt; 0</span>
-<span class="sd">    2. Pseudo-inertia matrix P is positive semi-definite</span>
-<span class="sd">    3. Triangle inequalities for inertia tensor</span>
-<span class="sd">    """</span>
-    <span class="n">P</span> <span class="o">=</span> <span class="n">pseudo_inertia_matrix_from_p10</span><span class="p">(</span><span class="n">p10</span><span class="p">)</span>
-    <span class="n">eigenvalues</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvalsh</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">eigenvalues</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="mf">1e-10</span><span class="p">)</span>  <span class="c1"># Allow small numerical errors</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">pseudo_inertia_matrix_from_p10</span><span class="p">(</span><span class="n">p10</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Build 4×4 pseudo-inertia matrix from 10D parameters"""</span>
-    <span class="c1"># Use Pinocchio's PseudoInertia class</span>
-    <span class="n">pseudo_inertia</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">PseudoInertia</span><span class="o">.</span><span class="n">FromDynamicParameters</span><span class="p">(</span><span class="n">p10</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">pseudo_inertia</span><span class="o">.</span><span class="n">toMatrix</span><span class="p">()</span>
-</code></pre></div></p>
-<p><strong>Pinocchio Dependency:</strong>
-- <code>pin.PseudoInertia.FromDynamicParameters(p10)</code> - Convert to pseudo-inertia</p>
-<h4 id="5-optimal-layer">5. Optimal Layer<a class="headerlink" href="#5-optimal-layer" title="Permanent link">&para;</a></h4>
-<h5 id="baseoptimaltrajectory-optimalbase_optimal_trajectorypy">BaseOptimalTrajectory (<code>optimal/base_optimal_trajectory.py</code>)<a class="headerlink" href="#baseoptimaltrajectory-optimalbase_optimal_trajectorypy" title="Permanent link">&para;</a></h5>
-<p><strong>Purpose:</strong> Generate optimal exciting trajectories for identification</p>
-<p><strong>Optimization Objective:</strong>
-<div class="highlight"><pre><span></span><code>minimize: condition_number(W(q,v,a))
-subject to:
-    - Joint limits: q_min ≤ q ≤ q_max
-    - Velocity limits: v_min ≤ v ≤ v_max
-    - Acceleration limits: a_min ≤ a ≤ a_max
-    - Torque limits: τ_min ≤ τ(q,v,a) ≤ τ_max
-    - Collision avoidance: distance &gt; safety_margin
-    - Duration: t_final = T
-</code></pre></div></p>
-<p><strong>Parameterization:</strong>
-- Fourier series: <code>q(t) = q₀ + Σ aₖsin(ωₖt) + bₖcos(ωₖt)</code>
-- B-splines: cubic/quintic splines with waypoints
-- Polynomial: 5th order trajectories</p>
-<h4 id="6-reporting-verification-vv-suite">6. Reporting &amp; Verification (V&amp;V) Suite<a class="headerlink" href="#6-reporting-verification-vv-suite" title="Permanent link">&para;</a></h4>
-<p><strong>Purpose:</strong> Turn the metrics <code>solve()</code> already computes into four
-consumable artifacts — a terminal report (human, right now), a
-self-contained HTML report (human, shareable), a machine-readable verdict
-(CI/scripts), and a static two-run compare page (offline, no backend). See
-<a href="../../reporting_and_verification/"><code>docs/source/reporting_and_verification.md</code></a>
-for usage; this section covers structure only.</p>
-<p><strong>Shared kernel (<code>tools/_report_common.py</code>):</strong> HTML/CSS primitives
-(<code>_STYLE</code>, <code>_esc</code>, <code>_insights_section</code>, <code>_param_uncertainty_section</code>,
-<code>_correlation_section</code>, <code>_series_panel_section</code>) and the verdict data model
-used by both domains:</p>
-<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">ThresholdCheck</span><span class="p">:</span>
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">;</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">;</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">comparison</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># "max" or "min"</span>
-    <span class="n">passed</span><span class="p">:</span> <span class="nb">bool</span>
-
-<span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">VerificationVerdict</span><span class="p">:</span>
-    <span class="n">passed</span><span class="p">:</span> <span class="nb">bool</span>
-    <span class="n">checks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ThresholdCheck</span><span class="p">]</span>
-    <span class="n">metrics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
-    <span class="n">insights</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>   <span class="c1"># provenance: git commit, config hash, timestamp</span>
-    <span class="n">series</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>     <span class="c1"># before/after time series, empty if no validation data</span>
-    <span class="n">compat</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>     <span class="c1"># domain/joint-names/decimate/sample_count, for cross-run compare</span>
-</code></pre></div>
-<p><strong>Per-domain adapters</strong> — structurally parallel, not shared, because
-calibration (iterative nonlinear fit, per-DOF pose error) and
-identification (one-shot linear QR solve, per-joint torque error) produce
-different diagnostics:</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th><code>tools/report.py</code> (calibration)</th>
-<th><code>tools/identification_report.py</code> (identification)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>HTML generator</td>
-<td><code>generate_calibration_report(calibrator, ...)</code></td>
-<td><code>generate_identification_report(identifier, ...)</code></td>
-</tr>
-<tr>
-<td>Called via</td>
-<td><code>BaseCalibration.export_html_report()</code></td>
-<td><code>BaseIdentification.export_html_report()</code></td>
-</tr>
-<tr>
-<td>Opt-in flag</td>
-<td><code>solve(html_report=True)</code></td>
-<td><code>solve(html_report=True)</code></td>
-</tr>
-</tbody>
-</table>
-<p><strong>Verification methods, added to both <code>BaseCalibration</code> and
-<code>BaseIdentification</code>:</strong></p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">verify</span><span class="p">(</span><span class="n">thresholds</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VerificationVerdict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Check self.evaluation_metrics / self.result against pass/fail</span>
-<span class="sd">    thresholds (default: condition_number ≤ 1000, plus domain-specific</span>
-<span class="sd">    validation-set thresholds). A threshold whose metric wasn't computed</span>
-<span class="sd">    (no validation data configured) is skipped, not failed."""</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">export_verification_report</span><span class="p">(</span>
-    <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"results"</span><span class="p">,</span>
-    <span class="n">thresholds</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""verify() + write the verdict as numpy-safe JSON</span>
-<span class="sd">    ({output_dir}/{calibration,identification}_verification.json)."""</span>
-</code></pre></div>
-<p>Called explicitly (not from inside <code>solve()</code>) — verification is opt-in
-output computed from already-stored results, not a new gate that could
-make a successful numerical solve raise.</p>
-<p><strong>Cross-run comparison (<code>tools/compare_report.py</code>):</strong> a static,
-self-contained HTML shell (<code>generate_compare_page()</code>) with no run object of
-its own — it loads two <code>export_verification_report()</code> JSON files
-client-side (drag-and-drop or file picker) and, after a mandatory
-compatibility check on their <code>compat</code> blocks (domain, joint/DOF names,
-<code>decimate</code>, sample count), renders a metric diff table and an overlaid
-before/after chart entirely in the browser. No backend, no run history —
-deliberately cut down from a broader "V&amp;V dashboard" concept; see
-<code>docs/decisions/external-tool-comparisons.md</code> Part C (Feature 6) for why.</p>
-<hr />
-<h3 id="5-pinocchio-integration-map">5. Pinocchio Integration Map<a class="headerlink" href="#5-pinocchio-integration-map" title="Permanent link">&para;</a></h3>
-<h4 id="critical-functions-backend-abstracted">Critical Functions (Backend-abstracted ✅)<a class="headerlink" href="#critical-functions-backend-abstracted" title="Permanent link">&para;</a></h4>
-<table>
-<thead>
-<tr>
-<th>Pinocchio Function</th>
-<th>Purpose</th>
-<th>Files Using</th>
-<th>Backend Method</th>
-<th>Migration Status</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>computeJointTorqueRegressor()</code></td>
-<td>Compute regressor W</td>
-<td>regressor.py</td>
-<td><code>compute_regressor()</code></td>
-<td>✅ Routed through <code>robot.backend</code></td>
-</tr>
-<tr>
-<td><code>rnea()</code></td>
-<td>Compute joint torques</td>
-<td>randomdata.py, cubic_spline.py</td>
-<td><code>compute_inverse_dynamics()</code></td>
-<td>✅ randomdata.py migrated; cubic_spline.py deferred</td>
-</tr>
-<tr>
-<td><code>crba()</code></td>
-<td>Mass matrix M(q)</td>
-<td>(in PinocchioBackend)</td>
-<td><code>compute_mass_matrix()</code></td>
-<td>✅ Implemented</td>
-</tr>
-<tr>
-<td><code>aba()</code></td>
-<td>Forward dynamics</td>
-<td>(in PinocchioBackend)</td>
-<td><code>compute_forward_dynamics()</code></td>
-<td>✅ Implemented</td>
-</tr>
-<tr>
-<td><code>computeCoriolisMatrix()</code></td>
-<td>Coriolis matrix C(q,v)</td>
-<td>(in PinocchioBackend)</td>
-<td><code>compute_coriolis_matrix()</code></td>
-<td>✅ Implemented</td>
-</tr>
-<tr>
-<td><code>computeGeneralizedGravity()</code></td>
-<td>Gravity vector g(q)</td>
-<td>calibration_tools.py</td>
-<td><code>compute_gravity_vector()</code></td>
-<td>✅ Routed through backend</td>
-</tr>
-<tr>
-<td><code>framesForwardKinematics()</code></td>
-<td>Update all frames</td>
-<td>calibration_tools.py (5 locations)</td>
-<td><code>compute_forward_kinematics()</code></td>
-<td>✅ Routed through backend</td>
-</tr>
-<tr>
-<td><code>updateFramePlacements()</code></td>
-<td>Update frame placements</td>
-<td>calibration_tools.py</td>
-<td><code>compute_forward_kinematics()</code></td>
-<td>✅ Included in FK</td>
-</tr>
-<tr>
-<td><code>computeFrameJacobian()</code></td>
-<td>Frame Jacobian</td>
-<td>calibration_tools.py</td>
-<td><code>compute_jacobian()</code></td>
-<td>✅ Routed through backend</td>
-</tr>
-<tr>
-<td><code>difference()</code></td>
-<td>Manifold velocity</td>
-<td>identification_tools.py</td>
-<td><code>compute_difference()</code></td>
-<td>✅ Routed through backend</td>
-</tr>
-<tr>
-<td><code>randomConfiguration()</code></td>
-<td>Random config sampling</td>
-<td>calibration_tools.py</td>
-<td><code>random_configuration()</code></td>
-<td>✅ Routed through backend</td>
-</tr>
-</tbody>
-</table>
-<h4 id="pinocchio-specific-functions-not-abstracted">Pinocchio-Specific Functions (Not abstracted ❌)<a class="headerlink" href="#pinocchio-specific-functions-not-abstracted" title="Permanent link">&para;</a></h4>
-<table>
-<thead>
-<tr>
-<th>Function</th>
-<th>Purpose</th>
-<th>Why Not Abstracted</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>computeFrameKinematicRegressor()</code></td>
-<td>Kinematic regressor for calibration</td>
-<td>Pinocchio-only feature (no MuJoCo/Genesis equivalent); uses <code>get_model_object()</code> escape hatch</td>
-</tr>
-<tr>
-<td><code>model.jointPlacements[idx]</code> mutation</td>
-<td>Modify joint frame placement</td>
-<td><strong>Critical blocker</strong>: MuJoCo/Genesis models are immutable after compilation. Calibration requires runtime model mutation.</td>
-</tr>
-<tr>
-<td><code>model.addFrame()</code></td>
-<td>Add custom frame at runtime</td>
-<td>MuJoCo/Genesis don't support runtime frame addition</td>
-</tr>
-<tr>
-<td><code>SE3()</code>, <code>SE3.Identity()</code>, <code>SE3.actInv()</code></td>
-<td>Rigid body transform type</td>
-<td>Pinocchio-specific type system; could use <code>scipy.spatial.transform</code> (future)</td>
-</tr>
-<tr>
-<td><code>Quaternion()</code></td>
-<td>Quaternion operations</td>
-<td>Could use <code>scipy.spatial.transform.Rotation</code> (future)</td>
-</tr>
-<tr>
-<td><code>rpy.rpyToMatrix()</code>, <code>rpy.matrixToRpy()</code></td>
-<td>RPY ↔ rotation matrix</td>
-<td>Could use <code>scipy.spatial.transform.Rotation</code> (future)</td>
-</tr>
-<tr>
-<td><code>Force()</code></td>
-<td>6D wrench representation</td>
-<td>Pinocchio-specific type</td>
-</tr>
-<tr>
-<td><code>Frame()</code>, <code>FrameType</code>, <code>Inertia.Zero()</code></td>
-<td>Frame/inertia construction</td>
-<td>Pinocchio-specific model types</td>
-</tr>
-<tr>
-<td><code>computeCollisions()</code>, <code>computeDistance()</code></td>
-<td>Collision detection</td>
-<td>Fundamentally simulator-specific (hppfcl vs MuJoCo vs PhysX)</td>
-</tr>
-<tr>
-<td><code>centerOfMass()</code>, <code>computeSubtreeMasses()</code></td>
-<td>COM computation</td>
-<td>Visualization-specific, low priority</td>
-</tr>
-</tbody>
-</table>
-<h4 id="backend-mapping-strategy">Backend Mapping Strategy<a class="headerlink" href="#backend-mapping-strategy" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code>graph LR
-    subgraph "FIGAROH Code"
-        Tools[Tools Layer]
-        Calib[Calibration]
-        Identif[Identification]
-    end
-
-    subgraph "Backend Abstraction"
-        API[Backend API]
-    end
-
-    subgraph "Implementations"
-        Pin[Pinocchio]
-        Muj[MuJoCo]
-        Gen[Genesis]
-    end
-
-    Tools --&gt;|compute_regressor| API
-    Tools --&gt;|compute_mass_matrix| API
-    Tools --&gt;|compute_jacobian| API
-    Calib --&gt;|compute_forward_kinematics| API
-    Calib --&gt;|compute_jacobian| API
-    Identif --&gt;|compute_regressor| API
-
-    API --&gt;|delegates| Pin
-    API --&gt;|delegates| Muj
-    API --&gt;|delegates| Gen
-
-    style API fill:#ffeb3b,stroke:#333,stroke-width:3px
-</code></pre></div>
-<hr />
-<h3 id="6-data-flow">6. Data Flow<a class="headerlink" href="#6-data-flow" title="Permanent link">&para;</a></h3>
-<h4 id="identification-data-flow">Identification Data Flow<a class="headerlink" href="#identification-data-flow" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code>flowchart TD
-    A[Robot Model URDF] --&gt; B[Load Robot]
-    C[Trajectory Data q v a tau] --&gt; D[Process Data Filter Differentiate]
-
-    B --&gt; E[RegressorBuilder]
-    D --&gt; E
-
-    E --&gt; F[Full Regressor W N×10nv]
-
-    F --&gt; G[Eliminate Zero Columns W_reduced]
-
-    G --&gt; H{Decimate?}
-    H --&gt;|Yes| I[Decimation Reduce N]
-    H --&gt;|No| J[Skip]
-    I --&gt; K[QR Decomposition W_base]
-    J --&gt; K
-
-    K --&gt; L[Linear Solver Ax = b]
-
-    L --&gt; M[Base Parameters phi_base]
-
-    M --&gt; N[Physical Consistency Check]
-
-    N --&gt; O{Feasible?}
-    O --&gt;|Yes| P[Reconstruct Full Parameters]
-    O --&gt;|No| Q[Report Error]
-
-    P --&gt; R[Quality Metrics RMS Condition]
-
-    R --&gt; S[Save Results]
-
-    style E fill:#4caf50,stroke:#333,stroke-width:2px
-    style K fill:#2196f3,stroke:#333,stroke-width:2px
-    style L fill:#ff9800,stroke:#333,stroke-width:2px
-    style N fill:#f44336,stroke:#333,stroke-width:2px
-</code></pre></div>
-<h4 id="calibration-data-flow">Calibration Data Flow<a class="headerlink" href="#calibration-data-flow" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code>flowchart TD
-    A[Robot Model URDF] --&gt; B[Load Robot]
-    C[Measurement Data q_meas poses_meas] --&gt; D[Load Measurements]
-    V[Validation Data CSV] -.-&gt;|optional| VAL[_load_validation_data]
-
-    B --&gt; E[Calculate Base Kinematic Regressor]
-    D --&gt; E
-
-    E --&gt; F[Base Regressor W_base Identifiable subset]
-
-    F --&gt; G[Initialize Variables var0]
-
-    G --&gt; H[Optimization Loop least_squares]
-
-    H --&gt; I[Cost Function residuals via SE3 log-map]
-
-    I --&gt; J[Update FK with calibration params]
-
-    J --&gt; K[Compute Predicted Poses]
-
-    K --&gt; L[Calculate Residuals measured vs predicted geometrically correct log-map]
-
-    L --&gt; M{Converged?}
-    M --&gt;|No| H
-    M --&gt;|Yes| N[Calibrated Parameters]
-
-    N --&gt; O[Evaluate Solution per-DOF stats condition number parameter correlation R2]
-
-    VAL --&gt; Q[Compute Validation Metrics nominal FK vs calibrated FK vs ground truth]
-
-    O --&gt; R[print_quality_report terminal output]
-    Q --&gt;|if validation data| R
-
-    R --&gt; S[Save and Visualize]
-
-    style E fill:#4caf50,stroke:#333,stroke-width:2px
-    style H fill:#2196f3,stroke:#333,stroke-width:2px
-    style J fill:#ff9800,stroke:#333,stroke-width:2px
-    style O fill:#9c27b0,stroke:#333,stroke-width:2px
-    style R fill:#e91e63,stroke:#333,stroke-width:2px
-</code></pre></div>
-<hr />
-<h3 id="7-backend-architecture">7. Backend Architecture<a class="headerlink" href="#7-backend-architecture" title="Permanent link">&para;</a></h3>
-<h4 id="backend-selection">Backend Selection<a class="headerlink" href="#backend-selection" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_backend</span>
-
-<span class="c1"># Option 1: From URDF (auto-detect format)</span>
-<span class="n">backend</span> <span class="o">=</span> <span class="n">get_backend</span><span class="p">(</span><span class="s2">"pinocchio"</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">"robot.urdf"</span><span class="p">)</span>
-<span class="n">backend</span> <span class="o">=</span> <span class="n">get_backend</span><span class="p">(</span><span class="s2">"mujoco"</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">"robot.urdf"</span><span class="p">)</span>  <span class="c1"># Auto-converts to MJCF</span>
-
-<span class="c1"># Option 2: Explicit format</span>
-<span class="n">backend</span> <span class="o">=</span> <span class="n">get_backend</span><span class="p">(</span><span class="s2">"mujoco"</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">"robot.xml"</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"mjcf"</span><span class="p">)</span>
-
-<span class="c1"># Option 3: With options</span>
-<span class="n">backend</span> <span class="o">=</span> <span class="n">get_backend</span><span class="p">(</span><span class="s2">"pinocchio"</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">"robot.urdf"</span><span class="p">,</span>
-                     <span class="n">package_dirs</span><span class="o">=</span><span class="p">[</span><span class="s2">"."</span><span class="p">],</span> <span class="n">root_joint</span><span class="o">=</span><span class="s2">"free_flyer"</span><span class="p">)</span>
-</code></pre></div>
-<h4 id="backend-interface-contract">Backend Interface Contract<a class="headerlink" href="#backend-interface-contract" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DynamicsBackend</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Abstract interface for dynamics computation"""</span>
-
-    <span class="c1"># === Core Dynamics (abstract) ===</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_mass_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""M(q) ∈ ℝ^(nv×nv)"""</span>
-
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_coriolis_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""C(q,v) ∈ ℝ^(nv×nv)"""</span>
-
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_gravity_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""g(q) ∈ ℝ^nv"""</span>
-
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_inverse_dynamics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-                                 <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""τ = RNEA(q,v,a) ∈ ℝ^nv"""</span>
-
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_forward_dynamics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-                                 <span class="n">tau</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""qdd = ABA(q,v,τ) ∈ ℝ^nv"""</span>
-
-    <span class="c1"># === Kinematics (abstract) ===</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_forward_kinematics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""Returns: {frame_name: {position, orientation, transformation}}"""</span>
-
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""J(q, frame) ∈ ℝ^(6×nv)"""</span>
-
-    <span class="c1"># === Identification (abstract) ===</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_regressor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-                         <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""W(q,v,a) ∈ ℝ^(nv × 10*nv)"""</span>
-
-    <span class="c1"># === Properties (abstract) ===</span>
-    <span class="nd">@property</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">nq</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
-    <span class="nd">@property</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">nv</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
-    <span class="nd">@property</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">model_format</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span> <span class="o">...</span>
-
-    <span class="c1"># === Optional methods (raise NotImplementedError by default) ===</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_joint_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span> <span class="o">...</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_frame_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span> <span class="o">...</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_inertias</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span> <span class="o">...</span>
-<span class="w">        </span><span class="sd">"""Per-body inertia objects (for nonzero-inertia filtering)"""</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_frame_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_difference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span> <span class="o">...</span>
-<span class="w">        </span><span class="sd">"""Lie group difference (q2 ⊖ q1) → [nv]"""</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_integrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span> <span class="o">...</span>
-<span class="w">        </span><span class="sd">"""Lie group integration (q ⊕ v) → [nq]"""</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">random_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span> <span class="o">...</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_model_object</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span> <span class="o">...</span>
-<span class="w">        </span><span class="sd">"""Escape hatch: return underlying simulator model (pin.Model, mj.MjModel, ...)</span>
-<span class="sd">        for advanced features not yet abstracted (PseudoInertia, collision model, etc.)"""</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_dynamics_derivatives</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span> <span class="o">...</span>
-</code></pre></div>
-<h4 id="implementation-comparison">Implementation Comparison<a class="headerlink" href="#implementation-comparison" title="Permanent link">&para;</a></h4>
-<table>
-<thead>
-<tr>
-<th>Feature</th>
-<th>Pinocchio</th>
-<th>MuJoCo</th>
-<th>Genesis</th>
-<th>Isaac Sim</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Format</strong></td>
-<td>URDF</td>
-<td>MJCF (auto-converts URDF)</td>
-<td>URDF/MJCF/USD</td>
-<td>USD</td>
-</tr>
-<tr>
-<td><strong>Performance</strong></td>
-<td>Fast (dense)</td>
-<td>Faster (sparse)</td>
-<td>Fastest (GPU)</td>
-<td>Fast (GPU)</td>
-</tr>
-<tr>
-<td><strong>Contact</strong></td>
-<td>Limited</td>
-<td>Excellent</td>
-<td>Excellent</td>
-<td>Excellent</td>
-</tr>
-<tr>
-<td><strong>Visualization</strong></td>
-<td>MeshCat</td>
-<td>MuJoCo Viewer</td>
-<td>Native</td>
-<td>Native</td>
-</tr>
-<tr>
-<td><strong>Maturity</strong></td>
-<td>Mature</td>
-<td>Mature</td>
-<td>New</td>
-<td>Mature</td>
-</tr>
-<tr>
-<td><strong>Use Case</strong></td>
-<td>Research, identification, calibration</td>
-<td>Simulation, control</td>
-<td>Large-scale, parallel</td>
-<td>Sim-to-real</td>
-</tr>
-<tr>
-<td><strong>Status</strong></td>
-<td>✅ Implemented (default)</td>
-<td>⚠️ Partial (regressor is placeholder)</td>
-<td>❌ Not started</td>
-<td>❌ Not started</td>
-</tr>
-<tr>
-<td><strong>Model manipulation</strong></td>
-<td>✅ Runtime mutable</td>
-<td>❌ Immutable after compile</td>
-<td>❌ Immutable after build</td>
-<td>❌ Requires physics re-init</td>
-</tr>
-<tr>
-<td><strong>Kinematic regressor</strong></td>
-<td>✅ Native (<code>computeFrameKinematicRegressor</code>)</td>
-<td>❌ No equivalent</td>
-<td>❌ No equivalent</td>
-<td>❌ No equivalent</td>
-</tr>
-</tbody>
-</table>
-<h4 id="backend-migration-status">Backend Migration Status<a class="headerlink" href="#backend-migration-status" title="Permanent link">&para;</a></h4>
-<p><strong>Fully portable (identification path):</strong>
-- <code>RegressorBuilder</code> → <code>backend.compute_regressor()</code>
-- <code>randomdata.py</code> → <code>backend.compute_inverse_dynamics()</code>
-- <code>identification_tools.py</code> → <code>backend.compute_difference()</code></p>
-<p><strong>Partially portable (calibration path):</strong>
-- <code>calibration_tools.py</code> — 7 functions accept optional <code>backend</code> parameter for FK, Jacobian, gravity, random-configuration
-- <code>computeFrameKinematicRegressor</code> uses <code>get_model_object()</code> escape hatch (no backend equivalent)
-- Model manipulation (<code>model.jointPlacements[idx]</code> mutation + revert) remains Pinocchio-specific — see <a href="#backend-migration-limitations">Backend Migration Limitations</a> below</p>
-<p><strong>Not portable (by design):</strong>
-- <code>calibration/parameter.py</code> — <code>pin.SE3</code>, <code>pin.Frame</code>, <code>pin.Inertia.Zero()</code> data type construction
-- <code>measurements/measurement.py</code> — <code>pin.SE3</code>, <code>pin.Force</code>, <code>pin.Frame</code> data types
-- <code>tools/robotvisualization.py</code> — Meshcat/Gepetto visualization
-- <code>tools/robotcollisions.py</code> — hppfcl/coal collision detection</p>
-<hr />
-<h3 id="8-extension-points">8. Extension Points<a class="headerlink" href="#8-extension-points" title="Permanent link">&para;</a></h3>
-<h4 id="adding-a-new-backend">Adding a New Backend<a class="headerlink" href="#adding-a-new-backend" title="Permanent link">&para;</a></h4>
+<p>Backend and cross-backend tests live in
+<a href="https://github.com/thanhndv212/figaroh-plus/blob/main/tests/unit/test_backends.py"><code>test_backends.py</code></a> and
+<a href="https://github.com/thanhndv212/figaroh-plus/blob/main/tests/integration/test_cross_backend.py"><code>test_cross_backend.py</code></a>.
+Optional dependency skips are reported as missing coverage.</p>
+<h3 id="identification-data-flow">Identification data flow<a class="headerlink" href="#identification-data-flow" title="Permanent link">&para;</a></h3>
 <ol>
-<li><strong>Create backend file:</strong> <code>src/figaroh/backends/my_backend.py</code></li>
+<li>Load the robot and YAML configuration. A subclass supplies trajectory data;
+   the convenience wrapper reads position, velocity, acceleration and torque CSVs.</li>
+<li>Process signals and build configurations, then construct the dynamic regressor
+   and the nominal CAD reference torque.</li>
+<li>Eliminate zero columns, optionally decimate, and use QR to obtain an
+   identifiable parameter basis. Solve and compute fitting metrics.</li>
+<li>Apply configured weighting, physical-consistency projection and reconstruction
+   where enabled. These are distinct result stages.</li>
+<li>Evaluate validation data when available, generate verification/report output,
+   and explicitly choose the result stage to export or archive.</li>
 </ol>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynamicsBackend</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">my_simulator</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sim</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">MyBackend</span><span class="p">(</span><span class="n">DynamicsBackend</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">create_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_mass_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">sim</span><span class="o">.</span><span class="n">compute_M</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
-
-    <span class="c1"># Implement all abstract methods...</span>
-</code></pre></div>
-<ol>
-<li><strong>Register in <code>__init__.py</code>:</strong></li>
-</ol>
-<div class="highlight"><pre><span></span><code><span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">.my_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">MyBackend</span>
-    <span class="n">_AVAILABLE_BACKENDS</span><span class="p">[</span><span class="s2">"my_simulator"</span><span class="p">]</span> <span class="o">=</span> <span class="n">MyBackend</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="k">pass</span>
-</code></pre></div>
-<ol>
-<li>
-<p><strong>Add tests:</strong> <code>tests/backends/test_my_backend.py</code></p>
-</li>
-<li>
-<p><strong>Update documentation</strong></p>
-</li>
-</ol>
-<h4 id="adding-a-new-solver">Adding a New Solver<a class="headerlink" href="#adding-a-new-solver" title="Permanent link">&para;</a></h4>
-<ol>
-<li><strong>Add method to <code>LinearSolver</code>:</strong></li>
-</ol>
-<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_solve_my_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""My custom solving method"""</span>
-    <span class="c1"># Implementation</span>
-    <span class="k">return</span> <span class="n">x</span>
-</code></pre></div>
-<ol>
-<li>
-<p><strong>Register in <code>METHODS</code> list</strong></p>
-</li>
-<li>
-<p><strong>Add unit tests</strong></p>
-</li>
-</ol>
-<h4 id="adding-a-new-calibration-type">Adding a New Calibration Type<a class="headerlink" href="#adding-a-new-calibration-type" title="Permanent link">&para;</a></h4>
-<ol>
-<li><strong>Extend <code>BaseCalibration</code>:</strong></li>
-</ol>
-<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MyRobotCalibration</span><span class="p">(</span><span class="n">BaseCalibration</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">cost_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
-        <span class="c1"># Robot-specific implementation</span>
-        <span class="k">return</span> <span class="n">residuals</span>
-</code></pre></div>
-<ol>
-<li>
-<p><strong>Add configuration support in YAML</strong></p>
-</li>
-<li>
-<p><strong>Create example in <code>figaroh-examples</code></strong></p>
-</li>
-</ol>
-<hr />
-<h3 id="9-backend-migration-limitations">9. Backend Migration Limitations<a class="headerlink" href="#9-backend-migration-limitations" title="Permanent link">&para;</a></h3>
-<blockquote>
-<p><strong>This section documents the fundamental barriers to fully migrating FIGAROH's
-calibration algorithms from Pinocchio to other simulator backends (MuJoCo, Genesis,
-IsaacSim). These are not implementation gaps — they are architectural constraints
-imposed by the simulators themselves.</strong></p>
-</blockquote>
-<h4 id="the-core-problem-model-manipulation">The Core Problem: Model Manipulation<a class="headerlink" href="#the-core-problem-model-manipulation" title="Permanent link">&para;</a></h4>
-<p>FIGAROH's geometric calibration algorithms work by <strong>modifying joint frame placements
-in-place, computing forward kinematics, then reverting the modifications</strong> — repeated
-hundreds of times per optimization iteration. This is the fundamental mechanism for
-identifying kinematic parameters (joint offsets, link lengths, frame placements).</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Current calibration pattern (calibration_tools.py):</span>
-<span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">]</span><span class="o">.</span><span class="n">translation</span> <span class="o">=</span> <span class="n">updated_translation</span>
-<span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">]</span><span class="o">.</span><span class="n">rotation</span> <span class="o">=</span> <span class="n">updated_rotation</span>
-<span class="c1"># ... compute forward kinematics with modified model ...</span>
-<span class="n">pin</span><span class="o">.</span><span class="n">framesForwardKinematics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
-<span class="c1"># ... measure end-effector pose ...</span>
-<span class="c1"># ... revert model to original ...</span>
-<span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">]</span><span class="o">.</span><span class="n">translation</span> <span class="o">=</span> <span class="n">original_translation</span>
-<span class="n">model</span><span class="o">.</span><span class="n">jointPlacements</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">]</span><span class="o">.</span><span class="n">rotation</span> <span class="o">=</span> <span class="n">original_rotation</span>
-</code></pre></div>
-<p><strong>Why this matters:</strong> Calibration is not about finding a different configuration <code>q</code> —
-it's about finding the correct <strong>kinematic structure</strong> itself (where joints are placed,
-what their offsets are). The model <em>is</em> the parameter being optimized. This is
-fundamentally different from identification (where <code>q</code>, <code>v</code>, <code>a</code> are the inputs and
-inertial parameters are the outputs).</p>
-<h4 id="simulator-capabilities-matrix">Simulator Capabilities Matrix<a class="headerlink" href="#simulator-capabilities-matrix" title="Permanent link">&para;</a></h4>
-<table>
-<thead>
-<tr>
-<th>Capability</th>
-<th>Pinocchio</th>
-<th>MuJoCo</th>
-<th>Genesis</th>
-<th>IsaacSim</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Runtime model mutation</strong></td>
-<td>✅ <code>model.jointPlacements[idx]</code> directly mutable</td>
-<td>❌ Model immutable after <code>MjModel.from_xml_path()</code></td>
-<td>❌ Model immutable after <code>scene.build()</code></td>
-<td>❌ Requires physics re-initialization</td>
-</tr>
-<tr>
-<td><strong>Runtime frame addition</strong></td>
-<td>✅ <code>model.addFrame()</code></td>
-<td>❌ Fixed kinematic tree after compile</td>
-<td>❌ Frames defined at load time only</td>
-<td>❌ Complex USD prim manipulation</td>
-</tr>
-<tr>
-<td><strong>Kinematic regressor</strong></td>
-<td>✅ <code>pin.computeFrameKinematicRegressor()</code></td>
-<td>❌ No equivalent</td>
-<td>❌ No equivalent</td>
-<td>❌ No equivalent</td>
-</tr>
-<tr>
-<td><strong>SE3/transform types</strong></td>
-<td>✅ <code>pin.SE3</code>, <code>pin.Quaternion</code>, <code>pin.rpy</code></td>
-<td>❌ Raw arrays (<code>pos[3]</code> + <code>quat[4]</code>)</td>
-<td>❌ Raw arrays</td>
-<td>❌ <code>torch.Tensor</code> / USD transforms</td>
-</tr>
-</tbody>
-</table>
-<h4 id="why-mujocogenesis-cant-support-this-pattern">Why MuJoCo/Genesis Can't Support This Pattern<a class="headerlink" href="#why-mujocogenesis-cant-support-this-pattern" title="Permanent link">&para;</a></h4>
-<p>MuJoCo and Genesis <strong>compile</strong> their models into optimized internal representations
-(sparse matrices, JIT-compiled physics). After compilation, the kinematic tree is
-fixed — you cannot change where a joint is placed without rebuilding the model from
-XML/spec.</p>
-<p>The workaround (reload model per iteration) is <strong>prohibitively expensive</strong>: a typical
-calibration optimization runs hundreds of iterations with multiple samples per
-iteration. Reloading a model from XML takes 10-100ms, compared to microseconds for
-Pinocchio's in-place mutation.</p>
-<h4 id="what-this-means-for-the-backend-track">What This Means for the Backend Track<a class="headerlink" href="#what-this-means-for-the-backend-track" title="Permanent link">&para;</a></h4>
-<p><strong>Identification (dynamics) is fully portable.</strong> The dynamics regressor, mass matrix,
-Coriolis, gravity, inverse/forward dynamics are all abstracted in <code>DynamicsBackend</code>
-and work across simulators. This is the high-value path for multi-simulator support.</p>
-<p><strong>Calibration (kinematics) is Pinocchio-bound</strong> for the foreseeable future. The
-<code>calibration_tools.py</code> functions accept an optional <code>backend</code> parameter and route
-dynamics calls (FK, Jacobian, gravity) through it when available — but the model
-manipulation pattern (<code>update_joint_placement</code>) has no backend equivalent and remains
-Pinocchio-specific via the <code>get_model_object()</code> escape hatch.</p>
-<h4 id="long-term-paths-to-full-portability">Long-Term Paths to Full Portability<a class="headerlink" href="#long-term-paths-to-full-portability" title="Permanent link">&para;</a></h4>
-<ol>
-<li>
-<p><strong>Propose upstream changes to MuJoCo/Genesis</strong> — request runtime model mutation
-   support (modify body/joint transforms without full recompilation). This is the
-   cleanest solution but depends on simulator maintainers' priorities. A PR to
-   MuJoCo's <code>MjSpec</code> API enabling partial recompilation would be the most impactful.</p>
-</li>
-<li>
-<p><strong>Reformulate calibration to avoid model mutation</strong> — some calibration formulations
-   can be rewritten to parameterize the kinematic error in configuration space rather
-   than model space. This is a significant algorithmic change but would eliminate the
-   model manipulation dependency entirely.</p>
-</li>
-<li>
-<p><strong>Mutable model wrapper</strong> — implement a wrapper that caches model modifications and
-   reloads the simulator model only when needed (e.g., batch modifications, reload
-   once per iteration instead of per sample). Reduces overhead but doesn't eliminate it.</p>
-</li>
-<li>
-<p><strong>SE3/transform abstraction layer</strong> — use <code>scipy.spatial.transform.Rotation</code> and
-   <code>RigidTransform</code> as a simulator-agnostic replacement for <code>pin.SE3</code>/<code>pin.Quaternion</code>/
-   <code>pin.rpy</code>. This would eliminate the data type coupling but not the model manipulation
-   coupling. Feasible and low-risk, but only solves part of the problem.</p>
-</li>
-<li>
-<p><strong>Finite-difference kinematic regressor</strong> — implement <code>computeFrameKinematicRegressor</code>
-   generically via finite differences of forward kinematics w.r.t. joint placement
-   perturbations. Would work with any backend that supports FK, but requires model
-   mutation (back to problem #1).</p>
-</li>
-</ol>
-<h4 id="current-architecture-decision">Current Architecture Decision<a class="headerlink" href="#current-architecture-decision" title="Permanent link">&para;</a></h4>
-<p>The backend abstraction covers <strong>dynamics computation</strong> (identification + calibration
-algorithm paths). It does <strong>not</strong> abstract:
-- <strong>Model manipulation</strong> — Pinocchio-specific (runtime mutable model)
-- <strong>Data type construction</strong> — <code>pin.SE3</code>, <code>pin.Quaternion</code>, <code>pin.Force</code>, <code>pin.Frame</code>
-- <strong>Kinematic regressor</strong> — Pinocchio-only feature (no simulator equivalent)
-- <strong>Collision detection</strong> — fundamentally simulator-specific (hppfcl vs MuJoCo vs PhysX)
-- <strong>Visualization</strong> — already decoupled (figaroh-examples uses Viser, not Pinocchio viz)</p>
-<p>This is a <strong>deliberate architectural boundary</strong>, not a gap. The backend track focuses on
-making identification portable across simulators. Calibration remains Pinocchio-specific
-until simulator APIs evolve to support runtime model mutation.</p>
-<hr />
-<h3 id="10-performance-considerations">10. Performance Considerations<a class="headerlink" href="#10-performance-considerations" title="Permanent link">&para;</a></h3>
-<h4 id="computational-bottlenecks">Computational Bottlenecks<a class="headerlink" href="#computational-bottlenecks" title="Permanent link">&para;</a></h4>
-<ol>
-<li><strong>Regressor Computation</strong> (Most expensive)</li>
-<li><code>pin.computeJointTorqueRegressor()</code> called N times (once per sample)</li>
-<li><strong>Optimization:</strong> Batch computation, caching, sparse operations</li>
-<li>
-<p><strong>MuJoCo advantage:</strong> 2-3x faster due to sparse representation</p>
-</li>
-<li>
-<p><strong>QR Decomposition</strong> (Medium)</p>
-</li>
-<li>QR on W_reduced (size depends on rank)</li>
-<li>
-<p><strong>Optimization:</strong> Use LAPACK optimized QR, consider rank-revealing QR</p>
-</li>
-<li>
-<p><strong>Forward Kinematics</strong> (Low to Medium)</p>
-</li>
-<li>Called many times in calibration optimization</li>
-<li><strong>Optimization:</strong> Cache when parameters don't change</li>
-</ol>
-<h4 id="memory-considerations">Memory Considerations<a class="headerlink" href="#memory-considerations" title="Permanent link">&para;</a></h4>
-<p><strong>Regressor Matrix Size:</strong>
-- Full regressor: N × (10 × nv) where N = number of samples
-- Example: 10,000 samples, 7 DOF → 10,000 × 70 = 700,000 elements (5.6 MB)
-- <strong>Large robots:</strong> N=50,000, nv=50 → 50,000 × 500 = 25M elements (200 MB)</p>
-<p><strong>Mitigation Strategies:</strong>
-1. <strong>Decimation:</strong> Reduce N by factor of 10-100 (configurable)
-2. <strong>Batching:</strong> Process data in chunks
-3. <strong>Sparse representation:</strong> For MuJoCo backend
-4. <strong>Out-of-core:</strong> For very large datasets</p>
-<h4 id="numerical-stability">Numerical Stability<a class="headerlink" href="#numerical-stability" title="Permanent link">&para;</a></h4>
-<p><strong>Conditioning:</strong>
-- Monitor condition number: <code>κ(W) = σ_max / σ_min</code>
-- Typical values: 10³-10⁶ (acceptable), &gt;10⁸ (problematic)
-- <strong>Regularization:</strong> Ridge, Tikhonov for ill-conditioned systems</p>
-<p><strong>Scaling:</strong>
-- Normalize q, v, a to unit scale
-- Scale parameters to similar magnitudes
-- Use unit-aware weighting (position vs orientation)</p>
-<p><strong>Manifold Handling:</strong>
-- Use <code>pin.difference()</code> for SE(3) velocity computation
-- Avoid Euler angle singularities (use quaternions)
-- Validate SE(3) transformations (orthogonality, det=1)</p>
-<hr />
-<h3 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h3>
-<p>FIGAROH's architecture achieves simulator independence through a <strong>three-layer design</strong>:</p>
-<ol>
-<li><strong>Backend Layer</strong> abstracts dynamics computation</li>
-<li><strong>Tools Layer</strong> implements core algorithms (regressor, solver, QR decomposition)</li>
-<li><strong>Workflow Layer</strong> orchestrates high-level tasks (calibration, identification, optimal)</li>
-</ol>
-<p><strong>Key Strengths:</strong>
-- Clean separation of concerns
-- Pluggable backends enable simulator flexibility for identification
-- Mature Pinocchio integration as reference implementation
-- "Strangler fig" migration pattern — backward-compatible, opt-in backend routing</p>
-<p><strong>Current State (v0.4.4, June 2026):</strong>
-- ✅ <code>DynamicsBackend</code> interface defined (9 abstract + 9 optional methods)
-- ✅ <code>PinocchioBackend</code> implemented (default, 293 tests, numerical correctness verified)
-- ✅ <code>MuJoCoBackend</code> implemented (dynamics, FK, Jacobian; regressor delegates to Pinocchio)
-- ✅ Core algorithm path migrated (identification + calibration route through backend)
-- ✅ URDF exporter with 12 joint-level categories + metrology registry
-- ✅ Export validation with interactive viser visualization (trajectory + static + error plots)
-- ✅ Validation data support — ground-truth FK comparison against held-out measurements
-- ✅ Statistical quality report — per-DOF residuals (R²), condition number, parameter correlation
-- ✅ SE3 log-map pose error replaces element-wise RPY subtraction
-- ❌ Genesis / IsaacSim backends not started</p>
-<p><strong>Key Limitation:</strong>
-Calibration algorithms require <strong>runtime model manipulation</strong> (modifying joint frame
-placements in-place). MuJoCo, Genesis, and IsaacSim compile models to immutable internal
-representations. This is the fundamental barrier to full cross-simulator calibration.
-See <a href="#backend-migration-limitations">Backend Migration Limitations</a> for details and
-long-term paths to resolution.</p>
-<p><strong>Next Steps:</strong>
-- Cross-backend validation suite (Pinocchio vs MuJoCo dynamics consistency)
-- Genesis backend (GPU acceleration for identification)
-- End-to-end example: identification → physical consistency projection → URDF export
-- Inertia ellipsoid / CoM overlay visualization (v0.5)
-- Investigate MuJoCo/Genesis upstream PRs for runtime model mutation support</p>
-<hr />
-<p><strong>Document Version:</strong> 3.2
-<strong>Last Updated:</strong> July 12, 2026
-<strong>Maintained by:</strong> FIGAROH Core Team</p>
+<p>Important contracts:</p>
+<ul>
+<li>Joint order, units and the provenance of torque measurements belong to the data
+  boundary. The convenience CSV loader creates sample-index timestamps; it is
+  not a universal timestamped log-ingestion API.</li>
+<li>Regressor rows are joint-major. Enabled friction, actuator-inertia and offset
+  blocks must match parameter key order; see the
+  <a href="https://github.com/thanhndv212/figaroh-plus/blob/main/tests/unit/test_identification_regressions.py">identification regressions</a>.</li>
+<li>Pinocchio's dynamic parameter order is
+  <code>[m, mx, my, mz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz]</code>; FIGAROH's standard ordering
+  differs. Use the conversion helpers in
+  <a href="https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/identification/parameter.py"><code>identification/parameter.py</code></a>.</li>
+<li>Projection is default-off. <code>result["physical consistency"]</code> records status,
+  feasibility information, and, after projection, <code>raw_parameters</code> and
+  <code>projected_parameters</code>. Reconstruction has its own <code>result["reconstruction"]</code>.
+  Callers must not equate a fitted base vector with a complete physical model.</li>
+<li>Unified signal-processing settings feed the filter parameters; explicit filter
+  overrides take precedence. <code>qr_relative_tolerance</code> is optional, preserving the
+  default rank-selection behavior when unset.</li>
+</ul>
+<h3 id="calibration-and-experiment-design">Calibration and experiment design<a class="headerlink" href="#calibration-and-experiment-design" title="Permanent link">&para;</a></h3>
+<p>Calibration fits geometric parameters through the workflow and helpers in
+<code>calibration/</code>. Model edits still use Pinocchio types. A held-out measurement
+comparison assesses fit quality; an exported-model FK consistency check assesses
+whether a file represents the intended calibrated model. They answer different
+questions and are reported separately.</p>
+<p>Optimal trajectory generation uses the IPOPT wrapper in
+<a href="https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/tools/robotipopt.py"><code>tools/robotipopt.py</code></a>. Calibration posture
+selection lives in <code>BaseOptimalCalibration</code>. Both provide result saving;
+a common report format across every optimal workflow remains roadmap work.
+Use the <code>figaroh-dev</code> conda environment for development, including <code>cyipopt</code>.
+Physical projection is opt-in at runtime, although <code>picos</code> is currently a
+package dependency in <code>pyproject.toml</code>.</p>
+<h3 id="export-and-reporting">Export and reporting<a class="headerlink" href="#export-and-reporting" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/tools/urdf_exporter.py"><code>tools/urdf_exporter.py</code></a> maps parameter names
+to update handlers. Joint placement/offset, mass, friction, armature and elasticity
+handlers exist. <strong>First-moment and inertia-tensor handlers currently only log a
+debug message</strong>: successful file output does not establish complete inertial
+export. This is an explicit M1 correctness gate.</p>
+<p>Metrology base/measurement-frame parameters are described for the caller instead
+of automatically applied to robot geometry. PAL runtime correction YAML uses
+<a href="https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/tools/geometric_calibration_export.py"><code>geometric_calibration_export.py</code></a>.</p>
+<p>Calibration and identification HTML reports, two-run comparison, provenance and
+run archives live in <code>tools/</code>; workflow verification methods attach verdicts to
+results. Example CLIs explicitly verify numerical execution; library verification defaults
+to prediction acceptance. Independent prediction
+acceptance requires explicit per-output error limits and separate validation.
+Physical/export and general acquisition-provenance certification remain separate;
+missing required evidence is not a successful check. Use the <a href="../../reporting_and_verification/">reporting and verification guide</a>
+for user-facing behavior. Store metrics with the model/config/data provenance;
+report whether validation is held-out, training-only, simulated or physical.</p>
+<h3 id="configuration-and-extension-rules">Configuration and extension rules<a class="headerlink" href="#configuration-and-extension-rules" title="Permanent link">&para;</a></h3>
+<p><code>UnifiedConfigParser</code> supports YAML inheritance. The workflow-specific config
+adapters translate unified task config into internal dictionaries; legacy config
+remains supported with deprecation warnings and a migration command. The
+<a href="../configuration/">configuration reference</a> owns the schema.</p>
+<p>For a new interface, dependency, result schema or module boundary, add a decision
+record first or in the same PR. Proposed <code>ResidualTerm</code>/<code>LinearRegressorTerm</code>,
+full MJCF workflows and deployment/control layers are not current API contracts.
+For a new backend, implement the supported operations, document unsupported ones,
+and add numerical comparisons before claiming workflow parity.</p>
+<p>The <a href="https://github.com/thanhndv212/figaroh-plus/blob/main/CONTRIBUTING.md">contribution workflow</a> owns branch/release policy; the
+<a href="https://github.com/thanhndv212/figaroh-plus/blob/main/docs/development/validation.md">validation guide</a> owns commands and evidence
+requirements. Keep numerical claims linked to tests or archived runs and update
+this overview when boundaries or result contracts change.</p>
 
 
 

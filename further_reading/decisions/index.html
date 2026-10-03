@@ -328,7 +328,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../roadmap/" class="md-tabs__link">
+        <a href="../contributing/" class="md-tabs__link">
           
   
   
@@ -499,6 +499,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../example_workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plan, Fit & Validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reporting_and_verification/" class="md-nav__link">
         
   
@@ -540,10 +568,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
         
           
-          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
             
   
   
@@ -561,8 +589,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1528,6 +1556,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../roadmap/" class="md-nav__link">
         
   
@@ -1536,6 +1592,34 @@
     
   
     Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plans/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Delivery Plans
   
 
     
@@ -1693,69 +1777,15 @@
   
 
 
-<h1 id="design-decisions">Design Decisions<a class="headerlink" href="#design-decisions" title="Permanent link">&para;</a></h1>
-<p><code>docs/decisions/</code> in the repository holds design-rationale documents —
-implementation plans, roadmaps, and comparison research. They're
-intentionally <strong>not</strong> part of this built site (kept as a sibling of
-<code>docs/source/</code>, which is the <code>docs_dir</code> MkDocs actually reads) since they're
-working documents for contributors, not user-facing reference — but they're
-worth knowing about if you want the reasoning behind a feature, not just
-its usage docs.</p>
-<p>As of 2026-08-31 this directory holds eight documents. Several previously
-separate files (a <code>robot_calibration</code> comparison, a MuJoCo <code>sysid</code>
-comparison, the quality/reporting roadmap that comparison produced, a TIAGo
-calibration analysis, and a TIAGo port review) were merged into two combined
-documents rather than kept as cross-linked siblings; a later TIAGo
-suspension/backlash port-review follow-up was split back into two focused
-documents (one done, one still proposed) rather than left as one growing
-combined file — the table below reflects the current state, not the
-historical filenames referenced by older commits.</p>
-<table>
-<thead>
-<tr>
-<th>Document</th>
-<th>What it covers</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/external-tool-comparisons.md"><code>external-tool-comparisons.md</code></a></td>
-<td>Three parts in one file: <strong>Part A</strong> — comparison against <code>robot_calibration</code> (ROS 2 kinematic/sensor calibration) and the resulting calibration-composability adaptation roadmap. <strong>Part B</strong> — comparison against MuJoCo's <code>sysid</code> module. <strong>Part C</strong> — the full quality &amp; reporting infrastructure roadmap Part B's comparison produced (the design rationale behind the <a href="../../reporting_and_verification/">Reporting &amp; Verification</a> suite, including why the compare page is a static two-run artifact rather than a run history/dashboard). Each part carries a verified implementation-status table.</td>
-</tr>
-<tr>
-<td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/tiago-calibration-and-port-review.md"><code>tiago-calibration-and-port-review.md</code></a></td>
-<td>Two parts: <strong>Part A</strong> — deep structural/statistical analysis of the TIAGo/TIAGo Pro mocap calibration pipelines, including the base-parameter redistribution work now shipped in core. <strong>Part B</strong> — review of porting eye-hand calibration (still not started) and mobile-base/suspension identification (superseded by <code>tiago-suspension-backlash-examples.md</code> below, now done) from old branches.</td>
-</tr>
-<tr>
-<td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/tiago-suspension-backlash-examples.md"><code>tiago-suspension-backlash-examples.md</code></a></td>
-<td>✅ <strong>Done.</strong> TIAGo generalized-base suspension identification and empirical backlash-surface examples, shipped as standalone research examples in <code>figaroh-examples</code> — what was ported, corrections made versus the historical prototype (gravity torque feature, polynomial degree, structurally-zero column handling), and known remaining gaps (no held-out train/validation split yet).</td>
-</tr>
-<tr>
-<td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/modular-linear-residual-terms-plan.md"><code>modular-linear-residual-terms-plan.md</code></a></td>
-<td>🔬 <strong>Proposed, not started.</strong> Generic <code>LinearRegressorTerm</code>/<code>ResidualTerm</code>/<code>WeightPolicy</code> composition architecture for the identification layer (motivated by, but not required by, the suspension/backlash examples above), plus the still-unbuilt physical/stateful backlash model and its core-promotion gates.</td>
-</tr>
-<tr>
-<td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/figaroh-examples-improvement_plan.md"><code>figaroh-examples-improvement_plan.md</code></a></td>
-<td>Cross-example audit of UR10/TIAGo/TALOS/Staubli TX40 + shared infrastructure — 35 of 39 items closed, 4 open (TALOS/Staubli script parity)</td>
-</tr>
-<tr>
-<td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/urdf_exporter.md"><code>urdf_exporter.md</code></a></td>
-<td>URDF exporter plan &amp; parameter-name registry — implemented with a few documented deviations from the original spec (function-based API, metrology-frame params not auto-applied, inertia-tensor handler still a stub)</td>
-</tr>
-<tr>
-<td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/validation-quality-report.md"><code>validation-quality-report.md</code></a></td>
-<td>FK validation + statistical quality matrix implementation plan — fully implemented, effectively superseded by the reporting suite <code>external-tool-comparisons.md</code> Part C tracks</td>
-</tr>
-<tr>
-<td><a href="https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/sim2real-modelbased-deployment.md"><code>sim2real-modelbased-deployment.md</code></a></td>
-<td>🔬 <strong>Ongoing research, not yet committed.</strong> Positioning FIGAROH as a sim-to-real deployment/model-based-control toolbox for RL/IL policies and motion retargeting — a 6-phase plan, research citations, and open decisions (including how it should integrate with tools like mjlab and motion-retargeting libraries)</td>
-</tr>
-</tbody>
-</table>
-<p>See also the top-level <a href="../../concepts/architecture/"><code>ARCHITECTURE.md</code></a> and
-<a href="../roadmap/"><code>ROADMAP.md</code></a>, which are user-facing and embedded directly in
-this site. <code>ROADMAP.md</code> §15 (References) links back to every document
-above from the specific roadmap track it informs.</p>
+<h1 id="design-decisions">Design decisions<a class="headerlink" href="#design-decisions" title="Permanent link">&para;</a></h1>
+<p>Contributor design records live in
+<a href="https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/README.md">docs/decisions/README.md</a>.
+That index classifies historical analysis, implemented designs and proposals;
+older checklists in those records are not a live task tracker.</p>
+<p>Use <a href="../../concepts/architecture/">Architecture</a> for current implementation,
+<a href="../roadmap/">Roadmap</a> for delivery priorities, and
+<a href="../contributing/">Contributing</a> for the issue-to-release workflow. Proposals only
+become current architecture after implementation and validation.</p>
 
 
 

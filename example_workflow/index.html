@@ -10,31 +10,31 @@
       
       
       
-        <link rel="canonical" href="https://thanhndv212.github.io/figaroh-plus/tutorials/calibration_walkthrough/">
+        <link rel="canonical" href="https://thanhndv212.github.io/figaroh-plus/example_workflow/">
       
       
-        <link rel="prev" href="../">
+        <link rel="prev" href="../getting_started/">
       
       
-        <link rel="next" href="../identification_walkthrough/">
+        <link rel="next" href="../reporting_and_verification/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>Calibration Walkthrough - FIGAROH</title>
+        <title>Plan, Fit & Validate - FIGAROH</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,9 +53,9 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#calibration-walkthrough" class="md-skip">
+        <a href="#plan-fit-and-validate-a-robot-example" class="md-skip">
           Skip to content
         </a>
       
@@ -94,7 +94,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="FIGAROH" class="md-header__button md-logo" aria-label="FIGAROH" data-md-component="logo">
+    <a href=".." title="FIGAROH" class="md-header__button md-logo" aria-label="FIGAROH" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Calibration Walkthrough
+              Plan, Fit & Validate
             
           </span>
         </div>
@@ -227,7 +227,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href=".." class="md-tabs__link">
         
   
   
@@ -250,7 +250,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../../getting_started/" class="md-tabs__link">
+        <a href="../getting_started/" class="md-tabs__link">
           
   
   
@@ -270,7 +270,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../concepts/architecture/" class="md-tabs__link">
+        <a href="../concepts/architecture/" class="md-tabs__link">
           
   
   
@@ -290,7 +290,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../examples/" class="md-tabs__link">
+        <a href="../examples/" class="md-tabs__link">
           
   
   
@@ -310,7 +310,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../api/" class="md-tabs__link">
+        <a href="../api/" class="md-tabs__link">
           
   
   
@@ -330,7 +330,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../further_reading/contributing/" class="md-tabs__link">
+        <a href="../further_reading/contributing/" class="md-tabs__link">
           
   
   
@@ -364,7 +364,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="FIGAROH" class="md-nav__button md-logo" aria-label="FIGAROH" data-md-component="logo">
+    <a href=".." title="FIGAROH" class="md-nav__button md-logo" aria-label="FIGAROH" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -394,7 +394,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -478,7 +478,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting_started/" class="md-nav__link">
+      <a href="../getting_started/" class="md-nav__link">
         
   
   
@@ -486,147 +486,6 @@
     
   
     Getting Started
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../example_workflow/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Plan, Fit & Validate
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../reporting_and_verification/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Reporting & Verification
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" checked>
-        
-          
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tutorials
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Tutorials
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
   
 
     
@@ -663,7 +522,7 @@
   <span class="md-ellipsis">
     
   
-    Calibration Walkthrough
+    Plan, Fit & Validate
   
 
     
@@ -681,7 +540,7 @@
   <span class="md-ellipsis">
     
   
-    Calibration Walkthrough
+    Plan, Fit & Validate
   
 
     
@@ -707,10 +566,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-problem" class="md-nav__link">
+  <a href="#1-define-the-outcome-and-inventory-available-evidence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The problem
+        1. Define the outcome and inventory available evidence
       
     </span>
   </a>
@@ -718,10 +577,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-model" class="md-nav__link">
+  <a href="#2-choose-the-model-and-parameter-scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The model
+        2. Choose the model and parameter scope
       
     </span>
   </a>
@@ -729,10 +588,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#running-it" class="md-nav__link">
+  <a href="#3-select-methods-with-explicit-objectives" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Running it
+        3. Select methods with explicit objectives
       
     </span>
   </a>
@@ -740,10 +599,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-you-configure" class="md-nav__link">
+  <a href="#4-design-acquisition-and-validation-together" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What you configure
+        4. Design acquisition and validation together
       
     </span>
   </a>
@@ -751,10 +610,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#interpreting-results" class="md-nav__link">
+  <a href="#5-collect-and-preserve-measurements" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Interpreting results
+        5. Collect and preserve measurements
       
     </span>
   </a>
@@ -762,10 +621,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
+  <a href="#6-process-data-through-an-auditable-adapter" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Next steps
+        6. Process data through an auditable adapter
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-fit-and-read-the-result-in-layers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Fit and read the result in layers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-validate-export-and-make-the-example-reusable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Validate, export and make the example reusable
       
     </span>
   </a>
@@ -788,7 +669,146 @@
   
   
     <li class="md-nav__item">
-      <a href="../identification_walkthrough/" class="md-nav__link">
+      <a href="../reporting_and_verification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reporting & Verification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/calibration_walkthrough/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration Walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/identification_walkthrough/" class="md-nav__link">
         
   
   
@@ -816,7 +836,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../optimal_design/" class="md-nav__link">
+      <a href="../tutorials/optimal_design/" class="md-nav__link">
         
   
   
@@ -911,7 +931,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/architecture/" class="md-nav__link">
+      <a href="../concepts/architecture/" class="md-nav__link">
         
   
   
@@ -939,7 +959,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/configuration/" class="md-nav__link">
+      <a href="../concepts/configuration/" class="md-nav__link">
         
   
   
@@ -967,7 +987,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/config_parameters/" class="md-nav__link">
+      <a href="../concepts/config_parameters/" class="md-nav__link">
         
   
   
@@ -995,7 +1015,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/backends/" class="md-nav__link">
+      <a href="../concepts/backends/" class="md-nav__link">
         
   
   
@@ -1023,7 +1043,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/integration/" class="md-nav__link">
+      <a href="../concepts/integration/" class="md-nav__link">
         
   
   
@@ -1110,7 +1130,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/" class="md-nav__link">
+      <a href="../examples/" class="md-nav__link">
         
   
   
@@ -1138,7 +1158,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/ur10/" class="md-nav__link">
+      <a href="../examples/ur10/" class="md-nav__link">
         
   
   
@@ -1166,7 +1186,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/tiago/" class="md-nav__link">
+      <a href="../examples/tiago/" class="md-nav__link">
         
   
   
@@ -1194,7 +1214,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/talos/" class="md-nav__link">
+      <a href="../examples/talos/" class="md-nav__link">
         
   
   
@@ -1222,7 +1242,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/staubli_tx40/" class="md-nav__link">
+      <a href="../examples/staubli_tx40/" class="md-nav__link">
         
   
   
@@ -1250,7 +1270,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/templates/" class="md-nav__link">
+      <a href="../examples/templates/" class="md-nav__link">
         
   
   
@@ -1337,7 +1357,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/" class="md-nav__link">
+      <a href="../api/" class="md-nav__link">
         
   
   
@@ -1365,7 +1385,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/calibration/" class="md-nav__link">
+      <a href="../api/calibration/" class="md-nav__link">
         
   
   
@@ -1393,7 +1413,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/identification/" class="md-nav__link">
+      <a href="../api/identification/" class="md-nav__link">
         
   
   
@@ -1421,7 +1441,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/optimal/" class="md-nav__link">
+      <a href="../api/optimal/" class="md-nav__link">
         
   
   
@@ -1449,7 +1469,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/backends/" class="md-nav__link">
+      <a href="../api/backends/" class="md-nav__link">
         
   
   
@@ -1477,7 +1497,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/integration/" class="md-nav__link">
+      <a href="../api/integration/" class="md-nav__link">
         
   
   
@@ -1505,7 +1525,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/measurements/" class="md-nav__link">
+      <a href="../api/measurements/" class="md-nav__link">
         
   
   
@@ -1533,7 +1553,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/tools/" class="md-nav__link">
+      <a href="../api/tools/" class="md-nav__link">
         
   
   
@@ -1561,7 +1581,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/utils/" class="md-nav__link">
+      <a href="../api/utils/" class="md-nav__link">
         
   
   
@@ -1589,7 +1609,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/visualisation/" class="md-nav__link">
+      <a href="../api/visualisation/" class="md-nav__link">
         
   
   
@@ -1676,7 +1696,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../further_reading/contributing/" class="md-nav__link">
+      <a href="../further_reading/contributing/" class="md-nav__link">
         
   
   
@@ -1704,7 +1724,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../further_reading/roadmap/" class="md-nav__link">
+      <a href="../further_reading/roadmap/" class="md-nav__link">
         
   
   
@@ -1732,7 +1752,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../further_reading/plans/" class="md-nav__link">
+      <a href="../further_reading/plans/" class="md-nav__link">
         
   
   
@@ -1760,7 +1780,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../further_reading/changelog/" class="md-nav__link">
+      <a href="../further_reading/changelog/" class="md-nav__link">
         
   
   
@@ -1788,7 +1808,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../further_reading/faq/" class="md-nav__link">
+      <a href="../further_reading/faq/" class="md-nav__link">
         
   
   
@@ -1816,7 +1836,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../further_reading/decisions/" class="md-nav__link">
+      <a href="../further_reading/decisions/" class="md-nav__link">
         
   
   
@@ -1871,10 +1891,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-problem" class="md-nav__link">
+  <a href="#1-define-the-outcome-and-inventory-available-evidence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The problem
+        1. Define the outcome and inventory available evidence
       
     </span>
   </a>
@@ -1882,10 +1902,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-model" class="md-nav__link">
+  <a href="#2-choose-the-model-and-parameter-scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The model
+        2. Choose the model and parameter scope
       
     </span>
   </a>
@@ -1893,10 +1913,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#running-it" class="md-nav__link">
+  <a href="#3-select-methods-with-explicit-objectives" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Running it
+        3. Select methods with explicit objectives
       
     </span>
   </a>
@@ -1904,10 +1924,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-you-configure" class="md-nav__link">
+  <a href="#4-design-acquisition-and-validation-together" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What you configure
+        4. Design acquisition and validation together
       
     </span>
   </a>
@@ -1915,10 +1935,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#interpreting-results" class="md-nav__link">
+  <a href="#5-collect-and-preserve-measurements" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Interpreting results
+        5. Collect and preserve measurements
       
     </span>
   </a>
@@ -1926,10 +1946,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
+  <a href="#6-process-data-through-an-auditable-adapter" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Next steps
+        6. Process data through an auditable adapter
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-fit-and-read-the-result-in-layers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Fit and read the result in layers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-validate-export-and-make-the-example-reusable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Validate, export and make the example reusable
       
     </span>
   </a>
@@ -1953,7 +1995,7 @@
 
 
   
-    <a href="https://github.com/thanhndv212/figaroh-plus/edit/main/docs/source/tutorials/calibration_walkthrough.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/thanhndv212/figaroh-plus/edit/main/docs/source/example_workflow.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1961,86 +2003,295 @@
   
 
 
-<h1 id="calibration-walkthrough">Calibration Walkthrough<a class="headerlink" href="#calibration-walkthrough" title="Permanent link">&para;</a></h1>
-<h2 id="the-problem">The problem<a class="headerlink" href="#the-problem" title="Permanent link">&para;</a></h2>
-<p>Manufacturing tolerances and assembly errors give every physical robot
-systematic geometric errors — joint zero-offsets, link length/orientation
-deviations from CAD, tool-center-point misalignment — typically 5-10mm at
-the end-effector. That's enough to make precision tasks (contact-rich
-manipulation, vision-guided grasping, multi-robot coordination) unreliable.</p>
-<p>Kinematic calibration corrects this using external measurements (motion
-capture, a tracked marker, a camera) of the end-effector at a set of known
-joint configurations.</p>
-<h2 id="the-model">The model<a class="headerlink" href="#the-model" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>P_measured = forward_kinematics(q, θ_nominal + Δθ) + ε
-</code></pre></div>
-<ul>
-<li><code>q</code> — measured joint configurations (document any use of commanded substitutes)</li>
-<li><code>θ_nominal</code> — nominal kinematic parameters from the URDF</li>
-<li><code>Δθ</code> — parameter corrections FIGAROH solves for</li>
-<li><code>P_measured</code> — external sensor measurement of the end-effector (or
-  another tracked frame) at each <code>q</code></li>
-<li><code>ε</code> — measurement noise</li>
-</ul>
-<p>FIGAROH minimizes the residual between <code>P_measured</code> and the predicted pose
-over <code>Δθ</code> using Levenberg-Marquardt, then reports which corrections are
-well- vs. poorly-observed given your measurement set.</p>
-<h2 id="running-it">Running it<a class="headerlink" href="#running-it" title="Permanent link">&para;</a></h2>
-<p>Every robot in <a href="https://github.com/thanhndv212/figaroh-examples">figaroh-examples</a>
-provides a <code>BaseCalibration</code> subclass (e.g. <code>TiagoCalibration</code>) that
-supplies the robot-specific frame/marker configuration; the shape is the
-same for every robot:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">examples.tiago.utils.tiago_tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">TiagoCalibration</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.robot</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_robot</span>
-
-<span class="n">robot</span> <span class="o">=</span> <span class="n">load_robot</span><span class="p">(</span><span class="s2">"path/to/robot.urdf"</span><span class="p">,</span> <span class="n">load_by_urdf</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">calibrator</span> <span class="o">=</span> <span class="n">TiagoCalibration</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s2">"config/tiago_unified_config.yaml"</span><span class="p">)</span>
-<span class="n">calibrator</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">calibrator</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">plotting</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">html_report</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</code></pre></div>
-<p><code>solve()</code> always prints a terminal quality report (condition number,
-per-DOF residual RMSE, outlier count). <code>html_report=True</code> additionally
-writes a self-contained diagnostic page — see
-<a href="../../reporting_and_verification/">Reporting &amp; Verification</a>.</p>
-<p>From the command line, the TIAGo example wraps this in one script:</p>
-<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>examples/tiago
-python<span class="w"> </span>calibration.py<span class="w">                 </span><span class="c1"># full pipeline: calibrate → plot → save → export → viser viz</span>
-python<span class="w"> </span>calibration.py<span class="w"> </span>--calibrate-only<span class="w">  </span><span class="c1"># just solve, skip URDF export</span>
-python<span class="w"> </span>calibration.py<span class="w"> </span>--update-model<span class="w">    </span><span class="c1"># export a corrected URDF from a saved result</span>
-</code></pre></div>
-<h2 id="what-you-configure">What you configure<a class="headerlink" href="#what-you-configure" title="Permanent link">&para;</a></h2>
-<p>The <code>calibration:</code> section of your <a href="../../concepts/configuration/">unified config</a>
-declares:</p>
-<ul>
-<li><code>base_frame</code> / <code>tool_frame</code> — the kinematic chain endpoints</li>
-<li><code>markers</code> — which frame(s) are measured, and which of their 6 DOF are
-  observable (<code>measure: [x, y, z, roll, pitch, yaw]</code>) — a wrist-mounted
-  6-DOF tracker measures all six; a hand-mounted marker seen by a fixed
-  camera might only give 3-DOF position</li>
-<li><code>nb_sample</code> — number of configurations in your measurement set (more
-  isn't always better — see <a href="../optimal_design/">Optimal Experiment Design</a>
-  for how to pick the <em>best</em> set instead of the largest)</li>
-</ul>
-<h2 id="interpreting-results">Interpreting results<a class="headerlink" href="#interpreting-results" title="Permanent link">&para;</a></h2>
-<p>Compare nominal and calibrated prediction on unused configurations. Report
-translation and rotation components in explicit units; position-only or contact
-measurements cannot establish full pose accuracy. Analyze gauge, identifiable
-corrections and prior sensitivity before interpreting individual parameters.</p>
-<p>Verification defaults are task checks, not guaranteed accuracy. Inspect which
-validation metrics were available, and reload any exported model to check FK
-against the selected calibrated stage. See
-<a href="../../example_workflow/">Plan, Fit and Validate</a> for acquisition, split design,
-residual interpretation and acceptance evidence.</p>
-<h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="../identification_walkthrough/">Identification Walkthrough</a> — once
-  kinematics are corrected, identify the <em>dynamic</em> parameters (mass,
-  inertia, friction) for control and simulation.</li>
-<li><a href="../../reporting_and_verification/">Reporting &amp; Verification</a> — turn
-  this run into a shareable report and a CI-gateable pass/fail check.</li>
-<li><a href="../../examples/">Examples Gallery</a> — complete calibration scripts
-  for UR10, TIAGo, and TALOS.</li>
-</ul>
+<h1 id="plan-fit-and-validate-a-robot-example">Plan, fit and validate a robot example<a class="headerlink" href="#plan-fit-and-validate-a-robot-example" title="Permanent link">&para;</a></h1>
+<p><strong>Draft guideline for review — 2026-10-02.</strong> This is a decision process for
+using FIGAROH with a new robot or dataset. It complements the runnable
+<a href="../tutorials/">tutorials</a>; it does not introduce a new pipeline API.
+Record each decision in the examples repository's
+<a href="https://github.com/thanhndv212/figaroh-examples/blob/main/docs/experiment-brief-template.md">experiment brief</a>.
+Reference workflows demonstrate the process; a new example must still audit
+its own sensors, model, assumptions and validation evidence.</p>
+<h2 id="1-define-the-outcome-and-inventory-available-evidence">1. Define the outcome and inventory available evidence<a class="headerlink" href="#1-define-the-outcome-and-inventory-available-evidence" title="Permanent link">&para;</a></h2>
+<p>Start by answering these questions before selecting a solver:</p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Record</th>
+<th>Consequence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What should improve?</td>
+<td>Effort prediction, geometric accuracy, or an exported model for a declared application</td>
+<td>Determines residuals and acceptance metrics</td>
+</tr>
+<tr>
+<td>Which model is available?</td>
+<td>URDF/source revision, geometry packages, joint names/order, active chain, fixed/free base, payload and nominal parameters</td>
+<td>Defines coordinates, frames and model assumptions</td>
+</tr>
+<tr>
+<td>What measurements exist?</td>
+<td>Raw files, timestamps, units, sensors, effort source, measured pose/contact components and missing channels</td>
+<td>Determines which estimation problem is supported</td>
+</tr>
+<tr>
+<td>What can be collected?</td>
+<td>Accessible joints/poses, instrumentation, controller, logging rate, operating limits and recording time</td>
+<td>Determines feasible excitation and validation design</td>
+</tr>
+<tr>
+<td>What independent evidence exists?</td>
+<td>Separate recording, unused trajectory/postures, synthetic truth or none</td>
+<td>Limits the validation claim</td>
+</tr>
+<tr>
+<td>What must remain fixed?</td>
+<td>Known payload, unobserved joints, sensor transforms, geometry, friction or other nuisance parameters</td>
+<td>Reduces ambiguity and defines the estimation scope</td>
+</tr>
+</tbody>
+</table>
+<p>Classify every input as measured, commanded, numerically derived, inferred or
+simulated. Encoder position and commanded position are different signals.
+Current-derived effort needs a documented conversion, gear ratio, sign and
+joint-side convention; it is not automatically a calibrated torque measurement.
+Keep unknown quantities unknown rather than filling them with undocumented
+constants. Missing dynamic measurements may support a reduced gravity/friction
+study, but do not establish full inertial identification.</p>
+<p><strong>Output:</strong> a task statement, input inventory, missing-data list and intended
+validation level. If critical data are absent, plan acquisition or narrow the
+model before fitting.</p>
+<h2 id="2-choose-the-model-and-parameter-scope">2. Choose the model and parameter scope<a class="headerlink" href="#2-choose-the-model-and-parameter-scope" title="Permanent link">&para;</a></h2>
+<p>For <strong>dynamic identification</strong>, declare the rigid-body inertial blocks and
+any friction, actuator inertia, coupling or external-force terms. State which
+are fitted, fixed or excluded. Motion/effort data identify parameter
+combinations; an apparently precise full inertial vector may simply be one
+choice in an unobservable null space. Distinguish base parameters from a
+physical full model and from nuisance parameters.</p>
+<p>For <strong>geometric calibration</strong>, declare the chain, measured frame, sensor/world
+frame, joint offsets/link corrections and any base/tool/marker transforms.
+State the gauge: which frame or transform anchors otherwise interchangeable
+corrections. A position-only marker supports position residuals; plane contact
+constrains the observed contact component. Neither supplies full 6D pose truth.
+Use measured joint configurations where available and document substitutes.</p>
+<p>Start with the smallest model that explains the measured phenomenon. Add a
+parameter block only with a physical reason, observability evidence and a
+validation test. Record payload, temperature/contact regime and other operating
+conditions that could invalidate a single-model assumption.</p>
+<p><strong>Output:</strong> parameter/block table, observation equation, units, frame conventions,
+fixed quantities, gauge and unsupported effects.</p>
+<h2 id="3-select-methods-with-explicit-objectives">3. Select methods with explicit objectives<a class="headerlink" href="#3-select-methods-with-explicit-objectives" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Appropriate question</th>
+<th>Required interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Base-parameter OLS</td>
+<td>Which observable dynamic combinations explain effort?</td>
+<td>Prediction baseline; does not guarantee physical individual inertias</td>
+</tr>
+<tr>
+<td>WLS or regularized estimation</td>
+<td>Is there a justified noise model or prior?</td>
+<td>Estimate weights/scales from training evidence; disclose prior and its influence</td>
+</tr>
+<tr>
+<td>Exact SDP/LMI reconstruction</td>
+<td>Can a physical full model preserve the chosen base vector?</td>
+<td>Check solver status, physical constraints and base residual; a returned fallback is not success</td>
+</tr>
+<tr>
+<td>Per-link physical projection</td>
+<td>Can an estimated link vector be made physically consistent?</td>
+<td>Recompute effort/base fit afterward; projection may alter prediction</td>
+</tr>
+<tr>
+<td>Direct physical constrained fit</td>
+<td>Which physical model minimizes the declared effort objective?</td>
+<td>Separate experiment from exact reconstruction; confirm the selected implementation is supported</td>
+</tr>
+<tr>
+<td>Log-Cholesky fit</td>
+<td>Can positive pseudo-inertia coordinates produce an adequate physical fit?</td>
+<td>Feasibility and optimizer convergence are separate; currently a research path pending convergence review</td>
+</tr>
+<tr>
+<td>Geometric least-squares calibration</td>
+<td>Which identifiable corrections reduce the measured pose/contact residual?</td>
+<td>Declare residual components, scaling, gauge, priors and redistribution semantics</td>
+</tr>
+</tbody>
+</table>
+<p>This table is a selection guide, not a promise that every method is exposed by
+every robot entry point. Check the <a href="../api/identification/">identification</a>,
+<a href="../api/calibration/">calibration</a> and <a href="../api/tools/">tools</a> interfaces and the
+robot adapter. Link a missing capability to a scoped issue instead of silently
+substituting a different objective.</p>
+<p>Compare methods with the same training/validation samples, conventions,
+residual scaling and extra-parameter policy. Freeze extras to isolate inertial
+methods, or compare joint estimation as a separately declared protocol. Record
+initialization, priors, bounds, tolerances, solver/version, evaluation budget
+and timeout. Select hyperparameters on training/development data; reserve the
+final validation set for assessment.</p>
+<p><strong>Output:</strong> baseline, candidate methods, objective/constraint definitions and a
+comparison protocol frozen before inspecting final validation results.</p>
+<h2 id="4-design-acquisition-and-validation-together">4. Design acquisition and validation together<a class="headerlink" href="#4-design-acquisition-and-validation-together" title="Permanent link">&para;</a></h2>
+<p>If data already exist, first assess what they excite and where coverage is
+missing. Do not assume a long recording supplies identifiable parameters.
+For a new experiment, define both fitting and validation recordings up front.</p>
+<p>For dynamics, vary configurations and motion to expose the selected gravity,
+inertial and friction effects. Inspect the relevant regressor's rank and
+singular spectrum under declared column scaling. Include direction/speed
+coverage when estimating friction. For calibration, vary chain configurations
+and marker observations to expose the chosen corrections; inspect the
+measurement Jacobian and gauge dependencies. Repeated similar samples cannot
+replace missing directions of information.</p>
+<p>Use <a href="../tutorials/optimal_design/">optimal experiment design</a> where applicable,
+with the same parameter scope and constraints as the intended task. Compare
+against a feasible baseline; matrix conditioning alone does not establish
+better real measurements or validation accuracy. Check generated motion/poses
+against the actual robot's position, velocity, acceleration, effort, workspace,
+collision and acquisition constraints before execution. An offline optimizer
+result is a candidate experiment, not evidence of executed motion.</p>
+<p>Prefer an independent validation recording with different unused excitation or
+postures in the intended operating range. A temporal block from one recording
+is useful but weaker evidence. For filtered time series, separate blocks by a
+guard interval sufficient for the documented filter/derivative support.
+Random neighboring-sample splits can leak strongly correlated information.</p>
+<p><strong>Output:</strong> acquisition plan, excitation rationale, coverage diagnostics,
+training/development/final-validation assignments and predeclared thresholds.</p>
+<h2 id="5-collect-and-preserve-measurements">5. Collect and preserve measurements<a class="headerlink" href="#5-collect-and-preserve-measurements" title="Permanent link">&para;</a></h2>
+<p>Preserve immutable raw recordings and nominal models. Record acquisition date,
+robot/controller state, payload, sensor configuration, calibration/conversion,
+clock sources, actual sample intervals and missing/saturated/dropped samples.
+Document whether streams share a clock and how offset/drift is established.
+Store enough metadata to reconstruct joint order, units and all frame transforms.</p>
+<p>Run a small acquisition check before the full experiment: inspect channel
+signs, ranges, timestamps, synchronization and observation availability. Keep
+recorded executed motion separate from the planned trajectory. Synthetic runs
+need known model parameters, independently checked states/derivatives and saved
+noise seeds; using the same code to generate and fit data alone can conceal a
+shared convention bug.</p>
+<p><strong>Output:</strong> raw-data manifest, acquisition notes and sanity-check figures.</p>
+<h2 id="6-process-data-through-an-auditable-adapter">6. Process data through an auditable adapter<a class="headerlink" href="#6-process-data-through-an-auditable-adapter" title="Permanent link">&para;</a></h2>
+<p>Keep robot-specific import/conversion in <code>examples/&lt;robot&gt;/utils/</code>; reusable
+numerical processing belongs in the core library. Preserve a mapping from raw
+samples to accepted, trimmed and decimated samples.</p>
+<ol>
+<li>Check timestamps, missing values, joint order, dimensions, units and frames.</li>
+<li>Align streams with an explicit policy; record interpolation and exclusions.</li>
+<li>Establish the actual rate from timestamps. Set filter cutoffs in the correct
+   units and document assumptions if timestamps are unavailable.</li>
+<li>For dynamics, check velocity/acceleration provenance for <strong>every active
+   coordinate</strong>. Handle <code>nq != nv</code> deliberately; do not blindly differentiate
+   configuration columns as if all were scalar joint angles.</li>
+<li>Document filter type/order, phase behavior, derivative method and edge trim.
+   Apply consistent index changes to all corresponding channels.</li>
+<li>Process split partitions independently so smoothing, learned noise weights,
+   outlier rules or normalization do not borrow final-validation information.</li>
+<li>Inspect raw/processed overlays and derived signals before constructing the
+   regressor or calibration residual.</li>
+</ol>
+<p>For geometric observations, check pose representation, rotation conventions
+and marker validity; do not average or subtract rotation coordinates without
+considering their representation. Label offline noncausal filtering if relevant
+to the eventual deployment.</p>
+<p><strong>Output:</strong> processing recipe, accepted indices, split provenance and processed
+signal diagnostics. Current rate/derivative limitations in the delivery plan
+must be checked for the chosen adapter before trusting a fit.</p>
+<h2 id="7-fit-and-read-the-result-in-layers">7. Fit and read the result in layers<a class="headerlink" href="#7-fit-and-read-the-result-in-layers" title="Permanent link">&para;</a></h2>
+<p>Fit the nominal/baseline and candidates under the frozen protocol. Preserve
+raw estimates, reconstructed/projected estimates and failed candidates as
+separate stages. Read the result in this order:</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Inspect</th>
+<th>A useful conclusion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Input correctness</td>
+<td>Rates, signs, frames, synchronized channels and coverage</td>
+<td>Whether the fitted problem matches the observations</td>
+</tr>
+<tr>
+<td>Numerical termination</td>
+<td>Success flag, residual/objective, budget, bounds and fallback</td>
+<td>Whether the intended solve completed</td>
+</tr>
+<tr>
+<td>Training fit</td>
+<td>Per-joint/component RMSE, bias, residual traces and nominal comparison</td>
+<td>What the model explains in the fitted data</td>
+</tr>
+<tr>
+<td>Parameter interpretation</td>
+<td>Rank, observable combinations, physical checks, gauge and prior sensitivity</td>
+<td>Which parameter claims are justified</td>
+</tr>
+<tr>
+<td>Held-out prediction</td>
+<td>Same metrics on unused data, coverage and leakage checks</td>
+<td>Whether the improvement transfers</td>
+</tr>
+<tr>
+<td>Export parity</td>
+<td>Reloaded-model effort or FK vs selected fitted stage</td>
+<td>Whether the delivered model represents the fitted result</td>
+</tr>
+</tbody>
+</table>
+<p>Plot residuals against time and relevant configuration/velocity/acceleration,
+as applicable. Persistent bias, phase lag or structured errors warrant checking
+synchronization, conversion or missing effects before adding model complexity.
+Correlation alone can conceal amplitude/bias error. Report each effort in its
+proper unit (N or Nm), and translation/rotation separately unless justified
+whitening defines a dimensionless residual. Do not combine mixed units into an
+unlabeled aggregate error. Define relative errors and zero-signal behavior.</p>
+<p>Good effort prediction does not prove each link parameter is correct. Synthetic
+truth comparisons should use identifiable coordinates where appropriate;
+real-data parameter analysis needs physical plausibility and sensitivity,
+not an invented ground-truth vector. A positive pseudo-inertia candidate can
+still have an unsuccessful optimizer termination or poor validation fit.</p>
+<p><strong>Output:</strong> methodology, procedure, model fitting results, parameter analysis,
+held-out validation and limitations, with every candidate's status retained.</p>
+<h2 id="8-validate-export-and-make-the-example-reusable">8. Validate, export and make the example reusable<a class="headerlink" href="#8-validate-export-and-make-the-example-reusable" title="Permanent link">&para;</a></h2>
+<p>Evaluate final held-out data with the selected model and frozen processing.
+Label evidence as training-only, temporal holdout, separate simulation or
+independent real recording. If no genuine held-out data exist, state that
+validation is unavailable; a training fallback does not fill this gap.</p>
+<p>Use <a href="../reporting_and_verification/">reporting and verification</a>, but inspect
+which checks were computed, skipped and passed. A passing verdict with absent
+validation checks does not establish generalization. Choose task thresholds
+from the application and measurement limits before measuring; preserve
+existing regression gates unless a separate reviewed change justifies them.</p>
+<p>Export only an explicitly selected, accepted result stage to a new output.
+Reload the model and compare FK for calibration or inverse dynamics for
+identification on declared states. Check inertial frames/CoM/tensors and
+physical consistency where relevant. Existing inertial-export limitations
+require explicit checks; a written URDF alone is insufficient evidence.</p>
+<p>Archive paired core/examples revisions, dependency versions, input/model/config
+hashes, commands, processing/splits, solver settings/status, metrics, reports,
+selected stage and export/reload evidence. Specify which fields the existing
+archive captures and attach the remaining evidence explicitly. Hardware control
+or rollout claims require their own executed experiment.</p>
+<p>A reusable example includes a README explaining purpose and limitations, data
+and model provenance, unified config, a small supported adapter, reproducible
+commands, an evidence report and regression tests for its essential behavior.
+See the examples repository's
+<a href="https://github.com/thanhndv212/figaroh-examples/blob/main/docs/new-example-guide.md">new-example guide</a>
+for the folder layout and review checklist.</p>
 
 
 
@@ -2096,10 +2347,10 @@ residual interpretation and acceptance evidence.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "content.code.copy", "content.action.edit", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "content.code.copy", "content.action.edit", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

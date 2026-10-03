@@ -330,7 +330,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../further_reading/roadmap/" class="md-tabs__link">
+        <a href="../../further_reading/contributing/" class="md-tabs__link">
           
   
   
@@ -501,6 +501,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../example_workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plan, Fit & Validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reporting_and_verification/" class="md-nav__link">
         
   
@@ -542,10 +570,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
         
           
-          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
             
   
   
@@ -563,8 +591,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1819,6 +1847,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#physical-inertial-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Physical inertial conventions
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2090,6 +2129,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../further_reading/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../further_reading/roadmap/" class="md-nav__link">
         
   
@@ -2098,6 +2165,34 @@
     
   
     Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../further_reading/plans/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Delivery Plans
   
 
     
@@ -2741,6 +2836,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#physical-inertial-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Physical inertial conventions
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2881,8 +2987,7 @@ robot-specific implementations of key methods.</p>
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 66</span>
-<span class="normal"> 67</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 67</span>
 <span class="normal"> 68</span>
 <span class="normal"> 69</span>
 <span class="normal"> 70</span>
@@ -2941,7 +3046,8 @@ robot-specific implementations of key methods.</p>
 <span class="normal">123</span>
 <span class="normal">124</span>
 <span class="normal">125</span>
-<span class="normal">126</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">config_file</span><span class="o">=</span><span class="s2">"config/robot_config.yaml"</span><span class="p">):</span>
+<span class="normal">126</span>
+<span class="normal">127</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">config_file</span><span class="o">=</span><span class="s2">"config/robot_config.yaml"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Initialize base identification with robot model and configuration.</span>
 
 <span class="sd">    Args:</span>
@@ -3236,8 +3342,7 @@ deviations from the WLS fit are stored under
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">144</span>
-<span class="normal">145</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">145</span>
 <span class="normal">146</span>
 <span class="normal">147</span>
 <span class="normal">148</span>
@@ -3335,7 +3440,8 @@ deviations from the WLS fit are stored under
 <span class="normal">240</span>
 <span class="normal">241</span>
 <span class="normal">242</span>
-<span class="normal">243</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span>
+<span class="normal">243</span>
+<span class="normal">244</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">decimate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">decimation_factor</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
@@ -3691,8 +3797,7 @@ phi = identification.solve_with_custom_solver(
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">245</span>
-<span class="normal">246</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">246</span>
 <span class="normal">247</span>
 <span class="normal">248</span>
 <span class="normal">249</span>
@@ -3829,7 +3934,8 @@ phi = identification.solve_with_custom_solver(
 <span class="normal">380</span>
 <span class="normal">381</span>
 <span class="normal">382</span>
-<span class="normal">383</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve_with_custom_solver</span><span class="p">(</span>
+<span class="normal">383</span>
+<span class="normal">384</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve_with_custom_solver</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">method</span><span class="o">=</span><span class="s2">"lstsq"</span><span class="p">,</span>
     <span class="n">regularization</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -4040,8 +4146,7 @@ and applies the appropriate parser.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">385</span>
-<span class="normal">386</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">386</span>
 <span class="normal">387</span>
 <span class="normal">388</span>
 <span class="normal">389</span>
@@ -4078,7 +4183,8 @@ and applies the appropriate parser.</p>
 <span class="normal">420</span>
 <span class="normal">421</span>
 <span class="normal">422</span>
-<span class="normal">423</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_file</span><span class="p">,</span> <span class="n">setting_type</span><span class="o">=</span><span class="s2">"identification"</span><span class="p">):</span>
+<span class="normal">423</span>
+<span class="normal">424</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_file</span><span class="p">,</span> <span class="n">setting_type</span><span class="o">=</span><span class="s2">"identification"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Load the identification parameters from the yaml file.</span>
 
 <span class="sd">    This method supports both legacy YAML format and the new unified</span>
@@ -4232,8 +4338,7 @@ data exactly as before. Passed through from
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">425</span>
-<span class="normal">426</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">426</span>
 <span class="normal">427</span>
 <span class="normal">428</span>
 <span class="normal">429</span>
@@ -4255,7 +4360,8 @@ data exactly as before. Passed through from
 <span class="normal">445</span>
 <span class="normal">446</span>
 <span class="normal">447</span>
-<span class="normal">448</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
+<span class="normal">448</span>
+<span class="normal">449</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_trajectory_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Load and process CSV data.</span>
 
@@ -4301,8 +4407,7 @@ data exactly as before. Passed through from
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">450</span>
-<span class="normal">451</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">451</span>
 <span class="normal">452</span>
 <span class="normal">453</span>
 <span class="normal">454</span>
@@ -4322,7 +4427,8 @@ data exactly as before. Passed through from
 <span class="normal">468</span>
 <span class="normal">469</span>
 <span class="normal">470</span>
-<span class="normal">471</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">truncate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">471</span>
+<span class="normal">472</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">truncate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Load and process data"""</span>
     <span class="c1"># Set default filter configuration</span>
     <span class="n">filter_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_config</span>
@@ -4368,8 +4474,7 @@ parameters.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">473</span>
-<span class="normal">474</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">474</span>
 <span class="normal">475</span>
 <span class="normal">476</span>
 <span class="normal">477</span>
@@ -4379,7 +4484,8 @@ parameters.</p>
 <span class="normal">481</span>
 <span class="normal">482</span>
 <span class="normal">483</span>
-<span class="normal">484</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_full_regressor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">484</span>
+<span class="normal">485</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_full_regressor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Build regressor matrix, compute pre-identified values of standard</span>
 <span class="sd">    parameters, compute joint torques based on pre-identified standard</span>
 <span class="sd">    parameters."""</span>
@@ -4413,8 +4519,7 @@ parameters.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">486</span>
-<span class="normal">487</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">487</span>
 <span class="normal">488</span>
 <span class="normal">489</span>
 <span class="normal">490</span>
@@ -4444,7 +4549,8 @@ parameters.</p>
 <span class="normal">514</span>
 <span class="normal">515</span>
 <span class="normal">516</span>
-<span class="normal">517</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">initialize_standard_parameters</span><span class="p">(</span>
+<span class="normal">517</span>
+<span class="normal">518</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">initialize_standard_parameters</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Initialize standard parameters for the robot."""</span>
@@ -4498,8 +4604,7 @@ parameters.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">519</span>
-<span class="normal">520</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">520</span>
 <span class="normal">521</span>
 <span class="normal">522</span>
 <span class="normal">523</span>
@@ -4508,7 +4613,8 @@ parameters.</p>
 <span class="normal">526</span>
 <span class="normal">527</span>
 <span class="normal">528</span>
-<span class="normal">529</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_reference_torque</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">529</span>
+<span class="normal">530</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_reference_torque</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Compute reference joint torques based on standard parameters and dynamic regressor."""</span>
 
     <span class="c1"># joint torque estimated from p,v,a with std params</span>
@@ -4541,9 +4647,9 @@ parameters.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">907</span>
-<span class="normal">908</span>
-<span class="normal">909</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_kinematics_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">908</span>
+<span class="normal">909</span>
+<span class="normal">910</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_kinematics_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Process kinematics data (positions, velocities, accelerations) with filtering."""</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">filter_kinematics_data</span><span class="p">(</span><span class="n">filter_config</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -4624,8 +4730,7 @@ parameters.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">911</span>
-<span class="normal">912</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">912</span>
 <span class="normal">913</span>
 <span class="normal">914</span>
 <span class="normal">915</span>
@@ -4673,7 +4778,8 @@ parameters.</p>
 <span class="normal">957</span>
 <span class="normal">958</span>
 <span class="normal">959</span>
-<span class="normal">960</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">filter_kinematics_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">960</span>
+<span class="normal">961</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">filter_kinematics_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Apply filtering to data with configurable parameters.</span>
 
 <span class="sd">    Args:</span>
@@ -4745,14 +4851,14 @@ parameters.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">962</span>
-<span class="normal">963</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">963</span>
 <span class="normal">964</span>
 <span class="normal">965</span>
 <span class="normal">966</span>
 <span class="normal">967</span>
 <span class="normal">968</span>
-<span class="normal">969</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_torque_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="normal">969</span>
+<span class="normal">970</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_torque_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Process torque data (generic implementation, should be overridden for robot-specific processing)."""</span>
     <span class="c1"># Generic torque processing - robots should override this method</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span><span class="p">[</span><span class="s2">"torques"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -4786,8 +4892,7 @@ physical-consistency / reconstruction status.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1763</span>
-<span class="normal">1764</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1764</span>
 <span class="normal">1765</span>
 <span class="normal">1766</span>
 <span class="normal">1767</span>
@@ -4898,11 +5003,7 @@ physical-consistency / reconstruction status.</p>
 <span class="normal">1872</span>
 <span class="normal">1873</span>
 <span class="normal">1874</span>
-<span class="normal">1875</span>
-<span class="normal">1876</span>
-<span class="normal">1877</span>
-<span class="normal">1878</span>
-<span class="normal">1879</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_quality_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">1875</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_quality_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Print a formatted identification quality report to the terminal.</span>
 
 <span class="sd">    Reports condition number, overall torque residual statistics,</span>
@@ -4932,9 +5033,7 @@ physical-consistency / reconstruction status.</p>
         <span class="n">cond_label</span> <span class="o">=</span> <span class="p">(</span>
             <span class="s2">"well-conditioned"</span>
             <span class="k">if</span> <span class="n">cond_num</span> <span class="o">&lt;</span> <span class="mi">100</span>
-            <span class="k">else</span> <span class="s2">"moderately-conditioned"</span>
-            <span class="k">if</span> <span class="n">cond_num</span> <span class="o">&lt;</span> <span class="mi">1000</span>
-            <span class="k">else</span> <span class="s2">"ill-conditioned"</span>
+            <span class="k">else</span> <span class="s2">"moderately-conditioned"</span> <span class="k">if</span> <span class="n">cond_num</span> <span class="o">&lt;</span> <span class="mi">1000</span> <span class="k">else</span> <span class="s2">"ill-conditioned"</span>
         <span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  Condition:    </span><span class="si">{</span><span class="n">cond_num</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">cond_label</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -4968,9 +5067,7 @@ physical-consistency / reconstruction status.</p>
     <span class="n">std_relative</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"std_relative"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">base_names</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"base parameters names"</span><span class="p">,</span> <span class="p">[])</span>
     <span class="k">if</span> <span class="n">std_relative</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">std_relative</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">base_names</span><span class="p">):</span>
-        <span class="n">order</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
-            <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">base_names</span><span class="p">)),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">std_relative</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-        <span class="p">)</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">base_names</span><span class="p">)),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">std_relative</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"  Base-Parameter Uncertainty (top 5 by relative std-dev)"</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">order</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"    </span><span class="si">{</span><span class="n">base_names</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">&lt;50s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">std_relative</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">8.1f</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
@@ -4988,8 +5085,7 @@ physical-consistency / reconstruction status.</p>
                 <span class="s2">"These are NOT an independent generalization test."</span>
             <span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">"  Validation (identification set, "</span>
-                <span class="sa">f</span><span class="s2">"n=</span><span class="si">{</span><span class="n">val</span><span class="p">[</span><span class="s1">'n_val_samples'</span><span class="p">]</span><span class="si">}</span><span class="s2">)"</span>
+                <span class="sa">f</span><span class="s2">"  Validation (identification set, "</span> <span class="sa">f</span><span class="s2">"n=</span><span class="si">{</span><span class="n">val</span><span class="p">[</span><span class="s1">'n_val_samples'</span><span class="p">]</span><span class="si">}</span><span class="s2">)"</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  Validation (separate set, n=</span><span class="si">{</span><span class="n">val</span><span class="p">[</span><span class="s1">'n_val_samples'</span><span class="p">]</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
@@ -5137,7 +5233,11 @@ HTML file — the visual counterpart of :meth:<code>print_quality_report</code>.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1881</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1877</span>
+<span class="normal">1878</span>
+<span class="normal">1879</span>
+<span class="normal">1880</span>
+<span class="normal">1881</span>
 <span class="normal">1882</span>
 <span class="normal">1883</span>
 <span class="normal">1884</span>
@@ -5169,11 +5269,7 @@ HTML file — the visual counterpart of :meth:<code>print_quality_report</code>.
 <span class="normal">1910</span>
 <span class="normal">1911</span>
 <span class="normal">1912</span>
-<span class="normal">1913</span>
-<span class="normal">1914</span>
-<span class="normal">1915</span>
-<span class="normal">1916</span>
-<span class="normal">1917</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">export_html_report</span><span class="p">(</span>
+<span class="normal">1913</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">export_html_report</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"results"</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Export the identification quality report as a self-contained</span>
@@ -5220,133 +5316,32 @@ HTML file — the visual counterpart of :meth:<code>print_quality_report</code>.
 
 
 <h3 id="figaroh.identification.base_identification.BaseIdentification.verify" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">verify</span><span class="p">(</span><span class="n">thresholds</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">verify</span><span class="p">(</span><span class="n">thresholds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s1">'prediction'</span><span class="p">)</span></code>
 
 <a href="#figaroh.identification.base_identification.BaseIdentification.verify" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents ">
 
-        <p>Check this identification's metrics against pass/fail thresholds.</p>
-<p>Unlike :meth:<code>print_quality_report</code>/:meth:<code>export_html_report</code>
-(for a human to read), this returns a machine-checkable
-:class:<code>~figaroh.tools._report_common.VerificationVerdict</code> a CI
-script can branch on. Computed entirely from data already
-gathered during :meth:<code>solve</code> — never raises after a successful
-solve, and never gates <code>solve()</code> itself (opt-in, called
-whenever the caller wants a verdict).</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>thresholds</code>
-            </td>
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Per-metric <code>{"threshold": float, "comparison":
-"max"|"min"}</code> overrides. Defaults to
-<code>IDENTIFICATION_DEFAULT_THRESHOLDS</code> (a 6-DOF arm and a
-30-DOF humanoid don't share the same bar — override per
-robot as needed).</p>
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>VerificationVerdict</code></td>            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p><code>passed</code>, per-metric <code>checks</code>, the</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-<td></td>            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>raw <code>metrics</code> dict, human-readable <code>insights</code> (the same</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-<td></td>            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>text used by :meth:<code>export_html_report</code>), and <code>metadata</code></p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-<td></td>            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>(git commit, config file hash, timestamp, robot name).</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-<p><span class="doc-section-title">Raises:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="AttributeError">AttributeError</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If called before :meth:<code>solve</code>.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+        <p>Return scoped acceptance evidence with explicit incomplete states.</p>
+<p><code>scope="execution"</code> checks finite numerical fit outputs;
+it does not certify prediction, physical parameters or export.
+<code>scope="prediction"</code> (default) additionally requires independent validation
+and explicit application error limits. No universal improvement,
+correlation, conditioning or prediction-error gate is imposed.</p>
+<p><code>thresholds</code> maps metric names to <code>threshold</code>, <code>comparison</code>
+(min/max), and optional <code>required</code> (default True). Missing required
+evidence produces not_evaluated, not PASS. Nonfinite evidence fails.
+<code>passed</code> is True only when all required checks in scope pass.</p>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1919</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1915</span>
+<span class="normal">1916</span>
+<span class="normal">1917</span>
+<span class="normal">1918</span>
+<span class="normal">1919</span>
 <span class="normal">1920</span>
 <span class="normal">1921</span>
 <span class="normal">1922</span>
@@ -5441,32 +5436,46 @@ robot as needed).</p>
 <span class="normal">2011</span>
 <span class="normal">2012</span>
 <span class="normal">2013</span>
-<span class="normal">2014</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">verify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thresholds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Check this identification's metrics against pass/fail thresholds.</span>
+<span class="normal">2014</span>
+<span class="normal">2015</span>
+<span class="normal">2016</span>
+<span class="normal">2017</span>
+<span class="normal">2018</span>
+<span class="normal">2019</span>
+<span class="normal">2020</span>
+<span class="normal">2021</span>
+<span class="normal">2022</span>
+<span class="normal">2023</span>
+<span class="normal">2024</span>
+<span class="normal">2025</span>
+<span class="normal">2026</span>
+<span class="normal">2027</span>
+<span class="normal">2028</span>
+<span class="normal">2029</span>
+<span class="normal">2030</span>
+<span class="normal">2031</span>
+<span class="normal">2032</span>
+<span class="normal">2033</span>
+<span class="normal">2034</span>
+<span class="normal">2035</span>
+<span class="normal">2036</span>
+<span class="normal">2037</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">verify</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">thresholds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">scope</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"prediction"</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return scoped acceptance evidence with explicit incomplete states.</span>
 
-<span class="sd">    Unlike :meth:`print_quality_report`/:meth:`export_html_report`</span>
-<span class="sd">    (for a human to read), this returns a machine-checkable</span>
-<span class="sd">    :class:`~figaroh.tools._report_common.VerificationVerdict` a CI</span>
-<span class="sd">    script can branch on. Computed entirely from data already</span>
-<span class="sd">    gathered during :meth:`solve` — never raises after a successful</span>
-<span class="sd">    solve, and never gates ``solve()`` itself (opt-in, called</span>
-<span class="sd">    whenever the caller wants a verdict).</span>
+<span class="sd">    ``scope="execution"`` checks finite numerical fit outputs;</span>
+<span class="sd">    it does not certify prediction, physical parameters or export.</span>
+<span class="sd">    ``scope="prediction"`` (default) additionally requires independent validation</span>
+<span class="sd">    and explicit application error limits. No universal improvement,</span>
+<span class="sd">    correlation, conditioning or prediction-error gate is imposed.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        thresholds: Per-metric ``{"threshold": float, "comparison":</span>
-<span class="sd">            "max"|"min"}`` overrides. Defaults to</span>
-<span class="sd">            ``IDENTIFICATION_DEFAULT_THRESHOLDS`` (a 6-DOF arm and a</span>
-<span class="sd">            30-DOF humanoid don't share the same bar — override per</span>
-<span class="sd">            robot as needed).</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        VerificationVerdict: ``passed``, per-metric ``checks``, the</span>
-<span class="sd">        raw ``metrics`` dict, human-readable ``insights`` (the same</span>
-<span class="sd">        text used by :meth:`export_html_report`), and ``metadata``</span>
-<span class="sd">        (git commit, config file hash, timestamp, robot name).</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        AttributeError: If called before :meth:`solve`.</span>
+<span class="sd">    ``thresholds`` maps metric names to ``threshold``, ``comparison``</span>
+<span class="sd">    (min/max), and optional ``required`` (default True). Missing required</span>
+<span class="sd">    evidence produces not_evaluated, not PASS. Nonfinite evidence fails.</span>
+<span class="sd">    ``passed`` is True only when all required checks in scope pass.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
@@ -5475,28 +5484,23 @@ robot as needed).</p>
 
     <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools._report_common</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
         <span class="n">IDENTIFICATION_DEFAULT_THRESHOLDS</span><span class="p">,</span>
-        <span class="n">evaluate_thresholds</span><span class="p">,</span>
+        <span class="n">scoped_verification</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.identification_report</span><span class="w"> </span><span class="kn">import</span> <span class="n">_build_insights</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.provenance</span><span class="w"> </span><span class="kn">import</span> <span class="n">collect_run_provenance</span>
 
     <span class="n">thresholds</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">thresholds</span> <span class="k">if</span> <span class="n">thresholds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="k">else</span> <span class="n">IDENTIFICATION_DEFAULT_THRESHOLDS</span>
+        <span class="n">thresholds</span> <span class="k">if</span> <span class="n">thresholds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">IDENTIFICATION_DEFAULT_THRESHOLDS</span>
     <span class="p">)</span>
 
     <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span>
     <span class="n">base_names</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"base parameters names"</span><span class="p">,</span> <span class="p">[])</span>
     <span class="n">std_relative_raw</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"std_relative"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">std_relative</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="nb">list</span><span class="p">(</span><span class="n">std_relative_raw</span><span class="p">)</span> <span class="k">if</span> <span class="n">std_relative_raw</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
-    <span class="p">)</span>
+    <span class="n">std_relative</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">std_relative_raw</span><span class="p">)</span> <span class="k">if</span> <span class="n">std_relative_raw</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
     <span class="n">validation</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"validation_metrics"</span><span class="p">)</span>
 
     <span class="n">metrics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">"condition_number"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-            <span class="s2">"condition number"</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">)</span>
-        <span class="p">),</span>
+        <span class="s2">"condition_number"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"condition number"</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">)),</span>
         <span class="s2">"rmse"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"rmse norm (N/m)"</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">)),</span>
     <span class="p">}</span>
     <span class="k">if</span> <span class="n">validation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -5507,12 +5511,55 @@ robot as needed).</p>
             <span class="s2">"improvement_pct"</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">)</span>
         <span class="p">)</span>
 
-    <span class="n">verdict</span> <span class="o">=</span> <span class="n">evaluate_thresholds</span><span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="n">thresholds</span><span class="p">)</span>
+    <span class="n">joint_names</span> <span class="o">=</span> <span class="p">(</span><span class="n">validation</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"joint_names"</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="n">independent</span> <span class="o">=</span> <span class="p">(</span><span class="n">validation</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"validation_source"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"validation_data"</span>
+    <span class="k">for</span> <span class="n">joint</span> <span class="ow">in</span> <span class="n">joint_names</span><span class="p">:</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+            <span class="n">validation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tau_measured_per_joint"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">joint</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="p">)</span>
+        <span class="n">predicted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+            <span class="n">validation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tau_identified_per_joint"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">joint</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">observed</span><span class="o">.</span><span class="n">size</span> <span class="ow">and</span> <span class="n">observed</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">predicted</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="s2">"validation"</span> <span class="k">if</span> <span class="n">independent</span> <span class="k">else</span> <span class="s2">"training"</span>
+            <span class="n">metrics</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_rmse:</span><span class="si">{</span><span class="n">joint</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">observed</span> <span class="o">-</span> <span class="n">predicted</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="p">)</span>
+            <span class="n">metrics</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_abs_bias:</span><span class="si">{</span><span class="n">joint</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
+                <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">observed</span> <span class="o">-</span> <span class="n">predicted</span><span class="p">))</span>
+            <span class="p">)</span>
+            <span class="n">metrics</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_peak_error:</span><span class="si">{</span><span class="n">joint</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">observed</span> <span class="o">-</span> <span class="n">predicted</span><span class="p">))</span>
+            <span class="p">)</span>
+    <span class="n">verdict</span> <span class="o">=</span> <span class="n">scoped_verification</span><span class="p">(</span>
+        <span class="n">metrics</span><span class="p">,</span>
+        <span class="n">thresholds</span><span class="p">,</span>
+        <span class="n">scope</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="s2">"finite_parameters"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"base parameters values"</span><span class="p">),</span>
+            <span class="s2">"finite_prediction"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"torque estimated"</span><span class="p">),</span>
+            <span class="s2">"finite_measurements"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"torque processed"</span><span class="p">),</span>
+            <span class="s2">"finite_fit_rmse"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"rmse norm (N/m)"</span><span class="p">),</span>
+        <span class="p">},</span>
+        <span class="n">independent</span><span class="p">,</span>
+        <span class="p">[</span><span class="sa">f</span><span class="s2">"validation_rmse:</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">joint_names</span><span class="p">],</span>
+        <span class="n">facts</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">"requested_validation_loaded"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"validation_data_file"</span><span class="p">)</span>
+                <span class="ow">or</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_val_available"</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+            <span class="p">),</span>
+            <span class="s2">"matching_torque_shapes"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">"torque estimated"</span><span class="p">])</span>
+                <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">"torque processed"</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"torque estimated"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"torque processed"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="k">else</span> <span class="kc">None</span>
+            <span class="p">),</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
     <span class="n">verdict</span><span class="o">.</span><span class="n">insights</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">i</span><span class="p">[</span><span class="s2">"text"</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">_build_insights</span><span class="p">(</span>
-            <span class="n">result</span><span class="p">,</span> <span class="n">std_relative</span><span class="p">,</span> <span class="n">base_names</span><span class="p">,</span> <span class="n">validation</span>
-        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">_build_insights</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">std_relative</span><span class="p">,</span> <span class="n">base_names</span><span class="p">,</span> <span class="n">validation</span><span class="p">)</span>
     <span class="p">]</span>
     <span class="n">verdict</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="s2">"_run_provenance"</span><span class="p">,</span> <span class="kc">None</span>
@@ -5523,9 +5570,7 @@ robot as needed).</p>
         <span class="n">n_val</span> <span class="o">=</span> <span class="n">validation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"n_val_samples"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">verdict</span><span class="o">.</span><span class="n">series</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">"time"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_val</span><span class="p">)),</span>
-            <span class="s2">"joint_names"</span><span class="p">:</span> <span class="n">validation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                <span class="s2">"joint_names"</span><span class="p">,</span> <span class="n">active_joints</span>
-            <span class="p">),</span>
+            <span class="s2">"joint_names"</span><span class="p">:</span> <span class="n">validation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"joint_names"</span><span class="p">,</span> <span class="n">active_joints</span><span class="p">),</span>
             <span class="s2">"nominal"</span><span class="p">:</span> <span class="n">validation</span><span class="p">[</span><span class="s2">"tau_nominal_per_joint"</span><span class="p">],</span>
             <span class="s2">"fitted"</span><span class="p">:</span> <span class="n">validation</span><span class="p">[</span><span class="s2">"tau_identified_per_joint"</span><span class="p">],</span>
             <span class="s2">"measured"</span><span class="p">:</span> <span class="n">validation</span><span class="p">[</span><span class="s2">"tau_measured_per_joint"</span><span class="p">],</span>
@@ -5547,7 +5592,7 @@ robot as needed).</p>
 
 
 <h3 id="figaroh.identification.base_identification.BaseIdentification.export_verification_report" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">export_verification_report</span><span class="p">(</span><span class="n">output_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s1">'results'</span><span class="p">,</span> <span class="n">thresholds</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">export_verification_report</span><span class="p">(</span><span class="n">output_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s1">'results'</span><span class="p">,</span> <span class="n">thresholds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s1">'prediction'</span><span class="p">)</span></code>
 
 <a href="#figaroh.identification.base_identification.BaseIdentification.export_verification_report" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -5617,6 +5662,22 @@ robot as needed).</p>
                   <code>None</code>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>scope</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Forwarded to :meth:<code>verify</code>; default prediction acceptance.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;prediction&#39;</code>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -5646,30 +5707,7 @@ robot as needed).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2016</span>
-<span class="normal">2017</span>
-<span class="normal">2018</span>
-<span class="normal">2019</span>
-<span class="normal">2020</span>
-<span class="normal">2021</span>
-<span class="normal">2022</span>
-<span class="normal">2023</span>
-<span class="normal">2024</span>
-<span class="normal">2025</span>
-<span class="normal">2026</span>
-<span class="normal">2027</span>
-<span class="normal">2028</span>
-<span class="normal">2029</span>
-<span class="normal">2030</span>
-<span class="normal">2031</span>
-<span class="normal">2032</span>
-<span class="normal">2033</span>
-<span class="normal">2034</span>
-<span class="normal">2035</span>
-<span class="normal">2036</span>
-<span class="normal">2037</span>
-<span class="normal">2038</span>
-<span class="normal">2039</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2039</span>
 <span class="normal">2040</span>
 <span class="normal">2041</span>
 <span class="normal">2042</span>
@@ -5684,11 +5722,39 @@ robot as needed).</p>
 <span class="normal">2051</span>
 <span class="normal">2052</span>
 <span class="normal">2053</span>
-<span class="normal">2054</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">export_verification_report</span><span class="p">(</span>
+<span class="normal">2054</span>
+<span class="normal">2055</span>
+<span class="normal">2056</span>
+<span class="normal">2057</span>
+<span class="normal">2058</span>
+<span class="normal">2059</span>
+<span class="normal">2060</span>
+<span class="normal">2061</span>
+<span class="normal">2062</span>
+<span class="normal">2063</span>
+<span class="normal">2064</span>
+<span class="normal">2065</span>
+<span class="normal">2066</span>
+<span class="normal">2067</span>
+<span class="normal">2068</span>
+<span class="normal">2069</span>
+<span class="normal">2070</span>
+<span class="normal">2071</span>
+<span class="normal">2072</span>
+<span class="normal">2073</span>
+<span class="normal">2074</span>
+<span class="normal">2075</span>
+<span class="normal">2076</span>
+<span class="normal">2077</span>
+<span class="normal">2078</span>
+<span class="normal">2079</span>
+<span class="normal">2080</span>
+<span class="normal">2081</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">export_verification_report</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"results"</span><span class="p">,</span>
     <span class="n">thresholds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">scope</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"prediction"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Write this identification's :meth:`verify` verdict as JSON.</span>
 
@@ -5697,6 +5763,7 @@ robot as needed).</p>
 <span class="sd">            ``{output_dir}/identification_verification.json``.</span>
 <span class="sd">        output_dir: Directory used when ``output_path`` is omitted.</span>
 <span class="sd">        thresholds: Forwarded to :meth:`verify`.</span>
+<span class="sd">        scope: Forwarded to :meth:`verify`; default prediction acceptance.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        str: The path the JSON verdict was written to.</span>
@@ -5705,21 +5772,23 @@ robot as needed).</p>
     <span class="kn">from</span><span class="w"> </span><span class="nn">os</span><span class="w"> </span><span class="kn">import</span> <span class="n">makedirs</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">os.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">join</span>
 
-    <span class="n">verdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span><span class="n">thresholds</span><span class="o">=</span><span class="n">thresholds</span><span class="p">)</span>
+    <span class="n">verdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span><span class="n">thresholds</span><span class="o">=</span><span class="n">thresholds</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="n">scope</span><span class="p">)</span>
     <span class="n">verdict_dict</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">asdict</span><span class="p">(</span><span class="n">verdict</span><span class="p">)</span>
 
     <span class="n">results_manager</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"results_manager"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">results_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">verdict_dict</span> <span class="o">=</span> <span class="n">results_manager</span><span class="o">.</span><span class="n">_convert_for_serialization</span><span class="p">(</span>
-            <span class="n">verdict_dict</span>
-        <span class="p">)</span>
+        <span class="n">verdict_dict</span> <span class="o">=</span> <span class="n">results_manager</span><span class="o">.</span><span class="n">_convert_for_serialization</span><span class="p">(</span><span class="n">verdict_dict</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">output_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">output_path</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s2">"identification_verification.json"</span><span class="p">)</span>
 
+    <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools._report_common</span><span class="w"> </span><span class="kn">import</span> <span class="n">verification_json_data</span>
+
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">verdict_dict</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span>
+            <span class="n">verification_json_data</span><span class="p">(</span><span class="n">verdict_dict</span><span class="p">),</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">allow_nan</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Verification report written to </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output_path</span>
@@ -5745,34 +5814,7 @@ robot as needed).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2056</span>
-<span class="normal">2057</span>
-<span class="normal">2058</span>
-<span class="normal">2059</span>
-<span class="normal">2060</span>
-<span class="normal">2061</span>
-<span class="normal">2062</span>
-<span class="normal">2063</span>
-<span class="normal">2064</span>
-<span class="normal">2065</span>
-<span class="normal">2066</span>
-<span class="normal">2067</span>
-<span class="normal">2068</span>
-<span class="normal">2069</span>
-<span class="normal">2070</span>
-<span class="normal">2071</span>
-<span class="normal">2072</span>
-<span class="normal">2073</span>
-<span class="normal">2074</span>
-<span class="normal">2075</span>
-<span class="normal">2076</span>
-<span class="normal">2077</span>
-<span class="normal">2078</span>
-<span class="normal">2079</span>
-<span class="normal">2080</span>
-<span class="normal">2081</span>
-<span class="normal">2082</span>
-<span class="normal">2083</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2083</span>
 <span class="normal">2084</span>
 <span class="normal">2085</span>
 <span class="normal">2086</span>
@@ -5812,7 +5854,34 @@ robot as needed).</p>
 <span class="normal">2120</span>
 <span class="normal">2121</span>
 <span class="normal">2122</span>
-<span class="normal">2123</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">2123</span>
+<span class="normal">2124</span>
+<span class="normal">2125</span>
+<span class="normal">2126</span>
+<span class="normal">2127</span>
+<span class="normal">2128</span>
+<span class="normal">2129</span>
+<span class="normal">2130</span>
+<span class="normal">2131</span>
+<span class="normal">2132</span>
+<span class="normal">2133</span>
+<span class="normal">2134</span>
+<span class="normal">2135</span>
+<span class="normal">2136</span>
+<span class="normal">2137</span>
+<span class="normal">2138</span>
+<span class="normal">2139</span>
+<span class="normal">2140</span>
+<span class="normal">2141</span>
+<span class="normal">2142</span>
+<span class="normal">2143</span>
+<span class="normal">2144</span>
+<span class="normal">2145</span>
+<span class="normal">2146</span>
+<span class="normal">2147</span>
+<span class="normal">2148</span>
+<span class="normal">2149</span>
+<span class="normal">2150</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Plot identification results using unified results manager."""</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"result"</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"No identification results to plot. Run solve() first."</span><span class="p">)</span>
@@ -5902,34 +5971,7 @@ robot as needed).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2125</span>
-<span class="normal">2126</span>
-<span class="normal">2127</span>
-<span class="normal">2128</span>
-<span class="normal">2129</span>
-<span class="normal">2130</span>
-<span class="normal">2131</span>
-<span class="normal">2132</span>
-<span class="normal">2133</span>
-<span class="normal">2134</span>
-<span class="normal">2135</span>
-<span class="normal">2136</span>
-<span class="normal">2137</span>
-<span class="normal">2138</span>
-<span class="normal">2139</span>
-<span class="normal">2140</span>
-<span class="normal">2141</span>
-<span class="normal">2142</span>
-<span class="normal">2143</span>
-<span class="normal">2144</span>
-<span class="normal">2145</span>
-<span class="normal">2146</span>
-<span class="normal">2147</span>
-<span class="normal">2148</span>
-<span class="normal">2149</span>
-<span class="normal">2150</span>
-<span class="normal">2151</span>
-<span class="normal">2152</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2152</span>
 <span class="normal">2153</span>
 <span class="normal">2154</span>
 <span class="normal">2155</span>
@@ -5969,7 +6011,34 @@ robot as needed).</p>
 <span class="normal">2189</span>
 <span class="normal">2190</span>
 <span class="normal">2191</span>
-<span class="normal">2192</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s2">"results"</span><span class="p">):</span>
+<span class="normal">2192</span>
+<span class="normal">2193</span>
+<span class="normal">2194</span>
+<span class="normal">2195</span>
+<span class="normal">2196</span>
+<span class="normal">2197</span>
+<span class="normal">2198</span>
+<span class="normal">2199</span>
+<span class="normal">2200</span>
+<span class="normal">2201</span>
+<span class="normal">2202</span>
+<span class="normal">2203</span>
+<span class="normal">2204</span>
+<span class="normal">2205</span>
+<span class="normal">2206</span>
+<span class="normal">2207</span>
+<span class="normal">2208</span>
+<span class="normal">2209</span>
+<span class="normal">2210</span>
+<span class="normal">2211</span>
+<span class="normal">2212</span>
+<span class="normal">2213</span>
+<span class="normal">2214</span>
+<span class="normal">2215</span>
+<span class="normal">2216</span>
+<span class="normal">2217</span>
+<span class="normal">2218</span>
+<span class="normal">2219</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s2">"results"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Save identification results using unified results manager."""</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"result"</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"No identification results to save. Run solve() first."</span><span class="p">)</span>
@@ -6853,9 +6922,10 @@ parameters from that segment.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Calculate joint velocities and accelerations from positions.</p>
-<p>Computes first and second order derivatives of joint positions using central
-differences. Handles both constant and variable timesteps.</p>
+        <p>Estimate interval tangent velocities and their coordinate derivatives.</p>
+<p>Configuration differences use the model/backend Lie-group operation, so
+positions have width <code>nq</code> and velocities/accelerations have width <code>nv</code>.
+Effort-selection flags do not determine these dimensions.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -6878,7 +6948,7 @@ differences. Handles both constant and variable timesteps.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Robot model (used when backend is None)</p>
+                <p>Robot model; unused when backend is supplied.</p>
               </div>
             </td>
             <td>
@@ -6894,7 +6964,9 @@ differences. Handles both constant and variable timesteps.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Joint position matrix (n_samples, n_joints)</p>
+                <p>Finite configurations of shape (n_samples, nq), with at
+least three samples. Manifold configurations must be valid for
+the selected model (e.g. normalized quaternions).</p>
               </div>
             </td>
             <td>
@@ -6903,17 +6975,14 @@ differences. Handles both constant and variable timesteps.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>param</code>
+                <code>identif_config</code>
             </td>
             <td>
                   <code><span title="dict">dict</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Parameters containing:
-- is_joint_torques: Whether using joint torques
-- is_external_wrench: Whether using external wrench
-- ts: Timestep if constant</p>
+                <p>Contains positive finite <code>ts</code> when dt is None.</p>
               </div>
             </td>
             <td>
@@ -6925,11 +6994,13 @@ differences. Handles both constant and variable timesteps.</p>
                 <code>dt</code>
             </td>
             <td>
-                  <code><span title="ndarray">ndarray</span></code>
+                  <code><span title="float">float</span> or <span title="ndarray">ndarray</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Variable timesteps between samples.</p>
+                <p>Positive finite sample interval, or
+one interval per consecutive configuration pair (n_samples - 1).
+Pass timestamp differences, not absolute timestamps.</p>
               </div>
             </td>
             <td>
@@ -6945,8 +7016,8 @@ differences. Handles both constant and variable timesteps.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If provided, uses backend.compute_difference
-instead of pin.difference for Lie group operations.</p>
+                <p>Supplies nq, nv and
+compute_difference instead of the Pinocchio model.</p>
               </div>
             </td>
             <td>
@@ -6971,11 +7042,39 @@ instead of pin.difference for Lie group operations.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <ul>
-<li>q (ndarray): Trimmed position matrix</li>
-<li>dq (ndarray): Joint velocity matrix</li>
-<li>ddq (ndarray): Joint acceleration matrix</li>
-</ul>
+                <p>Positions (n_samples - 2, nq), velocities and accelerations</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+<td></td>            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>(n_samples - 2, nv). All tangent coordinates are differentiated.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Invalid configurations, sample count or timesteps.</p>
               </div>
             </td>
           </tr>
@@ -6985,7 +7084,12 @@ instead of pin.difference for Lie group operations.</p>
 
 <details class="note" open>
   <summary>Note</summary>
-  <p>Two samples are removed from start/end due to central differences</p>
+  <p>Preserves the historical alignment: q[:-2] and the first n_samples-2
+forward interval velocities. Velocities represent interval midpoints,
+not the returned position timestamps. Acceleration is the gradient of
+those tangent components at the midpoint times (one-sided at endpoints).
+No interpolation to position timestamps or moving-frame transport is
+performed. Both discarded position samples are at the end.</p>
 </details>
 
             <details class="mkdocstrings-source">
@@ -7054,71 +7158,89 @@ instead of pin.difference for Lie group operations.</p>
 <span class="normal">260</span>
 <span class="normal">261</span>
 <span class="normal">262</span>
-<span class="normal">263</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_first_second_order_differentiation</span><span class="p">(</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_first_second_order_differentiation</span><span class="p">(</span>
     <span class="n">model</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">identif_config</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Calculate joint velocities and accelerations from positions.</span>
+<span class="w">    </span><span class="sd">"""Estimate interval tangent velocities and their coordinate derivatives.</span>
 
-<span class="sd">    Computes first and second order derivatives of joint positions using central</span>
-<span class="sd">    differences. Handles both constant and variable timesteps.</span>
+<span class="sd">    Configuration differences use the model/backend Lie-group operation, so</span>
+<span class="sd">    positions have width ``nq`` and velocities/accelerations have width ``nv``.</span>
+<span class="sd">    Effort-selection flags do not determine these dimensions.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        model (pin.Model): Robot model (used when backend is None)</span>
-<span class="sd">        q (ndarray): Joint position matrix (n_samples, n_joints)</span>
-<span class="sd">        param (dict): Parameters containing:</span>
-<span class="sd">            - is_joint_torques: Whether using joint torques</span>
-<span class="sd">            - is_external_wrench: Whether using external wrench</span>
-<span class="sd">            - ts: Timestep if constant</span>
-<span class="sd">        dt (ndarray, optional): Variable timesteps between samples.</span>
-<span class="sd">        backend (DynamicsBackend, optional): If provided, uses backend.compute_difference</span>
-<span class="sd">            instead of pin.difference for Lie group operations.</span>
+<span class="sd">        model (pin.Model): Robot model; unused when backend is supplied.</span>
+<span class="sd">        q (ndarray): Finite configurations of shape (n_samples, nq), with at</span>
+<span class="sd">            least three samples. Manifold configurations must be valid for</span>
+<span class="sd">            the selected model (e.g. normalized quaternions).</span>
+<span class="sd">        identif_config (dict): Contains positive finite ``ts`` when dt is None.</span>
+<span class="sd">        dt (float or ndarray, optional): Positive finite sample interval, or</span>
+<span class="sd">            one interval per consecutive configuration pair (n_samples - 1).</span>
+<span class="sd">            Pass timestamp differences, not absolute timestamps.</span>
+<span class="sd">        backend (DynamicsBackend, optional): Supplies nq, nv and</span>
+<span class="sd">            compute_difference instead of the Pinocchio model.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        tuple:</span>
-<span class="sd">            - q (ndarray): Trimmed position matrix</span>
-<span class="sd">            - dq (ndarray): Joint velocity matrix</span>
-<span class="sd">            - ddq (ndarray): Joint acceleration matrix</span>
+<span class="sd">        tuple: Positions (n_samples - 2, nq), velocities and accelerations</span>
+<span class="sd">        (n_samples - 2, nv). All tangent coordinates are differentiated.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: Invalid configurations, sample count or timesteps.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        Two samples are removed from start/end due to central differences</span>
+<span class="sd">        Preserves the historical alignment: q[:-2] and the first n_samples-2</span>
+<span class="sd">        forward interval velocities. Velocities represent interval midpoints,</span>
+<span class="sd">        not the returned position timestamps. Acceleration is the gradient of</span>
+<span class="sd">        those tangent components at the midpoint times (one-sided at endpoints).</span>
+<span class="sd">        No interpolation to position timestamps or moving-frame transport is</span>
+<span class="sd">        performed. Both discarded position samples are at the end.</span>
 <span class="sd">    """</span>
     <span class="n">nq</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">nq</span> <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">nq</span>
+    <span class="n">nv</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">nv</span> <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">nv</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">q</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">nq</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"q must have shape (n_samples, </span><span class="si">{</span><span class="n">nq</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"q must contain at least three samples"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">q</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"q must contain only finite configurations"</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">identif_config</span><span class="p">[</span><span class="s2">"is_joint_torques"</span><span class="p">]:</span>
-        <span class="n">dq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
-        <span class="n">ddq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+    <span class="n">intervals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">identif_config</span><span class="p">[</span><span class="s2">"ts"</span><span class="p">]</span> <span class="k">if</span> <span class="n">dt</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">dt</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">constant_dt</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">constant_dt</span><span class="p">:</span>
+        <span class="n">intervals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">intervals</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">intervals</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"dt must be scalar or have one timestep per sample pair"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">intervals</span><span class="p">))</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">intervals</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Every timestep must be finite and strictly positive"</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">identif_config</span><span class="p">[</span><span class="s2">"is_external_wrench"</span><span class="p">]:</span>
-        <span class="n">dq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
-        <span class="n">ddq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">dq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nv</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">timestep</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">intervals</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">difference</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">compute_difference</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">difference</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">q</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">dq</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">difference</span> <span class="o">/</span> <span class="n">timestep</span>
 
-    <span class="k">if</span> <span class="n">dt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">dt</span> <span class="o">=</span> <span class="n">identif_config</span><span class="p">[</span><span class="s2">"ts"</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">dq</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">compute_difference</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="p">:],</span> <span class="n">q</span><span class="p">[</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:])</span> <span class="o">/</span> <span class="n">dt</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">dq</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">q</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="p">:],</span> <span class="n">q</span><span class="p">[</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:])</span> <span class="o">/</span> <span class="n">dt</span>
-
-        <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nq</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">ddq</span><span class="p">[:,</span> <span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">dq</span><span class="p">[:,</span> <span class="n">jj</span><span class="p">],</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">dt</span>
+    <span class="k">if</span> <span class="n">constant_dt</span><span class="p">:</span>
+        <span class="n">ddq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">dq</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">intervals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">dq</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">compute_difference</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="p">:],</span> <span class="n">q</span><span class="p">[</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:])</span> <span class="o">/</span> <span class="n">dt</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">dq</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">q</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="p">:],</span> <span class="n">q</span><span class="p">[</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:])</span> <span class="o">/</span> <span class="n">dt</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+        <span class="n">midpoint_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">intervals</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">intervals</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">midpoint_times</span><span class="p">))</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">midpoint_times</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"dt produces invalid interval midpoint times"</span><span class="p">)</span>
+        <span class="n">ddq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">dq</span><span class="p">,</span> <span class="n">midpoint_times</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nq</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">ddq</span><span class="p">[:,</span> <span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">dq</span><span class="p">[:,</span> <span class="n">jj</span><span class="p">],</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">dt</span>
-
-    <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-
-    <span class="n">dq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">dq</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dq</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">ddq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">ddq</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ddq</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">q</span><span class="p">,</span> <span class="n">dq</span><span class="p">,</span> <span class="n">ddq</span>
+    <span class="k">return</span> <span class="n">q</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">dq</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">ddq</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -7238,16 +7360,7 @@ from start and end of filtered signal.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/identification_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span>
-<span class="normal">275</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">275</span>
 <span class="normal">276</span>
 <span class="normal">277</span>
 <span class="normal">278</span>
@@ -7272,7 +7385,16 @@ from start and end of filtered signal.</p>
 <span class="normal">297</span>
 <span class="normal">298</span>
 <span class="normal">299</span>
-<span class="normal">300</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">low_pass_filter_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">identif_config</span><span class="p">,</span> <span class="n">nbutter</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">low_pass_filter_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">identif_config</span><span class="p">,</span> <span class="n">nbutter</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Apply zero-phase Butterworth low-pass filter to measurement data.</span>
 
 <span class="sd">    Uses scipy's filtfilt for zero-phase digital filtering. Removes high</span>
@@ -9213,7 +9335,22 @@ parameter support.</p>
 
     </div>
 
-</div>
+</div><h2 id="physical-inertial-conventions">Physical inertial conventions<a class="headerlink" href="#physical-inertial-conventions" title="Permanent link">&para;</a></h2>
+<p>Physical-consistency utilities use Pinocchio dynamic-parameter order:
+<code>[m, mx, my, mz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz]</code>. The first moments are
+<code>h = m*c</code>; the six tensor entries describe rotational inertia <code>I_O</code> about
+the link-frame origin. They are distinct from inertia <code>I_C</code> about the centre
+of mass: <code>I_O = I_C + m * ((c.T*c)*eye(3) - c*c.T)</code>.</p>
+<p>The physical constraint is positive semidefiniteness of the pseudo-inertia
+<code>P = [[Sigma, h], [h.T, m]]</code>, with
+<code>Sigma = 0.5*trace(I_O)*eye(3) - I_O</code>. Projection uses this second-moment
+block as its decision variable and converts back using
+<code>I_O = trace(Sigma)*eye(3) - Sigma</code>. Its objective and weights apply to the
+ten dynamic parameters. SDP reconstruction imposes the same pseudo-inertia
+constraint while preserving its base-parameter equalities.</p>
+<p>The existing CAD <code>com_bounds</code> option bounds first moments <code>h</code>, in kg*m,
+rather than CoM coordinates in metres. Physical feasibility does not establish
+identifiability or complete inertial URDF export.</p>
 
 
 
