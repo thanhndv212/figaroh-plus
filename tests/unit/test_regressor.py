@@ -4,7 +4,9 @@ import pytest
 import numpy as np
 import sys
 import os
-from unittest.mock import Mock, patch
+from types import SimpleNamespace
+
+import pinocchio as pin
 
 # Add the src directory to the path if needed
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
@@ -34,101 +36,132 @@ except ImportError as e:
     raise
 
 
-class TestRegressorBuilding:
-    """Test main regressor building functions."""
+@pytest.fixture(scope="module")
+def arm():
+    """Pinocchio sample manipulator with random, sign-mixed motion samples."""
+    model = pin.buildSampleModelManipulator()
+    robot = SimpleNamespace(model=model, data=model.createData())
+    rng = np.random.default_rng(58)
+    n = 7
+    q = np.array([pin.randomConfiguration(model) for _ in range(n)])
+    v = rng.uniform(-1, 1, (n, model.nv))
+    a = rng.uniform(-3, 3, (n, model.nv))
+    return robot, q, v, a
 
-    @pytest.fixture
-    def mock_robot(self):
-        """Create a mock robot for testing."""
-        robot = Mock()
-        robot.model.nq = 3
-        robot.model.nv = 3
-        robot.model.inertias.tolist.return_value = [
-            Mock(mass=1.0),
-            Mock(mass=2.0),
-            Mock(mass=0.0),
-        ]
-        robot.data = Mock()
-        return robot
+
+def _config(nv, act_idxv=None, **flags):
+    cfg = {
+        "is_joint_torques": True,
+        "has_friction": False,
+        "has_actuator_inertia": False,
+        "has_joint_offset": False,
+        "act_idxv": list(range(nv)) if act_idxv is None else act_idxv,
+    }
+    cfg.update(flags)
+    return cfg
+
+
+class TestRegressorBuilding:
+    """build_regressor_basic on a real Pinocchio model (no mocks)."""
 
     def test_build_regressor_basic_exists(self):
         """Test that the main function exists and is callable."""
         assert callable(build_regressor_basic)
 
-    def test_build_regressor_basic_joint_torques(self, mock_robot):
-        """Test basic regressor building for joint torques."""
-        # Mock pinocchio functions
-        with patch("figaroh.tools.regressor.pin") as mock_pin:
-            mock_pin.computeJointTorqueRegressor.return_value = np.random.randn(3, 30)
+    def test_rows_are_joint_major_pinocchio_regressor(self, arm):
+        """Row j * N + i is joint j at sample i of Pinocchio's own regressor."""
+        robot, q, v, a = arm
+        model, n = robot.model, len(q)
 
-            q = np.array([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]])
-            v = np.array([[0.7, 0.8, 0.9], [1.0, 1.1, 1.2]])
-            a = np.array([[1.3, 1.4, 1.5], [1.6, 1.7, 1.8]])
+        W = build_regressor_basic(robot, q, v, a, _config(model.nv))
 
-            param = {
-                "is_joint_torques": True,
-                "has_friction": False,
-                "has_actuator_inertia": False,
-                "has_joint_offset": False,
-            }
+        assert W.shape == (n * model.nv, 10 * model.nv)
+        for i in range(n):
+            Y = pin.computeJointTorqueRegressor(
+                model, model.createData(), q[i], v[i], a[i]
+            )
+            np.testing.assert_allclose(W[i::n], Y, atol=1e-12)
 
-            try:
-                W = build_regressor_basic(mock_robot, q, v, a, param)
+    @pytest.mark.parametrize(
+        "flags, blocks",
+        [
+            ({}, []),
+            ({"has_friction": True}, ["fv", "fs"]),
+            ({"has_actuator_inertia": True}, ["ia"]),
+            ({"has_joint_offset": True}, ["off"]),
+            (
+                {
+                    "has_friction": True,
+                    "has_actuator_inertia": True,
+                    "has_joint_offset": True,
+                },
+                ["fv", "fs", "ia", "off"],
+            ),
+        ],
+        ids=["none", "friction", "actuator_inertia", "joint_offset", "all"],
+    )
+    def test_extra_blocks_follow_inertial_columns_in_order(self, arm, flags, blocks):
+        """Each enabled block takes nv columns after the inertial ones, in the
+        order fv, fs, ia, off, and only joint j's rows populate its column."""
+        robot, q, v, a = arm
+        nv, n = robot.model.nv, len(q)
+        expected_column = {
+            "fv": lambda j: v[:, j],
+            "fs": lambda j: np.sign(v[:, j]),
+            "ia": lambda j: a[:, j],
+            "off": lambda j: np.ones(n),
+        }
 
-                # Basic shape check - should be 2D array
-                assert isinstance(W, np.ndarray)
-                assert W.ndim == 2
-                assert W.shape[0] > 0  # Should have some rows
-                assert W.shape[1] > 0  # Should have some columns
+        W = build_regressor_basic(robot, q, v, a, _config(nv, **flags))
 
-            except Exception as e:
-                # If the function signature is different, skip this test
-                pytest.skip(f"Function signature different than expected: {e}")
+        assert W.shape == (n * nv, (10 + len(blocks)) * nv)
+        for k, block in enumerate(blocks):
+            for j in range(nv):
+                col = W[:, 10 * nv + k * nv + j].reshape(nv, n)
+                np.testing.assert_array_equal(col[j], expected_column[block](j))
+                np.testing.assert_array_equal(np.delete(col, j, axis=0), 0.0)
 
-    def test_build_regressor_basic_with_different_params(self, mock_robot):
-        """Test regressor building with different parameter configurations."""
-        with patch("figaroh.tools.regressor.pin") as mock_pin:
-            mock_pin.computeJointTorqueRegressor.return_value = np.random.randn(3, 30)
+    def test_inactive_joints_get_no_extra_entries(self, arm):
+        robot, q, v, a = arm
+        nv = robot.model.nv
+        active = [0, 2, 5]
+        flags = {
+            "has_friction": True,
+            "has_actuator_inertia": True,
+            "has_joint_offset": True,
+        }
 
-            q = np.array([[0.1, 0.2, 0.3]])
-            v = np.array([[0.7, 0.8, 0.9]])
-            a = np.array([[1.3, 1.4, 1.5]])
+        W = build_regressor_basic(robot, q, v, a, _config(nv, active, **flags))
 
-            # Test different parameter configurations
-            test_params = [
-                {"is_joint_torques": True},
-                {"is_joint_torques": True, "has_friction": True},
-                {"is_joint_torques": True, "has_actuator_inertia": True},
-                {"is_joint_torques": True, "has_joint_offset": True},
-            ]
+        extra = W[:, 10 * nv :]
+        for k in range(4):
+            for j in range(nv):
+                populated = np.any(extra[:, k * nv + j] != 0)
+                assert populated == (j in active), (k, j)
+        # The inertial part does not depend on which joints are active.
+        W_all = build_regressor_basic(robot, q, v, a, _config(nv, **flags))
+        np.testing.assert_array_equal(W[:, : 10 * nv], W_all[:, : 10 * nv])
 
-            for param in test_params:
-                try:
-                    W = build_regressor_basic(mock_robot, q, v, a, param)
-                    assert isinstance(W, np.ndarray)
-                    assert W.ndim == 2
-                except Exception as e:
-                    # If this parameter configuration isn't supported, that's OK
-                    print(f"Parameter config {param} not supported: {e}")
+    def test_single_sample_1d_matches_2d(self, arm):
+        robot, q, v, a = arm
+        cfg = _config(robot.model.nv, has_friction=True)
 
-    def test_build_regressor_basic_single_sample(self, mock_robot):
-        """Test with single sample inputs."""
-        with patch("figaroh.tools.regressor.pin") as mock_pin:
-            mock_pin.computeJointTorqueRegressor.return_value = np.random.randn(3, 30)
+        W_1d = build_regressor_basic(robot, q[0], v[0], a[0], cfg)
+        W_2d = build_regressor_basic(robot, q[:1], v[:1], a[:1], cfg)
 
-            # Single sample as 1D arrays
-            q = np.array([0.1, 0.2, 0.3])
-            v = np.array([0.7, 0.8, 0.9])
-            a = np.array([1.3, 1.4, 1.5])
+        np.testing.assert_array_equal(W_1d, W_2d)
+        assert W_1d.shape == (robot.model.nv, 12 * robot.model.nv)
 
-            param = {"is_joint_torques": True}
+    def test_input_validation(self, arm):
+        robot, q, v, a = arm
+        cfg = _config(robot.model.nv)
 
-            try:
-                W = build_regressor_basic(mock_robot, q, v, a, param)
-                assert isinstance(W, np.ndarray)
-                assert W.ndim == 2
-            except Exception as e:
-                pytest.skip(f"Single sample input not supported: {e}")
+        with pytest.raises(ValueError, match="q must have"):
+            build_regressor_basic(robot, q[:, :-1], v, a, cfg)
+        with pytest.raises(ValueError, match="Inconsistent sample counts"):
+            build_regressor_basic(robot, q, v[:-1], a, cfg)
+        with pytest.raises(ValueError, match="joint_torques or external_wrench"):
+            build_regressor_basic(robot, q, v, a, {**cfg, "is_joint_torques": False})
 
 
 class TestOptionalFunctions:
@@ -226,37 +259,6 @@ class TestActualModuleStructure:
             assert hasattr(
                 regressor_module, func_name
             ), f"Missing expected function: {func_name}"
-
-
-class TestWithRealParameters:
-    """Test with realistic parameter combinations."""
-
-    @pytest.fixture
-    def simple_robot(self):
-        """Create a simple mock robot."""
-        robot = Mock()
-        robot.model.nq = 2
-        robot.model.nv = 2
-        robot.data = Mock()
-        return robot
-
-    def test_minimal_working_example(self, simple_robot):
-        """Test the most basic working example."""
-        # Very simple inputs
-        q = np.array([0.1, 0.2])
-        v = np.array([0.0, 0.0])
-        a = np.array([0.0, 0.0])
-
-        # Minimal parameters
-        param = {}
-
-        try:
-            # Try with no patching first to see what happens
-            W = build_regressor_basic(simple_robot, q, v, a, param)
-            assert isinstance(W, np.ndarray)
-        except Exception as e:
-            print(f"Basic call failed: {e}")
-            # This tells us what the actual function signature and requirements are
 
 
 if __name__ == "__main__":
