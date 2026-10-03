@@ -106,6 +106,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Trajectory optimisation can retry a failed segment from a new initial guess:
+  `problem.segment_attempts` (default 1, no retry). See figaroh-examples#60.
+
 - `tasks.identification.problem.qr_relative_tolerance`: QR rank threshold as
   a fraction of the largest pivot. Default unset (unchanged behaviour). A
   warning suggests it when the base regressor's condition number exceeds
