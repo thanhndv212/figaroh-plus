@@ -789,8 +789,6 @@ def init_robot(robot):
 def calc_torque(N, robot, q, v, a):
     tau = np.zeros(robot.model.nv * N)
     for i in range(N):
-        for j in range(robot.model.nv):
-            tau[j * N + i] = pin.rnea(
-                robot.model, robot.data, q[i, :], v[i, :], a[i, :]
-            )[j]
+        # Joint-major layout: tau[j * N + i] is joint j at sample i.
+        tau[i::N] = pin.rnea(robot.model, robot.data, q[i, :], v[i, :], a[i, :])
     return tau
