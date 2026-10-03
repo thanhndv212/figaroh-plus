@@ -10,7 +10,6 @@ from figaroh.identification.cad_constraints import (
     add_com_bounds,
     add_symmetry_constraints,
     build_cad_constraints_from_config,
-    apply_cad_constraints_to_problem,
 )
 
 # ---------------------------------------------------------------------------
@@ -116,7 +115,7 @@ def test_build_from_config_com_bounds():
 
 def test_project_p10_lmi_mass_bounds_enforced():
     """Tight upper mass bound must clamp the projected mass."""
-    pc = pytest.importorskip("picos")  # skip if picos unavailable
+    pytest.importorskip("picos")  # skip if picos unavailable
 
     from figaroh.identification.physical_consistency import project_p10_lmi
 
@@ -135,7 +134,7 @@ def test_project_p10_lmi_mass_bounds_enforced():
 
 def test_cad_constraints_tighten_feasible_set():
     """ROADMAP gate: tight but valid mass bound tightens solution without infeasibility."""
-    pc = pytest.importorskip("picos")  # skip if picos unavailable
+    pytest.importorskip("picos")  # skip if picos unavailable
 
     from figaroh.identification.physical_consistency import project_p10_lmi
 
