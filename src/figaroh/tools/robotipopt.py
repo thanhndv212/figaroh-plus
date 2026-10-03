@@ -748,9 +748,10 @@ class RobotIPOPTSolver:
                       returned in results.
 
         Note:
-            IPOPT status codes for success: -1 (solved to acceptable level),
-            0 (solved), 1 (solved to acceptable level). All other codes
-            indicate various types of failures or early termination.
+            IPOPT status codes for success: 0 (solved) and 1 (solved to
+            acceptable level). All other codes, including -1 (maximum number
+            of iterations exceeded), indicate failure or early termination;
+            the last iterate is still returned in ``x_opt``.
         """
         try:
             # Import cyipopt only when needed
@@ -799,8 +800,12 @@ class RobotIPOPTSolver:
             self.last_info = info
 
             # Analyze results
-            # Acceptable IPOPT exit codes
-            success = info["status"] in [-1, 0, 1]
+            # Converged IPOPT exit codes; -1 is Maximum_Iterations_Exceeded
+            success = info["status"] in [0, 1]
+            if info["status"] == -1:
+                self.logger.warning(
+                    "IPOPT stopped at the iteration limit without converging"
+                )
 
             self.logger.info(f"Optimization completed in {solve_time:.2f} seconds")
             self.logger.info(f"Status: {info['status']} - {info['status_msg']}")
