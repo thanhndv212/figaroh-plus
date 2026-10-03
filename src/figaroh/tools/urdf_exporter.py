@@ -74,10 +74,9 @@ Typical usage::
 """
 
 import logging
-import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import Optional, Union, List, Tuple
+from typing import Optional, Union, List
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
@@ -98,9 +97,9 @@ logger.addHandler(logging.NullHandler())
 
 _PARAM_REGISTRY: List[tuple] = [
     # ── JOINT PLACEMENT (additive, format: d_px_{joint}) ──
-    ("d_px",   "prefix", "joint_placement", 0),
-    ("d_py",   "prefix", "joint_placement", 1),
-    ("d_pz",   "prefix", "joint_placement", 2),
+    ("d_px", "prefix", "joint_placement", 0),
+    ("d_py", "prefix", "joint_placement", 1),
+    ("d_pz", "prefix", "joint_placement", 2),
     ("d_phix", "prefix", "joint_placement", 3),
     ("d_phiy", "prefix", "joint_placement", 4),
     ("d_phiz", "prefix", "joint_placement", 5),
@@ -119,7 +118,7 @@ _PARAM_REGISTRY: List[tuple] = [
     ("k_RY", "prefix", "elasticity", 4),
     ("k_RZ", "prefix", "elasticity", 5),
     # ── ABSOLUTE: MASS (format: m_{link}) ──
-    ("m_",   "prefix_nosep", "mass", None),
+    ("m_", "prefix_nosep", "mass", None),
     # ── ABSOLUTE: FIRST MOMENTS (format: mx_{link}, my_{link}, mz_{link}) ──
     ("mx_", "prefix_nosep", "first_moment", 0),
     ("my_", "prefix_nosep", "first_moment", 1),
@@ -144,9 +143,9 @@ _METROLOGY_REGISTRY: List[tuple] = [
     # Transform from the external measurement origin (mocap world, Vicon,
     # etc.) to the robot's base_link.  NOT intrinsic to the URDF — users
     # must define these based on their calibration setup.
-    ("base_px",   "exact", "base_frame", 0),
-    ("base_py",   "exact", "base_frame", 1),
-    ("base_pz",   "exact", "base_frame", 2),
+    ("base_px", "exact", "base_frame", 0),
+    ("base_py", "exact", "base_frame", 1),
+    ("base_pz", "exact", "base_frame", 2),
     ("base_phix", "exact", "base_frame", 3),
     ("base_phiy", "exact", "base_frame", 4),
     ("base_phiz", "exact", "base_frame", 5),
@@ -155,9 +154,9 @@ _METROLOGY_REGISTRY: List[tuple] = [
     # to the measurement frame mounted on the end-effector.
     # For mocap: optical marker frame.  For eye-hand: camera optical frame
     # or chessboard frame.
-    ("pEEx",   "prefix_nosep", "ee_measurement_frame", 0),
-    ("pEEy",   "prefix_nosep", "ee_measurement_frame", 1),
-    ("pEEz",   "prefix_nosep", "ee_measurement_frame", 2),
+    ("pEEx", "prefix_nosep", "ee_measurement_frame", 0),
+    ("pEEy", "prefix_nosep", "ee_measurement_frame", 1),
+    ("pEEz", "prefix_nosep", "ee_measurement_frame", 2),
     ("phiEEx", "prefix_nosep", "ee_measurement_frame", 3),
     ("phiEEy", "prefix_nosep", "ee_measurement_frame", 4),
     ("phiEEz", "prefix_nosep", "ee_measurement_frame", 5),
@@ -165,11 +164,28 @@ _METROLOGY_REGISTRY: List[tuple] = [
 
 # ── Registry: is_additive flags ─────────────────────────────
 
-_ADDITIVE_PREFIXES = frozenset({
-    "d_px", "d_py", "d_pz", "d_phix", "d_phiy", "d_phiz",
-    "offsetPX", "offsetPY", "offsetPZ", "offsetRX", "offsetRY", "offsetRZ",
-    "k_PX", "k_PY", "k_PZ", "k_RX", "k_RY", "k_RZ",
-})
+_ADDITIVE_PREFIXES = frozenset(
+    {
+        "d_px",
+        "d_py",
+        "d_pz",
+        "d_phix",
+        "d_phiy",
+        "d_phiz",
+        "offsetPX",
+        "offsetPY",
+        "offsetPZ",
+        "offsetRX",
+        "offsetRY",
+        "offsetRZ",
+        "k_PX",
+        "k_PY",
+        "k_PZ",
+        "k_RX",
+        "k_RY",
+        "k_RZ",
+    }
+)
 
 
 # ── Joint-param lookup maps (auto-apply) ─────────────────────
@@ -218,13 +234,13 @@ def _parse_param_name(name: str) -> Optional[tuple]:
     for prefix, (cat, idx, is_add) in _PREFIX_MAP:
         sep = prefix + "_"
         if name.startswith(sep):
-            target = name[len(sep):]
+            target = name[len(sep) :]
             if target:
                 return (cat, target, idx, is_add)
     # 3. Prefix, no separator
     for prefix, (cat, idx, is_add) in _PREFIX_NOSEP_MAP:
         if name.startswith(prefix):
-            target = name[len(prefix):]
+            target = name[len(prefix) :]
             if target:
                 return (cat, target, idx, is_add)
     return None
@@ -244,13 +260,13 @@ def _parse_frame_param_name(name: str) -> Optional[tuple]:
     for prefix, (cat, idx) in _FRAME_PREFIX_MAP:
         sep = prefix + "_"
         if name.startswith(sep):
-            target = name[len(sep):]
+            target = name[len(sep) :]
             if target:
                 return (cat, target, idx)
     # 3. Prefix, no separator (pEEx{frame}, phiEEx{frame})
     for prefix, (cat, idx) in _FRAME_PREFIX_NOSEP_MAP:
         if name.startswith(prefix):
-            target = name[len(prefix):]
+            target = name[len(prefix) :]
             if target:
                 return (cat, target, idx)
     return None
@@ -289,8 +305,7 @@ def _get_xyz_array(elem: ET.Element, attr: str = "xyz") -> List[float]:
     return [float(v) for v in val.split()]
 
 
-def _set_xyz_array(elem: ET.Element, values: List[float],
-                   attr: str = "xyz") -> None:
+def _set_xyz_array(elem: ET.Element, values: List[float], attr: str = "xyz") -> None:
     """Set a space-separated triple attribute from a float list.
 
     Uses a clean format: up to 6 significant digits, no trailing zeros.
@@ -312,8 +327,9 @@ def _fmt(v: float) -> str:
 # ── Handlers ─────────────────────────────────────────────────────
 
 
-def _apply_joint_placement(doc: ET.ElementTree, target: str, idx: int,
-                           value: float, is_additive: bool) -> None:
+def _apply_joint_placement(
+    doc: ET.ElementTree, target: str, idx: int, value: float, is_additive: bool
+) -> None:
     """Apply a joint origin placement delta (d_px_*, base_*).
 
     ``target`` is the joint name (or ``"_base_"`` for base params).
@@ -357,8 +373,9 @@ def _apply_joint_placement(doc: ET.ElementTree, target: str, idx: int,
         _set_xyz_array(origin, arr, attr)
 
 
-def _apply_joint_offset(doc: ET.ElementTree, target: str, idx: int,
-                        value: float, is_additive: bool) -> None:
+def _apply_joint_offset(
+    doc: ET.ElementTree, target: str, idx: int, value: float, is_additive: bool
+) -> None:
     """Apply a joint calibration offset (offsetRX_*).
 
     Maps idx 0-2 to the calibration rising value (x,y,z not meaningful
@@ -379,8 +396,9 @@ def _apply_joint_offset(doc: ET.ElementTree, target: str, idx: int,
     calib.set("rising", _fmt(new_val))
 
 
-def _apply_mass(doc: ET.ElementTree, target: str, _idx, value: float,
-                _is_additive: bool = False) -> None:
+def _apply_mass(
+    doc: ET.ElementTree, target: str, _idx, value: float, _is_additive: bool = False
+) -> None:
     """Replace link mass (m_* — always absolute)."""
     link = _find_link(doc, target)
     if link is None:
@@ -391,8 +409,9 @@ def _apply_mass(doc: ET.ElementTree, target: str, _idx, value: float,
     mass.set("value", _fmt(value))
 
 
-def _apply_viscous_friction(doc: ET.ElementTree, target: str, _idx,
-                            value: float, _is_additive: bool = False) -> None:
+def _apply_viscous_friction(
+    doc: ET.ElementTree, target: str, _idx, value: float, _is_additive: bool = False
+) -> None:
     """Replace joint dynamics damping (fv_* — always absolute)."""
     joint = _find_joint(doc, target)
     if joint is None:
@@ -402,8 +421,9 @@ def _apply_viscous_friction(doc: ET.ElementTree, target: str, _idx,
     dyn.set("damping", _fmt(value))
 
 
-def _apply_static_friction(doc: ET.ElementTree, target: str, _idx,
-                           value: float, _is_additive: bool = False) -> None:
+def _apply_static_friction(
+    doc: ET.ElementTree, target: str, _idx, value: float, _is_additive: bool = False
+) -> None:
     """Replace joint dynamics friction (fs_* — always absolute)."""
     joint = _find_joint(doc, target)
     if joint is None:
@@ -413,8 +433,9 @@ def _apply_static_friction(doc: ET.ElementTree, target: str, _idx,
     dyn.set("friction", _fmt(value))
 
 
-def _apply_armature(doc: ET.ElementTree, target: str, _idx,
-                    value: float, _is_additive: bool = False) -> None:
+def _apply_armature(
+    doc: ET.ElementTree, target: str, _idx, value: float, _is_additive: bool = False
+) -> None:
     """Replace joint armature inertia (Ia_* — always absolute)."""
     joint = _find_joint(doc, target)
     if joint is None:
@@ -424,8 +445,9 @@ def _apply_armature(doc: ET.ElementTree, target: str, _idx,
     dyn.set("armature", _fmt(value))
 
 
-def _apply_elasticity(doc: ET.ElementTree, target: str, idx: int,
-                      value: float, is_additive: bool) -> None:
+def _apply_elasticity(
+    doc: ET.ElementTree, target: str, idx: int, value: float, is_additive: bool
+) -> None:
     """Apply joint stiffness (k_* — additive).
 
     URDF doesn't have a native elasticity element — we store it as
@@ -456,25 +478,28 @@ _HANDLERS = {
     "armature": _apply_armature,
     "elasticity": _apply_elasticity,
     # Stub handlers for future extension
-    "first_moment": lambda doc, target, idx, val, add: \
-        logger.debug("first_moment handler not implemented (target=%s)", target),
-    "inertia": lambda doc, target, idx, val, add: \
-        logger.debug("inertia handler not implemented (target=%s)", target),
+    "first_moment": lambda doc, target, idx, val, add: (
+        logger.debug("first_moment handler not implemented (target=%s)", target)
+    ),
+    "inertia": lambda doc, target, idx, val, add: (
+        logger.debug("inertia handler not implemented (target=%s)", target)
+    ),
 }
 
 
 _FRAME_PARAM_DESCRIPTIONS = {
     "base_frame": "Base frame: transform from metrology origin (e.g. mocap world, "
-                  "Vicon origin) to robot ``base_link``.",
+    "Vicon origin) to robot ``base_link``.",
     "ee_measurement_frame": "EE measurement frame: transform from the last robot "
-                            "joint (e.g. ``arm_7_joint``, ``head_2_link``) to the "
-                            "measurement device frame (marker cluster, camera "
-                            "optical frame, or chessboard frame).",
+    "joint (e.g. ``arm_7_joint``, ``head_2_link``) to the "
+    "measurement device frame (marker cluster, camera "
+    "optical frame, or chessboard frame).",
 }
 
 
-def frame_settings_doc(*, calibration_type: Optional[str] = None,
-                       verbose: bool = True) -> dict:
+def frame_settings_doc(
+    *, calibration_type: Optional[str] = None, verbose: bool = True
+) -> dict:
     """Return default metrology-frame parameter values with explanations.
 
     These parameters define the transformation between the robot and the
@@ -530,10 +555,11 @@ def frame_settings_doc(*, calibration_type: Optional[str] = None,
             "  EE frame   : last joint → measurement frame\n"
             "              default = identity\n"
             "  %s\n"
-            "  To customize, pass e.g. %%s = {...} to export_urdf() "
+            "  To customize, pass e.g. pEEx_%s = <value> to export_urdf() "
             "and configure your\n"
             "  controller or calibration pipeline accordingly.",
             note,
+            target,
         )
 
     return defaults
@@ -599,13 +625,15 @@ def export_urdf(
             category, target, idx, is_additive = parsed
             handler = _HANDLERS.get(category)
             if handler is None:
-                logger.warning("No handler for category '%s' (param='%s')",
-                               category, name)
+                logger.warning(
+                    "No handler for category '%s' (param='%s')", category, name
+                )
                 continue
             if verbose:
                 action = "additive" if is_additive else "absolute"
-                logger.info("%s → %s.%s %s (%.4f)", name, category, target,
-                            action, value)
+                logger.info(
+                    "%s → %s.%s %s (%.4f)", name, category, target, action, value
+                )
             handler(doc, target, idx, value, is_additive)
             continue
 
@@ -619,7 +647,9 @@ def export_urdf(
                 "Metrology frame param '%s' = %.4f — not auto-applied to URDF.  "
                 "This defines: %s  See frame_settings_doc() for defaults and "
                 "explanations.",
-                name, value, desc,
+                name,
+                value,
+                desc,
             )
             continue
 
