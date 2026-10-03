@@ -84,7 +84,9 @@ def test_standard_parameters_reproduce_rnea(arm):
     }
     W = build_regressor_basic(robot, q, v, a, cfg)
     phi = np.array(list(get_standard_parameters(model, cfg).values()))
-    tau = np.stack([pin.rnea(model, robot.data, q[i], v[i], a[i]) for i in range(len(q))])
+    tau = np.stack(
+        [pin.rnea(model, robot.data, q[i], v[i], a[i]) for i in range(len(q))]
+    )
     # Regressor rows are joint-major: row j * N + i is joint j, sample i.
     np.testing.assert_allclose(W @ phi, tau.T.ravel(), atol=1e-9)
 
@@ -124,7 +126,9 @@ def test_regressor_extra_columns_match_parameter_keys(
     assert any(k.startswith("off_") for k in params) == joint_offset
 
     # Each column is labelled with the parameter it multiplies.
-    tau = np.stack([pin.rnea(model, robot.data, q[i], v[i], a[i]) for i in range(len(q))])
+    tau = np.stack(
+        [pin.rnea(model, robot.data, q[i], v[i], a[i]) for i in range(len(q))]
+    )
     if friction:
         tau = tau + 0.3 * v + 0.2 * np.sign(v)
     if actuator_inertia:
@@ -220,16 +224,12 @@ def test_qr_relative_tolerance_drops_barely_excited_column(caplog):
     params = ["p0", "p1", "p2"]
 
     with caplog.at_level(logging.WARNING):
-        default = _base_identification(None)._calculate_base_parameters(
-            tau, W, params
-        )
+        default = _base_identification(None)._calculate_base_parameters(tau, W, params)
     assert len(default["phi_base"]) == 3
     assert "ill-conditioned" in caplog.text
 
     caplog.clear()
     with caplog.at_level(logging.WARNING):
-        relative = _base_identification(1e-4)._calculate_base_parameters(
-            tau, W, params
-        )
+        relative = _base_identification(1e-4)._calculate_base_parameters(tau, W, params)
     assert len(relative["phi_base"]) == 2
     assert "ill-conditioned" not in caplog.text

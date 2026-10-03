@@ -40,6 +40,7 @@ def _get_joints(doc):
 def _extract_joint_origin(urdf_path: str, joint_name: str):
     """Return (xyz_str, rpy_str) for a joint's origin element."""
     import xml.etree.ElementTree as ET
+
     doc = ET.parse(urdf_path)
     for joint in _get_joints(doc):
         name = joint.get("name")
@@ -53,6 +54,7 @@ def _extract_joint_origin(urdf_path: str, joint_name: str):
 def _extract_link_mass(urdf_path: str, link_name: str):
     """Return mass value string for a link."""
     import xml.etree.ElementTree as ET
+
     doc = ET.parse(urdf_path)
     for link in doc.findall(".//link"):
         name = link.get("name")
@@ -68,6 +70,7 @@ def _extract_link_mass(urdf_path: str, link_name: str):
 def _extract_joint_dynamics(urdf_path: str, joint_name: str):
     """Return (damping_str, friction_str) for a joint."""
     import xml.etree.ElementTree as ET
+
     doc = ET.parse(urdf_path)
     for joint in _get_joints(doc):
         name = joint.get("name")
@@ -121,7 +124,9 @@ class TestURDFExporterNumerical:
         modified = export_urdf(self.nominal, self.params, output_path=self.output)
         comp = URDFComparison(self.nominal, modified)
         err = comp.fk_consistency_check(n_samples=100)
-        assert err.rmse_orientation < 0.15, f"RMSE orient too high: {err.rmse_orientation}"
+        assert (
+            err.rmse_orientation < 0.15
+        ), f"RMSE orient too high: {err.rmse_orientation}"
         assert err.rmse_orientation > 0.001, "Orientation changes not reflected"
 
     def test_trajectory_max_error_within_bounds(self):
@@ -131,7 +136,9 @@ class TestURDFExporterNumerical:
         err = comp.fk_consistency_check(n_samples=100)
         # d_px=0.05 + d_phiz=0.1 → shouldn't exceed ~2× combined
         assert err.max_position < 0.3, f"Max pos err excessive: {err.max_position}"
-        assert err.max_orientation < 0.3, f"Max orient err excessive: {err.max_orientation}"
+        assert (
+            err.max_orientation < 0.3
+        ), f"Max orient err excessive: {err.max_orientation}"
 
     def test_zero_params_identity(self):
         """Empty params → exported URDF produces identical FK."""
@@ -170,8 +177,9 @@ class TestURDFExporterNumerical:
         poses = comp.static_poses(poses=[q0, q1])
         twist0 = poses[0].pose_delta.twist
         twist1 = poses[1].pose_delta.twist
-        assert np.linalg.norm(twist0 - twist1) > 1e-6, \
-            "Pose delta should change with joint angle"
+        assert (
+            np.linalg.norm(twist0 - twist1) > 1e-6
+        ), "Pose delta should change with joint angle"
 
     def test_static_joint_limits(self):
         """Near joint limits: FK still computes without NaN."""

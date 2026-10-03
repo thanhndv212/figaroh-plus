@@ -150,9 +150,7 @@ def compute_run_dir(obj: Any, root: str = "results/runs") -> Path:
     """
     provenance = getattr(obj, "_run_provenance", None)
     if provenance is None:
-        raise AttributeError(
-            "No run provenance available. Run solve() first."
-        )
+        raise AttributeError("No run provenance available. Run solve() first.")
 
     task = provenance.get("task", "unknown")
     asset_id = provenance.get("asset", {}).get("asset_id", "unknown")
@@ -201,21 +199,15 @@ def archive_run(obj: Any, run_dir: Path) -> str:
     """
     provenance = getattr(obj, "_run_provenance", None)
     if provenance is None:
-        raise AttributeError(
-            "No run provenance available. Run solve() first."
-        )
+        raise AttributeError("No run provenance available. Run solve() first.")
 
     with open(run_dir / "provenance.json", "w") as f:
         json.dump(provenance, f, indent=2, default=str)
 
-    config = getattr(obj, "identif_config", None) or getattr(
-        obj, "calib_config", None
-    )
+    config = getattr(obj, "identif_config", None) or getattr(obj, "calib_config", None)
     if config:
         with open(run_dir / "config.snapshot.yaml", "w") as f:
-            yaml.dump(
-                _yaml_safe(config), f, default_flow_style=False, sort_keys=True
-            )
+            yaml.dump(_yaml_safe(config), f, default_flow_style=False, sort_keys=True)
 
     param_names, param_values = _extract_parameters(obj)
     if param_names:
