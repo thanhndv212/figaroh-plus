@@ -15,8 +15,9 @@ constraints and pitfalls; current architecture belongs in
   Python >=3.8; this is not a claim that every supported version is CI-tested.
 - Tests: `python -m pytest -q -rs`; one file:
   `python -m pytest tests/unit/test_identification_regressions.py -q -rs`.
-- Hooks: `pre-commit run --files <changed-files>` (new files must be staged for
-  hooks to see them); whole-tree audit: `pre-commit run --all-files`.
+- Hooks: `pre-commit run --all-files` (what the blocking `Lint` job runs); for a
+  quick check, `pre-commit run --files <changed-files>` (new files must be staged
+  for hooks to see them).
   Hooks can modify files. Inspect and rerun after formatting.
 - Docs: `python -m mkdocs build` from the repository root. This is MkDocs,
   not Sphinx. Generated `site/` is ignored.

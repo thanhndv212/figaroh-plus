@@ -95,8 +95,8 @@ robot-specific code into core just to avoid a second PR.
 
 Required core checks are `Tests (core)`, `Tests (pinocchio-4.1)`, `Tests (mujoco-3.9)`,
 `Tests (mujoco-current)`, `Lint`, and `Docs`.
-`Lint backlog` reports legacy full-tree debt and is advisory until that debt is
-resolved. These names describe workflow jobs; a maintainer must select them in
+`Lint` runs every pre-commit hook on the full tree (the legacy debt was cleared
+in #81-#85). These names describe workflow jobs; a maintainer must select them in
 GitHub branch protection/rulesets for server-enforced merge blocking.
 
 Release sequence:

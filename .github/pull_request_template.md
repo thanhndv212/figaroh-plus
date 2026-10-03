@@ -18,7 +18,7 @@ Closes #
 <!-- Levels from docs/development/validation.md. Tick what you ran and paste results.
      For a level you skipped, say which and why. -->
 
-- [ ] V0 local: changed-file hooks, critical lint (+ `mkdocs build` for docs)
+- [ ] V0 local: `pre-commit run --all-files`, critical lint (+ `mkdocs build` for docs)
 - [ ] V1 core suite: pass/fail/skip counts, regression test for a fix
 - [ ] V2 example workflow: figaroh-examples commit, command, before/after metrics on the same data
 - [ ] V3 milestone/release: exit criteria from ROADMAP
