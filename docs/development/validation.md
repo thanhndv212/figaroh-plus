@@ -81,6 +81,28 @@ excluded to make this rollout pass. Clean existing debt in focused follow-ups,
 then make the full hook suite blocking. Changed-file checks can require cleanup
 of an existing file; they do not exempt old violations in a touched file.
 
+### Full-tree debt inventory (2026-10-03)
+
+`pre-commit run --all-files` on `devel` `cc262d8` (`figaroh-dev`), each hook
+run on its own on a pristine tree (#57). The critical selection
+(`E9,F63,F7,F82`) is clean; every other hook not listed here passes.
+
+| Hook | Findings | Cleanup issue |
+|---|---|---|
+| `black` | 10 files would be reformatted | #81 |
+| `trailing-whitespace` | 4 TIAGo fixture URDFs | #81 |
+| `flake8` F401 in package `__init__.py` (public re-exports) | 22 | #82 |
+| `flake8` F401 / E402 / E131 in other modules | 32 / 18 / 2 | #83 |
+| `flake8` F841 / E722 in `src/` (possible dead logic) | 8 / 2 | #84 |
+| `flake8` F841 in `tests/` (possible missing assertions) | 6 | #85 |
+
+The 90 flake8 findings are split by the kind of review they need, not by
+module. Each issue lists its exact findings and is fixed in its own PR.
+Re-exports must not be deleted (#82). Unused locals in #84 and #85 may be
+logic or assertions that were meant to take effect, so they are not
+mechanical deletions. Once all six rows are clean, record the passing
+full-tree run here and make the full hook suite blocking.
+
 Documentation currently has legacy mkdocstrings/link warnings. The build fails
 on errors; warning cleanup is a separate task before enabling global strict mode.
 The workflow must not suppress installation or build errors. Docs deployment is
