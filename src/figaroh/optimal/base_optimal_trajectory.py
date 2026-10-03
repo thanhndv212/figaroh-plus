@@ -616,6 +616,24 @@ class BaseTrajectoryIPOPTProblem(BaseOptimizationProblem):
             self.Ns, X, self.opt_cb, self.tps, self.vel_wps, self.acc_wps, self.wp_init
         )
 
+    def gradient(self, X: np.ndarray) -> np.ndarray:
+        """
+        Gradient of the objective by forward finite differences.
+
+        The default numdifftools gradient uses Richardson extrapolation over
+        many step sizes, which costs tens of seconds per call here because
+        every objective evaluation rebuilds the full regressor.
+        """
+        X = np.asarray(X, dtype=float)
+        f0 = self.objective(X)
+        eps = 1e-6
+        grad = np.zeros_like(X)
+        for i in range(len(X)):
+            X_plus = X.copy()
+            X_plus[i] += eps
+            grad[i] = (self.objective(X_plus) - f0) / eps
+        return grad
+
     def jacobian(self, X: np.ndarray) -> np.ndarray:
         """
         Jacobian of constraints - Custom implementation for better performance.
