@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The blocking `Lint` job runs every pre-commit hook on the full tree instead of
+  only on changed files, and the advisory `Lint backlog` job is removed: the
+  legacy lint debt inventoried in #57 was cleared in #81-#85.
+
 - Replace universal quality gates with scoped execution/prediction verification;
   preserve diagnostic metrics, record incomplete required evidence, reject nonfinite
   results, and require explicit per-output limits for prediction acceptance. (#70)

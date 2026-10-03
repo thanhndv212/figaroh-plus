@@ -32,7 +32,7 @@ conda activate figaroh-dev
 python -m pip install -e '.[dev,docs]'
 python -m pytest -q -rs
 python -m flake8 src tests --select=E9,F63,F7,F82 --show-source --statistics
-pre-commit run --files <changed-files>
+pre-commit run --all-files
 python -m mkdocs build
 git diff --check
 ```
@@ -65,21 +65,20 @@ datasets and record the output directory. For identification changes, inspect
 held-out torque error, rank/condition, parameter ordering and physical validity;
 for calibration, inspect held-out pose error and exported-model FK consistency.
 
-## Initial lint gate and existing debt
+## Lint gate
 
-The 2026-09-28 full-tree pre-commit baseline fails on existing formatting,
-unused imports/variables and other style findings. See the [audit](workflow-audit-2026-09-28.md).
-The initial blocking `Lint` job therefore runs:
+The blocking `Lint` job runs:
 
 - Critical Python checks across **all** source and tests (`E9,F63,F7,F82`).
-- Every configured pre-commit hook on **all changed files** relative to the PR
-  base, or the preceding push commit. A new branch/manual run compares to `devel`.
+- Every configured pre-commit hook on the **full tree**
+  (`pre-commit run --all-files`).
 
-The separate `Lint backlog` job runs the complete hook suite on the full tree,
-uploads its output and explicitly warns on failure; it is advisory. No tests are
-excluded to make this rollout pass. Clean existing debt in focused follow-ups,
-then make the full hook suite blocking. Changed-file checks can require cleanup
-of an existing file; they do not exempt old violations in a touched file.
+Until 2026-10-03 the full tree carried legacy debt (see the
+[2026-09-28 audit](workflow-audit-2026-09-28.md)), so `Lint` gated only changed
+files and an advisory `Lint backlog` job audited the full tree. The debt was
+inventoried (below) and cleared in focused PRs, after which the full hook suite
+became blocking and the advisory job was removed. No tests were excluded or
+skipped to get there.
 
 ### Full-tree debt inventory (2026-10-03)
 
@@ -100,8 +99,15 @@ The 90 flake8 findings are split by the kind of review they need, not by
 module. Each issue lists its exact findings and is fixed in its own PR.
 Re-exports must not be deleted (#82). Unused locals in #84 and #85 may be
 logic or assertions that were meant to take effect, so they are not
-mechanical deletions. Once all six rows are clean, record the passing
-full-tree run here and make the full hook suite blocking.
+mechanical deletions.
+
+**Cleared.** All six rows were fixed in #87, #88, #89, #91 and #92 (rebase-merged
+into `devel`). `pre-commit run --all-files` passes on `devel` `a2caeea`, locally in
+`figaroh-dev` and in the hosted `Lint backlog` audit of #92 (audit step
+`success`), and `flake8 src tests` reports no findings. Two findings turned out
+to be real defects and were fixed with regression tests (`frame_settings_doc`
+hint, #84; two unasserted test computations, #85); two pre-existing algorithm
+defects found on the way are tracked in #90.
 
 Documentation currently has legacy mkdocstrings/link warnings. The build fails
 on errors; warning cleanup is a separate task before enabling global strict mode.
