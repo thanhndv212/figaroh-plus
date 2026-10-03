@@ -7,7 +7,7 @@ body:
     id: package
     attributes:
       label: 'Delivery package and roadmap milestone'
-      description: 'e.g. "D6 — Inertial URDF export (figaroh-plus#41) · M1". Write "unscheduled" if none.'
+      description: 'e.g. "D6 — Inertial URDF export (thanhndv212/figaroh-plus#41) · M1". Write "unscheduled" if none.'
     validations:
       required: true
   - type: textarea
@@ -48,7 +48,7 @@ body:
     id: dependencies
     attributes:
       label: 'Dependencies'
-      description: 'Use repo-qualified references (figaroh-plus#N, figaroh-examples#N) and say why. Also set GitHub''s "blocked by" relationship.'
+      description: 'Write #N for this repository and thanhndv212/<repo>#N for the other one, and say why. Also set GitHub''s "blocked by" relationship.'
       value: |
         - Blocked by: nothing
         - Unblocks:
