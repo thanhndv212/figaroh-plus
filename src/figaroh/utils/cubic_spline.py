@@ -448,8 +448,8 @@ class CubicSpline:
                 ```
 
         Note:
-            Constraint violations are printed to console with specific
-            joint indices and violation types for debugging purposes.
+            Constraint violations are logged at DEBUG level with specific
+            joint indices and violation types; callers report the outcome.
         """
         __isViolated = False
         for i in range(q.shape[0]):
@@ -459,11 +459,11 @@ class CubicSpline:
                     - self.rmodel.lowerPositionLimit[j]
                 )
                 if q[i, j] > self.rmodel.upperPositionLimit[j] - delta_lim:
-                    logger.warning("Joint q %d upper limit violated!", j)
+                    logger.debug("Joint q %d upper limit violated!", j)
                     __isViolated_pos = True
 
                 elif q[i, j] < self.rmodel.lowerPositionLimit[j] + delta_lim:
-                    logger.warning("Joint position idx_q %d lower limit violated!", j)
+                    logger.debug("Joint position idx_q %d lower limit violated!", j)
                     __isViolated_pos = True
                 else:
                     __isViolated_pos = False
@@ -475,7 +475,7 @@ class CubicSpline:
                     if abs(v[i, j]) > (1 - soft_lim) * abs(
                         self.rmodel.velocityLimit[j]
                     ):
-                        logger.warning("Joint vel idx_v %d limits violated!", j)
+                        logger.debug("Joint vel idx_v %d limits violated!", j)
                         __isViolated_vel = True
                     else:
                         __isViolated_vel = False
@@ -487,18 +487,18 @@ class CubicSpline:
                     if abs(tau[i, j]) > (1 - soft_lim) * abs(
                         self.rmodel.effortLimit[j]
                     ):
-                        logger.warning("Joint effort idx_v %d limits violated!", j)
+                        logger.debug("Joint effort idx_v %d limits violated!", j)
                         __isViolated_eff = True
                     else:
                         __isViolated_eff = False
                     __isViolated = __isViolated or __isViolated_eff
                     # print(__isViolated)
         if not __isViolated:
-            logger.info(
+            logger.debug(
                 "SUCCEEDED to generate waypoints for a feasible initial cubic spline"
             )
         else:
-            logger.warning("FAILED to generate a feasible cubic spline")
+            logger.debug("FAILED to generate a feasible cubic spline")
         return __isViolated
 
     def check_self_collision(self):
@@ -789,8 +789,6 @@ def init_robot(robot):
 def calc_torque(N, robot, q, v, a):
     tau = np.zeros(robot.model.nv * N)
     for i in range(N):
-        for j in range(robot.model.nv):
-            tau[j * N + i] = pin.rnea(
-                robot.model, robot.data, q[i, :], v[i, :], a[i, :]
-            )[j]
+        # Joint-major layout: tau[j * N + i] is joint j at sample i.
+        tau[i::N] = pin.rnea(robot.model, robot.data, q[i, :], v[i, :], a[i, :])
     return tau

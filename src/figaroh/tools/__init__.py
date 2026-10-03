@@ -27,4 +27,20 @@ from . import report
 from . import identification_report
 from . import compare_report
 
-__all__ = []
+# Submodules are imported eagerly so ``figaroh.tools.<module>`` works after
+# ``import figaroh``; __all__ declares them as the package's public surface.
+__all__ = [
+    "robot",
+    "randomdata",
+    "regressor",
+    "qrdecomposition",
+    "robotvisualization",
+    "robotcollisions",
+    "robotipopt",
+    "urdf_exporter",
+    "geometric_calibration_export",
+    "export_validation",
+    "report",
+    "identification_report",
+    "compare_report",
+]

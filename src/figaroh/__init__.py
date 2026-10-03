@@ -11,4 +11,16 @@ from . import utils
 from . import visualisation
 from . import optimal
 
-__version__ = "0.4.8"
+# Subpackages are imported eagerly so ``import figaroh`` exposes them as
+# attributes (``figaroh.tools.robot``, ...); __all__ declares that surface.
+__all__ = [
+    "tools",
+    "calibration",
+    "identification",
+    "measurements",
+    "utils",
+    "visualisation",
+    "optimal",
+]
+
+__version__ = "0.5.0"

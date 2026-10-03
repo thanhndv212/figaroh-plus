@@ -27,10 +27,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from typing import Dict, List, Tuple, Any
 
-# Setup logger for this module
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
-
 from figaroh.tools.regressor import (
     build_regressor_basic,
     build_regressor_reduced,
@@ -50,6 +46,10 @@ from figaroh.optimal.config import load_param
 from figaroh.optimal.base_parameter import BaseParameterComputer
 from figaroh.optimal.contraints import TrajectoryConstraintManager
 from figaroh.utils.results_manager import ResultsManager, plot_with_fallback
+
+# Setup logger for this module
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class BaseOptimalTrajectory:
@@ -253,6 +253,23 @@ class BaseOptimalTrajectory:
             self.logger.error(f"Error building base regressor: {e}")
             raise
 
+    def _limit_waypoint_steps(self, wps: np.ndarray) -> np.ndarray:
+        """Clamp waypoint-to-waypoint steps to what the velocity limits allow.
+
+        Waypoints are sampled independently over the joint range, but a
+        rest-to-rest cubic segment of duration T peaks at 1.5 * dq / T.
+        Bounding each step by (2/3) * T * v_max (with a 10% margin) makes
+        the sampled guess velocity-feasible by construction; clamped
+        waypoints move towards their predecessor, so they stay in range.
+        """
+        wps = np.array(wps, dtype=float)  # (n_joints, n_wps)
+        max_step = 0.9 * (2.0 / 3.0) * self.trajectory_config["t_s"]
+        max_step = max_step * np.abs(np.asarray(self.CB.upper_dq, dtype=float))
+        for k in range(1, wps.shape[1]):
+            step = np.clip(wps[:, k] - wps[:, k - 1], -max_step, max_step)
+            wps[:, k] = wps[:, k - 1] + step
+        return wps
+
     def _generate_feasible_initial_guess(self, wp_init, vel_wp_init, acc_wp_init):
         """Generate a feasible initial guess for optimization."""
         self.logger.info("Generating feasible initial trajectory...")
@@ -272,6 +289,7 @@ class BaseOptimalTrajectory:
                 wps, vel_wps, acc_wps = self.WP.gen_rand_wp(
                     wp_init, vel_wp_init, acc_wp_init
                 )
+                wps = self._limit_waypoint_steps(wps)
 
                 # Generate time points
                 tps = np.matrix(
@@ -307,7 +325,46 @@ class BaseOptimalTrajectory:
         return wps, vel_wps, acc_wps, tps, t_i, p_i, v_i, a_i
 
     def _solve_segment(self, s_rep, wp_init, vel_wp_init, acc_wp_init, W_stack) -> bool:
-        """Solve a single trajectory segment."""
+        """Solve a single trajectory segment.
+
+        A segment that fails (infeasible at the iteration limit, solver
+        error) is retried from a fresh random initial guess, up to
+        ``segment_attempts`` times in total (default 1: no retry). The
+        non-smooth objective makes the outcome depend on the starting
+        point, so a new start often succeeds where the first did not.
+        """
+        attempts = max(1, int(self.trajectory_config.get("segment_attempts", 1)))
+        for attempt in range(1, attempts + 1):
+            result_data = self._attempt_segment(
+                s_rep, wp_init, vel_wp_init, acc_wp_init, W_stack
+            )
+            if result_data is not None:
+                result_data["iter_data"]["attempt"] = attempt
+                self.results["T_F"].append(result_data["t_f"])
+                self.results["P_F"].append(result_data["p_f"])
+                self.results["V_F"].append(result_data["v_f"])
+                self.results["A_F"].append(result_data["a_f"])
+                self.results["iteration_data"].append(result_data["iter_data"])
+                self.logger.info(
+                    f"Segment {s_rep + 1} completed successfully "
+                    f"(attempt {attempt}/{attempts})"
+                )
+                return True
+            if attempt < attempts:
+                self.logger.warning(
+                    "Segment %d attempt %d/%d failed; retrying from a new "
+                    "initial guess",
+                    s_rep + 1,
+                    attempt,
+                    attempts,
+                )
+        return False
+
+    def _attempt_segment(self, s_rep, wp_init, vel_wp_init, acc_wp_init, W_stack):
+        """One solve of a segment from a new initial guess.
+
+        Returns the solver's result data, or ``None`` if the segment failed.
+        """
         try:
             # Generate feasible initial guess
             wps, vel_wps, acc_wps, tps, t_i, p_i, v_i, a_i = (
@@ -332,21 +389,11 @@ class BaseOptimalTrajectory:
             )
 
             success, result_data = problem.solve_with_waypoints(wps)
-
-            if success:
-                self.results["T_F"].append(result_data["t_f"])
-                self.results["P_F"].append(result_data["p_f"])
-                self.results["V_F"].append(result_data["v_f"])
-                self.results["A_F"].append(result_data["a_f"])
-                self.results["iteration_data"].append(result_data["iter_data"])
-                self.logger.info(f"Segment {s_rep + 1} completed successfully!")
-                return True
-            else:
-                return False
+            return result_data if success else None
 
         except Exception as e:
             self.logger.error(f"Error solving segment {s_rep + 1}: {e}")
-            return False
+            return None
 
     def _prepare_next_segment(self) -> Tuple[np.ndarray, np.ndarray]:
         """Prepare initial conditions for next segment."""
@@ -512,7 +559,7 @@ class BaseOptimalTrajectory:
                 results_dict, output_dir, save_formats=["yaml", "npz"]
             )
 
-            self.logger.info(f"Trajectory results saved successfully")
+            self.logger.info("Trajectory results saved successfully")
             return saved_files
 
         except ImportError:
@@ -616,6 +663,24 @@ class BaseTrajectoryIPOPTProblem(BaseOptimizationProblem):
             self.Ns, X, self.opt_cb, self.tps, self.vel_wps, self.acc_wps, self.wp_init
         )
 
+    def gradient(self, X: np.ndarray) -> np.ndarray:
+        """
+        Gradient of the objective by forward finite differences.
+
+        The default numdifftools gradient uses Richardson extrapolation over
+        many step sizes, which costs tens of seconds per call here because
+        every objective evaluation rebuilds the full regressor.
+        """
+        X = np.asarray(X, dtype=float)
+        f0 = self.objective(X)
+        eps = 1e-6
+        grad = np.zeros_like(X)
+        for i in range(len(X)):
+            X_plus = X.copy()
+            X_plus[i] += eps
+            grad[i] = (self.objective(X_plus) - f0) / eps
+        return grad
+
     def jacobian(self, X: np.ndarray) -> np.ndarray:
         """
         Jacobian of constraints - Custom implementation for better performance.
@@ -654,6 +719,19 @@ class BaseTrajectoryIPOPTProblem(BaseOptimizationProblem):
             jac[:min_dim, :min_dim] = np.eye(min_dim)
             return jac
 
+    def _is_feasible(self, X, tol: float = 1e-6) -> bool:
+        """Check variable and constraint bounds at ``X`` within ``tol``."""
+        X = np.asarray(X, dtype=float)
+        lb, ub = self.get_variable_bounds()
+        cl, cu = self.get_constraint_bounds()
+        c = np.asarray(self.constraints(X), dtype=float)
+        return bool(
+            np.all(X >= np.asarray(lb) - tol)
+            and np.all(X <= np.asarray(ub) + tol)
+            and np.all(c >= np.asarray(cl) - tol)
+            and np.all(c <= np.asarray(cu) + tol)
+        )
+
     def solve_with_waypoints(self, wps) -> Tuple[bool, Dict[str, Any]]:
         """
         Solve the optimization problem with given initial waypoints.
@@ -673,7 +751,9 @@ class BaseTrajectoryIPOPTProblem(BaseOptimizationProblem):
             # Adjust settings for this complex problem
             config.tolerance = 1e-3
             config.acceptable_tolerance = 1e-2
-            config.max_iterations = 200
+            config.max_iterations = self.opt_traj.trajectory_config.get(
+                "max_iterations", 200
+            )
             config.print_level = 3  # Reduce output
             config.custom_options = {
                 b"mu_strategy": b"adaptive",
@@ -682,12 +762,30 @@ class BaseTrajectoryIPOPTProblem(BaseOptimizationProblem):
 
             # Solve the problem
             success, results = solver.solve()
+            converged = success
+
+            # The condition-number objective is non-smooth, so IPOPT often
+            # stalls on dual infeasibility after reaching a feasible plateau.
+            # Keep such an iterate, but only if it satisfies every constraint.
+            if not success and results.get("status") == -1:
+                success = self._is_feasible(results["x_opt"])
+                if success:
+                    self.logger.warning(
+                        "IPOPT reached the iteration limit (%d) without "
+                        "converging; keeping the feasible final iterate "
+                        "(objective %.4g)",
+                        config.max_iterations,
+                        results["obj_val"],
+                    )
 
             if success:
                 # Extract final waypoint for next segment
                 X_opt = results["x_opt"]
                 wps_X = np.reshape(np.array(X_opt), (self.n_wps - 1, self.n_joints))
                 final_waypoint = wps_X[-1, :]
+                # The last callback may have been a finite-difference probe;
+                # rebuild the stored trajectory at the returned solution.
+                self.objective(np.asarray(X_opt))
 
                 # Update results with trajectory-specific data
                 results.update(
@@ -701,6 +799,7 @@ class BaseTrajectoryIPOPTProblem(BaseOptimizationProblem):
                             "obj_values": self.iteration_data["obj_values"],
                             "solve_time": results["solve_time"],
                             "status": results["status"],
+                            "converged": converged,
                             "final_waypoint": final_waypoint,
                         },
                     }

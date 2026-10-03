@@ -35,7 +35,10 @@ class FakeCalibrator:
     """Stand-in for BaseCalibration exposing only what the report reads."""
 
     def __init__(
-        self, evaluation_metrics, calib_config, results_data=None,
+        self,
+        evaluation_metrics,
+        calib_config,
+        results_data=None,
         redistributed=None,
     ):
         self.evaluation_metrics = evaluation_metrics
@@ -108,15 +111,15 @@ class TestBuildInsights:
     def test_healthy_fit_reports_no_issues(self):
         eval_ = _base_eval(param_stddev_percentage=[5.0, 8.0, 9.0])
         insights = _build_insights(
-            eval_, 100, _base_config()["param_name"],
+            eval_,
+            100,
+            _base_config()["param_name"],
             validation={"pos_improvement_pct": 90.0},
         )
         assert any("No issues detected" in i["text"] for i in insights)
 
     def test_flags_ill_conditioned(self):
-        eval_ = _base_eval(
-            condition_number=5000.0, condition_label="ill-conditioned"
-        )
+        eval_ = _base_eval(condition_number=5000.0, condition_label="ill-conditioned")
         insights = _build_insights(
             eval_, 100, _base_config()["param_name"], validation=None
         )
@@ -178,9 +181,7 @@ class TestGenerateCalibrationReport:
                 "orient_max_calibrated_deg": 0.1,
             }
         }
-        calibrator = FakeCalibrator(
-            _base_eval(), _base_config(), results_data
-        )
+        calibrator = FakeCalibrator(_base_eval(), _base_config(), results_data)
         doc = generate_calibration_report(calibrator)
         assert "94.3" in doc
         assert "n=50" in doc
@@ -230,9 +231,7 @@ class TestGenerateCalibrationReport:
     def test_writes_to_output_path(self, tmp_path):
         calibrator = FakeCalibrator(_base_eval(), _base_config())
         out_file = tmp_path / "report.html"
-        doc = generate_calibration_report(
-            calibrator, output_path=str(out_file)
-        )
+        doc = generate_calibration_report(calibrator, output_path=str(out_file))
         assert out_file.exists()
         assert out_file.read_text(encoding="utf-8") == doc
 
@@ -278,22 +277,22 @@ class TestGenerateCalibrationReport:
                 "orient_max_calibrated_deg": 0.1,
                 "dof_names": ["X (mm)", "Y (mm)"],
                 "error_nominal_per_dof": {
-                    "X (mm)": [1.0, 2.0, 3.0], "Y (mm)": [4.0, 5.0, 6.0],
+                    "X (mm)": [1.0, 2.0, 3.0],
+                    "Y (mm)": [4.0, 5.0, 6.0],
                 },
                 "error_fitted_per_dof": {
-                    "X (mm)": [0.1, 0.2, 0.3], "Y (mm)": [0.4, 0.5, 0.6],
+                    "X (mm)": [0.1, 0.2, 0.3],
+                    "Y (mm)": [0.4, 0.5, 0.6],
                 },
             }
         }
-        calibrator = FakeCalibrator(
-            _base_eval(), _base_config(), results_data
-        )
+        calibrator = FakeCalibrator(_base_eval(), _base_config(), results_data)
         doc = generate_calibration_report(calibrator)
         assert "initSeriesPanel(" in doc
         assert "function initSeriesPanel" in doc
         assert "series-panel-select" in doc
         assert '"names": ["X (mm)", "Y (mm)"]' in doc
-        assert "\"measured\": {\"X (mm)\": [0.0, 0.0, 0.0]" in doc
+        assert '"measured": {"X (mm)": [0.0, 0.0, 0.0]' in doc
         # Regression: the function definition must appear (in <head>)
         # before the invocation further down the page — scripts execute
         # in document order, so a call before its definition would throw
@@ -323,9 +322,7 @@ class TestGenerateCalibrationReport:
                 "error_fitted_per_dof": {"X (mm)": [0.1]},
             }
         }
-        calibrator = FakeCalibrator(
-            _base_eval(), _base_config(), results_data
-        )
+        calibrator = FakeCalibrator(_base_eval(), _base_config(), results_data)
         doc = generate_calibration_report(calibrator)
         assert "http://" not in doc
         assert "https://" not in doc

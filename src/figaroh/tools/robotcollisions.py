@@ -16,7 +16,7 @@
 """Enhanced collision detection and visualization utilities."""
 
 import logging
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 import numpy as np
 import pinocchio as pin
 
@@ -181,8 +181,9 @@ class CollisionManager:
                 try:
                     self.viz.viewer.gui.deleteNode(contact_name, True)
                     del self._vis_cache[contact_name]
-                except:
-                    pass  # Ignore deletion errors
+                except Exception as e:
+                    # Best-effort cleanup: the viewer may already have dropped the node.
+                    logger.debug("Could not delete %s: %s", contact_name, e)
 
     def _file_exists(self, filepath: str) -> bool:
         """Check if file exists safely."""
@@ -190,7 +191,7 @@ class CollisionManager:
             import os
 
             return os.path.exists(filepath)
-        except:
+        except Exception:  # "safely": any failure means not usable
             return False
 
 

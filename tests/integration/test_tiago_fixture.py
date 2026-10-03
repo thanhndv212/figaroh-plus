@@ -5,7 +5,6 @@ figaroh-examples work correctly as a reusable test fixture for figaroh.
 """
 
 import os
-import tempfile
 import numpy as np
 import pytest
 
@@ -28,8 +27,6 @@ class TestTiagoFixtureExists:
 
     def test_meshes_exist(self):
         """Verify mesh symlinks resolve to actual files."""
-        from pathlib import Path
-
         import conftest
 
         meshes_dir = conftest.FIXTURES / "tiago" / "meshes"
@@ -83,9 +80,7 @@ class TestTiagoModelStructure:
             "base_link",  # base
         ]
         for frame_name in required_frames:
-            assert tiago_model.existFrame(frame_name), (
-                f"Missing frame: {frame_name}"
-            )
+            assert tiago_model.existFrame(frame_name), f"Missing frame: {frame_name}"
 
 
 # ── Forward kinematics tests ───────────────────────────────────────────────
@@ -154,31 +149,42 @@ class TestTiagoUrdfExporter:
     def test_export_with_base_params_metrology_only(self, tiago_urdf_path, output_path):
         """Base_* params are accepted but not auto-applied (metrology-only)."""
         params = {"base_px": 0.01, "base_py": 0.0, "base_pz": 0.0, "base_phiz": 0.0}
-        modified = export_urdf(str(tiago_urdf_path), params, output_path=str(output_path))
+        modified = export_urdf(
+            str(tiago_urdf_path), params, output_path=str(output_path)
+        )
         # URDF is exported without auto-applying base params
         assert os.path.exists(modified)
         # FK should match original since base params are metrology-only
         from figaroh.tools.export_validation import URDFComparison
+
         comp = URDFComparison(str(tiago_urdf_path), modified)
         err = comp.fk_consistency_check(n_samples=10)
-        assert err.rmse_position < 1e-10, f"Base params leaked into URDF: {err.rmse_position}"
+        assert (
+            err.rmse_position < 1e-10
+        ), f"Base params leaked into URDF: {err.rmse_position}"
 
     def test_export_with_joint_offset(self, tiago_urdf_path, output_path):
         """Apply a legacy joint offset to TIAGo arm joint."""
         params = {"off_arm_3_joint": 0.05}
-        modified = export_urdf(str(tiago_urdf_path), params, output_path=str(output_path))
+        modified = export_urdf(
+            str(tiago_urdf_path), params, output_path=str(output_path)
+        )
         assert os.path.exists(modified)
 
     def test_export_with_placement_offset(self, tiago_urdf_path, output_path):
         """Apply d_px joint placement offset to TIAGo arm joint."""
         params = {"d_px_arm_3_joint": 0.02, "d_py_arm_3_joint": 0.01}
-        modified = export_urdf(str(tiago_urdf_path), params, output_path=str(output_path))
+        modified = export_urdf(
+            str(tiago_urdf_path), params, output_path=str(output_path)
+        )
         assert os.path.exists(modified)
 
     def test_export_with_offset_rx(self, tiago_urdf_path, output_path):
         """Apply offsetRX (calibrated) joint offset to TIAGo arm joint."""
         params = {"offsetRX_arm_3_joint": 0.02}
-        modified = export_urdf(str(tiago_urdf_path), params, output_path=str(output_path))
+        modified = export_urdf(
+            str(tiago_urdf_path), params, output_path=str(output_path)
+        )
         assert os.path.exists(modified)
 
     def test_comparison_detects_changes(self, tiago_urdf_path, output_path):
@@ -190,7 +196,9 @@ class TestTiagoUrdfExporter:
             "d_px_arm_3_joint": 0.02,
             "d_py_arm_3_joint": 0.01,
         }
-        modified = export_urdf(str(tiago_urdf_path), params, output_path=str(output_path))
+        modified = export_urdf(
+            str(tiago_urdf_path), params, output_path=str(output_path)
+        )
 
         comp = URDFComparison(str(tiago_urdf_path), modified)
         err = comp.fk_consistency_check(n_samples=50)
@@ -217,16 +225,17 @@ class TestTiagoEyeHandData:
 
         # Expected columns: x,y,z,phix,phiy,phiz + 9 joints + head joints
         assert len(header) >= 12, f"Expected >=12 cols, got {len(header)}: {header}"
-        assert len(rows) >= 10, (
-            f"Expected >=10 data rows, got {len(rows)}"
-        )
+        assert len(rows) >= 10, f"Expected >=10 data rows, got {len(rows)}"
         # First column should be a float
         float(rows[0][0])
 
     def test_multiple_csv_files(self, tiago_data_dir):
         """All expected eye-hand CSVs are present and non-empty."""
-        eh_dir = tiago_data_dir / "eye_hand_calibration_recorded_data_48c_hey5_cb_center.csv"
-        eh_dir = tiago_data_dir  # top-level data for eye-hand (some CSVs are at top level)
+        eye_hand_csv = (
+            tiago_data_dir / "eye_hand_calibration_recorded_data_48c_hey5_cb_center.csv"
+        )
+        assert eye_hand_csv.is_file(), f"missing {eye_hand_csv.name}"
+        assert eye_hand_csv.stat().st_size > 100, f"{eye_hand_csv.name} is empty"
         csv_count = 0
         for entry in tiago_data_dir.rglob("*.csv"):
             if entry.stat().st_size > 100:

@@ -17,7 +17,7 @@ Typical usage::
     comp.show_static_grid()
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Tuple, Union
 import logging
@@ -47,9 +47,9 @@ class PoseDelta:
     """
 
     translation: np.ndarray  # (3,) position delta in nominal EE frame
-    rotation: np.ndarray     # (3, 3) rotation matrix of the delta
-    twist: np.ndarray        # (6,) se3 twist vector [v, ω]
-    q: np.ndarray            # (nq,) joint configuration that produced this delta
+    rotation: np.ndarray  # (3, 3) rotation matrix of the delta
+    twist: np.ndarray  # (6,) se3 twist vector [v, ω]
+    q: np.ndarray  # (nq,) joint configuration that produced this delta
 
     def position_error(self) -> float:
         """Euclidean distance in meters."""
@@ -64,10 +64,10 @@ class PoseDelta:
 class FkConsistencyResult:
     """Aggregated FK consistency check — compares nominal vs. exported URDF FK."""
 
-    rmse_position: float         # meters
-    rmse_orientation: float      # radians
-    max_position: float          # meters
-    max_orientation: float       # radians
+    rmse_position: float  # meters
+    rmse_orientation: float  # radians
+    max_position: float  # meters
+    max_orientation: float  # radians
     per_sample: List[PoseDelta]  # one entry per configuration
 
     def __repr__(self):
@@ -160,7 +160,8 @@ class URDFComparison:
             frame_depth[fid] = depth[jp] if jp < len(depth) else 0
         # Pick deepest frame that is not attached to universe (jp > 0)
         candidates = [
-            (frame_depth[fid], fid) for fid in range(1, model.nframes)
+            (frame_depth[fid], fid)
+            for fid in range(1, model.nframes)
             if int(pj[fid]) > 0
         ]
         if not candidates:
@@ -215,13 +216,15 @@ class URDFComparison:
         for i, q in enumerate(poses):
             q_arr = np.asarray(q, dtype=float)
             delta = self._compute_delta(q_arr)
-            results.append(PoseError(
-                q=q_arr,
-                position_error_mm=delta.position_error() * 1000,
-                orientation_error_deg=delta.orientation_error() * 180 / np.pi,
-                pose_delta=delta,
-                label=f"pose_{i}",
-            ))
+            results.append(
+                PoseError(
+                    q=q_arr,
+                    position_error_mm=delta.position_error() * 1000,
+                    orientation_error_deg=delta.orientation_error() * 180 / np.pi,
+                    pose_delta=delta,
+                    label=f"pose_{i}",
+                )
+            )
         return results
 
     # ── Public visualization API ──
@@ -254,12 +257,14 @@ class URDFComparison:
             pass
 
         ViserUrdf(
-            viz, urdf_or_path=urdf_orig,
+            viz,
+            urdf_or_path=urdf_orig,
             root_node_name="/robot/original",
             load_meshes=True,
         )
         ViserUrdf(
-            viz, urdf_or_path=urdf_mod,
+            viz,
+            urdf_or_path=urdf_mod,
             root_node_name="/robot/modified",
             load_meshes=True,
         )
@@ -285,17 +290,20 @@ class URDFComparison:
             duration: Seconds to keep the display open after animation.
         """
         import trimesh
+
         viz = self._get_viser_server(server, port)
         urdf_orig, urdf_mod = self._load_yourdfpy()
         from viser.extras import ViserUrdf
 
         vis_orig = ViserUrdf(
-            viz, urdf_or_path=urdf_orig,
+            viz,
+            urdf_or_path=urdf_orig,
             root_node_name="/robot/orig_anim",
             load_meshes=True,
         )
         vis_mod = ViserUrdf(
-            viz, urdf_or_path=urdf_mod,
+            viz,
+            urdf_or_path=urdf_mod,
             root_node_name="/robot/mod_anim",
             load_meshes=True,
         )
@@ -369,12 +377,14 @@ class URDFComparison:
             q_arr = np.asarray(q, dtype=float)
 
             vis_orig = ViserUrdf(
-                viz, urdf_or_path=urdf_orig,
+                viz,
+                urdf_or_path=urdf_orig,
                 root_node_name=f"/grid/{i}/orig",
                 load_meshes=True,
             )
             vis_mod = ViserUrdf(
-                viz, urdf_or_path=urdf_mod,
+                viz,
+                urdf_or_path=urdf_mod,
                 root_node_name=f"/grid/{i}/mod",
                 load_meshes=True,
             )
@@ -391,7 +401,9 @@ class URDFComparison:
                 f"{pos_err:.1f}mm / {orient_err:.1f}°",
                 position=(x_off, z_off + 1.2, 0),
             )
-        print(f"[vis] {len(poses)} configs in grid at http://localhost:{viz.get_port()}")
+        print(
+            f"[vis] {len(poses)} configs in grid at http://localhost:{viz.get_port()}"
+        )
         time.sleep(duration)
 
     def show_interactive_validation(
@@ -420,8 +432,6 @@ class URDFComparison:
         """
         import threading
 
-        import trimesh
-        import viser
         from viser import uplot
         from viser.extras import ViserUrdf
 
@@ -432,9 +442,7 @@ class URDFComparison:
 
         # --- 3D Scene: trajectory robots ---
         # Parent frames to offset trajectory models from static comparison
-        traj_parent = server.scene.add_frame(
-            "/trajectory", show_axes=False
-        )
+        server.scene.add_frame("/trajectory", show_axes=False)
         traj_vis_orig = ViserUrdf(
             server,
             urdf_or_path=urdf_orig,
@@ -451,7 +459,7 @@ class URDFComparison:
         )
 
         # --- 3D Scene: static comparison robots (offset to the right) ---
-        static_parent = server.scene.add_frame(
+        server.scene.add_frame(
             "/static",
             show_axes=False,
             position=(2.5, 0, 0),
@@ -493,7 +501,9 @@ class URDFComparison:
         # --- Compute trajectory errors upfront ---
         traj_errors = [self._compute_delta(q) for q in traj_configs]
         traj_pos_mm = np.array([e.position_error() * 1000 for e in traj_errors])
-        traj_orient_deg = np.array([e.orientation_error() * 180 / np.pi for e in traj_errors])
+        traj_orient_deg = np.array(
+            [e.orientation_error() * 180 / np.pi for e in traj_errors]
+        )
         static_pos_mm = np.array(
             [e.position_error() * 1000 for e in static_state["errors"]]
         )
@@ -597,7 +607,10 @@ class URDFComparison:
             )
             speed_slider = server.gui.add_slider(
                 "Animation Speed",
-                0.01, 0.2, 0.01, 0.05,
+                0.01,
+                0.2,
+                0.01,
+                0.05,
                 hint="Delay between configurations (seconds)",
             )
 
@@ -605,12 +618,18 @@ class URDFComparison:
             server.gui.add_markdown("**Static Comparison**")
             pose_slider = server.gui.add_slider(
                 "Pose Index",
-                0, len(static_configs) - 1, 1, 0,
+                0,
+                len(static_configs) - 1,
+                1,
+                0,
                 hint="Select which static configuration to display",
             )
             opacity_slider = server.gui.add_slider(
                 "Modified Model Opacity",
-                0.0, 1.0, 0.01, 0.5,
+                0.0,
+                1.0,
+                0.01,
+                0.5,
                 hint="Transparency of the modified model overlay",
             )
             pose_label = server.gui.add_markdown(
@@ -753,8 +772,8 @@ class URDFComparison:
         positions = np.array([d.translation for d in deltas])
         orientations = np.array([d.twist[3:] for d in deltas])
         return FkConsistencyResult(
-            rmse_position=float(np.sqrt(np.mean(np.sum(positions ** 2, axis=1)))),
-            rmse_orientation=float(np.sqrt(np.mean(np.sum(orientations ** 2, axis=1)))),
+            rmse_position=float(np.sqrt(np.mean(np.sum(positions**2, axis=1)))),
+            rmse_orientation=float(np.sqrt(np.mean(np.sum(orientations**2, axis=1)))),
             max_position=float(np.max(np.linalg.norm(positions, axis=1))),
             max_orientation=float(np.max(np.linalg.norm(orientations, axis=1))),
             per_sample=deltas,
@@ -798,9 +817,7 @@ class URDFComparison:
         # 1. ROS_PACKAGE_PATH (ROS standard mechanism)
         rpp = os.environ.get("ROS_PACKAGE_PATH", "")
         if rpp:
-            search_dirs.extend(
-                Path(p).resolve() for p in rpp.split(":") if p
-            )
+            search_dirs.extend(Path(p).resolve() for p in rpp.split(":") if p)
 
         # 2. Auto-discovered models/ directory
         models_dir = URDFComparison._find_models_dir(urdf_path)
@@ -824,6 +841,7 @@ class URDFComparison:
     def _load_yourdfpy(self):
         """Lazy-load yourdfpy URDF objects for viser rendering."""
         import yourdfpy
+
         handler = self._create_package_handler(self.nominal_path)
         return (
             yourdfpy.URDF.load(str(self.nominal_path), filename_handler=handler),
@@ -836,6 +854,7 @@ class URDFComparison:
         if server is not None:
             return server
         import viser
+
         srv = viser.ViserServer(port=port, verbose=True)
         # Give the server a moment to start
         time.sleep(0.5)

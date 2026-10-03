@@ -5,12 +5,11 @@ This module provides standardized plotting and saving functionality
 across all task types: Calibration, Identification, OptimalCalibration, OptimalTrajectory.
 """
 
-import os
 import yaml
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from typing import Callable, Dict, Any, Optional, List, Union
+from typing import Callable, Dict, Any, Optional, List
 from datetime import datetime
 import logging
 
@@ -24,7 +23,6 @@ except ImportError:
 
 from .error_handling import (
     FigarohExampleError,
-    validate_input_data,
     setup_example_logging,
 )
 
@@ -650,7 +648,7 @@ class ResultsManager:
     def _plot_parameters(self, ax, values, names=None):
         """Plot parameter values with names."""
         x_pos = np.arange(len(values))
-        bars = ax.bar(x_pos, values, color=self.COLORS["optimal"], alpha=0.7)
+        ax.bar(x_pos, values, color=self.COLORS["optimal"], alpha=0.7)
 
         ax.set_title("Parameter Values")
         ax.set_ylabel("Value")

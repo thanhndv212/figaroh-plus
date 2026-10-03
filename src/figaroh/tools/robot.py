@@ -261,8 +261,12 @@ def create_robot(
         return load_robot(robot_urdf, package_dirs, loader=loader, **kwargs)
 
 
-# Import utilities from load_robot
-from .load_robot import load_robot, get_available_loaders, list_available_robots
+# Imported last: load_robot imports Robot from this module (circular import).
+from .load_robot import (  # noqa: E402
+    load_robot,
+    get_available_loaders,
+    list_available_robots,
+)
 
 __all__ = [
     "Robot",

@@ -27,10 +27,6 @@ import logging
 import numpy as np
 import pinocchio as pin
 
-# Setup logger for this module
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
-
 from ..tools.regressor import eliminate_non_dynaffect
 from ..tools.qrdecomposition import (
     QRDecomposer,
@@ -64,6 +60,9 @@ from .data_loader import (
     load_data,
     get_idxq_from_jname,
 )
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 # Constants for calibration
 TOL_QR = 1e-8
@@ -199,7 +198,7 @@ def get_rel_kinreg(model, data, start_frame, end_frame, q, backend=None):
         pin.updateFramePlacements(model, data)
     kinreg = np.zeros((6, 6 * (model.njoints - 1)))
     frame = model.frames[model.getFrameId(end_frame)]
-    oMf = data.oMi[frame.parent] * frame.placement
+    oMf = data.oMi[frame.parentJoint] * frame.placement
     for p in sup_joints:
         oMp = data.oMi[model.parents[p]] * model.jointPlacements[p]
         fMp = oMf.actInv(oMp)
@@ -676,7 +675,6 @@ def calculate_identifiable_kinematics_model(q, model, data, calib_config, backen
         MIN_MODEL = 1
 
     # obtain aggreated Jacobian matrix J and kinematic regressor R
-    calib_idx = calib_config["calibration_index"]
     R = np.zeros([6 * calib_config["NbSample"], 6 * (model.njoints - 1)])
     J = np.zeros([6 * calib_config["NbSample"], model.njoints - 1])
     for i in range(calib_config["NbSample"]):

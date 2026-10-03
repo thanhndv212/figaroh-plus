@@ -16,6 +16,16 @@ All four read from data `solve()` already computed — none of them re-run
 the calibration/identification, and none of them require network access or
 a backend.
 
+## Interpreting a verdict
+
+Use [Plan, Fit and Validate](example_workflow.md) to establish input correctness,
+parameter scope and independent validation before interpreting these reports.
+Inspect computed and skipped checks: a passing verdict with unavailable
+validation metrics does not establish held-out accuracy. Keep solver termination,
+physical feasibility, prediction quality and export/reload parity as separate
+conclusions. The compare page's compatibility checks do not establish matching
+raw inputs, processing, objectives or absence of leakage; retain that provenance.
+
 ## Terminal quality reports
 
 `print_quality_report()` runs automatically at the end of `solve()`; call
@@ -74,41 +84,75 @@ and returns a `VerificationVerdict` — this is the piece that turns a report
 (for a human to read) into something a script can branch on:
 
 ```python
-verdict = identifier.verify()
+verdict = identifier.verify(scope="execution")
 print(verdict.passed)          # bool
 for check in verdict.checks:
     print(check.name, check.value, check.comparison, check.threshold, check.passed)
 ```
 
-Default thresholds (every one is overridable per call — see below):
-
-**Calibration:**
-
-| Metric | Default | Comparison |
-|---|---|---|
-| `position_rmse_mm` (validation set) | 2.0 | max |
-| `orientation_rmse_deg` (validation set) | 0.1 | max |
-| `condition_number` | 1000.0 | max |
-
-**Identification:**
-
-| Metric | Default | Comparison |
-|---|---|---|
-| `validation_correlation` | 0.9 | min |
-| `condition_number` | 1000.0 | max |
-| `validation_improvement_pct` | 50.0 | min |
-
-A threshold whose metric can't be computed (typically because no
-`validation_data_file` was configured) is **skipped, not failed** — an
-empty check list counts as passed, since there's nothing to fail on.
-
-Override thresholds per call:
+A bare library `verify()` defaults to **prediction acceptance**, which stays
+incomplete without a validation set and explicit limits. Routine example CLIs
+explicitly request **numerical execution**:
 
 ```python
-verdict = calibrator.verify(thresholds={
-    "condition_number": {"threshold": 500.0, "comparison": "max"},
-})
+verdict = identifier.verify(scope="execution")
+print(verdict.scope, verdict.status, verdict.stages)
 ```
+
+This checks finite, nonempty fitted parameters, predictions, measurements and
+RMSE, matching effort dimensions, and whether explicitly requested validation
+loaded. Calibration additionally checks its reported optimization success and
+finite parameter/residual outputs. It does not certify data provenance, a full
+physical model or export/reload parity. Those stages remain `not_evaluated`.
+
+There are **no universal improvement, correlation, raw condition-number or
+calibration-error gates**. These remain report diagnostics. A good nominal model
+may have little improvement; high correlation can coexist with biased torque;
+raw conditioning changes with parameter units and basis scaling.
+
+For prediction acceptance, provide independent validation data and explicit
+application limits. For identification, supply an absolute maximum RMSE in Nm
+for **every active validation joint**:
+
+```python
+profile = {
+    f"validation_rmse:{joint}": {
+        "threshold": allowed_error_nm[joint],
+        "comparison": "max",
+        "rationale": "measurement uncertainty and the application requirement",
+    }
+    for joint in active_joints
+}
+verdict = identifier.verify(scope="prediction", thresholds=profile)
+```
+
+Identification also exposes `validation_abs_bias:<joint>` and
+`validation_peak_error:<joint>` in Nm (or `training_…` for fallback). Add explicit
+limits where the application needs them; the per-joint RMSE limits remain required.
+
+For calibration, use `position_rmse_mm` and, when rotational DOFs are measured,
+`orientation_rmse_deg`, with application-specific maximum limits. No replacement
+universal error value is supplied. Record units, the requirement behind each
+limit and the validation split before evaluating acceptance. Loading a separate
+file is necessary but does not prove experimental independence: split integrity,
+coverage and acquisition provenance remain the experiment owner's responsibility.
+
+`passed` remains available for existing consumers and is true only if all
+required checks **in the named scope** pass. Additive `status`, `scope`, `stages`
+and applied `policy` fields make the meaning explicit:
+
+- `pass`: all required checks in scope succeeded.
+- `fail`: a required evaluated check failed, including computed NaN/Inf evidence.
+- `not_evaluated`: required evidence or a prediction profile is unavailable.
+
+Missing checks are retained with their reason, rather than silently skipped.
+An empty threshold-only policy is `not_evaluated`, never PASS. A spec may set
+`required=False` for an advisory check; it is still reported. A failed explicitly
+requested validation load prevents execution acceptance. Training fallback can
+support diagnostics but cannot pass prediction acceptance. Physical and export
+acceptance require their own evidence; a scoped prediction PASS is not a full
+physical-model approval. Compare historical verdicts with care: their unscoped
+boolean used the earlier universal gates, not this policy.
 
 Write the verdict to disk as JSON (numpy-safe, includes git commit / config
 hash / timestamp provenance):
@@ -117,7 +161,8 @@ hash / timestamp provenance):
 path = identifier.export_verification_report(
     output_path=None,       # defaults to {output_dir}/identification_verification.json
     output_dir="results",
-    thresholds=None,        # defaults, same as verify()
+    thresholds=None,        # explicit limits, when evaluating prediction
+    scope="execution",
 )
 ```
 
@@ -130,19 +175,21 @@ This is the pattern already used by the `identification.py` entry points in
 [figaroh-examples](https://github.com/thanhndv212/figaroh-examples):
 
 ```python
-verdict = identifier.verify()
-identifier.export_verification_report(output_path=str(run_dir / "verdict.json"))
+verdict = identifier.verify(scope="execution")
+identifier.export_verification_report(output_path=str(run_dir / "verdict.json"), scope="execution")
 
 for check in verdict.checks:
-    status = "PASS" if check.passed else "FAIL"
-    print(f"  [{status}] {check.name}: {check.value:.4g} ({check.comparison} {check.threshold:.4g})")
+    status = check.status.upper()
+    print(f"  [{status}] {check.name}: {check.value} ({check.comparison} {check.threshold:.4g})")
 
 if not verdict.passed:
     sys.exit(1)
 ```
 
-Run it as `python identification.py --verify`, and the script's exit code
-is a real CI gate — non-zero on a failing run, zero on a passing one.
+Run it as `python identification.py --verify`. The scope must be printed with
+the verdict: zero means numerical execution passed by default, not that an
+independent prediction or physical model was accepted. Prediction-scoped
+incomplete evidence produces a nonzero exit.
 
 ## Comparing two runs
 

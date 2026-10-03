@@ -42,11 +42,13 @@ class RobotProjectionReport:
 
 
 def _sigma_from_p10(p10: np.ndarray) -> np.ndarray:
+    """Return the second moment about the link origin, not rotational inertia."""
     # p10 order (Pinocchio dynamic parameters):
     # [m, mcx, mcy, mcz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz]
     Ixx, Ixy, Iyy = p10[4], p10[5], p10[6]
     Ixz, Iyz, Izz = p10[7], p10[8], p10[9]
-    return np.array([[Ixx, Ixy, Ixz], [Ixy, Iyy, Iyz], [Ixz, Iyz, Izz]], dtype=float)
+    inertia = np.array([[Ixx, Ixy, Ixz], [Ixy, Iyy, Iyz], [Ixz, Iyz, Izz]], dtype=float)
+    return 0.5 * np.trace(inertia) * np.eye(3) - inertia
 
 
 def pseudo_inertia_matrix_from_p10(p10: np.ndarray) -> np.ndarray:
@@ -54,7 +56,10 @@ def pseudo_inertia_matrix_from_p10(p10: np.ndarray) -> np.ndarray:
 
     P = [[sigma, h], [h^T, m]]
 
-    where sigma is the 3x3 matrix block and h = m*c is the first moment.
+    Here sigma = 0.5 * trace(I_O) * eye(3) - I_O is the second moment,
+    I_O is the rotational inertia about the link origin, and h = m*c is
+    the first moment. The p10 tensor entries describe I_O, not sigma or
+    the inertia about the centre of mass.
     """
     p10 = np.asarray(p10, dtype=float).reshape(10)
 
@@ -114,12 +119,12 @@ def _auto_weights(p10_hat: np.ndarray) -> np.ndarray:
 
     m_scale = max(abs(float(p10_hat[0])), 1e-6)
     h_scale = max(float(np.linalg.norm(p10_hat[1:4])), 1e-6)
-    sigma_scale = max(float(np.linalg.norm(p10_hat[4:10])), 1e-6)
+    inertia_scale = max(float(np.linalg.norm(p10_hat[4:10])), 1e-6)
 
     w = np.ones(10, dtype=float)
     w[0] = 1.0 / m_scale
     w[1:4] = 1.0 / h_scale
-    w[4:10] = 1.0 / sigma_scale
+    w[4:10] = 1.0 / inertia_scale
     return w
 
 
@@ -190,9 +195,16 @@ def project_p10_lmi(
     # Mass term (1-element)
     h_hat_c = pc.Constant("h_hat", p10_hat[1:4].reshape(3, 1))
     dm = float(w[0]) * (m - float(p10_hat[0]))
-    dh = w[1:4].reshape(3, 1) * (h - h_hat_c)
+    # PICOS '*' is a matrix product: an explicit diagonal matrix is needed
+    # to penalise each first moment independently rather than their sum.
+    dh = pc.Constant("Wh", np.diag(w[1:4])) * (h - h_hat_c)
     obj = pc.SquaredNorm(dm) + pc.SquaredNorm(dh)
-    # Sigma terms: iterate over 6 unique upper-triangle entries to avoid
+    # Dynamic inertia is I_O = trace(sigma) * eye(3) - sigma. Weights apply
+    # to its six p10 entries, not to the second moment decision variable.
+    inertia = (sigma[0, 0] + sigma[1, 1] + sigma[2, 2]) * pc.Constant(
+        "I3", np.eye(3)
+    ) - sigma
+    # Inertia terms: iterate over 6 unique upper-triangle entries to avoid
     # Frobenius double-counting.  p10 order: Ixx=4, Ixy=5, Iyy=6, Ixz=7, Iyz=8, Izz=9
     for _r, _c, _idx in [
         (0, 0, 4),
@@ -202,7 +214,7 @@ def project_p10_lmi(
         (1, 2, 8),
         (2, 2, 9),
     ]:
-        obj = obj + (float(w[_idx]) * (sigma[_r, _c] - float(p10_hat[_idx]))) ** 2
+        obj = obj + (float(w[_idx]) * (inertia[_r, _c] - float(p10_hat[_idx]))) ** 2
     problem.minimize = obj
 
     # Solve — use verbosity (picos 2.x) instead of the deprecated verbose kwarg
@@ -232,16 +244,17 @@ def project_p10_lmi(
     m_val = float(m.value)
     h_val = np.asarray(h.value).reshape(3)
     sigma_val = np.asarray(sigma.value).reshape(3, 3)
+    inertia_val = np.trace(sigma_val) * np.eye(3) - sigma_val
 
     p10_proj = np.zeros(10, dtype=float)
     p10_proj[0] = m_val
     p10_proj[1:4] = h_val
-    p10_proj[4] = sigma_val[0, 0]
-    p10_proj[5] = sigma_val[0, 1]
-    p10_proj[6] = sigma_val[1, 1]
-    p10_proj[7] = sigma_val[0, 2]
-    p10_proj[8] = sigma_val[1, 2]
-    p10_proj[9] = sigma_val[2, 2]
+    p10_proj[4] = inertia_val[0, 0]
+    p10_proj[5] = inertia_val[0, 1]
+    p10_proj[6] = inertia_val[1, 1]
+    p10_proj[7] = inertia_val[0, 2]
+    p10_proj[8] = inertia_val[1, 2]
+    p10_proj[9] = inertia_val[2, 2]
 
     # Verify with a relaxed tolerance to absorb solver numerical noise
     # (SDP solvers satisfy P >> 0 up to ~1e-8 relative error).

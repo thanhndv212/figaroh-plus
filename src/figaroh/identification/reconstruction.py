@@ -273,24 +273,14 @@ def _load_prior_from_urdf(
                 idx = name_to_idx.get(joint_name)
                 if idx is not None:
                     inertia = model.inertias[idx]
-                    cx, cy, cz = (
-                        float(inertia.lever[0]),
-                        float(inertia.lever[1]),
-                        float(inertia.lever[2]),
-                    )
-                    m_val = float(inertia.mass)
-                    I = inertia.inertia  # 3×3
+                    # Pinocchio's inertia.inertia is about the CoM, while
+                    # dynamic parameters need the tensor about the link origin.
+                    dynamic_parameters = inertia.toDynamicParameters()
                     flat = {
-                        f"m_{joint_name}": m_val,
-                        f"mx_{joint_name}": m_val * cx,
-                        f"my_{joint_name}": m_val * cy,
-                        f"mz_{joint_name}": m_val * cz,
-                        f"Ixx_{joint_name}": float(I[0, 0]),
-                        f"Ixy_{joint_name}": float(I[0, 1]),
-                        f"Iyy_{joint_name}": float(I[1, 1]),
-                        f"Ixz_{joint_name}": float(I[0, 2]),
-                        f"Iyz_{joint_name}": float(I[1, 2]),
-                        f"Izz_{joint_name}": float(I[2, 2]),
+                        f"{inertial_key}_{joint_name}": float(value)
+                        for inertial_key, value in zip(
+                            _INERTIAL_KEYS, dynamic_parameters
+                        )
                     }
                     prior[p_name] = flat.get(p_name, default)
                     found = True
@@ -435,12 +425,14 @@ def _reconstruct_sdp(
         mz = theta[idx["mz"]]
         m = theta[idx["m"]]
 
-        # 4×4 pseudo-inertia P_j
+        # p10 stores rotational inertia about the link origin. The upper
+        # pseudo-inertia block is instead Sigma = 0.5 * trace(I_O) * I - I_O.
+        half_trace = 0.5 * (Ixx + Iyy + Izz)
         P_j = pc.block(
             [
-                [Ixx, Ixy, Ixz, mx],
-                [Ixy, Iyy, Iyz, my],
-                [Ixz, Iyz, Izz, mz],
+                [half_trace - Ixx, -Ixy, -Ixz, mx],
+                [-Ixy, half_trace - Iyy, -Iyz, my],
+                [-Ixz, -Iyz, half_trace - Izz, mz],
                 [mx, my, mz, m],
             ]
         )

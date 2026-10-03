@@ -36,7 +36,6 @@ from typing import Any, Dict, List, Optional
 
 UNCERTAINTY_WARN_PCT = 30.0
 UNCERTAINTY_CAUTION_PCT = 10.0
-VALIDATION_IMPROVEMENT_WARN_PCT = 50.0
 
 
 def _esc(value: Any) -> str:
@@ -56,8 +55,7 @@ def _uncertainty_tier(std_pctg: float) -> str:
 
 def _insights_section(insights: List[Dict[str, str]]) -> str:
     items = "\n".join(
-        f'<li class="insight {i["level"]}">{_esc(i["text"])}</li>'
-        for i in insights
+        f'<li class="insight {i["level"]}">{_esc(i["text"])}</li>' for i in insights
     )
     return f'<ul class="insights">{items}</ul>'
 
@@ -85,9 +83,7 @@ def _param_uncertainty_section(
     n = min(len(param_names), len(std_pctg))
     ranked = sorted(
         range(n),
-        key=lambda i: (
-            -std_pctg[i] if not math.isnan(std_pctg[i]) else 0.0
-        ),
+        key=lambda i: (-std_pctg[i] if not math.isnan(std_pctg[i]) else 0.0),
     )
 
     rows = []
@@ -98,7 +94,8 @@ def _param_uncertainty_section(
         val_str = "—" if val is None or math.isnan(val) else f"{val:.6g}"
         tier = _uncertainty_tier(sp)
         bar_pct = 0.0 if math.isnan(sp) else min(sp, 100.0)
-        rows.append(f"""
+        rows.append(
+            f"""
         <tr class="tier-{tier}">
           <td>{_esc(param_names[i])}</td>
           <td class="num">{val_str}</td>
@@ -111,7 +108,8 @@ def _param_uncertainty_section(
             </div>
           </td>
         </tr>
-        """)
+        """
+        )
 
     return f"""
     <table class="data">
@@ -144,7 +142,7 @@ def _correlation_section(corr_pairs: List[Dict[str, Any]]) -> str:
         rows.append(
             "<tr>"
             f"<td>{_esc(p['param_i'])} ↔ {_esc(p['param_j'])}</td>"
-            f"<td class=\"num\"><span class=\"badge tier-{tier}\">"
+            f'<td class="num"><span class="badge tier-{tier}">'
             f"ρ = {rho:+.3f}</span></td>"
             "</tr>"
         )
@@ -164,7 +162,7 @@ def _hash_short(value: Optional[str]) -> str:
 
 
 def _run_title(provenance: Optional[Dict[str, Any]], fallback: str) -> str:
-    """"{asset_id} ({model})" when a physical unit is identified, else
+    """ "{asset_id} ({model})" when a physical unit is identified, else
     just the model/class name — used for the report's <h1>."""
     if not provenance:
         return fallback
@@ -221,8 +219,7 @@ def _provenance_section(provenance: Optional[Dict[str, Any]]) -> str:
         asset_rows = [
             _row(
                 "Asset ID",
-                "unspecified unit — set robot.instance.asset_id or "
-                "pass --asset-id",
+                "unspecified unit — set robot.instance.asset_id or " "pass --asset-id",
                 "unspecified",
             )
         ]
@@ -269,9 +266,7 @@ def _provenance_section(provenance: Optional[Dict[str, Any]]) -> str:
             continue
         label = key.replace("_", " ")
         if info.get("status") == "not_found":
-            data_rows.append(
-                _row(label, f"not found: {info.get('path', '')}")
-            )
+            data_rows.append(_row(label, f"not found: {info.get('path', '')}"))
         else:
             data_rows.append(_row(label, info.get("path", "")))
 
@@ -291,14 +286,10 @@ def _provenance_section(provenance: Optional[Dict[str, Any]]) -> str:
 
     run_id = provenance.get("run_id", "")
     header = (
-        f'<p class="run-id">Run ID: <code>{_esc(run_id)}</code></p>'
-        if run_id
-        else ""
+        f'<p class="run-id">Run ID: <code>{_esc(run_id)}</code></p>' if run_id else ""
     )
 
     return f'{header}<div class="kv-grid">{group_html}</div>'
-
-
 
 
 # Above this cap, the before/after chart's inline JSON payload and SVG
@@ -322,8 +313,7 @@ def _downsample_series(
     idx = list(range(0, n, stride))
     new_time = [time[i] for i in idx]
     new_series_dicts = [
-        {name: [arr[i] for i in idx] for name, arr in d.items()}
-        for d in series_dicts
+        {name: [arr[i] for i in idx] for name, arr in d.items()} for d in series_dicts
     ]
     return new_time, new_series_dicts
 
@@ -351,9 +341,7 @@ def _series_panel_section(
         nominal = validation.get("error_nominal_per_dof")
         fitted = validation.get("error_fitted_per_dof")
         n_val = validation.get("n_val_samples", 0)
-        measured = (
-            {name: [0.0] * n_val for name in names} if names else None
-        )
+        measured = {name: [0.0] * n_val for name in names} if names else None
         unit = ""
     elif domain == "identification":
         names = validation.get("joint_names")
@@ -421,10 +409,17 @@ class ThresholdCheck:
     """One metric checked against one threshold."""
 
     name: str
-    value: float
+    value: Optional[float]
     threshold: float
     comparison: str  # "max" or "min"
     passed: bool
+    status: str = "pass"
+    required: bool = True
+    reason: str = ""
+
+    def __post_init__(self):
+        if self.status == "pass" and not self.passed:
+            self.status = "fail"
 
 
 @dataclass
@@ -455,67 +450,215 @@ class VerificationVerdict:
     # Compatibility descriptor for Feature 6's cross-run compare (Step
     # 5): enough to tell whether two verdicts are safe to overlay.
     compat: Dict[str, Any] = field(default_factory=dict)
+    status: str = "not_evaluated"
+    scope: str = "thresholds"
+    stages: Dict[str, str] = field(default_factory=dict)
+    policy: Dict[str, Dict[str, Any]] = field(default_factory=dict)
 
 
-# Default thresholds are starting points, not values sourced from any real
-# deployment's acceptance criteria — every call site can override them
-# (D4: thresholds are per-call config, not hardcoded constants).
-CALIBRATION_DEFAULT_THRESHOLDS: Dict[str, Dict[str, Any]] = {
-    "position_rmse_mm": {"threshold": 2.0, "comparison": "max"},
-    "orientation_rmse_deg": {"threshold": 0.1, "comparison": "max"},
-    "condition_number": {"threshold": 1000.0, "comparison": "max"},
-}
-
-IDENTIFICATION_DEFAULT_THRESHOLDS: Dict[str, Dict[str, Any]] = {
-    "validation_correlation": {"threshold": 0.9, "comparison": "min"},
-    "condition_number": {"threshold": 1000.0, "comparison": "max"},
-    "validation_improvement_pct": {"threshold": 50.0, "comparison": "min"},
-}
+# Scientific limits must be specified by the application, not inferred from
+# nominal improvement, pooled correlation or unscaled conditioning.
+CALIBRATION_DEFAULT_THRESHOLDS: Dict[str, Dict[str, Any]] = {}
+IDENTIFICATION_DEFAULT_THRESHOLDS: Dict[str, Dict[str, Any]] = {}
 
 
-def evaluate_thresholds(
-    metrics: Dict[str, float], thresholds: Dict[str, Dict[str, Any]]
-) -> VerificationVerdict:
-    """Check each metric named in ``thresholds`` against its threshold.
+def _check_status(checks):
+    required = [c for c in checks if c.required]
+    if any(c.status == "fail" for c in required):
+        return "fail"
+    if not required or any(c.status == "not_evaluated" for c in required):
+        return "not_evaluated"
+    return "pass"
 
-    A threshold whose metric is missing from ``metrics`` (or is NaN) —
-    e.g. a validation-set threshold when no validation data was
-    provided — is silently skipped rather than counted as a failure;
-    ``verify()`` callers can note the gap via ``insights`` instead. An
-    empty check list (nothing was evaluable) counts as passed: there is
-    nothing to fail on.
+
+def evaluate_thresholds(metrics, thresholds):
+    """Evaluate explicit limits; missing required evidence cannot pass.
+
+    Specs accept ``required=False`` for advisory checks. Missing metrics are
+    recorded as not evaluated; computed nonfinite values fail. Empty policies
+    have no acceptance evidence and return not evaluated, with passed=False.
     """
-    checks: List[ThresholdCheck] = []
+    checks = []
     for name, spec in thresholds.items():
-        value = metrics.get(name)
-        if value is None or (isinstance(value, float) and math.isnan(value)):
-            continue
-
-        threshold = spec["threshold"]
+        threshold = float(spec["threshold"])
         comparison = spec["comparison"]
-        if comparison == "max":
-            passed = value <= threshold
-        elif comparison == "min":
-            passed = value >= threshold
-        else:
-            raise ValueError(
-                f"Unknown comparison {comparison!r} for threshold {name!r} "
-                "(expected 'max' or 'min')"
-            )
+        if comparison not in ("min", "max"):
+            raise ValueError(f"Unknown comparison {comparison!r} for {name!r}")
+        if not math.isfinite(threshold):
+            raise ValueError(f"Threshold for {name!r} must be finite")
+        value = metrics.get(name)
+        status, reason = "not_evaluated", "Required metric is unavailable"
+        if value is not None:
+            value = float(value)
+            if not math.isfinite(value):
+                status, reason = "fail", "Computed metric is nonfinite"
+            else:
+                passed = (
+                    value <= threshold if comparison == "max" else value >= threshold
+                )
+                status, reason = ("pass" if passed else "fail"), ""
         checks.append(
             ThresholdCheck(
-                name=name,
-                value=float(value),
-                threshold=float(threshold),
-                comparison=comparison,
-                passed=bool(passed),
+                name,
+                value,
+                threshold,
+                comparison,
+                status == "pass",
+                status,
+                bool(spec.get("required", True)),
+                reason,
             )
         )
-
-    overall_passed = all(c.passed for c in checks) if checks else True
+    status = _check_status(checks)
     return VerificationVerdict(
-        passed=overall_passed, checks=checks, metrics=dict(metrics)
+        status == "pass", checks, dict(metrics), status=status, policy=dict(thresholds)
     )
+
+
+def scoped_verification(
+    metrics,
+    thresholds,
+    scope,
+    arrays,
+    independent,
+    prediction_keys,
+    solver_success=None,
+    facts=None,
+):
+    """Build a scoped verdict without claiming unrequested model stages.
+
+    Execution verifies finite, nonempty numerical outputs. Prediction also
+    requires independent measurements and explicit error limits for every
+    requested output. Neither scope certifies physical feasibility or export.
+    """
+    import numpy as np
+
+    if scope not in ("execution", "prediction"):
+        raise ValueError("Verification scope must be 'execution' or 'prediction'")
+    verdict = evaluate_thresholds(metrics, thresholds)
+    guard = []
+    for name, array in arrays.items():
+        status, reason = "not_evaluated", "Numerical evidence is unavailable"
+        if array is not None:
+            values = np.asarray(array, dtype=float)
+            valid = values.size > 0 and np.all(np.isfinite(values))
+            status, reason = (
+                ("pass", "")
+                if valid
+                else ("fail", "Empty or nonfinite numerical output")
+            )
+        guard.append(
+            ThresholdCheck(
+                name,
+                None if status == "not_evaluated" else float(status == "pass"),
+                1.0,
+                "min",
+                status == "pass",
+                status,
+                True,
+                reason,
+            )
+        )
+    for name, value in (facts or {}).items():
+        status = "not_evaluated" if value is None else ("pass" if value else "fail")
+        guard.append(
+            ThresholdCheck(
+                name,
+                None if status == "not_evaluated" else float(status == "pass"),
+                1.0,
+                "min",
+                status == "pass",
+                status,
+                True,
+                (
+                    "Numerical dimensions are missing or inconsistent"
+                    if status != "pass"
+                    else ""
+                ),
+            )
+        )
+    if solver_success is not None:
+        status = "pass" if solver_success else "fail"
+        guard.append(
+            ThresholdCheck(
+                "solver_success",
+                float(solver_success),
+                1.0,
+                "min",
+                bool(solver_success),
+                status,
+            )
+        )
+    numerical_status = _check_status(guard)
+    verdict.checks = guard + verdict.checks
+    prediction_status = "not_evaluated"
+    if scope == "prediction":
+        for name, satisfied, reason in [
+            (
+                "independent_validation",
+                independent,
+                "No independently loaded validation data",
+            ),
+            (
+                "prediction_error_policy",
+                bool(prediction_keys)
+                and all(
+                    k in thresholds
+                    and thresholds[k].get("required", True)
+                    and thresholds[k]["comparison"] == "max"
+                    and float(thresholds[k]["threshold"]) >= 0
+                    for k in prediction_keys
+                ),
+                "Specify nonnegative per-output maximum error limits before acceptance",
+            ),
+        ]:
+            status = "pass" if satisfied else "not_evaluated"
+            verdict.checks.append(
+                ThresholdCheck(
+                    name,
+                    1.0 if satisfied else None,
+                    1.0,
+                    "min",
+                    satisfied,
+                    status,
+                    True,
+                    "" if satisfied else reason,
+                )
+            )
+        prediction_status = _check_status(verdict.checks)
+    verdict.status = _check_status(verdict.checks)
+    verdict.passed = verdict.status == "pass"
+    verdict.scope = scope
+    verdict.stages = {
+        "numerical_execution": numerical_status,
+        "prediction": prediction_status,
+        "data_provenance": "not_evaluated",
+        "solver": (
+            ("pass" if solver_success else "fail")
+            if solver_success is not None
+            else "not_evaluated"
+        ),
+        "physical": "not_evaluated",
+        "export": "not_evaluated",
+    }
+    return verdict
+
+
+def verification_json_data(data):
+    """Keep invalid evidence readable in strict JSON; status retains failure."""
+    import numpy as np
+
+    if isinstance(data, dict):
+        return {k: verification_json_data(v) for k, v in data.items()}
+    if isinstance(data, (list, tuple)):
+        return [verification_json_data(v) for v in data]
+    if isinstance(data, np.ndarray):
+        return verification_json_data(data.tolist())
+    if isinstance(data, np.generic):
+        return verification_json_data(data.item())
+    if isinstance(data, float) and not math.isfinite(data):
+        return None
+    return data
 
 
 def _git_commit_hash() -> str:

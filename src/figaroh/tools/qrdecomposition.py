@@ -28,7 +28,7 @@ Note:
 The resulting row ordering matches the returned base-parameter expressions.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 from scipy import linalg
@@ -181,7 +181,7 @@ class QRDecomposer:
 
         method_norm = method.strip().lower()
         if method_norm in {"pivoting", "pivot", "qr_pivoting", "qr-pivoting"}:
-            _, R, P = linalg.qr(W_e, pivoting=True)
+            _, R, P = linalg.qr(W_e, pivoting=True, mode="economic")
             rank = self._find_rank(R)
             params_sorted = [params_r[P[i]] for i in range(P.shape[0])]
             R1, Q1, R2 = self._extract_base_components(
@@ -330,7 +330,7 @@ class QRDecomposer:
               - W_b has shape (m, r) with r = rank(W_e)
               - base_parameters maps expression strings (length r) to values.
         """
-        Q, R, P = linalg.qr(W_e, pivoting=True)
+        Q, R, P = linalg.qr(W_e, pivoting=True, mode="economic")
 
         # Reorder parameters according to pivoting
         params_sorted = [params_r[P[i]] for i in range(P.shape[0])]
@@ -517,7 +517,7 @@ class QRDecomposer:
         dependent.  Both lists are returned sorted in ascending column order so
         the result does not depend on arbitrary column ordering.
         """
-        _, R, P = linalg.qr(W_e, pivoting=True)
+        _, R, P = linalg.qr(W_e, pivoting=True, mode="economic")
         rank = self._find_rank(R)
         # Sort so the selected columns are deterministic regardless of input ordering
         base_indices = sorted(P[:rank].tolist())
@@ -622,7 +622,7 @@ class QRDecomposer:
               - M has shape (r, n) where r is the identified rank
               - base_params_expr is a list[str] of length r
         """
-        _, R, P = linalg.qr(W_e, pivoting=True)
+        _, R, P = linalg.qr(W_e, pivoting=True, mode="economic")
         rank = self._find_rank(R)
 
         # Dependency coefficients in the pivoted ordering — full precision

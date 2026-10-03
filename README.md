@@ -11,11 +11,15 @@
 FIGAROH is a Python toolbox providing efficient and highly flexible frameworks for dynamics identification and geometric calibration of rigid multi-body systems based on the URDF modeling convention. It supports both serial (industrial manipulators) and tree-structure systems (humanoids, mobile manipulators).
 
 **📦 Available on PyPI:** `pip install figaroh`
-**📖 Version:** 0.4.8
+**📖 Version:** 0.5.0
+
+For contributors: [Roadmap](https://github.com/thanhndv212/figaroh-plus/blob/main/ROADMAP.md), [Architecture](https://github.com/thanhndv212/figaroh-plus/blob/main/ARCHITECTURE.md),
+[Contribution workflow](https://github.com/thanhndv212/figaroh-plus/blob/main/CONTRIBUTING.md), and
+[validation guide](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/development/validation.md).
 
 > Note: This repo is a fork from [gitlab repo](https://gitlab.laas.fr/gepetto/figaroh) of which the author is no longer a contributor.
 
-Working with an AI coding agent? [`skills/`](skills/) holds agent skills that set up a FIGAROH task end to end — start with [`skills/figaroh-start`](skills/figaroh-start/SKILL.md), which routes to the right package and directory, and [`skills/figaroh-setup-env`](skills/figaroh-setup-env/SKILL.md), which ships a `doctor.sh` that verifies your environment before anything runs.
+Working with an AI coding agent? [`skills/`](https://github.com/thanhndv212/figaroh-plus/blob/main/skills/) holds agent skills that set up a FIGAROH task end to end — start with [`skills/figaroh-start`](https://github.com/thanhndv212/figaroh-plus/blob/main/skills/figaroh-start/SKILL.md), which routes to the right package and directory, and [`skills/figaroh-setup-env`](https://github.com/thanhndv212/figaroh-plus/blob/main/skills/figaroh-setup-env/SKILL.md), which ships a `doctor.sh` that verifies your environment before anything runs.
 
 ---
 
@@ -88,7 +92,7 @@ cd figaroh-examples && pip install -r requirements.txt
 ### 🛠️ Modern Architecture
 - **Proper logging** (NullHandler pattern for libraries)
 - **Abstract base classes** for extensibility
-- **Pinocchio 3.x compatibility**
+- **Pinocchio 3.7 and 4.1 compatibility checks**
 - **Cross-platform**: Linux, macOS, Windows
 
 ### 📊 Reporting & Verification (V&V)
@@ -103,7 +107,7 @@ cd figaroh-examples && pip install -r requirements.txt
   for the full walkthrough
 ---
 
-## Core Modules (See more at [ARCHITECTURE](ARCHITECTURE))
+## Core Modules (See more at [Architecture](https://github.com/thanhndv212/figaroh-plus/blob/main/ARCHITECTURE.md))
 
 ### `figaroh.calibration` — Geometric Calibration
 
@@ -242,9 +246,16 @@ Export calibrated/identified parameters to URDF or YAML.
 | Category | Packages |
 |----------|----------|
 | **Scientific** | numpy, scipy, matplotlib, pandas, numdifftools |
-| **Robotics** | pinocchio (pin), ndcurves, meshcat |
+| **Robotics** | pinocchio (`pin>=3.7,<5`), ndcurves, meshcat |
 | **Config** | pyyaml, rospkg |
 | **Optimization** | cyipopt (conda), picos |
+
+The Pinocchio compatibility matrix pins 3.7.0 with ndcurves 2.0.0.1 and
+4.1.0 with ndcurves 2.3.0 on Python 3.12. Install Pinocchio and ndcurves
+together so their native dependencies agree. Other versions inside the
+declared range are eligible for dependency resolution but have no separate
+CI profile. See the [version support decision](docs/decisions/pinocchio-version-support.md)
+and [validation guide](docs/development/validation.md).
 
 ---
 
@@ -289,4 +300,4 @@ If you use FIGAROH in your research, please cite the following papers:
 
 ## License
 
-Please refer to the [LICENSE](LICENSE) file for licensing information.
+Please refer to the [LICENSE](https://github.com/thanhndv212/figaroh-plus/blob/main/LICENSE) file for licensing information.

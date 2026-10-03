@@ -7,7 +7,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-03
+
+### Changed
+
+- The blocking `Lint` job runs every pre-commit hook on the full tree instead of
+  only on changed files, and the advisory `Lint backlog` job is removed: the
+  legacy lint debt inventoried in #57 was cleared in #81-#85.
+
+- Replace universal quality gates with scoped execution/prediction verification;
+  preserve diagnostic metrics, record incomplete required evidence, reject nonfinite
+  results, and require explicit per-output limits for prediction acceptance. (#70)
+  **Behaviour change:** `verify()` without `scope` now means prediction acceptance,
+  so callers that only checked `.passed` get `False` (not evaluated) unless they
+  supply separately loaded validation data and limits; pass `scope="execution"`
+  for numerical-execution checks. The default thresholds are now empty, and
+  training-data fallback metrics are named `training_*`.
+
+- Bound Pinocchio to `pin>=3.7,<5`, replace deprecated frame-parent access,
+  and add explicit Pinocchio 3.7.0 / 4.1.0 CI profiles with compatible ndcurves
+  versions. Constraints apply before environment creation; CI checks native
+  imports, installed versions and dependency consistency.
+- Require one focused PR per completed issue and explicit maintainer approval
+  before agents merge, with the policy recorded in CONTRIBUTING, AGENTS and
+  the PR review checklist.
+
+- Reorganize the roadmap around delivery outcomes and exit gates, preserve its
+  previous detailed planning snapshot in an archive, and replace the architecture
+  inventory with a source-audited description of current contracts and limits.
+- Document the `devel` integration / `main` release workflow in CONTRIBUTING,
+  refresh agent guidance, and add issue/PR templates and a design-decision index.
+- Add Python 3.12 core and MuJoCo 3.9/3.14 test jobs, critical whole-tree lint,
+  changed-file pre-commit checks, and an advisory report of existing lint debt.
+  Documentation builds now check PRs to both development and release branches;
+  installation failures propagate, and deployment only runs on pushes to `main`.
+  CI fetches the pinned examples mesh fixtures required by the full suite and
+  fixes a platform-sensitive QR precision assertion to use absolute tolerance.
+
 ### Fixed
+
+- Optimal trajectory generation no longer exhausts memory or the time budget
+  (figaroh-examples#50). Pivoted QR in `qrdecomposition` uses economic mode
+  instead of building a full m×m Q (13.7 GB for UR10 at setup; TIAGo was
+  killed). The trajectory problem uses forward-difference objective gradients
+  instead of numdifftools, `calc_torque` calls RNEA once per sample instead
+  of once per joint, and initial waypoint steps are clamped to the velocity
+  limits so the feasibility search succeeds. Per-sample constraint-check
+  messages are DEBUG, not WARNING.
+- `RobotIPOPTSolver` no longer reports IPOPT status -1 (maximum iterations
+  exceeded) as success. **Behaviour change:** a trajectory segment that stops
+  at the iteration limit is kept only if its final iterate is feasible; it is
+  then marked `converged: False` with a warning. The iteration cap is
+  configurable as `problem.max_iterations` (default 200).
+- Configuration variants that `extends` a section (e.g. `tasks.calibration`)
+  now override that section. They were merged into the configuration root, so
+  the selected task silently kept its base values (#76).
+- `figaroh.utils.config_parser.get_param_from_yaml()` accepts whole legacy files
+  with `calibration:` / `identification:` sections and dispatches the requested
+  one; `task_type="auto"` selects a single present section and still requires
+  an explicit task when both exist (#76).
+- Configuration differentiation now estimates acceleration for every tangent
+  coordinate, including the last fixed-base joint. Derivative widths use `nv`
+  rather than `nq` or effort-selection flags, supporting quaternion/continuous
+  joints through model/backend differences. Uneven intervals use velocity
+  midpoint times; malformed/nonpositive/nonfinite intervals fail explicitly.
+  The legacy trailing-two-sample trim and interval velocity alignment remain.
+  Older UR10 dataset fits remain preprocessing-limited until torque-generation
+  provenance and sampling/filter assumptions are audited separately. (#32)
+
+- Physical-consistency fallback, SDP projection and SDP reconstruction now
+  distinguish link-origin rotational inertia from the second-moment block
+  of pseudo-inertia. Projection weights and returned p10 entries remain in
+  dynamic-parameter coordinates; reconstruction enforces inertia triangle
+  inequalities as well as positive mass. Previously SDP fits could accept
+  physically invalid inertias. First-moment projection weights now penalize
+  each component independently instead of only a weighted sum, preventing
+  changes to feasible nonzero-CoM inputs. URDF reconstruction priors now use
+  link-origin tensor entries via Pinocchio's dynamic-parameter conversion,
+  including the parallel-axis contribution of a nonzero CoM. (#21)
+
+- MuJoCo mass-matrix evaluation now supports both `mj_fullM` signatures: the
+  pre-3.10 `(model, destination, qM)` form and the newer `(model, data, destination)`
+  form. This fixes failures with recent MuJoCo versions that removed `data.qM`.
 
 - `get_standard_parameters` read each joint's CAD inertia from the body
   before it (`model.inertias[i]` instead of `[i + 1]`), so `tau_ref`, the
@@ -26,6 +107,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ValueError`. (#13)
 
 ### Added
+
+- Trajectory optimisation can retry a failed segment from a new initial guess:
+  `problem.segment_attempts` (default 1, no retry). See figaroh-examples#60.
 
 - `tasks.identification.problem.qr_relative_tolerance`: QR rank threshold as
   a fraction of the largest pivot. Default unset (unchanged behaviour). A

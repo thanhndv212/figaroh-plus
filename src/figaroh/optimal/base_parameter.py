@@ -15,11 +15,7 @@
 
 import logging
 import numpy as np
-from typing import Dict, List, Tuple, Any
-
-# Setup logger for this module
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+from typing import Tuple
 
 from figaroh.identification.identification_tools import get_standard_parameters
 from figaroh.utils.cubic_spline import (
@@ -36,6 +32,10 @@ from figaroh.identification.parameter import (
     add_standard_additional_parameters,
     add_custom_parameters,
 )
+
+# Setup logger for this module
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class BaseParameterComputer:

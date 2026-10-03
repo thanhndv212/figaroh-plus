@@ -66,8 +66,12 @@ class TestGenerateComparePage:
     def test_contains_two_file_inputs_and_drop_zones(self):
         doc = generate_compare_page()
         for element_id in (
-            "zone-a", "zone-b", "file-a", "file-b",
-            "filename-a", "filename-b",
+            "zone-a",
+            "zone-b",
+            "file-a",
+            "file-b",
+            "filename-a",
+            "filename-b",
         ):
             assert f'id="{element_id}"' in doc
 
@@ -79,9 +83,7 @@ class TestGenerateComparePage:
         # Only literal-string getElementById("...") calls — dynamic ones
         # like getElementById("zone-" + slot) are checked separately
         # (test_dynamic_id_prefixes_have_matching_static_elements).
-        get_by_id_calls = set(
-            re.findall(r'getElementById\("([^"]+)"\)', doc)
-        )
+        get_by_id_calls = set(re.findall(r'getElementById\("([^"]+)"\)', doc))
         assert get_by_id_calls, "expected at least one getElementById call"
         for element_id in get_by_id_calls:
             assert f'id="{element_id}"' in doc, (
@@ -97,9 +99,7 @@ class TestGenerateComparePage:
         actually exist, since the regex above can't see through string
         concatenation."""
         doc = generate_compare_page()
-        prefixes = set(
-            re.findall(r'getElementById\("([a-z-]+-)"\s*\+\s*slot\)', doc)
-        )
+        prefixes = set(re.findall(r'getElementById\("([a-z-]+-)"\s*\+\s*slot\)', doc))
         assert prefixes, "expected at least one dynamic-id getElementById"
         for prefix in prefixes:
             for slot in ("a", "b"):
@@ -113,9 +113,13 @@ class TestGenerateComparePage:
     def test_series_overlay_controls_present(self):
         doc = generate_compare_page()
         for element_id in (
-            "compare-toggle-a", "compare-toggle-b",
-            "compare-select", "compare-reset", "compare-svg",
-            "compare-legend", "compare-tooltip",
+            "compare-toggle-a",
+            "compare-toggle-b",
+            "compare-select",
+            "compare-reset",
+            "compare-svg",
+            "compare-legend",
+            "compare-tooltip",
         ):
             assert f'id="{element_id}"' in doc
 
@@ -139,7 +143,10 @@ class TestGenerateComparePage:
         dof_names/active_joints/decimate/sample_count."""
         doc = generate_compare_page()
         for field in (
-            "dof_names", "active_joints", "decimate", "sample_count",
+            "dof_names",
+            "active_joints",
+            "decimate",
+            "sample_count",
         ):
             assert field in doc
 

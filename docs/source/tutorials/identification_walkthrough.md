@@ -2,14 +2,15 @@
 
 ## The problem
 
-Dynamic models generated from CAD have 20-50% error in mass, inertia, and
-friction parameters — CAD doesn't know about cables, connectors, paint, or
-assembly tolerances. Accurate dynamic parameters matter for feedforward
+Nominal models can omit cables, connectors, payloads, friction and assembly
+differences. The resulting parameter and prediction errors depend on the robot
+and the operating conditions. Accurate dynamic parameters matter for feedforward
 torque control, energy-efficient trajectory planning, collision detection,
 and any digital-twin/simulation use of the model.
 
-Dynamic parameter identification recovers the true parameters from logged
-motion + torque data.
+Dynamic identification estimates observable parameter combinations from
+motion and effort data. Individual physical link parameters require additional
+constraints and are not necessarily uniquely recoverable.
 
 ## The model
 
@@ -33,14 +34,12 @@ linear least squares.
 
 ## The pipeline
 
-1. **Base parameter analysis** — QR decomposition of `W` finds the minimal
-   set of *identifiable* linear combinations of `φ` (many individual
-   parameters aren't observable in isolation; only combinations of them
-   are).
-2. **Signal processing** — filter noisy position/torque logs (median filter
-   for outliers, Butterworth for noise) and estimate velocity/acceleration
-   if not measured directly.
-3. **Regressor construction** — build `W` from the processed motion data.
+1. **Partition and signal processing** — declare training/validation data,
+   check rates and synchronization, then process each partition independently;
+   estimate velocity/acceleration if not measured directly.
+2. **Regressor construction** — build `W` from checked motion and effort data.
+3. **Base parameter analysis** — analyze identifiable combinations and dataset
+   excitation; distinguish structural dependencies from weak sample coverage.
 4. **Parameter estimation** — solve the linear least-squares problem for
    the base parameters (FIGAROH's [solver](../api/tools.md) supports OLS,
    WLS, ridge, and several constrained/robust variants).
@@ -84,16 +83,19 @@ The `identification:` section of your
 (`sampling_frequency`, `cutoff_frequency`), and joint/velocity/torque
 limits used to sanity-check the logged data.
 
-## Expected results
+## Interpreting results
 
-- Base parameters identified with under ~5% uncertainty
-- Torque prediction accuracy above ~95% (`validation_correlation` above the
-  default 0.9 threshold) on held-out trajectories
-- A condition number well under the default 1000.0 threshold — see
-  [verification thresholds](../reporting_and_verification.md)
+Report per-joint training and held-out effort errors against the nominal model,
+rank/conditioning under declared scaling, and uncertainty assumptions. Default
+verification thresholds are configurable checks, not guarantees of percentage
+accuracy or full-parameter recovery. Record which checks were skipped and whether
+the adapter used genuine held-out data.
 
-The quality of all three depends heavily on the trajectory used to collect
-data — see [Optimal Experiment Design](optimal_design.md).
+If reconstructing or projecting full inertias, report solver and physical
+verdicts separately and recompute prediction for the selected stage. The private
+log-Cholesky benchmark remains experimental pending convergence review. Follow
+[Plan, Fit and Validate](../example_workflow.md) for method selection, comparison
+policy, parameter interpretation and export checks.
 
 ## Next steps
 

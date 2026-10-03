@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 pytest.importorskip("picos")
 pytest.importorskip("cvxopt")
 
-from figaroh.optimal.base_optimal_calibration import (
+from figaroh.optimal.base_optimal_calibration import (  # noqa: E402 (needs picos/cvxopt)
     BaseOptimalCalibration,
 )  # noqa: E402
 

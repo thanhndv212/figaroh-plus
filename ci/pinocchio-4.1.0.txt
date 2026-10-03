@@ -1,0 +1,6 @@
+# Pinocchio 4.x profile and its compatible native wheel stack.
+pin==4.1.0
+ndcurves==2.3.0
+cmeel-assimp==6.0.5
+cmeel-urdfdom==6.0.0
+cmeel-tinyxml2==11.0.0

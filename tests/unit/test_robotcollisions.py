@@ -4,14 +4,13 @@ import pytest
 import numpy as np
 import sys
 import os
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 # Add the src directory to the path if needed
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
 try:
     from figaroh.tools.robotcollisions import CollisionManager, CollisionWrapper
-    import pinocchio as pin
 except ImportError as e:
     print(f"Import error: {e}")
     pytest.skip("Required modules not available", allow_module_level=True)
@@ -479,7 +478,7 @@ class TestEdgeCases:
         geom_model.createData.return_value = geom_data
         robot.geom_model = geom_model
 
-        manager = CollisionManager(robot)
+        CollisionManager(robot)
 
         # Should enable contact detection
         assert geom_data.collisionRequests.enable_contact is True

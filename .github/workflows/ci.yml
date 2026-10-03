@@ -1,0 +1,136 @@
+name: Core CI
+
+on:
+  push:
+    branches: [main, devel]
+  # Also validate stacked PRs before they reach devel.
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: core-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  MPLBACKEND: Agg
+  EXAMPLES_REVISION: 3a2c8e9b07e10b397cda79dbb04a5e88469bcc22
+
+jobs:
+  tests:
+    name: Tests (${{ matrix.profile }})
+    env:
+      PIP_CONSTRAINT: ${{ github.workspace }}/ci-constraints.txt
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: core
+            pinocchio: '3.7.0'
+            ndcurves: '2.0.0.1'
+            mujoco: ''
+          - profile: pinocchio-4.1
+            pinocchio: '4.1.0'
+            ndcurves: '2.3.0'
+            mujoco: ''
+          - profile: mujoco-3.9
+            pinocchio: '3.7.0'
+            ndcurves: '2.0.0.1'
+            mujoco: 'mujoco==3.9.0'
+          - profile: mujoco-current
+            pinocchio: '4.1.0'
+            ndcurves: '2.3.0'
+            mujoco: 'mujoco==3.14.0'
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Constrain robotics dependencies before environment creation
+        env:
+          PINOCCHIO_VERSION: ${{ matrix.pinocchio }}
+        run: |
+          cp "ci/pinocchio-${PINOCCHIO_VERSION}.txt" "$PIP_CONSTRAINT"
+      - name: Fetch pinned TIAGo mesh fixtures
+        # The tracked fixture symlinks resolve into this sibling repository.
+        run: |
+          git init ../figaroh-examples
+          git -C ../figaroh-examples remote add origin https://github.com/thanhndv212/figaroh-examples.git
+          git -C ../figaroh-examples sparse-checkout init --cone
+          git -C ../figaroh-examples sparse-checkout set models/tiago_description/meshes
+          git -C ../figaroh-examples fetch --depth=1 --filter=blob:none origin "$EXAMPLES_REVISION"
+          git -C ../figaroh-examples checkout --detach FETCH_HEAD
+          git -C ../figaroh-examples rev-parse HEAD > examples-revision.txt
+      - uses: conda-incubator/setup-miniconda@v4
+        with:
+          miniforge-version: latest
+          environment-file: environment.yml
+          activate-environment: figaroh-dev
+      - name: Install development tools
+        run: python -m pip install -e '.[dev]' pytest-timeout
+      - name: Install optional backend
+        if: matrix.mujoco != ''
+        env:
+          MUJOCO_SPEC: ${{ matrix.mujoco }}
+        run: python -m pip install "$MUJOCO_SPEC"
+      - name: Verify solver coverage
+        run: python -c "import cyipopt, picos, cvxopt; print(cyipopt.__version__, picos.__version__, cvxopt.__version__)"
+      - name: Verify pinned robotics versions and dependency consistency
+        env:
+          EXPECTED_PINOCCHIO: ${{ matrix.pinocchio }}
+          EXPECTED_NDCURVES: ${{ matrix.ndcurves }}
+        run: |
+          python - <<'PY'
+          import os
+          from importlib.metadata import version
+          import pinocchio
+          import ndcurves
+          assert pinocchio.__version__ == os.environ["EXPECTED_PINOCCHIO"]
+          assert version("pin") == os.environ["EXPECTED_PINOCCHIO"]
+          assert version("ndcurves") == os.environ["EXPECTED_NDCURVES"]
+          print("Pinocchio", pinocchio.__version__, "ndcurves", version("ndcurves"))
+          PY
+          python -m pip check
+      - name: Verify optional backend import
+        if: matrix.mujoco != ''
+        run: python -c "import mujoco; print(mujoco.__version__)"
+      - name: Record installed versions
+        run: python -m pip freeze > installed-versions.txt
+      - name: Run the full suite
+        run: python -m pytest -q -rs --timeout=120 --timeout-method=thread --junitxml=test-results.xml
+      - name: Upload validation evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: tests-${{ matrix.profile }}
+          path: |
+            test-results.xml
+            installed-versions.txt
+            examples-revision.txt
+            ci-constraints.txt
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: conda-incubator/setup-miniconda@v4
+        with:
+          miniforge-version: latest
+          activate-environment: figaroh-dev
+          python-version: '3.12'
+      - run: python -m pip install pre-commit 'flake8==6.1.0'
+      - name: Critical checks across all Python code
+        run: python -m flake8 src tests --select=E9,F63,F7,F82 --show-source --statistics
+      - name: All hooks on the full tree
+        run: pre-commit run --all-files --show-diff-on-failure
