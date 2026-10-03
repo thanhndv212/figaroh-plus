@@ -325,7 +325,46 @@ class BaseOptimalTrajectory:
         return wps, vel_wps, acc_wps, tps, t_i, p_i, v_i, a_i
 
     def _solve_segment(self, s_rep, wp_init, vel_wp_init, acc_wp_init, W_stack) -> bool:
-        """Solve a single trajectory segment."""
+        """Solve a single trajectory segment.
+
+        A segment that fails (infeasible at the iteration limit, solver
+        error) is retried from a fresh random initial guess, up to
+        ``segment_attempts`` times in total (default 1: no retry). The
+        non-smooth objective makes the outcome depend on the starting
+        point, so a new start often succeeds where the first did not.
+        """
+        attempts = max(1, int(self.trajectory_config.get("segment_attempts", 1)))
+        for attempt in range(1, attempts + 1):
+            result_data = self._attempt_segment(
+                s_rep, wp_init, vel_wp_init, acc_wp_init, W_stack
+            )
+            if result_data is not None:
+                result_data["iter_data"]["attempt"] = attempt
+                self.results["T_F"].append(result_data["t_f"])
+                self.results["P_F"].append(result_data["p_f"])
+                self.results["V_F"].append(result_data["v_f"])
+                self.results["A_F"].append(result_data["a_f"])
+                self.results["iteration_data"].append(result_data["iter_data"])
+                self.logger.info(
+                    f"Segment {s_rep + 1} completed successfully "
+                    f"(attempt {attempt}/{attempts})"
+                )
+                return True
+            if attempt < attempts:
+                self.logger.warning(
+                    "Segment %d attempt %d/%d failed; retrying from a new "
+                    "initial guess",
+                    s_rep + 1,
+                    attempt,
+                    attempts,
+                )
+        return False
+
+    def _attempt_segment(self, s_rep, wp_init, vel_wp_init, acc_wp_init, W_stack):
+        """One solve of a segment from a new initial guess.
+
+        Returns the solver's result data, or ``None`` if the segment failed.
+        """
         try:
             # Generate feasible initial guess
             wps, vel_wps, acc_wps, tps, t_i, p_i, v_i, a_i = (
@@ -350,21 +389,11 @@ class BaseOptimalTrajectory:
             )
 
             success, result_data = problem.solve_with_waypoints(wps)
-
-            if success:
-                self.results["T_F"].append(result_data["t_f"])
-                self.results["P_F"].append(result_data["p_f"])
-                self.results["V_F"].append(result_data["v_f"])
-                self.results["A_F"].append(result_data["a_f"])
-                self.results["iteration_data"].append(result_data["iter_data"])
-                self.logger.info(f"Segment {s_rep + 1} completed successfully!")
-                return True
-            else:
-                return False
+            return result_data if success else None
 
         except Exception as e:
             self.logger.error(f"Error solving segment {s_rep + 1}: {e}")
-            return False
+            return None
 
     def _prepare_next_segment(self) -> Tuple[np.ndarray, np.ndarray]:
         """Prepare initial conditions for next segment."""
