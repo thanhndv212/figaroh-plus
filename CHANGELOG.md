@@ -89,6 +89,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Record the log-Cholesky feasibility spike with frozen synthetic trajectories,
+  independent physical/Jacobian checks and machine-readable Pinocchio 3.7/4.1
+  results. The decision is revise: convergence/scaling must improve before a
+  production solver is approved. (#22)
+
 - `tasks.identification.problem.qr_relative_tolerance`: QR rank threshold as
   a fraction of the largest pivot. Default unset (unchanged behaviour). A
   warning suggests it when the base regressor's condition number exceeds
