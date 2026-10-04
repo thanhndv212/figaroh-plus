@@ -34,6 +34,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Calibration parameter standard errors (`std_dev`, `std_pctg`, the
+  covariance behind `redistribute_parameters`) were ~100× too small (#107).
+  - **Cause:** `calc_stddev` estimated the residual variance as
+    `result.cost**2 / (m - n)`, but `least_squares`' `cost` is already
+    `0.5 * sum(fun**2)`.
+  - **Fix:** it now uses `sum(r**2) / (m - n)` over the measurement
+    residuals, excluding regularisation rows a subclass `cost_function`
+    appends. The covariance still uses the full Jacobian.
+  - **TIAGo mocap:** arm_5's offset SE goes from 0.088 to 10.1 mrad. The
+    PAL "conservative (≥ 2σ)" YAML keeps 19 of 41 `full_params` corrections
+    instead of all 41.
 - `add_base_name` shifts `base_mapping_slice` when it prepends the base names
   at `joint_offset` level; the slice pointed six entries too early.
 - Calibration held-out data (`validation_data_file`) works (#105).
