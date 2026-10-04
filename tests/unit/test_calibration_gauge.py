@@ -40,7 +40,9 @@ def _tiago_config(model, level, measurable):
         "kinematics": {"base_frame": "universe", "tool_frame": "wrist_ft_tool_link"},
         "parameters": {"calibration_level": level},
         "measurements": {
-            "markers": [{"reference_joint": "arm_7_joint", "measurable_dof": measurable}]
+            "markers": [
+                {"reference_joint": "arm_7_joint", "measurable_dof": measurable}
+            ]
         },
         "data": {"source_file": "unused.csv"},
     }
@@ -90,7 +92,13 @@ def test_closed_form_recovers_base_and_tip(tiago_model, orient):
     model, data = tiago_model, tiago_model.createData()
     measurable = [True] * 3 + [orient] * 3
     cfg = _tiago_config(model, "full_params", measurable)
-    tip = [f"{e}_1" for e, m in zip(["pEEx", "pEEy", "pEEz", "phiEEx", "phiEEy", "phiEEz"], measurable) if m]
+    tip = [
+        f"{e}_1"
+        for e, m in zip(
+            ["pEEx", "pEEy", "pEEz", "phiEEx", "phiEEy", "phiEEz"], measurable
+        )
+        if m
+    ]
     cfg["param_name"] = list(BASE_TPL) + tip
     q = _configurations(model, 25)
     cfg["NbSample"] = len(q)
@@ -146,7 +154,11 @@ def test_drop_parameters_keeps_base_mapping_aligned():
 
 
 def test_add_base_name_shifts_joint_offset_slice():
-    cfg = {"calib_model": "joint_offset", "param_name": ["x", "y"], "base_mapping_slice": (0, 2)}
+    cfg = {
+        "calib_model": "joint_offset",
+        "param_name": ["x", "y"],
+        "base_mapping_slice": (0, 2),
+    }
     add_base_name(cfg)
     assert cfg["param_name"][:6] == list(BASE_TPL)
     assert cfg["base_mapping_slice"] == (6, 8)
