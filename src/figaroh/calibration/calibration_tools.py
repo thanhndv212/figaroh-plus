@@ -87,6 +87,7 @@ __all__ = [
     "initialize_variables",
     "calc_updated_fkm",
     "update_joint_placement",
+    "apply_joint_offset",
     "calculate_kinematics_model",
     "calculate_identifiable_kinematics_model",
     "calculate_base_kinematics_regressor",
@@ -352,7 +353,6 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
         calib_config["param_name"]
     ), "Length of variables != length of params"
     param_dict = dict(zip(calib_config["param_name"], var))
-    origin_model = model.copy()
 
     # store parameter updated to the model
     updated_params = []
@@ -436,6 +436,12 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
 
     # 3/ calculate transformation from start frame to end frame of kinematic chain using updated model: oMee
 
+    # placements are restored from this copy once the samples are evaluated
+    saved_placements = {
+        j_id: model.jointPlacements[j_id].copy()
+        for j_id in calib_config["actJoint_idx"]
+    }
+
     # update model.jointPlacements with kinematic error parameter
     for j_id in calib_config["actJoint_idx"]:
         xyz_rpy = np.zeros(6)
@@ -457,8 +463,12 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
                         xyz_rpy[axis_id] += param_dict[key]
                         updated_params.append(key)
 
-        # updaet joint placement
-        model = update_joint_placement(model, j_id, xyz_rpy)
+        # update joint placement: full_params perturb the placement in the
+        # parent frame; joint offsets act about the joint's own axes (q + offset)
+        if calib_config["calib_model"] == "joint_offset":
+            model = apply_joint_offset(model, j_id, xyz_rpy)
+        else:
+            model = update_joint_placement(model, j_id, xyz_rpy)
 
     # joint elasticity: one compliance parameter per active joint (ELAS_TPL,
     # see _build_elastic_param_names), matched once here since the mapping
@@ -506,10 +516,13 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
             else:
                 tau = pin.computeGeneralizedGravity(model, data, q_[i, :])
 
+            geometric_placements = {
+                j_id: model.jointPlacements[j_id].copy() for j_id in elastic_map
+            }
             for j_id, (key, elas_id) in elastic_map.items():
                 xyz_rpy = np.zeros(6)
                 xyz_rpy[elas_id] = param_dict[key] * tau[j_id - 1]
-                model = update_joint_placement(model, j_id, xyz_rpy)
+                model = apply_joint_offset(model, j_id, xyz_rpy)
 
             # jointPlacements changed: data.oMf is stale until FK is redone
             if backend is not None:
@@ -521,10 +534,8 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
             oMee = get_rel_transform(model, data, start_f, end_f)
 
             # revert model back to origin from the added joint elastic error
-            for j_id, (key, elas_id) in elastic_map.items():
-                xyz_rpy = np.zeros(6)
-                xyz_rpy[elas_id] = param_dict[key] * tau[j_id - 1]
-                model = update_joint_placement(model, j_id, -xyz_rpy)
+            for j_id, placement in geometric_placements.items():
+                model.jointPlacements[j_id] = placement
         else:
             oMee = get_rel_transform(model, data, start_f, end_f)
 
@@ -546,19 +557,8 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
     PEE = PEE.flatten("C")
 
     # revert model back to original
-    assert origin_model.jointPlacements != model.jointPlacements, "before revert"
-    for j_id in calib_config["actJoint_idx"]:
-        xyz_rpy = np.zeros(6)
-        j_name = model.names[j_id]
-        for key in param_dict.keys():
-            if j_name in key:
-                # update xyz_rpy
-                for axis_id, axis in enumerate(axis_tpl):
-                    if axis in key:
-                        xyz_rpy[axis_id] = param_dict[key]
-        model = update_joint_placement(model, j_id, -xyz_rpy)
-
-    assert origin_model.jointPlacements != model.jointPlacements, "after revert"
+    for j_id, placement in saved_placements.items():
+        model.jointPlacements[j_id] = placement
 
     return PEE
 
@@ -591,6 +591,41 @@ def update_joint_placement(model, joint_idx, xyz_rpy):
     # update placements
     model.jointPlacements[joint_idx].translation = updt_translation
     model.jointPlacements[joint_idx].rotation = updt_rotation
+    return model
+
+
+def apply_joint_offset(model, joint_idx, offset):
+    """Offset a joint about its own axes (joint-angle / joint-position offset).
+
+    Composes the offset on the child side of the joint placement,
+    ``M <- M * SE3(R(offset[3:6]), offset[0:3])``, so that it is expressed in
+    the joint frame. For a revolute joint about z, ``offset[5] = d`` is then
+    exactly the configuration ``q + d``; for a prismatic joint along x,
+    ``offset[0] = d`` is ``q + d``. This is the meaning of the
+    ``offset{PX,PY,PZ,RX,RY,RZ}_<joint>`` parameters (``JOINT_OFFSETTPL``,
+    axis taken from the joint's ``shortname()``) and of the elastic
+    deflections (``ELAS_TPL``).
+
+    :func:`update_joint_placement` instead adds to the placement's parent-frame
+    translation and RPY angles, which is the ``full_params`` (``d_p*``,
+    ``d_phi*``) placement-error parameterisation. The two coincide only when
+    the joint axis is the parent's corresponding axis.
+
+    Args:
+        model (pin.Model): Robot model to modify
+        joint_idx (int): Index of joint to update
+        offset (ndarray): (6,) translation (x, y, z) and rotation (roll,
+            pitch, yaw) offsets, expressed in the joint frame
+
+    Returns:
+        pin.Model: Updated robot model
+
+    Side Effects:
+        Modifies model.jointPlacements[joint_idx] in place
+    """
+    offset = np.asarray(offset, dtype=float)
+    delta = pin.SE3(pin.rpy.rpyToMatrix(offset[3:6]), offset[0:3])
+    model.jointPlacements[joint_idx] = model.jointPlacements[joint_idx] * delta
     return model
 
 
