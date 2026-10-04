@@ -1602,10 +1602,15 @@ class BaseCalibration(ABC):
             # solved parameter vector itself — always the true count.
             nvars = len(result.x)
             self.nvars = nvars
-            sigma_ro_sq = (result.cost**2) / (
-                self.calib_config["NbSample"] * self.calib_config["calibration_index"]
-                - nvars
-            )
+            # Residual variance from the measurement residuals only: a
+            # subclass cost_function may append regularisation rows after
+            # them. (least_squares' result.cost is 0.5 * sum(fun**2), so it
+            # must not be squared, #107.)
+            n_meas = len(self.PEE_measured)
+            r_meas = np.asarray(result.fun)[:n_meas]
+            sigma_ro_sq = np.sum(r_meas**2) / (n_meas - nvars)
+            # Covariance from the full Jacobian, so regularisation rows act
+            # as prior information on the parameters they constrain.
             J = result.jac
             C_param = sigma_ro_sq * np.linalg.pinv(np.dot(J.T, J))
             self._C_param = C_param
