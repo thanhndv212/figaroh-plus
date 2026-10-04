@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Calibration held-out data (`validation_data_file`) works (#105).
+  - **Config key read:** `tasks.calibration.data.validation_data_file` is now
+    read from the unified config. Before, only a CLI override reached
+    `calib_config`.
+  - **Training count preserved:** loading the validation CSV no longer
+    overwrites the training `calib_config["NbSample"]`. A larger validation set
+    crashed `solve()`, and a smaller one silently truncated training.
+  - **Unpack order fixed:** `_load_validation_data` no longer swaps poses and
+    joint configurations.
+  - **All samples used:** validation metrics now evaluate every validation
+    sample (`_compute_logmap_residuals` takes `n_samples`).
+  - **Failures logged:** a validation file that fails to load now logs a
+    warning instead of being skipped silently.
 - Calibration `joint_offset` parameters (`offset{PX,PY,PZ,RX,RY,RZ}_<joint>`)
   are now offsets of the joint configuration, `q + offset` (#101). They were
   added to the joint placement's parent-frame RPY, a rotation about the parent
