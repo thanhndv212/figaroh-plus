@@ -501,8 +501,9 @@ class BaseCalibration(ABC):
         if val_data_path:
             try:
                 self._load_validation_data(val_data_path)
-            except Exception:
-                pass  # Don't fail calibration if validation data unavailable
+            except Exception as e:
+                # Don't fail calibration if validation data is unavailable
+                logger.warning("Validation data %s not loaded: %s", val_data_path, e)
 
     def _load_validation_data(self, path: str):
         """Load separate validation measurement data.
@@ -516,16 +517,22 @@ class BaseCalibration(ABC):
             - Sets self._PEE_val with validation measured poses
             - Sets self._val_available = True
         """
+        # load_data sets calib_config["NbSample"] to the rows it read; the
+        # training sample count must survive loading the validation set.
+        orig_path = self._data_path
+        n_train = self.calib_config.get("NbSample")
         try:
-            orig_path = self._data_path
             self._data_path = abspath(path)
-            self._q_val, self._PEE_val = load_data(
+            # load_data returns (measured poses, joint configurations)
+            self._PEE_val, self._q_val = load_data(
                 self._data_path, self.model, self.calib_config, []
             )
-            self._data_path = orig_path
             self._val_available = True
         except Exception as e:
             raise CalibrationError(f"Validation data loading failed: {e}")
+        finally:
+            self._data_path = orig_path
+            self.calib_config["NbSample"] = n_train
 
     def _compute_validation_metrics(self) -> Optional[Dict[str, Any]]:
         """Compute FK validation metrics on held-out data.
@@ -562,21 +569,19 @@ class BaseCalibration(ABC):
 
         result = self.LM_result
         zeros = np.zeros_like(result.x)
+        # calc_updated_fkm evaluates calib_config["NbSample"] samples
+        val_config = dict(self.calib_config, NbSample=len(q_val))
 
         # FK for nominal and calibrated on validation set
-        PEE_nom = calc_updated_fkm(
-            self.model, self.data, zeros, q_val, self.calib_config
-        )
-        PEE_cal = calc_updated_fkm(
-            self.model, self.data, result.x, q_val, self.calib_config
-        )
+        PEE_nom = calc_updated_fkm(self.model, self.data, zeros, q_val, val_config)
+        PEE_cal = calc_updated_fkm(self.model, self.data, result.x, q_val, val_config)
 
         # Log-map residuals
-        resid_nom = self._compute_logmap_residuals(PEE_val, PEE_nom)
-        resid_cal = self._compute_logmap_residuals(PEE_val, PEE_cal)
+        n_val = len(q_val)
+        resid_nom = self._compute_logmap_residuals(PEE_val, PEE_nom, n_samples=n_val)
+        resid_cal = self._compute_logmap_residuals(PEE_val, PEE_cal, n_samples=n_val)
 
         n_dofs = self.calib_config["calibration_index"]
-        n_val = len(q_val)
 
         # Reshape to (n_dofs, n_val) — DOF-major
         resid_nom_2d = resid_nom.reshape((n_dofs, n_val))
@@ -696,6 +701,7 @@ class BaseCalibration(ABC):
         estimated_flat: np.ndarray,
         *,
         position_frame: str = "body",
+        n_samples: Optional[int] = None,
     ) -> np.ndarray:
         """Compute pose residuals using the SE3 log map for geometric correctness.
 
@@ -743,6 +749,8 @@ class BaseCalibration(ABC):
             position_frame: ``"body"`` (default) for body-frame position error
                 from the SE3 log map, or ``"world"`` for world-frame position
                 error.
+            n_samples: Number of samples in the arrays. Defaults to the
+                training count ``calib_config["NbSample"]``.
 
         Returns:
             Flat residual array in the same DOF-major order as the input,
@@ -758,7 +766,8 @@ class BaseCalibration(ABC):
         measured_dofs = np.where(measurability)[0]
         unmeasured_dofs = np.where(~measurability)[0]
         n_meas = len(measured_dofs)
-        n_samples = self.calib_config["NbSample"]
+        if n_samples is None:
+            n_samples = self.calib_config["NbSample"]
         n_markers = self.calib_config.get("NbMarkers", 1)
 
         # Reshape to (n_markers, n_meas, n_samples) — DOF-major

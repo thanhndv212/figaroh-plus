@@ -359,6 +359,8 @@ def unified_to_legacy_config(robot, unified_calib_config) -> dict:
     # 8. Extract data configuration
     calib_config["NbSample"] = data.get("number_of_samples", 500)
     calib_config["data_file"] = data.get("source_file")
+    # held-out measurements in the same format; "" means none
+    calib_config["validation_data_file"] = data.get("validation_data_file") or None
     calib_config["sample_configs_file"] = data.get("sample_configurations_file")
 
     return calib_config
