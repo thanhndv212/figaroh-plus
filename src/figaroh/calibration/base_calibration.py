@@ -42,7 +42,12 @@ from figaroh.calibration.calibration_tools import (
     load_data,
     calc_updated_fkm,
     initialize_variables,
+    estimate_frames_closed_form,
+    measurement_jacobian,
+    select_identifiable_parameters,
+    drop_calibration_parameters,
 )
+from figaroh.calibration.parameter import BASE_TPL, EE_TPL
 from figaroh.tools.qrdecomposition import (
     redistribute_min_norm,
     propagate_covariance_min_norm,
@@ -453,10 +458,78 @@ class BaseCalibration(ABC):
             if self.calib_config["known_tipframe"] is False:
                 add_pee_name(self.calib_config)
 
+            if hasattr(self, "q_measured") and hasattr(self, "PEE_measured"):
+                self.eliminate_absorbed_parameters()
+
             return True
 
         except Exception as e:
             raise CalibrationError(f"Parameter list creation failed: {e}")
+
+    def _frame_param_names(self) -> List[str]:
+        """Base and tip frame parameters present in ``param_name``."""
+        tip = {
+            f"{e}_{k + 1}"
+            for e in EE_TPL
+            for k in range(self.calib_config["NbMarkers"])
+        }
+        return [n for n in self.calib_config["param_name"] if n in BASE_TPL or n in tip]
+
+    def initial_frame_guess(self) -> Dict[str, float]:
+        """Closed-form guess for the unknown base and tip frames.
+
+        See :func:`estimate_frames_closed_form`. Empty when the frames are
+        known or the measurement does not determine them (partial position
+        measurability, several markers, camera anchor).
+        """
+        return estimate_frames_closed_form(
+            self.model,
+            self.data,
+            self.q_measured,
+            self.PEE_measured,
+            self.calib_config,
+        )
+
+    def eliminate_absorbed_parameters(self, tol: float = 1e-4) -> List[str]:
+        """Drop joint parameters that the base/tip frames absorb on this data.
+
+        The structural selection in :func:`calculate_base_kinematics_regressor`
+        uses the joint regressor alone. When the base and tip frames are also
+        estimated, some retained joint parameters are combinations of frame
+        parameters (e.g. a vertical prismatic or revolute first joint against
+        the base's z translation and yaw), so the problem is rank deficient.
+        This builds the full measurement Jacobian at the measured
+        configurations, with the configured measurability, evaluated at the
+        closed-form frame guess, and drops every joint parameter whose
+        unit-normalised column is a combination of the frame columns and the
+        joint columns kept before it (:func:`select_identifiable_parameters`).
+        Frame parameters are always kept.
+
+        Set ``calib_config["eliminate_absorbed_parameters"] = False`` to skip.
+
+        Returns:
+            list: Names of the dropped parameters (also stored in
+            ``calib_config["absorbed_param_name"]``).
+        """
+        cfg = self.calib_config
+        cfg["absorbed_param_name"] = []
+        if not cfg.get("eliminate_absorbed_parameters", True):
+            return []
+        names = list(cfg["param_name"])
+        frames = self._frame_param_names()
+        guess = self.initial_frame_guess()
+        var0 = np.array([guess.get(n, 0.0) for n in names])
+        J = measurement_jacobian(self.model, self.data, var0, self.q_measured, cfg)
+        _, dropped = select_identifiable_parameters(J, names, frames, tol=tol)
+        if dropped:
+            drop_calibration_parameters(cfg, dropped)
+            logger.info(
+                "Dropped %d parameter(s) absorbed by the base/tip frames: %s",
+                len(dropped),
+                dropped,
+            )
+        cfg["absorbed_param_name"] = dropped
+        return dropped
 
     def load_data_set(self):
         """Load experimental measurement data for calibration.
@@ -1464,9 +1537,14 @@ class BaseCalibration(ABC):
             logger.info(f"Samples: {self.calib_config['NbSample']}")
             logger.info(f"DOFs: {self.calib_config['calibration_index']}")
 
-        # Initialize parameters
+        # Initialize parameters: zero, except the base/tip frames, which start
+        # at their closed-form estimate when it is available
         if var_init is None:
             var_init, _ = initialize_variables(self.calib_config, mode=0)
+            guess = self.initial_frame_guess()
+            for i, name in enumerate(self.calib_config["param_name"]):
+                if name in guess:
+                    var_init[i] = guess[name]
 
         try:
             # Run optimization with outlier removal

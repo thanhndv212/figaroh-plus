@@ -7,8 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Calibration drops joint parameters that the estimated base/tip frames
+  absorb, starts the frames at a closed-form estimate, and selects
+  parameters deterministically (#102, #99).
+  - **Absorbed parameters dropped:** after the structural selection,
+    `BaseCalibration.create_param_list` builds the full measurement Jacobian
+    at the measured configurations (configured measurability, base and tip
+    columns included) and drops every joint parameter that is a combination
+    of the frames and the joint parameters before it
+    (`eliminate_absorbed_parameters`, tolerance 1e-4 on unit-normalised
+    columns). The names are kept in `calib_config["absorbed_param_name"]`.
+    TIAGo mocap: `joint_offset` drops the torso and arm_1 (rank 14/14 instead
+    of 14/16); `full_params` drops 4–9 parameters (full rank instead of
+    26–29/32), including the RPY near-singularity at pitch ±π/2.
+  - **Closed-form start:** `solve_optimisation` starts unknown base/tip frames
+    at `estimate_frames_closed_form` (Kabsch / chordal mean alternated with
+    linear least squares) instead of zero.
+  - **Deterministic draw:** the structural random configurations come from a
+    seeded NumPy generator (`calib_config["random_seed"]`, default 0) instead
+    of Pinocchio's global RNG.
+  - **Behaviour change:** the calibrated parameter set is smaller when frames
+    are estimated. Set `calib_config["eliminate_absorbed_parameters"] = False`
+    for the previous set.
+
 ### Fixed
 
+- `add_base_name` shifts `base_mapping_slice` when it prepends the base names
+  at `joint_offset` level; the slice pointed six entries too early.
 - Calibration held-out data (`validation_data_file`) works (#105).
   - **Config key read:** `tasks.calibration.data.validation_data_file` is now
     read from the unified config. Before, only a CLI override reached

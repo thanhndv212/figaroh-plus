@@ -88,6 +88,11 @@ __all__ = [
     "calc_updated_fkm",
     "update_joint_placement",
     "apply_joint_offset",
+    "random_joint_configuration",
+    "estimate_frames_closed_form",
+    "measurement_jacobian",
+    "select_identifiable_parameters",
+    "drop_calibration_parameters",
     "calculate_kinematics_model",
     "calculate_identifiable_kinematics_model",
     "calculate_base_kinematics_regressor",
@@ -712,12 +717,12 @@ def calculate_identifiable_kinematics_model(q, model, data, calib_config, backen
     # obtain aggreated Jacobian matrix J and kinematic regressor R
     R = np.zeros([6 * calib_config["NbSample"], 6 * (model.njoints - 1)])
     J = np.zeros([6 * calib_config["NbSample"], model.njoints - 1])
+    # seeded, so the selected parameter set does not depend on global RNG
+    # state (figaroh-plus#99)
+    rng = np.random.default_rng(calib_config.get("random_seed", 0))
     for i in range(calib_config["NbSample"]):
         if MIN_MODEL == 1:
-            if backend is not None:
-                q_rand = backend.random_configuration()
-            else:
-                q_rand = pin.randomConfiguration(model)
+            q_rand = random_joint_configuration(model, rng)
             q_i = calib_config["q0"]
             q_i[calib_config["config_idx"]] = q_rand[calib_config["config_idx"]]
         else:
@@ -887,3 +892,217 @@ def calculate_base_kinematics_regressor(
     calib_config["base_mapping_slice"] = (_base_slice_start, _base_slice_end)
 
     return Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e
+
+
+# FRAME INITIALISATION AND DATA-LEVEL IDENTIFIABILITY
+
+
+def random_joint_configuration(model, rng):
+    """Draw a configuration uniformly within joint limits from ``rng``.
+
+    One-DoF joints are drawn within their position limits, or within
+    [-pi, pi] when the limits are missing or wider than a turn; other joints
+    stay at the neutral configuration. Unlike ``pin.randomConfiguration``,
+    the draw depends only on ``rng``, not on Pinocchio's global generator.
+
+    Args:
+        model (pin.Model): Robot model
+        rng (np.random.Generator): Random generator
+
+    Returns:
+        ndarray: (nq,) configuration
+    """
+    q = pin.neutral(model)
+    for joint in model.joints[1:]:
+        if joint.nq != 1:
+            continue
+        lo = model.lowerPositionLimit[joint.idx_q]
+        hi = model.upperPositionLimit[joint.idx_q]
+        if not (np.isfinite(lo) and np.isfinite(hi)) or hi - lo > 2 * np.pi:
+            lo, hi = -np.pi, np.pi
+        q[joint.idx_q] = rng.uniform(lo, hi)
+    return q
+
+
+def _kabsch(source, target):
+    """Rotation R minimising sum |R (s - s_mean) - (t - t_mean)|^2."""
+    H = (source - source.mean(0)).T @ (target - target.mean(0))
+    U, _, Vt = np.linalg.svd(H)
+    D = np.diag([1.0, 1.0, np.sign(np.linalg.det(Vt.T @ U.T))])
+    return Vt.T @ D @ U.T
+
+
+def _chordal_mean(rotations):
+    """Rotation closest (Frobenius) to the mean of ``rotations``."""
+    U, _, Vt = np.linalg.svd(np.sum(rotations, axis=0))
+    D = np.diag([1.0, 1.0, np.sign(np.linalg.det(U @ Vt))])
+    return U @ D @ Vt
+
+
+def estimate_frames_closed_form(model, data, q, PEE, calib_config, n_iter=50):
+    """Closed-form initial guess for the unknown base and tip frames.
+
+    With nominal joint parameters, the measured marker satisfies
+    ``P_i = R_b (p_i + R_i t_tip) + t_b`` (and ``R_meas_i = R_b R_i R_tip``
+    when orientation is measured), where ``(R_i, p_i)`` is the nominal
+    start-to-end frame transform. Rotations are estimated by Kabsch
+    (positions) or chordal averaging (orientations), alternated with a linear
+    least-squares solve for ``t_b`` and ``t_tip``.
+
+    Only applies to one marker whose position is fully measured, with the
+    base frame estimated directly (``base_*`` parameters, no camera
+    ``base_to_ref_frame`` anchor). Otherwise returns an empty dict.
+
+    Args:
+        model (pin.Model): Robot model (nominal joint placements)
+        data (pin.Data): Robot data
+        q (ndarray): (NbSample, nq) joint configurations
+        PEE (ndarray): Flattened DOF-major measurements, as from ``load_data``
+        calib_config (dict): Calibration configuration
+        n_iter (int): Alternation iterations
+
+    Returns:
+        dict: Initial values keyed by the ``base_*``, ``pEE*``/``phiEE*``
+        names present in ``calib_config["param_name"]``.
+    """
+    names = list(calib_config["param_name"])
+    meas = list(calib_config["measurability"])
+    if (
+        not any(n in names for n in BASE_TPL)
+        or calib_config.get("NbMarkers", 1) != 1
+        or calib_config.get("base_to_ref_frame") is not None
+        or not all(meas[:3])
+    ):
+        return {}
+    n = len(q)
+    M = np.asarray(PEE, dtype=float).reshape(sum(meas), n)
+    P = M[:3].T
+    orient = all(meas[3:6])
+    if orient:
+        R_meas = np.array([pin.rpy.rpyToMatrix(M[3:6, i]) for i in range(n)])
+
+    R, p = np.empty((n, 3, 3)), np.empty((n, 3))
+    for i in range(n):
+        pin.framesForwardKinematics(model, data, q[i])
+        T = get_rel_transform(
+            model, data, calib_config["start_frame"], calib_config["end_frame"]
+        )
+        R[i], p[i] = T.rotation, T.translation
+
+    tip_pos = any(f"{e}_1" in names for e in EE_TPL[:3])
+    tip_rot = orient and any(f"{e}_1" in names for e in EE_TPL[3:])
+    R_b, R_tip = np.eye(3), np.eye(3)
+    t_b, t_tip = np.zeros(3), np.zeros(3)
+    for _ in range(n_iter):
+        if orient:
+            R_b = _chordal_mean(R_meas @ np.transpose(R @ R_tip, (0, 2, 1)))
+            if tip_rot:
+                R_tip = _chordal_mean(np.transpose(R_b @ R, (0, 2, 1)) @ R_meas)
+        else:
+            R_b = _kabsch(p + R @ t_tip, P)
+        if tip_pos:
+            A = np.concatenate([R_b @ R, np.tile(np.eye(3), (n, 1, 1))], axis=2)
+            A = A.reshape(3 * n, 6)
+            b = (P - p @ R_b.T).reshape(3 * n)
+            sol = np.linalg.lstsq(A, b, rcond=None)[0]
+            t_tip, t_b = sol[:3], sol[3:]
+        else:
+            t_b = np.mean(P - p @ R_b.T, axis=0)
+
+    values = np.concatenate([t_b, pin.rpy.matrixToRpy(R_b)])
+    guess = {n_: v for n_, v in zip(BASE_TPL, values) if n_ in names}
+    tip = np.concatenate([t_tip, pin.rpy.matrixToRpy(R_tip)])
+    for e, v in zip(EE_TPL, tip):
+        if f"{e}_1" in names:
+            guess[f"{e}_1"] = v
+    return guess
+
+
+def measurement_jacobian(model, data, var, q, calib_config, step=1e-6):
+    """Central-difference Jacobian of ``calc_updated_fkm`` w.r.t. ``var``.
+
+    Rows follow the flattened, DOF-major measurement vector; columns follow
+    ``calib_config["param_name"]``.
+    """
+    var = np.asarray(var, dtype=float)
+    cfg = dict(calib_config, NbSample=len(q))
+    cols = []
+    for j in range(len(var)):
+        dv = np.zeros_like(var)
+        dv[j] = step
+        hi = calc_updated_fkm(model, data, var + dv, q, cfg)
+        lo = calc_updated_fkm(model, data, var - dv, q, cfg)
+        cols.append((hi - lo) / (2 * step))
+    return np.column_stack(cols)
+
+
+def select_identifiable_parameters(jacobian, names, always_keep=(), tol=1e-4):
+    """Split parameters into identifiable and absorbed ones, deterministically.
+
+    Columns are normalised to unit length (so units do not matter) and taken
+    in order: first ``always_keep`` (e.g. base and tip frames), then the rest
+    of ``names`` in order. A column is kept when its component orthogonal to
+    the columns already kept exceeds ``tol``; otherwise it is a combination of
+    them and is reported as absorbed. ``always_keep`` columns are never
+    dropped.
+
+    Args:
+        jacobian (ndarray): (n_meas, n_params) measurement Jacobian
+        names (list): Parameter names, one per column
+        always_keep (iterable): Names kept unconditionally and tested first
+        tol (float): Threshold on the orthogonal residual of a unit column.
+            Exact dependencies give ~1e-10 (finite-difference noise); the
+            default 1e-4 also drops near-dependencies whose column alone
+            would have a condition number above 1e4, such as the RPY
+            singularity of ``full_params`` at joint placements with pitch
+            +-pi/2.
+
+    Returns:
+        tuple: (kept names in original order, absorbed names in original order)
+    """
+    names = list(names)
+    always_keep = [n for n in names if n in set(always_keep)]
+    order = always_keep + [n for n in names if n not in set(always_keep)]
+    basis = np.zeros((jacobian.shape[0], 0))
+    kept = set()
+    for name in order:
+        col = jacobian[:, names.index(name)]
+        norm = np.linalg.norm(col)
+        if norm > 0:
+            r = col / norm
+            for _ in range(2):  # re-orthogonalise for numerical stability
+                r = r - basis @ (basis.T @ r)
+            res = np.linalg.norm(r)
+        else:
+            res = 0.0
+        if name in always_keep or res > tol:
+            kept.add(name)
+            if res > tol:
+                basis = np.column_stack([basis, r / res])
+    return [n for n in names if n in kept], [n for n in names if n not in kept]
+
+
+def drop_calibration_parameters(calib_config, dropped):
+    """Remove parameters from ``param_name``, keeping the base mapping aligned.
+
+    A dropped name inside ``base_mapping_slice`` also loses its row of
+    ``base_mapping_matrix`` / ``base_mapping_row_names``; names before the
+    slice shift it left.
+    """
+    names = list(calib_config["param_name"])
+    for idx in sorted((names.index(n) for n in dropped), reverse=True):
+        if "base_mapping_slice" in calib_config:
+            start, end = calib_config["base_mapping_slice"]
+            if start <= idx < end:
+                row = idx - start
+                calib_config["base_mapping_matrix"] = np.delete(
+                    calib_config["base_mapping_matrix"], row, axis=0
+                )
+                rows = list(calib_config["base_mapping_row_names"])
+                del rows[row]
+                calib_config["base_mapping_row_names"] = rows
+                calib_config["base_mapping_slice"] = (start, end - 1)
+            elif idx < start:
+                calib_config["base_mapping_slice"] = (start - 1, end - 1)
+        del names[idx]
+    calib_config["param_name"] = names
