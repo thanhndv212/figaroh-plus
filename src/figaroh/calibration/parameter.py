@@ -173,6 +173,13 @@ def add_base_name(calib_config):
         calib_config["param_name"][0:6] = BASE_TPL
     elif calib_config["calib_model"] == "joint_offset":
         calib_config["param_name"] = BASE_TPL + calib_config["param_name"]
+        # base_mapping_slice is positional: prepending shifts it
+        if "base_mapping_slice" in calib_config:
+            start, end = calib_config["base_mapping_slice"]
+            calib_config["base_mapping_slice"] = (
+                start + len(BASE_TPL),
+                end + len(BASE_TPL),
+            )
 
 
 def add_pee_name(calib_config):
