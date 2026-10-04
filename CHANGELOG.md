@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Calibration `joint_offset` parameters (`offset{PX,PY,PZ,RX,RY,RZ}_<joint>`)
+  are now offsets of the joint configuration, `q + offset` (#101). They were
+  added to the joint placement's parent-frame RPY, a rotation about the parent
+  axis, which differs from a joint offset whenever the joint axis is not the
+  parent's: up to 47 mm at the TIAGo tool for 0.05 rad on arm_2. New
+  `calibration_tools.apply_joint_offset` composes the offset in the joint
+  frame; elastic deflections (`k_*`, `non_geom`) use it too, and placements are
+  restored exactly after each FK evaluation. `full_params` (`d_p*`, `d_phi*`)
+  is unchanged. **Behaviour change:** `joint_offset` results from ≤ 0.5.0 on
+  joints whose axis is not the parent's z are not joint offsets; refit them.
+  On the corrected TIAGo 2021-11-30 mocap data the fit now returns arm_5
+  −49.7 mrad and arm_2/arm_6 near zero, instead of +22.8 / −31.7 mrad.
+- `export_urdf` writes joint offsets into the joint `<origin>` (about the
+  joint's own axis), so the reloaded URDF reproduces `q + offset`. They were
+  written to `<calibration rising>`, which Pinocchio and robot_state_publisher
+  ignore, so exported joint offsets had no effect on reload (#101).
+
 ## [0.5.0] - 2026-10-03
 
 ### Changed

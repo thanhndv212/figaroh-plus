@@ -96,10 +96,12 @@ class TestURDFExporterNumerical:
         self.output = self.tmp.name
         self.tmp.close()
 
+        # No joint offset here: the magnitude checks below assume only the
+        # d_px/d_phiz placement errors move FK. Joint offsets are checked by
+        # test_joint_offset_reloads_as_shifted_configuration.
         self.params = {
             "d_px_joint2": 0.05,
             "d_phiz_joint2": 0.1,
-            "offsetRX_joint1": 0.25,
             "m_link1": 2.5,
             "fv_joint1": 0.2,
         }
@@ -317,3 +319,62 @@ def test_frame_settings_doc_names_the_ee_parameter(caplog, calibration_type, fra
 
     assert f"pass e.g. pEEx_{frame} = <value>" in caplog.text
     assert "%s" not in caplog.text
+
+
+TIAGO_URDF = FIXTURES_DIR / "tiago" / "tiago.urdf"
+
+
+@pytest.mark.skipif(not TIAGO_URDF.exists(), reason="TIAGo fixture missing")
+@pytest.mark.parametrize(
+    "param, joint",
+    [
+        ("offsetRZ_arm_2_joint", "arm_2_joint"),
+        ("offsetRZ_arm_4_joint", "arm_4_joint"),  # origin at pitch -pi/2
+        ("offsetRZ_arm_5_joint", "arm_5_joint"),  # origin at pitch -pi/2
+        ("offsetPZ_torso_lift_joint", "torso_lift_joint"),
+    ],
+)
+def test_joint_offset_reloads_as_shifted_configuration(tmp_path, param, joint):
+    """An exported joint offset reloads as ``q + offset`` (#101).
+
+    Pinocchio ignores ``<calibration rising>``, so the offset must be written
+    into the joint origin, about the joint's own axis.
+    """
+    import pinocchio as pin
+
+    offset = 0.05
+    out = tmp_path / "tiago_offset.urdf"
+    export_urdf(str(TIAGO_URDF), {param: offset}, output_path=str(out))
+
+    nominal = pin.buildModelFromUrdf(str(TIAGO_URDF))
+    exported = pin.buildModelFromUrdf(str(out))
+    nd, ed = nominal.createData(), exported.createData()
+    fid = nominal.getFrameId("arm_tool_link")
+    idx_q = nominal.joints[nominal.getJointId(joint)].idx_q
+    for _ in range(10):
+        q = pin.randomConfiguration(nominal)
+        q[idx_q] = np.clip(q[idx_q], -1.0, 0.2)
+        pin.framesForwardKinematics(exported, ed, q)
+        q_shift = q.copy()
+        q_shift[idx_q] += offset
+        pin.framesForwardKinematics(nominal, nd, q_shift)
+        diff = pin.log6(nd.oMf[fid].inverse() * ed.oMf[fid]).vector
+        # exporter writes 6 significant digits
+        assert np.abs(diff).max() < 1e-5
+
+
+@pytest.mark.parametrize(
+    "rpy",
+    [
+        [0.3, -0.4, 1.2],
+        [-1.5708, -1.5707963267948966, 0.0],
+        [0.0, -1.5707963267948966, 0.0],
+        [0.2, 1.5707963267948966, -0.7],
+    ],
+)
+def test_rpy_matrix_round_trip(rpy):
+    """URDF rpy helpers invert each other, including at pitch = +-pi/2."""
+    from figaroh.tools.urdf_exporter import _matrix_to_rpy, _rpy_to_matrix
+
+    rot = _rpy_to_matrix(rpy)
+    assert _rpy_to_matrix(_matrix_to_rpy(rot)) == pytest.approx(rot, abs=1e-12)

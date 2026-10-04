@@ -78,6 +78,8 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Optional, Union, List
 
+import numpy as np
+
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
@@ -373,27 +375,69 @@ def _apply_joint_placement(
         _set_xyz_array(origin, arr, attr)
 
 
+def _rpy_to_matrix(rpy: List[float]) -> np.ndarray:
+    """URDF roll-pitch-yaw to rotation matrix, ``Rz(yaw) Ry(pitch) Rx(roll)``."""
+    r, p, y = rpy
+    cr, sr, cp, sp, cy, sy = (
+        np.cos(r),
+        np.sin(r),
+        np.cos(p),
+        np.sin(p),
+        np.cos(y),
+        np.sin(y),
+    )
+    return np.array(
+        [
+            [cy * cp, cy * sp * sr - sy * cr, cy * sp * cr + sy * sr],
+            [sy * cp, sy * sp * sr + cy * cr, sy * sp * cr - cy * sr],
+            [-sp, cp * sr, cp * cr],
+        ]
+    )
+
+
+def _matrix_to_rpy(rot: np.ndarray) -> List[float]:
+    """Rotation matrix to URDF roll-pitch-yaw (inverse of :func:`_rpy_to_matrix`)."""
+    pitch = np.arctan2(-rot[2, 0], np.hypot(rot[0, 0], rot[1, 0]))
+    if np.isclose(np.cos(pitch), 0.0, atol=1e-12):
+        # gimbal lock: only roll - yaw (pitch > 0) or roll + yaw is defined
+        yaw = 0.0
+        roll = np.arctan2(np.sign(-rot[2, 0]) * rot[0, 1], rot[1, 1])
+    else:
+        roll = np.arctan2(rot[2, 1], rot[2, 2])
+        yaw = np.arctan2(rot[1, 0], rot[0, 0])
+    return [float(roll), float(pitch), float(yaw)]
+
+
 def _apply_joint_offset(
     doc: ET.ElementTree, target: str, idx: int, value: float, is_additive: bool
 ) -> None:
-    """Apply a joint calibration offset (offsetRX_*).
+    """Apply a joint offset (offsetPX_* … offsetRZ_*) to the joint origin.
 
-    Maps idx 0-2 to the calibration rising value (x,y,z not meaningful
-    for revolute joints — convention stores the angle in the first element).
-    For revolute joints: only the RX/RY/RZ component matters.
+    The offset acts in the joint's own frame, matching
+    :func:`figaroh.calibration.calibration_tools.apply_joint_offset`:
+    ``origin <- origin * offset``. ``idx`` 0-2 translates along the joint
+    frame's x/y/z (prismatic offset), 3-5 rotates about its x/y/z (revolute
+    offset), so the reloaded model at ``q`` equals the nominal model at
+    ``q + value``. The offset is written into ``<origin>`` because URDF
+    parsers (Pinocchio, robot_state_publisher) ignore ``<calibration>``.
+    Joint offsets are always additive.
     """
     joint = _find_joint(doc, target)
     if joint is None:
         logger.warning("Joint '%s' not found in URDF, skipping", target)
         return
 
-    calib = _get_or_create_element(joint, "calibration")
-    current = calib.get("rising")
-    if current is not None:
-        new_val = float(current) + value if is_additive else value
+    origin = _get_or_create_element(joint, "origin")
+    xyz = np.array(_get_xyz_array(origin, "xyz"), dtype=float)
+    rot = _rpy_to_matrix(_get_xyz_array(origin, "rpy"))
+    if idx < 3:
+        xyz = xyz + rot[:, idx] * value
     else:
-        new_val = value
-    calib.set("rising", _fmt(new_val))
+        delta = [0.0, 0.0, 0.0]
+        delta[idx - 3] = value
+        rot = rot @ _rpy_to_matrix(delta)
+    _set_xyz_array(origin, xyz.tolist(), "xyz")
+    _set_xyz_array(origin, _matrix_to_rpy(rot), "rpy")
 
 
 def _apply_mass(
