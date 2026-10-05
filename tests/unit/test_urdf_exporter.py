@@ -456,3 +456,24 @@ def test_transmission_joint_is_not_mistaken_for_the_robot_joint(tmp_path):
         0.11
     )
     assert root.find("transmission/joint/origin") is None
+
+
+@pytest.mark.parametrize(
+    "params, match",
+    [
+        ({"offsetRZ_no_such_joint": 0.01}, "no_such_joint"),
+        ({"d_px_no_such_joint": 0.01}, "no_such_joint"),
+        ({"m_no_such_link": 1.0}, "no_such_link"),
+        ({"Ixx_arm_2_link": 0.1}, "inertia"),
+        ({"mx_arm_2_link": 0.1}, "first moments"),
+        ({"off_arm_2_joint": 0.1}, "legacy"),
+        ({"offsetRZ_arm_2_joint": 0.01, "d_px_arm_2_joint": 0.001}, "both"),
+    ],
+)
+def test_unsupported_mappings_are_rejected(tmp_path, params, match):
+    """A correction the exporter cannot write raises and writes nothing,
+    instead of a URDF that silently differs from the estimate (#62)."""
+    out = tmp_path / "out.urdf"
+    with pytest.raises(ValueError, match=match):
+        export_urdf(str(TIAGO_URDF), params, output_path=str(out))
+    assert not out.exists()

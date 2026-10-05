@@ -207,6 +207,14 @@ more precise than it is.
   - other methods: the fitted joint parameters directly (candidates left out
     of the fit at 0).
 
+  `joint_corrections()` raises if the fit has parameters a URDF cannot carry
+  (elastic, contact planes); `drop_unsupported=True` exports the kinematic
+  corrections only.
+- `metrology_frames()`: the fitted base frame and tool point. They describe
+  the measurement setup, so they are not written into the URDF; applied
+  outside a reloaded URDF they reproduce the calibrated forward kinematics,
+  for every method and both levels (figaroh-plus#62).
+
 ## Limits
 
 - Not supported with `include_non_geometric` (elastic parameters); use

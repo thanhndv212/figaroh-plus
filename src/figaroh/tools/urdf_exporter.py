@@ -23,14 +23,17 @@ Joint-level parameters (auto-applied to the URDF):
     - Joint offset / calibration (additive): ``offsetPX_{joint}``,
       ``offsetPY_{joint}``, ``offsetPZ_{joint}``, ``offsetRX_{joint}``,
       ``offsetRY_{joint}``, ``offsetRZ_{joint}``
-    - Legacy offset (absolute): ``off_{joint}``
     - Mass (absolute): ``m_{link}``
-    - First moments (absolute): ``mx_{link}``, ``my_{link}``, ``mz_{link}``
-    - Inertia tensor (absolute): ``Ixx_{link}``, ``Ixy_{link}``, ...,
-      ``Izz_{link}``
     - Viscous/static friction (absolute): ``fv_{joint}``, ``fs_{joint}``
     - Armature (absolute): ``Ia_{joint}``
-    - Joint elasticity (additive): ``k_PX_{joint}``, ..., ``k_RZ_{joint}``
+    - Joint elasticity (additive): ``k_PX_{joint}``, ..., ``k_RZ_{joint}``,
+      stored as a custom ``<dynamics elasticity>`` attribute that URDF
+      parsers ignore: it does not change the reloaded kinematics
+
+    Recognised but refused (``ValueError``, nothing written): first moments
+    ``mx_/my_/mz_{link}``, inertia tensors ``Ixx_{link}`` ... ``Izz_{link}``,
+    legacy ``off_{joint}``. So are names targeting a joint or link the URDF
+    does not have, and a joint carrying both ``offset*`` and ``d_*``.
 
 Metrology frame parameters (user-defined, not auto-applied):
     These define the transformation between the robot (URDF) and the
@@ -275,6 +278,14 @@ def _parse_frame_param_name(name: str) -> Optional[tuple]:
     return None
 
 
+def is_kinematic_correction(name: str) -> bool:
+    """Whether ``name`` is a joint correction that changes the reloaded
+    kinematics: a ``full_params`` placement (``d_*``) or a joint offset
+    (``offset*``). Frame, elastic and dynamic parameters are not."""
+    parsed = _parse_param_name(name)
+    return parsed is not None and parsed[0] in ("joint_placement", "joint_offset")
+
+
 # ── XML helpers ──────────────────────────────────────────────────
 
 
@@ -299,6 +310,23 @@ def _find_link(doc: ET.ElementTree, name: str) -> Optional[ET.Element]:
     return None
 
 
+def _require_joint(doc: ET.ElementTree, name: str) -> ET.Element:
+    """The robot's <joint> ``name``; a correction for a missing joint is an
+    error, not a skip, or the exported model silently differs (#62)."""
+    joint = _find_joint(doc, name)
+    if joint is None:
+        raise ValueError(f"Joint '{name}' not found in the URDF")
+    return joint
+
+
+def _require_link(doc: ET.ElementTree, name: str) -> ET.Element:
+    """The robot's <link> ``name``; see :func:`_require_joint`."""
+    link = _find_link(doc, name)
+    if link is None:
+        raise ValueError(f"Link '{name}' not found in the URDF")
+    return link
+
+
 def _get_or_create_element(parent: ET.Element, tag: str) -> ET.Element:
     """Get existing child element by tag, or create a new one."""
     child = parent.find(tag)
@@ -316,7 +344,7 @@ def _get_xyz_array(elem: ET.Element, attr: str = "xyz") -> List[float]:
 def _set_xyz_array(elem: ET.Element, values: List[float], attr: str = "xyz") -> None:
     """Set a space-separated triple attribute from a float list.
 
-    Uses a clean format: up to 6 significant digits, no trailing zeros.
+    Uses a clean format: up to 12 significant digits, no trailing zeros.
     """
     elem.set(attr, " ".join(_fmt(v) for v in values))
 
@@ -325,10 +353,12 @@ def _fmt(v: float) -> str:
     """Format a float for URDF output — compact, no scientific notation."""
     if v == 0.0:
         return "0"
-    s = f"{v:.6g}"
+    # 12 significant digits: a reloaded model matches the calibrated one to
+    # ~1e-12, well below any measurement (6 digits left ~1e-6 rad, #62)
+    s = f"{v:.12g}"
     # Ensure we don't get scientific notation
     if "e" in s or "E" in s:
-        s = f"{v:.10f}".rstrip("0").rstrip(".")
+        s = f"{v:.16f}".rstrip("0").rstrip(".")
     return s
 
 
@@ -345,10 +375,7 @@ def _apply_joint_placement(doc: ET.ElementTree, target: str, xyz_rpy) -> None:
     together because the rotation vector does not split into independent
     per-axis rotations.
     """
-    joint = _find_joint(doc, target)
-    if joint is None:
-        logger.warning("Joint '%s' not found in URDF, skipping", target)
-        return
+    joint = _require_joint(doc, target)
 
     xyz_rpy = np.asarray(xyz_rpy, dtype=float)
     origin = _get_or_create_element(joint, "origin")
@@ -418,10 +445,7 @@ def _apply_joint_offset(
     parsers (Pinocchio, robot_state_publisher) ignore ``<calibration>``.
     Joint offsets are always additive.
     """
-    joint = _find_joint(doc, target)
-    if joint is None:
-        logger.warning("Joint '%s' not found in URDF, skipping", target)
-        return
+    joint = _require_joint(doc, target)
 
     origin = _get_or_create_element(joint, "origin")
     xyz = np.array(_get_xyz_array(origin, "xyz"), dtype=float)
@@ -440,10 +464,7 @@ def _apply_mass(
     doc: ET.ElementTree, target: str, _idx, value: float, _is_additive: bool = False
 ) -> None:
     """Replace link mass (m_* — always absolute)."""
-    link = _find_link(doc, target)
-    if link is None:
-        logger.warning("Link '%s' not found in URDF, skipping", target)
-        return
+    link = _require_link(doc, target)
     inertial = _get_or_create_element(link, "inertial")
     mass = _get_or_create_element(inertial, "mass")
     mass.set("value", _fmt(value))
@@ -453,10 +474,7 @@ def _apply_viscous_friction(
     doc: ET.ElementTree, target: str, _idx, value: float, _is_additive: bool = False
 ) -> None:
     """Replace joint dynamics damping (fv_* — always absolute)."""
-    joint = _find_joint(doc, target)
-    if joint is None:
-        logger.warning("Joint '%s' not found in URDF, skipping", target)
-        return
+    joint = _require_joint(doc, target)
     dyn = _get_or_create_element(joint, "dynamics")
     dyn.set("damping", _fmt(value))
 
@@ -465,10 +483,7 @@ def _apply_static_friction(
     doc: ET.ElementTree, target: str, _idx, value: float, _is_additive: bool = False
 ) -> None:
     """Replace joint dynamics friction (fs_* — always absolute)."""
-    joint = _find_joint(doc, target)
-    if joint is None:
-        logger.warning("Joint '%s' not found in URDF, skipping", target)
-        return
+    joint = _require_joint(doc, target)
     dyn = _get_or_create_element(joint, "dynamics")
     dyn.set("friction", _fmt(value))
 
@@ -477,10 +492,7 @@ def _apply_armature(
     doc: ET.ElementTree, target: str, _idx, value: float, _is_additive: bool = False
 ) -> None:
     """Replace joint armature inertia (Ia_* — always absolute)."""
-    joint = _find_joint(doc, target)
-    if joint is None:
-        logger.warning("Joint '%s' not found in URDF, skipping", target)
-        return
+    joint = _require_joint(doc, target)
     dyn = _get_or_create_element(joint, "dynamics")
     dyn.set("armature", _fmt(value))
 
@@ -493,10 +505,7 @@ def _apply_elasticity(
     URDF doesn't have a native elasticity element — we store it as
     a custom ``<dynamics elasticity="..."/>`` attribute.
     """
-    joint = _find_joint(doc, target)
-    if joint is None:
-        logger.warning("Joint '%s' not found in URDF, skipping", target)
-        return
+    joint = _require_joint(doc, target)
     dyn = _get_or_create_element(joint, "dynamics")
     # We use a single elasticity value; for multi-DOF joints more
     # sophisticated handling would be needed.
@@ -517,13 +526,14 @@ _HANDLERS = {
     "static_friction": _apply_static_friction,
     "armature": _apply_armature,
     "elasticity": _apply_elasticity,
-    # Stub handlers for future extension
-    "first_moment": lambda doc, target, idx, val, add: (
-        logger.debug("first_moment handler not implemented (target=%s)", target)
-    ),
-    "inertia": lambda doc, target, idx, val, add: (
-        logger.debug("inertia handler not implemented (target=%s)", target)
-    ),
+}
+
+# Recognised but not written: refusing them keeps the URDF from silently
+# differing from the estimate (#62)
+_UNSUPPORTED = {
+    "first_moment": "first moments (mx_*, my_*, mz_*)",
+    "inertia": "inertia tensors (Ixx_* ... Izz_*)",
+    "legacy_offset": "legacy joint offsets (off_*); use offsetR*_/offsetP*_",
 }
 
 
@@ -641,7 +651,11 @@ def export_urdf(
 
     Raises:
         FileNotFoundError: If *nominal_urdf_path* does not exist.
-        ValueError: If an unknown parameter name is encountered.
+        ValueError: If a parameter name is unknown, names a joint or link
+            the URDF does not have, belongs to a category the exporter does
+            not write (inertia, first moments, legacy ``off_*``), or a joint
+            carries both ``offset*`` and ``d_*`` corrections. Nothing is
+            written then.
     """
     nominal_path = Path(nominal_urdf_path)
     if not nominal_path.exists():
@@ -659,6 +673,7 @@ def export_urdf(
     # Separate joint params (auto-apply) from frame params (user-defined)
     frame_params: dict = {}
     placements: dict = {}
+    offsets: set = set()
 
     for name, value in params.items():
         parsed = _parse_param_name(name)
@@ -671,10 +686,12 @@ def export_urdf(
                 continue
             handler = _HANDLERS.get(category)
             if handler is None:
-                logger.warning(
-                    "No handler for category '%s' (param='%s')", category, name
+                raise ValueError(
+                    f"Parameter '{name}': the exporter does not write "
+                    f"{_UNSUPPORTED.get(category, category)}"
                 )
-                continue
+            if category == "joint_offset":
+                offsets.add(target)
             if verbose:
                 action = "additive" if is_additive else "absolute"
                 logger.info(
@@ -707,6 +724,13 @@ def export_urdf(
             f"Metrology frame params: base_*, pEE*, phiEE*."
         )
 
+    both = sorted(offsets & set(placements))
+    if both:
+        # the fit never produces both; their order would be a guess
+        raise ValueError(
+            f"Joint(s) {both} carry both offset* and d_* corrections; "
+            f"use one calibration level per joint"
+        )
     for target, xyz_rpy in placements.items():
         _apply_joint_placement(doc, target, xyz_rpy)
 

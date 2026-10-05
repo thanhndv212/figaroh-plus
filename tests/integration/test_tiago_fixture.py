@@ -163,13 +163,15 @@ class TestTiagoUrdfExporter:
             err.rmse_position < 1e-10
         ), f"Base params leaked into URDF: {err.rmse_position}"
 
-    def test_export_with_joint_offset(self, tiago_urdf_path, output_path):
-        """Apply a legacy joint offset to TIAGo arm joint."""
-        params = {"off_arm_3_joint": 0.05}
-        modified = export_urdf(
-            str(tiago_urdf_path), params, output_path=str(output_path)
-        )
-        assert os.path.exists(modified)
+    def test_legacy_joint_offset_is_rejected(self, tiago_urdf_path, output_path):
+        """Legacy off_* was never written (a logged skip); it now raises (#62)."""
+        with pytest.raises(ValueError, match="off_arm_3_joint"):
+            export_urdf(
+                str(tiago_urdf_path),
+                {"off_arm_3_joint": 0.05},
+                output_path=str(output_path),
+            )
+        assert not os.path.exists(output_path)
 
     def test_export_with_placement_offset(self, tiago_urdf_path, output_path):
         """Apply d_px joint placement offset to TIAGo arm joint."""

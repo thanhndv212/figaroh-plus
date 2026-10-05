@@ -26,7 +26,7 @@ stale — `export_urdf()` shipped, but not exactly as specced in §2/§4 below.
 | Viscous/static friction, absolute (`fv_*`, `fs_*`) | ✅ Done | `_apply_viscous_friction`, `_apply_static_friction` |
 | Armature, absolute (`Ia_*`) | ✅ Done | `_apply_armature` |
 | Elasticity, additive (`k_*`) | ✅ Done | `_apply_elasticity` |
-| Inertia tensor, absolute (`Ixx_*` etc.) | 🟡 Stub only | Category is registered and parsed, but the handler is a no-op (`logger.debug("inertia handler not implemented", ...)`) — `Ixx_*`/`Ixy_*`/etc. params are silently accepted and do nothing |
+| Inertia tensor, absolute (`Ixx_*` etc.) | ❌ Refused | Parsed, then rejected with `ValueError` (figaroh-plus#62); it was a silent no-op. Same for first moments (`mx_*`) and legacy `off_*` |
 | Base placement (`base_px` etc.) | 🟡 Deviation | Parsed and recognized, but **deliberately not auto-applied** to the URDF — surfaced via `frame_settings_doc()` for the caller to configure separately, unlike §2's original "ADD to base frame placement" plan |
 | EE marker (`pEEx`/`phiEEx` etc.) | 🟡 Deviation | Same as base placement — parsed but not auto-applied; §2's original "create new link for marker" behavior was not implemented |
 | Unknown-param `ValueError` | ✅ Done | Matches §2 spec |
@@ -41,6 +41,28 @@ pipeline is solid and tested, but three of the plan's design decisions
 changed during implementation (no class, metrology frames deliberately
 excluded from auto-apply, inertia tensor left as a stub) and two scoped-out
 items (camera YAML, multi-format) remain undone as planned.
+
+### Update 2026-10-05: FK parity and explicit rejection (figaroh-plus#62)
+
+- **Parity is tested.** `tests/unit/test_calibration_export_parity.py` fits
+  a known TIAGo correction fixture at both calibration levels with the
+  `structural`, `excitation` and `map` methods, exports
+  `calibrator.joint_corrections()` (lifted and not), reloads, applies
+  `calibrator.metrology_frames()` outside the URDF and requires the
+  calibrated FK to within 1e-9 m on the fitted postures and on 30 unused
+  ones.
+- **Precision.** Values are written with 12 significant digits instead of
+  6; 6 digits left ~1e-6 rad on an rpy angle.
+- **Nothing is skipped silently.** A correction for a joint or link the URDF
+  does not have, a category the exporter does not write, or a joint with
+  both `offset*` and `d_*` raises `ValueError` and writes no file.
+  `joint_corrections()` raises `CalibrationError` for fitted parameters a
+  URDF cannot carry (elastic `k_*`, contact planes) unless
+  `drop_unsupported=True`.
+- **Metrology frames stay out.** `metrology_frames()` returns the fitted
+  base frame and tool point; `export_urdf` still logs and ignores them.
+  Elastic `k_*` is still written as a `<dynamics elasticity>` attribute,
+  which URDF parsers ignore.
 
 ---
 
