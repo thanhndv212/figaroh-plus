@@ -81,24 +81,39 @@ def _fitted(model, random_seed, n=40):
     return calib
 
 
+def _predict(model, calib):
+    return calc_updated_fkm(
+        model, model.createData(), calib.var_, calib.q_measured, calib.calib_config
+    )
+
+
 @pytest.fixture(scope="module")
 def two_fits(tiago_model):
-    # seeds 0 and 2 pick different representatives for the same model (same
-    # predictions); other seeds can keep a different number of parameters,
-    # i.e. a different model (figaroh-plus#113), which no lift can undo
-    return _fitted(tiago_model, 0), _fitted(tiago_model, 2)
+    """Two seeds that pick different representatives for the same model.
+
+    Which seeds do depends on the platform's QR tie-breaks
+    (figaroh-plus#113); some seeds even keep a different number of
+    parameters, i.e. a different model, which no lift can undo. So search.
+    """
+    fits, preds = [], []
+    for seed in range(10):
+        calib = _fitted(tiago_model, seed)
+        pred = _predict(tiago_model, calib)
+        rows = set(calib.calib_config["base_mapping_row_names_full"])
+        for other, other_pred in zip(fits, preds):
+            other_rows = set(other.calib_config["base_mapping_row_names_full"])
+            if np.abs(pred - other_pred).max() < 1e-8 and rows != other_rows:
+                return other, calib
+        fits.append(calib)
+        preds.append(pred)
+    pytest.fail(
+        "no two seeds in 0-9 gave the same model with different representatives"
+    )
 
 
 def test_representatives_differ_but_lift_does_not(two_fits, tiago_model):
     a, b = two_fits
-    q = a.q_measured
-    pa = calc_updated_fkm(
-        tiago_model, tiago_model.createData(), a.var_, q, a.calib_config
-    )
-    pb = calc_updated_fkm(
-        tiago_model, tiago_model.createData(), b.var_, q, b.calib_config
-    )
-    assert np.abs(pa - pb).max() < 1e-8  # same model
+    assert np.abs(_predict(tiago_model, a) - _predict(tiago_model, b)).max() < 1e-8
     rows_a = set(a.calib_config["base_mapping_row_names_full"])
     rows_b = set(b.calib_config["base_mapping_row_names_full"])
     assert rows_a != rows_b  # different representatives
