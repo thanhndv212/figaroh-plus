@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `BaseCalibration.metrology_frames()`: the fitted base frame and tool
+  point, which a URDF does not carry; applied outside an exported URDF they
+  reproduce the calibrated forward kinematics. Tested on a known TIAGo
+  correction fixture for both levels and three methods, on fitted and
+  unused postures (#62).
+
 - `BaseCalibration.joint_corrections(lift=True)`: the joint corrections to
   write into a URDF, the same values the PAL export uses (#111).
 
@@ -27,6 +33,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `docs/source/concepts/calibration_estimation.md`.
 
 ### Changed
+
+- `export_urdf` refuses what it cannot write instead of skipping it (#62).
+  A correction for a joint or link missing from the URDF, inertia tensors,
+  first moments, legacy `off_*`, and a joint with both `offset*` and `d_*`
+  now raise `ValueError`; no file is written. `joint_corrections()` raises
+  `CalibrationError` for fitted parameters a URDF cannot carry (elastic,
+  contact planes); pass `drop_unsupported=True` to export the kinematic
+  corrections only. Values are written with 12 significant digits instead
+  of 6.
+  - **Behaviour change:** calls that relied on the logged skip now fail.
+    Exported URDF text changes in the trailing digits.
 
 - `redistribute_parameters()` (and so the PAL `geometric_calibration`
   export and the HTML report) lifts `structural` base parameters by a

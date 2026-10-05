@@ -1737,23 +1737,79 @@ class BaseCalibration(ABC):
             for i, name in enumerate(names)
         }
 
-    def joint_corrections(self, lift: bool = True) -> Dict[str, float]:
+    def joint_corrections(
+        self, lift: bool = True, drop_unsupported: bool = False
+    ) -> Dict[str, float]:
         """Joint parameter values to write into a URDF (``export_urdf``).
 
         ``lift=True``: :meth:`redistribute_parameters` (the weighted lift
         for ``structural``; the fitted values otherwise), so the URDF and
         the PAL export carry the same corrections. ``lift=False``: the
         fitted joint parameters as estimated (for ``structural``, one
-        representative per dependent group and the rest at 0). Frame
-        parameters are never included.
+        representative per dependent group and the rest at 0). Either way
+        the reloaded URDF, with :meth:`metrology_frames` applied outside
+        it, reproduces the calibrated forward kinematics (figaroh-plus#62).
+
+        Frame parameters are never included; see :meth:`metrology_frames`.
+
+        Args:
+            lift: see above.
+            drop_unsupported: leave out fitted parameters a URDF cannot
+                carry (elastic ``k_*``, contact planes, ...). By default
+                they raise, because the reloaded model would then not
+                reproduce the calibration.
+
+        Raises:
+            CalibrationError: if the fit has parameters that are neither
+                frames nor kinematic joint corrections, and
+                ``drop_unsupported`` is False.
         """
+        from figaroh.tools.urdf_exporter import is_kinematic_correction
+
         if lift:
-            return {n: v["value"] for n, v in self.redistribute_parameters().items()}
+            values = {n: v["value"] for n, v in self.redistribute_parameters().items()}
+        else:
+            frames = set(self._frame_param_names())
+            values = {
+                n: float(v)
+                for n, v in zip(self.calib_config["param_name"], self.var_)
+                if n not in frames
+            }
+        unsupported = [n for n in values if not is_kinematic_correction(n)]
+        if unsupported and not drop_unsupported:
+            raise CalibrationError(
+                f"{len(unsupported)} fitted parameter(s) cannot be written to "
+                f"a URDF, so the exported model would not reproduce this "
+                f"calibration: {unsupported[:6]}"
+                f"{' ...' if len(unsupported) > 6 else ''}. Pass "
+                f"drop_unsupported=True to export the kinematic corrections "
+                f"only, and keep the others from calibrator.var_."
+            )
+        return {n: v for n, v in values.items() if n not in unsupported}
+
+    def metrology_frames(self) -> Dict[str, float]:
+        """Fitted base frame and tool point: the measurement setup.
+
+        ``base_*`` places the robot base in the measurement frame (mocap
+        world, camera); ``pEE*``/``phiEE*`` place the measured point on the
+        tool. They describe this setup, not the robot, so they are never in
+        :meth:`joint_corrections` and ``export_urdf`` does not write them.
+        To reproduce the calibrated measurements from an exported URDF,
+        apply them outside it, e.g. ``calc_updated_fkm(reloaded_model, ...,
+        values, q, dict(calib_config, param_name=list(frames)))``.
+        Frames given as known (``known_baseframe``/``known_tipframe``) are
+        not fitted and not returned.
+
+        Raises:
+            CalibrationError: If `solve()` hasn't run yet.
+        """
+        if getattr(self, "var_", None) is None:
+            raise CalibrationError("metrology_frames requires solve() to have run")
         frames = set(self._frame_param_names())
         return {
             n: float(v)
             for n, v in zip(self.calib_config["param_name"], self.var_)
-            if n not in frames
+            if n in frames
         }
 
     def plot_errors_distribution(self):
