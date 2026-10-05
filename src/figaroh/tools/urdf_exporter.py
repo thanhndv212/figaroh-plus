@@ -16,9 +16,10 @@ Joint-level parameters (auto-applied to the URDF):
     dynamics attributes. They come from figaroh's identification or
     calibration solvers and can be applied automatically:
 
-    - Joint placement (additive): ``d_px_{joint}``, ``d_py_{joint}``,
-      ``d_pz_{joint}``, ``d_phix_{joint}``, ``d_phiy_{joint}``,
-      ``d_phiz_{joint}``
+    - Joint placement (in the joint frame): ``d_px_{joint}``,
+      ``d_py_{joint}``, ``d_pz_{joint}``, ``d_phix_{joint}``,
+      ``d_phiy_{joint}``, ``d_phiz_{joint}``; a joint's six values are
+      composed as ``origin * SE3(exp3(d_phi), d_p)``
     - Joint offset / calibration (additive): ``offsetPX_{joint}``,
       ``offsetPY_{joint}``, ``offsetPZ_{joint}``, ``offsetRX_{joint}``,
       ``offsetRY_{joint}``, ``offsetRZ_{joint}``
@@ -329,50 +330,40 @@ def _fmt(v: float) -> str:
 # ── Handlers ─────────────────────────────────────────────────────
 
 
-def _apply_joint_placement(
-    doc: ET.ElementTree, target: str, idx: int, value: float, is_additive: bool
-) -> None:
-    """Apply a joint origin placement delta (d_px_*, base_*).
+def _apply_joint_placement(doc: ET.ElementTree, target: str, xyz_rpy) -> None:
+    """Apply one joint's ``full_params`` placement error to its origin.
 
-    ``target`` is the joint name (or ``"_base_"`` for base params).
-    ``idx`` maps to xyz (0-2) or rpy (3-5).
-    ``is_additive`` is always True for this category.
+    ``xyz_rpy`` holds ``d_px, d_py, d_pz, d_phix, d_phiy, d_phiz`` for
+    ``target``. They act in the joint frame, matching
+    :func:`figaroh.calibration.calibration_tools.update_joint_placement`:
+    ``origin <- origin * SE3(exp3(d_phi), d_p)``. The six values are applied
+    together because the rotation vector does not split into independent
+    per-axis rotations.
     """
-    if target == "_base_":
-        # Base params target the first non-fixed joint
-        for joint in doc.findall(".//joint"):
-            jtype = joint.get("type", "fixed")
-            if jtype != "fixed":
-                target_joint = joint.get("name", "")
-                break
-        else:
-            logger.warning("No non-fixed joint found for base_* params")
-            return
-    else:
-        target_joint = target
-
-    joint = _find_joint(doc, target_joint)
+    joint = _find_joint(doc, target)
     if joint is None:
-        logger.warning("Joint '%s' not found in URDF, skipping", target_joint)
+        logger.warning("Joint '%s' not found in URDF, skipping", target)
         return
 
+    xyz_rpy = np.asarray(xyz_rpy, dtype=float)
     origin = _get_or_create_element(joint, "origin")
-    is_rotation = idx >= 3
+    xyz = np.array(_get_xyz_array(origin, "xyz"), dtype=float)
+    rot = _rpy_to_matrix(_get_xyz_array(origin, "rpy"))
+    xyz = xyz + rot @ xyz_rpy[0:3]
+    rot = rot @ _rotvec_to_matrix(xyz_rpy[3:6])
+    _set_xyz_array(origin, xyz.tolist(), "xyz")
+    _set_xyz_array(origin, _matrix_to_rpy(rot), "rpy")
 
-    if is_rotation:
-        attr = "rpy"
-        arr = _get_xyz_array(origin, attr)
-        if len(arr) < 3:
-            arr = [0.0, 0.0, 0.0]
-        arr[idx - 3] += value if is_additive else value
-        _set_xyz_array(origin, arr, attr)
-    else:
-        attr = "xyz"
-        arr = _get_xyz_array(origin, attr)
-        if len(arr) < 3:
-            arr = [0.0, 0.0, 0.0]
-        arr[idx] += value if is_additive else value
-        _set_xyz_array(origin, arr, attr)
+
+def _rotvec_to_matrix(rotvec) -> np.ndarray:
+    """Rotation vector to rotation matrix (Rodrigues, Pinocchio's ``exp3``)."""
+    rotvec = np.asarray(rotvec, dtype=float)
+    angle = np.linalg.norm(rotvec)
+    if angle < 1e-12:
+        return np.eye(3)
+    k = rotvec / angle
+    K = np.array([[0.0, -k[2], k[1]], [k[2], 0.0, -k[0]], [-k[1], k[0], 0.0]])
+    return np.eye(3) + np.sin(angle) * K + (1.0 - np.cos(angle)) * (K @ K)
 
 
 def _rpy_to_matrix(rpy: List[float]) -> np.ndarray:
@@ -513,8 +504,8 @@ def _apply_elasticity(
 
 
 # Map category to handler
+# joint_placement is collected per joint and applied by _apply_joint_placement
 _HANDLERS = {
-    "joint_placement": _apply_joint_placement,
     "joint_offset": _apply_joint_offset,
     "mass": _apply_mass,
     "viscous_friction": _apply_viscous_friction,
@@ -662,11 +653,17 @@ def export_urdf(
 
     # Separate joint params (auto-apply) from frame params (user-defined)
     frame_params: dict = {}
+    placements: dict = {}
 
     for name, value in params.items():
         parsed = _parse_param_name(name)
         if parsed is not None:
             category, target, idx, is_additive = parsed
+            if category == "joint_placement":
+                placements.setdefault(target, np.zeros(6))[idx] += value
+                if verbose:
+                    logger.info("%s → joint_placement.%s (%.4f)", name, target, value)
+                continue
             handler = _HANDLERS.get(category)
             if handler is None:
                 logger.warning(
@@ -704,6 +701,9 @@ def export_urdf(
             f"armature (Ia_*), elasticity (k_*), inertia (Ixx_*).  "
             f"Metrology frame params: base_*, pEE*, phiEE*."
         )
+
+    for target, xyz_rpy in placements.items():
+        _apply_joint_placement(doc, target, xyz_rpy)
 
     # Write output
     output_path.parent.mkdir(parents=True, exist_ok=True)

@@ -8,8 +8,10 @@ method's return value plus calib_config["known_baseframe"]/
 ["base_mapping_row_names"].
 """
 
-import yaml
+import numpy as np
+import pinocchio as pin
 import pytest
+import yaml
 
 from figaroh.calibration.base_calibration import BaseCalibration
 from figaroh.tools.geometric_calibration_export import (
@@ -52,14 +54,49 @@ class TestBuildGeometricCalibration:
         result = build_geometric_calibration(calib)
         gc = result["robot_state_publisher"]["geometric_calibration"]
 
-        assert gc == {
-            "arm_1_dx": 0.001,
-            "arm_1_dy": 0.002,
-            "arm_1_dz": 0.003,
-            "arm_1_droll": 0.01,
-            "arm_1_dpitch": 0.02,
-            "arm_1_dyaw": 0.03,
+        # identity placement: translation passes through, the rotation
+        # vector is written as the RPY of exp3(d_phi) (#110)
+        rpy = pin.rpy.matrixToRpy(pin.exp3(np.array([0.01, 0.02, 0.03])))
+        assert gc == pytest.approx(
+            {
+                "arm_1_dx": 0.001,
+                "arm_1_dy": 0.002,
+                "arm_1_dz": 0.003,
+                "arm_1_droll": rpy[0],
+                "arm_1_dpitch": rpy[1],
+                "arm_1_dyaw": rpy[2],
+            },
+            abs=1e-12,
+        )
+
+    def test_rotated_placement_converts_to_origin_deltas(self):
+        """d_* act in the joint frame; PAL keys are origin xyz/rpy deltas."""
+        model = pin.Model()
+        placement = pin.SE3(pin.rpy.rpyToMatrix(0.0, -np.pi / 2, 0.3), np.zeros(3))
+        model.addJoint(0, pin.JointModelRZ(), placement, "arm_4_joint")
+        redistributed = {
+            "d_px_arm_4_joint": {"value": 0.002, "std_dev": 1e-4},
+            "d_phiz_arm_4_joint": {"value": 0.01, "std_dev": 1e-3},
         }
+        calib = _bare_calibration(redistributed, {"known_baseframe": True})
+        calib.model = model
+
+        gc = build_geometric_calibration(calib)["robot_state_publisher"][
+            "geometric_calibration"
+        ]
+
+        corrected = placement * pin.SE3(
+            pin.exp3(np.array([0, 0, 0.01])), np.array([0.002, 0, 0])
+        )
+        xyz = np.array([gc.get(f"arm_4_{k}", 0.0) for k in ("dx", "dy", "dz")])
+        rpy0 = pin.rpy.matrixToRpy(placement.rotation)
+        rpy = rpy0 + [gc.get(f"arm_4_{k}", 0.0) for k in ("droll", "dpitch", "dyaw")]
+        np.testing.assert_allclose(xyz, corrected.translation, atol=1e-12)
+        np.testing.assert_allclose(
+            pin.rpy.rpyToMatrix(rpy), corrected.rotation, atol=1e-9
+        )
+        # the joint-frame x translation lands on the parent's z axis
+        assert abs(gc["arm_4_dz"]) == pytest.approx(0.002)
 
     def test_excludes_non_joint_placement_categories(self):
         """joint_offset / elasticity-style names (from calib_model=

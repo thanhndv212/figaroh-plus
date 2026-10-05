@@ -374,6 +374,50 @@ class TestJointOffset:
         assert pee[:3] == pytest.approx(expected_T.translation, abs=1e-9)
 
 
+class TestFullParamsConvention:
+    """full_params errors use the kinematic regressor's convention (#110).
+
+    Parameter selection and the base-mapping matrix come from
+    ``computeFrameKinematicRegressor(..., LOCAL)``; the fitted FK must move
+    the tool exactly along those columns, including where the nominal
+    placement is rotated (TIAGo arm_1..arm_7).
+    """
+
+    @pytest.mark.parametrize(
+        "joint_name", ["arm_1_joint", "arm_2_joint", "arm_4_joint", "arm_5_joint"]
+    )
+    def test_fk_derivative_matches_regressor_column(self, tiago_model, joint_name):
+        model = tiago_model.copy()
+        data = model.createData()
+        fid = model.getFrameId("arm_tool_link")
+        jid = model.getJointId(joint_name)
+        h = 1e-7
+        for _ in range(5):
+            q = np.clip(pin.randomConfiguration(model), -1.0, 1.0)
+            pin.framesForwardKinematics(model, data, q)
+            R = pin.computeFrameKinematicRegressor(model, data, fid, pin.LOCAL)
+            oMf = data.oMf[fid].copy()
+            for axis in range(6):
+                delta = np.zeros(6)
+                delta[axis] = h
+                m = update_joint_placement(model.copy(), jid, delta)
+                d = m.createData()
+                pin.framesForwardKinematics(m, d, q)
+                fd = pin.log6(oMf.actInv(d.oMf[fid])).vector / h
+                np.testing.assert_allclose(
+                    fd, R[:, 6 * (jid - 1) + axis], atol=1e-5, err_msg=str(axis)
+                )
+
+    def test_rotation_is_a_rotation_vector_in_the_joint_frame(self, tiago_model):
+        model = tiago_model.copy()
+        jid = model.getJointId("arm_4_joint")
+        M0 = model.jointPlacements[jid].copy()
+        xyz_rpy = np.array([0.001, -0.002, 0.003, 0.02, -0.01, 0.03])
+        update_joint_placement(model, jid, xyz_rpy)
+        expected = M0 * pin.SE3(pin.exp3(xyz_rpy[3:]), xyz_rpy[:3])
+        assert model.jointPlacements[jid].isApprox(expected, 1e-12)
+
+
 class TestMultiMarkerGuard:
     def test_raises_instead_of_silently_falling_back(self, temp_urdf):
         model = pin.buildModelFromUrdf(temp_urdf)
