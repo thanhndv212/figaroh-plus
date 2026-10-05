@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Calibration estimation methods, chosen per robot and dataset with
+  `parameters.estimation.method` (#113); the default `structural` is
+  unchanged.
+  - `excitation`: select over every joint parameter on the measured postures
+    and drop those whose predicted standard error exceeds `excitation_k`
+    times their expected size.
+  - `map`: estimate every joint parameter with Gaussian priors of the
+    expected sizes (`priors`); posterior standard deviations in `std_dev`.
+  - `map_cv` / `cv_subset`: prior scale or parameter-set size chosen by
+    k-fold cross-validation over the training postures; no robot-specific
+    sizes needed.
+  - Diagnostics in `calib_config["estimation_report"]`; guide in
+    `docs/source/concepts/calibration_estimation.md`.
+
 ### Changed
 
 - Calibration drops joint parameters that the estimated base/tip frames

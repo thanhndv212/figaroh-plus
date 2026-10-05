@@ -47,6 +47,7 @@ from figaroh.calibration.calibration_tools import (
     select_identifiable_parameters,
     drop_calibration_parameters,
 )
+from figaroh.calibration import estimation
 from figaroh.calibration.parameter import BASE_TPL, EE_TPL
 from figaroh.tools.qrdecomposition import (
     redistribute_min_norm,
@@ -441,6 +442,13 @@ class BaseCalibration(ABC):
             q_ = []
         else:
             q_ = q
+
+        if estimation.settings(self.calib_config)["method"] != "structural":
+            try:
+                estimation.configure(self)
+                return True
+            except Exception as e:
+                raise CalibrationError(f"Parameter list creation failed: {e}")
 
         try:
             (
@@ -998,6 +1006,19 @@ class BaseCalibration(ABC):
                         residual_idx += 1
         return np.array(weighted_residuals)
 
+    def _objective(self, var: np.ndarray) -> np.ndarray:
+        """Residuals minimised by the solver.
+
+        The robot's :meth:`cost_function`, plus ``w * var`` when the
+        estimation method sets prior weights (``map``, ``map_cv``,
+        figaroh-plus#113); ``w`` is 0 for frame parameters.
+        """
+        residuals = self.cost_function(var)
+        weights = self.calib_config.get("prior_weights")
+        if weights is None:
+            return residuals
+        return np.append(residuals, np.asarray(weights) * var)
+
     def _setup_logging(self):
         """Setup logging configuration for terminal output."""
         # Create logger
@@ -1049,7 +1070,7 @@ class BaseCalibration(ABC):
 
             # Run optimization
             result = least_squares(
-                self.cost_function, current_var, method=method, max_nfev=1000
+                self._objective, current_var, method=method, max_nfev=1000
             )
 
             if not result.success:
@@ -1608,7 +1629,13 @@ class BaseCalibration(ABC):
             # must not be squared, #107.)
             n_meas = len(self.PEE_measured)
             r_meas = np.asarray(result.fun)[:n_meas]
-            sigma_ro_sq = np.sum(r_meas**2) / (n_meas - nvars)
+            prior_noise = self.calib_config.get("prior_noise")
+            if prior_noise is not None:
+                # MAP: the prior rows in result.jac make this the posterior
+                # covariance, with the noise the priors were scaled by
+                sigma_ro_sq = prior_noise**2
+            else:
+                sigma_ro_sq = np.sum(r_meas**2) / (n_meas - nvars)
             # Covariance from the full Jacobian, so regularisation rows act
             # as prior information on the parameters they constrain.
             J = result.jac
@@ -1677,6 +1704,21 @@ class BaseCalibration(ABC):
             raise CalibrationError(
                 "redistribute_parameters requires solve() to have run first"
             )
+        report = self.calib_config.get("estimation_report")
+        if report is not None:
+            # non-structural methods (#113) estimate the full joint
+            # parameters directly: nothing to redistribute. Candidates
+            # left out of the fit are at nominal (0, std 0).
+            names = list(self.calib_config["param_name"])
+            std = np.sqrt(np.abs(np.diag(C_param)))
+            fitted = {n: (float(v), float(s)) for n, v, s in zip(names, var_, std)}
+            return {
+                n: {
+                    "value": fitted.get(n, (0.0, 0.0))[0],
+                    "std_dev": fitted.get(n, (0.0, 0.0))[1],
+                }
+                for n in report["candidates"]
+            }
         M = self.calib_config.get("base_mapping_matrix")
         full_names = self.calib_config.get("base_mapping_param_names")
         base_slice = self.calib_config.get("base_mapping_slice")

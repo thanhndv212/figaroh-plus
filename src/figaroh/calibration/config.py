@@ -538,6 +538,8 @@ def _extract_calibration_params(calib_config, robot, parameters):
             "PLOT": 0,
             "coeff_regularize": parameters.get("regularization_coefficient", 0.01),
             "outlier_eps": parameters.get("outlier_threshold", 0.05),
+            # parameter selection / estimation method (estimation.py, #113)
+            "estimation": dict(parameters.get("estimation") or {}),
         }
     )
 
