@@ -57,7 +57,11 @@ from typing import Dict, List, Optional, Sequence
 import numpy as np
 from scipy.optimize import least_squares
 
-from .calibration_tools import measurement_jacobian, select_identifiable_parameters
+from .calibration_tools import (
+    calc_updated_fkm,
+    measurement_jacobian,
+    select_identifiable_parameters,
+)
 from .parameter import BASE_TPL, add_pee_name, get_fullparam_offset, get_joint_offset
 
 logger = logging.getLogger(__name__)
@@ -127,6 +131,8 @@ def joint_candidates(model, calib_config: dict) -> List[str]:
 
 def _joint_axis(model, joint: str):
     """('R' or 'P', axis letter) for an axis-aligned 1-DoF joint, else None."""
+    if model is None or not model.existJointName(joint):
+        return None
     short = model.joints[model.getJointId(joint)].shortname()
     tail = short.replace("JointModel", "")
     if len(tail) == 2 and tail[0] in "RP" and tail[1] in "XYZ":
@@ -428,3 +434,110 @@ def _choose_subset(calib, ident, removed, est, report) -> List[str]:
     report["n_joint_chosen"] = chosen["n_joint"]
     drop = set(removed[: n_joint - chosen["n_joint"]])
     return [n for n in ident if n not in drop]
+
+
+# ── lift of structural base parameters (#111) ───────────────────
+
+
+def lift_structural(
+    calib, priors: Optional[Dict[str, float]] = None, refine_iterations: int = 3
+):
+    """Weighted minimum-norm lift of fitted base parameters to joint corrections.
+
+    The ``structural`` method estimates one representative per group of
+    dependent joint parameters; which one is a numerical accident. Among all
+    joint corrections that reproduce the fit, return the most plausible
+    under the expected sizes ``priors`` (default: the estimation priors):
+
+        theta = argmin theta' P^-1 theta  subject to  M_full theta = t
+
+    ``M_full`` is the base mapping before any row was dropped; ``t`` holds
+    the fitted value of every kept joint row, and 0 on the rows the base
+    frame carries (``base_frame_row_names``) and on the rows the fit
+    dropped (held at 0). The result does not depend on which
+    representatives were chosen.
+
+    ``M`` is a first-order (structural) map, so with corrections of tens of
+    mrad the lifted model drifts from the fit by up to ~0.1 mm. When the
+    measured postures are available, ``refine_iterations`` Gauss-Newton
+    steps then make the lifted model reproduce the fitted predictions at
+    those postures, each step taking the smallest correction in the same
+    prior-weighted norm.
+
+    Returns:
+        (names, theta, cov): joint parameter names
+        (``base_mapping_param_names``), lifted values, and their covariance
+        conditional on this lift (propagated from the fitted base
+        parameters; directions the data does not see have zero variance
+        here, not their prior).
+    """
+    cfg = calib.calib_config
+    M = np.asarray(cfg.get("base_mapping_matrix_full", cfg["base_mapping_matrix"]))
+    rows_full = list(
+        cfg.get("base_mapping_row_names_full", cfg["base_mapping_row_names"])
+    )
+    kept = list(cfg["base_mapping_row_names"])
+    frame_rows = set(cfg.get("base_frame_row_names", []))
+    names = list(cfg["base_mapping_param_names"])
+    start, _ = cfg["base_mapping_slice"]
+    x = np.asarray(calib.var_)
+    C = np.asarray(calib._C_param)
+
+    free = [
+        (i, start + kept.index(r))
+        for i, r in enumerate(rows_full)
+        if r in kept and r not in frame_rows
+    ]
+    t = np.zeros(len(rows_full))
+    for i, k in free:
+        t[i] = x[k]
+
+    sizes = (
+        settings(cfg)["priors"] if priors is None else dict(DEFAULT_PRIORS, **priors)
+    )
+    P = prior_std(names, getattr(calib, "model", None), sizes) ** 2
+    G = (P[:, None] * M.T) @ np.linalg.inv((M * P) @ M.T)
+    theta = G @ t
+    if refine_iterations and hasattr(calib, "q_measured"):
+        frames = set(calib._frame_param_names())
+        other = [
+            n
+            for n in cfg["param_name"]
+            if n not in frames and not n.startswith(("d_", "offset"))
+        ]
+        if other:
+            # e.g. contact-plane parameters: core's FK cannot evaluate the fit
+            logger.info(
+                "lift not refined (first order only): parameters %s are not "
+                "joint or frame parameters",
+                other[:3],
+            )
+        else:
+            theta = _refine_lift(calib, names, theta, np.sqrt(P), refine_iterations)
+    rows_i = [i for i, _ in free]
+    var_k = [k for _, k in free]
+    Gs = G[:, rows_i]
+    cov = Gs @ C[np.ix_(var_k, var_k)] @ Gs.T
+    return names, theta, cov
+
+
+def _refine_lift(calib, names, theta, scale, iterations):
+    """Make the lifted joint corrections reproduce the fit at the postures."""
+    cfg = calib.calib_config
+    model, data, q = calib.model, calib.data, calib.q_measured
+    fitted = list(cfg["param_name"])
+    x = np.asarray(calib.var_)
+    frames = calib._frame_param_names()
+    frame_values = np.array([x[fitted.index(n)] for n in frames])
+    target = calc_updated_fkm(model, data, x, q, cfg)
+    lifted_cfg = dict(cfg, param_name=frames + list(names))
+    nf = len(frames)
+    for _ in range(iterations):
+        var = np.r_[frame_values, theta]
+        r = calc_updated_fkm(model, data, var, q, lifted_cfg) - target
+        J = measurement_jacobian(model, data, var, q, lifted_cfg)[:, nf:]
+        # unobservable directions show up as finite-difference noise
+        # (~1e-11 relative): truncate them instead of inverting them
+        step = np.linalg.lstsq(J * scale, r, rcond=1e-6)[0]
+        theta = theta - scale * step
+    return theta

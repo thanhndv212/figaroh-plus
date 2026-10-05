@@ -3,10 +3,11 @@
 Exercises the method in isolation (via BaseCalibration.__new__, bypassing
 __init__'s robot/config-file requirements) since it only reads
 self._C_param / self.var_ / self.calib_config -- no full calibration
-pipeline needed. See TIAGO_CALIBRATION_ANALYSIS.md §8 for why this method
-exists: it replaces the implicit "1 representative base parameter gets the
-fitted value, the rest of its redundant group stays at 0" deploy behavior
-with minimum-norm redistribution across the whole group.
+pipeline needed. It replaces the implicit "1 representative base parameter
+gets the fitted value, the rest of its redundant group stays at 0" deploy
+behavior with a weighted minimum-norm lift across the whole group
+(figaroh-plus#111); with equal expected sizes it is the Moore-Penrose
+minimum-norm solution.
 """
 
 import numpy as np
@@ -118,3 +119,67 @@ class TestRedistributeParameters:
 
         assert result["d_px_joint1"]["value"] == pytest.approx(5.0)
         assert result["d_px_joint2"]["value"] == pytest.approx(5.0)
+
+
+class TestWeightedLift:
+    """Weighted lift with frame and dropped rows held at 0 (#111)."""
+
+    def _calib(self, M, full_names, rows_full, kept, frame_rows, x, C):
+        calib = _bare_calibration()
+        calib.var_ = np.asarray(x, float)
+        calib._C_param = np.asarray(C, float)
+        keep = [rows_full.index(r) for r in kept]
+        calib.calib_config = {
+            "base_mapping_matrix": np.asarray(M)[keep],
+            "base_mapping_matrix_full": np.asarray(M),
+            "base_mapping_param_names": full_names,
+            "base_mapping_row_names": list(kept),
+            "base_mapping_row_names_full": list(rows_full),
+            "base_frame_row_names": list(frame_rows),
+            "base_mapping_slice": (0, len(kept)),
+            "param_name": list(kept),
+        }
+        return calib
+
+    def test_split_follows_expected_sizes(self):
+        """A translation (1 mm) and a rotation (2 mrad) in one group share
+        the fitted value in proportion to their prior variances."""
+        calib = self._calib(
+            [[1.0, 1.0]],
+            ["d_px_j1", "d_phix_j2"],
+            ["d_px_j1"],
+            ["d_px_j1"],
+            [],
+            [10.0],
+            [[0.25]],
+        )
+        r = calib.redistribute_parameters()
+        assert r["d_px_j1"]["value"] == pytest.approx(2.0)  # 1e-6 / 5e-6
+        assert r["d_phix_j2"]["value"] == pytest.approx(8.0)  # 4e-6 / 5e-6
+
+    def test_frame_and_dropped_rows_held_at_zero(self):
+        M = np.array([[1.0, 1.0, 0.0, 0.0], [0.0, 1.0, 1.0, 0.0], [0.0, 0.0, 1.0, 1.0]])
+        names = ["d_px_a", "d_px_b", "d_px_c", "d_px_d"]
+        rows_full = ["d_px_a", "d_px_b", "d_px_c"]
+        # row a carries the base frame, row b was dropped by the fit
+        calib = self._calib(
+            M, names, rows_full, ["d_px_a", "d_px_c"], ["d_px_a"], [0.3, 7.0], np.eye(2)
+        )
+        r = calib.redistribute_parameters()
+        theta = np.array([r[n]["value"] for n in names])
+        np.testing.assert_allclose(M @ theta, [0.0, 0.0, 7.0], atol=1e-12)
+        # the frame row's fitted value (0.3) is not distributed onto joints
+        assert r["d_px_a"]["value"] + r["d_px_b"]["value"] == pytest.approx(0.0)
+
+    def test_unseen_directions_have_zero_conditional_std(self):
+        calib = self._calib(
+            [[1.0, 1.0]],
+            ["d_px_j1", "d_px_j2"],
+            ["d_px_j1"],
+            ["d_px_j1"],
+            ["d_px_j1"],
+            [4.0],
+            [[0.5]],
+        )
+        r = calib.redistribute_parameters()
+        assert r["d_px_j1"] == {"value": 0.0, "std_dev": 0.0}

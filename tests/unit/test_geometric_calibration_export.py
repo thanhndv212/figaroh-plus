@@ -4,8 +4,7 @@ Builds a minimal BaseCalibration stand-in (BaseCalibration.__new__,
 bypassing __init__'s robot/config-file requirements — same pattern as
 test_base_calibration_redistribution.py) with a fixed
 redistribute_parameters() output, since this module only consumes that
-method's return value plus calib_config["known_baseframe"]/
-["base_mapping_row_names"].
+method's return value.
 """
 
 import numpy as np
@@ -116,37 +115,25 @@ class TestBuildGeometricCalibration:
 
         assert gc == {"arm_1_dx": 0.001}
 
-    def test_excludes_base_merged_block_when_baseframe_unknown(self):
+    def test_keeps_lifted_first_joint_when_baseframe_unknown(self):
+        """The lift (redistribute_parameters, #111) holds the base-frame rows
+        at 0, so first-joint values it returns are joint corrections, not
+        base-frame quantities: nothing is excluded on that basis. (Before
+        #111 the first six base rows were dropped here instead.)"""
         redistributed = {
             "d_px_torso_lift_joint": {"value": 0.01, "std_dev": 0.001},
-            "d_py_torso_lift_joint": {"value": 0.02, "std_dev": 0.001},
-            "d_pz_torso_lift_joint": {"value": 0.03, "std_dev": 0.001},
-            "d_phix_torso_lift_joint": {"value": 0.04, "std_dev": 0.001},
-            "d_phiy_torso_lift_joint": {"value": 0.05, "std_dev": 0.001},
-            "d_phiz_torso_lift_joint": {"value": 0.06, "std_dev": 0.001},
             "d_px_arm_1_joint": {"value": 0.001, "std_dev": 0.0001},
         }
         calib_config = {
             "known_baseframe": False,
-            "base_mapping_row_names": [
-                "d_px_torso_lift_joint",
-                "d_py_torso_lift_joint",
-                "d_pz_torso_lift_joint",
-                "d_phix_torso_lift_joint",
-                "d_phiy_torso_lift_joint",
-                "d_phiz_torso_lift_joint",
-                "d_px_arm_1_joint",
-            ],
+            "base_mapping_row_names": ["d_px_torso_lift_joint", "d_px_arm_1_joint"],
         }
         calib = _bare_calibration(redistributed, calib_config)
 
         result = build_geometric_calibration(calib)
         gc = result["robot_state_publisher"]["geometric_calibration"]
 
-        # Only the 7th row_names entry (arm_1) survives -- the first 6
-        # (torso_lift_joint, merged with the co-estimated base transform)
-        # are excluded, matching every hand-curated master_calibration.yaml.
-        assert gc == {"arm_1_dx": 0.001}
+        assert gc == {"torso_lift_dx": 0.01, "arm_1_dx": 0.001}
 
     def test_includes_first_joint_when_baseframe_known(self):
         """known_baseframe=True (or absent/default) means there's no

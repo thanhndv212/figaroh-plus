@@ -159,10 +159,22 @@ mismatch, so it complements real held-out data rather than replacing it.
 
 ## 8. Export and report
 
-- The URDF export (`export_urdf`) and the PAL `geometric_calibration` export
-  take the fitted joint parameters. For non-structural methods they are the
-  physical parameters directly; parameters left out of the fit stay at
-  nominal.
+- Write the same joint corrections to the URDF and to PAL's
+  `geometric_calibration`:
+
+  ```python
+  from figaroh.tools.urdf_exporter import export_urdf
+
+  export_urdf("urdf/robot.urdf", calibrator.joint_corrections(), output_path="urdf/robot_calibrated.urdf")
+  ```
+
+  For `structural`, `joint_corrections()` lifts the fitted base parameters
+  onto every joint with your expected error sizes, so a joint whose
+  correction was represented by another parameter in the fit gets its share
+  (`joint_corrections(lift=False)` returns the representatives only). For the
+  other methods it returns the fitted joint parameters; those left out stay
+  at nominal. Reload the written URDF and compare its forward kinematics with
+  the fit before deploying it.
 - Frames (base, tool point) are measurement-setup quantities and are not
   written into the robot URDF.
 - Record in your report: the method and every non-default setting, the

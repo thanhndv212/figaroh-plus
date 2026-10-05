@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `BaseCalibration.joint_corrections(lift=True)`: the joint corrections to
+  write into a URDF, the same values the PAL export uses (#111).
+
 - Calibration estimation methods, chosen per robot and dataset with
   `parameters.estimation.method` (#113); the default `structural` is
   unchanged.
@@ -24,6 +27,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `docs/source/concepts/calibration_estimation.md`.
 
 ### Changed
+
+- `redistribute_parameters()` (and so the PAL `geometric_calibration`
+  export and the HTML report) lifts `structural` base parameters by a
+  weighted minimum-norm lift instead of the Moore-Penrose one (#111).
+  - **Why:** the old lift weighed metres and radians equally, ignored the
+    rows the fit held at zero (base-frame and dropped rows), so it did not
+    reproduce the fit, and the PAL export removed "the first six rows" by
+    position instead.
+  - **Now:** expected sizes from `parameters.estimation.priors` weight the
+    lift; base-frame and dropped rows are held at 0; Gauss-Newton steps make
+    the lifted model reproduce the fit at the measured postures (skipped,
+    first order only, when the calibrator has non-joint parameters such as
+    contact planes). The result does not depend on which representative the
+    QR chose. The PAL export no longer excludes the first joint's
+    parameters.
+  - **Behaviour change:** PAL and report values for `structural` change.
 
 - Calibration drops joint parameters that the estimated base/tip frames
   absorb, starts the frames at a closed-form estimate, and selects

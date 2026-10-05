@@ -16,10 +16,9 @@
 """PAL Robotics ``robot_state_publisher`` geometric-calibration deploy file.
 
 Produces the runtime joint-correction YAML PAL robots (TIAGo, TIAGo Pro,
-TALOS, ...) read at ``/etc/calibration/master_calibration.yaml`` — the
-format hand-curated in ``figaroh_tiagoPro/data/master_calibration_*.yaml``
-to date, generalized here so any ``BaseCalibration``-based robot can
-produce one directly from a solved calibrator.
+TALOS, ...) read at ``/etc/calibration/master_calibration.yaml``
+(``robot_state_publisher: geometric_calibration: {<joint>_<axis>: value}``),
+directly from a solved ``BaseCalibration``.
 
 This is a different deploy target from
 :mod:`figaroh.tools.urdf_exporter`: that module bakes corrections into a
@@ -30,13 +29,14 @@ parameter names — this module reuses
 :func:`figaroh.tools.urdf_exporter._parse_param_name` rather than
 re-deriving that parsing.
 
-Built on :meth:`~figaroh.calibration.base_calibration.BaseCalibration.redistribute_parameters`
-rather than the base-only fit, so joints that would otherwise be silently
-left at nominal (0) in the base-only deploy — because they were
-structurally redundant with another parameter, not because they have no
-real offset — get their share of the identified correction too. See
-``TIAGO_CALIBRATION_ANALYSIS.md`` §8 for why that redistribution exists
-and its limits.
+The values come from
+:meth:`~figaroh.calibration.base_calibration.BaseCalibration.redistribute_parameters`:
+for the ``structural`` method, the weighted minimum-norm lift of the fitted
+base parameters onto every joint (figaroh-plus#111), so a joint whose
+correction was represented by another parameter in the fit still gets its
+share; for the other estimation methods, the fitted joint parameters. Use
+:meth:`~figaroh.calibration.base_calibration.BaseCalibration.joint_corrections`
+to write the same values into a URDF.
 """
 
 import logging
@@ -93,35 +93,24 @@ def build_geometric_calibration(
     """Build a PAL ``robot_state_publisher.geometric_calibration`` dict
     from a solved ``BaseCalibration`` instance's redistributed parameters.
 
-    Only genuine per-joint placement corrections (``d_px_{joint}`` etc.)
-    are included. Excluded, matching every hand-curated
-    ``figaroh_tiagoPro/data/master_calibration_*.yaml`` to date:
-
-    - Any parameter merged with the co-estimated base transform — when
-      ``calib_config["known_baseframe"]`` is ``False``, that's whichever
-      joint occupies the first 6 slots of ``base_mapping_row_names``, a
-      mixed mocap/robot quantity, not a pure per-joint correction. Found
-      structurally (via ``base_mapping_row_names``, which is never
-      renamed), not by name pattern — robust regardless of whatever
-      display renaming ``add_base_name``/a subclass override may have
-      applied to ``calib_config["param_name"]``.
-    - Marker/tip parameters (``pEE*``/``phiEE*``) and anything from a
-      non-``full_params`` candidate set (e.g. joint-offset/elasticity
-      parameters) — neither is a ``joint_placement`` entry in
-      :func:`~figaroh.tools.urdf_exporter._parse_param_name`'s registry,
-      so both are dropped by the category check below without needing
-      special-casing.
+    Only per-joint placement corrections (``d_px_{joint}`` etc.) are
+    included. Marker/tip and base-frame parameters, and anything from a
+    non-``full_params`` candidate set (joint-offset or elasticity
+    parameters), are not ``joint_placement`` entries in
+    :func:`~figaroh.tools.urdf_exporter._parse_param_name`'s registry and
+    are dropped by the category check. The base frame needs no exclusion:
+    the lift holds the base-frame rows at 0, so every lifted value is a joint
+    correction.
 
     Args:
         calibrator: A solved ``BaseCalibration`` instance (``solve()``
             already called).
         min_sigma: If given, only include parameters with
-            ``|value| / std_dev >= min_sigma`` — the "conservative"
-            variant (see ``master_calibration_20260805_conservative.yaml``
-            and ``TIAGO_CALIBRATION_ANALYSIS.md`` §7.5/§7.6, which found
-            this generalizes measurably better than deploying every
-            identified value regardless of statistical significance).
-            ``None`` (default) includes every joint-placement parameter.
+            ``|value| / std_dev >= min_sigma``: a conservative deploy
+            that leaves statistically insignificant corrections at
+            nominal. ``None`` (default) includes every joint-placement
+            parameter. Whether it generalizes better is robot- and
+            data-specific; check on held-out postures.
 
     Returns:
         ``{"robot_state_publisher": {"geometric_calibration": {key: value}}}``
@@ -132,15 +121,8 @@ def build_geometric_calibration(
     """
     redistributed = calibrator.redistribute_parameters()
 
-    exclude = set()
-    if not calibrator.calib_config.get("known_baseframe", True):
-        row_names = calibrator.calib_config.get("base_mapping_row_names", [])
-        exclude.update(row_names[:6])
-
     corrections: Dict[str, np.ndarray] = {}
     for name, info in redistributed.items():
-        if name in exclude:
-            continue
         parsed = _parse_param_name(name)
         if parsed is None or parsed[0] != "joint_placement":
             continue
@@ -178,18 +160,17 @@ def export_geometric_calibration_yaml(
 ) -> str:
     """:func:`build_geometric_calibration` + write as YAML, PAL deploy-ready.
 
-    Matches ``figaroh_tiagoPro/data/master_calibration_*.yaml``'s format
-    exactly (same nesting, same key style), so the output drops in at
-    ``/etc/calibration/master_calibration.yaml`` on a PAL robot unchanged.
+    PAL's ``master_calibration.yaml`` layout (``robot_state_publisher:
+    geometric_calibration:`` with ``<joint>_<axis>`` keys), so the output
+    drops in at ``/etc/calibration/master_calibration.yaml`` on a PAL robot.
 
     Args:
         calibrator: A solved ``BaseCalibration`` instance.
         output_path: Destination YAML file path.
         min_sigma: See :func:`build_geometric_calibration`.
         header_comment: Optional single-line comment written above the
-            YAML document (e.g. source data file, sample count, RMSE) —
-            matches the one-line provenance header every hand-curated
-            ``master_calibration_*.yaml`` carries today.
+            YAML document (e.g. source data file, sample count, RMSE), for
+            provenance.
 
     Returns:
         ``output_path``, unchanged, for chaining.

@@ -49,10 +49,6 @@ from figaroh.calibration.calibration_tools import (
 )
 from figaroh.calibration import estimation
 from figaroh.calibration.parameter import BASE_TPL, EE_TPL
-from figaroh.tools.qrdecomposition import (
-    redistribute_min_norm,
-    propagate_covariance_min_norm,
-)
 from figaroh.utils.config_parser import (
     UnifiedConfigParser,
     create_task_config,
@@ -465,6 +461,7 @@ class BaseCalibration(ABC):
                 add_base_name(self.calib_config)
             if self.calib_config["known_tipframe"] is False:
                 add_pee_name(self.calib_config)
+            self._record_full_mapping()
 
             if hasattr(self, "q_measured") and hasattr(self, "PEE_measured"):
                 self.eliminate_absorbed_parameters()
@@ -473,6 +470,28 @@ class BaseCalibration(ABC):
 
         except Exception as e:
             raise CalibrationError(f"Parameter list creation failed: {e}")
+
+    def _record_full_mapping(self) -> None:
+        """Keep the base mapping before rows are dropped, and its frame rows.
+
+        ``eliminate_absorbed_parameters`` deletes rows of
+        ``base_mapping_matrix``; the lift (:meth:`redistribute_parameters`,
+        figaroh-plus#111) needs every row, with the dropped ones held at 0.
+        At ``full_params`` with an unknown base frame, ``add_base_name``
+        renames the leading base parameters to ``base_*``: those rows carry
+        the base frame, not joint corrections.
+        """
+        cfg = self.calib_config
+        if cfg.get("base_mapping_matrix") is None:
+            return
+        rows = list(cfg["base_mapping_row_names"])
+        cfg["base_mapping_matrix_full"] = np.array(cfg["base_mapping_matrix"])
+        cfg["base_mapping_row_names_full"] = rows
+        start, _ = cfg["base_mapping_slice"]
+        frame_rows = []
+        if cfg["calib_model"] == "full_params" and not cfg["known_baseframe"]:
+            frame_rows = rows[: max(0, len(BASE_TPL) - start)]
+        cfg["base_frame_row_names"] = frame_rows
 
     def _frame_param_names(self) -> List[str]:
         """Base and tip frame parameters present in ``param_name``."""
@@ -1655,43 +1674,28 @@ class BaseCalibration(ABC):
             raise CalibrationError(f"Standard deviation calculation failed: {e}")
 
     def redistribute_parameters(self) -> dict:
-        """Minimum-norm redistribution of fitted base-parameter values (and
-        their covariance) onto the full standard-parameter set.
+        """Joint corrections with standard deviations, for export.
 
-        `create_param_list()`'s QR reduction keeps only a maximal
-        linearly-independent subset of the 6-per-joint candidate
-        parameters (the "base" parameters actually solved for); every
-        other candidate is an exact linear combination of that subset and
-        is implicitly left at its nominal value (0) when only
-        `calib_config["param_name"]` is deployed. This method instead
-        spreads each fitted base-parameter value across its full
-        redundant group via the Moore-Penrose pseudoinverse of the
-        base-mapping matrix `M` (`phi_base = M @ theta_r`), plus the
-        corresponding covariance propagation — see
-        :func:`figaroh.tools.qrdecomposition.redistribute_min_norm` /
-        :func:`~figaroh.tools.qrdecomposition.propagate_covariance_min_norm`.
+        - ``structural`` method: the fitted base parameters are lifted onto
+          every joint parameter by a weighted minimum-norm lift
+          (:func:`figaroh.calibration.estimation.lift_structural`,
+          figaroh-plus#111): among all joint corrections that reproduce the
+          fit, the most plausible under the expected error sizes
+          (``calib_config["estimation"]["priors"]``, defaults in
+          ``estimation.DEFAULT_PRIORS``). Rows the base frame carries and
+          rows the fit dropped are held at 0, so the lifted model predicts
+          what the fit predicts, and the result does not depend on which
+          representative the QR chose. ``std_dev`` is conditional on that
+          choice of lift: it propagates the fitted uncertainty and is 0 in
+          directions the data does not see.
+        - other methods (figaroh-plus#113): the fitted joint parameters
+          directly; candidates left out of the fit are 0.
 
-        This does not change what the model predicts (the redistributed
-        vector round-trips exactly through `M` back to the original fitted
-        base values) — only how the identified correction is distributed
-        across individual joint parameters. It does not add information:
-        non-identifiable directions remain non-identifiable, and the
-        reported `std_dev` for a redistributed parameter reflects the
-        minimum-norm estimator's own sensitivity, not an unconditional
-        physical uncertainty. See `TIAGO_CALIBRATION_ANALYSIS.md` §8 for
-        the full discussion and literature context.
-
-        Only covers parameters that went through the
-        `eliminate_non_dynaffect`/QR reduction (per-joint DH offsets);
-        marker/tip parameters added afterward by `add_pee_name` are
-        already individually free-standing (not part of a redundant
-        group) and are not included here.
+        Tool-point and base-frame parameters are not included.
 
         Returns:
             dict: ``{name: {"value": float, "std_dev": float}}`` for every
-            standard parameter in
-            ``calib_config["base_mapping_param_names"]`` — a strict
-            superset of ``calib_config["param_name"]``.
+            joint parameter of the calibration level.
 
         Raises:
             CalibrationError: If `solve()` hasn't run yet (no `_C_param`/
@@ -1719,29 +1723,37 @@ class BaseCalibration(ABC):
                 }
                 for n in report["candidates"]
             }
-        M = self.calib_config.get("base_mapping_matrix")
-        full_names = self.calib_config.get("base_mapping_param_names")
-        base_slice = self.calib_config.get("base_mapping_slice")
-        if M is None or full_names is None or base_slice is None:
+        if self.calib_config.get("base_mapping_matrix") is None or (
+            self.calib_config.get("base_mapping_param_names") is None
+        ):
             raise CalibrationError(
                 "base mapping matrix not available in calib_config -- "
                 "was create_param_list() run?"
             )
-
-        # base_slice locates the fitted base-parameter values by position
-        # in self.var_ (built one-to-one, in order, from calib_config
-        # ["param_name"] -- see initialize_variables), NOT by name: the
-        # names at these positions may have been overwritten in place by
-        # add_base_name since create_param_list() ran.
-        start, end = base_slice
-        phi_base = np.asarray(var_[start:end])
-        theta_full = redistribute_min_norm(M, phi_base)
-        C_full = propagate_covariance_min_norm(M, C_param[start:end, start:end])
-        std_full = np.sqrt(np.abs(np.diag(C_full)))
-
+        names, theta, cov = estimation.lift_structural(self)
+        std = np.sqrt(np.abs(np.diag(cov)))
         return {
-            name: {"value": float(theta_full[i]), "std_dev": float(std_full[i])}
-            for i, name in enumerate(full_names)
+            name: {"value": float(theta[i]), "std_dev": float(std[i])}
+            for i, name in enumerate(names)
+        }
+
+    def joint_corrections(self, lift: bool = True) -> Dict[str, float]:
+        """Joint parameter values to write into a URDF (``export_urdf``).
+
+        ``lift=True``: :meth:`redistribute_parameters` (the weighted lift
+        for ``structural``; the fitted values otherwise), so the URDF and
+        the PAL export carry the same corrections. ``lift=False``: the
+        fitted joint parameters as estimated (for ``structural``, one
+        representative per dependent group and the rest at 0). Frame
+        parameters are never included.
+        """
+        if lift:
+            return {n: v["value"] for n, v in self.redistribute_parameters().items()}
+        frames = set(self._frame_param_names())
+        return {
+            n: float(v)
+            for n, v in zip(self.calib_config["param_name"], self.var_)
+            if n not in frames
         }
 
     def plot_errors_distribution(self):

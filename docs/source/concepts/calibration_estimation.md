@@ -197,9 +197,15 @@ more precise than it is.
   cross-validation curve and the chosen factor or size.
 - `calibrator.std_dev`: for `map`/`map_cv`, posterior standard deviations;
   a value close to the prior means the data did not inform that parameter.
-- `redistribute_parameters()` and the PAL export: for the non-structural
-  methods, the fitted joint parameters directly (candidates left out of the
-  fit are reported at 0).
+- `redistribute_parameters()` / `joint_corrections()` (used by the PAL
+  export, and for the URDF via `export_urdf(nominal, calibrator.joint_corrections())`):
+  - `structural`: a weighted minimum-norm lift of the fitted base parameters
+    onto every joint parameter, with the expected sizes (`priors`) as
+    weights and base-frame and dropped rows held at 0; refined so the lifted
+    model reproduces the fit at the measured postures (figaroh-plus#111). It
+    does not depend on which representative the QR chose.
+  - other methods: the fitted joint parameters directly (candidates left out
+    of the fit at 0).
 
 ## Limits
 
