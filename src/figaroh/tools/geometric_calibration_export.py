@@ -42,6 +42,8 @@ and its limits.
 import logging
 from typing import Dict, Optional
 
+import numpy as np
+import pinocchio as pin
 import yaml
 
 from figaroh.tools.urdf_exporter import _parse_param_name
@@ -54,6 +56,26 @@ logger.addHandler(logging.NullHandler())
 _AXIS_SUFFIX = ["dx", "dy", "dz", "droll", "dpitch", "dyaw"]
 
 _JOINT_SUFFIX = "_joint"
+
+
+def _origin_delta(placement: pin.SE3, xyz_rpy) -> np.ndarray:
+    """PAL deltas for one joint: change of the origin's xyz and RPY.
+
+    FIGAROH's ``d_*`` placement error acts in the joint frame,
+    ``placement * SE3(exp3(d_phi), d_p)`` (figaroh-plus#110). The PAL keys
+    are taken as additive deltas on the URDF origin ``xyz`` and ``rpy``,
+    the meaning this module gave them before #110, so the corrected
+    placement is converted back to those deltas. Angle differences are
+    wrapped to (-pi, pi].
+    """
+    xyz_rpy = np.asarray(xyz_rpy, dtype=float)
+    corrected = placement * pin.SE3(pin.exp3(xyz_rpy[3:6]), xyz_rpy[0:3])
+    d_xyz = corrected.translation - placement.translation
+    d_rpy = pin.rpy.matrixToRpy(corrected.rotation) - pin.rpy.matrixToRpy(
+        placement.rotation
+    )
+    d_rpy = (d_rpy + np.pi) % (2 * np.pi) - np.pi
+    return np.r_[d_xyz, d_rpy]
 
 
 def _pal_joint_name(target: str) -> str:
@@ -115,7 +137,7 @@ def build_geometric_calibration(
         row_names = calibrator.calib_config.get("base_mapping_row_names", [])
         exclude.update(row_names[:6])
 
-    geometric_calibration: Dict[str, float] = {}
+    corrections: Dict[str, np.ndarray] = {}
     for name, info in redistributed.items():
         if name in exclude:
             continue
@@ -130,8 +152,19 @@ def build_geometric_calibration(
             if sigma < min_sigma:
                 continue
 
-        key = f"{_pal_joint_name(target)}_{_AXIS_SUFFIX[sub_idx]}"
-        geometric_calibration[key] = value
+        corrections.setdefault(target, np.zeros(6))[sub_idx] = value
+
+    model = getattr(calibrator, "model", None)
+    geometric_calibration: Dict[str, float] = {}
+    for target, xyz_rpy in corrections.items():
+        placement = pin.SE3.Identity()
+        if model is not None and model.existJointName(target):
+            placement = model.jointPlacements[model.getJointId(target)]
+        delta = _origin_delta(placement, xyz_rpy)
+        for sub_idx, value in enumerate(delta):
+            if abs(value) > 1e-12:
+                key = f"{_pal_joint_name(target)}_{_AXIS_SUFFIX[sub_idx]}"
+                geometric_calibration[key] = float(value)
 
     return {"robot_state_publisher": {"geometric_calibration": geometric_calibration}}
 

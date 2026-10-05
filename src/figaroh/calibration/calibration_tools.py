@@ -569,16 +569,23 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
 
 
 def update_joint_placement(model, joint_idx, xyz_rpy):
-    """Update joint placement with offset parameters.
+    """Apply a ``full_params`` placement error in the joint frame.
 
-    Modifies a joint's placement transform by adding position and orientation offsets.
+    ``M <- M * SE3(exp3(xyz_rpy[3:6]), xyz_rpy[0:3])``: the translation is
+    expressed in the joint frame and the rotation is a rotation vector. This
+    is the convention of Pinocchio's kinematic regressor
+    (``computeFrameKinematicRegressor(..., LOCAL)``), from which the base
+    parameters and the base-mapping matrix are derived, so the fitted model
+    has exactly the dependencies that selection assumed (figaroh-plus#110).
+    Earlier versions added the translation in the parent frame and the
+    rotation to the placement's RPY angles, which disagrees with the
+    regressor wherever the nominal placement is rotated.
 
     Args:
         model (pin.Model): Robot model to modify
         joint_idx (int): Index of joint to update
-        xyz_rpy (ndarray): (6,) array of offsets:
-            - xyz_rpy[0:3]: Translation offsets (x,y,z)
-            - xyz_rpy[3:6]: Rotation offsets (roll,pitch,yaw)
+        xyz_rpy (ndarray): (6,) ``d_px, d_py, d_pz`` (m) and ``d_phix,
+            d_phiy, d_phiz`` (rad, rotation vector), in the joint frame
 
     Returns:
         pin.Model: Updated robot model
@@ -586,16 +593,9 @@ def update_joint_placement(model, joint_idx, xyz_rpy):
     Side Effects:
         Modifies model.jointPlacements[joint_idx] in place
     """
-    tpl_translation = model.jointPlacements[joint_idx].translation
-    tpl_rotation = model.jointPlacements[joint_idx].rotation
-    tpl_orientation = pin.rpy.matrixToRpy(tpl_rotation)
-    # update axes
-    updt_translation = tpl_translation + xyz_rpy[0:3]
-    updt_orientation = tpl_orientation + xyz_rpy[3:6]
-    updt_rotation = pin.rpy.rpyToMatrix(updt_orientation)
-    # update placements
-    model.jointPlacements[joint_idx].translation = updt_translation
-    model.jointPlacements[joint_idx].rotation = updt_rotation
+    xyz_rpy = np.asarray(xyz_rpy, dtype=float)
+    delta = pin.SE3(pin.exp3(xyz_rpy[3:6]), xyz_rpy[0:3])
+    model.jointPlacements[joint_idx] = model.jointPlacements[joint_idx] * delta
     return model
 
 
@@ -611,10 +611,9 @@ def apply_joint_offset(model, joint_idx, offset):
     axis taken from the joint's ``shortname()``) and of the elastic
     deflections (``ELAS_TPL``).
 
-    :func:`update_joint_placement` instead adds to the placement's parent-frame
-    translation and RPY angles, which is the ``full_params`` (``d_p*``,
-    ``d_phi*``) placement-error parameterisation. The two coincide only when
-    the joint axis is the parent's corresponding axis.
+    :func:`update_joint_placement` composes on the same side for the
+    ``full_params`` (``d_p*``, ``d_phi*``) placement errors, with all three
+    rotation components as one rotation vector.
 
     Args:
         model (pin.Model): Robot model to modify
@@ -1053,9 +1052,8 @@ def select_identifiable_parameters(jacobian, names, always_keep=(), tol=1e-4):
         tol (float): Threshold on the orthogonal residual of a unit column.
             Exact dependencies give ~1e-10 (finite-difference noise); the
             default 1e-4 also drops near-dependencies whose column alone
-            would have a condition number above 1e4, such as the RPY
-            singularity of ``full_params`` at joint placements with pitch
-            +-pi/2.
+            would have a condition number above 1e4 (a direction the data
+            barely excites).
 
     Returns:
         tuple: (kept names in original order, absorbed names in original order)

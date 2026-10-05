@@ -20,8 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     (`eliminate_absorbed_parameters`, tolerance 1e-4 on unit-normalised
     columns). The names are kept in `calib_config["absorbed_param_name"]`.
     TIAGo mocap: `joint_offset` drops the torso and arm_1 (rank 14/14 instead
-    of 14/16); `full_params` drops 4–9 parameters (full rank instead of
-    26–29/32), including the RPY near-singularity at pitch ±π/2.
+    of 14/16); `full_params` drops the tool-absorbed `d_pz_arm_7_joint`
+    (with #110; before it, 4–9 parameters including an RPY
+    near-singularity).
   - **Closed-form start:** `solve_optimisation` starts unknown base/tip frames
     at `estimate_frames_closed_form` (Kabsch / chordal mean alternated with
     linear least squares) instead of zero.
@@ -31,6 +32,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Behaviour change:** the calibrated parameter set is smaller when frames
     are estimated. Set `calib_config["eliminate_absorbed_parameters"] = False`
     for the previous set.
+- `full_params` placement errors `d_{px,py,pz,phix,phiy,phiz}_<joint>` now
+  act in the joint frame, `placement · SE3(exp3(d_phi), d_p)`, the convention
+  of the kinematic regressor that selects the base parameters (#110).
+  - **Cause:** `update_joint_placement` added `d_p*` to the parent-frame
+    translation and `d_phi*` to the placement's RPY angles. Wherever the
+    nominal placement is rotated, the fitted model then had different
+    dependencies from the ones selection assumed: FK derivatives differed
+    from the regressor columns by O(1) on TIAGo arm_1–arm_7 and UR10
+    shoulder_pan, shoulder_lift, wrist_2 and wrist_3.
+  - **Effect:** TIAGo mocap `full_params` (figaroh-examples held-out
+    protocol, macOS): 31 instead of 28 parameters, norm RMSE 1.64 / 3.07 /
+    2.83 / 2.44 mm (training / validation / two confirmation sets) instead
+    of 1.75 / 3.68 / 3.35 / 2.89 mm.
+  - **Export:** `export_urdf` applies a joint's six `d_*` values together as
+    `origin · SE3(exp3(d_phi), d_p)`; `build_geometric_calibration` converts
+    them to PAL origin xyz/RPY deltas against the nominal placement.
+  - **Behaviour change:** `full_params` values from earlier versions use the
+    old convention and are not comparable on rotated placements (UR10, Talos,
+    TIAGo). `joint_offset` is unaffected.
 
 ### Fixed
 

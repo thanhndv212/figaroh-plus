@@ -378,3 +378,43 @@ def test_rpy_matrix_round_trip(rpy):
 
     rot = _rpy_to_matrix(rpy)
     assert _rpy_to_matrix(_matrix_to_rpy(rot)) == pytest.approx(rot, abs=1e-12)
+
+
+def test_full_params_placement_reloads_as_calibrated_model(tmp_path):
+    """Exported d_* corrections reload to the calibrated FK (#110).
+
+    The fit applies a joint's six values together in the joint frame
+    (``update_joint_placement``); the exporter must write the same origin,
+    including at TIAGo's rotated placements (arm_4, arm_5 at pitch -pi/2).
+    """
+    import pinocchio as pin
+
+    from figaroh.calibration.calibration_tools import update_joint_placement
+
+    corrections = {
+        "arm_2_joint": [0.002, -0.001, 0.003, 0.01, -0.02, 0.015],
+        "arm_4_joint": [-0.001, 0.002, 0.0, 0.03, 0.01, -0.02],
+        "arm_5_joint": [0.0, 0.0, 0.002, -0.015, 0.0, 0.04],
+    }
+    names = ["d_px", "d_py", "d_pz", "d_phix", "d_phiy", "d_phiz"]
+    params = {
+        f"{n}_{joint}": v
+        for joint, values in corrections.items()
+        for n, v in zip(names, values)
+    }
+    out = tmp_path / "tiago_full_params.urdf"
+    export_urdf(str(TIAGO_URDF), params, output_path=str(out))
+
+    calibrated = pin.buildModelFromUrdf(str(TIAGO_URDF))
+    for joint, values in corrections.items():
+        update_joint_placement(calibrated, calibrated.getJointId(joint), values)
+    exported = pin.buildModelFromUrdf(str(out))
+    cd, ed = calibrated.createData(), exported.createData()
+    fid = calibrated.getFrameId("arm_tool_link")
+    for _ in range(10):
+        q = pin.randomConfiguration(calibrated)
+        pin.framesForwardKinematics(calibrated, cd, q)
+        pin.framesForwardKinematics(exported, ed, q)
+        diff = pin.log6(cd.oMf[fid].inverse() * ed.oMf[fid]).vector
+        # exporter writes 6 significant digits
+        assert np.abs(diff).max() < 1e-5
