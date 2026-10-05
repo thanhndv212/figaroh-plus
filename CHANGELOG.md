@@ -54,6 +54,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- URDF export wrote corrections into `<transmission>` joints instead of the
+  robot joint when a transmission came first in the file (#114).
+  - **Cause:** `_find_joint` searched every `<joint>` in the document;
+    ros_control `<transmission>` blocks contain `<joint name=...>` too. It now
+    searches only the `<robot>` element's direct children (same for links).
+  - **Effect:** figaroh-examples UR10 exports were identical to the nominal
+    URDF (its transmissions precede the joints); TIAGo and Talos were not
+    affected.
+
 - Calibration parameter standard errors (`std_dev`, `std_pctg`, the
   covariance behind `redistribute_parameters`) were ~100× too small (#107).
   - **Cause:** `calc_stddev` estimated the residual variance as
