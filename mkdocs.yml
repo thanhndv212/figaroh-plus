@@ -72,6 +72,7 @@ nav:
       - Tutorials:
           - Overview: tutorials/index.md
           - Calibration Walkthrough: tutorials/calibration_walkthrough.md
+          - "Calibration: Choosing What to Estimate": tutorials/calibration_estimation_guide.md
           - Identification Walkthrough: tutorials/identification_walkthrough.md
           - Optimal Experiment Design: tutorials/optimal_design.md
   - Concepts:

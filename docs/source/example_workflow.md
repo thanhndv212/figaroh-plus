@@ -49,6 +49,10 @@ corrections. A position-only marker supports position residuals; plane contact
 constrains the observed contact component. Neither supplies full 6D pose truth.
 Use measured joint configurations where available and document substitutes.
 
+For calibration, which identifiable corrections to estimate, and whether with
+priors, is a separate choice from the calibration level: see
+[Calibration: choosing what to estimate](tutorials/calibration_estimation_guide.md).
+
 Start with the smallest model that explains the measured phenomenon. Add a
 parameter block only with a physical reason, observability evidence and a
 validation test. Record payload, temperature/contact regime and other operating
@@ -67,7 +71,7 @@ fixed quantities, gauge and unsupported effects.
 | Per-link physical projection | Can an estimated link vector be made physically consistent? | Recompute effort/base fit afterward; projection may alter prediction |
 | Direct physical constrained fit | Which physical model minimizes the declared effort objective? | Separate experiment from exact reconstruction; confirm the selected implementation is supported |
 | Log-Cholesky fit | Can positive pseudo-inertia coordinates produce an adequate physical fit? | Feasibility and optimizer convergence are separate; currently a research path pending convergence review |
-| Geometric least-squares calibration | Which identifiable corrections reduce the measured pose/contact residual? | Declare residual components, scaling, gauge, priors and redistribution semantics |
+| Geometric least-squares calibration | Which identifiable corrections reduce the measured pose/contact residual? | Declare residual components, scaling, gauge, priors and redistribution semantics; choose the [estimation method](concepts/calibration_estimation.md) (`structural`, `excitation`, `map`, `map_cv`, `cv_subset`) and record it |
 
 This table is a selection guide, not a promise that every method is exposed by
 every robot entry point. Check the [identification](api/identification.md),
@@ -173,7 +177,7 @@ separate stages. Read the result in this order:
 | Input correctness | Rates, signs, frames, synchronized channels and coverage | Whether the fitted problem matches the observations |
 | Numerical termination | Success flag, residual/objective, budget, bounds and fallback | Whether the intended solve completed |
 | Training fit | Per-joint/component RMSE, bias, residual traces and nominal comparison | What the model explains in the fitted data |
-| Parameter interpretation | Rank, observable combinations, physical checks, gauge and prior sensitivity | Which parameter claims are justified |
+| Parameter interpretation | Rank, observable combinations, physical checks, gauge and prior sensitivity (calibration: `estimation_report`, posterior vs prior; see the [guide](tutorials/calibration_estimation_guide.md#5-read-the-diagnostics)) | Which parameter claims are justified |
 | Held-out prediction | Same metrics on unused data, coverage and leakage checks | Whether the improvement transfers |
 | Export parity | Reloaded-model effort or FK vs selected fitted stage | Whether the delivered model represents the fitted result |
 

@@ -11,6 +11,7 @@ read the walkthrough for the workflow you need.
 | Tutorial | Workflow | Answers |
 |---|---|---|
 | [Calibration Walkthrough](calibration_walkthrough.md) | Kinematic calibration | Why do robots need calibrating, and how does FIGAROH solve for the correction? |
+| [Choosing What to Estimate](calibration_estimation_guide.md) | Kinematic calibration | Which corrections should I estimate, and how, for my robot and postures? |
 | [Identification Walkthrough](identification_walkthrough.md) | Dynamic parameter identification | How does FIGAROH turn a torque/motion log into a validated dynamic model? |
 | [Optimal Experiment Design](optimal_design.md) | Optimal configurations & trajectories | How does FIGAROH decide *which* poses/motions to measure, instead of guessing? |
 
