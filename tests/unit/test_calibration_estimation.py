@@ -237,3 +237,57 @@ def test_structural_default_unchanged(tiago_model):
     assert "estimation_report" not in cfg
     assert cfg.get("prior_weights") is None
     assert "base_mapping_matrix" in cfg
+
+
+# ── determinism of the selection (#113) ─────────────────────────
+
+
+def _selected(model, perturb=0.0, order=None):
+    calib = _calibrator(model, "full_params", {"method": "excitation"})
+    if order is not None:
+        n = calib.calib_config["NbSample"]
+        pee = calib.PEE_measured.reshape(-1, n)
+        calib.q_measured = calib.q_measured[order]
+        calib.PEE_measured = pee[:, order].ravel()
+    if perturb:
+        rng = np.random.default_rng(7)
+        calib.PEE_measured = calib.PEE_measured + perturb * rng.standard_normal(
+            calib.PEE_measured.shape
+        )
+    calib.create_param_list()
+    report = calib.calib_config["estimation_report"]
+    return list(calib.calib_config["param_name"]), [
+        n for n, _ in report["removal_order"]
+    ]
+
+
+def test_excitation_selection_is_stable_to_noise_and_sample_order(tiago_model):
+    """The selected set must not hinge on floating-point details, unlike the
+    structural QR's tie-breaks (figaroh-plus#113)."""
+    ref = _selected(tiago_model)
+    assert _selected(tiago_model, perturb=1e-12) == ref
+    order = np.random.default_rng(3).permutation(40)
+    assert _selected(tiago_model, order=order) == ref
+
+
+def test_excitation_order_ignores_column_order(tiago_model):
+    """Permuting the candidate columns gives the same removals and kept set."""
+    calib = _calibrator(tiago_model, "joint_offset", {"method": "excitation"})
+    calib.create_param_list()
+    names = list(calib.calib_config["param_name"])
+    frames = calib._frame_param_names()
+    x0 = np.zeros(len(names))
+    from figaroh.calibration.calibration_tools import measurement_jacobian
+
+    J = measurement_jacobian(
+        tiago_model, calib.data, x0, calib.q_measured, calib.calib_config
+    )
+    prior = estimation.prior_std(names, tiago_model, estimation.DEFAULT_PRIORS)
+    kept, removed, _ = estimation.excitation_order(J, names, frames, prior, 1e-3, k=0.5)
+    perm = np.random.default_rng(1).permutation(len(names))
+    names_p = [names[i] for i in perm]
+    kept_p, removed_p, _ = estimation.excitation_order(
+        J[:, perm], names_p, frames, prior[perm], 1e-3, k=0.5
+    )
+    assert removed_p == removed
+    assert set(kept_p) == set(kept)
