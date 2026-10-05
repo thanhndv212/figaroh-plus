@@ -418,3 +418,41 @@ def test_full_params_placement_reloads_as_calibrated_model(tmp_path):
         diff = pin.log6(cd.oMf[fid].inverse() * ed.oMf[fid]).vector
         # exporter writes 6 significant digits
         assert np.abs(diff).max() < 1e-5
+
+
+def test_transmission_joint_is_not_mistaken_for_the_robot_joint(tmp_path):
+    """A <transmission> listed first must not receive the correction (#114)."""
+    import xml.etree.ElementTree as ET
+
+    urdf = tmp_path / "with_transmission.urdf"
+    urdf.write_text(
+        """<?xml version="1.0"?>
+<robot name="arm">
+  <transmission name="t1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint1">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="m1"><mechanicalReduction>1</mechanicalReduction></actuator>
+  </transmission>
+  <link name="base"/>
+  <link name="link1"/>
+  <joint name="joint1" type="revolute">
+    <parent link="base"/>
+    <child link="link1"/>
+    <origin xyz="0.1 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1" upper="1" effort="1" velocity="1"/>
+  </joint>
+</robot>
+"""
+    )
+    out = export_urdf(
+        str(urdf), {"d_px_joint1": 0.01}, output_path=str(tmp_path / "out.urdf")
+    )
+    root = ET.parse(out).getroot()
+    robot_joint = root.find("joint[@name='joint1']")
+    assert float(robot_joint.find("origin").get("xyz").split()[0]) == pytest.approx(
+        0.11
+    )
+    assert root.find("transmission/joint/origin") is None

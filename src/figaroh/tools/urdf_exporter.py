@@ -279,16 +279,21 @@ def _parse_frame_param_name(name: str) -> Optional[tuple]:
 
 
 def _find_joint(doc: ET.ElementTree, name: str) -> Optional[ET.Element]:
-    """Find a <joint> element by name attribute."""
-    for joint in doc.findall(".//joint"):
+    """Find the robot's <joint> by name.
+
+    Only direct children of <robot>: <transmission> blocks also contain
+    <joint name=...> elements, and writing there leaves the model unchanged
+    (figaroh-plus#114).
+    """
+    for joint in doc.findall("joint"):
         if joint.get("name") == name:
             return joint
     return None
 
 
 def _find_link(doc: ET.ElementTree, name: str) -> Optional[ET.Element]:
-    """Find a <link> element by name attribute."""
-    for link in doc.findall(".//link"):
+    """Find the robot's <link> by name (direct children of <robot>)."""
+    for link in doc.findall("link"):
         if link.get("name") == name:
             return link
     return None
