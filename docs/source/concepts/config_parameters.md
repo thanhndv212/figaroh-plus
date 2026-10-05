@@ -19,7 +19,8 @@ the layout differs.
 
 | Field | Meaning | Unified path |
 |---|---|---|
-| `calib_level` | Kinematic-error model: `joint_offset` (one rotational offset per joint) or `full_params` (full 6-DOF xyz+rpy DH-style placement error per joint) | `parameters.calibration_level` |
+| `calib_level` | Kinematic-error model: `joint_offset` (one offset per joint, about or along its own axis) or `full_params` (six placement errors per joint, translation and rotation vector in the joint frame) | `parameters.calibration_level` |
+| `estimation` | Which parameters to estimate and how: `method` (`structural` default, `excitation`, `map`, `map_cv`, `cv_subset`), `priors`, `noise_std`, cross-validation settings. See [Calibration estimation methods](calibration_estimation.md) | `parameters.estimation` |
 | `non_geom` | Also identify joint elasticity (gravity-torque-driven compliance, one term per active joint) on top of the geometric model | `parameters.include_non_geometric` |
 | `base_frame` | URDF frame name at the **start** of the kinematic chain | `kinematics.base_frame` |
 | `tool_frame` | URDF frame name at the **end** of the chain (usually the gripper/tool mount) | `kinematics.tool_frame` |
