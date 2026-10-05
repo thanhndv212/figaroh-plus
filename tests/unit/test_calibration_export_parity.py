@@ -235,3 +235,31 @@ def test_metrology_frames_requires_a_fit():
     calib = _Calib.__new__(_Calib)
     with pytest.raises(CalibrationError):
         calib.metrology_frames()
+
+
+def test_pal_yaml_reproduces_calibrated_fk(
+    fit, postures, tiago_model, tiago_urdf_path, tmp_path
+):
+    """The PAL geometric_calibration, applied to the nominal URDF as origin
+    deltas, is the same model as the URDF export (#123): it was empty at
+    ``joint_offset``, and TIAGo's arm_4/arm_5 origins sit at pitch -pi/2,
+    where the rpy as written must be the reference."""
+    from figaroh.tools.geometric_calibration_export import (
+        build_geometric_calibration,
+    )
+    from test_geometric_calibration_export import apply_pal_yaml
+
+    _, calib = fit
+    cfg = calib.calib_config
+    gc = build_geometric_calibration(calib, nominal_urdf=str(tiago_urdf_path))[
+        "robot_state_publisher"
+    ]["geometric_calibration"]
+    assert gc
+    reloaded = pin.buildModelFromUrdf(
+        str(apply_pal_yaml(tiago_urdf_path, gc, tmp_path / "pal.urdf"))
+    )
+    frames = calib.metrology_frames()
+    for q in postures.values():
+        calibrated = _fk(tiago_model, calib.var_, cfg["param_name"], cfg, q)
+        got = _fk(reloaded, list(frames.values()), list(frames), cfg, q)
+        assert np.abs(got - calibrated).max() < PARITY_M

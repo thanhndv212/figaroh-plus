@@ -34,6 +34,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- PAL `geometric_calibration` export (`build_geometric_calibration`,
+  `export_geometric_calibration_yaml`) fixed and given `nominal_urdf`
+  (#123).
+  - **Joint offsets exported:** `joint_offset`-level corrections
+    (`offsetRZ_*` etc.) were dropped, so the TIAGo reference wrote an empty
+    `geometric_calibration`.
+  - **Deltas against the URDF origin:** they were taken against Pinocchio's
+    joint placement, which merges preceding fixed joints (wrong frame behind
+    a rotated fixed joint, e.g. UR10 `shoulder_pan_joint`).
+  - **Exact rpy:** the rpy delta is solved so that the origin's rpy as
+    written plus the delta is the corrected rotation, including at pitch
+    +-pi/2 (TIAGo arm_4..arm_6). Pass `nominal_urdf`; without it the origin
+    is recovered from the model. Where the joint axis is the axis roll and
+    yaw share at pitch +-pi/2, no small rpy delta exists and the exact one
+    trades roll against yaw (e.g. `droll` -pi/2, `dyaw` +pi/2): the same
+    small rotation.
+  - **Behaviour change:** PAL files gain the joint-offset keys; values
+    behind rotated fixed joints change.
+
 - `export_urdf` refuses what it cannot write instead of skipping it (#62).
   A correction for a joint or link missing from the URDF, inertia tensors,
   first moments, legacy `off_*`, and a joint with both `offset*` and `d_*`
