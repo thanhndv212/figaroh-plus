@@ -379,16 +379,15 @@ def _redistributed_section(redistributed: Optional[Dict[str, Dict[str, float]]])
         for v, sd in zip(values, std_dev)
     ]
     intro = (
-        '<p class="muted">Minimum-norm redistribution of the fitted base '
-        "parameters onto the full standard-parameter set (see "
-        "TIAGO_CALIBRATION_ANALYSIS.md §8) — includes parameters silently "
-        "left at their nominal value (0) in the base-only fit above, "
-        "because they were structurally redundant with another parameter "
-        "rather than independently identifiable. Does not change what the "
-        "model predicts; only the standard-error column here reflects the "
-        "minimum-norm estimator's own sensitivity to noise, not an "
-        "unconditional physical uncertainty for that individual "
-        "parameter.</p>"
+        '<p class="muted">Joint corrections for export '
+        "(BaseCalibration.redistribute_parameters). For the structural "
+        "method, the fitted base parameters are lifted onto every joint "
+        "parameter by a weighted minimum-norm lift with the expected error "
+        "sizes, holding base-frame and dropped rows at 0: parameters that "
+        "were represented by another one in the fit get their share. It "
+        "does not change what the model predicts. The standard deviations "
+        "are conditional on that lift, not unconditional physical "
+        "uncertainties of individual parameters.</p>"
     )
     return intro + _param_uncertainty_section(names, std_dev, std_pctg, values)
 
