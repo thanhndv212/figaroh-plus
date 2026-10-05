@@ -13,6 +13,13 @@ does:
 2. **How to estimate them.** Freely, or with prior knowledge of how large
    they are expected to be.
 
+This page is the reference for the available methods. For the step-by-step
+workflow (baseline, choosing, reading the diagnostics, checking on held-out
+data) see the guide
+[Calibration: choosing what to estimate](../tutorials/calibration_estimation_guide.md);
+for the rationale, the design record
+[Selectable calibration estimation methods](https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/decisions/calibration-estimation-methods.md).
+
 FIGAROH offers several methods. None is right for every robot and dataset;
 this page lists what each one does, what it needs from you, and when it
 tends to work. The choice is yours, in the configuration.

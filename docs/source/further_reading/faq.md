@@ -56,6 +56,23 @@ Check your initial parameter guesses and joint limits in the config first —
 most non-convergence traces back to a bad initial guess or an
 over-constrained problem, not the solver itself.
 
+### My calibration fits the training postures well but predicts new postures badly
+
+Usually too many parameters for what the postures excite: estimating weakly
+excited corrections freely fits noise. Check the number of measurements per
+estimated parameter, then try an estimation method that accounts for
+excitation (`excitation`, `map`, `map_cv`, `cv_subset`) and compare them on
+held-out postures. See
+[Choosing what to estimate](../tutorials/calibration_estimation_guide.md).
+
+### The calibrated parameter set differs between my laptop and CI
+
+With the default `structural` method, ties in the structural QR are broken by
+floating-point details, so the selected parameters can differ between
+platforms (figaroh-plus#113). The non-structural methods select on the
+measured postures in a fixed order; `map` and `map_cv` select nothing. See
+[Calibration estimation methods](../concepts/calibration_estimation.md).
+
 ### Identification results have high uncertainty or fail `verify()`
 
 This is almost always a data-quality problem, not an algorithm problem:

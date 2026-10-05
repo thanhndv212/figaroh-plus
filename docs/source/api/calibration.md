@@ -17,6 +17,15 @@ including the [reporting & verification suite](../reporting_and_verification.md)
     options:
       show_root_heading: false
 
+## estimation
+
+Parameter selection and estimation methods; see
+[Calibration estimation methods](../concepts/calibration_estimation.md).
+
+::: figaroh.calibration.estimation
+    options:
+      show_root_heading: false
+
 ## config
 
 ::: figaroh.calibration.config
