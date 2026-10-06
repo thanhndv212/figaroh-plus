@@ -57,6 +57,8 @@ class PoseObservations:
     constraint: Optional[str] = None
     mask: Optional[np.ndarray] = None
     session: Optional[np.ndarray] = None  # (n,) session ids
+    # source row of each posture in the files (#131); default 0..n-1
+    sample_index: Optional[np.ndarray] = None
     source: DataSource = field(default_factory=DataSource)
 
     def __post_init__(self):
@@ -94,6 +96,16 @@ class PoseObservations:
         if mask.shape != (n,) or mask.dtype != bool:
             raise ValueError(f"mask must be a bool array of shape {(n,)}")
         set_(self, "mask", mask)
+        index = (
+            np.arange(n) if self.sample_index is None else np.asarray(self.sample_index)
+        )
+        if (
+            index.shape != (n,)
+            or not np.issubdtype(index.dtype, np.integer)
+            or len(np.unique(index)) != n
+        ):
+            raise ValueError(f"sample_index must be {n} unique integers")
+        set_(self, "sample_index", index)
         if self.session is None:
             sid = self.source.session.id if self.source.session else ""
             session = np.full(n, sid, dtype=object)
@@ -109,6 +121,25 @@ class PoseObservations:
 
     def with_mask(self, mask: np.ndarray) -> "PoseObservations":
         return replace(self, mask=np.asarray(mask, dtype=bool))
+
+    def select_points(self, names: Sequence[str]) -> "PoseObservations":
+        """The same postures with only the named points (#131).
+
+        E.g. a file with four tracked points, of which a calibration fits
+        one: the adapter keeps all four and the calibration selects.
+        """
+        if self.values is None:
+            raise ValueError("constraint-only observations have no points")
+        missing = [p for p in names if p not in self.point_names]
+        if missing:
+            raise KeyError(f"points {missing} not in {list(self.point_names)}")
+        idx = [self.point_names.index(p) for p in names]
+        return replace(
+            self,
+            values=self.values[:, idx],
+            point_names=tuple(names),
+            measurability=self.measurability[idx],
+        )
 
     # ── legacy CSV / (PEE_measured, q_measured) ──
 
@@ -171,6 +202,7 @@ class PoseObservations:
             orientation=orientation,
             mask=mask,
             session=session,
+            sample_index=df.index.to_numpy(),
             source=source,
         )
 

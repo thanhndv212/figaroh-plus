@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `DataSource` and `Session` (files with sha256, adapter, recording
     identity) and `Protocol` (versioned roles per session, checked against
     the files' sha256).
+- Data contract: `TrajectoryData.sample_index` / `PoseObservations.sample_index`
+  record each sample's source row (default `0..n-1`; `from_csv` sets CSV
+  rows, so masked postures are named by row), and
+  `PoseObservations.select_points(names)` restricts observations to some
+  tracked points, e.g. one of TIAGo's four mocap points (#131).
 - The base classes use the data contract (#55, part 2).
   - `BaseIdentification`: `load_trajectory_data()` may return a
     `TrajectoryData`. Its effort is checked against the model (drive-side
