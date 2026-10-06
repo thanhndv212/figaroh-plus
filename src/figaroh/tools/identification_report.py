@@ -133,7 +133,21 @@ def _build_insights(
                     "generalization to new trajectories.",
                 }
             )
-        corr = validation.get("correlation", 1.0)
+        unpredictable = validation.get("unpredictable_joints", [])
+        if unpredictable:
+            insights.append(
+                {
+                    "level": "warn",
+                    "text": "Held-out effort of "
+                    + ", ".join(unpredictable)
+                    + " is predicted no better than by a constant (RMSE ≥ "
+                    "std of the measured effort): do not trust the "
+                    "parameters these joints drive.",
+                }
+            )
+        corr = validation.get(
+            "correlation_normalised", validation.get("correlation", 1.0)
+        )
         if corr < LOW_CORRELATION_WARN:
             insights.append(
                 {
@@ -290,7 +304,36 @@ def _validation_section(validation: Optional[Dict[str, Any]]) -> str:
     )
 
     n_val = validation.get("n_val_samples", 0)
-    val_corr = validation.get("correlation", float("nan"))
+    val_corr = validation.get(
+        "correlation_normalised", validation.get("correlation", float("nan"))
+    )
+    joint_rows = ""
+    for name, m in validation.get("per_joint", {}).items():
+        css = "" if m["predictive"] else ' class="flag"'
+        verdict = (
+            "yes"
+            if m["predictive"]
+            else "<strong>no</strong> — not better than a constant"
+        )
+        joint_rows += (
+            f"<tr{css}><td>{_esc(name)}</td><td>{_esc(m['unit'])}</td>"
+            f'<td class="num">{m["rmse_identified"]:.4g}</td>'
+            f'<td class="num">{m["rmse_nominal"]:.4g}</td>'
+            f'<td class="num">{m["std_measured"]:.4g}</td>'
+            f'<td class="num">{m["r2"]:.3f}</td>'
+            f"<td>{verdict}</td></tr>"
+        )
+    per_joint_table = (
+        '<p class="muted">Per joint, in its own unit. A joint is predictive '
+        "when its RMSE is below the std of its measured effort.</p>"
+        '<table class="data"><thead><tr><th>Joint</th><th>Unit</th>'
+        "<th>RMSE identified</th><th>RMSE nominal</th><th>Std measured</th>"
+        "<th>R²</th><th>Predictive</th></tr></thead><tbody>"
+        + joint_rows
+        + "</tbody></table>"
+        if joint_rows
+        else ""
+    )
     set_label = (
         "identification set (fallback)"
         if validation.get("validation_source") == "identification_data_fallback"
@@ -299,7 +342,8 @@ def _validation_section(validation: Optional[Dict[str, Any]]) -> str:
     return f"""
     {warning_html}
     <p class="muted">{set_label}, n={n_val}
-      &middot; correlation {val_corr:.4f}</p>
+      &middot; correlation (per-joint normalised) {val_corr:.4f}
+      &middot; pooled values mix joints and units</p>
     <table class="data">
       <thead>
         <tr><th>Metric</th><th>Nominal</th><th>Identified</th>
@@ -307,6 +351,7 @@ def _validation_section(validation: Optional[Dict[str, Any]]) -> str:
       </thead>
       <tbody>{rows}</tbody>
     </table>
+    {per_joint_table}
     """
 
 
