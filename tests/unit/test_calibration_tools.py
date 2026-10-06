@@ -418,8 +418,9 @@ class TestFullParamsConvention:
         assert model.jointPlacements[jid].isApprox(expected, 1e-12)
 
 
-class TestMultiMarkerGuard:
-    def test_raises_instead_of_silently_falling_back(self, temp_urdf):
+class TestMultiMarker:
+    def test_markers_without_offsets_repeat_the_tool_frame(self, temp_urdf):
+        """Several markers (#119): rows are marker-major, one block each."""
         model = pin.buildModelFromUrdf(temp_urdf)
         data = model.createData()
         j1 = model.getJointId("joint1")
@@ -433,10 +434,13 @@ class TestMultiMarkerGuard:
             param_name=["d_px_joint1"],
             NbMarkers=2,
         )
-        q = np.zeros((1, model.nq))
+        q = np.zeros((3, model.nq))
+        q[:, 0] = [0.0, 0.5, 1.0]
+        calib_config["NbSample"] = 3
 
-        with pytest.raises(NotImplementedError):
-            calc_updated_fkm(model, data, np.zeros(1), q, calib_config)
+        pee = calc_updated_fkm(model, data, np.zeros(1), q, calib_config)
+        assert pee.shape == (2 * 3,)
+        np.testing.assert_allclose(pee[:3], pee[3:])
 
 
 def _two_joint_full_params_config(model, **overrides):

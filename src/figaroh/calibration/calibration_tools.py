@@ -314,7 +314,11 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
           deflection about that joint's own motion axis, then reverts it,
           on every sample.
         - ``eeMf``: end frame to the measured marker frame (``EE_TPL``
-          params), or identity if not estimated.
+          params), or identity if not estimated. With several markers
+          (``NbMarkers`` > 1, e.g. the points of one rigid body), each
+          marker ``k`` has its own ``eeMf_k`` (``pEEx_k`` ... ``phiEEz_k``)
+          on the same tool frame, and its rows follow marker ``k - 1``'s
+          (figaroh-plus#119).
 
     Args:
         model (pin.Model): Robot model to update
@@ -329,16 +333,14 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
             - non_geom: Whether to apply joint elasticity
             - actJoint_idx: Active joint indices
             - measurability: Active DOFs
-            - NbMarkers: Must be 1 (multi-marker is not supported)
+            - NbMarkers: Number of markers on the tool frame
         verbose (int, optional): Print update info. Defaults to 0.
         backend (DynamicsBackend, optional): If provided, routes forward
             kinematics and gravity calls through the backend abstraction.
 
     Returns:
-        ndarray: Flattened marker measurements in world frame
-
-    Raises:
-        NotImplementedError: If calib_config["NbMarkers"] > 1.
+        ndarray: Flattened marker measurements in world frame, ordered
+        marker, then measured component, then sample (as ``load_data``)
 
     Notes:
         - Requires base or end-effector parameters in param_name to
@@ -401,34 +403,21 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
     else:
         wMo = pin.SE3.Identity()
 
-    # 2/ calculate transformation from the end frame to the end-effector frame,
-    # if not known: eeMf
-    if ee_param_incl and calib_config["NbMarkers"] == 1:
-        for marker_idx in range(1, calib_config["NbMarkers"] + 1):
+    # 2/ calculate transformation from the end frame to each marker frame,
+    # if not known: eeMf (one per marker, identity when not estimated)
+    n_markers = calib_config["NbMarkers"]
+    eeMf = [pin.SE3.Identity()] * n_markers
+    if ee_param_incl:
+        for marker_idx in range(1, n_markers + 1):
             pee = np.zeros(6)
-            ee_name = "EE"
-            for key in param_dict.keys():
-                if ee_name in key and str(marker_idx) in key:
-                    # update xyz_rpy with kinematic errors
-                    for axis_pee_id, axis_pee in enumerate(EE_TPL):
-                        if axis_pee in key:
-                            if verbose == 1:
-                                logger.debug(
-                                    "Updating [{}_{}] joint placement at axis {} with [{}]".format(
-                                        ee_name, str(marker_idx), axis_pee, key
-                                    )
-                                )
-                            pee[axis_pee_id] += param_dict[key]
-                            updated_params.append(key)
-
-            eeMf = cartesian_to_SE3(pee)
-    else:
-        if calib_config["NbMarkers"] > 1:
-            raise NotImplementedError(
-                "calc_updated_fkm only supports NbMarkers == 1, got "
-                "NbMarkers={}.".format(calib_config["NbMarkers"])
-            )
-        eeMf = pin.SE3.Identity()
+            for axis_pee_id, axis_pee in enumerate(EE_TPL):
+                key = "{}_{}".format(axis_pee, marker_idx)
+                if key in param_dict:
+                    if verbose == 1:
+                        logger.debug("Updating marker frame with [{}]".format(key))
+                    pee[axis_pee_id] += param_dict[key]
+                    updated_params.append(key)
+            eeMf[marker_idx - 1] = cartesian_to_SE3(pee)
 
     # 3/ calculate transformation from start frame to end frame of kinematic chain using updated model: oMee
 
@@ -494,8 +483,9 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
         updated_params, list(param_dict.keys())
     )
 
-    # pose vector of the end-effector
-    PEE = np.zeros((calib_config["calibration_index"], calib_config["NbSample"]))
+    # pose vector of the markers: rows are marker-major, then component
+    n_dofs = calib_config["calibration_index"]
+    PEE = np.zeros((n_markers * n_dofs, calib_config["NbSample"]))
 
     q_ = np.copy(q)
     for i in range(calib_config["NbSample"]):
@@ -535,19 +525,19 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
         else:
             oMee = get_rel_transform(model, data, start_f, end_f)
 
-        # calculate transformation from world frame to end-effector frame
+        # calculate transformation from world frame to each marker frame
         wMee = wMo * oMee
-        wMf = wMee * eeMf
-
-        # final transform
-        trans = wMf.translation.tolist()
-        orient = pin.rpy.matrixToRpy(wMf.rotation).tolist()
-        loc = trans + orient
-        measure = []
-        for mea_id, mea in enumerate(calib_config["measurability"]):
-            if mea:
-                measure.append(loc[mea_id])
-        PEE[:, i] = np.array(measure)
+        for k, eeMf_k in enumerate(eeMf):
+            wMf = wMee * eeMf_k
+            trans = wMf.translation.tolist()
+            orient = pin.rpy.matrixToRpy(wMf.rotation).tolist()
+            loc = trans + orient
+            measure = [
+                loc[mea_id]
+                for mea_id, mea in enumerate(calib_config["measurability"])
+                if mea
+            ]
+            PEE[k * n_dofs : (k + 1) * n_dofs, i] = np.array(measure)
 
     # final result of updated fkm
     PEE = PEE.flatten("C")
@@ -801,19 +791,27 @@ def calculate_base_kinematics_regressor(
     geo_params = get_fullparam_offset(joint_names)
     joint_offsets = get_joint_offset(model, joint_names)
 
+    # Several markers of one body (figaroh-plus#119) observe the tool
+    # frame's orientation, even when each marker's position alone is
+    # measured: the structural regressor then uses every component.
+    # Dependencies the actual points leave are removed at the data level.
+    reg_config = calib_config
+    if calib_config.get("NbMarkers", 1) > 1:
+        reg_config = dict(calib_config, measurability=[True] * 6, calibration_index=6)
+
     # calculate kinematic regressor with random configs
     if not calib_config["free_flyer"]:
         Rrand = calculate_identifiable_kinematics_model(
-            [], model, data, calib_config, backend=backend
+            [], model, data, reg_config, backend=backend
         )
     else:
         Rrand = calculate_identifiable_kinematics_model(
-            q, model, data, calib_config, backend=backend
+            q, model, data, reg_config, backend=backend
         )
     # calculate kinematic regressor with input configs
     if np.any(np.array(q)):
         R = calculate_identifiable_kinematics_model(
-            q, model, data, calib_config, backend=backend
+            q, model, data, reg_config, backend=backend
         )
     else:
         R = Rrand
@@ -940,7 +938,12 @@ def estimate_frames_closed_form(model, data, q, PEE, calib_config, n_iter=50):
     (positions) or chordal averaging (orientations), alternated with a linear
     least-squares solve for ``t_b`` and ``t_tip``.
 
-    Only applies to one marker whose position is fully measured, with the
+    With several markers (``NbMarkers`` > 1, points of one rigid body,
+    figaroh-plus#119), each has its own ``t_tip_k`` and the base frame is
+    fitted to all of them; orientations, if measured, are not used then and
+    tip rotations are guessed as zero.
+
+    Only applies to markers whose position is fully measured, with the
     base frame estimated directly (``base_*`` parameters, no camera
     ``base_to_ref_frame`` anchor). Otherwise returns an empty dict.
 
@@ -958,19 +961,19 @@ def estimate_frames_closed_form(model, data, q, PEE, calib_config, n_iter=50):
     """
     names = list(calib_config["param_name"])
     meas = list(calib_config["measurability"])
+    n_markers = calib_config.get("NbMarkers", 1)
     if (
         not any(n in names for n in BASE_TPL)
-        or calib_config.get("NbMarkers", 1) != 1
         or calib_config.get("base_to_ref_frame") is not None
         or not all(meas[:3])
     ):
         return {}
     n = len(q)
-    M = np.asarray(PEE, dtype=float).reshape(sum(meas), n)
-    P = M[:3].T
-    orient = all(meas[3:6])
+    M = np.asarray(PEE, dtype=float).reshape(n_markers, sum(meas), n)
+    P = np.transpose(M[:, :3], (0, 2, 1))  # (n_markers, n, 3)
+    orient = n_markers == 1 and len(meas) == 6 and all(meas[3:6])
     if orient:
-        R_meas = np.array([pin.rpy.rpyToMatrix(M[3:6, i]) for i in range(n)])
+        R_meas = np.array([pin.rpy.rpyToMatrix(M[0, 3:6, i]) for i in range(n)])
 
     R, p = np.empty((n, 3, 3)), np.empty((n, 3))
     for i in range(n):
@@ -980,32 +983,40 @@ def estimate_frames_closed_form(model, data, q, PEE, calib_config, n_iter=50):
         )
         R[i], p[i] = T.rotation, T.translation
 
-    tip_pos = any(f"{e}_1" in names for e in EE_TPL[:3])
+    tip_pos = [
+        any(f"{e}_{k + 1}" in names for e in EE_TPL[:3]) for k in range(n_markers)
+    ]
     tip_rot = orient and any(f"{e}_1" in names for e in EE_TPL[3:])
     R_b, R_tip = np.eye(3), np.eye(3)
-    t_b, t_tip = np.zeros(3), np.zeros(3)
+    t_b, t_tip = np.zeros(3), np.zeros((n_markers, 3))
+    free = [k for k in range(n_markers) if tip_pos[k]]
     for _ in range(n_iter):
         if orient:
             R_b = _chordal_mean(R_meas @ np.transpose(R @ R_tip, (0, 2, 1)))
             if tip_rot:
                 R_tip = _chordal_mean(np.transpose(R_b @ R, (0, 2, 1)) @ R_meas)
         else:
-            R_b = _kabsch(p + R @ t_tip, P)
-        if tip_pos:
-            A = np.concatenate([R_b @ R, np.tile(np.eye(3), (n, 1, 1))], axis=2)
-            A = A.reshape(3 * n, 6)
-            b = (P - p @ R_b.T).reshape(3 * n)
-            sol = np.linalg.lstsq(A, b, rcond=None)[0]
-            t_tip, t_b = sol[:3], sol[3:]
-        else:
-            t_b = np.mean(P - p @ R_b.T, axis=0)
+            source = np.concatenate([p + R @ t_tip[k] for k in range(n_markers)])
+            R_b = _kabsch(source, P.reshape(-1, 3))
+        # P_k,i - R_b p_i = R_b R_i t_tip_k + t_b, linear in (t_tip_k, t_b);
+        # tips not estimated stay at 0
+        rhs = (P - (p @ R_b.T)[None]).reshape(-1)
+        A = np.zeros((n_markers, n, 3, 3 * len(free) + 3))
+        for col, k in enumerate(free):
+            A[k, :, :, 3 * col : 3 * col + 3] = R_b @ R
+        A[:, :, :, -3:] = np.eye(3)
+        sol = np.linalg.lstsq(A.reshape(-1, A.shape[-1]), rhs, rcond=None)[0]
+        for col, k in enumerate(free):
+            t_tip[k] = sol[3 * col : 3 * col + 3]
+        t_b = sol[-3:]
 
     values = np.concatenate([t_b, pin.rpy.matrixToRpy(R_b)])
     guess = {n_: v for n_, v in zip(BASE_TPL, values) if n_ in names}
-    tip = np.concatenate([t_tip, pin.rpy.matrixToRpy(R_tip)])
-    for e, v in zip(EE_TPL, tip):
-        if f"{e}_1" in names:
-            guess[f"{e}_1"] = v
+    for k in range(n_markers):
+        tip = np.concatenate([t_tip[k], pin.rpy.matrixToRpy(R_tip)])
+        for e, v in zip(EE_TPL, tip):
+            if f"{e}_{k + 1}" in names:
+                guess[f"{e}_{k + 1}"] = v
     return guess
 
 

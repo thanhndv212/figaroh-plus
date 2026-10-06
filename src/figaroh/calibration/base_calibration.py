@@ -92,6 +92,42 @@ def _measured_components(calib_config: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _by_component(flat, calib_config: Dict[str, Any], n_samples: int):
+    """(component, point x sample) view of a flat measurement vector.
+
+    Flat vectors are ordered marker, component, sample (``load_data``).
+    Columns run over the samples of marker 1, then marker 2, ...; with one
+    marker this is the usual (component, sample) array. Every per-component
+    statistic and per-sample norm then treats each point of each sample as
+    one error (figaroh-plus#119). None if the size does not match.
+    """
+    n_markers = int(calib_config.get("NbMarkers", 1))
+    n_dofs = int(calib_config["calibration_index"])
+    arr = np.asarray(flat)
+    if arr.size != n_markers * n_dofs * n_samples:
+        return None
+    arr = arr.reshape(n_markers, n_dofs, n_samples).transpose(1, 0, 2)
+    return arr.reshape(n_dofs, n_markers * n_samples)
+
+
+def _per_point_rows(validation: Dict[str, Any]) -> List[tuple]:
+    """(nominal, calibrated) position RMSE in mm per point; [] for one."""
+    if validation.get("n_markers", 1) < 2:
+        return []
+    return list(
+        zip(
+            validation.get("pos_rmse_nominal_per_point_mm", []),
+            validation.get("pos_rmse_calibrated_per_point_mm", []),
+        )
+    )
+
+
+def _point_columns(samples, n_samples: int, n_markers: int) -> np.ndarray:
+    """Columns of :func:`_by_component` that belong to sample indices."""
+    samples = np.asarray(samples, dtype=int)
+    return np.concatenate([samples + k * n_samples for k in range(n_markers)])
+
+
 class BaseCalibration(ABC):
     """
     Abstract base class for robot kinematic calibration.
@@ -757,10 +793,11 @@ class BaseCalibration(ABC):
         resid_cal = self._compute_logmap_residuals(PEE_val, PEE_cal, n_samples=n_val)
 
         n_dofs = self.calib_config["calibration_index"]
+        n_markers = self.calib_config.get("NbMarkers", 1)
 
-        # Reshape to (n_dofs, n_val) — DOF-major
-        resid_nom_2d = resid_nom.reshape((n_dofs, n_val))
-        resid_cal_2d = resid_cal.reshape((n_dofs, n_val))
+        # (n_dofs, n_markers * n_val): each point of each sample is one error
+        resid_nom_2d = _by_component(resid_nom, self.calib_config, n_val)
+        resid_cal_2d = _by_component(resid_cal, self.calib_config, n_val)
 
         # Rows are the measured components, not always x..rz (#100)
         comps = _measured_components(self.calib_config)
@@ -809,6 +846,15 @@ class BaseCalibration(ABC):
         def _per_dof(arr_2d):
             return {dof_names[i]: arr_2d[i].tolist() for i in range(n_dofs)}
 
+        def _per_point(arr_2d):
+            """Position RMSE (mm) of each marker; [] without position."""
+            if not comps["pos_rows"]:
+                return []
+            pos = arr_2d[comps["pos_rows"]].reshape(-1, n_markers, n_val)
+            return [
+                float(_error_stats(pos[:, k])["rmse"] * 1000) for k in range(n_markers)
+            ]
+
         from figaroh.tools.stages import record_stage
 
         metrics = {"position_rmse": (pos_cal_stats["rmse"], "m"), "samples": n_val}
@@ -829,6 +875,9 @@ class BaseCalibration(ABC):
             "dof_names": dof_names,
             "error_nominal_per_dof": _per_dof(nom_scaled),
             "error_fitted_per_dof": _per_dof(cal_scaled),
+            "n_markers": n_markers,
+            "pos_rmse_nominal_per_point_mm": _per_point(resid_nom_2d),
+            "pos_rmse_calibrated_per_point_mm": _per_point(resid_cal_2d),
             "pos_rmse_nominal_mm": pos_nom_stats["rmse"] * 1000,
             "pos_rmse_calibrated_mm": pos_cal_stats["rmse"] * 1000,
             "pos_max_nominal_mm": pos_nom_stats["max"] * 1000,
@@ -1295,8 +1344,10 @@ class BaseCalibration(ABC):
         # errors are reported separately.
         kept = np.setdiff1d(np.arange(n_samples), outlier_indices)
         sample_errors = self._sample_position_errors(residuals)
-        if len(residuals) == n_dofs * n_samples:
-            residuals_2d = residuals.reshape((n_dofs, n_samples))[:, kept]
+        residuals_2d = _by_component(residuals, self.calib_config, n_samples)
+        if residuals_2d is not None:
+            n_markers = self.calib_config.get("NbMarkers", 1)
+            residuals_2d = residuals_2d[:, _point_columns(kept, n_samples, n_markers)]
             per_sample_error = np.sqrt(np.sum(residuals_2d**2, axis=0))
         else:
             residuals_2d = None
@@ -1387,7 +1438,8 @@ class BaseCalibration(ABC):
         comps = _measured_components(self.calib_config)
         dof_names = comps["names"]
 
-        if len(residuals) != n_dofs * n_samples:
+        residuals_2d = _by_component(residuals, self.calib_config, n_samples)
+        if residuals_2d is None:
             return {
                 "dof_names": dof_names,
                 "mean": [],
@@ -1397,11 +1449,13 @@ class BaseCalibration(ABC):
                 "r_squared": [],
             }
 
-        residuals_2d = residuals.reshape((n_dofs, n_samples))
-        PEE_meas_2d = self.PEE_measured.reshape((n_dofs, n_samples))
+        PEE_meas_2d = _by_component(self.PEE_measured, self.calib_config, n_samples)
         if samples is not None:  # only these samples (excluded outliers, #98)
-            residuals_2d = residuals_2d[:, samples]
-            PEE_meas_2d = PEE_meas_2d[:, samples]
+            cols = _point_columns(
+                samples, n_samples, self.calib_config.get("NbMarkers", 1)
+            )
+            residuals_2d = residuals_2d[:, cols]
+            PEE_meas_2d = PEE_meas_2d[:, cols]
 
         means, stds, rmses, max_abs, r_squareds = [], [], [], [], []
 
@@ -1588,22 +1642,19 @@ class BaseCalibration(ABC):
         n_samples = self.calib_config["NbSample"]
         n_markers = self.calib_config["NbMarkers"]
 
-        # if len(residuals) == n_dofs * n_samples * n_markers:
-        #     residuals_3d = residuals.reshape((n_markers, n_dofs, n_samples))
-        #     self._PEE_dist = np.sqrt(np.sum(residuals_3d**2, axis=1))
-        if len(residuals) == n_dofs * n_samples:
-            residuals_2d = residuals.reshape((n_dofs, n_samples))
-            # Per-sample Euclidean-norm error -- same convention as
-            # _evaluate_solution()'s rmse/mae, see comment there.
-            sample_rms = np.sqrt(np.sum(residuals_2d**2, axis=0))
-            self._PEE_dist = sample_rms.reshape((1, n_samples))
+        residuals_2d = _by_component(residuals, self.calib_config, n_samples)
+        if residuals_2d is not None:
+            # Per-sample Euclidean-norm error of each marker -- same
+            # convention as _evaluate_solution()'s rmse/mae, see comment there.
+            residuals_3d = residuals.reshape((n_markers, n_dofs, n_samples))
+            self._PEE_dist = np.sqrt(np.sum(residuals_3d**2, axis=1))
         else:
             # Fallback for unexpected residual shapes
             self._PEE_dist = np.ones((n_markers, n_samples)) * evaluation["rmse"]
 
         # Reshape PEE measured for consistency
-        PEEm_LM2d = self.PEE_measured.reshape((n_dofs, n_samples))
-        PEEe_LM2d = PEE_est.reshape((n_dofs, n_samples))
+        PEEm_LM2d = _by_component(self.PEE_measured, self.calib_config, n_samples)
+        PEEe_LM2d = _by_component(PEE_est, self.calib_config, n_samples)
         # Store results
         self.results_data = {}
         self.results_data["number of calibrated parameters"] = len(result.x)
@@ -2291,7 +2342,8 @@ class BaseCalibration(ABC):
 
         dof_names = comps["names"]
         if validation is not None and "error_nominal_per_dof" in validation:
-            n_val = validation.get("n_val_samples", 0)
+            # one entry per point of each sample (marker-major, #119)
+            n_val = validation.get("n_val_samples", 0) * validation.get("n_markers", 1)
             dof_names = validation.get("dof_names", dof_names)
             verdict.series = {
                 "time": list(range(n_val)),
@@ -2498,6 +2550,14 @@ class BaseCalibration(ABC):
                     f"  {label:<20s} "
                     f"{nominal:10.{digits}f} {unit}"
                     f"{calibrated:12.{digits}f} {unit}"
+                    f"{gain:13.1f}%  {arrow}"
+                )
+            for k, (nominal, calibrated) in enumerate(_per_point_rows(val)):
+                gain = (nominal - calibrated) / nominal * 100 if nominal else 0.0
+                arrow = "\u2193" if gain > 0 else "\u2191"
+                print(
+                    f"  {f'  point {k + 1} RMSE':<20s} "
+                    f"{nominal:10.2f} mm{calibrated:12.2f} mm"
                     f"{gain:13.1f}%  {arrow}"
                 )
         else:
