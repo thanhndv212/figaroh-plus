@@ -25,7 +25,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `DataSource` and `Session` (files with sha256, adapter, recording
     identity) and `Protocol` (versioned roles per session, checked against
     the files' sha256).
-  - Not yet used by `BaseIdentification`/`BaseCalibration` (part 2).
+- The base classes use the data contract (#55, part 2).
+  - `BaseIdentification`: `load_trajectory_data()` may return a
+    `TrajectoryData`. Its effort is checked against the model (drive-side
+    kinds are refused: no drive-gain parameter exists yet), and its mask
+    leaves samples out of the regressor rows after filtering and
+    differentiation (with decimation, decimated sample `k` is sample
+    `k * factor`). A subclass returning one must convert the effort with
+    `TrajectoryData.converted()`, not override `process_torque_data()`.
+    Legacy dicts work as before.
+  - `BaseCalibration.load_data_set()` reads the CSV through
+    `PoseObservations` (same arrays as `load_data`); `del_list` rows are
+    masked, and `calibrator.observations` keeps every posture.
+  - `figaroh.tools.stages`: each run records `data`, `fit`, `validation`
+    (`fallback` when evaluated on training data), `physical` and `export`
+    (`failed` when `joint_corrections()` refuses parameters) stages on
+    `obj.stages`, in the results dict under `"stages"`, in the run archive's
+    `stages.json`, and in the verification JSON, which also gains
+    `schema_version`.
+  - Identification results gain `"effort rmse"` (N·m or N); the
+    mislabelled `"rmse norm (N/m)"` is kept for existing readers.
 
 - `BaseCalibration.metrology_frames()`: the fitted base frame and tool
   point, which a URDF does not carry; applied outside an exported URDF they

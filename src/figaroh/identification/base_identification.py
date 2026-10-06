@@ -50,7 +50,6 @@ from figaroh.identification.parameter import (
 from figaroh.tools.solver import LinearSolver
 from figaroh.utils.results_manager import plot_with_fallback
 
-
 # Setup logger for this module
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
@@ -101,6 +100,14 @@ class BaseIdentification(ABC):
         self._val_available = False
         self._val_processed_data = None
         self._val_num_samples = None
+
+        # Data contract (#55): the TrajectoryData an adapter returned, if
+        # any, its valid-sample masks, and the stage records of this run
+        self.trajectory = None
+        self._sample_mask = None
+        self._val_trajectory = None
+        self._val_sample_mask = None
+        self.stages = []
 
         # Diagnostics captured during solve() for validation / reporting:
         # column indices eliminated by _eliminate_zero_columns() and the
@@ -205,10 +212,21 @@ class BaseIdentification(ABC):
                 regressor_reduced
             )
 
-        # Step 3: Calculate base parameters
-        results = self._calculate_base_parameters(
-            tau_processed, W_processed, active_params
+        # Step 2b: leave out masked samples (after filtering/decimation)
+        tau_processed, W_processed = self._mask_rows(
+            tau_processed, W_processed, decimation_factor if decimate else 1
         )
+
+        # Step 3: Calculate base parameters
+        from figaroh.tools.stages import record_stage
+
+        try:
+            results = self._calculate_base_parameters(
+                tau_processed, W_processed, active_params
+            )
+        except Exception as e:
+            record_stage(self, "fit", "failed", f"{type(e).__name__}: {e}")
+            raise
 
         # Step 3b: Optional weighted least squares refinement
         wls_std = None
@@ -222,6 +240,17 @@ class BaseIdentification(ABC):
         # Step 4: Store results and compute quality metrics
         self._run_finished_at = datetime.now(timezone.utc).isoformat()
         self._compute_quality_metrics()
+        record_stage(
+            self,
+            "fit",
+            "ok",
+            "weighted least squares" if wls else "least squares",
+            {
+                "effort_rmse": (float(self.rms_error), "N·m or N (stacked joints)"),
+                "rows": len(self.tau_noised),
+                "base_parameters": len(self.phi_base),
+            },
+        )
         self._store_results(results)
         if wls_std is not None:
             self.result["wls_std_deviations"] = wls_std
@@ -453,11 +482,12 @@ class BaseIdentification(ABC):
         # Set default filter configuration
         filter_config = self.filter_config
 
-        # load raw data
-        self.raw_data = self.load_trajectory_data()
+        # load raw data: the legacy dict, or a TrajectoryData (#55)
+        self.raw_data = self._adopt_trajectory(self.load_trajectory_data())
 
         # Truncate data if truncation indices are provided
         self.raw_data = self._truncate_data(self.raw_data, truncate)
+        self._sample_mask = self._trajectory_mask(self.trajectory, truncate)
 
         # Apply filtering and differentiation kinematics data
         self.process_kinematics_data(filter_config)
@@ -470,6 +500,90 @@ class BaseIdentification(ABC):
 
         # Build full configuration
         self._build_full_configuration()
+        self._record_data_stage()
+
+    def _adopt_trajectory(self, data, attr="trajectory"):
+        """Accept a :class:`~figaroh.data.trajectory.TrajectoryData` (#55).
+
+        Returns the legacy dict the pipeline works on; a legacy dict passes
+        through. A ``TrajectoryData`` must hold joint effort already
+        (``TrajectoryData.converted`` applies known constants): it is
+        checked against the model, and a subclass that also overrides
+        :meth:`process_torque_data` is refused, since its conversion would
+        not be recorded. No drive-gain parameter exists in the
+        identification model yet, so drive-side efforts (currents, motor
+        torques, load fractions) are refused.
+        """
+        from figaroh.data.trajectory import TrajectoryData
+
+        if not isinstance(data, TrajectoryData):
+            setattr(self, attr, None)
+            return data
+        if type(self).process_torque_data is not BaseIdentification.process_torque_data:
+            raise TypeError(
+                f"{type(self).__name__} returns a TrajectoryData and overrides "
+                "process_torque_data(); convert the effort in "
+                "load_trajectory_data() with TrajectoryData.converted() so the "
+                "conversion is recorded"
+            )
+        active = self.identif_config.get("active_joints")
+        if active and list(active) != list(data.joint_names):
+            raise ValueError(
+                f"TrajectoryData joint order {list(data.joint_names)} differs "
+                f"from active_joints {list(active)}"
+            )
+        data.check_effort(self.model)
+        setattr(self, attr, data)
+        return data.to_legacy()
+
+    @staticmethod
+    def _trajectory_mask(trajectory, truncate=None):
+        """The valid-sample mask, truncated like the data; None if all valid."""
+        if trajectory is None:
+            return None
+        mask = trajectory.mask
+        if truncate is not None:
+            mask = mask[truncate[0] : truncate[1]]
+        return None if mask.all() else mask
+
+    def _record_data_stage(self):
+        from figaroh.tools.stages import record_stage
+
+        mask = getattr(self, "_sample_mask", None)
+        trajectory = getattr(self, "trajectory", None)
+        metrics = {
+            "samples": self.num_samples,
+            "masked_samples": 0 if mask is None else int((~mask).sum()),
+        }
+        reason = "legacy dict"
+        if trajectory is not None:
+            kinds = sorted(set(trajectory.effort_kind))
+            reason = f"TrajectoryData, clock {trajectory.clock}, effort {kinds}"
+            if trajectory.effort_conversion:
+                reason += f" ({trajectory.effort_conversion})"
+        record_stage(self, "data", "ok", reason, metrics)
+
+    def _mask_rows(self, tau, regressor, factor=1):
+        """Drop the rows of masked samples, after filtering (#55).
+
+        Filtering and differentiation ran on the full recorded signal; only
+        here, where regressor rows are built, are masked samples left out.
+        With decimation (``factor``), decimated sample ``k`` is sample
+        ``k * factor`` (``scipy.signal.decimate`` filters, then keeps every
+        ``factor``-th sample), used only if that sample is valid.
+        """
+        mask = getattr(self, "_sample_mask", None)
+        if mask is None:
+            return tau, regressor
+        kept = mask[::factor]
+        n_active = len(self.identif_config["act_idxv"])
+        if len(tau) != n_active * len(kept) or regressor.shape[0] != len(tau):
+            raise ValueError(
+                f"cannot apply the sample mask: {len(tau)} rows for "
+                f"{n_active} joints x {len(kept)} samples"
+            )
+        rows = np.tile(kept, n_active)
+        return tau[rows], regressor[rows]
 
     def calculate_full_regressor(self):
         """Build regressor matrix, compute pre-identified values of standard
@@ -559,7 +673,11 @@ class BaseIdentification(ABC):
         orig_num_samples = self.num_samples
 
         try:
-            self.raw_data = self.load_trajectory_data(data_source=data_source)
+            self.raw_data = self._adopt_trajectory(
+                self.load_trajectory_data(data_source=data_source),
+                attr="_val_trajectory",
+            )
+            self._val_sample_mask = self._trajectory_mask(self._val_trajectory)
             self.raw_data = self._truncate_data(self.raw_data, None)
             self.process_kinematics_data(self.filter_config)
             self.processed_data["torques"] = self.process_torque_data()
@@ -595,10 +713,13 @@ class BaseIdentification(ABC):
         if self._idx_eliminated is None or self._base_indices is None:
             return None
 
+        from figaroh.tools.stages import record_stage
+
         if getattr(self, "_val_available", False):
             val_processed_data = self._val_processed_data
             n_val = self._val_num_samples
             validation_source = "validation_data"
+            val_mask = getattr(self, "_val_sample_mask", None)
         else:
             logger.warning(
                 "No separate validation data available "
@@ -610,6 +731,7 @@ class BaseIdentification(ABC):
             val_processed_data = self.processed_data
             n_val = self.num_samples
             validation_source = "identification_data_fallback"
+            val_mask = getattr(self, "_sample_mask", None)
 
         q_val = val_processed_data["positions"]
         dq_val = val_processed_data["velocities"]
@@ -654,8 +776,16 @@ class BaseIdentification(ABC):
             :n_rows
         ]
 
+        # masked samples are left out of the statistics (#55); the
+        # per-joint series below keep every sample for plotting
+        rows = (
+            np.tile(val_mask, n_active)
+            if val_mask is not None
+            else np.ones(n_rows, bool)
+        )
+
         def _stats(estimated):
-            residuals = tau_val_measured - estimated
+            residuals = (tau_val_measured - estimated)[rows]
             return {
                 "rmse": float(np.sqrt(np.mean(residuals**2))),
                 "max": float(np.max(np.abs(residuals))),
@@ -671,10 +801,10 @@ class BaseIdentification(ABC):
             return 0.0
 
         correlation = 1.0
-        if n_rows > 1:
+        if rows.sum() > 1:
             try:
                 correlation = float(
-                    np.corrcoef(tau_val_measured, tau_val_identif)[0, 1]
+                    np.corrcoef(tau_val_measured[rows], tau_val_identif[rows])[0, 1]
                 )
             except (np.linalg.LinAlgError, ValueError):
                 correlation = 1.0
@@ -694,8 +824,24 @@ class BaseIdentification(ABC):
                 for i in range(n_active)
             }
 
+        n_used = n_val if val_mask is None else int(val_mask.sum())
+        metrics = {
+            "effort_rmse": (identif_stats["rmse"], "N·m or N"),
+            "samples": n_used,
+        }
+        if validation_source == "validation_data":
+            record_stage(self, "validation", "ok", "held-out trajectory", metrics)
+        else:
+            record_stage(
+                self,
+                "validation",
+                "fallback",
+                "no held-out data: evaluated on the identification data, "
+                "not an independent test",
+                metrics,
+            )
         return {
-            "n_val_samples": n_val,
+            "n_val_samples": n_used,
             "validation_source": validation_source,
             "rmse_nominal": nominal_stats["rmse"],
             "rmse_identified": identif_stats["rmse"],
@@ -1364,6 +1510,9 @@ class BaseIdentification(ABC):
             "torque estimated": identif_results["tau_estimated"],
             "torque processed": identif_results["tau_processed"],
             "std dev of estimated param": self.std_relative,
+            # N·m (revolute) / N (prismatic); "rmse norm (N/m)" is the
+            # historical, mislabelled key, kept for existing readers (#55)
+            "effort rmse": self.rms_error,
             "rmse norm (N/m)": self.rms_error,
             "num samples": self.num_samples,
             "identification config": getattr(self, "identif_config", {}),
@@ -1381,6 +1530,10 @@ class BaseIdentification(ABC):
         val_metrics = self._compute_validation_metrics()
         if val_metrics is not None:
             self.result["validation_metrics"] = val_metrics
+        self._record_physical_stage()
+        from figaroh.tools.stages import stages_as_dicts
+
+        self.result["stages"] = stages_as_dicts(self)
 
         # Provenance snapshot — nominal model, config, software, data,
         # timestamps — consumed identically by print_quality_report,
@@ -1413,6 +1566,22 @@ class BaseIdentification(ABC):
         except ImportError as e:
             logger.warning(f"ResultsManager not available: {e}")
             self.results_manager = None
+
+    def _record_physical_stage(self):
+        """Stage ``physical`` from the physical-consistency step, if enabled."""
+        info = self.result.get("physical consistency")
+        if not isinstance(info, dict):
+            return
+        from figaroh.tools.stages import record_stage
+
+        status = str(info.get("status", "ok"))
+        if status in ("skipped", "unavailable"):
+            stage_status = "not_run"
+        elif status in ("error", "failed"):
+            stage_status = "failed"
+        else:
+            stage_status = "ok"
+        record_stage(self, "physical", stage_status, str(info.get("reason", status)))
 
     def _apply_physical_consistency_if_enabled(self, identif_results):
         pc_cfg = {}
@@ -2071,10 +2240,14 @@ class BaseIdentification(ABC):
             output_path = join(output_dir, "identification_verification.json")
 
         from figaroh.tools._report_common import verification_json_data
+        from figaroh.tools.stages import with_schema as _with_schema
 
         with open(output_path, "w") as f:
             json.dump(
-                verification_json_data(verdict_dict), f, indent=2, allow_nan=False
+                verification_json_data(_with_schema(self, verdict_dict)),
+                f,
+                indent=2,
+                allow_nan=False,
             )
 
         logger.info(f"Verification report written to {output_path}")
