@@ -722,7 +722,8 @@ def calculate_identifiable_kinematics_model(q, model, data, calib_config, backen
     for i in range(calib_config["NbSample"]):
         if MIN_MODEL == 1:
             q_rand = random_joint_configuration(model, rng)
-            q_i = calib_config["q0"]
+            # a copy: q0 is robot.q0 and must not be overwritten (#125)
+            q_i = calib_config["q0"].copy()
             q_i[calib_config["config_idx"]] = q_rand[calib_config["config_idx"]]
         else:
             q_i = q_temp[i, :]
