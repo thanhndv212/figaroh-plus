@@ -23,6 +23,15 @@ HTML report generators and the static two-run compare page.
     options:
       show_root_heading: false
 
+### stages
+
+`StageResult` records: which step (data, fit, validation, physical, export)
+ran, failed, fell back or did not run (#55).
+
+::: figaroh.tools.stages
+    options:
+      show_root_heading: false
+
 ### _report_common
 
 Shared HTML/CSS primitives and the `VerificationVerdict`/`ThresholdCheck`

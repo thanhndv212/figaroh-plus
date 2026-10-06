@@ -39,7 +39,6 @@ from figaroh.calibration.calibration_tools import (
     calculate_base_kinematics_regressor,
     add_base_name,
     add_pee_name,
-    load_data,
     calc_updated_fkm,
     initialize_variables,
     estimate_frames_closed_form,
@@ -185,6 +184,9 @@ class BaseCalibration(ABC):
         self._data_path = abspath(self.calib_config["data_file"])
         self.STATUS = "NOT CALIBRATED"
         self._val_available = False
+        # Data contract (#55): the observations read, and stage records
+        self.observations = None
+        self.stages = []
 
     def initialize(self):
         """Initialize calibration data and parameters.
@@ -260,16 +262,33 @@ class BaseCalibration(ABC):
             plot: Visualization and analysis plotting
             export_html_report: Visual counterpart of the terminal report
         """
+        from figaroh.tools.stages import record_stage
+
         self._run_started_at = datetime.now(timezone.utc).isoformat()
-        result, outlier_indices = self.solve_optimisation(
-            method=method,
-            max_iterations=max_iterations,
-            outlier_threshold=outlier_threshold,
-            enable_logging=enable_logging,
-        )
+        try:
+            result, outlier_indices = self.solve_optimisation(
+                method=method,
+                max_iterations=max_iterations,
+                outlier_threshold=outlier_threshold,
+                enable_logging=enable_logging,
+            )
+        except Exception as e:
+            record_stage(self, "fit", "failed", f"{type(e).__name__}: {e}")
+            raise
 
         # Evaluate solution
         evaluation = self._evaluate_solution(result, outlier_indices)
+        record_stage(
+            self,
+            "fit",
+            "ok" if getattr(result, "success", True) else "failed",
+            str(getattr(result, "message", "")),
+            {
+                "rmse": (float(evaluation.get("rmse", float("nan"))), "m"),
+                "parameters": len(result.x),
+                "flagged_outliers": len(outlier_indices),
+            },
+        )
         self._run_finished_at = datetime.now(timezone.utc).isoformat()
 
         # Log final results
@@ -589,12 +608,36 @@ class BaseCalibration(ABC):
         See Also:
             load_data: Core data loading and processing function
         """
+        from figaroh.data.observations import PoseObservations
+        from figaroh.tools.stages import record_stage
+
+        # Same CSV layout and arrays as load_data(); del_list rows are
+        # masked rather than deleted, and the config is not written by the
+        # loader (#55, #105)
         try:
-            self.PEE_measured, self.q_measured = load_data(
-                self._data_path, self.model, self.calib_config, self.del_list_
+            self.observations = PoseObservations.from_csv(
+                self._data_path,
+                self.model,
+                self.calib_config,
+                del_list=self.del_list_ or (),
+            )
+            self.PEE_measured, self.q_measured = self.observations.to_legacy(
+                self.model, self.calib_config
             )
         except Exception as e:
+            record_stage(self, "data", "failed", f"{type(e).__name__}: {e}")
             raise CalibrationError(f"Data loading failed: {e}")
+        self.calib_config["NbSample"] = len(self.q_measured)
+        record_stage(
+            self,
+            "data",
+            "ok",
+            "PoseObservations from CSV",
+            {
+                "samples": len(self.q_measured),
+                "masked_samples": int((~self.observations.mask).sum()),
+            },
+        )
 
         # If validation data path is specified in config, load it
         val_data_path = self.calib_config.get("validation_data_file")
@@ -617,22 +660,20 @@ class BaseCalibration(ABC):
             - Sets self._PEE_val with validation measured poses
             - Sets self._val_available = True
         """
-        # load_data sets calib_config["NbSample"] to the rows it read; the
-        # training sample count must survive loading the validation set.
-        orig_path = self._data_path
-        n_train = self.calib_config.get("NbSample")
+        from figaroh.data.observations import PoseObservations
+
+        # PoseObservations does not write calib_config, so the training
+        # sample count is untouched (#105)
         try:
-            self._data_path = abspath(path)
-            # load_data returns (measured poses, joint configurations)
-            self._PEE_val, self._q_val = load_data(
-                self._data_path, self.model, self.calib_config, []
+            self._val_observations = PoseObservations.from_csv(
+                abspath(path), self.model, self.calib_config
+            )
+            self._PEE_val, self._q_val = self._val_observations.to_legacy(
+                self.model, self.calib_config
             )
             self._val_available = True
         except Exception as e:
             raise CalibrationError(f"Validation data loading failed: {e}")
-        finally:
-            self._data_path = orig_path
-            self.calib_config["NbSample"] = n_train
 
     def _compute_validation_metrics(self) -> Optional[Dict[str, Any]]:
         """Compute FK validation metrics on held-out data.
@@ -734,6 +775,20 @@ class BaseCalibration(ABC):
         def _per_dof(arr_2d):
             return {dof_names[i]: arr_2d[i].tolist() for i in range(n_dofs)}
 
+        from figaroh.tools.stages import record_stage
+
+        metrics = {"position_rmse": (pos_cal_stats["rmse"], "m"), "samples": n_val}
+        if validation_source == "validation_data":
+            record_stage(self, "validation", "ok", "held-out postures", metrics)
+        else:
+            record_stage(
+                self,
+                "validation",
+                "fallback",
+                "no held-out data: evaluated on the calibration data, "
+                "not an independent test",
+                metrics,
+            )
         return {
             "n_val_samples": n_val,
             "validation_source": validation_source,
@@ -1492,6 +1547,9 @@ class BaseCalibration(ABC):
         val_metrics = self._compute_validation_metrics()
         if val_metrics is not None:
             self.results_data["validation_metrics"] = val_metrics
+        from figaroh.tools.stages import stages_as_dicts
+
+        self.results_data["stages"] = stages_as_dicts(self)
 
         # Provenance snapshot — nominal model, config, software, data,
         # timestamps — consumed identically by print_quality_report,
@@ -1777,6 +1835,14 @@ class BaseCalibration(ABC):
             }
         unsupported = [n for n in values if not is_kinematic_correction(n)]
         if unsupported and not drop_unsupported:
+            from figaroh.tools.stages import record_stage
+
+            record_stage(
+                self,
+                "export",
+                "failed",
+                f"not representable in a URDF: {unsupported[:6]}",
+            )
             raise CalibrationError(
                 f"{len(unsupported)} fitted parameter(s) cannot be written to "
                 f"a URDF, so the exported model would not reproduce this "
@@ -2178,10 +2244,14 @@ class BaseCalibration(ABC):
             output_path = join(output_dir, "calibration_verification.json")
 
         from figaroh.tools._report_common import verification_json_data
+        from figaroh.tools.stages import with_schema as _with_schema
 
         with open(output_path, "w") as f:
             json.dump(
-                verification_json_data(verdict_dict), f, indent=2, allow_nan=False
+                verification_json_data(_with_schema(self, verdict_dict)),
+                f,
+                indent=2,
+                allow_nan=False,
             )
 
         logger.info(f"Verification report written to {output_path}")
