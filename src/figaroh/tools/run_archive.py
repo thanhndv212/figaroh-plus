@@ -101,6 +101,8 @@ def _append_index(
 ) -> None:
     passed = None
     metrics: Dict[str, Any] = {}
+    stages: Dict[str, Any] = {}
+    selected_stage = None
     verdict_path = run_dir / "verdict.json"
     if verdict_path.exists():
         try:
@@ -108,6 +110,8 @@ def _append_index(
                 verdict_data = json.load(f)
             passed = verdict_data.get("passed")
             metrics = verdict_data.get("metrics", {})
+            stages = verdict_data.get("stages", {})
+            selected_stage = verdict_data.get("selected_stage")
         except (OSError, ValueError) as e:
             logger.warning(f"Could not read verdict for index entry: {e}")
 
@@ -120,6 +124,9 @@ def _append_index(
         "run_finished": provenance.get("timestamps", {}).get("run_finished"),
         "passed": passed,
         "metrics": metrics,
+        # per-stage verdicts and the reported stage (#63); absent in old runs
+        "stages": stages,
+        "selected_stage": selected_stage,
         "path": str(run_dir),
     }
     index_path = root / "index.jsonl"

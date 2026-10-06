@@ -81,5 +81,62 @@ def stages_as_dicts(obj) -> List[Dict[str, Any]]:
 
 
 def with_schema(obj, verdict: Dict[str, Any]) -> Dict[str, Any]:
-    """A verdict dict with ``schema_version`` and the run's ``stages``."""
-    return {"schema_version": SCHEMA_VERSION, **verdict, "stages": stages_as_dicts(obj)}
+    """A verdict dict with ``schema_version`` and the run's stage records.
+
+    The records go under ``stage_records``: the verdict's own ``stages`` is
+    the per-stage status map and must not be replaced (#63).
+    """
+    return {
+        "schema_version": SCHEMA_VERSION,
+        **verdict,
+        "stage_records": stages_as_dicts(obj),
+    }
+
+
+_VERDICT_STATUS = {
+    "ok": "pass",
+    "failed": "fail",
+    "fallback": "fallback",
+    "not_run": "not_run",
+}
+
+
+def apply_to_verdict(verdict, obj, selected_stage: str = "fit") -> None:
+    """Separate per-stage verdicts from the run's records (#63).
+
+    ``verdict.stages`` keeps its scoped entries (``numerical_execution``,
+    ``prediction``, ``solver``) and gains ``data``, ``fit``,
+    ``validation``, ``physical`` and ``export`` from the records: ``pass``,
+    ``fail``, ``fallback`` (validation on training data: not held-out
+    evidence) or ``not_run``; a stage with no record keeps
+    ``not_evaluated``. ``data_provenance`` mirrors ``data``.
+    """
+    from figaroh.tools.provenance import collect_splits
+
+    records = {s.stage: s for s in getattr(obj, "stages", None) or []}
+    for stage in STAGES:
+        if stage in records:
+            verdict.stages[stage] = _VERDICT_STATUS[records[stage].status]
+        else:
+            verdict.stages.setdefault(stage, "not_evaluated")
+    verdict.stages["data_provenance"] = verdict.stages["data"]
+    verdict.stage_records = stages_as_dicts(obj)
+    fit = records.get("fit")
+    verdict.selected_stage = (
+        selected_stage if fit is not None and fit.status == "ok" else "none"
+    )
+    verdict.splits = collect_splits(obj)
+
+
+def stages_line(obj) -> str:
+    """One-line terminal summary, e.g. ``data ok · fit ok · validation
+    fallback (training data, not held-out)``."""
+    parts = []
+    for s in getattr(obj, "stages", None) or []:
+        text = f"{s.stage} {s.status}"
+        if s.stage == "validation" and s.status == "fallback":
+            text += " (training data, not held-out)"
+        elif s.status == "failed" and s.reason:
+            text += f" ({s.reason})"
+        parts.append(text)
+    return " · ".join(parts) if parts else "no stage records"

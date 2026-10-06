@@ -1949,6 +1949,9 @@ class BaseIdentification(ABC):
         print("=" * 70)
         print("  IDENTIFICATION QUALITY REPORT")
         print("=" * 70)
+        from figaroh.tools.stages import stages_line
+
+        print(f"  Stages:          {stages_line(self)}")
 
         cond_num = result.get("condition number", float("nan"))
         n_base = len(result.get("base parameters names", []))
@@ -2189,9 +2192,13 @@ class BaseIdentification(ABC):
 
         active_joints = self.identif_config.get("active_joints", [])
         if validation is not None and "tau_nominal_per_joint" in validation:
-            n_val = validation.get("n_val_samples", 0)
             verdict.series = {
-                "time": list(range(n_val)),
+                # every sample (masked ones too), like the per-joint series
+                "time": list(
+                    range(
+                        len(next(iter(validation["tau_measured_per_joint"].values())))
+                    )
+                ),
                 "joint_names": validation.get("joint_names", active_joints),
                 "nominal": validation["tau_nominal_per_joint"],
                 "fitted": validation["tau_identified_per_joint"],
@@ -2203,6 +2210,10 @@ class BaseIdentification(ABC):
             "sample_count": result.get("num samples", 0),
             "config_sha256": verdict.metadata.get("config", {}).get("sha256"),
         }
+        from figaroh.tools.stages import apply_to_verdict
+
+        # the reported parameters come from the fit (phi_base / var_)
+        apply_to_verdict(verdict, self, selected_stage="fit")
         return verdict
 
     def export_verification_report(

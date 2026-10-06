@@ -174,6 +174,78 @@ def _run_title(provenance: Optional[Dict[str, Any]], fallback: str) -> str:
     return model_name
 
 
+_STAGE_LABELS = {
+    "ok": "ok",
+    "failed": "FAILED",
+    "fallback": "fallback",
+    "not_run": "not run",
+}
+
+
+def _stages_section(records: List[Dict[str, Any]], splits: Dict[str, Any]) -> str:
+    """Which steps ran, failed or fell back, and which data each used (#63).
+
+    A ``fallback`` validation was computed on the training data and is not
+    held-out evidence.
+    """
+    if not records:
+        return (
+            '<p class="muted">No stage records (produced by a version of '
+            "figaroh predating stage records).</p>"
+        )
+    rows = []
+    for r in records:
+        metrics = ", ".join(
+            (
+                f"{k} {v['value']:.4g} {v['unit']}".strip()
+                if isinstance(v.get("value"), float)
+                else f"{k} {v.get('value')} {v.get('unit', '')}".strip()
+            )
+            for k, v in r.get("metrics", {}).items()
+        )
+        rows.append(
+            f"<tr><td>{_esc(r['stage'])}</td>"
+            f"<td>{_esc(_STAGE_LABELS.get(r['status'], r['status']))}</td>"
+            f"<td>{_esc(r.get('reason', ''))}</td><td>{_esc(metrics)}</td></tr>"
+        )
+    table = (
+        "<table><thead><tr><th>Stage</th><th>Status</th><th>Reason</th>"
+        "<th>Metrics</th></tr></thead><tbody>" + "".join(rows) + "</tbody></table>"
+    )
+
+    def _describe(entry):
+        if not isinstance(entry, dict):
+            return str(entry)
+        files = ", ".join(
+            f"{p.split('/')[-1]} ({_hash_short(h)})"
+            for p, h in entry.get("files", {}).items()
+        )
+        return (
+            f"session {entry.get('session')}, {entry.get('samples')} samples "
+            f"({entry.get('masked_samples', 0)} masked): {files}"
+        )
+
+    source = splits.get("validation_source", "none")
+    note = {
+        "held_out": "held-out data",
+        "training_fallback": "training data (fallback, not held-out evidence)",
+        "none": "none",
+    }.get(source, source)
+    data = (
+        f'<div class="kv-row"><span class="kv-key">Training</span>'
+        f'<span class="kv-val">{_esc(_describe(splits.get("training")))}</span></div>'
+        f'<div class="kv-row"><span class="kv-key">Validation</span>'
+        f'<span class="kv-val">{_esc(note)}'
+        + (
+            f": {_esc(_describe(splits['validation']))}"
+            if splits.get("validation")
+            else ""
+        )
+        + "</span></div>"
+    )
+    return table + data
+
+
 def _provenance_section(provenance: Optional[Dict[str, Any]]) -> str:
     """Render the run-provenance record — physical asset, nominal
     reference model, exact config used, software versions, input data
@@ -244,12 +316,17 @@ def _provenance_section(provenance: Optional[Dict[str, Any]]) -> str:
             value = ", ".join(str(v) for v in value)
         config_rows.append(_row(key, value))
 
+    core = software.get("figaroh_revision") or {}
     software_rows = [
         _row("figaroh", software.get("figaroh", "unknown")),
+        _row(
+            "figaroh commit",
+            _hash_short(core.get("commit")) + (" (dirty)" if core.get("dirty") else ""),
+        ),
         _row("pinocchio", software.get("pinocchio", "unknown")),
         _row("python", software.get("python", "unknown")),
         _row(
-            "git commit",
+            "working-dir commit",
             _hash_short(software.get("git_commit"))
             + (" (dirty)" if software.get("git_dirty") else ""),
         ),
@@ -454,6 +531,11 @@ class VerificationVerdict:
     scope: str = "thresholds"
     stages: Dict[str, str] = field(default_factory=dict)
     policy: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    # #63: the run's StageResult records (figaroh.tools.stages), the stage
+    # whose parameters the result reports, and which data trained/validated
+    stage_records: List[Dict[str, Any]] = field(default_factory=list)
+    selected_stage: str = "fit"
+    splits: Dict[str, Any] = field(default_factory=dict)
 
 
 # Scientific limits must be specified by the application, not inferred from

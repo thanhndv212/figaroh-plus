@@ -247,7 +247,10 @@ def test_verification_export_carries_schema_and_stages(model, tmp_path):
     )
     data = json.loads(open(path).read())
     assert data["schema_version"] == SCHEMA_VERSION
-    assert [s["stage"] for s in data["stages"]] == ["data", "fit", "validation"]
+    # the step records sit beside, not over, the scoped status map (#63)
+    assert [s["stage"] for s in data["stage_records"]] == ["data", "fit", "validation"]
+    assert data["stages"]["numerical_execution"] == "pass"
+    assert data["stages"]["validation"] == "fallback"
 
 
 # ── calibration ──
@@ -345,3 +348,13 @@ def test_calibration_reads_observations_and_records_stages(tiago_model, tmp_path
     with pytest.raises(CalibrationError):
         calib.joint_corrections(lift=False)
     assert {s.stage: s.status for s in calib.stages}["export"] == "failed"
+
+    # #63: the verdict separates the stages and names the data
+    verdict = calib.verify(scope="prediction")
+    assert verdict.stages["data"] == "pass" and verdict.stages["fit"] == "pass"
+    assert verdict.stages["validation"] == "fallback"
+    assert verdict.stages["export"] == "fail"
+    assert verdict.stages["prediction"] != "pass"  # no held-out data
+    assert verdict.selected_stage == "fit"
+    assert verdict.splits["training"]["masked_samples"] == 2
+    assert verdict.splits["validation_source"] == "training_fallback"
