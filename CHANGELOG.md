@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Calibration with several points of one rigid body per sample (#119).
+  Each `measurements.markers` entry is a point on the same tool frame with
+  its own offset (`pEEx_k`, ...); rows are marker-major, as the CSV loader
+  already ordered them. `calc_updated_fkm` no longer raises for
+  `NbMarkers > 1`; the closed-form frame guess fits the base frame and all
+  point offsets; the structural selection uses all six pose components
+  when there are several points; metrics, validation, outlier distances
+  and plots count every point of every sample; the terminal and HTML
+  validation tables list the position RMSE of each point. The loader now
+  refuses non-finite marker measurements (e.g. an occluded point), naming
+  the CSV rows. Several points identify the same joint parameters as one
+  and roughly halve standard errors; they did not improve held-out
+  prediction on the TIAGo mocap reference, so examples adopt them case by
+  case (`docs/source/concepts/config_parameters.md`, "Several points on the
+  tool").
 - Inertial URDF export (#60): `export_urdf` writes identified standard
   inertial parameters (`m_`, `mx_`…`mz_`, `Ixx_`…`Izz_`, Pinocchio
   `toDynamicParameters()` convention) as URDF mass, centre of mass and
