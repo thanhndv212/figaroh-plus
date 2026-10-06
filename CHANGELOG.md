@@ -192,6 +192,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Calibration quality reports label residual rows from `measurability` (#100).
+  A contact calibration measuring `[z, roll, pitch]` was printed as
+  `X/Y/Z (mm)` with the two rotations folded into "Position RMSE". Rows are
+  now named and scaled per measured component (mm for positions, deg for
+  rotations), position/orientation aggregates cover only the measured
+  components of each kind (NaN and "not measured" when none), and `verify()`
+  picks `position_rmse_mm`/`orientation_rmse_deg` from the measured kinds
+  rather than the component count. With no residual degrees of freedom,
+  `calc_stddev()` reports the uncertainty as not estimable (NaN, a warning,
+  `residual_dof` in the evaluation metrics) instead of dividing by zero.
+  Reports no longer claim there is no validation data when a subclass
+  evaluates its held-out set itself.
+
 - `calc_updated_fkm` with an empty parameter list (nominal FK) raised
   `UnboundLocalError`; it now returns the nominal model's measured frame
   (#129).
