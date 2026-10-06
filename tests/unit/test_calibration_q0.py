@@ -89,3 +89,25 @@ def test_structural_selection_leaves_q0_unchanged(robot_and_config, tiago_model)
     calib.create_param_list()
 
     np.testing.assert_array_equal(robot.q0, nominal)
+
+
+def test_nominal_fk_with_no_parameters(robot_and_config, tiago_model):
+    """An empty parameter list is the nominal model, not a crash (#129)."""
+    from figaroh.calibration.calibration_tools import calc_updated_fkm
+
+    _, cfg = robot_and_config
+    q = np.array([pin.randomConfiguration(tiago_model) for _ in range(3)])
+    pee = calc_updated_fkm(
+        tiago_model,
+        tiago_model.createData(),
+        np.zeros(0),
+        q,
+        dict(cfg, param_name=[], NbSample=3),
+    )
+    data = tiago_model.createData()
+    fid = tiago_model.getFrameId(cfg["end_frame"])
+    expected = []
+    for qi in q:
+        pin.framesForwardKinematics(tiago_model, data, qi)
+        expected.append(data.oMf[fid].translation.copy())
+    np.testing.assert_allclose(pee, np.array(expected).T.flatten(), atol=1e-12)
