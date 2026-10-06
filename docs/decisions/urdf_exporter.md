@@ -2,7 +2,7 @@
 
 **Status:** Implemented, with deviations from this spec (function-based API,
 no `URDFExporter` class; metrology frame params surfaced but not
-auto-applied; inertia-tensor handler unimplemented; camera-YAML and
+auto-applied; camera-YAML and
 multi-format export deferred). Section 5's parameter-name registry is still
 the accurate behavioral spec — kept as reference, not superseded.
 **Scope:** `figaroh/src/figaroh/tools/urdf_exporter.py` — applying
@@ -26,7 +26,7 @@ stale — `export_urdf()` shipped, but not exactly as specced in §2/§4 below.
 | Viscous/static friction, absolute (`fv_*`, `fs_*`) | ✅ Done | `_apply_viscous_friction`, `_apply_static_friction` |
 | Armature, absolute (`Ia_*`) | ✅ Done | `_apply_armature` |
 | Elasticity, additive (`k_*`) | ✅ Done | `_apply_elasticity` |
-| Inertia tensor, absolute (`Ixx_*` etc.) | ❌ Refused | Parsed, then rejected with `ValueError` (figaroh-plus#62); it was a silent no-op. Same for first moments (`mx_*`) and legacy `off_*` |
+| Standard inertials, absolute (`m_`, `mx_`…`Izz_`) | ✅ Done | `_apply_inertials` / `_apply_standard_inertial` (figaroh-plus#60): all ten per link, parallel-axis to URDF, reload-tested; see the 2026-10-06 update. Legacy `off_*` is still refused (#62) |
 | Base placement (`base_px` etc.) | 🟡 Deviation | Parsed and recognized, but **deliberately not auto-applied** to the URDF — surfaced via `frame_settings_doc()` for the caller to configure separately, unlike §2's original "ADD to base frame placement" plan |
 | EE marker (`pEEx`/`phiEEx` etc.) | 🟡 Deviation | Same as base placement — parsed but not auto-applied; §2's original "create new link for marker" behavior was not implemented |
 | Unknown-param `ValueError` | ✅ Done | Matches §2 spec |
@@ -63,6 +63,41 @@ items (camera YAML, multi-format) remain undone as planned.
   base frame and tool point; `export_urdf` still logs and ignores them.
   Elastic `k_*` is still written as a `<dynamics elasticity>` attribute,
   which URDF parsers ignore.
+
+### Update 2026-10-06: inertial export (figaroh-plus#60)
+
+- **Convention.** Inputs follow Pinocchio `toDynamicParameters()`,
+  `[m, mx, my, mz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz]`: first moments `m·c` and
+  inertia `I_O` about the link-frame origin, in link-frame axes. The
+  exporter writes `<origin xyz>` = `c = h/m` and the tensor about the centre
+  of mass, `I_C = I_O − m(|c|²E − ccᵀ)`.
+- **Inertial rotation.** An existing `<inertial><origin rpy>` is kept and
+  the tensor is written in its axes (`Rᵀ I_C R`); a missing one becomes
+  `0 0 0`. The reloaded model is the same either way; keeping it leaves
+  CAD principal axes and the file diff minimal.
+- **Complete sets.** First moments or tensor entries require all ten
+  parameters of the link; a partial set is refused rather than mixed with
+  CAD values. `m_` alone remains a mass override that keeps the URDF centre
+  of mass and tensor.
+- **Targets.** A target is a link, or a moving joint as
+  `get_standard_parameters` emits (Pinocchio joint names), which resolves
+  to its child link: Pinocchio's joint frame is the URDF child-link frame.
+  Pinocchio merges links attached by fixed joints into the joint's body, so
+  a joint whose child has massive fixed-attached links (TIAGo `arm_7_joint`:
+  wrist F/T sensor and hand) is refused — the estimate does not belong to
+  one URDF link. Fixed-joint targets, a name that is both a link and an
+  unrelated joint, and two targets reaching the same link are refused too.
+- **Physical verdict.** Each link's pseudo-inertia verdict
+  (`check_p10_feasibility`) is logged. `m ≤ 0` is always refused;
+  an inconsistent set is refused unless `export_urdf(...,
+  allow_infeasible=True)`, which writes it with a warning.
+- **Tested** against a known feasible fixture built from `pin.Inertia(m, c,
+  I_C)` (no optimizer): the reloaded per-joint dynamic parameters, mass,
+  CoM, tensor, verdict and RNEA at 20 random states match the intended
+  model on the pendulum (link and joint targets, rotated inertial frame)
+  and TIAGo `arm_3_joint`; the nominal file is unchanged. Round-trip parity
+  proves file consistency only, not hardware accuracy. Choosing which
+  estimate to export is D7 (figaroh-plus#61).
 
 ---
 

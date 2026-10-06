@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Inertial URDF export (#60): `export_urdf` writes identified standard
+  inertial parameters (`m_`, `mx_`…`mz_`, `Ixx_`…`Izz_`, Pinocchio
+  `toDynamicParameters()` convention) as URDF mass, centre of mass and
+  centre-of-mass tensor (parallel-axis theorem), keeping an existing
+  inertial `rpy`. Targets may be links or moving joints (as identification
+  names them). Partial sets, joints whose Pinocchio body merges
+  fixed-attached massive links, `m <= 0` and, unless
+  `allow_infeasible=True`, physically inconsistent sets are refused; each
+  link's physical verdict is logged. Previously these names raised (#62).
+
 - Identification validation per joint (#103): `validation_metrics` gains
   `per_joint` (RMSE identified/nominal in the joint's unit, N for prismatic,
   N·m for revolute; measured std; normalised RMSE; R²; `predictive`),
