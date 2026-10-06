@@ -267,6 +267,8 @@ def get_param_from_yaml(robot, calib_data) -> dict:
             "non_geom": calib_data["non_geom"],
             "eps": 1e-3,
             "PLOT": 0,
+            # seeds the structural selection's random configurations (#99)
+            "random_seed": calib_data.get("random_seed", 0),
         }
     )
     try:
@@ -538,6 +540,8 @@ def _extract_calibration_params(calib_config, robot, parameters):
             "PLOT": 0,
             "coeff_regularize": parameters.get("regularization_coefficient", 0.01),
             "outlier_eps": parameters.get("outlier_threshold", 0.05),
+            # seeds the structural selection's random configurations (#99)
+            "random_seed": parameters.get("random_seed", 0),
             # parameter selection / estimation method (estimation.py, #113)
             "estimation": dict(parameters.get("estimation") or {}),
         }

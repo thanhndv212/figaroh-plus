@@ -62,6 +62,7 @@ _CALIBRATION_CONFIG_KEYS = [
     "end_frame",
     "outlier_eps",
     "coeff_regularize",
+    "random_seed",
     "free_flyer",
 ]
 
