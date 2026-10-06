@@ -60,7 +60,6 @@ In the calibration task of the unified config:
 ```yaml
 parameters:
   calibration_level: full_params
-  regularization_coefficient: 0.0     # keep 0 with map / map_cv
   estimation:
     method: map_cv
 ```

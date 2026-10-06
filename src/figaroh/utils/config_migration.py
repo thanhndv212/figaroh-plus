@@ -91,7 +91,7 @@ def legacy_calibration_to_unified(calib_data: Dict[str, Any]) -> Dict[str, Any]:
         "parameters": {
             "calibration_level": calib_data.get("calib_level", "full_params"),
             "include_non_geometric": bool(calib_data.get("non_geom", False)),
-            "regularization_coefficient": calib_data.get("coeff_regularize", 0.01),
+            "regularization_coefficient": calib_data.get("coeff_regularize", 0.0),
             "outlier_threshold": calib_data.get("outlier_eps", 0.05),
         },
         "kinematics": {
@@ -356,7 +356,7 @@ def self_check(
             "free_flyer": ("free_flyer", False),
             "base_to_ref_frame": ("base_to_ref_frame", None),
             "ref_frame": ("ref_frame", None),
-            "coeff_regularize": ("coeff_regularize", 0.01),
+            "coeff_regularize": ("coeff_regularize", 0.0),
             "outlier_eps": ("outlier_eps", 0.05),
             "data_file": ("data_file", None),
             "nb_sample": ("NbSample", 500),

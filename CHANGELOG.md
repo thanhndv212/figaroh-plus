@@ -111,6 +111,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `regularization_coefficient` (`calib_config["coeff_regularize"]`) is
+  deprecated and defaults to 0 instead of 0.01 (#120). Robot cost functions
+  appended `sqrt(c) * theta` rows for every joint parameter, so a metre and
+  a radian were penalised alike. Core never applies the coefficient; a
+  non-zero value now raises a `DeprecationWarning` pointing to
+  `estimation.method: map`, which places priors of physical size on each
+  parameter group. Design record:
+  `docs/decisions/calibration-regularisation.md`. The figaroh-examples robots
+  drop their regularisation rows in the paired PR.
 - PAL `geometric_calibration` export (`build_geometric_calibration`,
   `export_geometric_calibration_yaml`) fixed and given `nominal_urdf`
   (#123).

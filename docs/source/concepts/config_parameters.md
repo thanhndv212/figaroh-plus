@@ -31,7 +31,7 @@ the layout differs.
 | `free_flyer` | `True` if the robot's base itself is unconstrained/floating in the model (mobile-base robots with an unknown per-sample base pose) | `kinematics.free_flying_base` |
 | `base_pose` | Initial guess `[x, y, z, roll, pitch, yaw]` (m, rad) for the `base_frame` → world (or anchor → camera, in eye-hand mode) transform being estimated | `measurements.poses.base_pose` |
 | `tip_pose` | Initial guess `[x, y, z, roll, pitch, yaw]` (m, rad) for the `tool_frame` → marker transform being estimated | `measurements.poses.tool_pose` |
-| `coeff_regularize` | L2 regularization weight applied to the non-base/non-tip parameters in the least-squares cost, to keep identified offsets small and the problem well-conditioned | `parameters.regularization_coefficient` |
+| `coeff_regularize` | **Deprecated (#120), default 0.** One L2 weight that robot cost functions applied to every joint parameter, penalising metres and radians alike. Core never applies it; a non-zero value raises a `DeprecationWarning`. Use `estimation.method: map` instead (priors of physical size per parameter group, [estimation methods](calibration_estimation.md)) | `parameters.regularization_coefficient` |
 | `outlier_eps` | Position error (**meters**, norm of the measured x/y/z residuals of a sample, worst marker) above which a sample is excluded and the rest refitted, for up to `max_iterations` fits. Rotational components do not take part; with no measured position component nothing is excluded. Excluded samples and their errors are in the evaluation (`excluded_samples`, `excluded_sample_errors`) and the report | `parameters.outlier_threshold` |
 | `random_seed` | Seed for the random configurations that select the identifiable parameter set (default 0). The selection, hence the result, does not depend on any global random state; the seed is recorded in the run provenance | `parameters.random_seed` |
 | `data_file` | Path to the CSV of recorded `(joint configuration, measured marker pose)` samples | `data.source_file` |
@@ -55,7 +55,7 @@ the layout differs.
     same measurements, as the per-joint offsets of every joint the camera
     observes through — "camera is off by X" and "joint N is off by Y" can
     produce very similar marker-pose residuals, which can leave the problem
-    under-determined or poorly conditioned. `coeff_regularize` and
+    under-determined or poorly conditioned. Priors (`estimation.method: map`) and
     deliberately exciting poses that vary joint loading/configuration
     widely (`sample_configs_file`, D-optimal design a la
     `tiago_pro/generate_optimal_configs.py`) are the two practical levers

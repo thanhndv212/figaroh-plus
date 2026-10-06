@@ -1002,7 +1002,8 @@ class BaseCalibration(ABC):
 
         This method provides a default implementation but should be overridden
         by derived classes to define robot-specific cost computation with
-        appropriate weighting and regularization.
+        appropriate weighting. Regularise with priors
+        (``estimation.method: map``, #120), not rows appended here.
 
         Args:
             var (ndarray): Parameter vector to evaluate
@@ -1024,7 +1025,7 @@ class BaseCalibration(ABC):
                 >>> raw_residuals = self._compute_logmap_residuals(
                 ...     self.PEE_measured, PEEe, position_frame="world")
 
-            Then apply weighting and regularization:
+            Then apply weighting:
                 >>> weighted_residuals = self.apply_measurement_weighting(
                 ...     raw_residuals, pos_weight=1000.0, orient_weight=100.0)
         """
@@ -1034,8 +1035,7 @@ class BaseCalibration(ABC):
         warnings.warn(
             f"Using default cost function for {self.__class__.__name__}. "
             "Consider implementing a robot-specific cost function with "
-            "appropriate weighting and regularization for optimal "
-            "performance.",
+            "appropriate measurement weighting.",
             UserWarning,
             stacklevel=2,
         )
