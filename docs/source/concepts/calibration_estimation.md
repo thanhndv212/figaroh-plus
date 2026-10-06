@@ -29,7 +29,6 @@ tasks:
   calibration:
     parameters:
       calibration_level: full_params      # or joint_offset
-      regularization_coefficient: 0.0     # keep 0 with map / map_cv
       estimation:
         method: map_cv                    # structural | excitation | map | map_cv | cv_subset
         priors:                           # expected error sizes (1 sigma)
@@ -223,5 +222,6 @@ more precise than it is.
   first, joint parameters, tool point last (as the TIAGo, UR10 and TALOS
   examples do). Classes with extra parameters (e.g. table-contact planes)
   are not supported.
-- Keep `regularization_coefficient: 0` with `map`/`map_cv`; otherwise both
-  regularisations apply.
+- `regularization_coefficient` is deprecated (#120): it weighted metres and
+  radians alike. Leave it at its default 0; `map`/`map_cv` are the
+  unit-consistent replacement.
