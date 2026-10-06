@@ -192,6 +192,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Calibration's identifiable parameter set no longer depends on global random
+  state (#99). The structural selection draws its random configurations from
+  a generator seeded by the new `parameters.random_seed` (default 0, legacy
+  `random_seed`), and the seed is recorded in the run provenance. Repeated
+  runs in one process give the same parameter set and result, whatever ran
+  before. The seeded draw itself landed with #102.
+
 - Calibration quality reports label residual rows from `measurability` (#100).
   A contact calibration measuring `[z, roll, pitch]` was printed as
   `X/Y/Z (mm)` with the two rotations folded into "Position RMSE". Rows are

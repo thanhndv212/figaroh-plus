@@ -84,6 +84,46 @@ def test_structural_regressor_ignores_global_rng(tiago_model):
     np.testing.assert_array_equal(first, second)
 
 
+def _selected_parameters(model, cfg):
+    calib = BaseCalibration.__new__(BaseCalibration)
+    calib.model, calib.data, calib.calib_config = model, model.createData(), cfg
+    calib.create_param_list()
+    return list(cfg["param_name"])
+
+
+def test_parameter_selection_ignores_global_rng(tiago_model):
+    """The selected set is the same whatever ran before in the process."""
+    selections = []
+    for seed in (0, 1, 123):
+        pin.seed(seed)
+        np.random.seed(seed)
+        cfg = _tiago_config(tiago_model, "full_params", [True] * 3 + [False] * 3)
+        cfg["NbSample"] = 20
+        selections.append(_selected_parameters(tiago_model, cfg))
+    assert selections[0] == selections[1] == selections[2]
+
+
+def test_random_seed_is_configured_and_recorded(tiago_model):
+    from figaroh.tools.provenance import _CALIBRATION_CONFIG_KEYS, _config_values
+
+    cfg = _tiago_config(tiago_model, "full_params", [True] * 3 + [False] * 3)
+    assert cfg["random_seed"] == 0  # default
+    unified = {
+        "joints": {},
+        "kinematics": {"base_frame": "universe", "tool_frame": "wrist_ft_tool_link"},
+        "parameters": {"calibration_level": "full_params", "random_seed": 7},
+        "measurements": {
+            "markers": [
+                {"reference_joint": "arm_7_joint", "measurable_dof": [True] * 3}
+            ]
+        },
+        "data": {"source_file": "unused.csv"},
+    }
+    cfg = unified_to_legacy_config(_Robot(tiago_model), unified)
+    assert cfg["random_seed"] == 7
+    assert _config_values(cfg, _CALIBRATION_CONFIG_KEYS)["random_seed"] == 7
+
+
 # ── closed-form frame initialisation ────────────────────────────
 
 

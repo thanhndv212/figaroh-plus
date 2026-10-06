@@ -33,6 +33,7 @@ the layout differs.
 | `tip_pose` | Initial guess `[x, y, z, roll, pitch, yaw]` (m, rad) for the `tool_frame` → marker transform being estimated | `measurements.poses.tool_pose` |
 | `coeff_regularize` | L2 regularization weight applied to the non-base/non-tip parameters in the least-squares cost, to keep identified offsets small and the problem well-conditioned | `parameters.regularization_coefficient` |
 | `outlier_eps` | Residual distance (**meters**) above which a sample is treated as an outlier and iteratively dropped before refitting | `parameters.outlier_threshold` |
+| `random_seed` | Seed for the random configurations that select the identifiable parameter set (default 0). The selection, hence the result, does not depend on any global random state; the seed is recorded in the run provenance | `parameters.random_seed` |
 | `data_file` | Path to the CSV of recorded `(joint configuration, measured marker pose)` samples | `data.source_file` |
 | `sample_configs_file` | Optional: path cross-referencing which planned/optimal configuration each `data_file` row corresponds to. Traceability only — not required for the fit itself | `data.sample_configurations_file` |
 | `nb_sample` | Number of samples expected from `data_file` | `data.number_of_samples` |
