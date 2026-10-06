@@ -346,6 +346,18 @@ def _validation_section(validation: Optional[Dict[str, Any]]) -> str:
         # skip a kind with no measured component (#100)
         if not math.isnan(validation[f"{kind}_nominal_{unit}"])
     ]
+    # several points of one body (#119): position RMSE of each
+    if validation.get("n_markers", 1) > 1:
+        for k, (nominal, calibrated) in enumerate(
+            zip(
+                validation.get("pos_rmse_nominal_per_point_mm", []),
+                validation.get("pos_rmse_calibrated_per_point_mm", []),
+            )
+        ):
+            gain = (nominal - calibrated) / nominal * 100 if nominal else 0.0
+            rows.append(
+                _row(f"Position RMSE, point {k + 1}", nominal, calibrated, gain, "mm")
+            )
 
     set_label = (
         "calibration set (fallback)"

@@ -150,6 +150,16 @@ def load_data(path_to_file, model, calib_config, del_list=[]):
         pose_ee = np.delete(pose_ee, del_list, axis=0)
         q_act = np.delete(q_act, del_list, axis=0)
 
+    # a missing (occluded) point would make every residual NaN: name the rows
+    bad = ~np.isfinite(pose_ee).all(axis=1)
+    if bad.any():
+        rows = np.delete(np.arange(len(df)), del_list or [])[bad]
+        raise ValueError(
+            f"{path_to_file}: non-finite marker measurements in CSV rows "
+            f"{rows.tolist()} (e.g. an occluded point); exclude them with "
+            "del_list or clean the file"
+        )
+
     # update number of data points
     calib_config["NbSample"] = q_act.shape[0]
 
