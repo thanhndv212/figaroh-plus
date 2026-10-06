@@ -197,8 +197,10 @@ Rules:
     `effort_conversion`.
 - **Mask, not removal:** loaders and outlier steps set `mask`; arrays keep
   every recorded sample, so reports can show what was excluded and why.
-  `to_legacy()` applies the mask, so legacy consumers see the same rows as
-  today.
+  `PoseObservations.to_legacy()` applies the mask, so legacy consumers see
+  the same rows as today. `TrajectoryData.to_legacy()` returns every sample,
+  because the trajectory mask selects regressor rows after filtering (next
+  rule); a legacy trajectory has no masked samples.
 - **Mask after filtering (trajectories):** filtering and differentiation
   run on the continuous recorded signal. The mask is applied when the
   regressor rows are built, so excluding samples never creates a gap that a
