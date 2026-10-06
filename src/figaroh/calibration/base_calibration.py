@@ -63,6 +63,34 @@ from figaroh.utils.results_manager import plot_with_fallback
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+_COMPONENT_NAMES = ("X", "Y", "Z", "rx", "ry", "rz")
+
+
+def _measured_components(calib_config: Dict[str, Any]) -> Dict[str, Any]:
+    """Label, scale and kind of each residual row (#100).
+
+    Residual rows are the *measured* pose components in order (see
+    ``_compute_logmap_residuals``), not always x, y, z, rx, ry, rz: a
+    table-contact calibration measuring ``[z, roll, pitch]`` has a
+    position row followed by two orientation rows.
+
+    Returns ``names`` ("Z (mm)", "rx (deg)", ...), ``scales`` (m → mm,
+    rad → deg) and the row indices of the measured position
+    (``pos_rows``) and orientation (``orient_rows``) components.
+    """
+    n_dofs = calib_config.get("calibration_index", 3)
+    measurability = calib_config.get("measurability")
+    if measurability is None or sum(bool(m) for m in measurability) != n_dofs:
+        dofs = list(range(n_dofs))  # legacy configs: first n_dofs components
+    else:
+        dofs = [i for i, m in enumerate(measurability) if m]
+    return {
+        "names": [f"{_COMPONENT_NAMES[d]} ({'mm' if d < 3 else 'deg'})" for d in dofs],
+        "scales": np.array([1000.0 if d < 3 else 180.0 / np.pi for d in dofs]),
+        "pos_rows": [i for i, d in enumerate(dofs) if d < 3],
+        "orient_rows": [i for i, d in enumerate(dofs) if d >= 3],
+    }
+
 
 class BaseCalibration(ABC):
     """
@@ -728,14 +756,19 @@ class BaseCalibration(ABC):
         resid_nom_2d = resid_nom.reshape((n_dofs, n_val))
         resid_cal_2d = resid_cal.reshape((n_dofs, n_val))
 
-        # Position DOFs (first 3), Orientation DOFs (last 3)
-        pos_nom = resid_nom_2d[:3, :]
-        pos_cal = resid_cal_2d[:3, :]
-        orient_nom = resid_nom_2d[3:6, :]
-        orient_cal = resid_cal_2d[3:6, :]
+        # Rows are the measured components, not always x..rz (#100)
+        comps = _measured_components(self.calib_config)
+        pos_nom = resid_nom_2d[comps["pos_rows"], :]
+        pos_cal = resid_cal_2d[comps["pos_rows"], :]
+        orient_nom = resid_nom_2d[comps["orient_rows"], :]
+        orient_cal = resid_cal_2d[comps["orient_rows"], :]
 
         def _error_stats(arr_2d):
-            """arr_2d: (n_dof_group, n_samples) → per-sample norm → stats."""
+            """arr_2d: (n_dof_group, n_samples) → per-sample norm → stats.
+            NaN when no component of the group is measured."""
+            if arr_2d.shape[0] == 0:
+                nan = float("nan")
+                return {"rmse": nan, "max": nan, "mean": nan}
             per_sample = np.sqrt(np.sum(arr_2d**2, axis=0))
             return {
                 "rmse": float(np.sqrt(np.mean(np.sum(arr_2d**2, axis=0)))),
@@ -749,6 +782,8 @@ class BaseCalibration(ABC):
         orient_cal_stats = _error_stats(orient_cal)
 
         def _improvement(before, after):
+            if np.isnan(before):
+                return float("nan")
             if before > 0:
                 return (before - after) / before * 100
             return 0.0
@@ -760,15 +795,8 @@ class BaseCalibration(ABC):
         # (a measured pose's error against itself is zero by
         # construction), so it is exposed as the zero reference line
         # nominal/fitted are being compared against.
-        dof_names = [
-            "X (mm)",
-            "Y (mm)",
-            "Z (mm)",
-            "rx (deg)",
-            "ry (deg)",
-            "rz (deg)",
-        ][:n_dofs]
-        scales = np.array([1000.0 if i < 3 else 180.0 / np.pi for i in range(n_dofs)])
+        dof_names = comps["names"]
+        scales = comps["scales"]
         nom_scaled = resid_nom_2d * scales[:, None]
         cal_scaled = resid_cal_2d * scales[:, None]
 
@@ -1275,6 +1303,7 @@ class BaseCalibration(ABC):
             "param_values": list(result.x),
             "param_stdev": self.std_dev,
             "param_stddev_percentage": self.std_pctg,
+            "residual_dof": getattr(self, "residual_dof", None),
             "n_outliers": len(outlier_indices),
             "outlier_percentage": len(outlier_indices) / n_samples * 100,
             "optimization_success": result.success,
@@ -1297,21 +1326,15 @@ class BaseCalibration(ABC):
         'max_abs', 'r_squared' — each a list of length n_dofs — plus
         'overall': {pos_rmse_mm, orient_rmse_deg, pos_mae_mm,
         orient_mae_deg, pos_max_mm, orient_max_deg}, each the per-sample
-        Euclidean-norm error for that DOF group (position DOFs 0:3,
-        orientation DOFs 3:6) aggregated across samples -- same convention
+        Euclidean-norm error for that DOF group (the measured position
+        and orientation components, NaN for a group with none measured)
+        aggregated across samples -- same convention
         _evaluate_solution()'s rmse/mae use, so a "Position RMSE"/"Position
         MAE" here always means the same thing as anywhere else in the
         report. Units: position DOFs=mm, orientation DOFs=deg.
         """
-        dof_names = [
-            "X (mm)",
-            "Y (mm)",
-            "Z (mm)",
-            "rx (deg)",
-            "ry (deg)",
-            "rz (deg)",
-        ]
-        dof_names = dof_names[:n_dofs]
+        comps = _measured_components(self.calib_config)
+        dof_names = comps["names"]
 
         if len(residuals) != n_dofs * n_samples:
             return {
@@ -1333,7 +1356,7 @@ class BaseCalibration(ABC):
             meas_row = PEE_meas_2d[i, :]
 
             # Scale: position → mm, orientation → deg
-            scale = 1000.0 if i < 3 else 180.0 / np.pi
+            scale = comps["scales"][i]
             scaled = row * scale
 
             means.append(float(np.mean(scaled)))
@@ -1347,17 +1370,22 @@ class BaseCalibration(ABC):
             r2 = 1.0 - ss_res / ss_tot if ss_tot > 1e-15 else 1.0
             r_squareds.append(float(r2))
 
-        # Overall position/orientation aggregates
-        pos_rows = residuals_2d[:3, :] if n_dofs >= 3 else residuals_2d
-        orient_rows = residuals_2d[3:6, :] if n_dofs >= 6 else np.zeros((3, n_samples))
-        pos_norm = np.sqrt(np.sum(pos_rows**2, axis=0))
-        orient_norm = np.sqrt(np.sum(orient_rows**2, axis=0))
-        pos_rmse = float(np.sqrt(np.mean(pos_norm**2))) * 1000
-        orient_rmse = float(np.sqrt(np.mean(orient_norm**2))) * 180 / np.pi
-        pos_mae = float(np.mean(pos_norm)) * 1000
-        orient_mae = float(np.mean(orient_norm)) * 180 / np.pi
-        pos_max = float(np.max(pos_norm)) * 1000
-        orient_max = float(np.max(orient_norm)) * 180 / np.pi
+        # Overall position/orientation aggregates over the measured
+        # components of each kind only; NaN when none is measured (#100)
+        def _norm_stats(rows, scale):
+            if not rows:
+                return float("nan"), float("nan"), float("nan")
+            norm = np.sqrt(np.sum(residuals_2d[rows, :] ** 2, axis=0))
+            return (
+                float(np.sqrt(np.mean(norm**2))) * scale,
+                float(np.mean(norm)) * scale,
+                float(np.max(norm)) * scale,
+            )
+
+        pos_rmse, pos_mae, pos_max = _norm_stats(comps["pos_rows"], 1000.0)
+        orient_rmse, orient_mae, orient_max = _norm_stats(
+            comps["orient_rows"], 180.0 / np.pi
+        )
 
         return {
             "dof_names": dof_names,
@@ -1707,12 +1735,25 @@ class BaseCalibration(ABC):
             n_meas = len(self.PEE_measured)
             r_meas = np.asarray(result.fun)[:n_meas]
             prior_noise = self.calib_config.get("prior_noise")
+            self.residual_dof = n_meas - nvars
             if prior_noise is not None:
                 # MAP: the prior rows in result.jac make this the posterior
                 # covariance, with the noise the priors were scaled by
                 sigma_ro_sq = prior_noise**2
+            elif self.residual_dof <= 0:
+                # as many parameters as observations: the residual
+                # variance, hence the uncertainty, is not estimable (#100)
+                logger.warning(
+                    f"{n_meas} observations for {nvars} parameters: "
+                    f"{self.residual_dof} residual degrees of freedom, "
+                    "parameter uncertainty not estimable"
+                )
+                self._C_param = None
+                self.std_dev = [float("nan")] * nvars
+                self.std_pctg = [float("nan")] * nvars
+                return
             else:
-                sigma_ro_sq = np.sum(r_meas**2) / (n_meas - nvars)
+                sigma_ro_sq = np.sum(r_meas**2) / self.residual_dof
             # Covariance from the full Jacobian, so regularisation rows act
             # as prior information on the parameters they constrain.
             J = result.jac
@@ -2141,20 +2182,26 @@ class BaseCalibration(ABC):
         independent = (
             bool(getattr(self, "_val_available", False)) and validation is not None
         )
+        # Position/orientation metrics only for the kinds actually
+        # measured, not inferred from the component count (#100)
+        comps = _measured_components(self.calib_config)
+        prediction_keys = []
+        if comps["pos_rows"]:
+            prediction_keys.append("position_rmse_mm")
+        if comps["orient_rows"]:
+            prediction_keys.append("orientation_rmse_deg")
         if validation is not None:
             # Training-data fallback stays labelled as training evidence, so
             # it can never satisfy a validation_* prediction limit.
             prefix = "" if independent else "training_"
-            metrics[f"{prefix}position_rmse_mm"] = validation.get(
-                "pos_rmse_calibrated_mm", float("nan")
-            )
-            if self.calib_config.get("calibration_index", 3) > 3:
+            if comps["pos_rows"]:
+                metrics[f"{prefix}position_rmse_mm"] = validation.get(
+                    "pos_rmse_calibrated_mm", float("nan")
+                )
+            if comps["orient_rows"]:
                 metrics[f"{prefix}orientation_rmse_deg"] = validation.get(
                     "orient_rmse_calibrated_deg", float("nan")
                 )
-        prediction_keys = ["position_rmse_mm"]
-        if self.calib_config.get("calibration_index", 3) > 3:
-            prediction_keys.append("orientation_rmse_deg")
         verdict = scoped_verification(
             metrics,
             thresholds,
@@ -2182,15 +2229,7 @@ class BaseCalibration(ABC):
             self, "_run_provenance", None
         ) or collect_run_provenance(self, "calibration")
 
-        n_dofs = self.calib_config.get("calibration_index", 0)
-        dof_names = [
-            "X (mm)",
-            "Y (mm)",
-            "Z (mm)",
-            "rx (deg)",
-            "ry (deg)",
-            "rz (deg)",
-        ][:n_dofs]
+        dof_names = comps["names"]
         if validation is not None and "error_nominal_per_dof" in validation:
             n_val = validation.get("n_val_samples", 0)
             dof_names = validation.get("dof_names", dof_names)
@@ -2333,29 +2372,34 @@ class BaseCalibration(ABC):
         overall = per_dof.get("overall", {}) if per_dof else {}
         if overall:
             print("-" * 70)
-            print("  Overall")
-            print(
-                f"    Position RMSE:    {overall['pos_rmse_mm']:.2f} mm    "
-                f"Orientation RMSE:  {overall['orient_rmse_deg']:.4f} deg"
-            )
-            if "pos_mae_mm" in overall:
+            print("  Overall (measured components of each kind)")
+
+            def _fmt(value, spec, unit):
+                if value is None or np.isnan(value):
+                    return "not measured"
+                return f"{value:{spec}} {unit}"
+
+            for stat, key in (("RMSE", "rmse"), ("MAE", "mae"), ("max", "max")):
+                if f"pos_{key}_mm" not in overall:
+                    continue
+                pos = _fmt(overall[f"pos_{key}_mm"], ".2f", "mm")
+                orient = _fmt(overall[f"orient_{key}_deg"], ".4f", "deg")
                 print(
-                    f"    Position MAE:     {overall['pos_mae_mm']:.2f} mm    "
-                    f"Orientation MAE:   {overall['orient_mae_deg']:.4f} deg"
+                    f"    {'Position ' + stat + ':':<18s}{pos}    "
+                    f"{'Orientation ' + stat + ':':<19s}{orient}"
                 )
-            print(
-                f"    Position max:     {overall['pos_max_mm']:.2f} mm    "
-                f"Orientation max:   {overall['orient_max_deg']:.4f} deg"
-            )
 
         # ── Validation ──
         print("-" * 70)
         if val is not None:
             if val.get("validation_source") == "calibration_data_fallback":
+                # a held-out set evaluated outside BaseCalibration is not
+                # seen here (#100)
                 print(
-                    "  ⚠ WARNING: no separate validation data "
-                    "provided — falling back to calibration data. "
-                    "These are NOT an independent generalization test."
+                    "  ⚠ WARNING: no validation_data_file loaded by this "
+                    "calibration — falling back to calibration data. "
+                    "These are NOT an independent generalization test; "
+                    "a held-out evaluation done elsewhere is not shown."
                 )
                 print(f"  Validation (calibration set, n={val['n_val_samples']})")
             else:
@@ -2365,43 +2409,49 @@ class BaseCalibration(ABC):
                 f"{'Calibrated':>12s} {'Improvement':>14s}"
             )
             print(f"  {'-'*20} {'-'*10} {'-'*12} {'-'*14}")
-            arrow_pos = "\u2193" if val["pos_improvement_pct"] > 0 else "\u2191"
-            arrow_orient = "\u2193" if val["orient_improvement_pct"] > 0 else "\u2191"
-            print(
-                f"  {'Position RMSE':<20s} "
-                f"{val['pos_rmse_nominal_mm']:10.2f} mm"
-                f"{val['pos_rmse_calibrated_mm']:12.2f} mm"
-                f"{val['pos_improvement_pct']:13.1f}%  {arrow_pos}"
-            )
-            print(
-                f"  {'Orientation RMSE':<20s} "
-                f"{val['orient_rmse_nominal_deg']:10.4f} deg"
-                f"{val['orient_rmse_calibrated_deg']:12.4f} deg"
-                f"{val['orient_improvement_pct']:13.1f}%  {arrow_orient}"
-            )
-            print(
-                f"  {'Position max':<20s} "
-                f"{val['pos_max_nominal_mm']:10.2f} mm"
-                f"{val['pos_max_calibrated_mm']:12.2f} mm"
-                f"{val['pos_improvement_pct']:13.1f}%  {arrow_pos}"
-            )
-            print(
-                f"  {'Orientation max':<20s} "
-                f"{val['orient_max_nominal_deg']:10.4f} deg"
-                f"{val['orient_max_calibrated_deg']:12.4f} deg"
-                f"{val['orient_improvement_pct']:13.1f}%  {arrow_orient}"
-            )
+            for label, kind, unit, digits in (
+                ("Position RMSE", "pos_rmse", "mm", 2),
+                ("Orientation RMSE", "orient_rmse", "deg", 4),
+                ("Position max", "pos_max", "mm", 2),
+                ("Orientation max", "orient_max", "deg", 4),
+            ):
+                nominal = val[f"{kind}_nominal_{unit}"]
+                if np.isnan(nominal):
+                    continue  # no component of this kind measured (#100)
+                calibrated = val[f"{kind}_calibrated_{unit}"]
+                gain = val[f"{kind.split('_')[0]}_improvement_pct"]
+                arrow = "\u2193" if gain > 0 else "\u2191"
+                print(
+                    f"  {label:<20s} "
+                    f"{nominal:10.{digits}f} {unit}"
+                    f"{calibrated:12.{digits}f} {unit}"
+                    f"{gain:13.1f}%  {arrow}"
+                )
         else:
-            print("  Validation: no separate validation data provided.")
+            # None also when a subclass evaluates its held-out set
+            # itself, so do not claim there is none (#100)
+            print("  Validation: not computed by this calibration.")
             print(
-                "    Collect measurements with random configurations " "for FK testing."
+                "    Set validation_data_file, or report the held-out "
+                "evaluation done outside BaseCalibration."
             )
 
         # ── Parameter uncertainty (top 5) ──
         std_pctg = eval_.get("param_stddev_percentage", [])
         std_dev = eval_.get("param_stdev", [])
         param_names = self.calib_config.get("param_name", [])
-        if std_pctg and param_names:
+        residual_dof = eval_.get("residual_dof")
+        if (
+            residual_dof is not None
+            and residual_dof <= 0
+            and self.calib_config.get("prior_noise") is None
+        ):
+            print("-" * 70)
+            print(
+                f"  Parameter Uncertainty: {residual_dof} residual degrees "
+                "of freedom — uncertainty not estimable"
+            )
+        elif std_pctg and param_names:
             print("-" * 70)
             ranked = sorted(
                 zip(param_names, std_dev, std_pctg),
