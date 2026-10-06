@@ -314,3 +314,61 @@ def test_session_identity_carries_no_role(tmp_path):
     )
     assert source.files[str(path)] == file_sha256(path)
     assert not hasattr(source.session, "role")
+
+
+# ── sample indices and point selection (#131) ──
+
+
+def test_sample_index_defaults_and_validation():
+    kinds, units = _units()
+    traj = TrajectoryData.from_legacy(_raw(), ARM, effort_kind=kinds, effort_unit=units)
+    np.testing.assert_array_equal(traj.sample_index, np.arange(50))
+    shifted = TrajectoryData.from_legacy(
+        _raw(),
+        ARM,
+        effort_kind=kinds,
+        effort_unit=units,
+        sample_index=np.arange(50) + 921,
+    )
+    assert shifted.sample_index[0] == 921
+    for bad in (np.arange(49), np.arange(50)[::-1], np.arange(50) * 0.5):
+        with pytest.raises(ValueError, match="sample_index"):
+            TrajectoryData.from_legacy(
+                _raw(), ARM, effort_kind=kinds, effort_unit=units, sample_index=bad
+            )
+    with pytest.raises(ValueError, match="sample_index"):
+        PoseObservations(
+            joint_names=ARM,
+            q=np.zeros((3, len(ARM))),
+            constraint="gap",
+            sample_index=np.array([0, 0, 1]),
+        )
+
+
+def test_csv_rows_survive_masking(tiago_model, tiago_data_dir, calib_config):
+    path = tiago_data_dir / "vicon_calibration_gripper1_shoulder.csv"
+    obs = PoseObservations.from_csv(path, tiago_model, calib_config, del_list=[2, 7])
+    np.testing.assert_array_equal(obs.sample_index, np.arange(obs.n_samples))
+    # the excluded postures are named by their CSV rows
+    assert list(obs.sample_index[~obs.mask]) == [2, 7]
+
+
+def test_select_points(tiago_model, calib_config):
+    rng = np.random.default_rng(0)
+    values = rng.normal(size=(5, 4, 6))
+    meas = np.tile([True] * 3 + [False] * 3, (4, 1))
+    obs = PoseObservations(
+        joint_names=[tiago_model.names[j] for j in calib_config["actJoint_idx"]],
+        q=rng.normal(size=(5, len(calib_config["actJoint_idx"]))),
+        values=values,
+        point_names=("BL", "BR", "TR", "TL"),
+        measurability=meas,
+        frame="qualisys:base_frame",
+    )
+    bl = obs.select_points(["BL"])
+    assert bl.point_names == ("BL",) and bl.frame == obs.frame
+    np.testing.assert_array_equal(bl.values[:, 0, :3], values[:, 0, :3])
+    pee, _ = bl.to_legacy(tiago_model, calib_config)
+    np.testing.assert_array_equal(pee, values[:, 0, :3].T.flatten())
+    with pytest.raises(KeyError, match="XX"):
+        obs.select_points(["XX"])

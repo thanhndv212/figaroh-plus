@@ -78,6 +78,8 @@ class TrajectoryData:
     effort_raw_kind: Tuple[str, ...] = ()
     effort_raw_unit: Tuple[str, ...] = ()
     mask: Optional[np.ndarray] = None
+    # source row of each sample in the files (#131); default 0..n-1
+    sample_index: Optional[np.ndarray] = None
     source: DataSource = field(default_factory=DataSource)
 
     def __post_init__(self):
@@ -122,6 +124,16 @@ class TrajectoryData:
         if mask.shape != (n,) or mask.dtype != bool:
             raise ValueError(f"mask must be a bool array of shape {(n,)}")
         set_(self, "mask", mask)
+        index = (
+            np.arange(n) if self.sample_index is None else np.asarray(self.sample_index)
+        )
+        if (
+            index.shape != (n,)
+            or not np.issubdtype(index.dtype, np.integer)
+            or not np.all(np.diff(index) > 0)
+        ):
+            raise ValueError(f"sample_index must be {n} strictly increasing integers")
+        set_(self, "sample_index", index)
         origin = {
             "q": "measured",
             "dq": "measured" if self.dq is not None else "absent",
@@ -147,6 +159,7 @@ class TrajectoryData:
         clock: str = "recorded",
         source: Optional[DataSource] = None,
         origin: Optional[Dict[str, str]] = None,
+        sample_index: Optional[np.ndarray] = None,
     ) -> "TrajectoryData":
         """From the dict ``load_trajectory_data`` returns today.
 
@@ -166,6 +179,7 @@ class TrajectoryData:
             effort_unit=effort_unit,
             clock=clock,
             origin=dict(origin or {}),
+            sample_index=sample_index,
             source=source or DataSource(),
         )
 
