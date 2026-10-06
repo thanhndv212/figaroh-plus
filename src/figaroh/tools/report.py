@@ -38,6 +38,7 @@ from figaroh.tools._report_common import (
     _insights_section,
     _param_uncertainty_section,
     _provenance_section,
+    _stages_section,
     _run_title,
     _series_panel_section,
 )
@@ -439,6 +440,12 @@ def generate_calibration_report(
     )
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
 
+    from figaroh.tools.provenance import collect_splits
+    from figaroh.tools.stages import stages_as_dicts
+
+    stage_records = stages_as_dicts(calibrator)
+    splits = collect_splits(calibrator)
+
     doc = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -460,6 +467,11 @@ def generate_calibration_report(
   <section>
     <h2>Summary</h2>
     <div class="card">{_summary_section(eval_, n_samples)}</div>
+  </section>
+
+  <section>
+    <h2>Stages and data</h2>
+    <div class="card">{_stages_section(stage_records, splits)}</div>
   </section>
 
   <section>

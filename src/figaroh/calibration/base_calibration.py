@@ -2206,6 +2206,10 @@ class BaseCalibration(ABC):
             "sample_count": n_samples,
             "config_sha256": verdict.metadata.get("config", {}).get("sha256"),
         }
+        from figaroh.tools.stages import apply_to_verdict
+
+        # the reported parameters come from the fit (phi_base / var_)
+        apply_to_verdict(verdict, self, selected_stage="fit")
         return verdict
 
     def export_verification_report(
@@ -2274,6 +2278,9 @@ class BaseCalibration(ABC):
         print("=" * 70)
         print("  CALIBRATION QUALITY REPORT")
         print("=" * 70)
+        from figaroh.tools.stages import stages_line
+
+        print(f"  Stages:       {stages_line(self)}")
 
         # ── Convergence ──
         status = (

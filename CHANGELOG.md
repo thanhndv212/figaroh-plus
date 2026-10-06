@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Stage-aware verdicts and reports (#63).
+  - `verify()` separates per-stage verdicts: `verdict.stages` gains `data`,
+    `fit`, `validation` (`fallback` on training data, never held-out
+    evidence), `physical` and `export` beside the existing scoped entries.
+  - New verdict fields: `stage_records`, `selected_stage`, `splits` (the
+    files and sessions that trained and validated the run).
+  - Provenance records the figaroh checkout's own commit
+    (`software.figaroh_revision`) beside the working directory's
+    (`git_commit`), so a run names its core/examples pair.
+  - The terminal and HTML reports show the stages and data; the run
+    archive index carries the stage verdicts.
+  - Fixed: the exported verification JSON's `stages` (the scoped status
+    map) was overwritten by the stage records; they are now under
+    `stage_records`.
+
 - `figaroh.data`: data contract types from the accepted decision record
   `docs/decisions/data-result-contract.md` (#55, part 1 of 2; additive).
   - `TrajectoryData` (identification): time with a `recorded`/`assumed`
