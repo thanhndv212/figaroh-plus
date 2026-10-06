@@ -100,8 +100,9 @@ def _build_insights(
         insights.append(
             {
                 "level": "warn",
-                "text": f"{n_outliers} outliers removed "
-                f"({outlier_pct:.1f}% of {n_samples} samples) — "
+                "text": f"{n_outliers} samples excluded as outliers "
+                f"({outlier_pct:.1f}% of {n_samples} samples: "
+                f"{eval_.get('excluded_samples', [])}) — "
                 "check data quality if this seems high.",
             }
         )
@@ -209,7 +210,7 @@ def _summary_section(eval_: Dict[str, Any], n_samples: int) -> str:
         <div class="stat-value">{n_samples}</div>
       </div>
       <div class="stat">
-        <div class="stat-label">Outliers</div>
+        <div class="stat-label">Excluded outliers</div>
         <div class="stat-value">{eval_.get("n_outliers", 0)}
           ({eval_.get("outlier_percentage", 0.0):.1f}%)</div>
       </div>

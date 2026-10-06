@@ -258,7 +258,7 @@ class BaseCalibration(ABC):
         self,
         method="lm",
         max_iterations=3,
-        outlier_threshold=3.0,
+        outlier_threshold=None,
         enable_logging=True,
         plotting=False,
         save_results=False,
@@ -276,6 +276,12 @@ class BaseCalibration(ABC):
         and handling visualization based on user preferences.
 
         Args:
+            max_iterations: Maximum number of fits; between fits, samples
+                whose position error exceeds ``outlier_threshold`` are
+                excluded and the rest refitted.
+            outlier_threshold: Position error [m] above which a sample is
+                excluded; ``None`` (default) uses the config's
+                ``parameters.outlier_threshold`` (``outlier_eps``).
             html_report: If True, also export an HTML diagnostic report
                 (see :meth:`export_html_report`) after the terminal
                 quality report is printed.
@@ -314,7 +320,7 @@ class BaseCalibration(ABC):
             {
                 "rmse": (float(evaluation.get("rmse", float("nan"))), "m"),
                 "parameters": len(result.x),
-                "flagged_outliers": len(outlier_indices),
+                "excluded_outliers": len(outlier_indices),
             },
         )
         self._run_finished_at = datetime.now(timezone.utc).isoformat()
@@ -327,7 +333,7 @@ class BaseCalibration(ABC):
             self._log_iteration_results("FINAL", result, evaluation)
 
             if len(outlier_indices) > 0:
-                logger.info(f"Outlier samples: {outlier_indices}")
+                logger.info(f"Samples excluded as outliers: {outlier_indices}")
             logger.info("Calibration completed successfully!")
 
         # Store results
@@ -1116,6 +1122,12 @@ class BaseCalibration(ABC):
         figaroh-plus#113); ``w`` is 0 for frame parameters.
         """
         residuals = self.cost_function(var)
+        excluded = getattr(self, "_excluded_rows", None)
+        if excluded is not None and len(excluded):
+            # excluded outlier samples (figaroh-plus#98): constant zero rows,
+            # so they contribute neither cost nor Jacobian
+            residuals = np.array(residuals, dtype=float)
+            residuals[excluded] = 0.0
         weights = self.calib_config.get("prior_weights")
         if weights is None:
             return residuals
@@ -1150,93 +1162,110 @@ class BaseCalibration(ABC):
         var_init: np.ndarray,
         method: str = "lm",
         max_iterations: int = 3,
-        outlier_threshold: float = 1.0,
+        outlier_threshold: Optional[float] = None,
     ) -> Tuple:
-        """Optimize with iterative outlier removal.
+        """Optimize, excluding samples whose position error exceeds a threshold.
+
+        Each round fits the kept samples, then excludes every sample whose
+        position error (the norm of its measured x/y/z residuals, worst
+        marker) is above ``outlier_threshold`` metres, and refits. Excluded
+        samples are never re-admitted. Rotational components do not take
+        part, so the threshold has one unit; with no measured position
+        component nothing is excluded (figaroh-plus#98).
 
         Args:
             var_init (ndarray): Initial parameter guess
-            max_iterations (int): Maximum outlier removal iterations
-            outlier_threshold (float): Threshold for outlier detection in
-                                  standard deviations
+            method (str): ``least_squares`` method
+            max_iterations (int): Maximum number of fits, so at most
+                ``max_iterations - 1`` exclusion rounds
+            outlier_threshold (float, optional): Position error [m] above
+                which a sample is excluded; ``None`` uses
+                ``calib_config["outlier_eps"]`` (``parameters.
+                outlier_threshold``), and no threshold excludes nothing
 
         Returns:
-            tuple: (result, outlier_indices, final_residuals)
+            tuple: (result, excluded sample indices, final residuals)
         """
         logger = logging.getLogger("calibration")
+        if outlier_threshold is None:
+            outlier_threshold = self.calib_config.get("outlier_eps")
+        self._outlier_threshold = outlier_threshold
+        excluded: List[int] = []
+        self._excluded_rows = None
+        n_vars = len(var_init)
         current_var = var_init.copy()
-        outlier_indices = []
 
-        for iteration in range(max_iterations):
-            logger.info(f"Outlier removal iteration {iteration + 1}")
-
-            # Run optimization
+        for iteration in range(max(1, max_iterations)):
             result = least_squares(
                 self._objective, current_var, method=method, max_nfev=1000
             )
-
             if not result.success:
-                logger.warning(f"Optimization failed at iteration {iteration + 1}")
+                logger.warning(f"Optimization failed at fit {iteration + 1}")
                 break
 
-            # Calculate residuals using SE3 log map for geometrically
-            # correct error and detect outliers
             PEE_est = self.get_pose_from_measure(result.x)
             residuals = self._compute_logmap_residuals(self.PEE_measured, PEE_est)
-            new_outliers = self._detect_outliers(residuals, outlier_threshold)
-
-            if len(new_outliers) == 0:
-                logger.info("No outliers detected, optimization converged")
+            errors = self._sample_position_errors(residuals)
+            if outlier_threshold is None or errors is None:
                 break
-
-            outlier_indices.extend(new_outliers)
-            outlier_indices = list(set(outlier_indices))  # Remove duplicates
-
+            new = [
+                int(i)
+                for i in np.flatnonzero(errors > outlier_threshold)
+                if i not in excluded
+            ]
+            if not new:
+                break
+            if iteration == max(1, max_iterations) - 1:
+                logger.warning(
+                    f"Samples {new} exceed the outlier threshold "
+                    f"({outlier_threshold} m) but max_iterations is reached: "
+                    "kept in the fit"
+                )
+                break
+            rows = self._sample_rows(excluded + new)
+            if len(self.PEE_measured) - len(rows) <= n_vars:
+                logger.warning(
+                    f"Excluding samples {new} would leave no more observations "
+                    f"than the {n_vars} parameters: kept in the fit"
+                )
+                break
+            excluded = sorted(excluded + new)
+            self._excluded_rows = rows
             logger.info(
-                f"Detected {len(new_outliers)} new outliers, "
-                f"total outliers: {len(outlier_indices)}"
+                f"Excluding samples {new} (position error > "
+                f"{outlier_threshold} m), refitting without {len(excluded)} "
+                "sample(s)"
             )
-
-            # Update for next iteration
             current_var = result.x
 
-        return result, outlier_indices, residuals
+        return result, excluded, residuals
 
-    def _detect_outliers(self, residuals: np.ndarray, threshold: float) -> List[int]:
-        """Detect outliers using statistical threshold.
+    def _sample_rows(self, samples: List[int]) -> np.ndarray:
+        """Indices of the measurement residual rows of ``samples``.
 
-        Args:
-            residuals (ndarray): Residual vector
-            threshold (float): Threshold in standard deviations
-
-        Returns:
-            list: Indices of detected outliers
+        Measurement rows are marker-, then DOF-, then sample-major
+        (``PEE_measured`` layout), so a row's sample is its index modulo
+        ``NbSample``.
         """
-        # Reshape residuals to per-sample format
-        n_dofs = self.calib_config["calibration_index"]
+        rows = np.arange(len(self.PEE_measured))
+        return rows[np.isin(rows % self.calib_config["NbSample"], samples)]
+
+    def _sample_position_errors(self, residuals: np.ndarray) -> Optional[np.ndarray]:
+        """Per-sample position error [m], worst marker; None if not available.
+
+        None when no position component is measured or the residuals do not
+        have the ``PEE_measured`` layout.
+        """
         n_samples = self.calib_config["NbSample"]
-
-        if len(residuals) != n_dofs * n_samples:
-            return []
-
-        residuals_2d = residuals.reshape((n_dofs, n_samples))
-
-        # Per-sample Euclidean-norm error (all DOFs combined into one
-        # physical distance per sample) -- same convention used everywhere
-        # else "error magnitude" is reported (_evaluate_solution,
-        # _compute_per_dof_stats, _error_stats). Outlier flagging itself is
-        # scale-invariant (mean + k*std of the same values), so this choice
-        # doesn't change which samples get flagged vs. the old per-sample
-        # RMS-across-DOFs convention -- it's purely for consistency.
-        rms_errors = np.sqrt(np.sum(residuals_2d**2, axis=0))
-
-        # Detect outliers
-        mean_error = np.mean(rms_errors)
-        std_error = np.std(rms_errors)
-        threshold_value = mean_error + threshold * std_error
-
-        outliers = np.where(rms_errors > threshold_value)[0].tolist()
-        return outliers
+        measured = [
+            dof for dof, m in enumerate(self.calib_config["measurability"]) if m
+        ]
+        position_rows = [k for k, dof in enumerate(measured) if dof < 3]
+        if not position_rows or len(residuals) % (len(measured) * n_samples):
+            return None
+        per_marker = np.asarray(residuals).reshape(-1, len(measured), n_samples)
+        errors = np.linalg.norm(per_marker[:, position_rows, :], axis=1)
+        return errors.max(axis=0)
 
     def _evaluate_solution(self, result, outlier_indices: List[int]) -> Dict[str, Any]:
         """Evaluate optimization solution quality.
@@ -1260,8 +1289,14 @@ class BaseCalibration(ABC):
         # _error_stats() (validation table) use, so "RMSE"/"MAE" mean the
         # same thing everywhere in the report instead of differing by
         # sqrt(n_dofs) depending on which number you're looking at.
+        #
+        # Samples excluded as outliers (figaroh-plus#98) are not part of the
+        # fit: the metrics cover the kept samples, and the excluded samples'
+        # errors are reported separately.
+        kept = np.setdiff1d(np.arange(n_samples), outlier_indices)
+        sample_errors = self._sample_position_errors(residuals)
         if len(residuals) == n_dofs * n_samples:
-            residuals_2d = residuals.reshape((n_dofs, n_samples))
+            residuals_2d = residuals.reshape((n_dofs, n_samples))[:, kept]
             per_sample_error = np.sqrt(np.sum(residuals_2d**2, axis=0))
         else:
             residuals_2d = None
@@ -1280,7 +1315,9 @@ class BaseCalibration(ABC):
             std_sample_rms = 0.0
 
         # ── Per-DOF breakdown ──
-        per_dof_stats = self._compute_per_dof_stats(residuals, n_dofs, n_samples)
+        per_dof_stats = self._compute_per_dof_stats(
+            residuals, n_dofs, n_samples, samples=kept
+        )
 
         # ── Condition number ──
         cond_num, cond_label = self._compute_condition_number(result)
@@ -1305,7 +1342,16 @@ class BaseCalibration(ABC):
             "param_stddev_percentage": self.std_pctg,
             "residual_dof": getattr(self, "residual_dof", None),
             "n_outliers": len(outlier_indices),
-            "outlier_percentage": len(outlier_indices) / n_samples * 100,
+            "outlier_percentage": len(outlier_indices)
+            / self.calib_config["NbSample"]
+            * 100,
+            "excluded_samples": list(outlier_indices),
+            "excluded_sample_errors": (
+                [float(sample_errors[i]) for i in outlier_indices]
+                if sample_errors is not None
+                else []
+            ),
+            "outlier_threshold": getattr(self, "_outlier_threshold", None),
             "optimization_success": result.success,
             "cost": result.cost,
             "n_iterations": getattr(result, "nit", 0),
@@ -1318,7 +1364,11 @@ class BaseCalibration(ABC):
         }
 
     def _compute_per_dof_stats(
-        self, residuals: np.ndarray, n_dofs: int, n_samples: int
+        self,
+        residuals: np.ndarray,
+        n_dofs: int,
+        n_samples: int,
+        samples: Optional[np.ndarray] = None,
     ) -> Dict[str, Any]:
         """Compute per-DOF residual statistics.
 
@@ -1332,6 +1382,7 @@ class BaseCalibration(ABC):
         _evaluate_solution()'s rmse/mae use, so a "Position RMSE"/"Position
         MAE" here always means the same thing as anywhere else in the
         report. Units: position DOFs=mm, orientation DOFs=deg.
+        ``samples`` restricts the statistics to those sample indices.
         """
         comps = _measured_components(self.calib_config)
         dof_names = comps["names"]
@@ -1348,6 +1399,9 @@ class BaseCalibration(ABC):
 
         residuals_2d = residuals.reshape((n_dofs, n_samples))
         PEE_meas_2d = self.PEE_measured.reshape((n_dofs, n_samples))
+        if samples is not None:  # only these samples (excluded outliers, #98)
+            residuals_2d = residuals_2d[:, samples]
+            PEE_meas_2d = PEE_meas_2d[:, samples]
 
         means, stds, rmses, max_abs, r_squareds = [], [], [], [], []
 
@@ -1618,22 +1672,24 @@ class BaseCalibration(ABC):
         var_init: Optional[np.ndarray] = None,
         method: str = "lm",
         max_iterations: int = 3,
-        outlier_threshold: float = 3.0,
+        outlier_threshold: Optional[float] = None,
         enable_logging: bool = False,
     ):
         """Solve calibration optimization with robust outlier handling.
 
         This method implements a comprehensive optimization strategy:
         1. Sets up logging for progress tracking
-        2. Iteratively removes outliers and re-optimizes
+        2. Excludes samples above the outlier threshold and refits
         3. Evaluates solution quality with detailed metrics
         4. Stores results for further analysis
 
         Args:
             var_init (ndarray, optional): Initial parameter guess. If None,
                                         uses zero initialization.
-            max_iterations (int): Maximum outlier removal iterations
-            outlier_threshold (float): Outlier detection threshold (std devs)
+            max_iterations (int): Maximum number of fits
+            outlier_threshold (float, optional): Position error [m] above
+                which a sample is excluded; ``None`` uses
+                ``calib_config["outlier_eps"]``
             enable_logging (bool): Whether to enable terminal logging
 
         Raises:
@@ -1734,6 +1790,10 @@ class BaseCalibration(ABC):
             # must not be squared, #107.)
             n_meas = len(self.PEE_measured)
             r_meas = np.asarray(result.fun)[:n_meas]
+            # rows of samples excluded as outliers are zero, not observations
+            excluded = getattr(self, "_excluded_rows", None)
+            if excluded is not None:
+                n_meas -= len(excluded)
             prior_noise = self.calib_config.get("prior_noise")
             self.residual_dof = n_meas - nvars
             if prior_noise is not None:
@@ -2330,11 +2390,24 @@ class BaseCalibration(ABC):
             f"Iterations: {eval_['n_iterations']}    "
             f"Cost: {eval_['cost']:.6f}"
         )
+        threshold = eval_.get("outlier_threshold")
         print(
-            f"  Outliers:     {eval_['n_outliers']} "
-            f"/ {self.calib_config['NbSample']} "
-            f"({eval_['outlier_percentage']:.1f}%)"
+            f"  Excluded:     {eval_['n_outliers']} "
+            f"/ {self.calib_config['NbSample']} samples "
+            f"({eval_['outlier_percentage']:.1f}%), position error > "
+            + (f"{threshold * 1e3:.1f} mm" if threshold is not None else "no threshold")
         )
+        excluded = eval_.get("excluded_samples") or []
+        if excluded:
+            errors = eval_.get("excluded_sample_errors") or [float("nan")] * len(
+                excluded
+            )
+            print(
+                "                "
+                + ", ".join(
+                    f"#{i} ({e * 1e3:.1f} mm)" for i, e in zip(excluded, errors)
+                )
+            )
 
         cond_label = eval_.get("condition_label", "unavailable")
         cond_num = eval_.get("condition_number", float("nan"))
