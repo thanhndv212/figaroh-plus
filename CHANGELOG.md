@@ -167,6 +167,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `calc_updated_fkm` with an empty parameter list (nominal FK) raised
+  `UnboundLocalError`; it now returns the nominal model's measured frame
+  (#129).
+
 - URDF export wrote corrections into `<transmission>` joints instead of the
   robot joint when a transmission came first in the file (#114).
   - **Cause:** `_find_joint` searched every `<joint>` in the document;

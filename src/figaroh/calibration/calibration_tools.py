@@ -362,19 +362,10 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
     # store parameter updated to the model
     updated_params = []
 
-    # check if baseframe and end--effector frame are known
-    for key in param_dict.keys():
-        if "base" in key:
-            base_param_incl = True
-            break
-        else:
-            base_param_incl = False
-    for key in param_dict.keys():
-        if "EE" in key:
-            ee_param_incl = True
-            break
-        else:
-            ee_param_incl = False
+    # check if baseframe and end--effector frame are known; with no
+    # parameters at all (nominal FK) neither is (#129)
+    base_param_incl = any("base" in key for key in param_dict)
+    ee_param_incl = any("EE" in key for key in param_dict)
 
     # kinematic chain
     start_f = calib_config["start_frame"]
