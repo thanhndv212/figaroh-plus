@@ -11,6 +11,7 @@ subpackage:
 | [Optimal](optimal.md) | `BaseOptimalCalibration`, `BaseOptimalTrajectory` |
 | [Backends](backends.md) | `DynamicsBackend` interface + Pinocchio/MuJoCo implementations |
 | [Integration](integration.md) | `RobotIdentificationSystem`, the one-line workflow API |
+| [Data contract](data.md) | `TrajectoryData`, `PoseObservations`, `DataSource`, `Protocol` (#55) |
 | [Measurements](measurements.md) | Measurement data structures |
 | [Tools](tools.md) | Reporting/verification, provenance & run archiving, linear solver, robot management, regressor builder, visualization, collisions, QR decomposition, IPOPT wrapper, URDF export |
 | [Utils](utils.md) | Config parser, cubic spline, results manager, error handling, legacy-to-unified config migration |

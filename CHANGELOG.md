@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `figaroh.data`: data contract types from the accepted decision record
+  `docs/decisions/data-result-contract.md` (#55, part 1 of 2; additive).
+  - `TrajectoryData` (identification): time with a `recorded`/`assumed`
+    clock, joint names, per-signal origin, effort in its recorded units with
+    a per-joint kind and unit (`joint_torque` N·m, `joint_force` N,
+    `motor_current`, ...), the conversion applied, the recorded signal, and a
+    valid-sample mask. `check_effort(model, drive_gain_joints)` refuses
+    effort that is not joint effort unless a drive gain is identified.
+  - `PoseObservations` (calibration): postures with named points or poses,
+    their frame, measurability, mask and sessions; constraint-only datasets
+    (contact) declare a constraint instead of zero "measurements".
+    `from_csv`/`to_legacy` reproduce `load_data` exactly, with deleted rows
+    masked instead, and leave `calib_config` unchanged.
+  - `DataSource` and `Session` (files with sha256, adapter, recording
+    identity) and `Protocol` (versioned roles per session, checked against
+    the files' sha256).
+  - Not yet used by `BaseIdentification`/`BaseCalibration` (part 2).
+
 - `BaseCalibration.metrology_frames()`: the fitted base frame and tool
   point, which a URDF does not carry; applied outside an exported URDF they
   reproduce the calibrated forward kinematics. Tested on a known TIAGo

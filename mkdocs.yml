@@ -96,6 +96,7 @@ nav:
       - Optimal: api/optimal.md
       - Backends: api/backends.md
       - Integration: api/integration.md
+      - Data contract: api/data.md
       - Measurements: api/measurements.md
       - Tools: api/tools.md
       - Utils: api/utils.md
