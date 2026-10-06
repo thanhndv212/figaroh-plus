@@ -831,8 +831,8 @@ class BaseIdentification(ABC):
         per_joint_metrics = {}
         unpredictable = []
         z_measured, z_identified = [], []
+        keep = val_mask if val_mask is not None else np.ones(n_val, bool)
         for i, name in enumerate(joint_names):
-            keep = val_mask if val_mask is not None else np.ones(n_val, bool)
             sl = slice(i * n_val, (i + 1) * n_val)
             meas = tau_val_measured[sl][keep]
             ident = tau_val_identif[sl][keep]
@@ -846,7 +846,12 @@ class BaseIdentification(ABC):
             unit = ""
             if self.model.existJointName(name):
                 short = self.model.joints[self.model.getJointId(name)].shortname()
-                unit = "N" if short.startswith("JointModelP") else "N·m"
+                if "Planar" in short:
+                    unit = "N, N·m"
+                elif short.startswith("JointModelP"):  # PX/PY/PZ/Unaligned
+                    unit = "N"
+                else:
+                    unit = "N·m"
             per_joint_metrics[name] = {
                 "unit": unit,
                 "rmse_identified": rmse_id,

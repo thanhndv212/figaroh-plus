@@ -309,7 +309,7 @@ def _validation_section(validation: Optional[Dict[str, Any]]) -> str:
     )
     joint_rows = ""
     for name, m in validation.get("per_joint", {}).items():
-        css = "" if m["predictive"] else ' class="flag"'
+        css = "" if m["predictive"] else ' class="tier-poor"'
         verdict = (
             "yes"
             if m["predictive"]
