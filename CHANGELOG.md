@@ -199,6 +199,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   runs in one process give the same parameter set and result, whatever ran
   before. The seeded draw itself landed with #102.
 
+- Calibration outlier removal now removes outliers (#98). The loop in
+  `BaseCalibration.solve()` used to flag samples by a 3-sigma rule and refit
+  the same full dataset, while the configured `parameters.outlier_threshold`
+  was unused. Samples whose position error exceeds `outlier_threshold`
+  (metres, `outlier_eps`; rotational components do not take part) are now
+  excluded from the fit and the rest refitted, for up to `max_iterations`
+  fits. `solve(outlier_threshold=...)` now overrides the config in metres
+  (default `None`: the config; it was a number of standard deviations).
+  RMSE, MAE, max error, per-DOF statistics and the residual degrees of
+  freedom cover the kept samples; the evaluation adds `excluded_samples`,
+  `excluded_sample_errors` and `outlier_threshold`, and the terminal and HTML
+  reports list them. The `fit` stage metric `flagged_outliers` is now
+  `excluded_outliers`.
+
 - Calibration quality reports label residual rows from `measurability` (#100).
   A contact calibration measuring `[z, roll, pitch]` was printed as
   `X/Y/Z (mm)` with the two rotations folded into "Position RMSE". Rows are
