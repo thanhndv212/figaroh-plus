@@ -89,6 +89,8 @@ class TrajectoryData:
         names = tuple(str(j) for j in self.joint_names)
         set_(self, "joint_names", names)
         n, nj = len(t), len(names)
+        if nj == 0:
+            raise ValueError("a trajectory needs at least one joint")
         if len(set(names)) != nj:
             raise ValueError(f"duplicate joint names: {names}")
         if self.clock not in CLOCKS:

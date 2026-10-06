@@ -372,3 +372,17 @@ def test_select_points(tiago_model, calib_config):
     np.testing.assert_array_equal(pee, values[:, 0, :3].T.flatten())
     with pytest.raises(KeyError, match="XX"):
         obs.select_points(["XX"])
+
+
+def test_zero_joints_are_refused():
+    """An adapter whose joint list resolved empty must fail, not produce an
+    empty dataset (found with TIAGo's legacy config, examples#17)."""
+    raw = _raw()
+    raw = {
+        k: (v[:, :0] if k != "timestamps" and v is not None else v)
+        for k, v in raw.items()
+    }
+    with pytest.raises(ValueError, match="at least one joint"):
+        TrajectoryData.from_legacy(raw, [], effort_kind=[], effort_unit=[])
+    with pytest.raises(ValueError, match="at least one joint"):
+        PoseObservations(joint_names=[], q=np.zeros((2, 0)), constraint="gap")

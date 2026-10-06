@@ -64,6 +64,8 @@ class PoseObservations:
     def __post_init__(self):
         set_ = object.__setattr__
         names = tuple(str(j) for j in self.joint_names)
+        if not names:
+            raise ValueError("observations need at least one joint")
         set_(self, "joint_names", names)
         q = np.asarray(self.q, dtype=float)
         if q.ndim != 2 or q.shape[1] != len(names):
