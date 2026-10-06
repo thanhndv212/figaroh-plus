@@ -1,6 +1,6 @@
 # Decision: Minimal additive data and result contract
 
-- Status: Proposed
+- Status: Accepted (maintainer, 2026-10-06; decisions recorded under "Maintainer decisions")
 - Date: 2026-10-06
 - Issue: [#54](https://github.com/thanhndv212/figaroh-plus/issues/54)
   (package [W3](https://github.com/thanhndv212/figaroh-plus/issues/35)).
@@ -156,15 +156,31 @@ class with optional fields.
 | `t` | (n,) s; `clock`: `recorded` or `assumed` (with the rate) |
 | `joint_names` | model joint names; the order of every column below |
 | `q`, `dq`, `ddq` | (n, n_j) rad or m; per signal an origin: `measured`, `derived:<method>` or `absent` |
-| `effort` | (n, n_j) joint torque or force, N·m or N |
-| `effort_origin` | `measured_torque`, `converted` (from current / motor effort / load, with the conversion recorded), `simulated` |
-| `effort_raw` | optional (n, n_j) recorded signal and its unit, kept when `converted` |
+| `effort` | (n, n_j), **in the units it was recorded in** |
+| `effort_kind` | per joint: `joint_torque` (N·m), `joint_force` (N, linear/prismatic actuators), `motor_current` (A), `motor_torque` (before the reduction), `load_fraction`, or another named signal |
+| `effort_unit` | per joint, e.g. `N·m`, `N`, `A`, `mA`, `%` |
+| `effort_conversion` | empty until the effort is converted to joint effort; then the steps applied (e.g. `× reduction_ratio × kmotor`, `+ m·g`), so a converted `TrajectoryData` keeps the recorded signal in `effort_raw` |
 | `mask` | (n,) bool, valid samples; removed samples stay visible |
 | `source` | `DataSource` |
 
 Rules:
 - **Validation:** checked at construction: shapes, finite values, strictly
   increasing `t`, joint names present in the model.
+- **Effort before solving:** the solver needs joint effort, so it checks
+  `effort_kind` per joint. It accepts `joint_torque` on revolute joints and
+  `joint_force` on prismatic joints. Any other kind is refused with a
+  message naming the joint and its kind; it is never solved as if it were
+  N·m. Converting (current sensing, motor-side torque, load fraction) is the
+  adapter's job (`process_torque_data` today), and the conversion is
+  recorded in `effort_conversion`.
+- **Mask, not removal:** loaders and outlier steps set `mask`; arrays keep
+  every recorded sample, so reports can show what was excluded and why.
+  `to_legacy()` applies the mask, so legacy consumers see the same rows as
+  today.
+- **Splits are data:** every sample belongs to a `DataSource.split` (and
+  session). The held-out roles (training, validation, confirmation) travel
+  with the data rather than living in configuration or a test file. A run
+  configuration selects splits by name; it does not define them.
 - **Filtering stays where it is:** the type records what was done, it does
   not do it.
 - **Stacking:** the joint-major stacking the solver uses becomes a method
@@ -249,8 +265,11 @@ Two concrete consumers, both in figaroh-examples (examples#17):
 1. **TIAGo identification adapter (dynamic).**
    - Clock: `recorded`.
    - Velocity: `measured`, shifted, with the lag in `notes`.
-   - Effort: `converted` from motor effort via `reduction_ratio`·`kmotor`,
-     with `effort_raw` kept.
+   - Effort: recorded as `motor_torque`-like effort in raw units; after
+     `process_torque_data` it is `joint_torque` (N·m) on the arm and
+     `joint_force` (N) on `torso_lift_joint` (prismatic), with
+     `effort_conversion` = `× reduction_ratio × kmotor` (`+ m·g` on the
+     torso) and `effort_raw` kept.
    - Zero-effort and duplicate channels: reported as today, via the
      `DataSource` notes.
 2. **TIAGo mocap calibration adapter (geometric).**
@@ -278,11 +297,15 @@ Not verified yet:
 
 Both are checked during #55 and examples#17.
 
-### Open questions for the maintainer
+### Maintainer decisions (2026-10-06)
 
-1. **Effort in N·m only?** Yes, with `effort_raw` for the recorded signal.
-   Or allow raw units in `effort`, with a flag?
-2. **`mask` vs removal:** keep removed samples visible (proposed), or keep
-   `del_list` deleting rows?
-3. **Where splits live:** in the data (`DataSource.split`, proposed), or
-   only in run configuration?
+1. **Effort units: raw, with a flag.** An unprocessed effort may be a
+   current (to be converted) or a linear actuator's force in N, not a
+   torque. `effort` therefore keeps the recorded units, and `effort_kind` /
+   `effort_unit` say what it is per joint. The solver refuses kinds other
+   than joint torque (revolute) and joint force (prismatic).
+2. **Removed samples: mask.** Nothing is deleted. `mask` marks valid
+   samples, and legacy converters apply it.
+3. **Splits: in the data.** The maintainer delegated this one, and the
+   proposal stands. `DataSource.split` and the session label are carried
+   by the data; run configuration selects splits by name.
