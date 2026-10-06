@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Identification validation per joint (#103): `validation_metrics` gains
+  `per_joint` (RMSE identified/nominal in the joint's unit, N for prismatic,
+  N·m for revolute; measured std; normalised RMSE; R²; `predictive`),
+  `unpredictable_joints` (held-out RMSE not below the measured std: no
+  better than a constant) and `correlation_normalised` (correlation of
+  per-joint standardised signals). The verdict's `validation_correlation`
+  now uses the normalised value, and `validation_unpredictable_joints` counts
+  flagged joints; the pooled `correlation` is kept. Terminal and HTML
+  reports show the per-joint table and flag unpredictable joints.
+
 - Stage-aware verdicts and reports (#63).
   - `verify()` separates per-stage verdicts: `verdict.stages` gains `data`,
     `fit`, `validation` (`fallback` on training data, never held-out

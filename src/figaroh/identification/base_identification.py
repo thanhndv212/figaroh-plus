@@ -824,6 +824,51 @@ class BaseIdentification(ABC):
                 for i in range(n_active)
             }
 
+        # Per joint, in that joint's unit (#103): pooled numbers mix N and
+        # N·m and are dominated by the largest torques (gravity). A joint
+        # whose held-out RMSE is not below the std of its measured effort
+        # is predicted no better than by a constant.
+        per_joint_metrics = {}
+        unpredictable = []
+        z_measured, z_identified = [], []
+        for i, name in enumerate(joint_names):
+            keep = val_mask if val_mask is not None else np.ones(n_val, bool)
+            sl = slice(i * n_val, (i + 1) * n_val)
+            meas = tau_val_measured[sl][keep]
+            ident = tau_val_identif[sl][keep]
+            nom = tau_val_nominal[sl][keep]
+            std = float(np.std(meas))
+            rmse_id = float(np.sqrt(np.mean((meas - ident) ** 2)))
+            rmse_nom = float(np.sqrt(np.mean((meas - nom) ** 2)))
+            predictive = bool(rmse_id < std)
+            if not predictive:
+                unpredictable.append(name)
+            unit = ""
+            if self.model.existJointName(name):
+                short = self.model.joints[self.model.getJointId(name)].shortname()
+                unit = "N" if short.startswith("JointModelP") else "N·m"
+            per_joint_metrics[name] = {
+                "unit": unit,
+                "rmse_identified": rmse_id,
+                "rmse_nominal": rmse_nom,
+                "std_measured": std,
+                "nrmse": rmse_id / std if std > 0 else float("inf"),
+                "r2": 1.0 - rmse_id**2 / std**2 if std > 0 else float("-inf"),
+                "predictive": predictive,
+            }
+            if std > 0:
+                z_measured.append((meas - meas.mean()) / std)
+                z_identified.append((ident - meas.mean()) / std)
+        # correlation of per-joint standardised signals: every joint counts
+        # alike, whatever its unit or torque range
+        correlation_normalised = float("nan")
+        if z_measured and sum(len(z) for z in z_measured) > 1:
+            correlation_normalised = float(
+                np.corrcoef(np.concatenate(z_measured), np.concatenate(z_identified))[
+                    0, 1
+                ]
+            )
+
         n_used = n_val if val_mask is None else int(val_mask.sum())
         metrics = {
             "effort_rmse": (identif_stats["rmse"], "N·m or N"),
@@ -850,7 +895,12 @@ class BaseIdentification(ABC):
             "improvement_pct": _improvement(
                 nominal_stats["rmse"], identif_stats["rmse"]
             ),
+            # pooled over joints and units, kept for existing readers; the
+            # verdict uses correlation_normalised (#103)
             "correlation": correlation,
+            "correlation_normalised": correlation_normalised,
+            "per_joint": per_joint_metrics,
+            "unpredictable_joints": unpredictable,
             "joint_names": joint_names,
             "tau_nominal_per_joint": _per_joint(tau_val_nominal),
             "tau_identified_per_joint": _per_joint(tau_val_identif),
@@ -2025,8 +2075,15 @@ class BaseIdentification(ABC):
             )
             print(
                 f"    Improvement:     {val['improvement_pct']:.1f}%    "
-                f"Correlation:     {val['correlation']:.4f}"
+                "Correlation (per-joint normalised): "
+                f"{val.get('correlation_normalised', float('nan')):.4f}"
             )
+            for name, m in val.get("per_joint", {}).items():
+                flag = "" if m["predictive"] else "  <- not better than a constant"
+                print(
+                    f"    {name:24s} RMSE {m['rmse_identified']:.4g} {m['unit']}"
+                    f"  std {m['std_measured']:.4g}  R² {m['r2']:.3f}{flag}"
+                )
         else:
             print("  Validation: no separate validation data provided.")
             print(
@@ -2129,8 +2186,13 @@ class BaseIdentification(ABC):
             "rmse": result.get("rmse norm (N/m)", float("nan")),
         }
         if validation is not None:
+            # per-joint normalised: a pooled correlation is dominated by the
+            # largest (gravity) torques and mixes N with N·m (#103)
             metrics["validation_correlation"] = validation.get(
-                "correlation", float("nan")
+                "correlation_normalised", validation.get("correlation", float("nan"))
+            )
+            metrics["validation_unpredictable_joints"] = float(
+                len(validation.get("unpredictable_joints", []))
             )
             metrics["validation_improvement_pct"] = validation.get(
                 "improvement_pct", float("nan")
