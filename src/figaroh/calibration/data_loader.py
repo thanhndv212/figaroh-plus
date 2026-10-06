@@ -158,7 +158,8 @@ def load_data(path_to_file, model, calib_config, del_list=[]):
 
     q_exp = np.empty((calib_config["NbSample"], calib_config["q0"].shape[0]))
     for i in range(calib_config["NbSample"]):
-        config = calib_config["q0"]
+        # a copy: q0 is robot.q0, which must not end up as the last sample (#125)
+        config = calib_config["q0"].copy()
         config[calib_config["config_idx"]] = q_act[i, :]
         q_exp[i, :] = config
 
