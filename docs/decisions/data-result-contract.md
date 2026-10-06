@@ -145,9 +145,24 @@ class with optional fields.
 
 - `files`: path → sha256.
 - `adapter`: name and version.
-- `split`: one of `training`, `validation`, `confirmation` or a free
-  label, plus a session id.
+- `session`: the recording's identity: an id and the recording date.
+  It describes where the data came from, not how a study uses it, so it
+  carries no role.
 - `notes`: free text, e.g. "velocity shifted 3 samples earlier".
+
+### `Protocol` (roles, versioned)
+
+A small manifest, stored as a file next to the data or the study:
+- `name` and `version`;
+- per session, its role (`training`, `validation`, `confirmation` or a free
+  label), with the session referenced by the sha256 of its files.
+
+A run configuration names a protocol; it does not list or define splits.
+The same session can be validation in one protocol and training in
+another without editing the data, and a changed file no longer matches its
+hash, so a frozen protocol cannot be silently altered. The TIAGo held-out
+protocol (examples `docs/development/tiago-mocap-heldout-protocol.md` and
+its test) becomes the first manifest.
 
 ### `TrajectoryData` (dynamic)
 
@@ -166,21 +181,33 @@ class with optional fields.
 Rules:
 - **Validation:** checked at construction: shapes, finite values, strictly
   increasing `t`, joint names present in the model.
-- **Effort before solving:** the solver needs joint effort, so it checks
-  `effort_kind` per joint. It accepts `joint_torque` on revolute joints and
-  `joint_force` on prismatic joints. Any other kind is refused with a
-  message naming the joint and its kind; it is never solved as if it were
-  N·m. Converting (current sensing, motor-side torque, load fraction) is the
-  adapter's job (`process_torque_data` today), and the conversion is
-  recorded in `effort_conversion`.
+- **Effort before solving:** the solver checks `effort_kind` per joint.
+  - It accepts `joint_torque` on revolute joints and `joint_force` on
+    prismatic joints.
+  - It also accepts a drive-side kind (`motor_current`, `motor_torque`,
+    `load_fraction`) on a joint whose model declares an unknown drive gain
+    for it (torque constant × reduction, or a load scale). The dynamic
+    model is linear in that gain, so it is identified with the other
+    parameters; this is how a robot whose `kmotor` is not trusted is
+    identified.
+  - Any other combination is refused with a message naming the joint and
+    its kind. Nothing is ever solved as if it were N·m.
+  - Converting with known constants is the adapter's job
+    (`process_torque_data` today), and the conversion is recorded in
+    `effort_conversion`.
 - **Mask, not removal:** loaders and outlier steps set `mask`; arrays keep
   every recorded sample, so reports can show what was excluded and why.
   `to_legacy()` applies the mask, so legacy consumers see the same rows as
   today.
-- **Splits are data:** every sample belongs to a `DataSource.split` (and
-  session). The held-out roles (training, validation, confirmation) travel
-  with the data rather than living in configuration or a test file. A run
-  configuration selects splits by name; it does not define them.
+- **Mask after filtering (trajectories):** filtering and differentiation
+  run on the continuous recorded signal. The mask is applied when the
+  regressor rows are built, so excluding samples never creates a gap that a
+  filter or a finite difference crosses. Decimation selects from the
+  filtered signal, and a decimated sample is used only if it is unmasked.
+  Postures (`PoseObservations`) are independent, so the mask applies
+  directly.
+- **Sessions are data, roles are protocol:** every sample carries its
+  `DataSource.session`; roles come from a `Protocol`.
 - **Filtering stays where it is:** the type records what was done, it does
   not do it.
 - **Stacking:** the joint-major stacking the solver uses becomes a method
@@ -255,7 +282,8 @@ the existing archive files plus `stages.json`, and `verdict.json` gains a
 
 **Benefit:**
 - **Conventions travel with the data:** joint order, units, effort origin,
-  clock, mask and split are carried by it and validated once.
+  clock, mask and session are carried by it and validated once; roles by a
+  protocol manifest.
 - **Reports and archives:** they can say which stage produced which
   number.
 
@@ -275,8 +303,9 @@ Two concrete consumers, both in figaroh-examples (examples#17):
 2. **TIAGo mocap calibration adapter (geometric).**
    - Points: the four points named BL, BR, TR, TL, with `frame` =
      `qualisys:base_frame`.
-   - Sessions: the held-out protocol's four, labelled with their roles, so
-     the split lives in the data rather than in a test file.
+   - Sessions: the four protocol sessions carry their ids and dates; their
+     roles move from the doc/test into a `Protocol` manifest referencing
+     them by hash.
    - `.to_legacy()` reproduces today's `PEE_measured` and `q_measured`
      byte for byte.
 
@@ -288,7 +317,15 @@ Acceptance for the implementation (#55):
   - a validation fallback to training data is recorded as stage
     `validation` `fallback`, not only as a log warning;
   - an export rejection (#62) as `export` `failed`.
-- **Fixed with it:** the `q0` aliasing (#125) and the N/m label.
+- **Effort kinds:** a `motor_current` effort is refused without a declared
+  drive gain and accepted with one; a prismatic joint in N is accepted.
+- **Mask order:** masking samples of a trajectory gives the same regressor
+  rows as filtering the full signal and then dropping those rows, and
+  differs from dropping them before filtering.
+- **Protocol:** a manifest with a session whose file hash does not match is
+  refused.
+- **Fixed with it:** the N/m label. The `q0` aliasing is fixed separately in
+  #125.
 
 Not verified yet:
 - that the field list covers TALOS upper-body and UR10 calibration without
@@ -301,11 +338,15 @@ Both are checked during #55 and examples#17.
 
 1. **Effort units: raw, with a flag.** An unprocessed effort may be a
    current (to be converted) or a linear actuator's force in N, not a
-   torque. `effort` therefore keeps the recorded units, and `effort_kind` /
-   `effort_unit` say what it is per joint. The solver refuses kinds other
-   than joint torque (revolute) and joint force (prismatic).
+   torque. `effort` keeps the recorded units, and `effort_kind` /
+   `effort_unit` say what it is per joint. Refinement agreed in review: a
+   drive-side kind is accepted when the model declares an unknown drive gain
+   for that joint, and is otherwise refused.
 2. **Removed samples: mask.** Nothing is deleted. `mask` marks valid
-   samples, and legacy converters apply it.
-3. **Splits: in the data.** The maintainer delegated this one, and the
-   proposal stands. `DataSource.split` and the session label are carried
-   by the data; run configuration selects splits by name.
+   samples, and legacy converters apply it. Refinement agreed in review:
+   for trajectories the mask is applied after filtering and
+   differentiation.
+3. **Splits: delegated.** Refined in review from "splits in the data":
+   session identity is carried by the data, while roles are study-specific
+   and live in a versioned `Protocol` manifest that references sessions by
+   hash. Run configuration names a protocol.
