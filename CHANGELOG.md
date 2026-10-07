@@ -226,6 +226,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The exciting-trajectory optimiser enforces collision clearance along the
+  trajectory (#143). Its collision constraint was empty when the robot's
+  geometry model had no collision pairs (no SRDF, as for the UR10): every
+  two geometries on non-adjacent bodies are now paired (`srdf` removes
+  pairs). Collision was checked at waypoints only, so splines crossed
+  obstacles between them; initial guesses and every solved segment must now
+  keep `collision_margin` along the whole spline (`collision_check_frequency`,
+  default 200 Hz), and `collision_checks_per_interval` adds check points
+  inside the constraint. `collision_screen` computes exact distances only for
+  nearby pairs. Robots whose trajectories crossed obstacles now need a
+  collision-free joint range (UR10 example: `joint_box`).
 - Calibration's identifiable parameter set no longer depends on global random
   state (#99). The structural selection draws its random configurations from
   a generator seeded by the new `parameters.random_seed` (default 0, legacy
