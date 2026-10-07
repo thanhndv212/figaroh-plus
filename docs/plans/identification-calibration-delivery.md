@@ -1,6 +1,7 @@
 # Identification and calibration delivery plan
 
-**Status: Tracker setup approved; execution details under review — revision 4, 2026-10-02.**
+**Status: Tracker setup approved; execution details under review — revision 4, 2026-10-02.
+Implementation status refreshed 2026-10-06 (after W3 closure)** (see [implementation status](#implementation-status)).
 Confirmed user preferences: advance calibration alongside dynamic identification;
 TIAGo mocap is the first calibration reference, with TALOS contact as the
 second consumer/regression target. The user authorized GitHub milestone/issue creation on 2026-10-02 and requested
@@ -75,41 +76,119 @@ samples and geometric pose/contact observations as separate payloads.
 
 ```mermaid
 flowchart TD
-    R[Scope and contract review] --> W1[W1: Fixtures]
-    R --> W2[W2: TALOS regression]
-    R --> W3[W3: Data/result contracts]
-    R --> W4[W4: Engineering process]
-    W1 --> D2[D2: Signal audit]
-    D1[D1: Acceleration correctness] --> D3[D3: UR10 truth fixture]
+    R["Scope and contract review"]
+    W1["<b>W1: Fixtures</b> · #33 ✅<br/>✓ ex#15 ex#16 ex#43 ex#59"]
+    W2["<b>W2: TALOS regression</b> · #34 ✅<br/>✓ ex#14 ex#48"]
+    W3["<b>W3: Data/result contracts</b> · #35 ✅<br/>✓ #54 #55 #125 #131<br/>✓ ex#17"]
+    W4["<b>W4: Engineering process</b> · #50 ✅<br/>✓ #56 #57 #58 #73 #81–#85<br/>✓ ex#18 ex#40 ex#45 ex#50<br/>✓ ex#56 ex#60 ex#76"]
+    D1["<b>D1: Acceleration correctness</b> · #36 ✅<br/>✓ #32"]
+    D2["<b>D2: Signal audit</b> · #37 ✅<br/>✓ ex#19 ex#20 ex#51"]
+    D3["<b>D3: UR10 truth fixture</b> · #38 ✅<br/>✓ #142 #143<br/>✓ ex#21"]
+    D4["<b>D4: Physical comparison</b> · #39<br/>in review: ex#12 (PR ex#13)<br/>#59 ex#22"]
+    D5["<b>D5: Convergence research</b> · #40<br/>in review: #22 (PR #31)<br/>#30"]
+    D6["<b>D6: Inertial export</b> · #41 ✅<br/>✓ #60 (PR #138)"]
+    D7["<b>D7: Dynamic reference</b> · #42<br/>#61 #116<br/>ex#23 ex#68 ex#69"]
+    C1["<b>C1: Frames/data audit</b> · #43 ✅<br/>✓ ex#24 ex#25"]
+    C2["<b>C2: Calibration truth/holdout</b> · #44 ✅<br/>✓ #101 #102 #105 #110 #113<br/>✓ ex#26 ex#27 ex#67"]
+    C3["<b>C3: Geometric export</b> · #45 ✅<br/>✓ #62 #111 #114 #123<br/>✓ ex#28"]
+    C4["<b>C4: Calibration reference</b> · #46 ✅<br/>✓ #97 #98 #99 #119 #120<br/>✓ ex#29"]
+    S1["<b>S1: Minimum reporting contract</b> · #47 ✅<br/>✓ #63 #70 #100 #103<br/>✓ ex#30 ex#36"]
+    U1["<b>U1: Onboarding acceptance</b> · #51<br/>✓ #66<br/>ex#33"]
+    A["M1 acceptance review"]
+    S2["<b>S2: Sensitivity/uncertainty</b> · #48<br/>✓ #107<br/>open: #64 ex#31"]
+    S3["<b>S3: Improved experiment design</b> · #49<br/>#65 #90<br/>ex#32"]
+    S4["<b>S4: Selective composition</b> · #52<br/>#67"]
+    B1["<b>B1: Backend parity</b> · #53<br/>#68<br/>ex#34"]
+    LC1["<b>LC1: Log-Cholesky production</b> · #20<br/>#23 #24 #25<br/>ex#11"]
+
+    R --> W1
+    R --> W2
+    R --> W3
+    R --> W4
+    W1 --> D2
+    D1 --> D3
     D2 --> D3
-    D3 --> D4[D4: Physical comparison]
-    D4 --> D5[D5: Convergence research]
-    D6[D6: Inertial export] --> D7[D7: Dynamic reference]
+    D3 --> D4
+    D4 --> D5
+    D6 --> D7
     D4 --> D7
     D5 -. optional nonlinear path .-> D7
-    W1 --> C1[C1: Frames/data audit]
+    D5 -. go decision .-> LC1
+    W1 --> C1
     W2 --> C1
-    C1 --> C2[C2: Calibration truth/holdout]
-    C2 --> C3[C3: Geometric export]
-    C3 --> C4[C4: Calibration reference]
-    W3 --> S1[S1: Minimum reporting contract]
+    C1 --> C2
+    C2 --> C3
+    C3 --> C4
+    W3 --> S1
     S1 --> D7
     S1 --> C4
-    D7 --> U1[U1: Onboarding acceptance]
+    D7 --> U1
     C4 --> U1
-    D7 --> A[M1 acceptance review]
+    D7 --> A
     C4 --> A
     U1 --> A
-    A --> S2[S2: Sensitivity/uncertainty]
-    S2 --> S3[S3: Improved experiment design]
-    A --> S4[S4: Selective composition]
+    A --> S2
+    S2 --> S3
+    A --> S4
     W3 --> S4
-    A --> B1[B1: Backend parity]
+    A --> B1
+
+    classDef cleared fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef ready fill:#fff3cd,stroke:#b8860b,color:#5c4400
+    class R,W1,W2,W3,W4,D1,D2,C1,C2,C3,S1,D6,C4,D3 cleared
+    class D4,D5 ready
+    class D4,D5 active
+    classDef active fill:#fff3cd,stroke:#b8860b,stroke-width:3px,stroke-dasharray:6 3,color:#5c4400
 ```
 
+Legend: **green ✅ = tracker cleared** (closure record confirmed); **amber =
+ready**, all prerequisites cleared (dashed amber border = work in progress or
+in review); uncoloured = blocked on an upstream package.
+Each box lists its tracker number, then the issues in its milestone (core
+first, then `ex#` = figaroh-examples). Issues marked ✓ are closed; unmarked
+issues are open. Two open examples issues have no package yet: ex#70 (TIAGo
+suspension real-data fit) and ex#71 (TIAGo backlash surface); both are
+research examples outside M1.
+
+### Implementation status
+
+Status as of 2026-10-06, taken from the GitHub trackers. The trackers stay
+authoritative; refresh this table when a tracker closes.
+
+| Package | Status | Closed | Delivered by / remaining |
+| --- | --- | --- | --- |
+| **W1** fixtures | ✅ **Cleared** | 2026-10-03 | examples #44, #57, #61, #62: hosted examples CI on both Pinocchio profiles; every robot loads from a clean checkout |
+| **W2** TALOS regression | ✅ **Cleared** | 2026-10-03 | examples #46, #54: examples #14 explained; deterministic TALOS fixtures and noise-floor held-out checks |
+| **W4** engineering process | ✅ **Cleared** | 2026-10-03 | core #71, #74, #80, #86–#93; examples #37, #40, #47: templates, real-model regressor tests, lint debt removed, full pre-commit blocking |
+| **D1** acceleration | ✅ **Cleared** | 2026-10-02 | core #69 (fixes #32) |
+| **D2** signal audit | ✅ **Cleared** | 2026-10-03 | examples #19/#20 UR10 and TIAGo audits, examples #35 |
+| **C1** frames/data audit | ✅ **Cleared** | 2026-10-03 | examples #24/#25 TIAGo and TALOS audits; its follow-ups #97–#99 were moved to C4 and closed there |
+| **C2** calibration truth/holdout | ✅ **Cleared** | 2026-10-05 | accepted on core `a991bf3` + examples `c791ecd`; deferred items moved to #119/#120 (C4) |
+| **C3** geometric export | ✅ **Cleared** | 2026-10-06 | accepted on core `efd9f69` + examples `2c75f50` |
+| **W3** data/result contracts | ✅ **Cleared** | 2026-10-06 | core #126 (ADR, #54), #128/#130 (contract, #55), #132 (#131), #127 (#125); examples #84 (#17); accepted on core `4ec06d4` + examples `9a9e6d7` |
+| **D3** UR10 truth fixture | ✅ **Cleared** | 2026-10-07 | examples #21 by examples #89/#91 (fixture, frozen protocol v1, UR10 example moved onto it); #142 by #144; #143 by #145 + examples #92 (both added 2026-10-07); accepted on core `2260786` + examples `b23b836` (core 846 passed; examples `validate.py` 16/16, pytest 255 passed) |
+| D5 convergence research | In review (optional) | — | #22 in review via PR #31 (revise decision; needs a rebase); #30 ready |
+| **D6** inertial export | ✅ **Cleared** | 2026-10-06 | #60 by PR #138; accepted on core `0e6a78c` + examples `a3381bc` (core 817 passed; examples `validate.py` 16/16, pytest 237 passed); merged-body export left to D7 (#61) |
+| **S1** reporting contract | ✅ **Cleared** | 2026-10-06 | core #63 (PR #134), #70, #100, #103 (PR #135); examples #30 (examples PR #85), #36 |
+| **C4** calibration reference | ✅ **Cleared** | 2026-10-06 | examples #29 by examples #88 (`reference_run.py`); #119 by #141 (core support; TIAGo protocol keeps one marker); #120 by #140 + examples #87 (`map` replaces the coefficient); #97–#99 by #127, #137, #139 + examples #86; accepted on core `c80b5fc` + examples `88e2fc2`. Held-out marker RMSE 3.8–4.2 mm; export parity ≤ 2.1e-12 m |
+| S2 uncertainty | In progress (M2) | — | core #107 calibration standard errors fixed; #64 open |
+| U1 onboarding | In progress | — | core #66 guideline published; the TIAGo mocap walkthrough can use C4 now; acceptance still waits on D7 |
+| D4 physical comparison | Ready, partly in review | — | D3 cleared; examples #12 in review (draft examples PR #13); #59 ready on the frozen UR10 protocol; examples #22 waits on #59 |
+| D7, S3, B1, LC1 | Blocked | — | waiting on the upstream packages shown in the graph; D7 waits on D4 |
+| S4 composition (M2) | Blocked | — | W3 cleared; still waits on accepted M1 references |
+
+**Gate summary:** M0's delivery roster (W1, W2, W4) and M1.1 (D1, D2, C1)
+are cleared. **The calibration workstream is complete through M1.4** (C2, C3,
+C4). On the dynamic side D3 and D6 have cleared and D4 is ready (partly in
+review). In M1.4, W3, S1 and C4 have cleared; D7 waits on D4, and
+U1 acceptance waits on D7.
+
+Housekeeping: the examples milestones for W1, D2, C1 and W4 have no open issues
+but are still open on GitHub, so they can be closed.
 
 Log-Cholesky #30 can use the independent analytic core fixture. D1 is fixed
-(#69, merged 2026-10-02); real-dataset conclusions still wait for D2. Inertial export
+(#69, merged 2026-10-02) and the D2 audits are complete, so real-dataset work
+can start with D3. Inertial export
 can be tested with known feasible parameters independently of solver success.
 Calibration need not wait for dynamic optimization, but changes to shared
 export/report code require paired regression coverage and serial integration.
@@ -221,10 +300,15 @@ for core #23–#25 and examples #11. D5 owns research #22/#30; its accepted go
 decision is a dependency, not completion of those production issues. LC1 is
 outside baseline M1 closure and introduces no additional production scope.
 
-Initial queue: D1 / core #32 was the first ready correctness fix and is
-delivered by #69 (merged 2026-10-02). W1 asset reproduction, W2 / examples #14
-and individual signal/contract audits are ready to investigate. Later packages remain blocked or planned as labeled. Select one
-issue, validate its focused change, open its PR, then await review/merge approval.
+Initial queue (2026-10-02): D1 / core #32 was the first ready correctness fix,
+delivered by #69. W1, W2, W3, W4, D1, D2, D3, D6, C1, C2, C3, C4 and S1 have since cleared
+(see [implementation status](#implementation-status)). Current queue
+(2026-10-07): D6 and C4 have cleared, so calibration is done through M1.4.
+The critical path is now dynamic: D3 cleared on 2026-10-07, so
+D4 comparison (#59 ready, then examples #22, on the frozen UR10 protocol) → D7 dynamic
+reference → U1 acceptance. D5 #22 (PR #31) is in review on the optional path.
+Select one issue, validate its focused change, open its PR, then await
+review/merge approval.
 
 ## Experimental design decisions to review before coding
 
@@ -397,7 +481,8 @@ narrow ADRs and the benchmark protocol before approving implementation.
 
 Select only ready work: existing core #32 (delivered by #69); reproducible example asset fixes;
 existing examples #14; separate robot sampling audits. Calibration frame audit
-can proceed in parallel. Open focused issues for the approved missing work.
+can proceed in parallel. **Done (2026-10-03):** this batch cleared as D1, W1, W2,
+D2 and C1, together with W4. Open focused issues for the approved missing work.
 Each completed issue produces a PR for review; dependent work waits or uses an
 explicit tested commit pair. Review evidence before expanding the batch.
 
@@ -407,7 +492,10 @@ Fresh UR10 truth fixture and calibration truth/held-out fixture; physical solver
 comparison and #30; independent inertial/geometric export gates; then dynamic
 and calibration reference integration. Each batch ends with an evidence review,
 not a guessed calendar deadline. Estimates follow a scoped issue audit; no
-release date or package version is promised in this draft.
+release date or package version is promised in this draft. Progress at
+2026-10-06: the calibration batches (C2, C3, C4) and inertial export (D6)
+have cleared; the UR10 truth fixture (D3) cleared on 2026-10-07;
+the physical comparison is only partly in review.
 
 ## Decisions still open
 
