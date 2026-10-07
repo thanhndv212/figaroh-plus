@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-07
+
+This release ships the **calibration reference workflow** (roadmap M1.1–M1.4,
+calibration side; delivery packages D2, C1–C4, W3 and S1) and the inertial
+URDF export (D6), with the core fixes found by the UR10 truth fixture (D3:
+#142, #143). The dynamic identification reference (D4, D7) is not in this
+release; it is planned for 0.7.0. Release tracker: #146.
+
+Behaviour changes when upgrading from 0.5.0, detailed in the entries below:
+
+- `solve(outlier_threshold=...)` is a position error in metres (it was a
+  number of standard deviations) and outliers are now excluded (#98).
+- `regularization_coefficient` is deprecated and defaults to 0; use
+  `estimation.method: map` (#120). It is planned for removal in 1.0.
+- Exciting-trajectory optimisation adds collision constraints for robots
+  without an SRDF and checks clearance along the whole spline (#143); such
+  robots may need a collision-free joint range (UR10 example: `joint_box`).
+- Results change on rerun: base parameters at full precision (#142), a
+  seeded identifiable-parameter selection (#99), and corrected `full_params`
+  and `joint_offset` semantics (#101, #110).
+- `export_urdf` refuses what it cannot write instead of skipping it (#62) and
+  writes complete inertial sets (#60).
+
+Known limitations: calibration accuracy is demonstrated on TIAGo mocap only
+(held-out marker RMSE 3.8–4.2 mm); nothing is applied to a running robot, and
+export parity shows file consistency, not hardware accuracy; inertial export
+is verified with known parameters, not yet with identified ones.
+
 ### Added
 
 - Calibration with several points of one rigid body per sample (#119).
