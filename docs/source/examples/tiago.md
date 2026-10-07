@@ -59,5 +59,10 @@ comparison. See [Reporting & Verification](../reporting_and_verification.md).
 
 - [Calibration Walkthrough](../tutorials/calibration_walkthrough.md) /
   [Identification Walkthrough](../tutorials/identification_walkthrough.md)
+- [Choosing what to estimate](../tutorials/calibration_estimation_guide.md) —
+  estimation methods, with evidence from the TIAGo truth fixture
+- TIAGo calibration evidence in figaroh-examples:
+  [held-out protocol](https://github.com/thanhndv212/figaroh-examples/blob/main/docs/development/tiago-mocap-heldout-protocol.md)
+  and [synthetic truth fixture](https://github.com/thanhndv212/figaroh-examples/blob/main/docs/development/tiago-calibration-synthetic-truth.md)
 - Full README with class hierarchy, troubleshooting, and expected accuracy:
   [figaroh-examples/examples/tiago/README.md](https://github.com/thanhndv212/figaroh-examples/blob/main/examples/tiago/README.md)

@@ -16,20 +16,36 @@ Joint-level parameters (auto-applied to the URDF):
     dynamics attributes. They come from figaroh's identification or
     calibration solvers and can be applied automatically:
 
-    - Joint placement (additive): ``d_px_{joint}``, ``d_py_{joint}``,
-      ``d_pz_{joint}``, ``d_phix_{joint}``, ``d_phiy_{joint}``,
-      ``d_phiz_{joint}``
+    - Joint placement (in the joint frame): ``d_px_{joint}``,
+      ``d_py_{joint}``, ``d_pz_{joint}``, ``d_phix_{joint}``,
+      ``d_phiy_{joint}``, ``d_phiz_{joint}``; a joint's six values are
+      composed as ``origin * SE3(exp3(d_phi), d_p)``
     - Joint offset / calibration (additive): ``offsetPX_{joint}``,
       ``offsetPY_{joint}``, ``offsetPZ_{joint}``, ``offsetRX_{joint}``,
       ``offsetRY_{joint}``, ``offsetRZ_{joint}``
-    - Legacy offset (absolute): ``off_{joint}``
     - Mass (absolute): ``m_{link}``
-    - First moments (absolute): ``mx_{link}``, ``my_{link}``, ``mz_{link}``
-    - Inertia tensor (absolute): ``Ixx_{link}``, ``Ixy_{link}``, ...,
-      ``Izz_{link}``
+    - Standard inertial parameters (absolute, all ten per link):
+      ``m_``, ``mx_``, ``my_``, ``mz_``, ``Ixx_``, ``Ixy_``, ``Iyy_``,
+      ``Ixz_``, ``Iyz_``, ``Izz_`` + ``{link}``; see
+      :func:`_apply_standard_inertial` for the conventions
     - Viscous/static friction (absolute): ``fv_{joint}``, ``fs_{joint}``
     - Armature (absolute): ``Ia_{joint}``
-    - Joint elasticity (additive): ``k_PX_{joint}``, ..., ``k_RZ_{joint}``
+    - Joint elasticity (additive): ``k_PX_{joint}``, ..., ``k_RZ_{joint}``,
+      stored as a custom ``<dynamics elasticity>`` attribute that URDF
+      parsers ignore: it does not change the reloaded kinematics
+
+    Inertial targets (``m_`` ... ``Izz_``) name a link, or a moving joint
+    as identification does (``get_standard_parameters`` keys by Pinocchio
+    joint); a joint resolves to its child link.
+
+    Refused (``ValueError``, nothing written): legacy ``off_{joint}``; names
+    targeting a joint or link the URDF does not have; a joint carrying both
+    ``offset*`` and ``d_*``; a partial inertial set (first moments or tensor
+    entries without all ten parameters); a joint target whose child link has
+    massive links attached by fixed joints (Pinocchio merges them into the
+    joint's body, so the estimate does not belong to one URDF link); a set
+    with ``m <= 0``; and, unless ``allow_infeasible=True``, a set that is not
+    physically consistent.
 
 Metrology frame parameters (user-defined, not auto-applied):
     These define the transformation between the robot (URDF) and the
@@ -77,6 +93,8 @@ import logging
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Optional, Union, List
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
@@ -272,23 +290,53 @@ def _parse_frame_param_name(name: str) -> Optional[tuple]:
     return None
 
 
+def is_kinematic_correction(name: str) -> bool:
+    """Whether ``name`` is a joint correction that changes the reloaded
+    kinematics: a ``full_params`` placement (``d_*``) or a joint offset
+    (``offset*``). Frame, elastic and dynamic parameters are not."""
+    parsed = _parse_param_name(name)
+    return parsed is not None and parsed[0] in ("joint_placement", "joint_offset")
+
+
 # ── XML helpers ──────────────────────────────────────────────────
 
 
 def _find_joint(doc: ET.ElementTree, name: str) -> Optional[ET.Element]:
-    """Find a <joint> element by name attribute."""
-    for joint in doc.findall(".//joint"):
+    """Find the robot's <joint> by name.
+
+    Only direct children of <robot>: <transmission> blocks also contain
+    <joint name=...> elements, and writing there leaves the model unchanged
+    (figaroh-plus#114).
+    """
+    for joint in doc.findall("joint"):
         if joint.get("name") == name:
             return joint
     return None
 
 
 def _find_link(doc: ET.ElementTree, name: str) -> Optional[ET.Element]:
-    """Find a <link> element by name attribute."""
-    for link in doc.findall(".//link"):
+    """Find the robot's <link> by name (direct children of <robot>)."""
+    for link in doc.findall("link"):
         if link.get("name") == name:
             return link
     return None
+
+
+def _require_joint(doc: ET.ElementTree, name: str) -> ET.Element:
+    """The robot's <joint> ``name``; a correction for a missing joint is an
+    error, not a skip, or the exported model silently differs (#62)."""
+    joint = _find_joint(doc, name)
+    if joint is None:
+        raise ValueError(f"Joint '{name}' not found in the URDF")
+    return joint
+
+
+def _require_link(doc: ET.ElementTree, name: str) -> ET.Element:
+    """The robot's <link> ``name``; see :func:`_require_joint`."""
+    link = _find_link(doc, name)
+    if link is None:
+        raise ValueError(f"Link '{name}' not found in the URDF")
+    return link
 
 
 def _get_or_create_element(parent: ET.Element, tag: str) -> ET.Element:
@@ -308,7 +356,7 @@ def _get_xyz_array(elem: ET.Element, attr: str = "xyz") -> List[float]:
 def _set_xyz_array(elem: ET.Element, values: List[float], attr: str = "xyz") -> None:
     """Set a space-separated triple attribute from a float list.
 
-    Uses a clean format: up to 6 significant digits, no trailing zeros.
+    Uses a clean format: up to 12 significant digits, no trailing zeros.
     """
     elem.set(attr, " ".join(_fmt(v) for v in values))
 
@@ -317,93 +365,118 @@ def _fmt(v: float) -> str:
     """Format a float for URDF output — compact, no scientific notation."""
     if v == 0.0:
         return "0"
-    s = f"{v:.6g}"
+    # 12 significant digits: a reloaded model matches the calibrated one to
+    # ~1e-12, well below any measurement (6 digits left ~1e-6 rad, #62)
+    s = f"{v:.12g}"
     # Ensure we don't get scientific notation
     if "e" in s or "E" in s:
-        s = f"{v:.10f}".rstrip("0").rstrip(".")
+        s = f"{v:.16f}".rstrip("0").rstrip(".")
     return s
 
 
 # ── Handlers ─────────────────────────────────────────────────────
 
 
-def _apply_joint_placement(
-    doc: ET.ElementTree, target: str, idx: int, value: float, is_additive: bool
-) -> None:
-    """Apply a joint origin placement delta (d_px_*, base_*).
+def _apply_joint_placement(doc: ET.ElementTree, target: str, xyz_rpy) -> None:
+    """Apply one joint's ``full_params`` placement error to its origin.
 
-    ``target`` is the joint name (or ``"_base_"`` for base params).
-    ``idx`` maps to xyz (0-2) or rpy (3-5).
-    ``is_additive`` is always True for this category.
+    ``xyz_rpy`` holds ``d_px, d_py, d_pz, d_phix, d_phiy, d_phiz`` for
+    ``target``. They act in the joint frame, matching
+    :func:`figaroh.calibration.calibration_tools.update_joint_placement`:
+    ``origin <- origin * SE3(exp3(d_phi), d_p)``. The six values are applied
+    together because the rotation vector does not split into independent
+    per-axis rotations.
     """
-    if target == "_base_":
-        # Base params target the first non-fixed joint
-        for joint in doc.findall(".//joint"):
-            jtype = joint.get("type", "fixed")
-            if jtype != "fixed":
-                target_joint = joint.get("name", "")
-                break
-        else:
-            logger.warning("No non-fixed joint found for base_* params")
-            return
-    else:
-        target_joint = target
+    joint = _require_joint(doc, target)
 
-    joint = _find_joint(doc, target_joint)
-    if joint is None:
-        logger.warning("Joint '%s' not found in URDF, skipping", target_joint)
-        return
-
+    xyz_rpy = np.asarray(xyz_rpy, dtype=float)
     origin = _get_or_create_element(joint, "origin")
-    is_rotation = idx >= 3
+    xyz = np.array(_get_xyz_array(origin, "xyz"), dtype=float)
+    rot = _rpy_to_matrix(_get_xyz_array(origin, "rpy"))
+    xyz = xyz + rot @ xyz_rpy[0:3]
+    rot = rot @ _rotvec_to_matrix(xyz_rpy[3:6])
+    _set_xyz_array(origin, xyz.tolist(), "xyz")
+    _set_xyz_array(origin, _matrix_to_rpy(rot), "rpy")
 
-    if is_rotation:
-        attr = "rpy"
-        arr = _get_xyz_array(origin, attr)
-        if len(arr) < 3:
-            arr = [0.0, 0.0, 0.0]
-        arr[idx - 3] += value if is_additive else value
-        _set_xyz_array(origin, arr, attr)
+
+def _rotvec_to_matrix(rotvec) -> np.ndarray:
+    """Rotation vector to rotation matrix (Rodrigues, Pinocchio's ``exp3``)."""
+    rotvec = np.asarray(rotvec, dtype=float)
+    angle = np.linalg.norm(rotvec)
+    if angle < 1e-12:
+        return np.eye(3)
+    k = rotvec / angle
+    K = np.array([[0.0, -k[2], k[1]], [k[2], 0.0, -k[0]], [-k[1], k[0], 0.0]])
+    return np.eye(3) + np.sin(angle) * K + (1.0 - np.cos(angle)) * (K @ K)
+
+
+def _rpy_to_matrix(rpy: List[float]) -> np.ndarray:
+    """URDF roll-pitch-yaw to rotation matrix, ``Rz(yaw) Ry(pitch) Rx(roll)``."""
+    r, p, y = rpy
+    cr, sr, cp, sp, cy, sy = (
+        np.cos(r),
+        np.sin(r),
+        np.cos(p),
+        np.sin(p),
+        np.cos(y),
+        np.sin(y),
+    )
+    return np.array(
+        [
+            [cy * cp, cy * sp * sr - sy * cr, cy * sp * cr + sy * sr],
+            [sy * cp, sy * sp * sr + cy * cr, sy * sp * cr - cy * sr],
+            [-sp, cp * sr, cp * cr],
+        ]
+    )
+
+
+def _matrix_to_rpy(rot: np.ndarray) -> List[float]:
+    """Rotation matrix to URDF roll-pitch-yaw (inverse of :func:`_rpy_to_matrix`)."""
+    pitch = np.arctan2(-rot[2, 0], np.hypot(rot[0, 0], rot[1, 0]))
+    if np.isclose(np.cos(pitch), 0.0, atol=1e-12):
+        # gimbal lock: only roll - yaw (pitch > 0) or roll + yaw is defined
+        yaw = 0.0
+        roll = np.arctan2(np.sign(-rot[2, 0]) * rot[0, 1], rot[1, 1])
     else:
-        attr = "xyz"
-        arr = _get_xyz_array(origin, attr)
-        if len(arr) < 3:
-            arr = [0.0, 0.0, 0.0]
-        arr[idx] += value if is_additive else value
-        _set_xyz_array(origin, arr, attr)
+        roll = np.arctan2(rot[2, 1], rot[2, 2])
+        yaw = np.arctan2(rot[1, 0], rot[0, 0])
+    return [float(roll), float(pitch), float(yaw)]
 
 
 def _apply_joint_offset(
     doc: ET.ElementTree, target: str, idx: int, value: float, is_additive: bool
 ) -> None:
-    """Apply a joint calibration offset (offsetRX_*).
+    """Apply a joint offset (offsetPX_* … offsetRZ_*) to the joint origin.
 
-    Maps idx 0-2 to the calibration rising value (x,y,z not meaningful
-    for revolute joints — convention stores the angle in the first element).
-    For revolute joints: only the RX/RY/RZ component matters.
+    The offset acts in the joint's own frame, matching
+    :func:`figaroh.calibration.calibration_tools.apply_joint_offset`:
+    ``origin <- origin * offset``. ``idx`` 0-2 translates along the joint
+    frame's x/y/z (prismatic offset), 3-5 rotates about its x/y/z (revolute
+    offset), so the reloaded model at ``q`` equals the nominal model at
+    ``q + value``. The offset is written into ``<origin>`` because URDF
+    parsers (Pinocchio, robot_state_publisher) ignore ``<calibration>``.
+    Joint offsets are always additive.
     """
-    joint = _find_joint(doc, target)
-    if joint is None:
-        logger.warning("Joint '%s' not found in URDF, skipping", target)
-        return
+    joint = _require_joint(doc, target)
 
-    calib = _get_or_create_element(joint, "calibration")
-    current = calib.get("rising")
-    if current is not None:
-        new_val = float(current) + value if is_additive else value
+    origin = _get_or_create_element(joint, "origin")
+    xyz = np.array(_get_xyz_array(origin, "xyz"), dtype=float)
+    rot = _rpy_to_matrix(_get_xyz_array(origin, "rpy"))
+    if idx < 3:
+        xyz = xyz + rot[:, idx] * value
     else:
-        new_val = value
-    calib.set("rising", _fmt(new_val))
+        delta = [0.0, 0.0, 0.0]
+        delta[idx - 3] = value
+        rot = rot @ _rpy_to_matrix(delta)
+    _set_xyz_array(origin, xyz.tolist(), "xyz")
+    _set_xyz_array(origin, _matrix_to_rpy(rot), "rpy")
 
 
 def _apply_mass(
     doc: ET.ElementTree, target: str, _idx, value: float, _is_additive: bool = False
 ) -> None:
     """Replace link mass (m_* — always absolute)."""
-    link = _find_link(doc, target)
-    if link is None:
-        logger.warning("Link '%s' not found in URDF, skipping", target)
-        return
+    link = _require_link(doc, target)
     inertial = _get_or_create_element(link, "inertial")
     mass = _get_or_create_element(inertial, "mass")
     mass.set("value", _fmt(value))
@@ -413,10 +486,7 @@ def _apply_viscous_friction(
     doc: ET.ElementTree, target: str, _idx, value: float, _is_additive: bool = False
 ) -> None:
     """Replace joint dynamics damping (fv_* — always absolute)."""
-    joint = _find_joint(doc, target)
-    if joint is None:
-        logger.warning("Joint '%s' not found in URDF, skipping", target)
-        return
+    joint = _require_joint(doc, target)
     dyn = _get_or_create_element(joint, "dynamics")
     dyn.set("damping", _fmt(value))
 
@@ -425,10 +495,7 @@ def _apply_static_friction(
     doc: ET.ElementTree, target: str, _idx, value: float, _is_additive: bool = False
 ) -> None:
     """Replace joint dynamics friction (fs_* — always absolute)."""
-    joint = _find_joint(doc, target)
-    if joint is None:
-        logger.warning("Joint '%s' not found in URDF, skipping", target)
-        return
+    joint = _require_joint(doc, target)
     dyn = _get_or_create_element(joint, "dynamics")
     dyn.set("friction", _fmt(value))
 
@@ -437,10 +504,7 @@ def _apply_armature(
     doc: ET.ElementTree, target: str, _idx, value: float, _is_additive: bool = False
 ) -> None:
     """Replace joint armature inertia (Ia_* — always absolute)."""
-    joint = _find_joint(doc, target)
-    if joint is None:
-        logger.warning("Joint '%s' not found in URDF, skipping", target)
-        return
+    joint = _require_joint(doc, target)
     dyn = _get_or_create_element(joint, "dynamics")
     dyn.set("armature", _fmt(value))
 
@@ -453,10 +517,7 @@ def _apply_elasticity(
     URDF doesn't have a native elasticity element — we store it as
     a custom ``<dynamics elasticity="..."/>`` attribute.
     """
-    joint = _find_joint(doc, target)
-    if joint is None:
-        logger.warning("Joint '%s' not found in URDF, skipping", target)
-        return
+    joint = _require_joint(doc, target)
     dyn = _get_or_create_element(joint, "dynamics")
     # We use a single elasticity value; for multi-DOF joints more
     # sophisticated handling would be needed.
@@ -468,22 +529,192 @@ def _apply_elasticity(
     dyn.set("elasticity", _fmt(new_val))
 
 
+# Pinocchio ``toDynamicParameters()`` order, the order of identification's
+# standard parameters
+_INERTIAL_KEYS = ("m", "mx", "my", "mz", "Ixx", "Ixy", "Iyy", "Ixz", "Iyz", "Izz")
+_INERTIAL_CATEGORIES = frozenset({"mass", "first_moment", "inertia"})
+
+
+def _inertial_key(name: str, target: str) -> str:
+    """``"mx"`` for ``"mx_link1"`` with target ``"link1"``."""
+    return name[: -len(target) - 1]
+
+
+def _has_mass(link: ET.Element) -> bool:
+    mass = link.find("inertial/mass")
+    return mass is not None and float(mass.get("value", "0")) != 0.0
+
+
+def _resolve_inertial_link(doc: ET.ElementTree, target: str) -> str:
+    """The URDF link an inertial parameter ``target`` writes to.
+
+    A link name is taken as is. A joint name, as identification emits, means
+    Pinocchio's body of that joint, expressed in the joint frame, which the
+    URDF child link shares. That body is the child link alone only when no
+    massive link is attached to it by fixed joints; Pinocchio merges those
+    in, so such a target is refused rather than written into one link.
+    """
+    link = _find_link(doc, target)
+    joint = _find_joint(doc, target)
+    if link is not None:
+        if joint is not None and joint.find("child").get("link") != target:
+            raise ValueError(
+                f"Inertial target '{target}' names both a link and a joint "
+                f"with another child link; rename one"
+            )
+        return target
+    if joint is None:
+        raise ValueError(f"Link or joint '{target}' not found in the URDF")
+    if joint.get("type") == "fixed":
+        raise ValueError(
+            f"Inertial target '{target}' is a fixed joint, not a Pinocchio "
+            f"joint body; name the link instead"
+        )
+    child = joint.find("child").get("link")
+
+    children: dict = {}
+    for j in doc.findall("joint"):
+        if j.get("type") == "fixed":
+            children.setdefault(j.find("parent").get("link"), []).append(
+                j.find("child").get("link")
+            )
+    merged, stack = [], list(children.get(child, []))
+    while stack:
+        name = stack.pop()
+        if _has_mass(_require_link(doc, name)):
+            merged.append(name)
+        stack.extend(children.get(name, []))
+    if merged:
+        raise ValueError(
+            f"Inertial parameters of joint '{target}' cover link '{child}' "
+            f"and the fixed-attached links {sorted(merged)}; they cannot be "
+            f"written into one URDF link"
+        )
+    return child
+
+
+def _apply_standard_inertial(
+    doc: ET.ElementTree, link_name: str, p10, allow_infeasible: bool = False
+) -> None:
+    """Write one link's ten standard inertial parameters into ``<inertial>``.
+
+    ``p10`` follows Pinocchio ``toDynamicParameters()``:
+    ``[m, mx, my, mz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz]``, the first moments
+    ``m*c`` and the inertia ``I_O`` about the link-frame origin, in link-frame
+    axes. URDF stores the mass, the centre of mass ``c = h/m`` as
+    ``<origin xyz>``, and the inertia about ``c`` (parallel axis,
+    ``I_C = I_O - m (|c|^2 E - c c^T)``) in the axes of ``<origin rpy>``.
+    An existing ``rpy`` is kept and the tensor rotated into it,
+    ``R^T I_C R``, so the reloaded model is the same either way.
+
+    Raises ``ValueError`` for ``m <= 0`` (no centre of mass) and, unless
+    ``allow_infeasible``, for a set whose pseudo-inertia is not positive
+    semidefinite. The verdict is logged per link either way.
+    """
+    from figaroh.identification.physical_consistency import check_p10_feasibility
+
+    p10 = np.asarray(p10, dtype=float)
+    m = p10[0]
+    if not m > 0.0:
+        raise ValueError(
+            f"Link '{link_name}': mass {m} is not positive, so its inertial "
+            f"parameters have no centre of mass"
+        )
+    verdict = check_p10_feasibility(p10)
+    if verdict.status != "feasible":
+        message = (
+            f"Link '{link_name}': inertial parameters are not physically "
+            f"consistent (min pseudo-inertia eigenvalue {verdict.min_eig:.3g}); "
+            f"project them (physical_consistency.project_link) first"
+        )
+        if not allow_infeasible:
+            raise ValueError(message + " or pass allow_infeasible=True")
+        logger.warning("%s; exported anyway (allow_infeasible=True)", message)
+    else:
+        logger.info(
+            "Link '%s': inertial parameters physically consistent "
+            "(min pseudo-inertia eigenvalue %.3g)",
+            link_name,
+            verdict.min_eig,
+        )
+
+    c = p10[1:4] / m
+    Ixx, Ixy, Iyy, Ixz, Iyz, Izz = p10[4:10]
+    I_O = np.array([[Ixx, Ixy, Ixz], [Ixy, Iyy, Iyz], [Ixz, Iyz, Izz]])
+    I_C = I_O - m * (c @ c * np.eye(3) - np.outer(c, c))
+
+    link = _require_link(doc, link_name)
+    inertial = _get_or_create_element(link, "inertial")
+    origin = _get_or_create_element(inertial, "origin")
+    rot = _rpy_to_matrix(_get_xyz_array(origin, "rpy"))
+    I_urdf = rot.T @ I_C @ rot
+    _set_xyz_array(origin, c.tolist(), "xyz")
+    if origin.get("rpy") is None:
+        origin.set("rpy", "0 0 0")
+    _get_or_create_element(inertial, "mass").set("value", _fmt(m))
+    tensor = _get_or_create_element(inertial, "inertia")
+    for attr, (i, j) in (
+        ("ixx", (0, 0)),
+        ("ixy", (0, 1)),
+        ("ixz", (0, 2)),
+        ("iyy", (1, 1)),
+        ("iyz", (1, 2)),
+        ("izz", (2, 2)),
+    ):
+        tensor.set(attr, _fmt(I_urdf[i, j]))
+
+
+def _apply_inertials(
+    doc: ET.ElementTree, inertials: dict, allow_infeasible: bool
+) -> None:
+    """Apply inertial parameters collected per target (``{target: {key: v}}``).
+
+    A lone ``m`` replaces the mass and keeps the URDF centre of mass and
+    tensor; anything else needs all ten parameters, so identified and CAD
+    values are never mixed within one link.
+    """
+    by_link: dict = {}
+    for target, values in inertials.items():
+        link_name = _resolve_inertial_link(doc, target)
+        merged = by_link.setdefault(link_name, {})
+        for key, value in values.items():
+            if key in merged:
+                raise ValueError(
+                    f"Link '{link_name}' receives '{key}' from several targets"
+                )
+            merged[key] = value
+
+    for link_name, values in by_link.items():
+        if set(values) == {"m"}:
+            _apply_mass(doc, link_name, None, values["m"])
+            continue
+        missing = [k for k in _INERTIAL_KEYS if k not in values]
+        if missing:
+            raise ValueError(
+                f"Link '{link_name}': partial inertial set, missing "
+                f"{[f'{k}_*' for k in missing]}; give all ten standard "
+                f"parameters or only m_*"
+            )
+        p10 = [values[k] for k in _INERTIAL_KEYS]
+        _apply_standard_inertial(doc, link_name, p10, allow_infeasible)
+
+
 # Map category to handler
+# joint_placement is collected per joint and applied by _apply_joint_placement;
+# mass, first_moment and inertia are collected per link and applied by
+# _apply_inertials
 _HANDLERS = {
-    "joint_placement": _apply_joint_placement,
     "joint_offset": _apply_joint_offset,
-    "mass": _apply_mass,
     "viscous_friction": _apply_viscous_friction,
     "static_friction": _apply_static_friction,
     "armature": _apply_armature,
     "elasticity": _apply_elasticity,
-    # Stub handlers for future extension
-    "first_moment": lambda doc, target, idx, val, add: (
-        logger.debug("first_moment handler not implemented (target=%s)", target)
-    ),
-    "inertia": lambda doc, target, idx, val, add: (
-        logger.debug("inertia handler not implemented (target=%s)", target)
-    ),
+}
+
+# Recognised but not written: refusing them keeps the URDF from silently
+# differing from the estimate (#62)
+_UNSUPPORTED = {
+    "legacy_offset": "legacy joint offsets (off_*); use offsetR*_/offsetP*_",
 }
 
 
@@ -574,6 +805,7 @@ def export_urdf(
     *,
     output_path: Optional[Union[str, Path]] = None,
     verbose: bool = False,
+    allow_infeasible: bool = False,
 ) -> str:
     """Apply identified/calibrated **joint-level** parameters to a nominal URDF.
 
@@ -593,6 +825,8 @@ def export_urdf(
         output_path: Path for the modified URDF. If ``None`` (default),
             writes to ``<stem>_modified.urdf`` beside the nominal URDF.
         verbose: If True, log which params were applied.
+        allow_infeasible: Write a complete inertial set whose pseudo-inertia
+            is not positive semidefinite, with a warning, instead of raising.
 
     Returns:
         Absolute path to the modified URDF file (joint params applied).  Use
@@ -601,7 +835,13 @@ def export_urdf(
 
     Raises:
         FileNotFoundError: If *nominal_urdf_path* does not exist.
-        ValueError: If an unknown parameter name is encountered.
+        ValueError: If a parameter name is unknown, names a joint or link
+            the URDF does not have, belongs to a category the exporter does
+            not write (legacy ``off_*``), a joint carries both ``offset*``
+            and ``d_*`` corrections, or an inertial set is partial, targets
+            a merged Pinocchio body, has ``m <= 0`` or (unless
+            *allow_infeasible*) is physically inconsistent. Nothing is
+            written then.
     """
     nominal_path = Path(nominal_urdf_path)
     if not nominal_path.exists():
@@ -618,17 +858,32 @@ def export_urdf(
 
     # Separate joint params (auto-apply) from frame params (user-defined)
     frame_params: dict = {}
+    placements: dict = {}
+    inertials: dict = {}
+    offsets: set = set()
 
     for name, value in params.items():
         parsed = _parse_param_name(name)
         if parsed is not None:
             category, target, idx, is_additive = parsed
+            if category == "joint_placement":
+                placements.setdefault(target, np.zeros(6))[idx] += value
+                if verbose:
+                    logger.info("%s → joint_placement.%s (%.4f)", name, target, value)
+                continue
+            if category in _INERTIAL_CATEGORIES:
+                inertials.setdefault(target, {})[_inertial_key(name, target)] = value
+                if verbose:
+                    logger.info("%s → inertial.%s (%.4f)", name, target, value)
+                continue
             handler = _HANDLERS.get(category)
             if handler is None:
-                logger.warning(
-                    "No handler for category '%s' (param='%s')", category, name
+                raise ValueError(
+                    f"Parameter '{name}': the exporter does not write "
+                    f"{_UNSUPPORTED.get(category, category)}"
                 )
-                continue
+            if category == "joint_offset":
+                offsets.add(target)
             if verbose:
                 action = "additive" if is_additive else "absolute"
                 logger.info(
@@ -657,9 +912,20 @@ def export_urdf(
             f"Unknown parameter '{name}'. "
             f"Recognized joint-level categories: joint placement (d_px_*), "
             f"joint offset (offsetRX_*), mass (m_*), friction (fv_*, fs_*), "
-            f"armature (Ia_*), elasticity (k_*), inertia (Ixx_*).  "
+            f"armature (Ia_*), elasticity (k_*), inertial (mx_*, Ixx_*).  "
             f"Metrology frame params: base_*, pEE*, phiEE*."
         )
+
+    both = sorted(offsets & set(placements))
+    if both:
+        # the fit never produces both; their order would be a guess
+        raise ValueError(
+            f"Joint(s) {both} carry both offset* and d_* corrections; "
+            f"use one calibration level per joint"
+        )
+    for target, xyz_rpy in placements.items():
+        _apply_joint_placement(doc, target, xyz_rpy)
+    _apply_inertials(doc, inertials, allow_infeasible)
 
     # Write output
     output_path.parent.mkdir(parents=True, exist_ok=True)

@@ -39,14 +39,15 @@ from figaroh.calibration.calibration_tools import (
     calculate_base_kinematics_regressor,
     add_base_name,
     add_pee_name,
-    load_data,
     calc_updated_fkm,
     initialize_variables,
+    estimate_frames_closed_form,
+    measurement_jacobian,
+    select_identifiable_parameters,
+    drop_calibration_parameters,
 )
-from figaroh.tools.qrdecomposition import (
-    redistribute_min_norm,
-    propagate_covariance_min_norm,
-)
+from figaroh.calibration import estimation
+from figaroh.calibration.parameter import BASE_TPL, EE_TPL
 from figaroh.utils.config_parser import (
     UnifiedConfigParser,
     create_task_config,
@@ -61,6 +62,70 @@ from figaroh.utils.results_manager import plot_with_fallback
 # Setup logger for this module
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
+
+_COMPONENT_NAMES = ("X", "Y", "Z", "rx", "ry", "rz")
+
+
+def _measured_components(calib_config: Dict[str, Any]) -> Dict[str, Any]:
+    """Label, scale and kind of each residual row (#100).
+
+    Residual rows are the *measured* pose components in order (see
+    ``_compute_logmap_residuals``), not always x, y, z, rx, ry, rz: a
+    table-contact calibration measuring ``[z, roll, pitch]`` has a
+    position row followed by two orientation rows.
+
+    Returns ``names`` ("Z (mm)", "rx (deg)", ...), ``scales`` (m → mm,
+    rad → deg) and the row indices of the measured position
+    (``pos_rows``) and orientation (``orient_rows``) components.
+    """
+    n_dofs = calib_config.get("calibration_index", 3)
+    measurability = calib_config.get("measurability")
+    if measurability is None or sum(bool(m) for m in measurability) != n_dofs:
+        dofs = list(range(n_dofs))  # legacy configs: first n_dofs components
+    else:
+        dofs = [i for i, m in enumerate(measurability) if m]
+    return {
+        "names": [f"{_COMPONENT_NAMES[d]} ({'mm' if d < 3 else 'deg'})" for d in dofs],
+        "scales": np.array([1000.0 if d < 3 else 180.0 / np.pi for d in dofs]),
+        "pos_rows": [i for i, d in enumerate(dofs) if d < 3],
+        "orient_rows": [i for i, d in enumerate(dofs) if d >= 3],
+    }
+
+
+def _by_component(flat, calib_config: Dict[str, Any], n_samples: int):
+    """(component, point x sample) view of a flat measurement vector.
+
+    Flat vectors are ordered marker, component, sample (``load_data``).
+    Columns run over the samples of marker 1, then marker 2, ...; with one
+    marker this is the usual (component, sample) array. Every per-component
+    statistic and per-sample norm then treats each point of each sample as
+    one error (figaroh-plus#119). None if the size does not match.
+    """
+    n_markers = int(calib_config.get("NbMarkers", 1))
+    n_dofs = int(calib_config["calibration_index"])
+    arr = np.asarray(flat)
+    if arr.size != n_markers * n_dofs * n_samples:
+        return None
+    arr = arr.reshape(n_markers, n_dofs, n_samples).transpose(1, 0, 2)
+    return arr.reshape(n_dofs, n_markers * n_samples)
+
+
+def _per_point_rows(validation: Dict[str, Any]) -> List[tuple]:
+    """(nominal, calibrated) position RMSE in mm per point; [] for one."""
+    if validation.get("n_markers", 1) < 2:
+        return []
+    return list(
+        zip(
+            validation.get("pos_rmse_nominal_per_point_mm", []),
+            validation.get("pos_rmse_calibrated_per_point_mm", []),
+        )
+    )
+
+
+def _point_columns(samples, n_samples: int, n_markers: int) -> np.ndarray:
+    """Columns of :func:`_by_component` that belong to sample indices."""
+    samples = np.asarray(samples, dtype=int)
+    return np.concatenate([samples + k * n_samples for k in range(n_markers)])
 
 
 class BaseCalibration(ABC):
@@ -183,6 +248,9 @@ class BaseCalibration(ABC):
         self._data_path = abspath(self.calib_config["data_file"])
         self.STATUS = "NOT CALIBRATED"
         self._val_available = False
+        # Data contract (#55): the observations read, and stage records
+        self.observations = None
+        self.stages = []
 
     def initialize(self):
         """Initialize calibration data and parameters.
@@ -226,7 +294,7 @@ class BaseCalibration(ABC):
         self,
         method="lm",
         max_iterations=3,
-        outlier_threshold=3.0,
+        outlier_threshold=None,
         enable_logging=True,
         plotting=False,
         save_results=False,
@@ -244,6 +312,12 @@ class BaseCalibration(ABC):
         and handling visualization based on user preferences.
 
         Args:
+            max_iterations: Maximum number of fits; between fits, samples
+                whose position error exceeds ``outlier_threshold`` are
+                excluded and the rest refitted.
+            outlier_threshold: Position error [m] above which a sample is
+                excluded; ``None`` (default) uses the config's
+                ``parameters.outlier_threshold`` (``outlier_eps``).
             html_report: If True, also export an HTML diagnostic report
                 (see :meth:`export_html_report`) after the terminal
                 quality report is printed.
@@ -258,16 +332,33 @@ class BaseCalibration(ABC):
             plot: Visualization and analysis plotting
             export_html_report: Visual counterpart of the terminal report
         """
+        from figaroh.tools.stages import record_stage
+
         self._run_started_at = datetime.now(timezone.utc).isoformat()
-        result, outlier_indices = self.solve_optimisation(
-            method=method,
-            max_iterations=max_iterations,
-            outlier_threshold=outlier_threshold,
-            enable_logging=enable_logging,
-        )
+        try:
+            result, outlier_indices = self.solve_optimisation(
+                method=method,
+                max_iterations=max_iterations,
+                outlier_threshold=outlier_threshold,
+                enable_logging=enable_logging,
+            )
+        except Exception as e:
+            record_stage(self, "fit", "failed", f"{type(e).__name__}: {e}")
+            raise
 
         # Evaluate solution
         evaluation = self._evaluate_solution(result, outlier_indices)
+        record_stage(
+            self,
+            "fit",
+            "ok" if getattr(result, "success", True) else "failed",
+            str(getattr(result, "message", "")),
+            {
+                "rmse": (float(evaluation.get("rmse", float("nan"))), "m"),
+                "parameters": len(result.x),
+                "excluded_outliers": len(outlier_indices),
+            },
+        )
         self._run_finished_at = datetime.now(timezone.utc).isoformat()
 
         # Log final results
@@ -278,7 +369,7 @@ class BaseCalibration(ABC):
             self._log_iteration_results("FINAL", result, evaluation)
 
             if len(outlier_indices) > 0:
-                logger.info(f"Outlier samples: {outlier_indices}")
+                logger.info(f"Samples excluded as outliers: {outlier_indices}")
             logger.info("Calibration completed successfully!")
 
         # Store results
@@ -437,6 +528,13 @@ class BaseCalibration(ABC):
         else:
             q_ = q
 
+        if estimation.settings(self.calib_config)["method"] != "structural":
+            try:
+                estimation.configure(self)
+                return True
+            except Exception as e:
+                raise CalibrationError(f"Parameter list creation failed: {e}")
+
         try:
             (
                 Rrand_b,
@@ -452,11 +550,102 @@ class BaseCalibration(ABC):
                 add_base_name(self.calib_config)
             if self.calib_config["known_tipframe"] is False:
                 add_pee_name(self.calib_config)
+            self._record_full_mapping()
+
+            if hasattr(self, "q_measured") and hasattr(self, "PEE_measured"):
+                self.eliminate_absorbed_parameters()
 
             return True
 
         except Exception as e:
             raise CalibrationError(f"Parameter list creation failed: {e}")
+
+    def _record_full_mapping(self) -> None:
+        """Keep the base mapping before rows are dropped, and its frame rows.
+
+        ``eliminate_absorbed_parameters`` deletes rows of
+        ``base_mapping_matrix``; the lift (:meth:`redistribute_parameters`,
+        figaroh-plus#111) needs every row, with the dropped ones held at 0.
+        At ``full_params`` with an unknown base frame, ``add_base_name``
+        renames the leading base parameters to ``base_*``: those rows carry
+        the base frame, not joint corrections.
+        """
+        cfg = self.calib_config
+        if cfg.get("base_mapping_matrix") is None:
+            return
+        rows = list(cfg["base_mapping_row_names"])
+        cfg["base_mapping_matrix_full"] = np.array(cfg["base_mapping_matrix"])
+        cfg["base_mapping_row_names_full"] = rows
+        start, _ = cfg["base_mapping_slice"]
+        frame_rows = []
+        if cfg["calib_model"] == "full_params" and not cfg["known_baseframe"]:
+            frame_rows = rows[: max(0, len(BASE_TPL) - start)]
+        cfg["base_frame_row_names"] = frame_rows
+
+    def _frame_param_names(self) -> List[str]:
+        """Base and tip frame parameters present in ``param_name``."""
+        tip = {
+            f"{e}_{k + 1}"
+            for e in EE_TPL
+            for k in range(self.calib_config["NbMarkers"])
+        }
+        return [n for n in self.calib_config["param_name"] if n in BASE_TPL or n in tip]
+
+    def initial_frame_guess(self) -> Dict[str, float]:
+        """Closed-form guess for the unknown base and tip frames.
+
+        See :func:`estimate_frames_closed_form`. Empty when the frames are
+        known or the measurement does not determine them (partial position
+        measurability, several markers, camera anchor).
+        """
+        return estimate_frames_closed_form(
+            self.model,
+            self.data,
+            self.q_measured,
+            self.PEE_measured,
+            self.calib_config,
+        )
+
+    def eliminate_absorbed_parameters(self, tol: float = 1e-4) -> List[str]:
+        """Drop joint parameters that the base/tip frames absorb on this data.
+
+        The structural selection in :func:`calculate_base_kinematics_regressor`
+        uses the joint regressor alone. When the base and tip frames are also
+        estimated, some retained joint parameters are combinations of frame
+        parameters (e.g. a vertical prismatic or revolute first joint against
+        the base's z translation and yaw), so the problem is rank deficient.
+        This builds the full measurement Jacobian at the measured
+        configurations, with the configured measurability, evaluated at the
+        closed-form frame guess, and drops every joint parameter whose
+        unit-normalised column is a combination of the frame columns and the
+        joint columns kept before it (:func:`select_identifiable_parameters`).
+        Frame parameters are always kept.
+
+        Set ``calib_config["eliminate_absorbed_parameters"] = False`` to skip.
+
+        Returns:
+            list: Names of the dropped parameters (also stored in
+            ``calib_config["absorbed_param_name"]``).
+        """
+        cfg = self.calib_config
+        cfg["absorbed_param_name"] = []
+        if not cfg.get("eliminate_absorbed_parameters", True):
+            return []
+        names = list(cfg["param_name"])
+        frames = self._frame_param_names()
+        guess = self.initial_frame_guess()
+        var0 = np.array([guess.get(n, 0.0) for n in names])
+        J = measurement_jacobian(self.model, self.data, var0, self.q_measured, cfg)
+        _, dropped = select_identifiable_parameters(J, names, frames, tol=tol)
+        if dropped:
+            drop_calibration_parameters(cfg, dropped)
+            logger.info(
+                "Dropped %d parameter(s) absorbed by the base/tip frames: %s",
+                len(dropped),
+                dropped,
+            )
+        cfg["absorbed_param_name"] = dropped
+        return dropped
 
     def load_data_set(self):
         """Load experimental measurement data for calibration.
@@ -489,20 +678,45 @@ class BaseCalibration(ABC):
         See Also:
             load_data: Core data loading and processing function
         """
+        from figaroh.data.observations import PoseObservations
+        from figaroh.tools.stages import record_stage
+
+        # Same CSV layout and arrays as load_data(); del_list rows are
+        # masked rather than deleted, and the config is not written by the
+        # loader (#55, #105)
         try:
-            self.PEE_measured, self.q_measured = load_data(
-                self._data_path, self.model, self.calib_config, self.del_list_
+            self.observations = PoseObservations.from_csv(
+                self._data_path,
+                self.model,
+                self.calib_config,
+                del_list=self.del_list_ or (),
+            )
+            self.PEE_measured, self.q_measured = self.observations.to_legacy(
+                self.model, self.calib_config
             )
         except Exception as e:
+            record_stage(self, "data", "failed", f"{type(e).__name__}: {e}")
             raise CalibrationError(f"Data loading failed: {e}")
+        self.calib_config["NbSample"] = len(self.q_measured)
+        record_stage(
+            self,
+            "data",
+            "ok",
+            "PoseObservations from CSV",
+            {
+                "samples": len(self.q_measured),
+                "masked_samples": int((~self.observations.mask).sum()),
+            },
+        )
 
         # If validation data path is specified in config, load it
         val_data_path = self.calib_config.get("validation_data_file")
         if val_data_path:
             try:
                 self._load_validation_data(val_data_path)
-            except Exception:
-                pass  # Don't fail calibration if validation data unavailable
+            except Exception as e:
+                # Don't fail calibration if validation data is unavailable
+                logger.warning("Validation data %s not loaded: %s", val_data_path, e)
 
     def _load_validation_data(self, path: str):
         """Load separate validation measurement data.
@@ -516,13 +730,17 @@ class BaseCalibration(ABC):
             - Sets self._PEE_val with validation measured poses
             - Sets self._val_available = True
         """
+        from figaroh.data.observations import PoseObservations
+
+        # PoseObservations does not write calib_config, so the training
+        # sample count is untouched (#105)
         try:
-            orig_path = self._data_path
-            self._data_path = abspath(path)
-            self._q_val, self._PEE_val = load_data(
-                self._data_path, self.model, self.calib_config, []
+            self._val_observations = PoseObservations.from_csv(
+                abspath(path), self.model, self.calib_config
             )
-            self._data_path = orig_path
+            self._PEE_val, self._q_val = self._val_observations.to_legacy(
+                self.model, self.calib_config
+            )
             self._val_available = True
         except Exception as e:
             raise CalibrationError(f"Validation data loading failed: {e}")
@@ -562,34 +780,38 @@ class BaseCalibration(ABC):
 
         result = self.LM_result
         zeros = np.zeros_like(result.x)
+        # calc_updated_fkm evaluates calib_config["NbSample"] samples
+        val_config = dict(self.calib_config, NbSample=len(q_val))
 
         # FK for nominal and calibrated on validation set
-        PEE_nom = calc_updated_fkm(
-            self.model, self.data, zeros, q_val, self.calib_config
-        )
-        PEE_cal = calc_updated_fkm(
-            self.model, self.data, result.x, q_val, self.calib_config
-        )
+        PEE_nom = calc_updated_fkm(self.model, self.data, zeros, q_val, val_config)
+        PEE_cal = calc_updated_fkm(self.model, self.data, result.x, q_val, val_config)
 
         # Log-map residuals
-        resid_nom = self._compute_logmap_residuals(PEE_val, PEE_nom)
-        resid_cal = self._compute_logmap_residuals(PEE_val, PEE_cal)
+        n_val = len(q_val)
+        resid_nom = self._compute_logmap_residuals(PEE_val, PEE_nom, n_samples=n_val)
+        resid_cal = self._compute_logmap_residuals(PEE_val, PEE_cal, n_samples=n_val)
 
         n_dofs = self.calib_config["calibration_index"]
-        n_val = len(q_val)
+        n_markers = self.calib_config.get("NbMarkers", 1)
 
-        # Reshape to (n_dofs, n_val) — DOF-major
-        resid_nom_2d = resid_nom.reshape((n_dofs, n_val))
-        resid_cal_2d = resid_cal.reshape((n_dofs, n_val))
+        # (n_dofs, n_markers * n_val): each point of each sample is one error
+        resid_nom_2d = _by_component(resid_nom, self.calib_config, n_val)
+        resid_cal_2d = _by_component(resid_cal, self.calib_config, n_val)
 
-        # Position DOFs (first 3), Orientation DOFs (last 3)
-        pos_nom = resid_nom_2d[:3, :]
-        pos_cal = resid_cal_2d[:3, :]
-        orient_nom = resid_nom_2d[3:6, :]
-        orient_cal = resid_cal_2d[3:6, :]
+        # Rows are the measured components, not always x..rz (#100)
+        comps = _measured_components(self.calib_config)
+        pos_nom = resid_nom_2d[comps["pos_rows"], :]
+        pos_cal = resid_cal_2d[comps["pos_rows"], :]
+        orient_nom = resid_nom_2d[comps["orient_rows"], :]
+        orient_cal = resid_cal_2d[comps["orient_rows"], :]
 
         def _error_stats(arr_2d):
-            """arr_2d: (n_dof_group, n_samples) → per-sample norm → stats."""
+            """arr_2d: (n_dof_group, n_samples) → per-sample norm → stats.
+            NaN when no component of the group is measured."""
+            if arr_2d.shape[0] == 0:
+                nan = float("nan")
+                return {"rmse": nan, "max": nan, "mean": nan}
             per_sample = np.sqrt(np.sum(arr_2d**2, axis=0))
             return {
                 "rmse": float(np.sqrt(np.mean(np.sum(arr_2d**2, axis=0)))),
@@ -603,6 +825,8 @@ class BaseCalibration(ABC):
         orient_cal_stats = _error_stats(orient_cal)
 
         def _improvement(before, after):
+            if np.isnan(before):
+                return float("nan")
             if before > 0:
                 return (before - after) / before * 100
             return 0.0
@@ -614,27 +838,46 @@ class BaseCalibration(ABC):
         # (a measured pose's error against itself is zero by
         # construction), so it is exposed as the zero reference line
         # nominal/fitted are being compared against.
-        dof_names = [
-            "X (mm)",
-            "Y (mm)",
-            "Z (mm)",
-            "rx (deg)",
-            "ry (deg)",
-            "rz (deg)",
-        ][:n_dofs]
-        scales = np.array([1000.0 if i < 3 else 180.0 / np.pi for i in range(n_dofs)])
+        dof_names = comps["names"]
+        scales = comps["scales"]
         nom_scaled = resid_nom_2d * scales[:, None]
         cal_scaled = resid_cal_2d * scales[:, None]
 
         def _per_dof(arr_2d):
             return {dof_names[i]: arr_2d[i].tolist() for i in range(n_dofs)}
 
+        def _per_point(arr_2d):
+            """Position RMSE (mm) of each marker; [] without position."""
+            if not comps["pos_rows"]:
+                return []
+            pos = arr_2d[comps["pos_rows"]].reshape(-1, n_markers, n_val)
+            return [
+                float(_error_stats(pos[:, k])["rmse"] * 1000) for k in range(n_markers)
+            ]
+
+        from figaroh.tools.stages import record_stage
+
+        metrics = {"position_rmse": (pos_cal_stats["rmse"], "m"), "samples": n_val}
+        if validation_source == "validation_data":
+            record_stage(self, "validation", "ok", "held-out postures", metrics)
+        else:
+            record_stage(
+                self,
+                "validation",
+                "fallback",
+                "no held-out data: evaluated on the calibration data, "
+                "not an independent test",
+                metrics,
+            )
         return {
             "n_val_samples": n_val,
             "validation_source": validation_source,
             "dof_names": dof_names,
             "error_nominal_per_dof": _per_dof(nom_scaled),
             "error_fitted_per_dof": _per_dof(cal_scaled),
+            "n_markers": n_markers,
+            "pos_rmse_nominal_per_point_mm": _per_point(resid_nom_2d),
+            "pos_rmse_calibrated_per_point_mm": _per_point(resid_cal_2d),
             "pos_rmse_nominal_mm": pos_nom_stats["rmse"] * 1000,
             "pos_rmse_calibrated_mm": pos_cal_stats["rmse"] * 1000,
             "pos_max_nominal_mm": pos_nom_stats["max"] * 1000,
@@ -696,6 +939,7 @@ class BaseCalibration(ABC):
         estimated_flat: np.ndarray,
         *,
         position_frame: str = "body",
+        n_samples: Optional[int] = None,
     ) -> np.ndarray:
         """Compute pose residuals using the SE3 log map for geometric correctness.
 
@@ -743,6 +987,8 @@ class BaseCalibration(ABC):
             position_frame: ``"body"`` (default) for body-frame position error
                 from the SE3 log map, or ``"world"`` for world-frame position
                 error.
+            n_samples: Number of samples in the arrays. Defaults to the
+                training count ``calib_config["NbSample"]``.
 
         Returns:
             Flat residual array in the same DOF-major order as the input,
@@ -758,7 +1004,8 @@ class BaseCalibration(ABC):
         measured_dofs = np.where(measurability)[0]
         unmeasured_dofs = np.where(~measurability)[0]
         n_meas = len(measured_dofs)
-        n_samples = self.calib_config["NbSample"]
+        if n_samples is None:
+            n_samples = self.calib_config["NbSample"]
         n_markers = self.calib_config.get("NbMarkers", 1)
 
         # Reshape to (n_markers, n_meas, n_samples) — DOF-major
@@ -804,7 +1051,8 @@ class BaseCalibration(ABC):
 
         This method provides a default implementation but should be overridden
         by derived classes to define robot-specific cost computation with
-        appropriate weighting and regularization.
+        appropriate weighting. Regularise with priors
+        (``estimation.method: map``, #120), not rows appended here.
 
         Args:
             var (ndarray): Parameter vector to evaluate
@@ -826,7 +1074,7 @@ class BaseCalibration(ABC):
                 >>> raw_residuals = self._compute_logmap_residuals(
                 ...     self.PEE_measured, PEEe, position_frame="world")
 
-            Then apply weighting and regularization:
+            Then apply weighting:
                 >>> weighted_residuals = self.apply_measurement_weighting(
                 ...     raw_residuals, pos_weight=1000.0, orient_weight=100.0)
         """
@@ -836,8 +1084,7 @@ class BaseCalibration(ABC):
         warnings.warn(
             f"Using default cost function for {self.__class__.__name__}. "
             "Consider implementing a robot-specific cost function with "
-            "appropriate weighting and regularization for optimal "
-            "performance.",
+            "appropriate measurement weighting.",
             UserWarning,
             stacklevel=2,
         )
@@ -916,6 +1163,25 @@ class BaseCalibration(ABC):
                         residual_idx += 1
         return np.array(weighted_residuals)
 
+    def _objective(self, var: np.ndarray) -> np.ndarray:
+        """Residuals minimised by the solver.
+
+        The robot's :meth:`cost_function`, plus ``w * var`` when the
+        estimation method sets prior weights (``map``, ``map_cv``,
+        figaroh-plus#113); ``w`` is 0 for frame parameters.
+        """
+        residuals = self.cost_function(var)
+        excluded = getattr(self, "_excluded_rows", None)
+        if excluded is not None and len(excluded):
+            # excluded outlier samples (figaroh-plus#98): constant zero rows,
+            # so they contribute neither cost nor Jacobian
+            residuals = np.array(residuals, dtype=float)
+            residuals[excluded] = 0.0
+        weights = self.calib_config.get("prior_weights")
+        if weights is None:
+            return residuals
+        return np.append(residuals, np.asarray(weights) * var)
+
     def _setup_logging(self):
         """Setup logging configuration for terminal output."""
         # Create logger
@@ -945,93 +1211,110 @@ class BaseCalibration(ABC):
         var_init: np.ndarray,
         method: str = "lm",
         max_iterations: int = 3,
-        outlier_threshold: float = 1.0,
+        outlier_threshold: Optional[float] = None,
     ) -> Tuple:
-        """Optimize with iterative outlier removal.
+        """Optimize, excluding samples whose position error exceeds a threshold.
+
+        Each round fits the kept samples, then excludes every sample whose
+        position error (the norm of its measured x/y/z residuals, worst
+        marker) is above ``outlier_threshold`` metres, and refits. Excluded
+        samples are never re-admitted. Rotational components do not take
+        part, so the threshold has one unit; with no measured position
+        component nothing is excluded (figaroh-plus#98).
 
         Args:
             var_init (ndarray): Initial parameter guess
-            max_iterations (int): Maximum outlier removal iterations
-            outlier_threshold (float): Threshold for outlier detection in
-                                  standard deviations
+            method (str): ``least_squares`` method
+            max_iterations (int): Maximum number of fits, so at most
+                ``max_iterations - 1`` exclusion rounds
+            outlier_threshold (float, optional): Position error [m] above
+                which a sample is excluded; ``None`` uses
+                ``calib_config["outlier_eps"]`` (``parameters.
+                outlier_threshold``), and no threshold excludes nothing
 
         Returns:
-            tuple: (result, outlier_indices, final_residuals)
+            tuple: (result, excluded sample indices, final residuals)
         """
         logger = logging.getLogger("calibration")
+        if outlier_threshold is None:
+            outlier_threshold = self.calib_config.get("outlier_eps")
+        self._outlier_threshold = outlier_threshold
+        excluded: List[int] = []
+        self._excluded_rows = None
+        n_vars = len(var_init)
         current_var = var_init.copy()
-        outlier_indices = []
 
-        for iteration in range(max_iterations):
-            logger.info(f"Outlier removal iteration {iteration + 1}")
-
-            # Run optimization
+        for iteration in range(max(1, max_iterations)):
             result = least_squares(
-                self.cost_function, current_var, method=method, max_nfev=1000
+                self._objective, current_var, method=method, max_nfev=1000
             )
-
             if not result.success:
-                logger.warning(f"Optimization failed at iteration {iteration + 1}")
+                logger.warning(f"Optimization failed at fit {iteration + 1}")
                 break
 
-            # Calculate residuals using SE3 log map for geometrically
-            # correct error and detect outliers
             PEE_est = self.get_pose_from_measure(result.x)
             residuals = self._compute_logmap_residuals(self.PEE_measured, PEE_est)
-            new_outliers = self._detect_outliers(residuals, outlier_threshold)
-
-            if len(new_outliers) == 0:
-                logger.info("No outliers detected, optimization converged")
+            errors = self._sample_position_errors(residuals)
+            if outlier_threshold is None or errors is None:
                 break
-
-            outlier_indices.extend(new_outliers)
-            outlier_indices = list(set(outlier_indices))  # Remove duplicates
-
+            new = [
+                int(i)
+                for i in np.flatnonzero(errors > outlier_threshold)
+                if i not in excluded
+            ]
+            if not new:
+                break
+            if iteration == max(1, max_iterations) - 1:
+                logger.warning(
+                    f"Samples {new} exceed the outlier threshold "
+                    f"({outlier_threshold} m) but max_iterations is reached: "
+                    "kept in the fit"
+                )
+                break
+            rows = self._sample_rows(excluded + new)
+            if len(self.PEE_measured) - len(rows) <= n_vars:
+                logger.warning(
+                    f"Excluding samples {new} would leave no more observations "
+                    f"than the {n_vars} parameters: kept in the fit"
+                )
+                break
+            excluded = sorted(excluded + new)
+            self._excluded_rows = rows
             logger.info(
-                f"Detected {len(new_outliers)} new outliers, "
-                f"total outliers: {len(outlier_indices)}"
+                f"Excluding samples {new} (position error > "
+                f"{outlier_threshold} m), refitting without {len(excluded)} "
+                "sample(s)"
             )
-
-            # Update for next iteration
             current_var = result.x
 
-        return result, outlier_indices, residuals
+        return result, excluded, residuals
 
-    def _detect_outliers(self, residuals: np.ndarray, threshold: float) -> List[int]:
-        """Detect outliers using statistical threshold.
+    def _sample_rows(self, samples: List[int]) -> np.ndarray:
+        """Indices of the measurement residual rows of ``samples``.
 
-        Args:
-            residuals (ndarray): Residual vector
-            threshold (float): Threshold in standard deviations
-
-        Returns:
-            list: Indices of detected outliers
+        Measurement rows are marker-, then DOF-, then sample-major
+        (``PEE_measured`` layout), so a row's sample is its index modulo
+        ``NbSample``.
         """
-        # Reshape residuals to per-sample format
-        n_dofs = self.calib_config["calibration_index"]
+        rows = np.arange(len(self.PEE_measured))
+        return rows[np.isin(rows % self.calib_config["NbSample"], samples)]
+
+    def _sample_position_errors(self, residuals: np.ndarray) -> Optional[np.ndarray]:
+        """Per-sample position error [m], worst marker; None if not available.
+
+        None when no position component is measured or the residuals do not
+        have the ``PEE_measured`` layout.
+        """
         n_samples = self.calib_config["NbSample"]
-
-        if len(residuals) != n_dofs * n_samples:
-            return []
-
-        residuals_2d = residuals.reshape((n_dofs, n_samples))
-
-        # Per-sample Euclidean-norm error (all DOFs combined into one
-        # physical distance per sample) -- same convention used everywhere
-        # else "error magnitude" is reported (_evaluate_solution,
-        # _compute_per_dof_stats, _error_stats). Outlier flagging itself is
-        # scale-invariant (mean + k*std of the same values), so this choice
-        # doesn't change which samples get flagged vs. the old per-sample
-        # RMS-across-DOFs convention -- it's purely for consistency.
-        rms_errors = np.sqrt(np.sum(residuals_2d**2, axis=0))
-
-        # Detect outliers
-        mean_error = np.mean(rms_errors)
-        std_error = np.std(rms_errors)
-        threshold_value = mean_error + threshold * std_error
-
-        outliers = np.where(rms_errors > threshold_value)[0].tolist()
-        return outliers
+        measured = [
+            dof for dof, m in enumerate(self.calib_config["measurability"]) if m
+        ]
+        position_rows = [k for k, dof in enumerate(measured) if dof < 3]
+        if not position_rows or len(residuals) % (len(measured) * n_samples):
+            return None
+        per_marker = np.asarray(residuals).reshape(-1, len(measured), n_samples)
+        errors = np.linalg.norm(per_marker[:, position_rows, :], axis=1)
+        return errors.max(axis=0)
 
     def _evaluate_solution(self, result, outlier_indices: List[int]) -> Dict[str, Any]:
         """Evaluate optimization solution quality.
@@ -1055,8 +1338,16 @@ class BaseCalibration(ABC):
         # _error_stats() (validation table) use, so "RMSE"/"MAE" mean the
         # same thing everywhere in the report instead of differing by
         # sqrt(n_dofs) depending on which number you're looking at.
-        if len(residuals) == n_dofs * n_samples:
-            residuals_2d = residuals.reshape((n_dofs, n_samples))
+        #
+        # Samples excluded as outliers (figaroh-plus#98) are not part of the
+        # fit: the metrics cover the kept samples, and the excluded samples'
+        # errors are reported separately.
+        kept = np.setdiff1d(np.arange(n_samples), outlier_indices)
+        sample_errors = self._sample_position_errors(residuals)
+        residuals_2d = _by_component(residuals, self.calib_config, n_samples)
+        if residuals_2d is not None:
+            n_markers = self.calib_config.get("NbMarkers", 1)
+            residuals_2d = residuals_2d[:, _point_columns(kept, n_samples, n_markers)]
             per_sample_error = np.sqrt(np.sum(residuals_2d**2, axis=0))
         else:
             residuals_2d = None
@@ -1075,7 +1366,9 @@ class BaseCalibration(ABC):
             std_sample_rms = 0.0
 
         # ── Per-DOF breakdown ──
-        per_dof_stats = self._compute_per_dof_stats(residuals, n_dofs, n_samples)
+        per_dof_stats = self._compute_per_dof_stats(
+            residuals, n_dofs, n_samples, samples=kept
+        )
 
         # ── Condition number ──
         cond_num, cond_label = self._compute_condition_number(result)
@@ -1098,8 +1391,18 @@ class BaseCalibration(ABC):
             "param_values": list(result.x),
             "param_stdev": self.std_dev,
             "param_stddev_percentage": self.std_pctg,
+            "residual_dof": getattr(self, "residual_dof", None),
             "n_outliers": len(outlier_indices),
-            "outlier_percentage": len(outlier_indices) / n_samples * 100,
+            "outlier_percentage": len(outlier_indices)
+            / self.calib_config["NbSample"]
+            * 100,
+            "excluded_samples": list(outlier_indices),
+            "excluded_sample_errors": (
+                [float(sample_errors[i]) for i in outlier_indices]
+                if sample_errors is not None
+                else []
+            ),
+            "outlier_threshold": getattr(self, "_outlier_threshold", None),
             "optimization_success": result.success,
             "cost": result.cost,
             "n_iterations": getattr(result, "nit", 0),
@@ -1112,7 +1415,11 @@ class BaseCalibration(ABC):
         }
 
     def _compute_per_dof_stats(
-        self, residuals: np.ndarray, n_dofs: int, n_samples: int
+        self,
+        residuals: np.ndarray,
+        n_dofs: int,
+        n_samples: int,
+        samples: Optional[np.ndarray] = None,
     ) -> Dict[str, Any]:
         """Compute per-DOF residual statistics.
 
@@ -1120,23 +1427,19 @@ class BaseCalibration(ABC):
         'max_abs', 'r_squared' — each a list of length n_dofs — plus
         'overall': {pos_rmse_mm, orient_rmse_deg, pos_mae_mm,
         orient_mae_deg, pos_max_mm, orient_max_deg}, each the per-sample
-        Euclidean-norm error for that DOF group (position DOFs 0:3,
-        orientation DOFs 3:6) aggregated across samples -- same convention
+        Euclidean-norm error for that DOF group (the measured position
+        and orientation components, NaN for a group with none measured)
+        aggregated across samples -- same convention
         _evaluate_solution()'s rmse/mae use, so a "Position RMSE"/"Position
         MAE" here always means the same thing as anywhere else in the
         report. Units: position DOFs=mm, orientation DOFs=deg.
+        ``samples`` restricts the statistics to those sample indices.
         """
-        dof_names = [
-            "X (mm)",
-            "Y (mm)",
-            "Z (mm)",
-            "rx (deg)",
-            "ry (deg)",
-            "rz (deg)",
-        ]
-        dof_names = dof_names[:n_dofs]
+        comps = _measured_components(self.calib_config)
+        dof_names = comps["names"]
 
-        if len(residuals) != n_dofs * n_samples:
+        residuals_2d = _by_component(residuals, self.calib_config, n_samples)
+        if residuals_2d is None:
             return {
                 "dof_names": dof_names,
                 "mean": [],
@@ -1146,8 +1449,13 @@ class BaseCalibration(ABC):
                 "r_squared": [],
             }
 
-        residuals_2d = residuals.reshape((n_dofs, n_samples))
-        PEE_meas_2d = self.PEE_measured.reshape((n_dofs, n_samples))
+        PEE_meas_2d = _by_component(self.PEE_measured, self.calib_config, n_samples)
+        if samples is not None:  # only these samples (excluded outliers, #98)
+            cols = _point_columns(
+                samples, n_samples, self.calib_config.get("NbMarkers", 1)
+            )
+            residuals_2d = residuals_2d[:, cols]
+            PEE_meas_2d = PEE_meas_2d[:, cols]
 
         means, stds, rmses, max_abs, r_squareds = [], [], [], [], []
 
@@ -1156,7 +1464,7 @@ class BaseCalibration(ABC):
             meas_row = PEE_meas_2d[i, :]
 
             # Scale: position → mm, orientation → deg
-            scale = 1000.0 if i < 3 else 180.0 / np.pi
+            scale = comps["scales"][i]
             scaled = row * scale
 
             means.append(float(np.mean(scaled)))
@@ -1170,17 +1478,22 @@ class BaseCalibration(ABC):
             r2 = 1.0 - ss_res / ss_tot if ss_tot > 1e-15 else 1.0
             r_squareds.append(float(r2))
 
-        # Overall position/orientation aggregates
-        pos_rows = residuals_2d[:3, :] if n_dofs >= 3 else residuals_2d
-        orient_rows = residuals_2d[3:6, :] if n_dofs >= 6 else np.zeros((3, n_samples))
-        pos_norm = np.sqrt(np.sum(pos_rows**2, axis=0))
-        orient_norm = np.sqrt(np.sum(orient_rows**2, axis=0))
-        pos_rmse = float(np.sqrt(np.mean(pos_norm**2))) * 1000
-        orient_rmse = float(np.sqrt(np.mean(orient_norm**2))) * 180 / np.pi
-        pos_mae = float(np.mean(pos_norm)) * 1000
-        orient_mae = float(np.mean(orient_norm)) * 180 / np.pi
-        pos_max = float(np.max(pos_norm)) * 1000
-        orient_max = float(np.max(orient_norm)) * 180 / np.pi
+        # Overall position/orientation aggregates over the measured
+        # components of each kind only; NaN when none is measured (#100)
+        def _norm_stats(rows, scale):
+            if not rows:
+                return float("nan"), float("nan"), float("nan")
+            norm = np.sqrt(np.sum(residuals_2d[rows, :] ** 2, axis=0))
+            return (
+                float(np.sqrt(np.mean(norm**2))) * scale,
+                float(np.mean(norm)) * scale,
+                float(np.max(norm)) * scale,
+            )
+
+        pos_rmse, pos_mae, pos_max = _norm_stats(comps["pos_rows"], 1000.0)
+        orient_rmse, orient_mae, orient_max = _norm_stats(
+            comps["orient_rows"], 180.0 / np.pi
+        )
 
         return {
             "dof_names": dof_names,
@@ -1329,22 +1642,19 @@ class BaseCalibration(ABC):
         n_samples = self.calib_config["NbSample"]
         n_markers = self.calib_config["NbMarkers"]
 
-        # if len(residuals) == n_dofs * n_samples * n_markers:
-        #     residuals_3d = residuals.reshape((n_markers, n_dofs, n_samples))
-        #     self._PEE_dist = np.sqrt(np.sum(residuals_3d**2, axis=1))
-        if len(residuals) == n_dofs * n_samples:
-            residuals_2d = residuals.reshape((n_dofs, n_samples))
-            # Per-sample Euclidean-norm error -- same convention as
-            # _evaluate_solution()'s rmse/mae, see comment there.
-            sample_rms = np.sqrt(np.sum(residuals_2d**2, axis=0))
-            self._PEE_dist = sample_rms.reshape((1, n_samples))
+        residuals_2d = _by_component(residuals, self.calib_config, n_samples)
+        if residuals_2d is not None:
+            # Per-sample Euclidean-norm error of each marker -- same
+            # convention as _evaluate_solution()'s rmse/mae, see comment there.
+            residuals_3d = residuals.reshape((n_markers, n_dofs, n_samples))
+            self._PEE_dist = np.sqrt(np.sum(residuals_3d**2, axis=1))
         else:
             # Fallback for unexpected residual shapes
             self._PEE_dist = np.ones((n_markers, n_samples)) * evaluation["rmse"]
 
         # Reshape PEE measured for consistency
-        PEEm_LM2d = self.PEE_measured.reshape((n_dofs, n_samples))
-        PEEe_LM2d = PEE_est.reshape((n_dofs, n_samples))
+        PEEm_LM2d = _by_component(self.PEE_measured, self.calib_config, n_samples)
+        PEEe_LM2d = _by_component(PEE_est, self.calib_config, n_samples)
         # Store results
         self.results_data = {}
         self.results_data["number of calibrated parameters"] = len(result.x)
@@ -1370,6 +1680,9 @@ class BaseCalibration(ABC):
         val_metrics = self._compute_validation_metrics()
         if val_metrics is not None:
             self.results_data["validation_metrics"] = val_metrics
+        from figaroh.tools.stages import stages_as_dicts
+
+        self.results_data["stages"] = stages_as_dicts(self)
 
         # Provenance snapshot — nominal model, config, software, data,
         # timestamps — consumed identically by print_quality_report,
@@ -1410,22 +1723,24 @@ class BaseCalibration(ABC):
         var_init: Optional[np.ndarray] = None,
         method: str = "lm",
         max_iterations: int = 3,
-        outlier_threshold: float = 3.0,
+        outlier_threshold: Optional[float] = None,
         enable_logging: bool = False,
     ):
         """Solve calibration optimization with robust outlier handling.
 
         This method implements a comprehensive optimization strategy:
         1. Sets up logging for progress tracking
-        2. Iteratively removes outliers and re-optimizes
+        2. Excludes samples above the outlier threshold and refits
         3. Evaluates solution quality with detailed metrics
         4. Stores results for further analysis
 
         Args:
             var_init (ndarray, optional): Initial parameter guess. If None,
                                         uses zero initialization.
-            max_iterations (int): Maximum outlier removal iterations
-            outlier_threshold (float): Outlier detection threshold (std devs)
+            max_iterations (int): Maximum number of fits
+            outlier_threshold (float, optional): Position error [m] above
+                which a sample is excluded; ``None`` uses
+                ``calib_config["outlier_eps"]``
             enable_logging (bool): Whether to enable terminal logging
 
         Raises:
@@ -1455,9 +1770,14 @@ class BaseCalibration(ABC):
             logger.info(f"Samples: {self.calib_config['NbSample']}")
             logger.info(f"DOFs: {self.calib_config['calibration_index']}")
 
-        # Initialize parameters
+        # Initialize parameters: zero, except the base/tip frames, which start
+        # at their closed-form estimate when it is available
         if var_init is None:
             var_init, _ = initialize_variables(self.calib_config, mode=0)
+            guess = self.initial_frame_guess()
+            for i, name in enumerate(self.calib_config["param_name"]):
+                if name in guess:
+                    var_init[i] = guess[name]
 
         try:
             # Run optimization with outlier removal
@@ -1515,10 +1835,38 @@ class BaseCalibration(ABC):
             # solved parameter vector itself — always the true count.
             nvars = len(result.x)
             self.nvars = nvars
-            sigma_ro_sq = (result.cost**2) / (
-                self.calib_config["NbSample"] * self.calib_config["calibration_index"]
-                - nvars
-            )
+            # Residual variance from the measurement residuals only: a
+            # subclass cost_function may append regularisation rows after
+            # them. (least_squares' result.cost is 0.5 * sum(fun**2), so it
+            # must not be squared, #107.)
+            n_meas = len(self.PEE_measured)
+            r_meas = np.asarray(result.fun)[:n_meas]
+            # rows of samples excluded as outliers are zero, not observations
+            excluded = getattr(self, "_excluded_rows", None)
+            if excluded is not None:
+                n_meas -= len(excluded)
+            prior_noise = self.calib_config.get("prior_noise")
+            self.residual_dof = n_meas - nvars
+            if prior_noise is not None:
+                # MAP: the prior rows in result.jac make this the posterior
+                # covariance, with the noise the priors were scaled by
+                sigma_ro_sq = prior_noise**2
+            elif self.residual_dof <= 0:
+                # as many parameters as observations: the residual
+                # variance, hence the uncertainty, is not estimable (#100)
+                logger.warning(
+                    f"{n_meas} observations for {nvars} parameters: "
+                    f"{self.residual_dof} residual degrees of freedom, "
+                    "parameter uncertainty not estimable"
+                )
+                self._C_param = None
+                self.std_dev = [float("nan")] * nvars
+                self.std_pctg = [float("nan")] * nvars
+                return
+            else:
+                sigma_ro_sq = np.sum(r_meas**2) / self.residual_dof
+            # Covariance from the full Jacobian, so regularisation rows act
+            # as prior information on the parameters they constrain.
             J = result.jac
             C_param = sigma_ro_sq * np.linalg.pinv(np.dot(J.T, J))
             self._C_param = C_param
@@ -1536,43 +1884,28 @@ class BaseCalibration(ABC):
             raise CalibrationError(f"Standard deviation calculation failed: {e}")
 
     def redistribute_parameters(self) -> dict:
-        """Minimum-norm redistribution of fitted base-parameter values (and
-        their covariance) onto the full standard-parameter set.
+        """Joint corrections with standard deviations, for export.
 
-        `create_param_list()`'s QR reduction keeps only a maximal
-        linearly-independent subset of the 6-per-joint candidate
-        parameters (the "base" parameters actually solved for); every
-        other candidate is an exact linear combination of that subset and
-        is implicitly left at its nominal value (0) when only
-        `calib_config["param_name"]` is deployed. This method instead
-        spreads each fitted base-parameter value across its full
-        redundant group via the Moore-Penrose pseudoinverse of the
-        base-mapping matrix `M` (`phi_base = M @ theta_r`), plus the
-        corresponding covariance propagation — see
-        :func:`figaroh.tools.qrdecomposition.redistribute_min_norm` /
-        :func:`~figaroh.tools.qrdecomposition.propagate_covariance_min_norm`.
+        - ``structural`` method: the fitted base parameters are lifted onto
+          every joint parameter by a weighted minimum-norm lift
+          (:func:`figaroh.calibration.estimation.lift_structural`,
+          figaroh-plus#111): among all joint corrections that reproduce the
+          fit, the most plausible under the expected error sizes
+          (``calib_config["estimation"]["priors"]``, defaults in
+          ``estimation.DEFAULT_PRIORS``). Rows the base frame carries and
+          rows the fit dropped are held at 0, so the lifted model predicts
+          what the fit predicts, and the result does not depend on which
+          representative the QR chose. ``std_dev`` is conditional on that
+          choice of lift: it propagates the fitted uncertainty and is 0 in
+          directions the data does not see.
+        - other methods (figaroh-plus#113): the fitted joint parameters
+          directly; candidates left out of the fit are 0.
 
-        This does not change what the model predicts (the redistributed
-        vector round-trips exactly through `M` back to the original fitted
-        base values) — only how the identified correction is distributed
-        across individual joint parameters. It does not add information:
-        non-identifiable directions remain non-identifiable, and the
-        reported `std_dev` for a redistributed parameter reflects the
-        minimum-norm estimator's own sensitivity, not an unconditional
-        physical uncertainty. See `TIAGO_CALIBRATION_ANALYSIS.md` §8 for
-        the full discussion and literature context.
-
-        Only covers parameters that went through the
-        `eliminate_non_dynaffect`/QR reduction (per-joint DH offsets);
-        marker/tip parameters added afterward by `add_pee_name` are
-        already individually free-standing (not part of a redundant
-        group) and are not included here.
+        Tool-point and base-frame parameters are not included.
 
         Returns:
             dict: ``{name: {"value": float, "std_dev": float}}`` for every
-            standard parameter in
-            ``calib_config["base_mapping_param_names"]`` — a strict
-            superset of ``calib_config["param_name"]``.
+            joint parameter of the calibration level.
 
         Raises:
             CalibrationError: If `solve()` hasn't run yet (no `_C_param`/
@@ -1585,29 +1918,116 @@ class BaseCalibration(ABC):
             raise CalibrationError(
                 "redistribute_parameters requires solve() to have run first"
             )
-        M = self.calib_config.get("base_mapping_matrix")
-        full_names = self.calib_config.get("base_mapping_param_names")
-        base_slice = self.calib_config.get("base_mapping_slice")
-        if M is None or full_names is None or base_slice is None:
+        report = self.calib_config.get("estimation_report")
+        if report is not None:
+            # non-structural methods (#113) estimate the full joint
+            # parameters directly: nothing to redistribute. Candidates
+            # left out of the fit are at nominal (0, std 0).
+            names = list(self.calib_config["param_name"])
+            std = np.sqrt(np.abs(np.diag(C_param)))
+            fitted = {n: (float(v), float(s)) for n, v, s in zip(names, var_, std)}
+            return {
+                n: {
+                    "value": fitted.get(n, (0.0, 0.0))[0],
+                    "std_dev": fitted.get(n, (0.0, 0.0))[1],
+                }
+                for n in report["candidates"]
+            }
+        if self.calib_config.get("base_mapping_matrix") is None or (
+            self.calib_config.get("base_mapping_param_names") is None
+        ):
             raise CalibrationError(
                 "base mapping matrix not available in calib_config -- "
                 "was create_param_list() run?"
             )
-
-        # base_slice locates the fitted base-parameter values by position
-        # in self.var_ (built one-to-one, in order, from calib_config
-        # ["param_name"] -- see initialize_variables), NOT by name: the
-        # names at these positions may have been overwritten in place by
-        # add_base_name since create_param_list() ran.
-        start, end = base_slice
-        phi_base = np.asarray(var_[start:end])
-        theta_full = redistribute_min_norm(M, phi_base)
-        C_full = propagate_covariance_min_norm(M, C_param[start:end, start:end])
-        std_full = np.sqrt(np.abs(np.diag(C_full)))
-
+        names, theta, cov = estimation.lift_structural(self)
+        std = np.sqrt(np.abs(np.diag(cov)))
         return {
-            name: {"value": float(theta_full[i]), "std_dev": float(std_full[i])}
-            for i, name in enumerate(full_names)
+            name: {"value": float(theta[i]), "std_dev": float(std[i])}
+            for i, name in enumerate(names)
+        }
+
+    def joint_corrections(
+        self, lift: bool = True, drop_unsupported: bool = False
+    ) -> Dict[str, float]:
+        """Joint parameter values to write into a URDF (``export_urdf``).
+
+        ``lift=True``: :meth:`redistribute_parameters` (the weighted lift
+        for ``structural``; the fitted values otherwise), so the URDF and
+        the PAL export carry the same corrections. ``lift=False``: the
+        fitted joint parameters as estimated (for ``structural``, one
+        representative per dependent group and the rest at 0). Either way
+        the reloaded URDF, with :meth:`metrology_frames` applied outside
+        it, reproduces the calibrated forward kinematics (figaroh-plus#62).
+
+        Frame parameters are never included; see :meth:`metrology_frames`.
+
+        Args:
+            lift: see above.
+            drop_unsupported: leave out fitted parameters a URDF cannot
+                carry (elastic ``k_*``, contact planes, ...). By default
+                they raise, because the reloaded model would then not
+                reproduce the calibration.
+
+        Raises:
+            CalibrationError: if the fit has parameters that are neither
+                frames nor kinematic joint corrections, and
+                ``drop_unsupported`` is False.
+        """
+        from figaroh.tools.urdf_exporter import is_kinematic_correction
+
+        if lift:
+            values = {n: v["value"] for n, v in self.redistribute_parameters().items()}
+        else:
+            frames = set(self._frame_param_names())
+            values = {
+                n: float(v)
+                for n, v in zip(self.calib_config["param_name"], self.var_)
+                if n not in frames
+            }
+        unsupported = [n for n in values if not is_kinematic_correction(n)]
+        if unsupported and not drop_unsupported:
+            from figaroh.tools.stages import record_stage
+
+            record_stage(
+                self,
+                "export",
+                "failed",
+                f"not representable in a URDF: {unsupported[:6]}",
+            )
+            raise CalibrationError(
+                f"{len(unsupported)} fitted parameter(s) cannot be written to "
+                f"a URDF, so the exported model would not reproduce this "
+                f"calibration: {unsupported[:6]}"
+                f"{' ...' if len(unsupported) > 6 else ''}. Pass "
+                f"drop_unsupported=True to export the kinematic corrections "
+                f"only, and keep the others from calibrator.var_."
+            )
+        return {n: v for n, v in values.items() if n not in unsupported}
+
+    def metrology_frames(self) -> Dict[str, float]:
+        """Fitted base frame and tool point: the measurement setup.
+
+        ``base_*`` places the robot base in the measurement frame (mocap
+        world, camera); ``pEE*``/``phiEE*`` place the measured point on the
+        tool. They describe this setup, not the robot, so they are never in
+        :meth:`joint_corrections` and ``export_urdf`` does not write them.
+        To reproduce the calibrated measurements from an exported URDF,
+        apply them outside it, e.g. ``calc_updated_fkm(reloaded_model, ...,
+        values, q, dict(calib_config, param_name=list(frames)))``.
+        Frames given as known (``known_baseframe``/``known_tipframe``) are
+        not fitted and not returned.
+
+        Raises:
+            CalibrationError: If `solve()` hasn't run yet.
+        """
+        if getattr(self, "var_", None) is None:
+            raise CalibrationError("metrology_frames requires solve() to have run")
+        frames = set(self._frame_param_names())
+        return {
+            n: float(v)
+            for n, v in zip(self.calib_config["param_name"], self.var_)
+            if n in frames
         }
 
     def plot_errors_distribution(self):
@@ -1873,20 +2293,26 @@ class BaseCalibration(ABC):
         independent = (
             bool(getattr(self, "_val_available", False)) and validation is not None
         )
+        # Position/orientation metrics only for the kinds actually
+        # measured, not inferred from the component count (#100)
+        comps = _measured_components(self.calib_config)
+        prediction_keys = []
+        if comps["pos_rows"]:
+            prediction_keys.append("position_rmse_mm")
+        if comps["orient_rows"]:
+            prediction_keys.append("orientation_rmse_deg")
         if validation is not None:
             # Training-data fallback stays labelled as training evidence, so
             # it can never satisfy a validation_* prediction limit.
             prefix = "" if independent else "training_"
-            metrics[f"{prefix}position_rmse_mm"] = validation.get(
-                "pos_rmse_calibrated_mm", float("nan")
-            )
-            if self.calib_config.get("calibration_index", 3) > 3:
+            if comps["pos_rows"]:
+                metrics[f"{prefix}position_rmse_mm"] = validation.get(
+                    "pos_rmse_calibrated_mm", float("nan")
+                )
+            if comps["orient_rows"]:
                 metrics[f"{prefix}orientation_rmse_deg"] = validation.get(
                     "orient_rmse_calibrated_deg", float("nan")
                 )
-        prediction_keys = ["position_rmse_mm"]
-        if self.calib_config.get("calibration_index", 3) > 3:
-            prediction_keys.append("orientation_rmse_deg")
         verdict = scoped_verification(
             metrics,
             thresholds,
@@ -1914,17 +2340,10 @@ class BaseCalibration(ABC):
             self, "_run_provenance", None
         ) or collect_run_provenance(self, "calibration")
 
-        n_dofs = self.calib_config.get("calibration_index", 0)
-        dof_names = [
-            "X (mm)",
-            "Y (mm)",
-            "Z (mm)",
-            "rx (deg)",
-            "ry (deg)",
-            "rz (deg)",
-        ][:n_dofs]
+        dof_names = comps["names"]
         if validation is not None and "error_nominal_per_dof" in validation:
-            n_val = validation.get("n_val_samples", 0)
+            # one entry per point of each sample (marker-major, #119)
+            n_val = validation.get("n_val_samples", 0) * validation.get("n_markers", 1)
             dof_names = validation.get("dof_names", dof_names)
             verdict.series = {
                 "time": list(range(n_val)),
@@ -1938,6 +2357,10 @@ class BaseCalibration(ABC):
             "sample_count": n_samples,
             "config_sha256": verdict.metadata.get("config", {}).get("sha256"),
         }
+        from figaroh.tools.stages import apply_to_verdict
+
+        # the reported parameters come from the fit (phi_base / var_)
+        apply_to_verdict(verdict, self, selected_stage="fit")
         return verdict
 
     def export_verification_report(
@@ -1976,10 +2399,14 @@ class BaseCalibration(ABC):
             output_path = join(output_dir, "calibration_verification.json")
 
         from figaroh.tools._report_common import verification_json_data
+        from figaroh.tools.stages import with_schema as _with_schema
 
         with open(output_path, "w") as f:
             json.dump(
-                verification_json_data(verdict_dict), f, indent=2, allow_nan=False
+                verification_json_data(_with_schema(self, verdict_dict)),
+                f,
+                indent=2,
+                allow_nan=False,
             )
 
         logger.info(f"Verification report written to {output_path}")
@@ -2002,6 +2429,9 @@ class BaseCalibration(ABC):
         print("=" * 70)
         print("  CALIBRATION QUALITY REPORT")
         print("=" * 70)
+        from figaroh.tools.stages import stages_line
+
+        print(f"  Stages:       {stages_line(self)}")
 
         # ── Convergence ──
         status = (
@@ -2012,11 +2442,24 @@ class BaseCalibration(ABC):
             f"Iterations: {eval_['n_iterations']}    "
             f"Cost: {eval_['cost']:.6f}"
         )
+        threshold = eval_.get("outlier_threshold")
         print(
-            f"  Outliers:     {eval_['n_outliers']} "
-            f"/ {self.calib_config['NbSample']} "
-            f"({eval_['outlier_percentage']:.1f}%)"
+            f"  Excluded:     {eval_['n_outliers']} "
+            f"/ {self.calib_config['NbSample']} samples "
+            f"({eval_['outlier_percentage']:.1f}%), position error > "
+            + (f"{threshold * 1e3:.1f} mm" if threshold is not None else "no threshold")
         )
+        excluded = eval_.get("excluded_samples") or []
+        if excluded:
+            errors = eval_.get("excluded_sample_errors") or [float("nan")] * len(
+                excluded
+            )
+            print(
+                "                "
+                + ", ".join(
+                    f"#{i} ({e * 1e3:.1f} mm)" for i, e in zip(excluded, errors)
+                )
+            )
 
         cond_label = eval_.get("condition_label", "unavailable")
         cond_num = eval_.get("condition_number", float("nan"))
@@ -2054,29 +2497,34 @@ class BaseCalibration(ABC):
         overall = per_dof.get("overall", {}) if per_dof else {}
         if overall:
             print("-" * 70)
-            print("  Overall")
-            print(
-                f"    Position RMSE:    {overall['pos_rmse_mm']:.2f} mm    "
-                f"Orientation RMSE:  {overall['orient_rmse_deg']:.4f} deg"
-            )
-            if "pos_mae_mm" in overall:
+            print("  Overall (measured components of each kind)")
+
+            def _fmt(value, spec, unit):
+                if value is None or np.isnan(value):
+                    return "not measured"
+                return f"{value:{spec}} {unit}"
+
+            for stat, key in (("RMSE", "rmse"), ("MAE", "mae"), ("max", "max")):
+                if f"pos_{key}_mm" not in overall:
+                    continue
+                pos = _fmt(overall[f"pos_{key}_mm"], ".2f", "mm")
+                orient = _fmt(overall[f"orient_{key}_deg"], ".4f", "deg")
                 print(
-                    f"    Position MAE:     {overall['pos_mae_mm']:.2f} mm    "
-                    f"Orientation MAE:   {overall['orient_mae_deg']:.4f} deg"
+                    f"    {'Position ' + stat + ':':<18s}{pos}    "
+                    f"{'Orientation ' + stat + ':':<19s}{orient}"
                 )
-            print(
-                f"    Position max:     {overall['pos_max_mm']:.2f} mm    "
-                f"Orientation max:   {overall['orient_max_deg']:.4f} deg"
-            )
 
         # ── Validation ──
         print("-" * 70)
         if val is not None:
             if val.get("validation_source") == "calibration_data_fallback":
+                # a held-out set evaluated outside BaseCalibration is not
+                # seen here (#100)
                 print(
-                    "  ⚠ WARNING: no separate validation data "
-                    "provided — falling back to calibration data. "
-                    "These are NOT an independent generalization test."
+                    "  ⚠ WARNING: no validation_data_file loaded by this "
+                    "calibration — falling back to calibration data. "
+                    "These are NOT an independent generalization test; "
+                    "a held-out evaluation done elsewhere is not shown."
                 )
                 print(f"  Validation (calibration set, n={val['n_val_samples']})")
             else:
@@ -2086,43 +2534,57 @@ class BaseCalibration(ABC):
                 f"{'Calibrated':>12s} {'Improvement':>14s}"
             )
             print(f"  {'-'*20} {'-'*10} {'-'*12} {'-'*14}")
-            arrow_pos = "\u2193" if val["pos_improvement_pct"] > 0 else "\u2191"
-            arrow_orient = "\u2193" if val["orient_improvement_pct"] > 0 else "\u2191"
-            print(
-                f"  {'Position RMSE':<20s} "
-                f"{val['pos_rmse_nominal_mm']:10.2f} mm"
-                f"{val['pos_rmse_calibrated_mm']:12.2f} mm"
-                f"{val['pos_improvement_pct']:13.1f}%  {arrow_pos}"
-            )
-            print(
-                f"  {'Orientation RMSE':<20s} "
-                f"{val['orient_rmse_nominal_deg']:10.4f} deg"
-                f"{val['orient_rmse_calibrated_deg']:12.4f} deg"
-                f"{val['orient_improvement_pct']:13.1f}%  {arrow_orient}"
-            )
-            print(
-                f"  {'Position max':<20s} "
-                f"{val['pos_max_nominal_mm']:10.2f} mm"
-                f"{val['pos_max_calibrated_mm']:12.2f} mm"
-                f"{val['pos_improvement_pct']:13.1f}%  {arrow_pos}"
-            )
-            print(
-                f"  {'Orientation max':<20s} "
-                f"{val['orient_max_nominal_deg']:10.4f} deg"
-                f"{val['orient_max_calibrated_deg']:12.4f} deg"
-                f"{val['orient_improvement_pct']:13.1f}%  {arrow_orient}"
-            )
+            for label, kind, unit, digits in (
+                ("Position RMSE", "pos_rmse", "mm", 2),
+                ("Orientation RMSE", "orient_rmse", "deg", 4),
+                ("Position max", "pos_max", "mm", 2),
+                ("Orientation max", "orient_max", "deg", 4),
+            ):
+                nominal = val[f"{kind}_nominal_{unit}"]
+                if np.isnan(nominal):
+                    continue  # no component of this kind measured (#100)
+                calibrated = val[f"{kind}_calibrated_{unit}"]
+                gain = val[f"{kind.split('_')[0]}_improvement_pct"]
+                arrow = "\u2193" if gain > 0 else "\u2191"
+                print(
+                    f"  {label:<20s} "
+                    f"{nominal:10.{digits}f} {unit}"
+                    f"{calibrated:12.{digits}f} {unit}"
+                    f"{gain:13.1f}%  {arrow}"
+                )
+            for k, (nominal, calibrated) in enumerate(_per_point_rows(val)):
+                gain = (nominal - calibrated) / nominal * 100 if nominal else 0.0
+                arrow = "\u2193" if gain > 0 else "\u2191"
+                print(
+                    f"  {f'  point {k + 1} RMSE':<20s} "
+                    f"{nominal:10.2f} mm{calibrated:12.2f} mm"
+                    f"{gain:13.1f}%  {arrow}"
+                )
         else:
-            print("  Validation: no separate validation data provided.")
+            # None also when a subclass evaluates its held-out set
+            # itself, so do not claim there is none (#100)
+            print("  Validation: not computed by this calibration.")
             print(
-                "    Collect measurements with random configurations " "for FK testing."
+                "    Set validation_data_file, or report the held-out "
+                "evaluation done outside BaseCalibration."
             )
 
         # ── Parameter uncertainty (top 5) ──
         std_pctg = eval_.get("param_stddev_percentage", [])
         std_dev = eval_.get("param_stdev", [])
         param_names = self.calib_config.get("param_name", [])
-        if std_pctg and param_names:
+        residual_dof = eval_.get("residual_dof")
+        if (
+            residual_dof is not None
+            and residual_dof <= 0
+            and self.calib_config.get("prior_noise") is None
+        ):
+            print("-" * 70)
+            print(
+                f"  Parameter Uncertainty: {residual_dof} residual degrees "
+                "of freedom — uncertainty not estimable"
+            )
+        elif std_pctg and param_names:
             print("-" * 70)
             ranked = sorted(
                 zip(param_names, std_dev, std_pctg),

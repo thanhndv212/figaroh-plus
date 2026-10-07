@@ -96,10 +96,12 @@ class TestURDFExporterNumerical:
         self.output = self.tmp.name
         self.tmp.close()
 
+        # No joint offset here: the magnitude checks below assume only the
+        # d_px/d_phiz placement errors move FK. Joint offsets are checked by
+        # test_joint_offset_reloads_as_shifted_configuration.
         self.params = {
             "d_px_joint2": 0.05,
             "d_phiz_joint2": 0.1,
-            "offsetRX_joint1": 0.25,
             "m_link1": 2.5,
             "fv_joint1": 0.2,
         }
@@ -317,3 +319,341 @@ def test_frame_settings_doc_names_the_ee_parameter(caplog, calibration_type, fra
 
     assert f"pass e.g. pEEx_{frame} = <value>" in caplog.text
     assert "%s" not in caplog.text
+
+
+TIAGO_URDF = FIXTURES_DIR / "tiago" / "tiago.urdf"
+
+
+@pytest.mark.skipif(not TIAGO_URDF.exists(), reason="TIAGo fixture missing")
+@pytest.mark.parametrize(
+    "param, joint",
+    [
+        ("offsetRZ_arm_2_joint", "arm_2_joint"),
+        ("offsetRZ_arm_4_joint", "arm_4_joint"),  # origin at pitch -pi/2
+        ("offsetRZ_arm_5_joint", "arm_5_joint"),  # origin at pitch -pi/2
+        ("offsetPZ_torso_lift_joint", "torso_lift_joint"),
+    ],
+)
+def test_joint_offset_reloads_as_shifted_configuration(tmp_path, param, joint):
+    """An exported joint offset reloads as ``q + offset`` (#101).
+
+    Pinocchio ignores ``<calibration rising>``, so the offset must be written
+    into the joint origin, about the joint's own axis.
+    """
+    import pinocchio as pin
+
+    offset = 0.05
+    out = tmp_path / "tiago_offset.urdf"
+    export_urdf(str(TIAGO_URDF), {param: offset}, output_path=str(out))
+
+    nominal = pin.buildModelFromUrdf(str(TIAGO_URDF))
+    exported = pin.buildModelFromUrdf(str(out))
+    nd, ed = nominal.createData(), exported.createData()
+    fid = nominal.getFrameId("arm_tool_link")
+    idx_q = nominal.joints[nominal.getJointId(joint)].idx_q
+    for _ in range(10):
+        q = pin.randomConfiguration(nominal)
+        q[idx_q] = np.clip(q[idx_q], -1.0, 0.2)
+        pin.framesForwardKinematics(exported, ed, q)
+        q_shift = q.copy()
+        q_shift[idx_q] += offset
+        pin.framesForwardKinematics(nominal, nd, q_shift)
+        diff = pin.log6(nd.oMf[fid].inverse() * ed.oMf[fid]).vector
+        # exporter writes 6 significant digits
+        assert np.abs(diff).max() < 1e-5
+
+
+@pytest.mark.parametrize(
+    "rpy",
+    [
+        [0.3, -0.4, 1.2],
+        [-1.5708, -1.5707963267948966, 0.0],
+        [0.0, -1.5707963267948966, 0.0],
+        [0.2, 1.5707963267948966, -0.7],
+    ],
+)
+def test_rpy_matrix_round_trip(rpy):
+    """URDF rpy helpers invert each other, including at pitch = +-pi/2."""
+    from figaroh.tools.urdf_exporter import _matrix_to_rpy, _rpy_to_matrix
+
+    rot = _rpy_to_matrix(rpy)
+    assert _rpy_to_matrix(_matrix_to_rpy(rot)) == pytest.approx(rot, abs=1e-12)
+
+
+def test_full_params_placement_reloads_as_calibrated_model(tmp_path):
+    """Exported d_* corrections reload to the calibrated FK (#110).
+
+    The fit applies a joint's six values together in the joint frame
+    (``update_joint_placement``); the exporter must write the same origin,
+    including at TIAGo's rotated placements (arm_4, arm_5 at pitch -pi/2).
+    """
+    import pinocchio as pin
+
+    from figaroh.calibration.calibration_tools import update_joint_placement
+
+    corrections = {
+        "arm_2_joint": [0.002, -0.001, 0.003, 0.01, -0.02, 0.015],
+        "arm_4_joint": [-0.001, 0.002, 0.0, 0.03, 0.01, -0.02],
+        "arm_5_joint": [0.0, 0.0, 0.002, -0.015, 0.0, 0.04],
+    }
+    names = ["d_px", "d_py", "d_pz", "d_phix", "d_phiy", "d_phiz"]
+    params = {
+        f"{n}_{joint}": v
+        for joint, values in corrections.items()
+        for n, v in zip(names, values)
+    }
+    out = tmp_path / "tiago_full_params.urdf"
+    export_urdf(str(TIAGO_URDF), params, output_path=str(out))
+
+    calibrated = pin.buildModelFromUrdf(str(TIAGO_URDF))
+    for joint, values in corrections.items():
+        update_joint_placement(calibrated, calibrated.getJointId(joint), values)
+    exported = pin.buildModelFromUrdf(str(out))
+    cd, ed = calibrated.createData(), exported.createData()
+    fid = calibrated.getFrameId("arm_tool_link")
+    for _ in range(10):
+        q = pin.randomConfiguration(calibrated)
+        pin.framesForwardKinematics(calibrated, cd, q)
+        pin.framesForwardKinematics(exported, ed, q)
+        diff = pin.log6(cd.oMf[fid].inverse() * ed.oMf[fid]).vector
+        # exporter writes 6 significant digits
+        assert np.abs(diff).max() < 1e-5
+
+
+def test_transmission_joint_is_not_mistaken_for_the_robot_joint(tmp_path):
+    """A <transmission> listed first must not receive the correction (#114)."""
+    import xml.etree.ElementTree as ET
+
+    urdf = tmp_path / "with_transmission.urdf"
+    urdf.write_text(
+        """<?xml version="1.0"?>
+<robot name="arm">
+  <transmission name="t1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint1">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="m1"><mechanicalReduction>1</mechanicalReduction></actuator>
+  </transmission>
+  <link name="base"/>
+  <link name="link1"/>
+  <joint name="joint1" type="revolute">
+    <parent link="base"/>
+    <child link="link1"/>
+    <origin xyz="0.1 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1" upper="1" effort="1" velocity="1"/>
+  </joint>
+</robot>
+"""
+    )
+    out = export_urdf(
+        str(urdf), {"d_px_joint1": 0.01}, output_path=str(tmp_path / "out.urdf")
+    )
+    root = ET.parse(out).getroot()
+    robot_joint = root.find("joint[@name='joint1']")
+    assert float(robot_joint.find("origin").get("xyz").split()[0]) == pytest.approx(
+        0.11
+    )
+    assert root.find("transmission/joint/origin") is None
+
+
+@pytest.mark.parametrize(
+    "params, match",
+    [
+        ({"offsetRZ_no_such_joint": 0.01}, "no_such_joint"),
+        ({"d_px_no_such_joint": 0.01}, "no_such_joint"),
+        ({"m_no_such_link": 1.0}, "no_such_link"),
+        ({"Ixx_arm_2_link": 0.1}, "partial inertial set"),
+        ({"m_arm_2_link": 1.0, "mx_arm_2_link": 0.1}, "partial inertial set"),
+        ({"off_arm_2_joint": 0.1}, "legacy"),
+        ({"offsetRZ_arm_2_joint": 0.01, "d_px_arm_2_joint": 0.001}, "both"),
+    ],
+)
+def test_unsupported_mappings_are_rejected(tmp_path, params, match):
+    """A correction the exporter cannot write raises and writes nothing,
+    instead of a URDF that silently differs from the estimate (#62)."""
+    out = tmp_path / "out.urdf"
+    with pytest.raises(ValueError, match=match):
+        export_urdf(str(TIAGO_URDF), params, output_path=str(out))
+    assert not out.exists()
+
+
+# ── Standard inertial parameters (#60) ──────────────────────────
+
+
+def _feasible_p10(mass, com, principal, rpy):
+    """A physically consistent ``toDynamicParameters()`` vector built from
+    mass, centre of mass and a rotated principal tensor, so the fixture does
+    not depend on any optimizer."""
+    import pinocchio as pin
+
+    from figaroh.tools.urdf_exporter import _rpy_to_matrix
+
+    rot = _rpy_to_matrix(rpy)
+    inertia = rot @ np.diag(principal) @ rot.T
+    return pin.Inertia(mass, np.asarray(com, float), inertia).toDynamicParameters()
+
+
+def _inertial_params(target, p10):
+    keys = ["m", "mx", "my", "mz", "Ixx", "Ixy", "Iyy", "Ixz", "Iyz", "Izz"]
+    return {f"{k}_{target}": float(v) for k, v in zip(keys, p10)}
+
+
+def _assert_reloads_as(urdf, exported_path, inertials):
+    """Reloading gives the intended per-joint inertias, physical verdicts
+    and inverse dynamics. ``inertials`` maps joint name to p10."""
+    import pinocchio as pin
+
+    from figaroh.identification.physical_consistency import check_p10_feasibility
+
+    expected = pin.buildModelFromUrdf(str(urdf))
+    for joint, p10 in inertials.items():
+        expected.inertias[expected.getJointId(joint)] = (
+            pin.Inertia.FromDynamicParameters(np.asarray(p10))
+        )
+    exported = pin.buildModelFromUrdf(str(exported_path))
+
+    for joint, p10 in inertials.items():
+        got = exported.inertias[exported.getJointId(joint)]
+        assert got.toDynamicParameters() == pytest.approx(p10, abs=1e-10)
+        want = pin.Inertia.FromDynamicParameters(np.asarray(p10))
+        assert got.mass == pytest.approx(want.mass, abs=1e-12)
+        assert got.lever == pytest.approx(want.lever, abs=1e-10)
+        assert got.inertia == pytest.approx(want.inertia, abs=1e-10)
+        assert check_p10_feasibility(got.toDynamicParameters()).status == "feasible"
+
+    ed, xd = expected.createData(), exported.createData()
+    rng = np.random.default_rng(60)
+    for _ in range(20):
+        q = pin.randomConfiguration(expected)
+        v = rng.standard_normal(expected.nv)
+        a = rng.standard_normal(expected.nv)
+        tau_e = pin.rnea(expected, ed, q, v, a)
+        tau_x = pin.rnea(exported, xd, q, v, a)
+        assert tau_x == pytest.approx(tau_e, abs=1e-9)
+
+
+def test_inertial_set_reloads_with_intended_dynamics(tmp_path):
+    """A full set per link, by link or by joint name, reloads as the
+    intended inertia and inverse dynamics; the nominal file is untouched."""
+    p1 = _feasible_p10(2.5, [0.03, -0.02, 0.45], [0.2, 0.19, 0.03], [0.3, -0.2, 0.5])
+    p2 = _feasible_p10(0.8, [-0.01, 0.04, 0.6], [0.05, 0.06, 0.015], [0.0, 0.4, -1.1])
+    params = {**_inertial_params("link1", p1), **_inertial_params("joint2", p2)}
+    params["fv_joint1"] = 0.2
+    nominal_bytes = Path(PENDULUM_URDF).read_bytes()
+
+    out = tmp_path / "pendulum_inertial.urdf"
+    export_urdf(PENDULUM_URDF, params, output_path=str(out))
+
+    assert Path(PENDULUM_URDF).read_bytes() == nominal_bytes
+    _assert_reloads_as(PENDULUM_URDF, out, {"joint1": p1, "joint2": p2})
+
+
+def test_inertial_set_keeps_existing_rpy(tmp_path):
+    """An existing ``<inertial><origin rpy>`` is kept; the tensor is written
+    in its axes, so the reloaded inertia is unchanged by the choice."""
+    import xml.etree.ElementTree as ET
+
+    rpy = "0.4 -0.3 1.2"
+    nominal = tmp_path / "pendulum_rpy.urdf"
+    inertial_origin = 'xyz="0 0 0.5" rpy="{}"/>\n      <inertia'
+    nominal.write_text(
+        Path(PENDULUM_URDF)
+        .read_text()
+        .replace(inertial_origin.format("0 0 0"), inertial_origin.format(rpy))
+    )
+    assert nominal.read_text().count(f'rpy="{rpy}"') == 2
+    p2 = _feasible_p10(1.3, [0.02, 0.01, 0.55], [0.09, 0.08, 0.02], [0.2, 0.1, 0.3])
+
+    out = tmp_path / "out.urdf"
+    export_urdf(str(nominal), _inertial_params("link2", p2), output_path=str(out))
+
+    origin = ET.parse(out).getroot().find("link[@name='link2']/inertial/origin")
+    assert origin.get("rpy") == rpy
+    _assert_reloads_as(nominal, out, {"joint2": p2})
+
+
+@pytest.mark.skipif(not TIAGO_URDF.exists(), reason="TIAGo fixture missing")
+def test_inertial_set_on_tiago_joint_target(tmp_path):
+    """Identification keys inertials by Pinocchio joint; a joint whose child
+    link carries the whole body exports and reloads exactly."""
+    p10 = _feasible_p10(1.9, [0.01, -0.03, 0.08], [0.012, 0.01, 0.006], [0.1, 0.2, 0.3])
+    out = tmp_path / "tiago_inertial.urdf"
+    export_urdf(
+        str(TIAGO_URDF), _inertial_params("arm_3_joint", p10), output_path=str(out)
+    )
+    _assert_reloads_as(TIAGO_URDF, out, {"arm_3_joint": p10})
+
+
+@pytest.mark.skipif(not TIAGO_URDF.exists(), reason="TIAGo fixture missing")
+@pytest.mark.parametrize(
+    "target, match",
+    [
+        ("arm_7_joint", "fixed-attached links"),  # wrist FT sensor and hand
+        ("arm_tool_joint", "fixed joint"),
+    ],
+)
+def test_inertial_set_on_merged_body_is_refused(tmp_path, target, match):
+    """Pinocchio merges fixed-attached links into a joint's body; that
+    estimate does not belong to one URDF link."""
+    p10 = _feasible_p10(1.0, [0.0, 0.0, 0.05], [0.01, 0.01, 0.005], [0.0, 0.0, 0.0])
+    out = tmp_path / "out.urdf"
+    with pytest.raises(ValueError, match=match):
+        export_urdf(
+            str(TIAGO_URDF), _inertial_params(target, p10), output_path=str(out)
+        )
+    assert not out.exists()
+
+
+def test_infeasible_inertial_set_is_refused_unless_allowed(tmp_path, caplog):
+    """The physical verdict gates the export by default and is logged."""
+    import pinocchio as pin
+
+    p10 = _feasible_p10(1.0, [0.0, 0.0, 0.5], [0.1, 0.1, 0.01], [0.0, 0.0, 0.0])
+    p10[9] = 0.5  # Izz beyond Ixx + Iyy about the centre of mass
+    params = _inertial_params("link1", p10)
+    out = tmp_path / "out.urdf"
+
+    with pytest.raises(ValueError, match="not physically consistent"):
+        export_urdf(PENDULUM_URDF, params, output_path=str(out))
+    assert not out.exists()
+
+    with caplog.at_level("WARNING", logger="figaroh.tools.urdf_exporter"):
+        export_urdf(PENDULUM_URDF, params, output_path=str(out), allow_infeasible=True)
+    assert "link1" in caplog.text and "allow_infeasible" in caplog.text
+    reloaded = pin.buildModelFromUrdf(str(out)).inertias[1].toDynamicParameters()
+    assert reloaded == pytest.approx(p10, abs=1e-10)
+
+
+@pytest.mark.parametrize("mass", [0.0, -1.0])
+def test_inertial_set_without_positive_mass_is_refused(tmp_path, mass):
+    p10 = np.zeros(10)
+    p10[0] = mass
+    with pytest.raises(ValueError, match="not positive"):
+        export_urdf(
+            PENDULUM_URDF,
+            _inertial_params("link1", p10),
+            output_path=str(tmp_path / "out.urdf"),
+        )
+
+
+def test_mass_only_keeps_urdf_centre_of_mass_and_tensor(tmp_path):
+    """``m_`` alone stays a mass override, by link or by joint name."""
+    import xml.etree.ElementTree as ET
+
+    out = tmp_path / "out.urdf"
+    export_urdf(PENDULUM_URDF, {"m_joint2": 3.0}, output_path=str(out))
+    link = ET.parse(out).getroot().find("link[@name='link2']/inertial")
+    assert link.find("mass").get("value") == "3"
+    assert link.find("origin").get("xyz") == "0 0 0.5"
+    assert link.find("inertia").get("izz") == "0.01"
+
+
+def test_same_link_from_link_and_joint_targets_is_refused(tmp_path):
+    with pytest.raises(ValueError, match="several targets"):
+        export_urdf(
+            PENDULUM_URDF,
+            {"m_link2": 1.0, "m_joint2": 2.0},
+            output_path=str(tmp_path / "out.urdf"),
+        )

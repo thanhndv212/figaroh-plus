@@ -461,6 +461,80 @@ class TestNumericalImprovements:
         ), "beta appears to be rounded to 6dp; expected full precision"
 
 
+class TestFullPrecisionBaseParameters:
+    """Identified base parameters are not rounded (#142).
+
+    Noise-free effort from small parameters (UR10 wrist inertia terms are
+    ~1e-5): rounding to six decimals would cost up to 5e-7 each.
+    """
+
+    @staticmethod
+    def problem(seed=11):
+        rng = np.random.default_rng(seed)
+        A = rng.normal(size=(60, 4))
+        W = np.column_stack([A, A @ rng.normal(size=(4, 2))])
+        params = [f"p{i}" for i in range(W.shape[1])]
+        theta = rng.normal(scale=3e-6, size=W.shape[1])
+        return W, params, theta, W @ theta
+
+    @pytest.mark.parametrize("method", ["double", "pivoting"])
+    def test_decompose_recovers_small_parameters(self, method):
+        W, params, _, tau = self.problem()
+        result = QRDecomposer(tolerance=1e-7).decompose(W, params, tau, method=method)
+        exact = np.linalg.lstsq(result.W_b, tau, rcond=None)[0]
+        np.testing.assert_allclose(result.phi_b, exact, rtol=0, atol=1e-15)
+        np.testing.assert_allclose(result.W_b @ result.phi_b, tau, rtol=0, atol=1e-13)
+
+    def test_double_decomposition_recovers_small_parameters(self):
+        W, params, theta, tau = self.problem()
+        dec = QRDecomposer(tolerance=1e-7)
+        W_b, _, _, phi_b = dec.double_decomposition(tau, W, params)
+        np.testing.assert_allclose(W_b @ phi_b, tau, rtol=0, atol=1e-13)
+        np.testing.assert_allclose(phi_b, dec.get_M() @ theta, rtol=0, atol=1e-15)
+
+    def test_prior_base_values_are_full_precision(self):
+        W, params, theta, tau = self.problem()
+        dec = QRDecomposer(tolerance=1e-7)
+        priors = dict(zip(params, theta))
+        _, _, _, _, phi_std = dec.double_decomposition(tau, W, params, priors)
+        np.testing.assert_allclose(phi_std, dec.get_M() @ theta, rtol=0, atol=1e-15)
+
+    def test_weighted_least_squares_is_full_precision(self):
+        from figaroh.identification.base_identification import BaseIdentification
+
+        W, params, theta, tau = self.problem()
+        W_b = W[:, :4]
+        phi = theta[:4]
+
+        class Stub(BaseIdentification):
+            def load_trajectory_data(self):
+                raise NotImplementedError
+
+        ident = Stub.__new__(Stub)
+        phi_wls, _ = ident._solve_weighted_least_squares(
+            W_b, W_b @ phi, np.full(len(tau), 0.5)
+        )
+        np.testing.assert_allclose(phi_wls, phi, rtol=0, atol=1e-15)
+
+    def test_legacy_weighted_least_squares_is_full_precision(self):
+        from types import SimpleNamespace
+
+        from figaroh.identification.identification_tools import (
+            weigthed_least_squares,
+        )
+
+        rng = np.random.default_rng(12)
+        W_b = rng.normal(size=(40, 3))
+        phi = rng.normal(scale=3e-6, size=3)
+        tau = W_b @ phi
+        tau_meas = tau + rng.normal(scale=1e-12, size=40)  # nonzero sigma
+        robot = SimpleNamespace(model=SimpleNamespace(nq=2))
+        config = {"idx_tau_stop": [20, 40]}
+        phi_wls = weigthed_least_squares(robot, phi, W_b, tau_meas, tau, config)
+        np.testing.assert_allclose(phi_wls, phi, rtol=0, atol=1e-11)
+        assert not np.allclose(phi_wls, np.around(phi_wls, 6), rtol=0, atol=1e-9)
+
+
 class TestRedistribution:
     """Tests for redistribute_min_norm / propagate_covariance_min_norm."""
 

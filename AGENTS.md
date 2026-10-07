@@ -58,8 +58,13 @@ or complete. Do not use an old test count as present-day validation evidence.
 - Projection/reconstruction are opt-in at runtime. Projection keeps raw and
   projected result dictionaries; choose the intended result stage explicitly.
   `picos` is currently a package dependency even when projection is disabled.
-- URDF first-moment/inertia handlers are currently stubs. A successful write is
-  not proof of a physically complete exported model; require reload checks.
+- URDF export writes identified inertial parameters (#60): inputs follow
+  Pinocchio `toDynamicParameters()` order with first moments and inertia about
+  the link-frame origin; each link needs all ten values (`m_` alone is a mass
+  override). Targets with massive links fixed to them (Pinocchio merges
+  these, e.g. TIAGo `arm_7_joint`) are always refused; physically infeasible
+  sets are refused unless `allow_infeasible=True`. A successful write is still
+  not proof of a correct model; require reload/RNEA checks.
 - Library logging uses module loggers/NullHandler. Do not introduce root logging
   configuration or `print` into library workflows.
 - Tests needing GUI or optional dependencies can skip. Report why; do not hide

@@ -150,6 +150,16 @@ def load_data(path_to_file, model, calib_config, del_list=[]):
         pose_ee = np.delete(pose_ee, del_list, axis=0)
         q_act = np.delete(q_act, del_list, axis=0)
 
+    # a missing (occluded) point would make every residual NaN: name the rows
+    bad = ~np.isfinite(pose_ee).all(axis=1)
+    if bad.any():
+        rows = np.delete(np.arange(len(df)), del_list or [])[bad]
+        raise ValueError(
+            f"{path_to_file}: non-finite marker measurements in CSV rows "
+            f"{rows.tolist()} (e.g. an occluded point); exclude them with "
+            "del_list or clean the file"
+        )
+
     # update number of data points
     calib_config["NbSample"] = q_act.shape[0]
 
@@ -158,7 +168,8 @@ def load_data(path_to_file, model, calib_config, del_list=[]):
 
     q_exp = np.empty((calib_config["NbSample"], calib_config["q0"].shape[0]))
     for i in range(calib_config["NbSample"]):
-        config = calib_config["q0"]
+        # a copy: q0 is robot.q0, which must not end up as the last sample (#125)
+        config = calib_config["q0"].copy()
         config[calib_config["config_idx"]] = q_act[i, :]
         q_exp[i, :] = config
 

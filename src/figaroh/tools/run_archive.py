@@ -101,6 +101,8 @@ def _append_index(
 ) -> None:
     passed = None
     metrics: Dict[str, Any] = {}
+    stages: Dict[str, Any] = {}
+    selected_stage = None
     verdict_path = run_dir / "verdict.json"
     if verdict_path.exists():
         try:
@@ -108,6 +110,8 @@ def _append_index(
                 verdict_data = json.load(f)
             passed = verdict_data.get("passed")
             metrics = verdict_data.get("metrics", {})
+            stages = verdict_data.get("stages", {})
+            selected_stage = verdict_data.get("selected_stage")
         except (OSError, ValueError) as e:
             logger.warning(f"Could not read verdict for index entry: {e}")
 
@@ -120,6 +124,9 @@ def _append_index(
         "run_finished": provenance.get("timestamps", {}).get("run_finished"),
         "passed": passed,
         "metrics": metrics,
+        # per-stage verdicts and the reported stage (#63); absent in old runs
+        "stages": stages,
+        "selected_stage": selected_stage,
         "path": str(run_dir),
     }
     index_path = root / "index.jsonl"
@@ -208,6 +215,18 @@ def archive_run(obj: Any, run_dir: Path) -> str:
     if config:
         with open(run_dir / "config.snapshot.yaml", "w") as f:
             yaml.dump(_yaml_safe(config), f, default_flow_style=False, sort_keys=True)
+
+    stages = getattr(obj, "stages", None)
+    if stages:
+        from figaroh.tools.stages import SCHEMA_VERSION, stages_as_dicts
+
+        with open(run_dir / "stages.json", "w") as f:
+            json.dump(
+                {"schema_version": SCHEMA_VERSION, "stages": stages_as_dicts(obj)},
+                f,
+                indent=2,
+                default=str,
+            )
 
     param_names, param_values = _extract_parameters(obj)
     if param_names:

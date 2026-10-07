@@ -266,3 +266,28 @@ def test_segment_retries_from_new_initial_guess(attempts, outcomes, solved, n_ca
     assert len(stub.results["T_F"]) == (1 if solved else 0)
     if solved:
         assert stub.results["iteration_data"][0]["attempt"] == n_calls
+
+
+@pytest.mark.parametrize("clear", [True, False])
+def test_segment_must_be_collision_free_between_check_points(monkeypatch, clear):
+    """A solved segment is kept only if the whole spline is clear (#143)."""
+    from figaroh.optimal import base_optimal_trajectory as bot
+
+    class Colliding(_StubConstraints):
+        n_pairs = 1
+
+        def trajectory_clear(self, tps, wps, vel_wps, acc_wps):
+            self.checked = wps
+            return clear
+
+    monkeypatch.setattr(bot, "RobotIPOPTSolver", _fake_solver(0, [0.5, 0.25], []))
+    problem = _stub_problem()
+    problem.opt_traj.constraint_manager = Colliding()
+    problem.wp_init = np.array([0.0])
+
+    success, _ = problem.solve_with_waypoints(np.zeros((1, 3)))
+
+    assert success is clear
+    np.testing.assert_allclose(
+        problem.opt_traj.constraint_manager.checked, [[0.0, 0.5, 0.25]]
+    )

@@ -73,6 +73,11 @@ declares:
 - `nb_sample` — number of configurations in your measurement set (more
   isn't always better — see [Optimal Experiment Design](optimal_design.md)
   for how to pick the *best* set instead of the largest)
+- `calibration_level` and `estimation` — which corrections exist
+  (`joint_offset` or `full_params`) and which of them are estimated, and how
+  (`structural` by default; `excitation`, `map`, `map_cv`, `cv_subset`). With
+  few postures this choice matters as much as the data: see
+  [Choosing what to estimate](calibration_estimation_guide.md)
 
 ## Interpreting results
 
@@ -89,6 +94,8 @@ residual interpretation and acceptance evidence.
 
 ## Next steps
 
+- [Choosing what to estimate](calibration_estimation_guide.md) — pick and
+  check the estimation method for your robot and postures.
 - [Identification Walkthrough](identification_walkthrough.md) — once
   kinematics are corrected, identify the *dynamic* parameters (mass,
   inertia, friction) for control and simulation.

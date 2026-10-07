@@ -62,6 +62,7 @@ _CALIBRATION_CONFIG_KEYS = [
     "end_frame",
     "outlier_eps",
     "coeff_regularize",
+    "random_seed",
     "free_flyer",
 ]
 
@@ -93,6 +94,83 @@ def _git_dirty() -> Optional[bool]:
     except Exception:
         pass
     return None
+
+
+def _package_revision() -> Dict[str, Any]:
+    """Git revision of the figaroh package itself, if it runs from a checkout.
+
+    ``software.git_commit`` is the working directory's commit: for an
+    example run, the examples repository. The core revision is recorded
+    here so a run names both halves of the pair (#63). ``unknown`` for an
+    installed (non-git) package. Never raises.
+    """
+    import os
+
+    try:
+        import figaroh
+
+        pkg_dir = os.path.dirname(os.path.abspath(figaroh.__file__))
+    except Exception:
+        return {"commit": "unknown", "dirty": None}
+    out: Dict[str, Any] = {"commit": "unknown", "dirty": None}
+    try:
+        head = subprocess.run(
+            ["git", "-C", pkg_dir, "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if head.returncode == 0:
+            out["commit"] = head.stdout.strip()
+            status = subprocess.run(
+                ["git", "-C", pkg_dir, "status", "--porcelain", "--", "."],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            if status.returncode == 0:
+                out["dirty"] = bool(status.stdout.strip())
+    except Exception:
+        pass
+    return out
+
+
+def collect_splits(obj: Any) -> Dict[str, Any]:
+    """Which data trained and which validated this run (#63).
+
+    From the data-contract objects when the run used them
+    (``trajectory`` / ``observations`` and their validation counterparts:
+    files with sha256, session, adapter); ``"legacy input"`` otherwise,
+    whose files are listed under provenance ``data``. ``validation_source``
+    comes from the run's ``validation`` stage: ``held_out``, or
+    ``training_fallback`` when no held-out data was available.
+    """
+
+    def describe(data):
+        if data is None:
+            return None
+        source = data.source
+        return {
+            "files": dict(source.files),
+            "session": source.session.id if source.session else None,
+            "adapter": source.adapter,
+            "samples": int(data.n_samples),
+            "masked_samples": int((~data.mask).sum()),
+        }
+
+    training = getattr(obj, "trajectory", None) or getattr(obj, "observations", None)
+    validation = getattr(obj, "_val_trajectory", None) or getattr(
+        obj, "_val_observations", None
+    )
+    status = {s.stage: s.status for s in getattr(obj, "stages", None) or []}
+    source = {"ok": "held_out", "fallback": "training_fallback"}.get(
+        status.get("validation"), "none"
+    )
+    return {
+        "training": describe(training) or "legacy input (see provenance data)",
+        "validation": describe(validation),
+        "validation_source": source,
+    }
 
 
 def _software_versions() -> Dict[str, str]:
@@ -257,8 +335,11 @@ def collect_run_provenance(obj: Any, task: str) -> Dict[str, Any]:
         },
         "software": {
             **_software_versions(),
+            # working directory's repository (an example run: examples)
             "git_commit": git_commit,
             "git_dirty": _git_dirty(),
+            # the figaroh package's own checkout, the other half of the pair
+            "figaroh_revision": _package_revision(),
             "hostname": socket.gethostname(),
         },
         "data": _data_files_provenance(config),

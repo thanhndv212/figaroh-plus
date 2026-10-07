@@ -38,6 +38,27 @@ _LEGACY_CONFIG_DEPRECATION_MESSAGE = (
 )
 
 
+def regularization_coefficient(value):
+    """``coeff_regularize`` from a config value; deprecated when non-zero.
+
+    The coefficient weights ``sqrt(c) * theta`` rows that robot cost
+    functions appended for every joint parameter, so a metre and a radian
+    were penalised alike (#120). ``estimation.method: map`` replaces it with
+    priors of physical size per parameter group. Core never applies the
+    coefficient; it is kept, default 0, for robot classes that still read it.
+    """
+    if value:
+        warnings.warn(
+            f"regularization_coefficient ({value}) is deprecated: it penalises "
+            "metres and radians alike. Use estimation.method: map (priors per "
+            "parameter group, docs/source/concepts/calibration_estimation.md) "
+            "and set the coefficient to 0 (figaroh-plus#120).",
+            DeprecationWarning,
+            stacklevel=3,
+        )
+    return value
+
+
 def get_sup_joints(model, start_frame, end_frame):
     """Get list of supporting joints between two frames in kinematic chain.
 
@@ -267,12 +288,16 @@ def get_param_from_yaml(robot, calib_data) -> dict:
             "non_geom": calib_data["non_geom"],
             "eps": 1e-3,
             "PLOT": 0,
+            # seeds the structural selection's random configurations (#99)
+            "random_seed": calib_data.get("random_seed", 0),
         }
     )
     try:
         calib_config.update(
             {
-                "coeff_regularize": calib_data["coeff_regularize"],
+                "coeff_regularize": regularization_coefficient(
+                    calib_data["coeff_regularize"]
+                ),
                 "data_file": calib_data["data_file"],
                 "sample_configs_file": calib_data["sample_configs_file"],
                 "outlier_eps": calib_data["outlier_eps"],
@@ -359,6 +384,8 @@ def unified_to_legacy_config(robot, unified_calib_config) -> dict:
     # 8. Extract data configuration
     calib_config["NbSample"] = data.get("number_of_samples", 500)
     calib_config["data_file"] = data.get("source_file")
+    # held-out measurements in the same format; "" means none
+    calib_config["validation_data_file"] = data.get("validation_data_file") or None
     calib_config["sample_configs_file"] = data.get("sample_configurations_file")
 
     return calib_config
@@ -534,8 +561,14 @@ def _extract_calibration_params(calib_config, robot, parameters):
             "non_geom": non_geom,
             "eps": 1e-3,
             "PLOT": 0,
-            "coeff_regularize": parameters.get("regularization_coefficient", 0.01),
+            "coeff_regularize": regularization_coefficient(
+                parameters.get("regularization_coefficient", 0.0)
+            ),
             "outlier_eps": parameters.get("outlier_threshold", 0.05),
+            # seeds the structural selection's random configurations (#99)
+            "random_seed": parameters.get("random_seed", 0),
+            # parameter selection / estimation method (estimation.py, #113)
+            "estimation": dict(parameters.get("estimation") or {}),
         }
     )
 

@@ -26,6 +26,36 @@ physical feasibility, prediction quality and export/reload parity as separate
 conclusions. The compare page's compatibility checks do not establish matching
 raw inputs, processing, objectives or absence of leakage; retain that provenance.
 
+### Stages, splits and revisions
+
+Each run records what each step did (`figaroh.tools.stages`, #55/#63). The
+terminal report prints them on a `Stages:` line, and the HTML report shows a
+**Stages and data** section.
+
+Each step gets its own verdict in `verdict.stages`:
+- the steps are `data`, `fit`, `validation`, `physical` and `export`;
+- each is `pass`, `fail`, `fallback` or `not_run`, or `not_evaluated` when
+  the run recorded nothing for it;
+- the existing entries (`numerical_execution`, `prediction`, `solver`) are
+  kept beside them.
+
+A `validation` **fallback** means the metrics were computed on the
+training data. It is never held-out evidence, and prediction acceptance
+cannot pass on it.
+
+| Field | Meaning |
+|---|---|
+| `verdict.stage_records` | every step's status, reason and metrics with units |
+| `verdict.selected_stage` | the step whose parameters the result reports (`fit`; `none` if the fit failed) |
+| `verdict.splits` | which files, sessions and sample counts trained and validated the run, and whether validation was held out |
+| provenance `software.git_commit` | the working directory's commit (an example run: the examples repository) |
+| provenance `software.figaroh_revision` | the figaroh checkout's own commit and dirty state |
+
+Together, the two commits name the paired core/examples revisions. The
+exported JSON carries the records under `stage_records` and a
+`schema_version`. The run archive writes `stages.json` and adds each run's
+stage verdicts to `index.jsonl`.
+
 ## Terminal quality reports
 
 `print_quality_report()` runs automatically at the end of `solve()`; call

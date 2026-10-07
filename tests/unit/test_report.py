@@ -163,7 +163,7 @@ class TestGenerateCalibrationReport:
     def test_handles_missing_validation_data(self):
         calibrator = FakeCalibrator(_base_eval(), _base_config())
         doc = generate_calibration_report(calibrator)
-        assert "No separate validation data provided" in doc
+        assert "Validation not computed by this calibration" in doc
 
     def test_renders_validation_section_when_present(self):
         results_data = {

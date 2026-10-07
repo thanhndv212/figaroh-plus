@@ -38,6 +38,7 @@ from figaroh.tools._report_common import (
     _insights_section,
     _param_uncertainty_section,
     _provenance_section,
+    _stages_section,
     _run_title,
     _series_panel_section,
 )
@@ -99,9 +100,22 @@ def _build_insights(
         insights.append(
             {
                 "level": "warn",
-                "text": f"{n_outliers} outliers removed "
-                f"({outlier_pct:.1f}% of {n_samples} samples) — "
+                "text": f"{n_outliers} samples excluded as outliers "
+                f"({outlier_pct:.1f}% of {n_samples} samples: "
+                f"{eval_.get('excluded_samples', [])}) — "
                 "check data quality if this seems high.",
+            }
+        )
+
+    residual_dof = eval_.get("residual_dof")
+    if residual_dof is not None and residual_dof <= 0:
+        insights.append(
+            {
+                "level": "warn",
+                "text": f"{residual_dof} residual degrees of freedom "
+                "(no more observations than parameters): parameter "
+                "uncertainty is not estimable and the fit residual says "
+                "nothing about accuracy.",
             }
         )
 
@@ -138,9 +152,9 @@ def _build_insights(
         insights.append(
             {
                 "level": "info",
-                "text": "No held-out validation data provided — these "
-                "metrics reflect fit quality on the training set "
-                "only, not generalization.",
+                "text": "No held-out validation computed by this "
+                "calibration — these metrics reflect fit quality on the "
+                "training set only, not generalization.",
             }
         )
     else:
@@ -148,7 +162,7 @@ def _build_insights(
             insights.append(
                 {
                     "level": "warn",
-                    "text": "No separate validation data provided — "
+                    "text": "No validation_data_file loaded — "
                     "validation metrics fall back to the "
                     "calibration data itself and do NOT test "
                     "generalization to new configurations.",
@@ -196,7 +210,7 @@ def _summary_section(eval_: Dict[str, Any], n_samples: int) -> str:
         <div class="stat-value">{n_samples}</div>
       </div>
       <div class="stat">
-        <div class="stat-label">Outliers</div>
+        <div class="stat-label">Excluded outliers</div>
         <div class="stat-value">{eval_.get("n_outliers", 0)}
           ({eval_.get("outlier_percentage", 0.0):.1f}%)</div>
       </div>
@@ -231,42 +245,29 @@ def _per_dof_section(per_dof: Dict[str, Any]) -> str:
             "</tr>"
         )
 
+    # aggregates are NaN for a kind with no measured component (#100)
     overall = per_dof.get("overall", {})
-    overall_html = ""
-    if overall:
-        mae_html = ""
-        if "pos_mae_mm" in overall:
-            mae_html = f"""
+    stats = []
+    for stat, key in (("RMSE", "rmse"), ("MAE", "mae"), ("max", "max")):
+        for kind, prefix, unit, digits in (
+            ("Position", "pos", "mm", 2),
+            ("Orientation", "orient", "deg", 4),
+        ):
+            value = overall.get(f"{prefix}_{key}_{unit}")
+            if value is None or math.isnan(value):
+                continue
+            stats.append(
+                f"""
           <div class="stat">
-            <div class="stat-label">Position MAE</div>
-            <div class="stat-value">{overall["pos_mae_mm"]:.2f} mm</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Orientation MAE</div>
-            <div class="stat-value">{overall["orient_mae_deg"]:.4f} deg</div>
-          </div>
-            """
-        overall_html = f"""
-        <div class="stat-row" style="margin-top:14px;">
-          <div class="stat">
-            <div class="stat-label">Position RMSE</div>
-            <div class="stat-value">{overall["pos_rmse_mm"]:.2f} mm</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Orientation RMSE</div>
-            <div class="stat-value">{overall["orient_rmse_deg"]:.4f} deg</div>
-          </div>
-          {mae_html}
-          <div class="stat">
-            <div class="stat-label">Position max</div>
-            <div class="stat-value">{overall["pos_max_mm"]:.2f} mm</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Orientation max</div>
-            <div class="stat-value">{overall["orient_max_deg"]:.4f} deg</div>
-          </div>
-        </div>
-        """
+            <div class="stat-label">{kind} {stat}</div>
+            <div class="stat-value">{value:.{digits}f} {unit}</div>
+          </div>"""
+            )
+    overall_html = (
+        f'<div class="stat-row" style="margin-top:14px;">{"".join(stats)}</div>'
+        if stats
+        else ""
+    )
 
     return f"""
     <table class="data">
@@ -280,11 +281,30 @@ def _per_dof_section(per_dof: Dict[str, Any]) -> str:
     """
 
 
+def _calibration_uncertainty_section(
+    eval_: Dict[str, Any], param_names: List[str]
+) -> str:
+    std_dev = eval_.get("param_stdev", [])
+    if std_dev and all(math.isnan(sd) for sd in std_dev):
+        # calc_stddev() found no residual degrees of freedom (#100)
+        return (
+            f'<p class="muted">{eval_.get("residual_dof", 0)} residual '
+            "degrees of freedom — uncertainty not estimable.</p>"
+        )
+    return _param_uncertainty_section(
+        param_names,
+        std_dev,
+        eval_.get("param_stddev_percentage", []),
+        eval_.get("param_values"),
+    )
+
+
 def _validation_section(validation: Optional[Dict[str, Any]]) -> str:
     if validation is None:
         return (
-            '<p class="muted">No separate validation data provided. '
-            "Collect measurements at random configurations to test "
+            '<p class="muted">Validation not computed by this '
+            "calibration. Set validation_data_file, or report a held-out "
+            "evaluation done outside BaseCalibration, to test "
             "generalization beyond the excitation trajectory.</p>"
         )
 
@@ -302,42 +322,42 @@ def _validation_section(validation: Optional[Dict[str, Any]]) -> str:
     warning_html = ""
     if validation.get("validation_source") == "calibration_data_fallback":
         warning_html = (
-            '<p class="warning">⚠ No separate validation data was '
-            "provided — falling back to calibration data. These "
+            '<p class="warning">⚠ No validation_data_file was loaded by '
+            "this calibration — falling back to calibration data. These "
             "metrics are <strong>not</strong> an independent "
-            "generalization test.</p>"
+            "generalization test; a held-out evaluation done elsewhere "
+            "is not shown here.</p>"
         )
 
     rows = [
         _row(
-            "Position RMSE",
-            validation["pos_rmse_nominal_mm"],
-            validation["pos_rmse_calibrated_mm"],
-            validation["pos_improvement_pct"],
-            "mm",
-        ),
-        _row(
-            "Orientation RMSE",
-            validation["orient_rmse_nominal_deg"],
-            validation["orient_rmse_calibrated_deg"],
-            validation["orient_improvement_pct"],
-            "deg",
-        ),
-        _row(
-            "Position max",
-            validation["pos_max_nominal_mm"],
-            validation["pos_max_calibrated_mm"],
-            validation["pos_improvement_pct"],
-            "mm",
-        ),
-        _row(
-            "Orientation max",
-            validation["orient_max_nominal_deg"],
-            validation["orient_max_calibrated_deg"],
-            validation["orient_improvement_pct"],
-            "deg",
-        ),
+            label,
+            validation[f"{kind}_nominal_{unit}"],
+            validation[f"{kind}_calibrated_{unit}"],
+            validation[f"{kind.split('_')[0]}_improvement_pct"],
+            unit,
+        )
+        for label, kind, unit in (
+            ("Position RMSE", "pos_rmse", "mm"),
+            ("Orientation RMSE", "orient_rmse", "deg"),
+            ("Position max", "pos_max", "mm"),
+            ("Orientation max", "orient_max", "deg"),
+        )
+        # skip a kind with no measured component (#100)
+        if not math.isnan(validation[f"{kind}_nominal_{unit}"])
     ]
+    # several points of one body (#119): position RMSE of each
+    if validation.get("n_markers", 1) > 1:
+        for k, (nominal, calibrated) in enumerate(
+            zip(
+                validation.get("pos_rmse_nominal_per_point_mm", []),
+                validation.get("pos_rmse_calibrated_per_point_mm", []),
+            )
+        ):
+            gain = (nominal - calibrated) / nominal * 100 if nominal else 0.0
+            rows.append(
+                _row(f"Position RMSE, point {k + 1}", nominal, calibrated, gain, "mm")
+            )
 
     set_label = (
         "calibration set (fallback)"
@@ -379,16 +399,15 @@ def _redistributed_section(redistributed: Optional[Dict[str, Dict[str, float]]])
         for v, sd in zip(values, std_dev)
     ]
     intro = (
-        '<p class="muted">Minimum-norm redistribution of the fitted base '
-        "parameters onto the full standard-parameter set (see "
-        "TIAGO_CALIBRATION_ANALYSIS.md §8) — includes parameters silently "
-        "left at their nominal value (0) in the base-only fit above, "
-        "because they were structurally redundant with another parameter "
-        "rather than independently identifiable. Does not change what the "
-        "model predicts; only the standard-error column here reflects the "
-        "minimum-norm estimator's own sensitivity to noise, not an "
-        "unconditional physical uncertainty for that individual "
-        "parameter.</p>"
+        '<p class="muted">Joint corrections for export '
+        "(BaseCalibration.redistribute_parameters). For the structural "
+        "method, the fitted base parameters are lifted onto every joint "
+        "parameter by a weighted minimum-norm lift with the expected error "
+        "sizes, holding base-frame and dropped rows at 0: parameters that "
+        "were represented by another one in the fit get their share. It "
+        "does not change what the model predicts. The standard deviations "
+        "are conditional on that lift, not unconditional physical "
+        "uncertainties of individual parameters.</p>"
     )
     return intro + _param_uncertainty_section(names, std_dev, std_pctg, values)
 
@@ -440,6 +459,12 @@ def generate_calibration_report(
     )
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
 
+    from figaroh.tools.provenance import collect_splits
+    from figaroh.tools.stages import stages_as_dicts
+
+    stage_records = stages_as_dicts(calibrator)
+    splits = collect_splits(calibrator)
+
     doc = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -461,6 +486,11 @@ def generate_calibration_report(
   <section>
     <h2>Summary</h2>
     <div class="card">{_summary_section(eval_, n_samples)}</div>
+  </section>
+
+  <section>
+    <h2>Stages and data</h2>
+    <div class="card">{_stages_section(stage_records, splits)}</div>
   </section>
 
   <section>
@@ -487,12 +517,7 @@ def generate_calibration_report(
 
   <section>
     <h2>Parameter uncertainty</h2>
-    <div class="card">{_param_uncertainty_section(
-        param_names,
-        eval_.get("param_stdev", []),
-        eval_.get("param_stddev_percentage", []),
-        eval_.get("param_values"),
-    )}</div>
+    <div class="card">{_calibration_uncertainty_section(eval_, param_names)}</div>
   </section>
 
   <section>

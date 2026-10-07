@@ -7,6 +7,360 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-07
+
+This release ships the **calibration reference workflow** (roadmap M1.1–M1.4,
+calibration side; delivery packages D2, C1–C4, W3 and S1) and the inertial
+URDF export (D6), with the core fixes found by the UR10 truth fixture (D3:
+#142, #143). The dynamic identification reference (D4, D7) is not in this
+release; it is planned for 0.7.0. Release tracker: #146.
+
+Behaviour changes when upgrading from 0.5.0, detailed in the entries below:
+
+- `solve(outlier_threshold=...)` is a position error in metres (it was a
+  number of standard deviations) and outliers are now excluded (#98).
+- `regularization_coefficient` is deprecated and defaults to 0; use
+  `estimation.method: map` (#120). It is planned for removal in 1.0.
+- Exciting-trajectory optimisation adds collision constraints for robots
+  without an SRDF and checks clearance along the whole spline (#143); such
+  robots may need a collision-free joint range (UR10 example: `joint_box`).
+- Results change on rerun: base parameters at full precision (#142), a
+  seeded identifiable-parameter selection (#99), and corrected `full_params`
+  and `joint_offset` semantics (#101, #110).
+- `export_urdf` refuses what it cannot write instead of skipping it (#62) and
+  writes complete inertial sets (#60).
+
+Known limitations: calibration accuracy is demonstrated on TIAGo mocap only
+(held-out marker RMSE 3.8–4.2 mm); nothing is applied to a running robot, and
+export parity shows file consistency, not hardware accuracy; inertial export
+is verified with known parameters, not yet with identified ones.
+
+### Added
+
+- Calibration with several points of one rigid body per sample (#119).
+  Each `measurements.markers` entry is a point on the same tool frame with
+  its own offset (`pEEx_k`, ...); rows are marker-major, as the CSV loader
+  already ordered them. `calc_updated_fkm` no longer raises for
+  `NbMarkers > 1`; the closed-form frame guess fits the base frame and all
+  point offsets; the structural selection uses all six pose components
+  when there are several points; metrics, validation, outlier distances
+  and plots count every point of every sample; the terminal and HTML
+  validation tables list the position RMSE of each point. The loader now
+  refuses non-finite marker measurements (e.g. an occluded point), naming
+  the CSV rows. Several points identify the same joint parameters as one
+  and roughly halve standard errors; they did not improve held-out
+  prediction on the TIAGo mocap reference, so examples adopt them case by
+  case (`docs/source/concepts/config_parameters.md`, "Several points on the
+  tool").
+- Inertial URDF export (#60): `export_urdf` writes identified standard
+  inertial parameters (`m_`, `mx_`…`mz_`, `Ixx_`…`Izz_`, Pinocchio
+  `toDynamicParameters()` convention) as URDF mass, centre of mass and
+  centre-of-mass tensor (parallel-axis theorem), keeping an existing
+  inertial `rpy`. Targets may be links or moving joints (as identification
+  names them). Partial sets, joints whose Pinocchio body merges
+  fixed-attached massive links, `m <= 0` and, unless
+  `allow_infeasible=True`, physically inconsistent sets are refused; each
+  link's physical verdict is logged. Previously these names raised (#62).
+
+- Identification validation per joint (#103): `validation_metrics` gains
+  `per_joint` (RMSE identified/nominal in the joint's unit, N for prismatic,
+  N·m for revolute; measured std; normalised RMSE; R²; `predictive`),
+  `unpredictable_joints` (held-out RMSE not below the measured std: no
+  better than a constant) and `correlation_normalised` (correlation of
+  per-joint standardised signals). The verdict's `validation_correlation`
+  now uses the normalised value, and `validation_unpredictable_joints` counts
+  flagged joints; the pooled `correlation` is kept. Terminal and HTML
+  reports show the per-joint table and flag unpredictable joints.
+
+- Stage-aware verdicts and reports (#63).
+  - `verify()` separates per-stage verdicts: `verdict.stages` gains `data`,
+    `fit`, `validation` (`fallback` on training data, never held-out
+    evidence), `physical` and `export` beside the existing scoped entries.
+  - New verdict fields: `stage_records`, `selected_stage`, `splits` (the
+    files and sessions that trained and validated the run).
+  - Provenance records the figaroh checkout's own commit
+    (`software.figaroh_revision`) beside the working directory's
+    (`git_commit`), so a run names its core/examples pair.
+  - The terminal and HTML reports show the stages and data; the run
+    archive index carries the stage verdicts.
+  - Fixed: the exported verification JSON's `stages` (the scoped status
+    map) was overwritten by the stage records; they are now under
+    `stage_records`.
+
+- `figaroh.data`: data contract types from the accepted decision record
+  `docs/decisions/data-result-contract.md` (#55, part 1 of 2; additive).
+  - `TrajectoryData` (identification): time with a `recorded`/`assumed`
+    clock, joint names, per-signal origin, effort in its recorded units with
+    a per-joint kind and unit (`joint_torque` N·m, `joint_force` N,
+    `motor_current`, ...), the conversion applied, the recorded signal, and a
+    valid-sample mask. `check_effort(model, drive_gain_joints)` refuses
+    effort that is not joint effort unless a drive gain is identified.
+  - `PoseObservations` (calibration): postures with named points or poses,
+    their frame, measurability, mask and sessions; constraint-only datasets
+    (contact) declare a constraint instead of zero "measurements".
+    `from_csv`/`to_legacy` reproduce `load_data` exactly, with deleted rows
+    masked instead, and leave `calib_config` unchanged.
+  - `DataSource` and `Session` (files with sha256, adapter, recording
+    identity) and `Protocol` (versioned roles per session, checked against
+    the files' sha256).
+- Data contract: `TrajectoryData.sample_index` / `PoseObservations.sample_index`
+  record each sample's source row (default `0..n-1`; `from_csv` sets CSV
+  rows, so masked postures are named by row), and
+  `PoseObservations.select_points(names)` restricts observations to some
+  tracked points, e.g. one of TIAGo's four mocap points (#131).
+- The base classes use the data contract (#55, part 2).
+  - `BaseIdentification`: `load_trajectory_data()` may return a
+    `TrajectoryData`. Its effort is checked against the model (drive-side
+    kinds are refused: no drive-gain parameter exists yet), and its mask
+    leaves samples out of the regressor rows after filtering and
+    differentiation (with decimation, decimated sample `k` is sample
+    `k * factor`). A subclass returning one must convert the effort with
+    `TrajectoryData.converted()`, not override `process_torque_data()`.
+    Legacy dicts work as before.
+  - `BaseCalibration.load_data_set()` reads the CSV through
+    `PoseObservations` (same arrays as `load_data`); `del_list` rows are
+    masked, and `calibrator.observations` keeps every posture.
+  - `figaroh.tools.stages`: each run records `data`, `fit`, `validation`
+    (`fallback` when evaluated on training data), `physical` and `export`
+    (`failed` when `joint_corrections()` refuses parameters) stages on
+    `obj.stages`, in the results dict under `"stages"`, in the run archive's
+    `stages.json`, and in the verification JSON, which also gains
+    `schema_version`.
+  - Identification results gain `"effort rmse"` (N·m or N); the
+    mislabelled `"rmse norm (N/m)"` is kept for existing readers.
+
+- `BaseCalibration.metrology_frames()`: the fitted base frame and tool
+  point, which a URDF does not carry; applied outside an exported URDF they
+  reproduce the calibrated forward kinematics. Tested on a known TIAGo
+  correction fixture for both levels and three methods, on fitted and
+  unused postures (#62).
+
+- `BaseCalibration.joint_corrections(lift=True)`: the joint corrections to
+  write into a URDF, the same values the PAL export uses (#111).
+
+- Calibration estimation methods, chosen per robot and dataset with
+  `parameters.estimation.method` (#113); the default `structural` is
+  unchanged.
+  - `excitation`: select over every joint parameter on the measured postures
+    and drop those whose predicted standard error exceeds `excitation_k`
+    times their expected size.
+  - `map`: estimate every joint parameter with Gaussian priors of the
+    expected sizes (`priors`); posterior standard deviations in `std_dev`.
+  - `map_cv` / `cv_subset`: prior scale or parameter-set size chosen by
+    k-fold cross-validation over the training postures; no robot-specific
+    sizes needed.
+  - Diagnostics in `calib_config["estimation_report"]`; guide in
+    `docs/source/concepts/calibration_estimation.md`.
+
+### Changed
+
+- `regularization_coefficient` (`calib_config["coeff_regularize"]`) is
+  deprecated and defaults to 0 instead of 0.01 (#120). Robot cost functions
+  appended `sqrt(c) * theta` rows for every joint parameter, so a metre and
+  a radian were penalised alike. Core never applies the coefficient; a
+  non-zero value now raises a `DeprecationWarning` pointing to
+  `estimation.method: map`, which places priors of physical size on each
+  parameter group. Design record:
+  `docs/decisions/calibration-regularisation.md`. The figaroh-examples robots
+  drop their regularisation rows in the paired PR.
+- PAL `geometric_calibration` export (`build_geometric_calibration`,
+  `export_geometric_calibration_yaml`) fixed and given `nominal_urdf`
+  (#123).
+  - **Joint offsets exported:** `joint_offset`-level corrections
+    (`offsetRZ_*` etc.) were dropped, so the TIAGo reference wrote an empty
+    `geometric_calibration`.
+  - **Deltas against the URDF origin:** they were taken against Pinocchio's
+    joint placement, which merges preceding fixed joints (wrong frame behind
+    a rotated fixed joint, e.g. UR10 `shoulder_pan_joint`).
+  - **Exact rpy:** the rpy delta is solved so that the origin's rpy as
+    written plus the delta is the corrected rotation, including at pitch
+    +-pi/2 (TIAGo arm_4..arm_6). Pass `nominal_urdf`; without it the origin
+    is recovered from the model. Where the joint axis is the axis roll and
+    yaw share at pitch +-pi/2, no small rpy delta exists and the exact one
+    trades roll against yaw (e.g. `droll` -pi/2, `dyaw` +pi/2): the same
+    small rotation.
+  - **Behaviour change:** PAL files gain the joint-offset keys; values
+    behind rotated fixed joints change.
+
+- `export_urdf` refuses what it cannot write instead of skipping it (#62).
+  A correction for a joint or link missing from the URDF, inertia tensors,
+  first moments, legacy `off_*`, and a joint with both `offset*` and `d_*`
+  now raise `ValueError`; no file is written. `joint_corrections()` raises
+  `CalibrationError` for fitted parameters a URDF cannot carry (elastic,
+  contact planes); pass `drop_unsupported=True` to export the kinematic
+  corrections only. Values are written with 12 significant digits instead
+  of 6.
+  - **Behaviour change:** calls that relied on the logged skip now fail.
+    Exported URDF text changes in the trailing digits.
+
+- `redistribute_parameters()` (and so the PAL `geometric_calibration`
+  export and the HTML report) lifts `structural` base parameters by a
+  weighted minimum-norm lift instead of the Moore-Penrose one (#111).
+  - **Why:** the old lift weighed metres and radians equally, ignored the
+    rows the fit held at zero (base-frame and dropped rows), so it did not
+    reproduce the fit, and the PAL export removed "the first six rows" by
+    position instead.
+  - **Now:** expected sizes from `parameters.estimation.priors` weight the
+    lift; base-frame and dropped rows are held at 0; Gauss-Newton steps make
+    the lifted model reproduce the fit at the measured postures (skipped,
+    first order only, when the calibrator has non-joint parameters such as
+    contact planes). The result does not depend on which representative the
+    QR chose. The PAL export no longer excludes the first joint's
+    parameters.
+  - **Behaviour change:** PAL and report values for `structural` change.
+
+- Calibration drops joint parameters that the estimated base/tip frames
+  absorb, starts the frames at a closed-form estimate, and selects
+  parameters deterministically (#102, #99).
+  - **Absorbed parameters dropped:** after the structural selection,
+    `BaseCalibration.create_param_list` builds the full measurement Jacobian
+    at the measured configurations (configured measurability, base and tip
+    columns included) and drops every joint parameter that is a combination
+    of the frames and the joint parameters before it
+    (`eliminate_absorbed_parameters`, tolerance 1e-4 on unit-normalised
+    columns). The names are kept in `calib_config["absorbed_param_name"]`.
+    TIAGo mocap: `joint_offset` drops the torso and arm_1 (rank 14/14 instead
+    of 14/16); `full_params` drops the tool-absorbed `d_pz_arm_7_joint`
+    (with #110; before it, 4–9 parameters including an RPY
+    near-singularity).
+  - **Closed-form start:** `solve_optimisation` starts unknown base/tip frames
+    at `estimate_frames_closed_form` (Kabsch / chordal mean alternated with
+    linear least squares) instead of zero.
+  - **Deterministic draw:** the structural random configurations come from a
+    seeded NumPy generator (`calib_config["random_seed"]`, default 0) instead
+    of Pinocchio's global RNG.
+  - **Behaviour change:** the calibrated parameter set is smaller when frames
+    are estimated. Set `calib_config["eliminate_absorbed_parameters"] = False`
+    for the previous set.
+- `full_params` placement errors `d_{px,py,pz,phix,phiy,phiz}_<joint>` now
+  act in the joint frame, `placement · SE3(exp3(d_phi), d_p)`, the convention
+  of the kinematic regressor that selects the base parameters (#110).
+  - **Cause:** `update_joint_placement` added `d_p*` to the parent-frame
+    translation and `d_phi*` to the placement's RPY angles. Wherever the
+    nominal placement is rotated, the fitted model then had different
+    dependencies from the ones selection assumed: FK derivatives differed
+    from the regressor columns by O(1) on TIAGo arm_1–arm_7 and UR10
+    shoulder_pan, shoulder_lift, wrist_2 and wrist_3.
+  - **Effect:** TIAGo mocap `full_params` (figaroh-examples held-out
+    protocol, macOS): 31 instead of 28 parameters, norm RMSE 1.64 / 3.07 /
+    2.83 / 2.44 mm (training / validation / two confirmation sets) instead
+    of 1.75 / 3.68 / 3.35 / 2.89 mm.
+  - **Export:** `export_urdf` applies a joint's six `d_*` values together as
+    `origin · SE3(exp3(d_phi), d_p)`; `build_geometric_calibration` converts
+    them to PAL origin xyz/RPY deltas against the nominal placement.
+  - **Behaviour change:** `full_params` values from earlier versions use the
+    old convention and are not comparable on rotated placements (UR10, Talos,
+    TIAGo). `joint_offset` is unaffected.
+
+### Fixed
+
+- The exciting-trajectory optimiser enforces collision clearance along the
+  trajectory (#143). Its collision constraint was empty when the robot's
+  geometry model had no collision pairs (no SRDF, as for the UR10): every
+  two geometries on non-adjacent bodies are now paired (`srdf` removes
+  pairs). Collision was checked at waypoints only, so splines crossed
+  obstacles between them; initial guesses and every solved segment must now
+  keep `collision_margin` along the whole spline (`collision_check_frequency`,
+  default 200 Hz), and `collision_checks_per_interval` adds check points
+  inside the constraint. `collision_screen` computes exact distances only for
+  nearby pairs. Robots whose trajectories crossed obstacles now need a
+  collision-free joint range (UR10 example: `joint_box`).
+- Identified base parameters are returned at full precision (#142).
+  `QRDecomposer` rounded `phi_b` to six decimals on every path, and the base
+  values computed from priors to five; both weighted-least-squares
+  refinements rounded to six. Small base parameters (UR10 wrist terms are
+  ~1e-5) lost up to 5 %, and noise-free effort was fitted to ~5e-6 N·m
+  instead of rounding error. Rounding remains only in displayed text.
+- Calibration's identifiable parameter set no longer depends on global random
+  state (#99). The structural selection draws its random configurations from
+  a generator seeded by the new `parameters.random_seed` (default 0, legacy
+  `random_seed`), and the seed is recorded in the run provenance. Repeated
+  runs in one process give the same parameter set and result, whatever ran
+  before. The seeded draw itself landed with #102.
+
+- Calibration outlier removal now removes outliers (#98). The loop in
+  `BaseCalibration.solve()` used to flag samples by a 3-sigma rule and refit
+  the same full dataset, while the configured `parameters.outlier_threshold`
+  was unused. Samples whose position error exceeds `outlier_threshold`
+  (metres, `outlier_eps`; rotational components do not take part) are now
+  excluded from the fit and the rest refitted, for up to `max_iterations`
+  fits. `solve(outlier_threshold=...)` now overrides the config in metres
+  (default `None`: the config; it was a number of standard deviations).
+  RMSE, MAE, max error, per-DOF statistics and the residual degrees of
+  freedom cover the kept samples; the evaluation adds `excluded_samples`,
+  `excluded_sample_errors` and `outlier_threshold`, and the terminal and HTML
+  reports list them. The `fit` stage metric `flagged_outliers` is now
+  `excluded_outliers`.
+
+- Calibration quality reports label residual rows from `measurability` (#100).
+  A contact calibration measuring `[z, roll, pitch]` was printed as
+  `X/Y/Z (mm)` with the two rotations folded into "Position RMSE". Rows are
+  now named and scaled per measured component (mm for positions, deg for
+  rotations), position/orientation aggregates cover only the measured
+  components of each kind (NaN and "not measured" when none), and `verify()`
+  picks `position_rmse_mm`/`orientation_rmse_deg` from the measured kinds
+  rather than the component count. With no residual degrees of freedom,
+  `calc_stddev()` reports the uncertainty as not estimable (NaN, a warning,
+  `residual_dof` in the evaluation metrics) instead of dividing by zero.
+  Reports no longer claim there is no validation data when a subclass
+  evaluates its held-out set itself.
+
+- `calc_updated_fkm` with an empty parameter list (nominal FK) raised
+  `UnboundLocalError`; it now returns the nominal model's measured frame
+  (#129).
+
+- URDF export wrote corrections into `<transmission>` joints instead of the
+  robot joint when a transmission came first in the file (#114).
+  - **Cause:** `_find_joint` searched every `<joint>` in the document;
+    ros_control `<transmission>` blocks contain `<joint name=...>` too. It now
+    searches only the `<robot>` element's direct children (same for links).
+  - **Effect:** figaroh-examples UR10 exports were identical to the nominal
+    URDF (its transmissions precede the joints); TIAGo and Talos were not
+    affected.
+
+- Calibration parameter standard errors (`std_dev`, `std_pctg`, the
+  covariance behind `redistribute_parameters`) were ~100× too small (#107).
+  - **Cause:** `calc_stddev` estimated the residual variance as
+    `result.cost**2 / (m - n)`, but `least_squares`' `cost` is already
+    `0.5 * sum(fun**2)`.
+  - **Fix:** it now uses `sum(r**2) / (m - n)` over the measurement
+    residuals, excluding regularisation rows a subclass `cost_function`
+    appends. The covariance still uses the full Jacobian.
+  - **TIAGo mocap:** arm_5's offset SE goes from 0.088 to 10.1 mrad. The
+    PAL "conservative (≥ 2σ)" YAML keeps 19 of 41 `full_params` corrections
+    instead of all 41.
+- `add_base_name` shifts `base_mapping_slice` when it prepends the base names
+  at `joint_offset` level; the slice pointed six entries too early.
+- Calibration held-out data (`validation_data_file`) works (#105).
+  - **Config key read:** `tasks.calibration.data.validation_data_file` is now
+    read from the unified config. Before, only a CLI override reached
+    `calib_config`.
+  - **Training count preserved:** loading the validation CSV no longer
+    overwrites the training `calib_config["NbSample"]`. A larger validation set
+    crashed `solve()`, and a smaller one silently truncated training.
+  - **Unpack order fixed:** `_load_validation_data` no longer swaps poses and
+    joint configurations.
+  - **All samples used:** validation metrics now evaluate every validation
+    sample (`_compute_logmap_residuals` takes `n_samples`).
+  - **Failures logged:** a validation file that fails to load now logs a
+    warning instead of being skipped silently.
+- Calibration `joint_offset` parameters (`offset{PX,PY,PZ,RX,RY,RZ}_<joint>`)
+  are now offsets of the joint configuration, `q + offset` (#101). They were
+  added to the joint placement's parent-frame RPY, a rotation about the parent
+  axis, which differs from a joint offset whenever the joint axis is not the
+  parent's: up to 47 mm at the TIAGo tool for 0.05 rad on arm_2. New
+  `calibration_tools.apply_joint_offset` composes the offset in the joint
+  frame; elastic deflections (`k_*`, `non_geom`) use it too, and placements are
+  restored exactly after each FK evaluation. `full_params` (`d_p*`, `d_phi*`)
+  is unchanged. **Behaviour change:** `joint_offset` results from ≤ 0.5.0 on
+  joints whose axis is not the parent's z are not joint offsets; refit them.
+  On the corrected TIAGo 2021-11-30 mocap data the fit now returns arm_5
+  −49.7 mrad and arm_2/arm_6 near zero, instead of +22.8 / −31.7 mrad.
+- `export_urdf` writes joint offsets into the joint `<origin>` (about the
+  joint's own axis), so the reloaded URDF reproduces `q + offset`. They were
+  written to `<calibration rising>`, which Pinocchio and robot_state_publisher
+  ignore, so exported joint offsets had no effect on reload (#101).
+
 ## [0.5.0] - 2026-10-03
 
 ### Changed

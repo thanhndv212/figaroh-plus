@@ -19,19 +19,21 @@ the layout differs.
 
 | Field | Meaning | Unified path |
 |---|---|---|
-| `calib_level` | Kinematic-error model: `joint_offset` (one rotational offset per joint) or `full_params` (full 6-DOF xyz+rpy DH-style placement error per joint) | `parameters.calibration_level` |
+| `calib_level` | Kinematic-error model: `joint_offset` (one offset per joint, about or along its own axis) or `full_params` (six placement errors per joint, translation and rotation vector in the joint frame) | `parameters.calibration_level` |
+| `estimation` | Which parameters to estimate and how: `method` (`structural` default, `excitation`, `map`, `map_cv`, `cv_subset`), `priors`, `noise_std`, cross-validation settings. See [Calibration estimation methods](calibration_estimation.md) | `parameters.estimation` |
 | `non_geom` | Also identify joint elasticity (gravity-torque-driven compliance, one term per active joint) on top of the geometric model | `parameters.include_non_geometric` |
 | `base_frame` | URDF frame name at the **start** of the kinematic chain | `kinematics.base_frame` |
 | `tool_frame` | URDF frame name at the **end** of the chain (usually the gripper/tool mount) | `kinematics.tool_frame` |
 | `base_to_ref_frame` | *(optional, eye-hand/camera mode only)* A frame reachable from `base_frame` via a **known** transform (e.g. a camera housing anchor) | `eye_hand.camera_frame` (requires `eye_hand.enabled: true`) |
 | `ref_frame` | *(optional, eye-hand/camera mode only)* The frame the chain restarts from after the known `base_to_ref_frame` segment; the *unknown* camera/anchor pose being estimated sits between `ref_frame` and the true world frame | `eye_hand.reference_frame` (requires `eye_hand.enabled: true`) |
-| `markers[].ref_joint` | Joint the external marker is rigidly mounted near; its offset from `tool_frame` is what gets estimated (`pEEx/y/z`, `phiEEx/y/z`) | `measurements.markers[].reference_joint` — written by convention, but **not currently read back** by `_extract_marker_info` (only `measurable_dof`, from the first marker, is consumed) |
-| `markers[].measure` | 6-DOF boolean mask `[x, y, z, roll, pitch, yaw]` — which axes the external sensor (mocap/vision/contact) actually reports for that marker | `measurements.markers[].measurable_dof` |
+| `markers[].ref_joint` | Joint the external marker is rigidly mounted near; its offset from `tool_frame` is what gets estimated (`pEEx/y/z`, `phiEEx/y/z`; `pEEx_k` ... for marker `k`). Several markers are points on the same `tool_frame`, see [Several points on the tool](#several-points-on-the-tool) | `measurements.markers[].reference_joint` — written by convention, but **not currently read back** by `_extract_marker_info` (only `measurable_dof`, from the first marker, is consumed) |
+| `markers[].measure` | 6-DOF boolean mask `[x, y, z, roll, pitch, yaw]` — which axes the external sensor (mocap/vision/contact) actually reports for that marker. Every marker uses the first marker's mask | `measurements.markers[].measurable_dof` |
 | `free_flyer` | `True` if the robot's base itself is unconstrained/floating in the model (mobile-base robots with an unknown per-sample base pose) | `kinematics.free_flying_base` |
 | `base_pose` | Initial guess `[x, y, z, roll, pitch, yaw]` (m, rad) for the `base_frame` → world (or anchor → camera, in eye-hand mode) transform being estimated | `measurements.poses.base_pose` |
 | `tip_pose` | Initial guess `[x, y, z, roll, pitch, yaw]` (m, rad) for the `tool_frame` → marker transform being estimated | `measurements.poses.tool_pose` |
-| `coeff_regularize` | L2 regularization weight applied to the non-base/non-tip parameters in the least-squares cost, to keep identified offsets small and the problem well-conditioned | `parameters.regularization_coefficient` |
-| `outlier_eps` | Residual distance (**meters**) above which a sample is treated as an outlier and iteratively dropped before refitting | `parameters.outlier_threshold` |
+| `coeff_regularize` | **Deprecated (#120), default 0.** One L2 weight that robot cost functions applied to every joint parameter, penalising metres and radians alike. Core never applies it; a non-zero value raises a `DeprecationWarning`. Use `estimation.method: map` instead (priors of physical size per parameter group, [estimation methods](calibration_estimation.md)) | `parameters.regularization_coefficient` |
+| `outlier_eps` | Position error (**meters**, norm of the measured x/y/z residuals of a sample, worst marker) above which a sample is excluded and the rest refitted, for up to `max_iterations` fits. Rotational components do not take part; with no measured position component nothing is excluded. Excluded samples and their errors are in the evaluation (`excluded_samples`, `excluded_sample_errors`) and the report | `parameters.outlier_threshold` |
+| `random_seed` | Seed for the random configurations that select the identifiable parameter set (default 0). The selection, hence the result, does not depend on any global random state; the seed is recorded in the run provenance | `parameters.random_seed` |
 | `data_file` | Path to the CSV of recorded `(joint configuration, measured marker pose)` samples | `data.source_file` |
 | `sample_configs_file` | Optional: path cross-referencing which planned/optimal configuration each `data_file` row corresponds to. Traceability only — not required for the fit itself | `data.sample_configurations_file` |
 | `nb_sample` | Number of samples expected from `data_file` | `data.number_of_samples` |
@@ -53,7 +55,7 @@ the layout differs.
     same measurements, as the per-joint offsets of every joint the camera
     observes through — "camera is off by X" and "joint N is off by Y" can
     produce very similar marker-pose residuals, which can leave the problem
-    under-determined or poorly conditioned. `coeff_regularize` and
+    under-determined or poorly conditioned. Priors (`estimation.method: map`) and
     deliberately exciting poses that vary joint loading/configuration
     widely (`sample_configs_file`, D-optimal design a la
     `tiago_pro/generate_optimal_configs.py`) are the two practical levers
@@ -64,6 +66,38 @@ the layout differs.
     downstream of that single anchor is *itself* another unknown sensor
     mount; it's one 6-DOF unknown at the root, not one inserted mid-chain
     and re-estimated jointly with everything past it.
+
+### Several points on the tool
+
+Each entry of `measurements.markers` is one measured point (or pose) on the
+same `tool_frame`, for example the points of one mocap rigid body. The CSV
+has columns `x1, y1, z1, x2, ...` per marker, and each marker `k` gets its
+own offset `pEEx_k, pEEy_k, pEEz_k` (and `phiEE*_k` when orientation is
+measured); the base frame and the joint parameters are shared. Residual rows
+are ordered marker, then component, then sample.
+
+What several points do and do not give (figaroh-plus#119):
+
+- **The same identifiable joint parameters as one point.** Free point
+  offsets absorb any rotation of the tool frame itself, so a joint offset
+  about the tool axis stays unidentifiable. On a TIAGo arm, four points
+  keep exactly the joint parameters one point keeps.
+- **Smaller standard errors**, about `1/sqrt(n_points)` when the points'
+  noise is independent. Points of one rigid body are not fully
+  independent, so expect less.
+- **Not necessarily better prediction.** On the TIAGo mocap reference, a
+  four-point fit did not predict held-out postures better than marker 1
+  alone (`full_params`: 3.39 against 2.80 mm on marker 1); the extra
+  points' rows bring their own errors (reflections, rigid-body tracking,
+  unmodelled wrist effects) into every parameter.
+- **One bad point affects the whole sample.** Outlier exclusion
+  (`outlier_eps`) uses each sample's worst point, so a misreflected point
+  removes that sample. A missing (occluded) point, i.e. an empty cell, is
+  refused by the loader with its CSV rows; exclude them with `del_list`.
+
+Decide per robot and dataset: compare held-out errors per point (the
+validation report lists them) with a one-point fit before adopting more
+points.
 
 !!! note "Eye-hand / camera calibration now has a unified-format equivalent"
     `base_to_ref_frame`/`ref_frame` map to
@@ -145,6 +179,9 @@ the layout differs.
 | `max_attempts` | Maximum attempts to find a feasible trajectory before giving up |
 | `max_iterations` | IPOPT iteration cap per trajectory segment (default 200; unified config: `problem.max_iterations`) |
 | `segment_attempts` | Solves per trajectory segment: a failed segment is retried from a new random initial guess (default 1 = no retry; unified config: `problem.segment_attempts`) |
+| `collision_margin` | Minimum clearance (m) between collision pairs (default 0.01). Pairs: the geometry model's, or, when it has none, every two geometries on non-adjacent bodies (the world and the first moving body count as adjacent); `srdf` removes pairs (#143). Initial guesses and every solved segment must keep this clearance along the whole spline, checked at `collision_check_frequency` (default 200 Hz) |
+| `collision_checks_per_interval` | Check points per waypoint interval in the collision constraint, ending at the waypoint (default 1 = waypoints only) |
+| `collision_screen` | Optional (m): exact distances only for pairs within it, the others count as the screen; faster with many mesh pairs (UR10 example: 0.02). Default none = all distances exact |
 
 ## Migrating from legacy to unified format
 
