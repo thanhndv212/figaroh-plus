@@ -32,6 +32,22 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 
+# Collision constraint of the exciting-trajectory optimiser (#143):
+# minimum clearance (m); screen (m, optional): exact distances only for
+# pairs a collision query flags within it, the others count as the screen
+# (faster with many pairs: on the UR10 1.5 ms per configuration at 2 cm
+# against 10 ms for all exact distances; None = all exact); check points per
+# waypoint interval inside the optimisation; rate (Hz) of the
+# whole-trajectory check a segment must pass; optional SRDF removing pairs.
+COLLISION_DEFAULTS = {
+    "collision_margin": 0.01,
+    "collision_screen": None,
+    "collision_checks_per_interval": 1,
+    "collision_check_frequency": 200.0,
+    "srdf": None,
+}
+
+
 class ConfigurationManager:
     """Manages configuration loading and validation."""
 
@@ -81,6 +97,9 @@ def load_param(robot, config_file: str) -> Tuple[Dict[str, Any], Any]:
                 "max_iterations": traj_params.get("max_iterations", 200),
                 "segment_attempts": traj_params.get("segment_attempts", 1),
             }
+            trajectory_config.update(
+                {k: traj_params.get(k, v) for k, v in COLLISION_DEFAULTS.items()}
+            )
         return trajectory_config, identif_config
 
     except FileNotFoundError:
@@ -104,4 +123,7 @@ def create_config(unified_traj_config) -> dict:
         "max_iterations": problem_params.get("max_iterations", 200),
         "segment_attempts": problem_params.get("segment_attempts", 1),
     }
+    trajectory_config.update(
+        {k: problem_params.get(k, v) for k, v in COLLISION_DEFAULTS.items()}
+    )
     return trajectory_config

@@ -25,6 +25,26 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 
+def add_non_adjacent_pairs(model, geom_model) -> int:
+    """Add a collision pair for every two geometries on non-adjacent bodies.
+
+    Geometries on the same joint, or on a joint and its parent (adjacent
+    bodies, usually in contact by design), are not paired. Fixed bodies
+    belong to the joint they are merged into (``universe`` for the world).
+    Returns the number of pairs added.
+    """
+    objects = geom_model.geometryObjects
+    added = 0
+    for i in range(len(objects)):
+        for j in range(i + 1, len(objects)):
+            a, b = objects[i].parentJoint, objects[j].parentJoint
+            if a == b or model.parents[a] == b or model.parents[b] == a:
+                continue
+            geom_model.addCollisionPair(pin.CollisionPair(i, j))
+            added += 1
+    return added
+
+
 class CollisionManager:
     """Enhanced collision detection with better performance and safety."""
 
