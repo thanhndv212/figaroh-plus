@@ -307,7 +307,11 @@ class BaseOptimalTrajectory:
                 # Compute torques and check constraints
                 tau_i = calc_torque(p_i.shape[0], self.robot, p_i, v_i, a_i)
                 tau_i = np.reshape(tau_i, (v_i.shape[1], v_i.shape[0])).transpose()
-                is_constr_violated = self.CB.check_cfg_constraints(p_i, v_i, tau_i)
+                is_constr_violated = self.CB.check_cfg_constraints(
+                    p_i, v_i, tau_i
+                ) or not self.constraint_manager.trajectory_clear(
+                    tps, wps, vel_wps, acc_wps
+                )
 
             except Exception as e:
                 self.logger.warning(f"Error in attempt {count}: {e}")
@@ -719,6 +723,15 @@ class BaseTrajectoryIPOPTProblem(BaseOptimizationProblem):
             jac[:min_dim, :min_dim] = np.eye(min_dim)
             return jac
 
+    def _is_collision_free(self, X) -> bool:
+        """Whole-trajectory collision check of waypoints ``X`` (#143)."""
+        manager = self.opt_traj.constraint_manager
+        if not getattr(manager, "n_pairs", 0):
+            return True
+        wps_X = np.reshape(np.asarray(X, dtype=float), (self.n_wps - 1, self.n_joints))
+        wps = np.vstack((self.wp_init, wps_X)).transpose()
+        return manager.trajectory_clear(self.tps, wps, self.vel_wps, self.acc_wps)
+
     def _is_feasible(self, X, tol: float = 1e-6) -> bool:
         """Check variable and constraint bounds at ``X`` within ``tol``."""
         X = np.asarray(X, dtype=float)
@@ -777,6 +790,14 @@ class BaseTrajectoryIPOPTProblem(BaseOptimizationProblem):
                         config.max_iterations,
                         results["obj_val"],
                     )
+
+            # Collision is constrained at check points only; accept the
+            # segment only if the whole spline is clear (#143).
+            if success and not self._is_collision_free(results["x_opt"]):
+                self.logger.error(
+                    "Optimised segment collides between collision check points"
+                )
+                return False, results
 
             if success:
                 # Extract final waypoint for next segment
