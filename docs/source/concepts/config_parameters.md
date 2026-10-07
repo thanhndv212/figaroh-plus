@@ -179,6 +179,9 @@ points.
 | `max_attempts` | Maximum attempts to find a feasible trajectory before giving up |
 | `max_iterations` | IPOPT iteration cap per trajectory segment (default 200; unified config: `problem.max_iterations`) |
 | `segment_attempts` | Solves per trajectory segment: a failed segment is retried from a new random initial guess (default 1 = no retry; unified config: `problem.segment_attempts`) |
+| `collision_margin` | Minimum clearance (m) between collision pairs (default 0.01). Pairs: the geometry model's, or, when it has none, every two geometries on non-adjacent bodies (the world and the first moving body count as adjacent); `srdf` removes pairs (#143). Initial guesses and every solved segment must keep this clearance along the whole spline, checked at `collision_check_frequency` (default 200 Hz) |
+| `collision_checks_per_interval` | Check points per waypoint interval in the collision constraint, ending at the waypoint (default 1 = waypoints only) |
+| `collision_screen` | Optional (m): exact distances only for pairs within it, the others count as the screen; faster with many mesh pairs (UR10 example: 0.02). Default none = all distances exact |
 
 ## Migrating from legacy to unified format
 
