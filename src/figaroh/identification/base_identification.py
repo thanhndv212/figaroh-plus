@@ -1500,8 +1500,7 @@ class BaseIdentification(ABC):
         WTtau = W_weighted.T @ tau_weighted
 
         C_X = np.linalg.inv(WTW)
-        phi_wls = C_X @ WTtau
-        phi_wls = np.around(phi_wls, 6)
+        phi_wls = C_X @ WTtau  # full precision (#142)
 
         std_wls = self._compute_wls_standard_deviations(C_X, phi_wls)
 
