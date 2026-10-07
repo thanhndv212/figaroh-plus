@@ -126,9 +126,16 @@ package dependency in `pyproject.toml`.
 
 [`tools/urdf_exporter.py`](https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/tools/urdf_exporter.py) maps parameter names
 to update handlers. Joint placement/offset, mass, friction, armature and elasticity
-handlers exist. **First-moment and inertia-tensor handlers currently only log a
-debug message**: successful file output does not establish complete inertial
-export. This is an explicit M1 correctness gate.
+handlers exist. Identified inertial parameters are written as complete per-link
+sets (#60): inputs follow Pinocchio `toDynamicParameters()` order, with first
+moments and inertia about the link-frame origin. The exporter writes the CoM
+origin and the CoM-frame tensor, keeping an existing inertial rotation. A link
+target or a moving joint (resolved to its child link) is accepted. Targets
+with massive links attached by fixed joints (merged by Pinocchio), partial
+sets and `m <= 0` are refused; physically infeasible sets are refused unless
+`allow_infeasible=True`. Tests check
+reloaded-model RNEA parity against known feasible inputs; round-trip parity
+shows file consistency, not hardware accuracy.
 
 Metrology base/measurement-frame parameters are described for the caller instead
 of automatically applied to robot geometry. PAL runtime correction YAML uses
