@@ -397,19 +397,36 @@ class ResultsManager:
         condition_number: float,
         joint_names: Optional[List[str]] = None,
         title: str = "Optimal Trajectory Results",
+        q_indices: Optional[List[int]] = None,
+        v_indices: Optional[List[int]] = None,
     ) -> None:
         """
         Plot optimal trajectory generation results.
 
+        Positions span the model's ``nq`` coordinates and velocities and
+        accelerations its ``nv`` coordinates, which differ for continuous,
+        spherical or free-flyer joints. Pass ``q_indices`` and ``v_indices``
+        (e.g. each plotted joint's ``idx_q`` and ``idx_v``) to plot those
+        joints; without them every column is plotted, which requires
+        ``nq == nv``.
+
         Args:
             trajectories: Dictionary containing trajectory data
             condition_number: Final condition number achieved
-            joint_names: Names of robot joints
+            joint_names: Names of the plotted joints, used as row labels
             title: Plot title
+            q_indices: Position column of each plotted joint
+            v_indices: Velocity/acceleration column of each plotted joint
         """
         if not HAS_MATPLOTLIB:
             self.logger.warning("Cannot plot: matplotlib not available")
             return
+        if (q_indices is None) != (v_indices is None) or (
+            q_indices is not None and len(q_indices) != len(v_indices)
+        ):
+            raise ValueError(
+                "q_indices and v_indices must be given together, one per joint"
+            )
 
         try:
             # Extract trajectory data
@@ -430,7 +447,20 @@ class ResultsManager:
                     trajectories.get("ddq", np.zeros_like(trajectories["q"]))
                 ]
 
-            n_joints = positions[0].shape[1]
+            if q_indices is None:
+                nq, nv = positions[0].shape[1], velocities[0].shape[1]
+                if nq != nv:
+                    self.logger.error(
+                        "Cannot plot trajectory: positions have %d columns and "
+                        "velocities %d (nq != nv); pass q_indices and v_indices",
+                        nq,
+                        nv,
+                    )
+                    return
+                q_indices = v_indices = list(range(nq))
+            n_joints = len(q_indices)
+            if joint_names is None or len(joint_names) != n_joints:
+                joint_names = [f"Joint {i+1}" for i in range(n_joints)]
 
             fig = plt.figure(figsize=self.PLOT_STYLES["optimal_trajectory"]["figsize"])
             gs = GridSpec(n_joints, 3, figure=fig, hspace=0.4, wspace=0.3)
@@ -438,17 +468,19 @@ class ResultsManager:
             # Plot each joint's trajectory
             colors = plt.cm.tab10(np.linspace(0, 1, len(times)))
 
-            for joint_idx in range(n_joints):
+            for joint_idx, (iq, iv, name) in enumerate(
+                zip(q_indices, v_indices, joint_names)
+            ):
                 # Position
                 ax_pos = fig.add_subplot(gs[joint_idx, 0])
                 for seg_idx, (t, pos) in enumerate(zip(times, positions)):
                     ax_pos.plot(
                         t,
-                        pos[:, joint_idx],
+                        pos[:, iq],
                         color=colors[seg_idx],
                         label=f"Segment {seg_idx+1}" if joint_idx == 0 else "",
                     )
-                ax_pos.set_ylabel(f"Joint {joint_idx+1}\nPosition (rad)")
+                ax_pos.set_ylabel(f"{name}\nPosition (rad)")
                 ax_pos.grid(True, alpha=0.3)
                 if joint_idx == 0:
                     ax_pos.legend()
@@ -457,8 +489,8 @@ class ResultsManager:
                 # Velocity
                 ax_vel = fig.add_subplot(gs[joint_idx, 1])
                 for seg_idx, (t, vel) in enumerate(zip(times, velocities)):
-                    ax_vel.plot(t, vel[:, joint_idx], color=colors[seg_idx])
-                ax_vel.set_ylabel(f"Joint {joint_idx+1}\nVelocity (rad/s)")
+                    ax_vel.plot(t, vel[:, iv], color=colors[seg_idx])
+                ax_vel.set_ylabel(f"{name}\nVelocity (rad/s)")
                 ax_vel.grid(True, alpha=0.3)
                 if joint_idx == 0:
                     ax_vel.set_title("Joint Velocities")
@@ -466,15 +498,16 @@ class ResultsManager:
                 # Acceleration
                 ax_acc = fig.add_subplot(gs[joint_idx, 2])
                 for seg_idx, (t, acc) in enumerate(zip(times, accelerations)):
-                    ax_acc.plot(t, acc[:, joint_idx], color=colors[seg_idx])
-                ax_acc.set_ylabel(f"Joint {joint_idx+1}\nAcceleration (rad/s²)")
+                    ax_acc.plot(t, acc[:, iv], color=colors[seg_idx])
+                ax_acc.set_ylabel(f"{name}\nAcceleration (rad/s²)")
                 ax_acc.grid(True, alpha=0.3)
                 if joint_idx == 0:
                     ax_acc.set_title("Joint Accelerations")
 
-            # Set x-labels for bottom row
-            for col in range(3):
-                fig.add_subplot(gs[-1, col]).set_xlabel("Time (s)")
+            # Label the bottom row's existing axes (a new add_subplot on the
+            # same cell would stack an empty axes on top of them).
+            for ax in (ax_pos, ax_vel, ax_acc):
+                ax.set_xlabel("Time (s)")
 
             fig.suptitle(
                 f"{self.robot_name.upper()} {title}\nCondition Number: {condition_number:.2e}",

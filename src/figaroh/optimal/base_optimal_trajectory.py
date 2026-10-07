@@ -448,28 +448,20 @@ class BaseOptimalTrajectory:
                     color = colors[seg_idx]
                     label = f"Segment {seg_idx + 1}"
 
-                    for joint_idx in range(n_joints):
-                        axes[joint_idx, 0].plot(
-                            T, P[:, joint_idx], color=color, label=label
-                        )
-                        axes[joint_idx, 1].plot(
-                            T, V[:, joint_idx], color=color, label=label
-                        )
-                        axes[joint_idx, 2].plot(
-                            T, A[:, joint_idx], color=color, label=label
-                        )
+                    # P spans nq columns, V and A span nv: index each by
+                    # the active joint's own idx_q / idx_v (#149).
+                    for joint_idx, (iq, iv) in enumerate(
+                        zip(self.CB.act_idxq, self.CB.act_idxv)
+                    ):
+                        axes[joint_idx, 0].plot(T, P[:, iq], color=color, label=label)
+                        axes[joint_idx, 1].plot(T, V[:, iv], color=color, label=label)
+                        axes[joint_idx, 2].plot(T, A[:, iv], color=color, label=label)
 
                 # Set labels and formatting
-                for joint_idx in range(n_joints):
-                    axes[joint_idx, 0].set_ylabel(
-                        f"Joint {joint_idx+1}\nPosition (rad)"
-                    )
-                    axes[joint_idx, 1].set_ylabel(
-                        f"Joint {joint_idx+1}\nVelocity (rad/s)"
-                    )
-                    axes[joint_idx, 2].set_ylabel(
-                        f"Joint {joint_idx+1}\nAcceleration (rad/s²)"
-                    )
+                for joint_idx, name in enumerate(self.CB.act_Jname):
+                    axes[joint_idx, 0].set_ylabel(f"{name}\nPosition (rad)")
+                    axes[joint_idx, 1].set_ylabel(f"{name}\nVelocity (rad/s)")
+                    axes[joint_idx, 2].set_ylabel(f"{name}\nAcceleration (rad/s²)")
 
                     if joint_idx == 0:
                         for col in range(3):
@@ -508,8 +500,10 @@ class BaseOptimalTrajectory:
             results_manager.plot_optimal_trajectory_results(
                 trajectories=self.results,
                 condition_number=condition_number,
-                joint_names=[f"Joint {i+1}" for i in range(len(self.CB.act_Jid))],
+                joint_names=self.CB.act_Jname,
                 title="Optimal Trajectory Generation Results",
+                q_indices=self.CB.act_idxq,
+                v_indices=self.CB.act_idxv,
             )
 
         plot_with_fallback(
