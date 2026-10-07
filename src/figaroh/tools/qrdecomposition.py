@@ -188,7 +188,7 @@ class QRDecomposer:
                 R, np.linalg.qr(W_e[:, P])[0], rank
             )
             beta = np.linalg.solve(R1, R2) if R2.size else np.empty((rank, 0))
-            phi_b = np.round(np.linalg.solve(R1, Q1.T @ tau), 6)
+            phi_b = np.linalg.solve(R1, Q1.T @ tau)
             W_b = Q1 @ R1
             base_param_expressions = self._build_parameter_expressions(
                 params_sorted[:rank], params_sorted[rank:], beta
@@ -227,7 +227,7 @@ class QRDecomposer:
             rank = len(base_indices)
             R1, Q1, R2 = self._extract_base_components(R_r, Q_r, rank)
             beta = np.linalg.solve(R1, R2) if R2.size else np.empty((rank, 0))
-            phi_b = np.round(np.linalg.solve(R1, Q1.T @ tau), 6)
+            phi_b = np.linalg.solve(R1, Q1.T @ tau)
             W_b = Q1 @ R1
             base_param_expressions = self._build_parameter_expressions(
                 params_base, params_regroup, beta
@@ -341,9 +341,9 @@ class QRDecomposer:
         # Extract base components
         R1, Q1, R2 = self._extract_base_components(R, Q, rank)
 
-        # Compute base parameters — full precision; round only for display
+        # Compute base parameters — full precision; round only for display (#142)
         beta = np.linalg.solve(R1, R2) if R2.size else np.empty((rank, 0))
-        phi_b = np.round(np.linalg.solve(R1, Q1.T @ tau), 6)
+        phi_b = np.linalg.solve(R1, Q1.T @ tau)
         W_b = Q1 @ R1
 
         # Build parameter expressions (display rounding happens inside)
@@ -434,9 +434,9 @@ class QRDecomposer:
         rank = len(base_indices)
         R1, Q1, R2 = self._extract_base_components(R_r, Q_r, rank)
 
-        # Compute parameters — full precision; round only for display
+        # Compute parameters — full precision; round only for display (#142)
         beta = np.linalg.solve(R1, R2) if R2.size else np.empty((rank, 0))
-        phi_b = np.round(np.linalg.solve(R1, Q1.T @ tau), 6)
+        phi_b = np.linalg.solve(R1, Q1.T @ tau)
         W_b = Q1 @ R1
 
         # Build expressions and compute standard parameters if provided
@@ -601,7 +601,7 @@ class QRDecomposer:
                 if j < beta.shape[1]:
                     phi_std[i] += beta[i, j] * params_std[regroup_param]
 
-        return np.around(phi_std, 5)
+        return np.array(phi_std, dtype=float)
 
     def get_base_mapping_matrix_pivoting(
         self, W_e: np.ndarray, params_r: List[str]

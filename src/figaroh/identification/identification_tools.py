@@ -191,9 +191,7 @@ def weigthed_least_squares(robot, phi_b, W_b, tau_meas, tau_est, identif_config)
 
         phi_b = np.matmul(np.linalg.pinv(np.matmul(P, W_b)), np.matmul(P, tau_meas))
 
-    phi_b = np.around(phi_b, 6)
-
-    return phi_b
+    return phi_b  # full precision (#142)
 
 
 def calculate_first_second_order_differentiation(
