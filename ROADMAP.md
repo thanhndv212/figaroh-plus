@@ -106,7 +106,8 @@ blocking. The M0 gate review itself is still to be recorded. M1 is the proposed
 next integration priority. Calibration reliability improvements run alongside
 dynamic identification; M2 refers to the broader composition architecture,
 not a requirement to postpone all calibration work until dynamics finishes.
-No version or release date is assigned before scope and compatibility are reviewed.
+Versions follow the [release plan](#release-plan): each minor release ships one
+accepted outcome; no release date is promised.
 
 ### Delivery milestones beneath roadmap outcomes
 
@@ -157,6 +158,44 @@ ship without waiting for log-Cholesky go; the nonlinear method remains opt-in
 and conditional. A failed/fallback model cannot silently become an exportable
 production result. Future uncertainty and experiment-design work follows stable
 reference baselines, with backend expansion queued behind measured parity.
+
+## Release plan
+
+Versions follow roadmap outcomes, not commit counts. A release ships what has
+been accepted: its delivery packages are cleared, each with a closure record
+and a core/examples revision pair, and those records are its evidence.
+
+| Bump | When |
+|---|---|
+| **0.MINOR** (before 1.0) | One roadmap outcome or gate side is accepted |
+| **0.x.PATCH** | Wrong-result or crash fixes with no behaviour change, from a `main` hotfix branch, then merged back into `devel` |
+| **1.0.0** | M1 accepted (both reference workflows), public API declared, deprecated features removed; a release candidate first |
+| **After 1.0** | M2 additions are minor releases; removing a deprecated feature is a major release |
+
+A deprecated feature warns for at least one minor release before it is removed;
+removals are batched into 1.0. Optional research (D5/LC1) ships as an opt-in
+feature in the minor release after its go decision and never holds a release.
+
+| Version | Outcome | Delivery packages | Status |
+|---|---|---|---|
+| 0.5.0 | M0 engineering baseline | W1, W2, W4, D1 | Released 2026-10-03 |
+| 0.6.0 | Calibration reference workflow (M1.1–M1.4, calibration side) and shared foundations | D2, C1–C4, W3, S1; D6 inertial export and D3 fixture fixes, both accepted | Ready; [release tracker #146](https://github.com/thanhndv212/figaroh-plus/issues/146) |
+| 0.7.0 | Dynamic reference workflow (M1.2–M1.4, dynamic side) | D4, D7; D5 if it gets a go decision | Next |
+| 1.0.0 | M1 accepted | U1 acceptance, M1 review, deprecations removed | After 0.7.0 |
+| 1.1, 1.2 | M2 composable calibration and identification | S2, S3, S4 | Later |
+| 1.x or 2.0 | M3 backend parity | B1 | Later; 2.0 only if the backend API breaks |
+
+Each release is tracked by a core release issue. It lists the packages in scope
+and what is excluded, freezes `devel`, and records the release-candidate
+evidence on one core/examples pair: core tests, hosted CI on both Pinocchio
+profiles, examples `validate.py`, package build with `twine check` and a clean
+wheel install, and the docs build. The release PR bumps both version strings
+and dates the changelog with a scope paragraph, behaviour changes, migration
+notes and limitations. The [release sequence](https://github.com/thanhndv212/figaroh-plus/blob/devel/CONTRIBUTING.md#merge-and-release-gates)
+then merges `devel` into `main` with a merge commit (branch deletion off); one
+build from the `vX.Y.Z` tag goes to PyPI and the GitHub release, with matching
+sha256. The examples repository pins `figaroh>=X.Y,<X.(Y+1)` and is tagged
+`vX.Y.Z` as the paired revision. Finally `main` is merged back into `devel`.
 
 ## Work to split into issues
 
