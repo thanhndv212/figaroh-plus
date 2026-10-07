@@ -179,8 +179,8 @@ feature in the minor release after its go decision and never holds a release.
 | Version | Outcome | Delivery packages | Status |
 |---|---|---|---|
 | 0.5.0 | M0 engineering baseline | W1, W2, W4, D1 | Released 2026-10-03 |
-| 0.6.0 | Calibration reference workflow (M1.1–M1.4, calibration side) and shared foundations | D2, C1–C4, W3, S1; D6 inertial export and D3 fixture fixes, both accepted | Ready; [release tracker #146](https://github.com/thanhndv212/figaroh-plus/issues/146) |
-| 0.7.0 | Dynamic reference workflow (M1.2–M1.4, dynamic side) | D4, D7; D5 if it gets a go decision | Next |
+| 0.6.0 | Calibration reference workflow (M1.1–M1.4, calibration side) and shared foundations | D2, C1–C4, W3, S1; D6 inertial export and D3 fixture fixes, both accepted | Released 2026-10-07 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.6.0), [tracker #146](https://github.com/thanhndv212/figaroh-plus/issues/146)); examples tag `v0.6.0` |
+| 0.7.0 | Dynamic reference workflow (M1.2–M1.4, dynamic side) | D4, D7; D5 if it gets a go decision | Next; D3 and D6 already shipped in 0.6.0 |
 | 1.0.0 | M1 accepted | U1 acceptance, M1 review, deprecations removed | After 0.7.0 |
 | 1.1, 1.2 | M2 composable calibration and identification | S2, S3, S4 | Later |
 | 1.x or 2.0 | M3 backend parity | B1 | Later; 2.0 only if the backend API breaks |
