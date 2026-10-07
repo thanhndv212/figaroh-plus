@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Optimal-trajectory plots work for robots whose position and velocity
+  dimensions differ (`nq != nv`, e.g. TIAGo) (#149). Positions were indexed
+  with velocity columns, so the plot failed (`index 24 is out of bounds`) and
+  was skipped with a logged error. Both plot paths now draw only the active
+  joints, positions through each joint's `idx_q` and velocities and
+  accelerations through its `idx_v`, labelled with the joint names.
+  `ResultsManager.plot_optimal_trajectory_results` gains `q_indices` and
+  `v_indices`; without them it plots every column and refuses (logged error)
+  when `nq != nv`. The bottom row no longer gets a second, empty set of axes
+  stacked on it for the time labels.
+
 ## [0.6.0] - 2026-10-07
 
 This release ships the **calibration reference workflow** (roadmap M1.1–M1.4,
