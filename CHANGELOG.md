@@ -237,6 +237,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   inside the constraint. `collision_screen` computes exact distances only for
   nearby pairs. Robots whose trajectories crossed obstacles now need a
   collision-free joint range (UR10 example: `joint_box`).
+- Identified base parameters are returned at full precision (#142).
+  `QRDecomposer` rounded `phi_b` to six decimals on every path, and the base
+  values computed from priors to five; both weighted-least-squares
+  refinements rounded to six. Small base parameters (UR10 wrist terms are
+  ~1e-5) lost up to 5 %, and noise-free effort was fitted to ~5e-6 N·m
+  instead of rounding error. Rounding remains only in displayed text.
 - Calibration's identifiable parameter set no longer depends on global random
   state (#99). The structural selection draws its random configurations from
   a generator seeded by the new `parameters.random_seed` (default 0, legacy
