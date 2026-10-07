@@ -602,6 +602,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Interpreting a verdict">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stages-splits-and-revisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stages, splits and revisions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -783,6 +800,34 @@
     
   
     Calibration Walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/calibration_estimation_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration: Choosing What to Estimate
   
 
     
@@ -990,6 +1035,34 @@
     
   
     Configuration Parameter Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/calibration_estimation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration Estimation Methods
   
 
     
@@ -1520,6 +1593,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../api/data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../api/measurements/" class="md-nav__link">
         
   
@@ -1894,6 +1995,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Interpreting a verdict">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stages-splits-and-revisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stages, splits and revisions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2040,6 +2158,53 @@ validation metrics does not establish held-out accuracy. Keep solver termination
 physical feasibility, prediction quality and export/reload parity as separate
 conclusions. The compare page's compatibility checks do not establish matching
 raw inputs, processing, objectives or absence of leakage; retain that provenance.</p>
+<h3 id="stages-splits-and-revisions">Stages, splits and revisions<a class="headerlink" href="#stages-splits-and-revisions" title="Permanent link">&para;</a></h3>
+<p>Each run records what each step did (<code>figaroh.tools.stages</code>, #55/#63). The
+terminal report prints them on a <code>Stages:</code> line, and the HTML report shows a
+<strong>Stages and data</strong> section.</p>
+<p>Each step gets its own verdict in <code>verdict.stages</code>:
+- the steps are <code>data</code>, <code>fit</code>, <code>validation</code>, <code>physical</code> and <code>export</code>;
+- each is <code>pass</code>, <code>fail</code>, <code>fallback</code> or <code>not_run</code>, or <code>not_evaluated</code> when
+  the run recorded nothing for it;
+- the existing entries (<code>numerical_execution</code>, <code>prediction</code>, <code>solver</code>) are
+  kept beside them.</p>
+<p>A <code>validation</code> <strong>fallback</strong> means the metrics were computed on the
+training data. It is never held-out evidence, and prediction acceptance
+cannot pass on it.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>verdict.stage_records</code></td>
+<td>every step's status, reason and metrics with units</td>
+</tr>
+<tr>
+<td><code>verdict.selected_stage</code></td>
+<td>the step whose parameters the result reports (<code>fit</code>; <code>none</code> if the fit failed)</td>
+</tr>
+<tr>
+<td><code>verdict.splits</code></td>
+<td>which files, sessions and sample counts trained and validated the run, and whether validation was held out</td>
+</tr>
+<tr>
+<td>provenance <code>software.git_commit</code></td>
+<td>the working directory's commit (an example run: the examples repository)</td>
+</tr>
+<tr>
+<td>provenance <code>software.figaroh_revision</code></td>
+<td>the figaroh checkout's own commit and dirty state</td>
+</tr>
+</tbody>
+</table>
+<p>Together, the two commits name the paired core/examples revisions. The
+exported JSON carries the records under <code>stage_records</code> and a
+<code>schema_version</code>. The run archive writes <code>stages.json</code> and adds each run's
+stage verdicts to <code>index.jsonl</code>.</p>
 <h2 id="terminal-quality-reports">Terminal quality reports<a class="headerlink" href="#terminal-quality-reports" title="Permanent link">&para;</a></h2>
 <p><code>print_quality_report()</code> runs automatically at the end of <code>solve()</code>; call
 it again any time after a successful solve to reprint it:</p>

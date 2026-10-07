@@ -808,6 +808,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../tutorials/calibration_estimation_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration: Choosing What to Estimate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../tutorials/identification_walkthrough/" class="md-nav__link">
         
   
@@ -995,6 +1023,34 @@
     
   
     Configuration Parameter Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/calibration_estimation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration Estimation Methods
   
 
     
@@ -1505,6 +1561,34 @@
     
   
     Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data contract
   
 
     
@@ -2077,6 +2161,9 @@ State the gauge: which frame or transform anchors otherwise interchangeable
 corrections. A position-only marker supports position residuals; plane contact
 constrains the observed contact component. Neither supplies full 6D pose truth.
 Use measured joint configurations where available and document substitutes.</p>
+<p>For calibration, which identifiable corrections to estimate, and whether with
+priors, is a separate choice from the calibration level: see
+<a href="../tutorials/calibration_estimation_guide/">Calibration: choosing what to estimate</a>.</p>
 <p>Start with the smallest model that explains the measured phenomenon. Add a
 parameter block only with a physical reason, observability evidence and a
 validation test. Record payload, temperature/contact regime and other operating
@@ -2126,7 +2213,7 @@ fixed quantities, gauge and unsupported effects.</p>
 <tr>
 <td>Geometric least-squares calibration</td>
 <td>Which identifiable corrections reduce the measured pose/contact residual?</td>
-<td>Declare residual components, scaling, gauge, priors and redistribution semantics</td>
+<td>Declare residual components, scaling, gauge, priors and redistribution semantics; choose the <a href="../concepts/calibration_estimation/">estimation method</a> (<code>structural</code>, <code>excitation</code>, <code>map</code>, <code>map_cv</code>, <code>cv_subset</code>) and record it</td>
 </tr>
 </tbody>
 </table>
@@ -2237,7 +2324,7 @@ separate stages. Read the result in this order:</p>
 </tr>
 <tr>
 <td>Parameter interpretation</td>
-<td>Rank, observable combinations, physical checks, gauge and prior sensitivity</td>
+<td>Rank, observable combinations, physical checks, gauge and prior sensitivity (calibration: <code>estimation_report</code>, posterior vs prior; see the <a href="../tutorials/calibration_estimation_guide/#5-read-the-diagnostics">guide</a>)</td>
 <td>Which parameter claims are justified</td>
 </tr>
 <tr>

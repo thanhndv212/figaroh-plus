@@ -16,7 +16,7 @@
         <link rel="prev" href="../">
       
       
-        <link rel="next" href="../identification_walkthrough/">
+        <link rel="next" href="../calibration_estimation_guide/">
       
       
         
@@ -788,6 +788,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../calibration_estimation_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration: Choosing What to Estimate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../identification_walkthrough/" class="md-nav__link">
         
   
@@ -975,6 +1003,34 @@
     
   
     Configuration Parameter Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/calibration_estimation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration Estimation Methods
   
 
     
@@ -1485,6 +1541,34 @@
     
   
     Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data contract
   
 
     
@@ -2020,6 +2104,11 @@ declares:</p>
 <li><code>nb_sample</code> — number of configurations in your measurement set (more
   isn't always better — see <a href="../optimal_design/">Optimal Experiment Design</a>
   for how to pick the <em>best</em> set instead of the largest)</li>
+<li><code>calibration_level</code> and <code>estimation</code> — which corrections exist
+  (<code>joint_offset</code> or <code>full_params</code>) and which of them are estimated, and how
+  (<code>structural</code> by default; <code>excitation</code>, <code>map</code>, <code>map_cv</code>, <code>cv_subset</code>). With
+  few postures this choice matters as much as the data: see
+  <a href="../calibration_estimation_guide/">Choosing what to estimate</a></li>
 </ul>
 <h2 id="interpreting-results">Interpreting results<a class="headerlink" href="#interpreting-results" title="Permanent link">&para;</a></h2>
 <p>Compare nominal and calibrated prediction on unused configurations. Report
@@ -2033,6 +2122,8 @@ against the selected calibrated stage. See
 residual interpretation and acceptance evidence.</p>
 <h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
+<li><a href="../calibration_estimation_guide/">Choosing what to estimate</a> — pick and
+  check the estimation method for your robot and postures.</li>
 <li><a href="../identification_walkthrough/">Identification Walkthrough</a> — once
   kinematics are corrected, identify the <em>dynamic</em> parameters (mass,
   inertia, friction) for control and simulation.</li>

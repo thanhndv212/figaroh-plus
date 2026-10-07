@@ -665,6 +665,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../tutorials/calibration_estimation_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration: Choosing What to Estimate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../tutorials/identification_walkthrough/" class="md-nav__link">
         
   
@@ -852,6 +880,34 @@
     
   
     Configuration Parameter Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/calibration_estimation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration Estimation Methods
   
 
     
@@ -1367,6 +1423,34 @@
     
   
     Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data contract
   
 
     
@@ -10485,7 +10569,7 @@ config file (e.g. <code>yaml.safe_load(f)["calibration"]</code>).</p>
         <span class="s2">"parameters"</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">"calibration_level"</span><span class="p">:</span> <span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"calib_level"</span><span class="p">,</span> <span class="s2">"full_params"</span><span class="p">),</span>
             <span class="s2">"include_non_geometric"</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"non_geom"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)),</span>
-            <span class="s2">"regularization_coefficient"</span><span class="p">:</span> <span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"coeff_regularize"</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">),</span>
+            <span class="s2">"regularization_coefficient"</span><span class="p">:</span> <span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"coeff_regularize"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
             <span class="s2">"outlier_threshold"</span><span class="p">:</span> <span class="n">calib_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"outlier_eps"</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"kinematics"</span><span class="p">:</span> <span class="p">{</span>
@@ -11364,7 +11448,7 @@ from-scratch check, resolve inheritance first via
             <span class="s2">"free_flyer"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"free_flyer"</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
             <span class="s2">"base_to_ref_frame"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"base_to_ref_frame"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
             <span class="s2">"ref_frame"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"ref_frame"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-            <span class="s2">"coeff_regularize"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"coeff_regularize"</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">),</span>
+            <span class="s2">"coeff_regularize"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"coeff_regularize"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
             <span class="s2">"outlier_eps"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"outlier_eps"</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span>
             <span class="s2">"data_file"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"data_file"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
             <span class="s2">"nb_sample"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"NbSample"</span><span class="p">,</span> <span class="mi">500</span><span class="p">),</span>

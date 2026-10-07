@@ -665,6 +665,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../tutorials/calibration_estimation_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration: Choosing What to Estimate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../tutorials/identification_walkthrough/" class="md-nav__link">
         
   
@@ -852,6 +880,34 @@
     
   
     Configuration Parameter Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/calibration_estimation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration Estimation Methods
   
 
     
@@ -1382,6 +1438,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../api/data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../api/measurements/" class="md-nav__link">
         
   
@@ -1831,6 +1915,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#my-calibration-fits-the-training-postures-well-but-predicts-new-postures-badly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        My calibration fits the training postures well but predicts new postures badly
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-calibrated-parameter-set-differs-between-my-laptop-and-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The calibrated parameter set differs between my laptop and CI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#identification-results-have-high-uncertainty-or-fail-verify" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2068,6 +2174,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#my-calibration-fits-the-training-postures-well-but-predicts-new-postures-badly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        My calibration fits the training postures well but predicts new postures badly
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-calibrated-parameter-set-differs-between-my-laptop-and-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The calibrated parameter set differs between my laptop and CI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#identification-results-have-high-uncertainty-or-fail-verify" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2197,6 +2325,19 @@ config define them — see <a href="../../concepts/configuration/">override rule
 <p>Check your initial parameter guesses and joint limits in the config first —
 most non-convergence traces back to a bad initial guess or an
 over-constrained problem, not the solver itself.</p>
+<h3 id="my-calibration-fits-the-training-postures-well-but-predicts-new-postures-badly">My calibration fits the training postures well but predicts new postures badly<a class="headerlink" href="#my-calibration-fits-the-training-postures-well-but-predicts-new-postures-badly" title="Permanent link">&para;</a></h3>
+<p>Usually too many parameters for what the postures excite: estimating weakly
+excited corrections freely fits noise. Check the number of measurements per
+estimated parameter, then try an estimation method that accounts for
+excitation (<code>excitation</code>, <code>map</code>, <code>map_cv</code>, <code>cv_subset</code>) and compare them on
+held-out postures. See
+<a href="../../tutorials/calibration_estimation_guide/">Choosing what to estimate</a>.</p>
+<h3 id="the-calibrated-parameter-set-differs-between-my-laptop-and-ci">The calibrated parameter set differs between my laptop and CI<a class="headerlink" href="#the-calibrated-parameter-set-differs-between-my-laptop-and-ci" title="Permanent link">&para;</a></h3>
+<p>With the default <code>structural</code> method, ties in the structural QR are broken by
+floating-point details, so the selected parameters can differ between
+platforms (figaroh-plus#113). The non-structural methods select on the
+measured postures in a fixed order; <code>map</code> and <code>map_cv</code> select nothing. See
+<a href="../../concepts/calibration_estimation/">Calibration estimation methods</a>.</p>
 <h3 id="identification-results-have-high-uncertainty-or-fail-verify">Identification results have high uncertainty or fail <code>verify()</code><a class="headerlink" href="#identification-results-have-high-uncertainty-or-fail-verify" title="Permanent link">&para;</a></h3>
 <p>This is almost always a data-quality problem, not an algorithm problem:</p>
 <ul>

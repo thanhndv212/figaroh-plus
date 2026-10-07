@@ -16,7 +16,7 @@
         <link rel="prev" href="../configuration/">
       
       
-        <link rel="next" href="../backends/">
+        <link rel="next" href="../calibration_estimation/">
       
       
         
@@ -665,6 +665,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../tutorials/calibration_estimation_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration: Choosing What to Estimate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../tutorials/identification_walkthrough/" class="md-nav__link">
         
   
@@ -917,6 +945,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="calibration: section">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#several-points-on-the-tool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Several points on the tool
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1017,6 +1062,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../calibration_estimation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration Estimation Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1539,6 +1612,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../api/data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../api/measurements/" class="md-nav__link">
         
   
@@ -1913,6 +2014,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="calibration: section">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#several-points-on-the-tool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Several points on the tool
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2060,8 +2178,13 @@ the layout differs.</p>
 <tbody>
 <tr>
 <td><code>calib_level</code></td>
-<td>Kinematic-error model: <code>joint_offset</code> (one rotational offset per joint) or <code>full_params</code> (full 6-DOF xyz+rpy DH-style placement error per joint)</td>
+<td>Kinematic-error model: <code>joint_offset</code> (one offset per joint, about or along its own axis) or <code>full_params</code> (six placement errors per joint, translation and rotation vector in the joint frame)</td>
 <td><code>parameters.calibration_level</code></td>
+</tr>
+<tr>
+<td><code>estimation</code></td>
+<td>Which parameters to estimate and how: <code>method</code> (<code>structural</code> default, <code>excitation</code>, <code>map</code>, <code>map_cv</code>, <code>cv_subset</code>), <code>priors</code>, <code>noise_std</code>, cross-validation settings. See <a href="../calibration_estimation/">Calibration estimation methods</a></td>
+<td><code>parameters.estimation</code></td>
 </tr>
 <tr>
 <td><code>non_geom</code></td>
@@ -2090,12 +2213,12 @@ the layout differs.</p>
 </tr>
 <tr>
 <td><code>markers[].ref_joint</code></td>
-<td>Joint the external marker is rigidly mounted near; its offset from <code>tool_frame</code> is what gets estimated (<code>pEEx/y/z</code>, <code>phiEEx/y/z</code>)</td>
+<td>Joint the external marker is rigidly mounted near; its offset from <code>tool_frame</code> is what gets estimated (<code>pEEx/y/z</code>, <code>phiEEx/y/z</code>; <code>pEEx_k</code> ... for marker <code>k</code>). Several markers are points on the same <code>tool_frame</code>, see <a href="#several-points-on-the-tool">Several points on the tool</a></td>
 <td><code>measurements.markers[].reference_joint</code> — written by convention, but <strong>not currently read back</strong> by <code>_extract_marker_info</code> (only <code>measurable_dof</code>, from the first marker, is consumed)</td>
 </tr>
 <tr>
 <td><code>markers[].measure</code></td>
-<td>6-DOF boolean mask <code>[x, y, z, roll, pitch, yaw]</code> — which axes the external sensor (mocap/vision/contact) actually reports for that marker</td>
+<td>6-DOF boolean mask <code>[x, y, z, roll, pitch, yaw]</code> — which axes the external sensor (mocap/vision/contact) actually reports for that marker. Every marker uses the first marker's mask</td>
 <td><code>measurements.markers[].measurable_dof</code></td>
 </tr>
 <tr>
@@ -2115,13 +2238,18 @@ the layout differs.</p>
 </tr>
 <tr>
 <td><code>coeff_regularize</code></td>
-<td>L2 regularization weight applied to the non-base/non-tip parameters in the least-squares cost, to keep identified offsets small and the problem well-conditioned</td>
+<td><strong>Deprecated (#120), default 0.</strong> One L2 weight that robot cost functions applied to every joint parameter, penalising metres and radians alike. Core never applies it; a non-zero value raises a <code>DeprecationWarning</code>. Use <code>estimation.method: map</code> instead (priors of physical size per parameter group, <a href="../calibration_estimation/">estimation methods</a>)</td>
 <td><code>parameters.regularization_coefficient</code></td>
 </tr>
 <tr>
 <td><code>outlier_eps</code></td>
-<td>Residual distance (<strong>meters</strong>) above which a sample is treated as an outlier and iteratively dropped before refitting</td>
+<td>Position error (<strong>meters</strong>, norm of the measured x/y/z residuals of a sample, worst marker) above which a sample is excluded and the rest refitted, for up to <code>max_iterations</code> fits. Rotational components do not take part; with no measured position component nothing is excluded. Excluded samples and their errors are in the evaluation (<code>excluded_samples</code>, <code>excluded_sample_errors</code>) and the report</td>
 <td><code>parameters.outlier_threshold</code></td>
+</tr>
+<tr>
+<td><code>random_seed</code></td>
+<td>Seed for the random configurations that select the identifiable parameter set (default 0). The selection, hence the result, does not depend on any global random state; the seed is recorded in the run provenance</td>
+<td><code>parameters.random_seed</code></td>
 </tr>
 <tr>
 <td><code>data_file</code></td>
@@ -2157,7 +2285,7 @@ this unknown camera-pose block is estimated <em>simultaneously</em>, from the
 same measurements, as the per-joint offsets of every joint the camera
 observes through — "camera is off by X" and "joint N is off by Y" can
 produce very similar marker-pose residuals, which can leave the problem
-under-determined or poorly conditioned. <code>coeff_regularize</code> and
+under-determined or poorly conditioned. Priors (<code>estimation.method: map</code>) and
 deliberately exciting poses that vary joint loading/configuration
 widely (<code>sample_configs_file</code>, D-optimal design a la
 <code>tiago_pro/generate_optimal_configs.py</code>) are the two practical levers
@@ -2169,6 +2297,35 @@ downstream of that single anchor is <em>itself</em> another unknown sensor
 mount; it's one 6-DOF unknown at the root, not one inserted mid-chain
 and re-estimated jointly with everything past it.</p>
 </div>
+<h3 id="several-points-on-the-tool">Several points on the tool<a class="headerlink" href="#several-points-on-the-tool" title="Permanent link">&para;</a></h3>
+<p>Each entry of <code>measurements.markers</code> is one measured point (or pose) on the
+same <code>tool_frame</code>, for example the points of one mocap rigid body. The CSV
+has columns <code>x1, y1, z1, x2, ...</code> per marker, and each marker <code>k</code> gets its
+own offset <code>pEEx_k, pEEy_k, pEEz_k</code> (and <code>phiEE*_k</code> when orientation is
+measured); the base frame and the joint parameters are shared. Residual rows
+are ordered marker, then component, then sample.</p>
+<p>What several points do and do not give (figaroh-plus#119):</p>
+<ul>
+<li><strong>The same identifiable joint parameters as one point.</strong> Free point
+  offsets absorb any rotation of the tool frame itself, so a joint offset
+  about the tool axis stays unidentifiable. On a TIAGo arm, four points
+  keep exactly the joint parameters one point keeps.</li>
+<li><strong>Smaller standard errors</strong>, about <code>1/sqrt(n_points)</code> when the points'
+  noise is independent. Points of one rigid body are not fully
+  independent, so expect less.</li>
+<li><strong>Not necessarily better prediction.</strong> On the TIAGo mocap reference, a
+  four-point fit did not predict held-out postures better than marker 1
+  alone (<code>full_params</code>: 3.39 against 2.80 mm on marker 1); the extra
+  points' rows bring their own errors (reflections, rigid-body tracking,
+  unmodelled wrist effects) into every parameter.</li>
+<li><strong>One bad point affects the whole sample.</strong> Outlier exclusion
+  (<code>outlier_eps</code>) uses each sample's worst point, so a misreflected point
+  removes that sample. A missing (occluded) point, i.e. an empty cell, is
+  refused by the loader with its CSV rows; exclude them with <code>del_list</code>.</li>
+</ul>
+<p>Decide per robot and dataset: compare held-out errors per point (the
+validation report lists them) with a one-point fit before adopting more
+points.</p>
 <div class="admonition note">
 <p class="admonition-title">Eye-hand / camera calibration now has a unified-format equivalent</p>
 <p><code>base_to_ref_frame</code>/<code>ref_frame</code> map to
@@ -2407,6 +2564,18 @@ downstream.</p>
 <tr>
 <td><code>segment_attempts</code></td>
 <td>Solves per trajectory segment: a failed segment is retried from a new random initial guess (default 1 = no retry; unified config: <code>problem.segment_attempts</code>)</td>
+</tr>
+<tr>
+<td><code>collision_margin</code></td>
+<td>Minimum clearance (m) between collision pairs (default 0.01). Pairs: the geometry model's, or, when it has none, every two geometries on non-adjacent bodies (the world and the first moving body count as adjacent); <code>srdf</code> removes pairs (#143). Initial guesses and every solved segment must keep this clearance along the whole spline, checked at <code>collision_check_frequency</code> (default 200 Hz)</td>
+</tr>
+<tr>
+<td><code>collision_checks_per_interval</code></td>
+<td>Check points per waypoint interval in the collision constraint, ending at the waypoint (default 1 = waypoints only)</td>
+</tr>
+<tr>
+<td><code>collision_screen</code></td>
+<td>Optional (m): exact distances only for pairs within it, the others count as the screen; faster with many mesh pairs (UR10 example: 0.02). Default none = all distances exact</td>
 </tr>
 </tbody>
 </table>
