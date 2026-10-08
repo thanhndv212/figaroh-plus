@@ -46,7 +46,6 @@ import numpy as np
 from figaroh.identification.physical_consistency import (
     check_p10_feasibility,
     project_p10_lmi,
-    pseudo_inertia_matrix_from_p10,  # noqa: F401  (documented dependency)
 )
 from figaroh.identification.reconstruction import (
     _p10_indices_for_joints,
@@ -190,9 +189,7 @@ def _coord_scale(params: Sequence[str], joints: Sequence[str], prior: np.ndarray
         hs = max(float(np.linalg.norm(p[1:4])), 1e-3)
         is_ = max(float(np.linalg.norm(p[4:10])), 1e-3)
         for k in _P10_KEYS:
-            scale[idx[k]] = (
-                ms if k == "m" else hs if k in ("mx", "my", "mz") else is_
-            )
+            scale[idx[k]] = ms if k == "m" else hs if k in ("mx", "my", "mz") else is_
     return scale
 
 
@@ -336,9 +333,7 @@ def _per_joint_rmse(p: ComparatorProblem, theta: np.ndarray) -> Dict[str, float]
     if nj == 0 or r.size % nj:
         return {"all": float(np.sqrt(np.mean(r**2)))}
     r = r.reshape(nj, -1)
-    return {
-        j: float(np.sqrt(np.mean(r[k] ** 2))) for k, j in enumerate(p.joint_names)
-    }
+    return {j: float(np.sqrt(np.mean(r[k] ** 2))) for k, j in enumerate(p.joint_names)}
 
 
 def _make_record(
