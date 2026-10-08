@@ -15,7 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   production solver is approved. (#22)
 - Diagnose why the log-Cholesky spike's fits stop at their evaluation budget
   and freeze a revised protocol (budget 2000, convergence by termination
-  status, three fresh seed sets) before confirmation. (#30)
+  status, three fresh seed sets) before confirmation. The fresh-seed
+  confirmation is no-go: 8 of 24 gated fits still hit the budget. (#30)
 
 ### Fixed
 
