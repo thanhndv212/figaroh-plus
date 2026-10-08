@@ -1,6 +1,7 @@
 # Log-Cholesky convergence: revised protocol (frozen before confirmation)
 
-- Status: Proposed — protocol frozen 2026-10-08; confirmation results pending
+- Status: Accepted — **no-go** for the revised protocol (2026-10-08); protocol
+  frozen the same day in a separate earlier commit
 - Issue: [#30](https://github.com/thanhndv212/figaroh-plus/issues/30)
 - Parent: [#40 (D5)](https://github.com/thanhndv212/figaroh-plus/issues/40)
 - Supersedes the measurement protocol of
@@ -8,9 +9,18 @@
   its script and its results stay unchanged as the first experiment.
 - Scope: private synthetic research spike; no production API approval
 
-This record is committed before any confirmation-seed run. The results section
-is added afterwards in a separate commit, so the history shows what was fixed
-in advance.
+The protocol sections below were committed before any confirmation-seed run.
+The results section was added afterwards in a separate commit, so the history
+shows what was fixed in advance.
+
+## Decision
+
+**No-go.** Raising the budget alone does not make termination reliable. On the
+fresh seeds, 8 of 24 gated fits run out of 2000 evaluations, on both Pinocchio
+3.7 and 4.1. Every accuracy, feasibility and runtime gate passes, so the
+remaining problem is termination, as in #22. Production issues #23–#25 stay
+blocked. A next revision should change the method, not the budget again (see
+the end of this record).
 
 ## Diagnosis: why 19 of 20 fits stopped
 
@@ -111,6 +121,65 @@ must not replace that stage or be relabelled as success.
   These starts were already outside the gates in #22, and the budget was not
   changed after seeing this.
 - No confirmation seed was run before this record was committed.
+
+## Results (2026-10-08)
+
+Run at core `3578b63` (protocol commit). Python 3.12.11, SciPy 1.16.1, PICOS
+2.6.1, CVXOPT 1.3.2; Pinocchio 3.7.0 and 4.1.0. Both profiles give the same
+status, evaluation count and held-out error for every fit. The exploration
+replication passes the gates. Gated fits (nominal and repaired-OLS starts):
+
+| Set | Converged | Not converged (status 0 at 2000) |
+| --- | --- | --- |
+| confirmation_a | 5 / 8 | clean nominal, weak-excitation nominal, near-boundary repaired-OLS |
+| confirmation_b | 4 / 8 | clean nominal and repaired-OLS, near-boundary nominal and repaired-OLS |
+| confirmation_c | 7 / 8 | clean nominal |
+
+Converged gated fits used 209–1875 evaluations; three needed more than 1700.
+All 24 gated fits are feasible on every link and take at most 3.9 s.
+
+Accuracy passes everywhere, including in non-converged fits:
+
+| Set | Clean held-out (Nm) | Noisy held-out, log-Cholesky / OLS+SDP (Nm) |
+| --- | --- | --- |
+| confirmation_a | 1.24e-6, 1.26e-6 | 0.0164 / 0.0303 |
+| confirmation_b | 1.7e-7, 9.8e-8 | 0.0093 / 2.19 |
+| confirmation_c | 9.5e-7, 9.5e-7 | 0.0112 / 0.223 |
+
+OLS+SDP held-out error on the fresh seeds is much larger than on the
+exploration seeds; per-link projection of OLS changes the predictions far more
+there. The log-Cholesky candidates beat it by 1.8× to 235×, but the go decision
+depends on termination, which fails.
+
+**Observed pattern (not proven).** On the fresh seeds, the ridge optimum (the
+unconstrained minimiser of the same objective) is physically infeasible in
+11 of 12 cases, on 1–5 links. On the exploration seeds it was infeasible only
+in the near-boundary case. When the ridge optimum is infeasible, the
+constrained infimum lies on the boundary of the positive-definite set, which
+log-Cholesky coordinates reach only as some coordinate goes to minus infinity.
+Every non-converged gated fit is in such a case. Not every such case fails,
+so infeasibility is consistent with, but not sufficient for, non-termination.
+The clean cases show that the identifiable part of the solution is accurate
+long before the solver stops (relative cost excess over the ridge optimum
+7e-4 to 5e-2, against an unattainable reference).
+
+The exploration seeds therefore underrepresented the boundary case that
+dominates the fresh draws. That is why the budget chosen from them did not
+transfer.
+
+## Next revision (proposal, not frozen)
+
+Change what the solver is asked to do rather than how long it runs:
+
+- Treat a boundary infimum explicitly: detect an infeasible ridge optimum
+  first, and in that case fit with a barrier or margin on the pseudo-inertia
+  eigenvalues (or the SDP directly on the torque objective) instead of letting
+  log coordinates diverge.
+- Remove the unidentifiable drift: fix the regressor null-space component to
+  the prior (fit only identifiable combinations plus the feasibility margin),
+  or test dogbox/LM, which terminated quickly in the diagnosis.
+- Declare a stopping rule on the identifiable residual, not only on SciPy's
+  status, and freeze it with new fresh seeds before measuring.
 
 ## Reproduction
 
