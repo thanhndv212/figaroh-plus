@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   independent physical/Jacobian checks and machine-readable Pinocchio 3.7/4.1
   results. The decision is revise: convergence/scaling must improve before a
   production solver is approved. (#22)
+- Diagnose why the log-Cholesky spike's fits stop at their evaluation budget
+  and freeze a revised protocol (budget 2000, convergence by termination
+  status, three fresh seed sets) before confirmation. (#30)
 
 ### Fixed
 
