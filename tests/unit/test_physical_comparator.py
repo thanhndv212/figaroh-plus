@@ -13,7 +13,6 @@ pytest.importorskip("picos")
 from figaroh.identification import _physical_comparator as pcmp  # noqa: E402
 from figaroh.identification._physical_comparator import (  # noqa: E402
     FixedExtras,
-    PhysicalPolicy,
     build_problem,
     diagnose_exact,
     solve_direct_effort_fit,
@@ -51,9 +50,7 @@ def setup():
 def _problem(setup, tau=None, **kw):
     Y, names, joints, truth, prior = setup
     tau = Y @ truth if tau is None else tau
-    return build_problem(
-        Y, tau, names, joints, prior=prior, theta_truth=truth, **kw
-    )
+    return build_problem(Y, tau, names, joints, prior=prior, theta_truth=truth, **kw)
 
 
 def test_noise_free_all_accepted(setup):
@@ -72,9 +69,7 @@ def test_noise_free_all_accepted(setup):
 
 def test_negated_phi_infeasible(setup):
     p = _problem(setup)
-    bad = pcmp.ComparatorProblem(
-        **{**p.__dict__, "phi_ols": -p.phi_ols}
-    )
+    bad = pcmp.ComparatorProblem(**{**p.__dict__, "phi_ols": -p.phi_ols})
     recs = diagnose_exact(bad)
     d1 = [r for r in recs if r.objective == "D1:phase1"][0]
     assert d1.objective_value < 0
