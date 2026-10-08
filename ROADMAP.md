@@ -50,10 +50,14 @@ and then `main`. The docs site embeds this file directly.
   package D1) is fixed by [PR #69](https://github.com/thanhndv212/figaroh-plus/pull/69),
   merged into `devel` on 2026-10-02. UR10/TIAGo signal-rate assumptions still
   require separate examples audits (D2) before new scientific benchmark claims.
-- [Core PR #31](https://github.com/thanhndv212/figaroh-plus/pull/31) is open with
-  passing hosted checks and a **revise** feasibility decision. The private
-  experiment is not a production solver. [#30](https://github.com/thanhndv212/figaroh-plus/issues/30)
-  must resolve convergence/scaling before #23–#25 proceed.
+- Log-Cholesky research (D5) is optional and still open. The feasibility spike
+  ([core PR #31](https://github.com/thanhndv212/figaroh-plus/pull/31), merged)
+  recorded **revise**; the budget/scaling revision
+  ([#30](https://github.com/thanhndv212/figaroh-plus/issues/30)) recorded
+  **no-go** because 8 of 24 gated fits still exhaust 2000 evaluations.
+  [#155](https://github.com/thanhndv212/figaroh-plus/issues/155) changes the
+  fitting method next. The private experiment is not a production solver, and
+  #23–#25 stay blocked until a go decision.
 - [Examples PR #13](https://github.com/thanhndv212/figaroh-examples/pull/13) is still draft.
   The Hey5 geometry failure was fixed by W1 (every robot loads from a clean
   checkout) and the 3.7 TALOS regression ([examples #14](https://github.com/thanhndv212/figaroh-examples/issues/14))
@@ -125,7 +129,7 @@ scope, dependencies and closure policy are in the
 | M1.4 integrated workflows | W3 minimum contracts, S1 minimum reports, D7 dynamic reference, C4 calibration reference, U1 verified onboarding | ✅ **W3, S1, C4**; U1 in progress; D7 blocked |
 | M2 follow-up | S2 uncertainty, S3 experiment-design improvements, S4 selective composition; W3 is prerequisite groundwork | ✅ W3 groundwork done; S2 in progress; S3, S4 blocked |
 | M3 backend parity | B1 capabilities and measured parity; broader ports need separately reviewed packages | Blocked on M1 |
-| Optional nonlinear research | D5 and linked production #23–#25 when that path is approved; excluded from baseline M1 closure | D5 ready (#30, PR #31 open) |
+| Optional nonlinear research | D5 and linked production #23–#25 when that path is approved; excluded from baseline M1 closure | D5 open: #22 revise, #30 no-go; #155 (method change) ready |
 
 A delivery milestone is cleared only when **all included issues meet their
 acceptance criteria**, required changes are reviewed/merged, and milestone-level
