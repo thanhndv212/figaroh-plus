@@ -85,7 +85,7 @@ flowchart TD
     D2["<b>D2: Signal audit</b> · #37 ✅<br/>✓ ex#19 ex#20 ex#51"]
     D3["<b>D3: UR10 truth fixture</b> · #38 ✅<br/>✓ #142 #143<br/>✓ ex#21"]
     D4["<b>D4: Physical comparison</b> · #39<br/>in review: ex#12 (PR ex#13)<br/>#59 ex#22"]
-    D5["<b>D5: Convergence research</b> · #40<br/>in review: #22 (PR #31)<br/>#30"]
+    D5["<b>D5: Convergence research</b> · #40<br/>✓ #22 (revise) #30 (no-go)<br/>#155"]
     D6["<b>D6: Inertial export</b> · #41 ✅<br/>✓ #60 (PR #138)"]
     D7["<b>D7: Dynamic reference</b> · #42<br/>#61 #116<br/>ex#23 ex#68 ex#69"]
     C1["<b>C1: Frames/data audit</b> · #43 ✅<br/>✓ ex#24 ex#25"]
@@ -137,7 +137,7 @@ flowchart TD
     classDef ready fill:#fff3cd,stroke:#b8860b,color:#5c4400
     class R,W1,W2,W3,W4,D1,D2,C1,C2,C3,S1,D6,C4,D3 cleared
     class D4,D5 ready
-    class D4,D5 active
+    class D4 active
     classDef active fill:#fff3cd,stroke:#b8860b,stroke-width:3px,stroke-dasharray:6 3,color:#5c4400
 ```
 
@@ -167,7 +167,7 @@ authoritative; refresh this table when a tracker closes.
 | **C3** geometric export | ✅ **Cleared** | 2026-10-06 | accepted on core `efd9f69` + examples `2c75f50` |
 | **W3** data/result contracts | ✅ **Cleared** | 2026-10-06 | core #126 (ADR, #54), #128/#130 (contract, #55), #132 (#131), #127 (#125); examples #84 (#17); accepted on core `4ec06d4` + examples `9a9e6d7` |
 | **D3** UR10 truth fixture | ✅ **Cleared** | 2026-10-07 | examples #21 by examples #89/#91 (fixture, frozen protocol v1, UR10 example moved onto it); #142 by #144; #143 by #145 + examples #92 (both added 2026-10-07); accepted on core `2260786` + examples `b23b836` (core 846 passed; examples `validate.py` 16/16, pytest 255 passed) |
-| D5 convergence research | In review (optional) | — | #22 in review via PR #31 (revise decision; needs a rebase); #30 ready |
+| D5 convergence research | Ready (optional) | — | #22 done via PR #31 (revise); #30 done via #154 (no-go: 8/24 gated fits exhaust 2000 evaluations); #155 method change ready |
 | **D6** inertial export | ✅ **Cleared** | 2026-10-06 | #60 by PR #138; accepted on core `0e6a78c` + examples `a3381bc` (core 817 passed; examples `validate.py` 16/16, pytest 237 passed); merged-body export left to D7 (#61) |
 | **S1** reporting contract | ✅ **Cleared** | 2026-10-06 | core #63 (PR #134), #70, #100, #103 (PR #135); examples #30 (examples PR #85), #36 |
 | **C4** calibration reference | ✅ **Cleared** | 2026-10-06 | examples #29 by examples #88 (`reference_run.py`); #119 by #141 (core support; TIAGo protocol keeps one marker); #120 by #140 + examples #87 (`map` replaces the coefficient); #97–#99 by #127, #137, #139 + examples #86; accepted on core `c80b5fc` + examples `88e2fc2`. Held-out marker RMSE 3.8–4.2 mm; export parity ≤ 2.1e-12 m |
@@ -243,7 +243,7 @@ guidance is part of U1; S3 is the later algorithmic improvement milestone.
 | [D2](https://github.com/thanhndv212/figaroh-plus/issues/37) | M1.1 dynamic | Audit robot signal processing | Separate examples issues for UR10 and TIAGo | Recorded vs inferred timestamps; explicit filter rates/cutoffs/order; torque/current units/signs; trim/decimation index provenance; immutable raw files |
 | [D3](https://github.com/thanhndv212/figaroh-plus/issues/38) | M1.2 dynamic | Fresh UR10 truth fixture and benchmark protocol | Examples; D1/D2 | Save verified true inertias, analytic q/dq/ddq, independent train/validation trajectories and noise seeds; no ground-truth parameter claims from old CSVs |
 | [D4](https://github.com/thanhndv212/figaroh-plus/issues/39) | M1.2 dynamic | Fair physical-estimation comparator | Private core spike + linked examples experiment; D3 | Base OLS, exact reconstruction, direct LMI-constrained effort fit, per-link projection and log-Cholesky; common inputs; comparable objectives and extras policy; separate failures |
-| [D5](https://github.com/thanhndv212/figaroh-plus/issues/40) | M1.2 optional nonlinear research | Convergence/scaling revision | Core #30; analytic fixture now, robot evaluation after D3/D4 | Objective/gradient histories, scaling/bounds/prior ablations, multiple starts and justified budget; preserve earlier protocol; current #30 acceptance criteria govern go |
+| [D5](https://github.com/thanhndv212/figaroh-plus/issues/40) | M1.2 optional nonlinear research | Convergence/scaling revision | Core #30 (no-go), #155; analytic fixture now, robot evaluation after D3/D4 | Objective/gradient histories, scaling/bounds/prior ablations, multiple starts and justified budget; preserve earlier protocol; the #30 go gates, carried unchanged into #155, govern go |
 | [D6](https://github.com/thanhndv212/figaroh-plus/issues/41) | M1.3 dynamic | Complete inertial export | Core; prior mapping review and known-parameter fixture | Mass/first moments/CoM, origin vs CoM tensor and inertial rotation handled; export/reload matches intended RNEA and physical verdict; unsupported targets fail explicitly |
 | [D7](https://github.com/thanhndv212/figaroh-plus/issues/42) | M1.4 dynamic | Accepted dynamic reference workflow | Core integration + examples; D4/D6/S1; D5 only for optional nonlinear path | Explicit selected stage, fit and genuine validation splits, per-joint units, physical/solver verdict, exported model and archive; successful supported baseline can ship without nonlinear go |
 | [C1](https://github.com/thanhndv212/figaroh-plus/issues/43) | M1.1 calibration | Audit geometric data/frames and reproduction | Examples with focused core fixes; W1/W2 | Named observation frames, translation/rotation units, timestamps, measurement source and split policy; TIAGo and TALOS current behavior captured |
@@ -296,7 +296,7 @@ automatic merging are configured by this setup.
 | [LC1](https://github.com/thanhndv212/figaroh-plus/issues/20) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/22) | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/18) |
 
 **LC1** uses existing core #20 as the canonical conditional-production tracker
-for core #23–#25 and examples #11. D5 owns research #22/#30; its accepted go
+for core #23–#25 and examples #11. D5 owns research #22/#30/#155; its accepted go
 decision is a dependency, not completion of those production issues. LC1 is
 outside baseline M1 closure and introduces no additional production scope.
 
@@ -306,7 +306,7 @@ delivered by #69. W1, W2, W3, W4, D1, D2, D3, D6, C1, C2, C3, C4 and S1 have sin
 (2026-10-07): D6 and C4 have cleared, so calibration is done through M1.4.
 The critical path is now dynamic: D3 cleared on 2026-10-07, so
 D4 comparison (#59 ready, then examples #22, on the frozen UR10 protocol) → D7 dynamic
-reference → U1 acceptance. D5 #22 (PR #31) is in review on the optional path.
+reference → U1 acceptance. On the optional path, D5 #30 recorded no-go and #155 (method change) is ready.
 Select one issue, validate its focused change, open its PR, then await
 review/merge approval.
 
@@ -330,7 +330,7 @@ No API is chosen just because one research script already contains a function.
 
 Freeze ranks/tolerances, bounds, noise, initialization, iteration/evaluation
 budget, timeout and quality metrics before measuring. Preserve the old
-protocol. The existing #30 criteria are not relaxed by this plan; any revised
+protocol. The existing #30 criteria (carried into #155) are not relaxed by this plan; any revised
 criterion requires a reasoned decision before new measurements.
 
 ### Calibration
