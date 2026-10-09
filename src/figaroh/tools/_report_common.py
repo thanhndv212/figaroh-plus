@@ -610,6 +610,9 @@ def scoped_verification(
     Execution verifies finite, nonempty numerical outputs. Prediction also
     requires independent measurements and explicit error limits for every
     requested output. Neither scope certifies physical feasibility or export.
+
+    ``facts`` maps a name to ``None`` (not evaluated), a bool, or a
+    ``(bool, reason)`` tuple whose reason is the message of a failing fact.
     """
     import numpy as np
 
@@ -640,6 +643,11 @@ def scoped_verification(
             )
         )
     for name, value in (facts or {}).items():
+        # a fact is None (unknown), a bool, or ``(bool, reason)`` whose
+        # reason is the message when it fails
+        reason = "Numerical dimensions are missing or inconsistent"
+        if isinstance(value, tuple):
+            value, reason = value
         status = "not_evaluated" if value is None else ("pass" if value else "fail")
         guard.append(
             ThresholdCheck(
@@ -650,15 +658,7 @@ def scoped_verification(
                 status == "pass",
                 status,
                 True,
-                (
-                    (
-                        "The requested estimate was rejected"
-                        if name == "selected_stage_accepted"
-                        else "Numerical dimensions are missing or inconsistent"
-                    )
-                    if status != "pass"
-                    else ""
-                ),
+                reason if status != "pass" else "",
             )
         )
     if solver_success is not None:

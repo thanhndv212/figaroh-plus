@@ -216,3 +216,50 @@ def test_a_new_solve_drops_the_old_export_record(pend, tmp_path):
     ident.export_urdf(PENDULUM, output_path=str(tmp_path / "o2.urdf"))
     ident.solve_with_custom_solver(decimate=False)
     assert "export" not in [s.stage for s in ident.stages]
+
+
+# -- scoped_verification: a fact may carry its own failure reason --
+
+
+def _fact_checks(facts):
+    from figaroh.tools._report_common import scoped_verification
+
+    v = scoped_verification({}, {}, "execution", {}, False, [], facts=facts)
+    return {c.name: c for c in v.checks}
+
+
+def test_tuple_fact_uses_its_reason_and_plain_facts_keep_theirs():
+    checks = _fact_checks(
+        {
+            "tuple_bad": (False, "because of x"),
+            "tuple_ok": (True, "unused"),
+            "plain_bad": False,
+            "plain_ok": True,
+            "unknown": None,
+        }
+    )
+    assert checks["tuple_bad"].status == "fail"
+    assert checks["tuple_bad"].reason == "because of x"
+    assert checks["tuple_ok"].status == "pass" and checks["tuple_ok"].reason == ""
+    assert checks["plain_bad"].reason == (
+        "Numerical dimensions are missing or inconsistent"
+    )
+    assert checks["plain_ok"].status == "pass"
+    assert checks["unknown"].status == "not_evaluated"
+
+
+def test_rejected_selection_reason_reaches_the_verdict(model, traj, monkeypatch):
+    pytest.importorskip("picos")
+    from figaroh.identification import physical_fit as pf
+
+    monkeypatch.setattr(
+        pf,
+        "_solve_core",
+        lambda *a, **k: {"status": "error", "exception": "boom", "runtime_s": 0.0},
+    )
+    ident = _run(model, traj, select_stage="physical_fit")
+    check = {c.name: c for c in ident.verify(scope="execution").checks}[
+        "selected_stage_accepted"
+    ]
+    assert check.status == "fail"
+    assert "physical_fit" in check.reason and "cvxopt: error" in check.reason

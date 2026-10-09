@@ -2376,7 +2376,10 @@ class BaseIdentification(ABC):
                         if i not in set(self._idx_eliminated or [])
                     ]
                     finite_prediction = self._solve_W @ np.asarray(sel.values)[keep]
-            facts_extra["selected_stage_accepted"] = bool(sel.accepted)
+            facts_extra["selected_stage_accepted"] = (
+                bool(sel.accepted),
+                f"The requested {sel.requested} estimate was rejected: {sel.reason}",
+            )
         verdict = scoped_verification(
             metrics,
             thresholds,
