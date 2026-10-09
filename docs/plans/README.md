@@ -7,6 +7,7 @@ belongs in GitHub issues and design contracts in `docs/decisions/`.
 | Plan | Status |
 | --- | --- |
 | [Identification and calibration delivery](identification-calibration-delivery.md) | Revision 4, 2026-10-02; tracker setup approved; execution details under review |
+| [Calibration studies](calibration-studies-plan.md) | Proposed, 2026-10-09; tracker not opened |
 | [Archived roadmap v2](archive/roadmap-v2.md) | Historical; dates/completion claims are not current commitments |
 
 ## How to read delivery issues
