@@ -7,7 +7,7 @@ belongs in GitHub issues and design contracts in `docs/decisions/`.
 | Plan | Status |
 | --- | --- |
 | [Identification and calibration delivery](identification-calibration-delivery.md) | Revision 4, 2026-10-02; tracker setup approved; execution details under review. Status refreshed 2026-10-09 |
-| [Calibration studies](calibration-studies-plan.md) | Proposed, 2026-10-09; tracker not opened |
+| [Calibration studies](calibration-studies-plan.md) | Proposed, 2026-10-09; tracker core #167 (C5) opened |
 | [Archived roadmap v2](archive/roadmap-v2.md) | Historical; dates/completion claims are not current commitments |
 
 ## How to read delivery issues
@@ -37,6 +37,7 @@ name in each repository that has work for it.
 | U | User onboarding | U1 — general robot/dataset guide |
 | B | Backends | B1 — backend capability review |
 | LC | Conditional log-Cholesky production (outside baseline M1) | LC1 |
+| C5 / D8 | Calibration studies / identification studies (research follow-ups, outside baseline M1) | C5 — calibration studies |
 
 **Work issues** are the units a PR closes. They are sub-issues of their package
 tracker and state Problem, Goal, Acceptance criteria, Out of scope and Dependencies
