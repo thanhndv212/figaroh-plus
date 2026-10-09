@@ -20,6 +20,7 @@ that can be inherited by any robot type (TIAGo, UR10, MATE, etc.).
 """
 
 import logging
+import os
 import yaml
 import numpy as np
 from abc import ABC, abstractmethod
@@ -49,6 +50,7 @@ from figaroh.identification.parameter import (
 )
 from figaroh.tools.solver import LinearSolver
 from figaroh.utils.results_manager import plot_with_fallback
+from figaroh.identification.reconstruction import _INERTIAL_KEYS
 
 # Setup logger for this module
 logger = logging.getLogger(__name__)
@@ -116,6 +118,7 @@ class BaseIdentification(ABC):
         # trajectory data.
         self._idx_eliminated = None
         self._base_indices = None
+        self.selected = None
         self._decimate_used = False
 
         # Set default filter configuration, can be overridden in subclasses
@@ -217,6 +220,8 @@ class BaseIdentification(ABC):
             tau_processed, W_processed, decimation_factor if decimate else 1
         )
 
+        self._reset_solve_state(tau_processed, W_processed, active_params)
+
         # Step 3: Calculate base parameters
         from figaroh.tools.stages import record_stage
 
@@ -271,6 +276,24 @@ class BaseIdentification(ABC):
             self.export_html_report()
 
         return self.phi_base
+
+    def _reset_solve_state(self, tau, W, active_params):
+        """Start a solve: keep its rows, drop what an earlier solve left.
+
+        The rows are kept for the optional physical_fit stage (#61). The
+        weights, reconstruction, physical fit, selection and the ``export``
+        stage record belong to the previous solve and no longer apply.
+        """
+        from figaroh.tools.stages import drop_stage
+
+        self._solve_tau = tau
+        self._solve_W = W
+        self._solve_active = active_params
+        self._wls_row_weight = None
+        self._recon_result = None
+        self._physical_fit = None
+        self.selected = None
+        drop_stage(self, "export")
 
     def solve_with_custom_solver(
         self,
@@ -341,6 +364,8 @@ class BaseIdentification(ABC):
             tau_processed, W_processed = self._prepare_undecimated_data(
                 regressor_reduced
             )
+
+        self._reset_solve_state(tau_processed, W_processed, active_params)
 
         # Step 3: Solve using custom solver
         solver = LinearSolver(
@@ -767,7 +792,11 @@ class BaseIdentification(ABC):
 
         phi_std_vec = np.array(list(self.standard_parameter.values()))
         tau_val_nominal = _select_active_joint_rows(W_val_full @ phi_std_vec)
-        tau_val_identif = _select_active_joint_rows(W_val_base @ self.phi_base)
+        sel = getattr(self, "selected", None)
+        if sel is not None and sel.accepted:
+            tau_val_identif = _select_active_joint_rows(sel.predict(W_val_full))
+        else:
+            tau_val_identif = _select_active_joint_rows(W_val_base @ self.phi_base)
 
         # Joint-major, matching the regressor's row convention (block j
         # occupies rows [j*n_val:(j+1)*n_val]) — torques columns are
@@ -890,7 +919,13 @@ class BaseIdentification(ABC):
                 "not an independent test",
                 metrics,
             )
+        estimate_stage = {}
+        if sel is not None:
+            # stage whose numbers are in the identified series; a rejected
+            # selection leaves the fit's under the legacy keys
+            estimate_stage = {"estimate_stage": sel.stage if sel.accepted else "fit"}
         return {
+            **estimate_stage,
             "n_val_samples": n_used,
             "validation_source": validation_source,
             "rmse_nominal": nominal_stats["rmse"],
@@ -1427,6 +1462,8 @@ class BaseIdentification(ABC):
 
         sig_ro_joint, diag_SIGMA = self._calculate_joint_variances(W_b, tau, n_active)
         self._joint_variances = sig_ro_joint
+        # sqrt of the WLS weights, reused by the optional physical fit
+        self._wls_row_weight = np.sqrt(1.0 / (diag_SIGMA + 1e-12))
 
         return self._solve_weighted_least_squares(W_b, tau, diag_SIGMA)
 
@@ -1579,6 +1616,9 @@ class BaseIdentification(ABC):
         # Optional full-parameter reconstruction (default-off, v0.4.2)
         self._apply_reconstruction_if_enabled(identif_results)
 
+        # Optional estimate selection (#61); absent for the default "fit"
+        self._select_and_store_estimate()
+
         # Held-out validation metrics (only present if validation_data_file
         # was configured and successfully loaded)
         val_metrics = self._compute_validation_metrics()
@@ -1621,8 +1661,87 @@ class BaseIdentification(ABC):
             logger.warning(f"ResultsManager not available: {e}")
             self.results_manager = None
 
+    def _select_and_store_estimate(self):
+        """Run the physical fit if wanted and resolve ``select_stage``.
+
+        Leaves ``self.result`` untouched for the default ``fit`` selection
+        without an enabled physical fit.
+        """
+        from figaroh.identification import selection
+
+        requested = selection.requested_stage(self)
+        if selection.physical_fit_wanted(self):
+            self._physical_fit = selection.run_physical_fit(self)
+            record = self._physical_fit["record"]
+            self.result["physical_fit"] = {
+                "status": (
+                    "accepted" if self._physical_fit["accepted"] else "rejected"
+                ),
+                "reason": self._physical_fit["reason"],
+                "solvers": list(self._physical_fit["solvers"]),
+                "solver_status": None if record is None else record.solver_status,
+                "runtime_s": None if record is None else float(record.runtime_s),
+                "objective_value": (None if record is None else record.objective_value),
+                "feasibility": (
+                    {} if record is None else record.as_dict()["feasibility"]
+                ),
+            }
+        if requested == "fit":
+            self.selected = None
+            return
+        sel = selection.select_estimate(self)
+        self.selected = sel
+        info = sel.as_dict()
+        if sel.space == "standard" and sel.values is not None:
+            info.update(self._selected_fit_rmse(sel))
+        self.result["selected"] = info
+
+    def _selected_fit_rmse(self, sel):
+        """Effort RMSE of a standard-space candidate on the fitted rows."""
+        names = list(self.standard_parameter.keys())
+        eliminated = set(self._idx_eliminated or [])
+        keep = [i for i in range(len(names)) if i not in eliminated]
+        theta_active = np.asarray(sel.values, dtype=float)[keep]
+        residual = self._solve_tau - self._solve_W @ theta_active
+        n_active = max(len(self.identif_config.get("act_idxv", [])), 1)
+        per = residual.size // n_active
+        active_joints = self.identif_config.get("active_joints", [])
+        per_joint = {}
+        for i in range(n_active):
+            name = active_joints[i] if i < len(active_joints) else f"joint_{i}"
+            seg = residual[i * per : (i + 1) * per]
+            per_joint[name] = float(np.sqrt(np.mean(seg**2))) if seg.size else 0.0
+        return {
+            "effort_rmse_fit": float(np.sqrt(np.mean(residual**2))),
+            "effort_rmse_fit_per_joint": per_joint,
+        }
+
     def _record_physical_stage(self):
-        """Stage ``physical`` from the physical-consistency step, if enabled."""
+        """Stage ``physical``: selected candidate > physical fit > legacy."""
+        from figaroh.tools.stages import record_stage
+
+        sel = getattr(self, "selected", None)
+        if sel is not None:
+            if sel.accepted:
+                record_stage(self, "physical", "ok", sel.reason)
+            else:
+                swapped = bool(sel.extra.get("swapped_method"))
+                record_stage(
+                    self,
+                    "physical",
+                    "fallback" if swapped else "failed",
+                    sel.reason,
+                )
+            return
+        pf = getattr(self, "_physical_fit", None)
+        if pf is not None:
+            record_stage(
+                self,
+                "physical",
+                "ok" if pf["accepted"] else "failed",
+                pf["reason"],
+            )
+            return
         info = self.result.get("physical consistency")
         if not isinstance(info, dict):
             return
@@ -1856,7 +1975,12 @@ class BaseIdentification(ABC):
         recon_cfg = getattr(self, "identif_config", {}).get("reconstruction", {})
         if not isinstance(recon_cfg, dict):
             recon_cfg = {}
-        if not bool(recon_cfg.get("enabled", False)):
+        from figaroh.identification.selection import requested_stage
+
+        if not (
+            bool(recon_cfg.get("enabled", False))
+            or requested_stage(self) == "reconstruction"
+        ):
             return
 
         M = identif_results.get("M", getattr(self, "_M_matrix", None))
@@ -1936,6 +2060,7 @@ class BaseIdentification(ABC):
             cad_constraints=cad_cst,
         )
 
+        self._recon_result = result
         self.result["reconstruction"] = {
             "enabled": True,
             "status": result.status,
@@ -1945,6 +2070,8 @@ class BaseIdentification(ABC):
             "theta_r_dict": result.as_dict(),
             "params_r": result.params_r,
         }
+        if requested_stage(self) != "fit":
+            self.result["reconstruction"]["effective_method"] = result.effective_method
 
     def _compute_per_joint_stats(self):
         """Per-joint torque residual statistics (mean/std/RMSE/max), the
@@ -2006,6 +2133,13 @@ class BaseIdentification(ABC):
         from figaroh.tools.stages import stages_line
 
         print(f"  Stages:          {stages_line(self)}")
+        sel = getattr(self, "selected", None)
+        if sel is not None:
+            print(
+                f"  Reported estimate: "
+                f"{sel.stage if sel.accepted else 'none'}"
+                f" (requested {sel.requested}: {sel.status}; {sel.reason})"
+            )
 
         cond_num = result.get("condition number", float("nan"))
         n_base = len(result.get("base parameters names", []))
@@ -2022,14 +2156,24 @@ class BaseIdentification(ABC):
             print(f"  Condition:    {cond_num:.1f} ({cond_label})")
         else:
             print("  Condition:    unavailable")
+        rmse_label = "RMSE:" if sel is None else "RMSE (base fit):"
         print(
-            f"  RMSE:         {result.get('rmse norm (N/m)', float('nan')):.4f}    "
+            f"  {rmse_label:<13s} {result.get('rmse norm (N/m)', float('nan')):.4f}    "
             f"Correlation: {self.correlation:.4f}"
         )
+        selected_info = result.get("selected")
+        if isinstance(selected_info, dict) and "effort_rmse_fit" in selected_info:
+            print(
+                f"  RMSE ({selected_info['stage']} estimate): "
+                f"{selected_info['effort_rmse_fit']:.4f}"
+            )
 
         if per_joint is not None:
             print("-" * 70)
-            print("  Per-Joint Torque Residuals (training set)")
+            heading = "Per-Joint Torque Residuals (training set)"
+            if sel is not None:
+                heading = "Base fit residuals, per joint (training set)"
+            print(f"  {heading}")
             names = per_joint["joint_names"]
             print(
                 f"  {'Joint':<22s} {'Mean':>10s} {'Std':>10s} "
@@ -2042,6 +2186,11 @@ class BaseIdentification(ABC):
                 r = f"{per_joint['rmse'][i]:10.4f}"
                 x = f"{per_joint['max_abs'][i]:10.4f}"
                 print(f"  {names[i]:<22s} {m} {s} {r} {x}")
+            per_joint_sel = (selected_info or {}).get("effort_rmse_fit_per_joint")
+            if per_joint_sel:
+                print(f"  Selected estimate ({selected_info['stage']}) RMSE per joint")
+                for name, value in per_joint_sel.items():
+                    print(f"  {name:<22s} {value:10.4f}")
         else:
             print("-" * 70)
             print("  Per-joint residuals: unavailable")
@@ -2185,9 +2334,18 @@ class BaseIdentification(ABC):
         std_relative = list(std_relative_raw) if std_relative_raw is not None else []
         validation = result.get("validation_metrics")
 
+        # with a non-default select_stage the thresholds judge the selected
+        # estimate, not the base fit it was derived from (#61)
+        fit_rmse = result.get("rmse norm (N/m)", float("nan"))
+        selected_info = result.get("selected")
+        if (
+            isinstance(selected_info, dict)
+            and selected_info.get("effort_rmse_fit") is not None
+        ):
+            fit_rmse = selected_info["effort_rmse_fit"]
         metrics: Dict[str, float] = {
             "condition_number": result.get("condition number", float("nan")),
-            "rmse": result.get("rmse norm (N/m)", float("nan")),
+            "rmse": fit_rmse,
         }
         if validation is not None:
             # per-joint normalised: a pooled correlation is dominated by the
@@ -2222,15 +2380,35 @@ class BaseIdentification(ABC):
                 metrics[f"{prefix}_peak_error:{joint}"] = float(
                     np.max(np.abs(observed - predicted))
                 )
+        sel = getattr(self, "selected", None)
+        finite_parameters = result.get("base parameters values")
+        finite_prediction = result.get("torque estimated")
+        facts_extra = {}
+        if sel is not None:
+            # the candidate that was asked for, not the fit (#61)
+            if sel.values is not None:
+                finite_parameters = sel.values
+                if sel.space == "standard":
+                    eliminated = set(self._idx_eliminated or [])
+                    keep = [i for i in range(len(sel.names)) if i not in eliminated]
+                    finite_prediction = self._solve_W @ np.asarray(sel.values)[keep]
+            facts_extra["selected_stage_accepted"] = (
+                bool(sel.accepted),
+                f"The requested {sel.requested} estimate was rejected: {sel.reason}",
+            )
         verdict = scoped_verification(
             metrics,
             thresholds,
             scope,
             {
-                "finite_parameters": result.get("base parameters values"),
-                "finite_prediction": result.get("torque estimated"),
+                "finite_parameters": finite_parameters,
+                "finite_prediction": finite_prediction,
                 "finite_measurements": result.get("torque processed"),
-                "finite_fit_rmse": result.get("rmse norm (N/m)"),
+                "finite_fit_rmse": (
+                    fit_rmse
+                    if isinstance(selected_info, dict)
+                    else result.get("rmse norm (N/m)")
+                ),
             },
             independent,
             [f"validation_rmse:{j}" for j in joint_names],
@@ -2246,6 +2424,7 @@ class BaseIdentification(ABC):
                     and result.get("torque processed") is not None
                     else None
                 ),
+                **facts_extra,
             },
         )
         verdict.insights = [
@@ -2278,9 +2457,128 @@ class BaseIdentification(ABC):
         }
         from figaroh.tools.stages import apply_to_verdict
 
-        # the reported parameters come from the fit (phi_base / var_)
-        apply_to_verdict(verdict, self, selected_stage="fit")
+        # the reported parameters come from the fit (phi_base / var_) unless
+        # select_stage asked for another estimate (#61)
+        apply_to_verdict(
+            verdict,
+            self,
+            selected_stage=(
+                "fit" if sel is None else (sel.stage if sel.accepted else "none")
+            ),
+        )
         return verdict
+
+    def _identified_joints(self):
+        """Joints that carry at least one identified inertial parameter.
+
+        A joint counts when a standard inertial column of its body was not
+        eliminated from the regressor. The floating-base (free-flyer) joint
+        is left out: its body is not a URDF joint.
+        """
+        eliminated = set(self._idx_eliminated or [])
+        kept = {
+            name
+            for i, name in enumerate(self.standard_parameter.keys())
+            if i not in eliminated
+        }
+        joints = []
+        for jid, joint in enumerate(self.model.names):
+            if jid == 0 or "FreeFlyer" in self.model.joints[jid].shortname():
+                continue
+            if any(f"{key}_{joint}" in kept for key in _INERTIAL_KEYS):
+                joints.append(joint)
+        return joints
+
+    def export_urdf(
+        self,
+        nominal_urdf: str,
+        output_path: Optional[str] = None,
+        merged_bodies: str = "refuse",
+    ) -> str:
+        """Write the selected estimate's link inertials into a URDF.
+
+        Needs ``select_stage`` ``reconstruction`` or ``physical_fit`` and an
+        *accepted* estimate: the base-parameter fit has no per-link
+        inertials, and a rejected estimate is not exported. Either case
+        records stage ``export`` as failed and raises. On success the URDF is
+        written, reloaded with Pinocchio as a check and ``export`` is
+        recorded ``ok`` with the file as artifact.
+
+        Args:
+            nominal_urdf: Path of the nominal URDF the run was based on.
+            output_path: Where to write; default ``<stem>_modified.urdf``
+                beside the nominal one.
+            merged_bodies: ``"refuse"`` (default) or ``"subtract_fixed"`` for
+                joints whose Pinocchio body holds fixed-attached links, see
+                :func:`figaroh.tools.urdf_exporter.export_urdf`.
+
+        Returns:
+            str: Absolute path of the written URDF.
+
+        Raises:
+            ValueError: no accepted standard-space estimate, or the exporter
+                refused the parameters.
+        """
+        from figaroh.tools.stages import record_stage
+        from figaroh.tools.urdf_exporter import export_urdf
+
+        sel = getattr(self, "selected", None)
+        try:
+            if sel is None or sel.space != "standard":
+                raise ValueError(
+                    "the base-parameter fit has no link inertials to export; "
+                    "set select_stage to 'reconstruction' or 'physical_fit'"
+                )
+            if not sel.accepted:
+                raise ValueError(
+                    f"the requested {sel.requested} estimate was rejected "
+                    f"({sel.reason}); nothing to export"
+                )
+            params = {}
+            # only joints whose inertials were identified: the free-flyer
+            # body has no URDF joint and non-identified joints keep their
+            # nominal values (also when a fixed link is merged into them)
+            for joint, p10 in sel.link_p10(self._identified_joints()).items():
+                for key, value in zip(_INERTIAL_KEYS, p10):
+                    params[f"{key}_{joint}"] = float(value)
+            out = export_urdf(
+                nominal_urdf,
+                params,
+                output_path=output_path,
+                merged_bodies=merged_bodies,
+                psd_eig_tol=sel.psd_eig_tol,
+            )
+            import pinocchio as pin
+
+            try:
+                pin.buildModelFromUrdf(out)  # the file must load
+            except Exception:
+                os.remove(out)
+                raise
+        except (ValueError, KeyError) as exc:
+            record_stage(self, "export", "failed", str(exc))
+            self._refresh_result_stages()
+            raise ValueError(f"export failed: {exc}") from exc
+        except Exception as exc:  # I/O, Pinocchio reload, ...
+            record_stage(self, "export", "failed", f"{type(exc).__name__}: {exc}")
+            self._refresh_result_stages()
+            raise
+        record_stage(
+            self,
+            "export",
+            "ok",
+            f"{sel.stage} link inertials written",
+            artifacts=[out],
+        )
+        self._refresh_result_stages()
+        return out
+
+    def _refresh_result_stages(self):
+        """Keep ``result['stages']`` equal to the recorded stages."""
+        if isinstance(self.result, dict) and "stages" in self.result:
+            from figaroh.tools.stages import stages_as_dicts
+
+            self.result["stages"] = stages_as_dicts(self)
 
     def export_verification_report(
         self,
@@ -2358,7 +2656,10 @@ class BaseIdentification(ABC):
                 plt.plot(tau_identified, label="Identified", alpha=0.7)
                 plt.xlabel("Sample")
                 plt.ylabel("Torque (Nm)")
-                plt.title(f"{self.__class__.__name__} Torque Comparison")
+                plt.title(
+                    f"{self.__class__.__name__} Torque Comparison"
+                    + ("" if self.selected is None else " (base fit)")
+                )
                 plt.legend()
                 plt.grid(True, alpha=0.3)
 

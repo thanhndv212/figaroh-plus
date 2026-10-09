@@ -99,6 +99,21 @@ items (camera YAML, multi-format) remain undone as planned.
   proves file consistency only, not hardware accuracy. Choosing which
   estimate to export is D7 (figaroh-plus#61).
 
+### Update 2026-10-09: merged bodies and the selected estimate (figaroh-plus#61)
+
+- **`merged_bodies`.** `export_urdf(..., merged_bodies="refuse")` is the
+  default and keeps the behaviour above. `"subtract_fixed"` writes, on the
+  moving child link, the estimated joint-body inertia minus the nominal
+  inertia of its fixed-attached links (all in the joint frame): the child
+  receives `p10_est - (Pinocchio body nominal p10 - child URDF nominal p10)`.
+  The fixed links are unchanged, so the reloaded joint body equals the
+  estimate. A remainder that is not physically consistent is refused, as is
+  a lone mass override.
+- **Selected estimate.** `BaseIdentification.export_urdf(nominal_urdf,
+  output_path, merged_bodies)` exports the estimate chosen by
+  `select_stage` (`reconstruction` or `physical_fit`). With the default fit,
+  or a rejected selection, it records an `export failed` stage and raises.
+
 ---
 
 ## 1. Executive Summary

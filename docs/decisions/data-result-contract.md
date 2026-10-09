@@ -352,3 +352,32 @@ Both are checked during #55 and examples#17.
    session identity is carried by the data, while roles are study-specific
    and live in a versioned `Protocol` manifest that references sessions by
    hash. Run configuration names a protocol.
+
+## Selected stage (figaroh-plus#61, D7)
+
+Identification reports the base-space fit by default. An opt-in
+`identification.select_stage` chooses which estimate is reported,
+validated, archived and exported:
+
+- `fit` (or absent): unchanged. No new keys in the result, `verdict.json`
+  or archive.
+- `reconstruction`: nominal standard parameters overwritten by the
+  reconstructed `theta_r`. Accepted only if the solver status is ok, the
+  effective method equals the requested one (`auto` accepts either), the
+  relative base residual is at most 1e-6 and every link's pseudo-inertia is
+  feasible.
+- `physical_fit`: `figaroh.identification.physical_fit.solve_direct_effort_fit`
+  over all standard columns, with the nominal model as prior and the WLS row
+  weights when used. Solver `cvxopt` by default; an optional `second_solver`
+  is recorded in the reason. Accepted only if the solver is optimal and the
+  record is accepted.
+- `projected` is not selectable (`ValueError`). Its block is a projection of
+  the nominal model, not of the fit (see #163).
+
+**A rejected requested stage is a hard reject.** `selected_stage` is
+`"none"`, `verify().passed` is false in both scopes, export refuses and
+records `export failed`, and the archive has no `parameters.csv`. There is
+no fallback to the fit. Fit numbers stay under their legacy keys.
+
+`merged_bodies="subtract_fixed"` is the opt-in for exporting a joint whose
+body merges fixed-attached links (see `urdf_exporter.md`).

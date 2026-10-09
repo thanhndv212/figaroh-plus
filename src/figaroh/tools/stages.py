@@ -75,6 +75,11 @@ def record_stage(
     return result
 
 
+def drop_stage(obj, stage: str) -> None:
+    """Remove the record of ``stage`` from ``obj.stages`` (a no-op if none)."""
+    obj.stages = [s for s in getattr(obj, "stages", None) or [] if s.stage != stage]
+
+
 def stages_as_dicts(obj) -> List[Dict[str, Any]]:
     """``obj.stages`` as plain dicts (for results dictionaries and JSON)."""
     return [asdict(s) for s in getattr(obj, "stages", None) or []]
