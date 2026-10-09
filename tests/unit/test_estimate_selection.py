@@ -2,7 +2,6 @@
 
 import json
 import os
-import re
 import sys
 
 import numpy as np
@@ -45,41 +44,8 @@ def _run(model, traj, **cfg):
     return ident
 
 
-# Expressed in the base-parameter basis, which QR picks differently across
-# platforms and BLAS builds (#116): compared by size only. Predictions,
-# errors, validation and the verdict do not depend on that choice.
-BASIS_DEPENDENT = {
-    "/result/base parameters",
-    "/result/base parameters names",
-    "/result/base parameters values",
-    "/result/base regressor",
-    "/result/std dev of estimated param",
-    "/result/condition number",
-    "/verdict/metrics/condition_number",
-}
-
-
-# insight sentences quote the condition number and, for poorly identified
-# parameters, names expressed in the (basis-dependent) base parameters
-_COND = re.compile(r"(Condition number )[-+0-9.eE]+")
-_POOR = re.compile(r"(poorly identified: ).*")
-
-
-def _mask(s):
-    return _POOR.sub(r"\1#", _COND.sub(r"\1#", s))
-
-
-def _size(x):
-    if isinstance(x, dict) and "shape" in x:
-        return x["shape"]
-    return len(x) if isinstance(x, (dict, list)) else None
-
-
 def _close(a, b, path=""):
     """Equal structure; numbers within a tight tolerance."""
-    if path in BASIS_DEPENDENT:
-        assert _size(a) == _size(b), path
-        return
     if isinstance(a, dict):
         assert isinstance(b, dict) and a.keys() == b.keys(), path
         for k in a:
@@ -91,7 +57,7 @@ def _close(a, b, path=""):
     elif isinstance(a, float):
         assert b == pytest.approx(a, rel=1e-9, abs=1e-12), path
     elif isinstance(a, str) and isinstance(b, str):
-        assert _mask(a) == _mask(b), path
+        assert a == b, path
     else:
         assert a == b, path
 

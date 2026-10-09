@@ -843,7 +843,9 @@ def calculate_base_kinematics_regressor(
     # (random-config) regressor covers both, since the base/dependent
     # column split is a property of the kinematic chain, not of any
     # particular dataset.
-    decomposer = QRDecomposer(tolerance=tol_qr)
+    # LAPACK pivoting: calibration selection is made deterministic in #113,
+    # not here, so calibration results stay as they were.
+    decomposer = QRDecomposer(tolerance=tol_qr, deterministic=False)
     M, paramsrand_base, idx_base, _ = decomposer.get_base_mapping_matrix_double(
         Rrand_e, paramsrand_e
     )
