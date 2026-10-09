@@ -1,6 +1,7 @@
 # Calibration studies plan
 
-**Status:** Proposed, 2026-10-09. Tracker and issues not opened yet.
+**Status:** Proposed, 2026-10-09. Tracker opened 2026-10-09 as core #167 (package C5) with
+examples #96–#101; backlash (#71) and suspension (#70) are existing issues.
 
 **Scope:** improve the existing real-data calibration and identification
 studies in `figaroh-examples` so that each meets the standard set by the TIAGo
@@ -197,8 +198,7 @@ the `implementer` agent.
 
 ## Next steps
 
-1. Open one tracker in figaroh-plus with one issue per study (in
-   figaroh-examples) and one for Phase 0; acceptance criteria are requirements
-   1–8.
+1. ~~Open one tracker in figaroh-plus with one issue per study (in
+   figaroh-examples) and one for Phase 0.~~ Done: core #167, examples #96–#101.
 2. Plan Phase 0 with the `architect` agent; fix the TIAGo Pro split in
    parallel.

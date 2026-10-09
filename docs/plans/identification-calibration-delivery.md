@@ -92,6 +92,8 @@ flowchart TD
     C2["<b>C2: Calibration truth/holdout</b> · #44 ✅<br/>✓ #101 #102 #105 #110 #113<br/>✓ ex#26 ex#27 ex#67"]
     C3["<b>C3: Geometric export</b> · #45 ✅<br/>✓ #62 #111 #114 #123<br/>✓ ex#28"]
     C4["<b>C4: Calibration reference</b> · #46 ✅<br/>✓ #97 #98 #99 #119 #120<br/>✓ ex#29"]
+    C5["<b>C5: Calibration studies</b> · #167<br/>ex#96–#101 ex#70 ex#71"]
+    D8["<b>D8: Identification studies</b> (research)<br/>#157–#161"]
     S1["<b>S1: Minimum reporting contract</b> · #47 ✅<br/>✓ #63 #70 #100 #103<br/>✓ ex#30 ex#36"]
     U1["<b>U1: Onboarding acceptance</b> · #51<br/>✓ #66<br/>ex#33"]
     A["M1 acceptance review"]
@@ -119,6 +121,9 @@ flowchart TD
     C1 --> C2
     C2 --> C3
     C3 --> C4
+    C4 --> C5
+    D4 --> D8
+    C5 -. more worked studies .-> U1
     W3 --> S1
     S1 --> D7
     S1 --> C4
@@ -186,8 +191,9 @@ merged (#61, PR #165) and its example evidence is open. U1 acceptance waits on D
 
 Housekeeping: the examples milestones for W1, D2, C1 and W4 have no open issues
 but are still open on GitHub, so they can be closed. The `status:blocked` labels
-on examples #23, core #61 and tracker #42 predate the D4 closure and should be
-refreshed: their remaining blockers are listed in the [path forward](#path-forward).
+on core #61 and tracker #42 were stale after the D4 closure and were set to
+`status:ready` on 2026-10-09. Examples #23 stays `status:blocked` until examples
+#68 and #69 land; its remaining blockers are listed in the [path forward](#path-forward).
 
 Log-Cholesky #30 can use the independent analytic core fixture. D1 is fixed
 (#69, merged 2026-10-02) and the D2 audits are complete, so real-dataset work
@@ -226,27 +232,38 @@ block D7.
 | core #163 | The physical-consistency projection projects the nominal model, not the fit. PR #165 leaves it unchanged, cannot select it as a stage, and reports relabel it |
 | core #164 | The SDP reconstruction and LMI projection pass `max_seconds` to picos, which only knows `timelimit`. Fixed for `physical_fit` only |
 
-**Identification study expansion (research, `status:planned`, no package, outside
-baseline M1).** Each extends the D4 physical comparison and none changes the
-baseline:
+**Identification study expansion (package D8, research, `status:planned`, outside
+baseline M1).** D8 groups core #157–#161 under one milestone (no tracker yet).
+Each extends the D4 physical comparison and none changes the baseline:
 
 | Issue | Study |
 | --- | --- |
-| core #155 | Change the log-Cholesky fitting method for reliable termination (D5, `delivery`, ready) |
+| core #155 | Change the log-Cholesky fitting method for reliable termination (belongs to D5, not D8; `delivery`, ready) |
 | core #157 | Geometric (log-det) regularization for the physical direct fit |
 | core #158 | Geometry-derived physical constraints (mass, CoM, bounding ellipsoid) |
 | core #159 | Manifold-optimization alternative to log-Cholesky |
 | core #160 | Noise-bias estimators (IDIM-IV, DIDIM, TLS) in the physical comparison |
 | core #161 | Bayesian physically consistent identification |
-| examples #70, #71 | TIAGo suspension and backlash research examples (no package) |
+| examples #70, #71 | TIAGo suspension and backlash research examples; now Phase 3 of C5 (below) |
 
-**Calibration study expansion.** The [calibration studies plan](calibration-studies-plan.md)
-(proposed 2026-10-09, tracker not opened) would bring seven further studies to
-the TIAGo motion-capture standard, starting with a shared simulation and
-held-out harness (Phase 0, which includes core #116 and the identifiable-set
-fix #99). It is separate from M1: no study depends on D7, and the TIAGo
-motion-capture reference numbers are its regression check. Next step in that
-plan: open one tracker and one issue per study.
+**Calibration study expansion (package C5, tracker core #167, `status:planned`).** The
+[calibration studies plan](calibration-studies-plan.md) (proposed 2026-10-09)
+brings further studies to the TIAGo motion-capture standard. Phase 0 first,
+because every study uses its tools:
+
+| Phase | Issue | Study |
+| --- | --- | --- |
+| 0 | examples #96 | Shared simulation and held-out harness (confirms the identifiable-set fixes #99 and #113 hold) |
+| 1 | examples #97 | TIAGo Pro motion capture |
+| 1 | examples #98 | TALOS table contact |
+| 1 | examples #99 | UR10 hand-eye (k-fold within one session) |
+| 2 | examples #100 | TIAGo motion capture across hardware (audit first) |
+| 2 | examples #101 | TIAGo head camera, chessboard on hand (audit first) |
+| 3 | examples #71, #70 | TIAGo backlash surface and suspension base (existing issues, to be attached to C5) |
+
+C5 is separate from M1: no study depends on D7, and the TIAGo motion-capture
+reference numbers are its regression check. Phase 2 needs the original 2023
+recordings from the maintainer.
 
 ## Work-package milestones and PR boundaries
 
@@ -348,7 +365,13 @@ automatic merging are configured by this setup.
 | [U1](https://github.com/thanhndv212/figaroh-plus/issues/51) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/19) | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/16) |
 | [S4](https://github.com/thanhndv212/figaroh-plus/issues/52) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/20) | No examples-owned issues in this roster |
 | [B1](https://github.com/thanhndv212/figaroh-plus/issues/53) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/21) | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/17) |
+| [C5](https://github.com/thanhndv212/figaroh-plus/issues/167) | Milestone to be created | Milestone to be created |
+| D8 (no tracker yet) | Milestone to be created | No examples-owned issues in this roster |
 | [LC1](https://github.com/thanhndv212/figaroh-plus/issues/20) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/22) | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/18) |
+
+**C5** (calibration studies, tracker core #167) and **D8** (identification studies,
+core #157–#161) were added on 2026-10-09 beneath M2 and are outside baseline M1
+closure. Their milestones are not created yet; link them here when they exist.
 
 **LC1** uses existing core #20 as the canonical conditional-production tracker
 for core #23–#25 and examples #11. D5 owns research #22/#30/#155; its accepted go
