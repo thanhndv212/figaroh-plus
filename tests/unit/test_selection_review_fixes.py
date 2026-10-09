@@ -194,3 +194,25 @@ def test_export_removes_the_file_when_the_reload_fails(
     assert not out.exists()
     st = _export_stage(ident)
     assert st.status == "failed" and "RuntimeError" in st.reason
+
+
+# -- the export stage record follows the run --
+
+
+def test_result_stages_follow_the_export_record(pend, tmp_path):
+    ident = _export_ident(pend)
+    assert "export" not in [d["stage"] for d in ident.result["stages"]]
+    ident.export_urdf(PENDULUM, output_path=str(tmp_path / "o.urdf"))
+    exp = [d for d in ident.result["stages"] if d["stage"] == "export"]
+    assert len(exp) == 1 and exp[0]["status"] == "ok"
+
+
+def test_a_new_solve_drops_the_old_export_record(pend, tmp_path):
+    ident = _export_ident(pend)
+    ident.export_urdf(PENDULUM, output_path=str(tmp_path / "o.urdf"))
+    ident.solve(decimate=False, plotting=False)
+    assert "export" not in [s.stage for s in ident.stages]
+    assert "export" not in [d["stage"] for d in ident.result["stages"]]
+    ident.export_urdf(PENDULUM, output_path=str(tmp_path / "o2.urdf"))
+    ident.solve_with_custom_solver(decimate=False)
+    assert "export" not in [s.stage for s in ident.stages]

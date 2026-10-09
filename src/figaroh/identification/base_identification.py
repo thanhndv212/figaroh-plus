@@ -283,9 +283,11 @@ class BaseIdentification(ABC):
         """Start a solve: keep its rows, drop what an earlier solve left.
 
         The rows are kept for the optional physical_fit stage (#61). The
-        weights, reconstruction, physical fit and selection belong to the
-        previous solve and no longer apply.
+        weights, reconstruction, physical fit, selection and the ``export``
+        stage record belong to the previous solve and no longer apply.
         """
+        from figaroh.tools.stages import drop_stage
+
         self._solve_tau = tau
         self._solve_W = W
         self._solve_active = active_params
@@ -293,6 +295,7 @@ class BaseIdentification(ABC):
         self._recon_result = None
         self._physical_fit = None
         self.selected = None
+        drop_stage(self, "export")
 
     def solve_with_custom_solver(
         self,
@@ -2531,9 +2534,11 @@ class BaseIdentification(ABC):
                 raise
         except (ValueError, KeyError) as exc:
             record_stage(self, "export", "failed", str(exc))
+            self._refresh_result_stages()
             raise ValueError(f"export failed: {exc}") from exc
         except Exception as exc:  # I/O, Pinocchio reload, ...
             record_stage(self, "export", "failed", f"{type(exc).__name__}: {exc}")
+            self._refresh_result_stages()
             raise
         record_stage(
             self,
@@ -2542,7 +2547,15 @@ class BaseIdentification(ABC):
             f"{sel.stage} link inertials written",
             artifacts=[out],
         )
+        self._refresh_result_stages()
         return out
+
+    def _refresh_result_stages(self):
+        """Keep ``result['stages']`` equal to the recorded stages."""
+        if isinstance(self.result, dict) and "stages" in self.result:
+            from figaroh.tools.stages import stages_as_dicts
+
+            self.result["stages"] = stages_as_dicts(self)
 
     def export_verification_report(
         self,
