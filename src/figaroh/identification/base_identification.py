@@ -2431,6 +2431,27 @@ class BaseIdentification(ABC):
         )
         return verdict
 
+    def _identified_joints(self):
+        """Joints that carry at least one identified inertial parameter.
+
+        A joint counts when a standard inertial column of its body was not
+        eliminated from the regressor. The floating-base (free-flyer) joint
+        is left out: its body is not a URDF joint.
+        """
+        eliminated = set(self._idx_eliminated or [])
+        kept = {
+            name
+            for i, name in enumerate(self.standard_parameter.keys())
+            if i not in eliminated
+        }
+        joints = []
+        for jid, joint in enumerate(self.model.names):
+            if jid == 0 or "FreeFlyer" in self.model.joints[jid].shortname():
+                continue
+            if any(f"{key}_{joint}" in kept for key in _P10_KEYS):
+                joints.append(joint)
+        return joints
+
     def export_urdf(
         self,
         nominal_urdf,
@@ -2477,7 +2498,10 @@ class BaseIdentification(ABC):
                     f"({sel.reason}); nothing to export"
                 )
             params = {}
-            for joint, p10 in sel.link_p10(list(self.model.names[1:])).items():
+            # only joints whose inertials were identified: the free-flyer
+            # body has no URDF joint and non-identified joints keep their
+            # nominal values (also when a fixed link is merged into them)
+            for joint, p10 in sel.link_p10(self._identified_joints()).items():
                 for key, value in zip(_P10_KEYS, p10):
                     params[f"{key}_{joint}"] = float(value)
             out = export_urdf(
