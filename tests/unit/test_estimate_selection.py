@@ -44,8 +44,31 @@ def _run(model, traj, **cfg):
     return ident
 
 
+# Expressed in the base-parameter basis, which QR picks differently across
+# platforms and BLAS builds (#116): compared by size only. Predictions,
+# errors, validation and the verdict do not depend on that choice.
+BASIS_DEPENDENT = {
+    "/result/base parameters",
+    "/result/base parameters names",
+    "/result/base parameters values",
+    "/result/base regressor",
+    "/result/std dev of estimated param",
+    "/result/condition number",
+    "/verdict/metrics/condition_number",
+}
+
+
+def _size(x):
+    if isinstance(x, dict) and "shape" in x:
+        return x["shape"]
+    return len(x) if isinstance(x, (dict, list)) else None
+
+
 def _close(a, b, path=""):
     """Equal structure; numbers within a tight tolerance."""
+    if path in BASIS_DEPENDENT:
+        assert _size(a) == _size(b), path
+        return
     if isinstance(a, dict):
         assert isinstance(b, dict) and a.keys() == b.keys(), path
         for k in a:
