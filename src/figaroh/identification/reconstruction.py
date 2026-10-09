@@ -61,6 +61,11 @@ class ReconstructionResult:
             the solve completes.
         objective: Objective value from the SDP solver (Option B only);
             ``None`` for nullspace reconstruction.
+        effective_method: Method that actually produced ``theta_r``
+            (``"nullspace"`` or ``"sdp"``). It differs from the requested
+            method when ``"auto"`` resolved to nullspace or when an SDP
+            request fell back to nullspace (``status`` is then
+            ``"solver_missing"`` or ``"error"``).
     """
 
     theta_r: np.ndarray
@@ -69,6 +74,7 @@ class ReconstructionResult:
     status: str = "ok"
     base_residual_norm: Optional[float] = None
     objective: Optional[float] = None
+    effective_method: Optional[str] = None
 
     def as_dict(self) -> Dict[str, float]:
         """Return {param_name: value} mapping aligned to ``params_r``."""
@@ -597,6 +603,7 @@ def reconstruct_full_parameters(
                 residual=residual_fall,
                 status=status,
                 base_residual_norm=float(np.linalg.norm(residual_fall)),
+                effective_method="nullspace",
             )
         except Exception as exc:
             status = "error"
@@ -610,6 +617,7 @@ def reconstruct_full_parameters(
                 residual=residual_fall,
                 status=status,
                 base_residual_norm=float(np.linalg.norm(residual_fall)),
+                effective_method="nullspace",
             )
     elif effective_method == "nullspace":
         theta_r, _ = reconstruct_theta_r(
@@ -628,6 +636,7 @@ def reconstruct_full_parameters(
         status=status,
         base_residual_norm=float(np.linalg.norm(residual)),
         objective=objective,
+        effective_method=effective_method,
     )
 
 
