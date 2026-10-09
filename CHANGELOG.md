@@ -28,6 +28,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Base-parameter selection no longer depends on BLAS rounding or on the order
+  of regressor columns. `QRDecomposer` picks base columns with the new
+  `deterministic_column_pivots`: largest residual first, columns within a
+  relative `1e-6` of the largest are tied and the smallest parameter name wins.
+  `phi_base` is now reproducible across macOS/Linux and Pinocchio versions
+  (the base parameters it reports differ from before wherever the old
+  selection was a tie). `QRDecomposer(deterministic=False)` restores LAPACK
+  pivoting; geometric calibration keeps it until #113. (#116)
 - Optimal-trajectory plots work for robots whose position and velocity
   dimensions differ (`nq != nv`, e.g. TIAGo) (#149). Positions were indexed
   with velocity columns, so the plot failed (`index 24 is out of bounds`) and
