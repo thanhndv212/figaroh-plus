@@ -2123,6 +2123,13 @@ class BaseIdentification(ABC):
         from figaroh.tools.stages import stages_line
 
         print(f"  Stages:          {stages_line(self)}")
+        sel = getattr(self, "selected", None)
+        if sel is not None:
+            print(
+                f"  Reported estimate: "
+                f"{sel.stage if sel.accepted else 'none'}"
+                f" (requested {sel.requested}: {sel.status}; {sel.reason})"
+            )
 
         cond_num = result.get("condition number", float("nan"))
         n_base = len(result.get("base parameters names", []))

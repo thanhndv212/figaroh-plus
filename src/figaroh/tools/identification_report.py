@@ -209,6 +209,14 @@ def _summary_section(result: Dict[str, Any], correlation: float) -> str:
         else _esc(cond_label)
     )
     n_base = len(result.get("base parameters names", []))
+    selected = result.get("selected")
+    selected_stat = ""
+    if isinstance(selected, dict):
+        selected_stat = f"""
+      <div class="stat">
+        <div class="stat-label">Reported estimate</div>
+        <div class="stat-value">{_esc(_selected_label(selected))}</div>
+      </div>"""
     return f"""
     <div class="stat-row">
       <div class="stat">
@@ -230,9 +238,16 @@ def _summary_section(result: Dict[str, Any], correlation: float) -> str:
       <div class="stat">
         <div class="stat-label">Condition number</div>
         <div class="stat-value">{cond_str}</div>
-      </div>
+      </div>{selected_stat}
     </div>
     """
+
+
+def _selected_label(selected: Dict[str, Any]) -> str:
+    """``physical_fit`` / ``none (requested physical_fit: rejected)``."""
+    if selected.get("status") == "accepted":
+        return str(selected.get("stage"))
+    return f"none (requested {selected.get('requested')}: rejected)"
 
 
 def _per_joint_section(per_joint: Optional[Dict[str, Any]]) -> str:
@@ -358,7 +373,8 @@ def _validation_section(validation: Optional[Dict[str, Any]]) -> str:
 def _consistency_section(result: Dict[str, Any]) -> str:
     pc = result.get("physical consistency")
     recon = result.get("reconstruction")
-    if pc is None and recon is None:
+    selected = result.get("selected")
+    if pc is None and recon is None and not isinstance(selected, dict):
         return (
             '<p class="muted">Physical-consistency projection and '
             "full-parameter reconstruction were not enabled for this "
@@ -382,7 +398,39 @@ def _consistency_section(result: Dict[str, Any]) -> str:
             f'<div class="stat-value">{recon_status}</div>'
             "</div>"
         )
-    return f'<div class="stat-row">{"".join(parts)}</div>'
+    html = f'<div class="stat-row">{"".join(parts)}</div>'
+    if pc is not None:
+        html += (
+            '<p class="muted">The physical-consistency block is a projection '
+            "of the nominal model, not of the fit (see #163).</p>"
+        )
+    if isinstance(selected, dict):
+        html += _selected_block(selected)
+    return html
+
+
+def _selected_block(selected: Dict[str, Any]) -> str:
+    """Selected stage, the reason and the per-link feasibility table."""
+    rows = "".join(
+        "<tr>"
+        f"<td>{_esc(link)}</td>"
+        f'<td class="num">{v["mass"]:.4g}</td>'
+        f'<td class="num">{v["min_eig"]:.3g}</td>'
+        f"<td>{'feasible' if v['ok'] else 'infeasible'}</td>"
+        "</tr>"
+        for link, v in selected.get("feasibility", {}).items()
+    )
+    table = (
+        '<table class="data"><thead><tr><th>Link</th><th>Mass</th>'
+        "<th>Min pseudo-inertia eigenvalue</th><th>Status</th></tr></thead>"
+        f"<tbody>{rows}</tbody></table>"
+        if rows
+        else ""
+    )
+    return (
+        f'<p>Reported estimate: <b>{_esc(_selected_label(selected))}</b>'
+        f" &middot; {_esc(str(selected.get('reason', '')))}</p>{table}"
+    )
 
 
 def generate_identification_report(
