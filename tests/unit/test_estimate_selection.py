@@ -3,7 +3,6 @@
 import json
 import os
 import sys
-import types
 
 import numpy as np
 import pytest
@@ -143,8 +142,7 @@ def test_physical_fit_solver_error_is_a_hard_reject(model, traj, monkeypatch, tm
         assert v.passed is False
         assert v.selected_stage == "none"
         assert any(
-            c.name == "selected_stage_accepted" and c.status == "fail"
-            for c in v.checks
+            c.name == "selected_stage_accepted" and c.status == "fail" for c in v.checks
         )
     # fit numbers stay under the legacy keys and in validation
     assert ident.result["validation_metrics"]["estimate_stage"] == "fit"
@@ -220,7 +218,9 @@ def test_reconstruction_with_an_infeasible_link_is_rejected(model, traj, monkeyp
     # make the nominal prior unphysical for one link and re-select
     name = f"m_{model.names[1]}"
     ident.standard_parameter[name] = -5.0
-    from figaroh.identification.reconstruction import reconstruct_full_parameters  # noqa
+    from figaroh.identification.reconstruction import (
+        reconstruct_full_parameters,
+    )  # noqa
 
     ident._apply_reconstruction_if_enabled(
         {
@@ -234,7 +234,9 @@ def test_reconstruction_with_an_infeasible_link_is_rejected(model, traj, monkeyp
     assert model.names[1] in sel.reason or "infeasible" in sel.reason
 
 
-def test_reconstruction_sdp_without_picos_is_a_fallback_reject(model, traj, monkeypatch):
+def test_reconstruction_sdp_without_picos_is_a_fallback_reject(
+    model, traj, monkeypatch
+):
     monkeypatch.setitem(sys.modules, "picos", None)
     ident = _run(model, traj, select_stage="reconstruction", **_recon_cfg("sdp"))
     sel = ident.selected

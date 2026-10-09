@@ -78,7 +78,9 @@ def test_terminal_and_html_report_name_the_selection(model, traj, tmp_path, caps
     ident = _run(model, traj, select_stage="physical_fit")
     ident.print_quality_report()
     assert "Reported estimate: physical_fit" in capsys.readouterr().out
-    text = Path(ident.export_html_report(output_path=str(tmp_path / "r.html"))).read_text()
+    text = Path(
+        ident.export_html_report(output_path=str(tmp_path / "r.html"))
+    ).read_text()
     assert "Reported estimate" in text and "physical_fit" in text
     assert "Min pseudo-inertia eigenvalue" in text
     for joint in ident.identif_config["active_joints"]:
@@ -89,12 +91,16 @@ def test_html_report_of_a_rejection_says_none(model, traj, tmp_path, monkeypatch
     pytest.importorskip("picos")
     _break_solver(monkeypatch)
     ident = _run(model, traj, select_stage="physical_fit")
-    text = Path(ident.export_html_report(output_path=str(tmp_path / "r.html"))).read_text()
+    text = Path(
+        ident.export_html_report(output_path=str(tmp_path / "r.html"))
+    ).read_text()
     assert "none (requested physical_fit: rejected)" in text
 
 
 def test_projected_block_is_labelled_as_nominal_projection(model, traj, tmp_path):
     pytest.importorskip("picos")
     ident = _run(model, traj, physical_consistency={"enabled": True})
-    text = Path(ident.export_html_report(output_path=str(tmp_path / "r.html"))).read_text()
+    text = Path(
+        ident.export_html_report(output_path=str(tmp_path / "r.html"))
+    ).read_text()
     assert "projection of the nominal model, not of the fit (see #163)" in text

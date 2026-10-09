@@ -1665,18 +1665,16 @@ class BaseIdentification(ABC):
             record = self._physical_fit["record"]
             self.result["physical_fit"] = {
                 "status": (
-                    "accepted"
-                    if self._physical_fit["accepted"]
-                    else "rejected"
+                    "accepted" if self._physical_fit["accepted"] else "rejected"
                 ),
                 "reason": self._physical_fit["reason"],
                 "solvers": list(self._physical_fit["solvers"]),
                 "solver_status": None if record is None else record.solver_status,
                 "runtime_s": None if record is None else float(record.runtime_s),
-                "objective_value": (
-                    None if record is None else record.objective_value
+                "objective_value": (None if record is None else record.objective_value),
+                "feasibility": (
+                    {} if record is None else record.as_dict()["feasibility"]
                 ),
-                "feasibility": {} if record is None else record.as_dict()["feasibility"],
             }
         if requested == "fit":
             self.selected = None

@@ -271,7 +271,9 @@ def run_physical_fit(identif) -> Dict[str, Any]:
             record = pf.solve_direct_effort_fit(problem, solver=second, **opts)
             steps.append(f"{second}: {record.solver_status}")
         outcome["record"] = record
-        outcome["accepted"] = bool(record.solver_status == "optimal" and record.accepted)
+        outcome["accepted"] = bool(
+            record.solver_status == "optimal" and record.accepted
+        )
         verdict = (
             "all links feasible"
             if outcome["accepted"]
@@ -316,10 +318,8 @@ def _select_reconstruction(identif) -> SelectedEstimate:
         names=list(identif.standard_parameter.keys()),
     )
     if recon is None:
-        return SelectedEstimate(
-            reason="reconstruction did not run", **rejected
-        )
-    rcfg = (identif.identif_config.get("reconstruction") or {})
+        return SelectedEstimate(reason="reconstruction did not run", **rejected)
+    rcfg = identif.identif_config.get("reconstruction") or {}
     requested = str(rcfg.get("method", "nullspace")).lower().strip()
     mass_min = float(rcfg.get("mass_min", 1e-6))
     psd_tol = float(rcfg.get("psd_eig_tol", -1e-10))
@@ -331,8 +331,7 @@ def _select_reconstruction(identif) -> SelectedEstimate:
         theta[pos[name]] = val
     equiv, rel = _equivalent_base(identif, theta)
     resid_rel = float(
-        np.linalg.norm(recon.residual)
-        / max(np.linalg.norm(identif.phi_base), 1e-300)
+        np.linalg.norm(recon.residual) / max(np.linalg.norm(identif.phi_base), 1e-300)
     )
     feas = _link_feasibility(identif, theta, mass_min, psd_tol)
 
@@ -359,9 +358,7 @@ def _select_reconstruction(identif) -> SelectedEstimate:
         extra={"swapped_method": swapped},
     )
     if problems:
-        return SelectedEstimate(
-            reason="; ".join(problems), **{**rejected, **common}
-        )
+        return SelectedEstimate(reason="; ".join(problems), **{**rejected, **common})
     return SelectedEstimate(
         stage="reconstruction",
         requested="reconstruction",

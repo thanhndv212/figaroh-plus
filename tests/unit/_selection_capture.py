@@ -19,7 +19,9 @@ def _plain(x):
                 "last": float(flat[-1]),
             }
     if isinstance(x, dict):
-        return {str(k): _plain(v) for k, v in sorted(x.items(), key=lambda kv: str(kv[0]))}
+        return {
+            str(k): _plain(v) for k, v in sorted(x.items(), key=lambda kv: str(kv[0]))
+        }
     if isinstance(x, (list, tuple)):
         return [_plain(v) for v in x]
     if isinstance(x, np.ndarray):
@@ -38,7 +40,5 @@ def capture(ident):
     verdict.pop("metadata", None)
     result = {k: v for k, v in ident.result.items() if k != "identification config"}
     return json.loads(
-        json.dumps(
-            _plain({"result": result, "verdict": verdict}), allow_nan=True
-        )
+        json.dumps(_plain({"result": result, "verdict": verdict}), allow_nan=True)
     )

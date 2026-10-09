@@ -94,8 +94,7 @@ def _param_uncertainty_section(
         val_str = "—" if val is None or math.isnan(val) else f"{val:.6g}"
         tier = _uncertainty_tier(sp)
         bar_pct = 0.0 if math.isnan(sp) else min(sp, 100.0)
-        rows.append(
-            f"""
+        rows.append(f"""
         <tr class="tier-{tier}">
           <td>{_esc(param_names[i])}</td>
           <td class="num">{val_str}</td>
@@ -108,8 +107,7 @@ def _param_uncertainty_section(
             </div>
           </td>
         </tr>
-        """
-        )
+        """)
 
     return f"""
     <table class="data">

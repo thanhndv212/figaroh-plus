@@ -428,7 +428,7 @@ def _selected_block(selected: Dict[str, Any]) -> str:
         else ""
     )
     return (
-        f'<p>Reported estimate: <b>{_esc(_selected_label(selected))}</b>'
+        f"<p>Reported estimate: <b>{_esc(_selected_label(selected))}</b>"
         f" &middot; {_esc(str(selected.get('reason', '')))}</p>{table}"
     )
 
