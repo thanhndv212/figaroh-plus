@@ -59,8 +59,14 @@ BASIS_DEPENDENT = {
 }
 
 
-# insight sentences quote the condition number
+# insight sentences quote the condition number and, for poorly identified
+# parameters, names expressed in the (basis-dependent) base parameters
 _COND = re.compile(r"(Condition number )[-+0-9.eE]+")
+_POOR = re.compile(r"(poorly identified: ).*")
+
+
+def _mask(s):
+    return _POOR.sub(r"\1#", _COND.sub(r"\1#", s))
 
 
 def _size(x):
@@ -85,7 +91,7 @@ def _close(a, b, path=""):
     elif isinstance(a, float):
         assert b == pytest.approx(a, rel=1e-9, abs=1e-12), path
     elif isinstance(a, str) and isinstance(b, str):
-        assert _COND.sub(r"\1#", a) == _COND.sub(r"\1#", b), path
+        assert _mask(a) == _mask(b), path
     else:
         assert a == b, path
 
