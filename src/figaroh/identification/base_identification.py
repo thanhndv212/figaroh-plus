@@ -2491,10 +2491,10 @@ class BaseIdentification(ABC):
 
     def export_urdf(
         self,
-        nominal_urdf,
-        output_path=None,
-        merged_bodies="refuse",
-    ):
+        nominal_urdf: str,
+        output_path: Optional[str] = None,
+        merged_bodies: str = "refuse",
+    ) -> str:
         """Write the selected estimate's link inertials into a URDF.
 
         Needs ``select_stage`` ``reconstruction`` or ``physical_fit`` and an

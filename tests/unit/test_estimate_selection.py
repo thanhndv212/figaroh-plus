@@ -220,10 +220,6 @@ def test_reconstruction_with_an_infeasible_link_is_rejected(model, traj, monkeyp
     # make the nominal prior unphysical for one link and re-select
     name = f"m_{model.names[1]}"
     ident.standard_parameter[name] = -5.0
-    from figaroh.identification.reconstruction import (
-        reconstruct_full_parameters,
-    )  # noqa
-
     ident._apply_reconstruction_if_enabled(
         {
             "M": ident._M_matrix,
