@@ -105,6 +105,8 @@ def test_physical_fit_noise_free_is_accepted(pfit):
     assert {s.stage: s.status for s in pfit.stages}["physical"] == "ok"
     v = pfit.verify(scope="execution")
     assert v.passed and v.selected_stage == "physical_fit"
+    # export judges the links with the tolerance they were accepted with
+    assert pfit.selected.psd_eig_tol == pytest.approx(-1e-8)
 
 
 def test_physical_fit_prediction_is_full_regressor_times_theta(pfit):

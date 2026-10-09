@@ -625,6 +625,24 @@ def test_infeasible_inertial_set_is_refused_unless_allowed(tmp_path, caplog):
     assert reloaded == pytest.approx(p10, abs=1e-10)
 
 
+def test_psd_eig_tol_admits_a_marginal_inertial_set(tmp_path):
+    """A set accepted upstream at a looser tolerance is not refused here."""
+    from figaroh.identification.physical_consistency import check_p10_feasibility
+
+    # flat body (pseudo-inertia eigenvalue 0) pushed just past it
+    p10 = _feasible_p10(1.0, [0.0, 0.0, 0.0], [0.1, 0.1, 0.2], [0.0, 0.0, 0.0])
+    p10[9] += 2e-9
+    min_eig = check_p10_feasibility(p10, psd_eig_tol=-1.0).min_eig
+    assert -1e-8 < min_eig < -1e-10
+    params = _inertial_params("link1", p10)
+    out = tmp_path / "out.urdf"
+
+    with pytest.raises(ValueError, match="not physically consistent"):
+        export_urdf(PENDULUM_URDF, params, output_path=str(out))
+    export_urdf(PENDULUM_URDF, params, output_path=str(out), psd_eig_tol=-1e-8)
+    assert out.exists()
+
+
 @pytest.mark.parametrize("mass", [0.0, -1.0])
 def test_inertial_set_without_positive_mass_is_refused(tmp_path, mass):
     p10 = np.zeros(10)

@@ -2485,6 +2485,7 @@ class BaseIdentification(ABC):
                 params,
                 output_path=output_path,
                 merged_bodies=merged_bodies,
+                psd_eig_tol=sel.psd_eig_tol,
             )
             import pinocchio as pin
 

@@ -65,6 +65,8 @@ class SelectedEstimate:
         feasibility: Per link ``{mass, min_eig, ok}`` for standard candidates.
         effective_method: Method that produced a reconstruction.
         solvers: Solver names tried for a physical fit.
+        psd_eig_tol: Pseudo-inertia eigenvalue tolerance the links were
+            judged feasible with; export uses the same one.
     """
 
     stage: str
@@ -79,6 +81,7 @@ class SelectedEstimate:
     feasibility: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     effective_method: Optional[str] = None
     solvers: List[str] = field(default_factory=list)
+    psd_eig_tol: float = -1e-10
     base_indices: Optional[Sequence[int]] = field(default=None, repr=False)
     extra: Dict[str, Any] = field(default_factory=dict)
 
@@ -271,6 +274,7 @@ def run_physical_fit(identif) -> Dict[str, Any]:
             record = pf.solve_direct_effort_fit(problem, solver=second, **opts)
             steps.append(f"{second}: {record.solver_status}")
         outcome["record"] = record
+        outcome["psd_eig_tol"] = problem.policy.feas_tol
         outcome["accepted"] = bool(
             record.solver_status == "optimal" and record.accepted
         )
@@ -355,6 +359,7 @@ def _select_reconstruction(identif) -> SelectedEstimate:
         base_residual_rel=resid_rel,
         feasibility=feas,
         effective_method=eff,
+        psd_eig_tol=psd_tol,
         extra={"swapped_method": swapped},
     )
     if problems:
@@ -398,6 +403,7 @@ def _select_physical_fit(identif) -> SelectedEstimate:
         base_residual_rel=rel,
         feasibility=feas,
         solvers=solvers,
+        psd_eig_tol=float(out.get("psd_eig_tol", -1e-10)),
     )
     if out["accepted"]:
         return SelectedEstimate(

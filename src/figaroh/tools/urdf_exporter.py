@@ -650,7 +650,11 @@ def _subtract_fixed(
 
 
 def _apply_standard_inertial(
-    doc: ET.ElementTree, link_name: str, p10, allow_infeasible: bool = False
+    doc: ET.ElementTree,
+    link_name: str,
+    p10,
+    allow_infeasible: bool = False,
+    psd_eig_tol: float = -1e-10,
 ) -> None:
     """Write one link's ten standard inertial parameters into ``<inertial>``.
 
@@ -665,7 +669,8 @@ def _apply_standard_inertial(
 
     Raises ``ValueError`` for ``m <= 0`` (no centre of mass) and, unless
     ``allow_infeasible``, for a set whose pseudo-inertia is not positive
-    semidefinite. The verdict is logged per link either way.
+    semidefinite (smallest pseudo-inertia eigenvalue below ``psd_eig_tol``).
+    The verdict is logged per link either way.
     """
     from figaroh.identification.physical_consistency import check_p10_feasibility
 
@@ -676,7 +681,7 @@ def _apply_standard_inertial(
             f"Link '{link_name}': mass {m} is not positive, so its inertial "
             f"parameters have no centre of mass"
         )
-    verdict = check_p10_feasibility(p10)
+    verdict = check_p10_feasibility(p10, psd_eig_tol=psd_eig_tol)
     if verdict.status != "feasible":
         message = (
             f"Link '{link_name}': inertial parameters are not physically "
@@ -726,6 +731,7 @@ def _apply_inertials(
     allow_infeasible: bool,
     merged_bodies: str = "refuse",
     nominal_urdf_path=None,
+    psd_eig_tol: float = -1e-10,
 ) -> None:
     """Apply inertial parameters collected per target (``{target: {key: v}}``).
 
@@ -788,7 +794,7 @@ def _apply_inertials(
                 fixed,
                 link_name,
             )
-        _apply_standard_inertial(doc, link_name, p10, allow_infeasible)
+        _apply_standard_inertial(doc, link_name, p10, allow_infeasible, psd_eig_tol)
 
 
 # Map category to handler
@@ -899,6 +905,7 @@ def export_urdf(
     verbose: bool = False,
     allow_infeasible: bool = False,
     merged_bodies: str = "refuse",
+    psd_eig_tol: float = -1e-10,
 ) -> str:
     """Apply identified/calibrated **joint-level** parameters to a nominal URDF.
 
@@ -926,6 +933,9 @@ def export_urdf(
             child link ``p10_est - p10_fixed_nominal`` (the fixed links'
             nominal share, from the nominal model, removed; they keep their
             CAD values) and refuses a remainder that is not physical.
+        psd_eig_tol: Smallest pseudo-inertia eigenvalue still accepted as
+            feasible. Pass the tolerance the estimate was accepted with, so
+            an estimate accepted upstream is not refused here.
 
     Returns:
         Absolute path to the modified URDF file (joint params applied).  Use
@@ -1029,7 +1039,9 @@ def export_urdf(
         )
     for target, xyz_rpy in placements.items():
         _apply_joint_placement(doc, target, xyz_rpy)
-    _apply_inertials(doc, inertials, allow_infeasible, merged_bodies, nominal_path)
+    _apply_inertials(
+        doc, inertials, allow_infeasible, merged_bodies, nominal_path, psd_eig_tol
+    )
 
     # Write output
     output_path.parent.mkdir(parents=True, exist_ok=True)
