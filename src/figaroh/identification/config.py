@@ -123,6 +123,8 @@ def get_param_from_yaml(robot, identif_data):
     if isinstance(reconstruction, dict):
         identif_config["reconstruction"] = reconstruction
 
+    _extract_selection_config(identif_config, identif_data)
+
     # Optional held-out validation dataset (separate from training data,
     # never a split of it). Mirrors BaseCalibration's validation_data_file.
     identif_config["validation_data_file"] = identif_data.get(
@@ -195,6 +197,8 @@ def unified_to_legacy_identif_config(robot, unified_identif_config) -> dict:
     if isinstance(reconstruction, dict) and reconstruction:
         identif_config["reconstruction"] = reconstruction
 
+    _extract_selection_config(identif_config, unified_identif_config)
+
     # 10. Optional held-out validation dataset (separate file/directory,
     # never a split of the training data). Mirrors calibration's
     # tasks.calibration.data.validation_data_file.
@@ -206,6 +210,61 @@ def unified_to_legacy_identif_config(robot, unified_identif_config) -> dict:
     )
 
     return identif_config
+
+
+SELECT_STAGES = ("fit", "reconstruction", "physical_fit")
+
+PHYSICAL_FIT_DEFAULTS = {
+    "enabled": False,
+    "solver": "cvxopt",
+    "second_solver": None,
+    "mass_min": 1e-6,
+    "prior_weight": 1e-6,
+    "max_seconds": None,
+}
+
+
+def _extract_selection_config(identif_config, source):
+    """Parse the optional ``select_stage`` and ``physical_fit`` keys.
+
+    Both are additive: when absent nothing is written, so legacy configs
+    keep their exact ``identif_config``. ``select_stage`` must name a
+    selectable stage; ``projected`` is deliberately not selectable (the
+    physical-consistency projection is of the nominal model, not the fit).
+
+    Raises:
+        ValueError: unknown ``select_stage`` or ``physical_fit`` key/type.
+    """
+    if "select_stage" in source and source["select_stage"] is not None:
+        stage = str(source["select_stage"]).strip().lower()
+        if stage not in SELECT_STAGES:
+            raise ValueError(
+                f"select_stage={source['select_stage']!r} is not selectable; "
+                f"choose one of {SELECT_STAGES}"
+                + (
+                    " ('projected' is a projection of the nominal model, "
+                    "not of the fit)"
+                    if stage == "projected"
+                    else ""
+                )
+            )
+        identif_config["select_stage"] = stage
+
+    pf = source.get("physical_fit")
+    if isinstance(pf, list):
+        pf = pf[0] if pf else None
+    if pf is not None:
+        if not isinstance(pf, dict):
+            raise ValueError("physical_fit must be a mapping")
+        unknown = set(pf) - set(PHYSICAL_FIT_DEFAULTS)
+        if unknown:
+            raise ValueError(
+                f"unknown physical_fit keys {sorted(unknown)}; "
+                f"allowed: {sorted(PHYSICAL_FIT_DEFAULTS)}"
+            )
+        merged = dict(PHYSICAL_FIT_DEFAULTS)
+        merged.update(pf)
+        identif_config["physical_fit"] = merged
 
 
 def _extract_signal_processing_params(identif_config, signal_processing):
