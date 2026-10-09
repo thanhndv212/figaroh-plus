@@ -653,7 +653,11 @@ def scoped_verification(
                 status,
                 True,
                 (
-                    "Numerical dimensions are missing or inconsistent"
+                    (
+                        "The requested estimate was rejected"
+                        if name == "selected_stage_accepted"
+                        else "Numerical dimensions are missing or inconsistent"
+                    )
                     if status != "pass"
                     else ""
                 ),

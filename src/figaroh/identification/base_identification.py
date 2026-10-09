@@ -116,6 +116,7 @@ class BaseIdentification(ABC):
         # trajectory data.
         self._idx_eliminated = None
         self._base_indices = None
+        self.selected = None
         self._decimate_used = False
 
         # Set default filter configuration, can be overridden in subclasses
@@ -216,6 +217,15 @@ class BaseIdentification(ABC):
         tau_processed, W_processed = self._mask_rows(
             tau_processed, W_processed, decimation_factor if decimate else 1
         )
+
+        # kept for the optional physical_fit stage (#61)
+        self._solve_tau = tau_processed
+        self._solve_W = W_processed
+        self._solve_active = active_params
+        self._wls_row_weight = None
+        self._recon_result = None
+        self._physical_fit = None
+        self.selected = None
 
         # Step 3: Calculate base parameters
         from figaroh.tools.stages import record_stage
@@ -767,7 +777,13 @@ class BaseIdentification(ABC):
 
         phi_std_vec = np.array(list(self.standard_parameter.values()))
         tau_val_nominal = _select_active_joint_rows(W_val_full @ phi_std_vec)
-        tau_val_identif = _select_active_joint_rows(W_val_base @ self.phi_base)
+        sel = getattr(self, "selected", None)
+        if sel is not None and sel.accepted:
+            tau_val_identif = _select_active_joint_rows(
+                sel.predict(W_val_full, W_val_reduced)
+            )
+        else:
+            tau_val_identif = _select_active_joint_rows(W_val_base @ self.phi_base)
 
         # Joint-major, matching the regressor's row convention (block j
         # occupies rows [j*n_val:(j+1)*n_val]) — torques columns are
@@ -890,7 +906,13 @@ class BaseIdentification(ABC):
                 "not an independent test",
                 metrics,
             )
+        estimate_stage = {}
+        if sel is not None:
+            # stage whose numbers are in the identified series; a rejected
+            # selection leaves the fit's under the legacy keys
+            estimate_stage = {"estimate_stage": sel.stage if sel.accepted else "fit"}
         return {
+            **estimate_stage,
             "n_val_samples": n_used,
             "validation_source": validation_source,
             "rmse_nominal": nominal_stats["rmse"],
@@ -1427,6 +1449,8 @@ class BaseIdentification(ABC):
 
         sig_ro_joint, diag_SIGMA = self._calculate_joint_variances(W_b, tau, n_active)
         self._joint_variances = sig_ro_joint
+        # sqrt of the WLS weights, reused by the optional physical fit
+        self._wls_row_weight = np.sqrt(1.0 / (diag_SIGMA + 1e-12))
 
         return self._solve_weighted_least_squares(W_b, tau, diag_SIGMA)
 
@@ -1579,6 +1603,9 @@ class BaseIdentification(ABC):
         # Optional full-parameter reconstruction (default-off, v0.4.2)
         self._apply_reconstruction_if_enabled(identif_results)
 
+        # Optional estimate selection (#61); absent for the default "fit"
+        self._select_and_store_estimate()
+
         # Held-out validation metrics (only present if validation_data_file
         # was configured and successfully loaded)
         val_metrics = self._compute_validation_metrics()
@@ -1621,8 +1648,90 @@ class BaseIdentification(ABC):
             logger.warning(f"ResultsManager not available: {e}")
             self.results_manager = None
 
+    def _select_and_store_estimate(self):
+        """Run the physical fit if wanted and resolve ``select_stage``.
+
+        Leaves ``self.result`` untouched for the default ``fit`` selection
+        without an enabled physical fit.
+        """
+        from figaroh.identification import selection
+
+        requested = selection.requested_stage(self)
+        if selection.physical_fit_wanted(self):
+            self._physical_fit = selection.run_physical_fit(self)
+            record = self._physical_fit["record"]
+            self.result["physical_fit"] = {
+                "status": (
+                    "accepted"
+                    if self._physical_fit["accepted"]
+                    else "rejected"
+                ),
+                "reason": self._physical_fit["reason"],
+                "solvers": list(self._physical_fit["solvers"]),
+                "solver_status": None if record is None else record.solver_status,
+                "runtime_s": None if record is None else float(record.runtime_s),
+                "objective_value": (
+                    None if record is None else record.objective_value
+                ),
+                "feasibility": {} if record is None else record.as_dict()["feasibility"],
+            }
+        if requested == "fit":
+            self.selected = None
+            return
+        sel = selection.select_estimate(self)
+        self.selected = sel
+        info = sel.as_dict()
+        if sel.space == "standard" and sel.values is not None:
+            info.update(self._selected_fit_rmse(sel))
+        self.result["selected"] = info
+
+    def _selected_fit_rmse(self, sel):
+        """Effort RMSE of a standard-space candidate on the fitted rows."""
+        names = list(self.standard_parameter.keys())
+        keep = [
+            i for i in range(len(names)) if i not in set(self._idx_eliminated or [])
+        ]
+        theta_active = np.asarray(sel.values, dtype=float)[keep]
+        residual = self._solve_tau - self._solve_W @ theta_active
+        n_active = max(len(self.identif_config.get("act_idxv", [])), 1)
+        per = residual.size // n_active
+        active_joints = self.identif_config.get("active_joints", [])
+        per_joint = {}
+        for i in range(n_active):
+            name = active_joints[i] if i < len(active_joints) else f"joint_{i}"
+            seg = residual[i * per : (i + 1) * per]
+            per_joint[name] = float(np.sqrt(np.mean(seg**2))) if seg.size else 0.0
+        return {
+            "effort_rmse_fit": float(np.sqrt(np.mean(residual**2))),
+            "effort_rmse_fit_per_joint": per_joint,
+        }
+
     def _record_physical_stage(self):
-        """Stage ``physical`` from the physical-consistency step, if enabled."""
+        """Stage ``physical``: selected candidate > physical fit > legacy."""
+        from figaroh.tools.stages import record_stage
+
+        sel = getattr(self, "selected", None)
+        if sel is not None:
+            if sel.accepted:
+                record_stage(self, "physical", "ok", sel.reason)
+            else:
+                swapped = bool(sel.extra.get("swapped_method"))
+                record_stage(
+                    self,
+                    "physical",
+                    "fallback" if swapped else "failed",
+                    sel.reason,
+                )
+            return
+        pf = getattr(self, "_physical_fit", None)
+        if pf is not None:
+            record_stage(
+                self,
+                "physical",
+                "ok" if pf["accepted"] else "failed",
+                pf["reason"],
+            )
+            return
         info = self.result.get("physical consistency")
         if not isinstance(info, dict):
             return
@@ -1856,7 +1965,12 @@ class BaseIdentification(ABC):
         recon_cfg = getattr(self, "identif_config", {}).get("reconstruction", {})
         if not isinstance(recon_cfg, dict):
             recon_cfg = {}
-        if not bool(recon_cfg.get("enabled", False)):
+        from figaroh.identification.selection import requested_stage
+
+        if not (
+            bool(recon_cfg.get("enabled", False))
+            or requested_stage(self) == "reconstruction"
+        ):
             return
 
         M = identif_results.get("M", getattr(self, "_M_matrix", None))
@@ -1936,6 +2050,7 @@ class BaseIdentification(ABC):
             cad_constraints=cad_cst,
         )
 
+        self._recon_result = result
         self.result["reconstruction"] = {
             "enabled": True,
             "status": result.status,
@@ -1945,6 +2060,8 @@ class BaseIdentification(ABC):
             "theta_r_dict": result.as_dict(),
             "params_r": result.params_r,
         }
+        if requested_stage(self) != "fit":
+            self.result["reconstruction"]["effective_method"] = result.effective_method
 
     def _compute_per_joint_stats(self):
         """Per-joint torque residual statistics (mean/std/RMSE/max), the
@@ -2222,13 +2339,29 @@ class BaseIdentification(ABC):
                 metrics[f"{prefix}_peak_error:{joint}"] = float(
                     np.max(np.abs(observed - predicted))
                 )
+        sel = getattr(self, "selected", None)
+        finite_parameters = result.get("base parameters values")
+        finite_prediction = result.get("torque estimated")
+        facts_extra = {}
+        if sel is not None:
+            # the candidate that was asked for, not the fit (#61)
+            if sel.values is not None:
+                finite_parameters = sel.values
+                if sel.space == "standard":
+                    keep = [
+                        i
+                        for i in range(len(sel.names))
+                        if i not in set(self._idx_eliminated or [])
+                    ]
+                    finite_prediction = self._solve_W @ np.asarray(sel.values)[keep]
+            facts_extra["selected_stage_accepted"] = bool(sel.accepted)
         verdict = scoped_verification(
             metrics,
             thresholds,
             scope,
             {
-                "finite_parameters": result.get("base parameters values"),
-                "finite_prediction": result.get("torque estimated"),
+                "finite_parameters": finite_parameters,
+                "finite_prediction": finite_prediction,
                 "finite_measurements": result.get("torque processed"),
                 "finite_fit_rmse": result.get("rmse norm (N/m)"),
             },
@@ -2246,6 +2379,7 @@ class BaseIdentification(ABC):
                     and result.get("torque processed") is not None
                     else None
                 ),
+                **facts_extra,
             },
         )
         verdict.insights = [
@@ -2278,8 +2412,15 @@ class BaseIdentification(ABC):
         }
         from figaroh.tools.stages import apply_to_verdict
 
-        # the reported parameters come from the fit (phi_base / var_)
-        apply_to_verdict(verdict, self, selected_stage="fit")
+        # the reported parameters come from the fit (phi_base / var_) unless
+        # select_stage asked for another estimate (#61)
+        apply_to_verdict(
+            verdict,
+            self,
+            selected_stage=(
+                "fit" if sel is None else (sel.stage if sel.accepted else "none")
+            ),
+        )
         return verdict
 
     def export_verification_report(
