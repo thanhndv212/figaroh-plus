@@ -64,9 +64,10 @@ current architecture description.
 7. The maintainer reviews each PR. Agents must wait for the maintainer's explicit
    approval before merging; passing checks or a request to implement/open a PR
    does not authorize a merge. Address review comments and rerun affected checks.
-   After approval and required checks pass on the current head, squash-merge the
-   focused feature/fix PR. If the approved scope changes materially, obtain a
-   renewed review before merging. Use a
+   After approval and required checks pass on the current head, merge the
+   focused feature/fix PR with a **merge commit** (not squash or rebase), so the
+   PR's individual commits stay in `devel`'s history. If the approved scope
+   changes materially, obtain a renewed review before merging. Use a
    Conventional Commit title, e.g. `fix(identification): preserve joint ordering`.
 8. Close the issue with the merged PR linked. Because `main` is the default
    branch, `Closes #N` may not close it when merging into `devel`. Mark roadmap
