@@ -545,23 +545,6 @@ def _has_mass(link: ET.Element) -> bool:
     return mass is not None and float(mass.get("value", "0")) != 0.0
 
 
-def _resolve_inertial_link(
-    doc: ET.ElementTree, target: str, merged_bodies: str = "refuse"
-) -> str:
-    """The URDF link an inertial parameter ``target`` writes to.
-
-    A link name is taken as is. A joint name, as identification emits, means
-    Pinocchio's body of that joint, expressed in the joint frame, which the
-    URDF child link shares. That body is the child link alone only when no
-    massive link is attached to it by fixed joints; Pinocchio merges those
-    in. With ``merged_bodies="refuse"`` such a target is refused rather than
-    written into one link; ``"subtract_fixed"`` accepts it (the caller then
-    removes the fixed links' nominal share, see :func:`_subtract_fixed`).
-    """
-    link, _ = _resolve_inertial_target(doc, target)
-    return link
-
-
 def _resolve_inertial_target(doc: ET.ElementTree, target: str):
     """``(link, merged)``: the link written and the fixed-attached massive
     links Pinocchio merges into the same body (empty for a link name)."""
