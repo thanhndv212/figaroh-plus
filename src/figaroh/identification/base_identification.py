@@ -221,14 +221,7 @@ class BaseIdentification(ABC):
             tau_processed, W_processed, decimation_factor if decimate else 1
         )
 
-        # kept for the optional physical_fit stage (#61)
-        self._solve_tau = tau_processed
-        self._solve_W = W_processed
-        self._solve_active = active_params
-        self._wls_row_weight = None
-        self._recon_result = None
-        self._physical_fit = None
-        self.selected = None
+        self._reset_solve_state(tau_processed, W_processed, active_params)
 
         # Step 3: Calculate base parameters
         from figaroh.tools.stages import record_stage
@@ -284,6 +277,21 @@ class BaseIdentification(ABC):
             self.export_html_report()
 
         return self.phi_base
+
+    def _reset_solve_state(self, tau, W, active_params):
+        """Start a solve: keep its rows, drop what an earlier solve left.
+
+        The rows are kept for the optional physical_fit stage (#61). The
+        weights, reconstruction, physical fit and selection belong to the
+        previous solve and no longer apply.
+        """
+        self._solve_tau = tau
+        self._solve_W = W
+        self._solve_active = active_params
+        self._wls_row_weight = None
+        self._recon_result = None
+        self._physical_fit = None
+        self.selected = None
 
     def solve_with_custom_solver(
         self,
@@ -354,6 +362,8 @@ class BaseIdentification(ABC):
             tau_processed, W_processed = self._prepare_undecimated_data(
                 regressor_reduced
             )
+
+        self._reset_solve_state(tau_processed, W_processed, active_params)
 
         # Step 3: Solve using custom solver
         solver = LinearSolver(

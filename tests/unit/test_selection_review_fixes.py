@@ -120,3 +120,31 @@ def test_non_identified_merged_body_joint_does_not_block_export(tmp_path):
     _nominal_selection(ident)
     out = ident.export_urdf(str(urdf), output_path=str(tmp_path / "o.urdf"))
     assert pin.buildModelFromUrdf(out).nv == 2
+
+
+# -- solve_with_custom_solver refreshes the rows the selection uses --
+
+
+def test_custom_solver_after_solve_uses_the_new_rows(model, traj):
+    pytest.importorskip("picos")
+    ident = _Ident(model)
+    ident.trajectory_to_return = traj
+    ident.initialize()
+    ident.identif_config.update(select_stage="physical_fit")
+    ident.solve(decimate=True, decimation_factor=4, plotting=False)
+    decimated_rows = ident._solve_W.shape[0]
+    ident.solve_with_custom_solver(decimate=False)
+    assert ident._solve_W.shape[0] == len(ident.tau_noised) != decimated_rows
+    assert ident._solve_tau.shape[0] == len(ident.tau_noised)
+    assert ident.selected.accepted, ident.selected.reason
+    assert ident._wls_row_weight is None and ident._recon_result is None
+
+
+def test_custom_solver_without_a_prior_solve_does_not_fail(model, traj):
+    pytest.importorskip("picos")
+    ident = _Ident(model)
+    ident.trajectory_to_return = traj
+    ident.initialize()
+    ident.identif_config.update(select_stage="physical_fit")
+    ident.solve_with_custom_solver(decimate=False)
+    assert ident.selected.accepted, ident.selected.reason
