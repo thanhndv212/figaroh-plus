@@ -55,6 +55,7 @@ import numpy as np
 
 from figaroh.identification.physical_consistency import (
     check_p10_feasibility,
+    mass_bound_tolerance,
     project_p10_lmi,
 )
 from figaroh.identification.reconstruction import (
@@ -340,7 +341,9 @@ def _feasibility(p: ComparatorProblem, theta: np.ndarray) -> Dict[str, Dict[str,
     for j, idx in _link_indices(p).items():
         p10 = np.array([theta[idx[k]] for k in _P10_KEYS])
         rep = check_p10_feasibility(
-            p10, mass_min=p.policy.mass_min, psd_eig_tol=p.policy.feas_tol
+            p10,
+            mass_min=p.policy.mass_min - mass_bound_tolerance(p.policy.mass_min),
+            psd_eig_tol=p.policy.feas_tol,
         )
         out[j] = {
             "mass": rep.mass,

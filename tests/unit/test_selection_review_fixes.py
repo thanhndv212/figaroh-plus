@@ -179,9 +179,7 @@ def test_export_records_a_missing_nominal_file(pend, tmp_path):
     assert st.status == "failed" and "FileNotFoundError" in st.reason
 
 
-def test_export_removes_the_file_when_the_reload_fails(
-    pend, tmp_path, monkeypatch
-):
+def test_export_removes_the_file_when_the_reload_fails(pend, tmp_path, monkeypatch):
     ident = _export_ident(pend)
 
     def boom(*a, **k):
@@ -324,3 +322,62 @@ def test_html_report_labels_the_base_fit(worse_selected, tmp_path):
     assert "Base fit residuals" in html
     assert "RMSE (selected estimate)" in html
     assert "RMSE per joint" in html
+
+
+# -- feasibility: identified links only, mass bound within solver tolerance --
+
+
+def test_reconstruction_feasibility_skips_links_without_identified_parameters(
+    model, traj
+):
+    from figaroh.identification.selection import _link_feasibility
+
+    ident = _run(model, traj)
+    names = list(ident.standard_parameter.keys())
+    joints = list(model.names[1:])
+    first, second = joints[0], joints[1]
+    ident._params_r_for_recon = [n for n in names if n.endswith(f"_{first}")]
+    theta = np.array(list(ident.standard_parameter.values()), dtype=float)
+    theta[names.index(f"m_{second}")] = 0.0  # nominal-only link, unphysical
+    feas = _link_feasibility(ident, theta, 1e-6, -1e-10)
+    assert set(feas) == {first}
+    ident._params_r_for_recon = None  # no information: every link is judged
+    assert not _link_feasibility(ident, theta, 1e-6, -1e-10)[second]["ok"]
+
+
+KEYS = ["m", "mx", "my", "mz", "Ixx", "Ixy", "Iyy", "Ixz", "Iyz", "Izz"]
+
+
+def _sphere_p10(m):
+    return np.array([m, 0, 0, 0, 0.1, 0, 0.1, 0, 0, 0.1])
+
+
+def test_physical_fit_feasibility_accepts_a_mass_on_its_bound():
+    pytest.importorskip("picos")
+    from figaroh.identification import physical_fit as pf
+
+    names = [f"{k}_j1" for k in KEYS]
+    problem = pf.build_problem(
+        np.eye(10),
+        np.ones(10),
+        names,
+        ["j1"],
+        prior=_sphere_p10(0.5),
+        policy=pf.PhysicalPolicy(mass_min=0.5),
+    )
+    on_bound = pf._feasibility(problem, _sphere_p10(0.5 - 1e-12))
+    assert on_bound["j1"]["ok"]
+    below = pf._feasibility(problem, _sphere_p10(0.5 - 1e-6))
+    assert not below["j1"]["ok"]
+
+
+def test_reconstruction_feasibility_accepts_a_mass_on_its_bound(model, traj):
+    from figaroh.identification.selection import _link_feasibility
+
+    ident = _run(model, traj)
+    names = list(ident.standard_parameter.keys())
+    theta = np.array(list(ident.standard_parameter.values()), dtype=float)
+    joint = model.names[1]
+    for k, v in zip(KEYS, _sphere_p10(0.5 - 1e-12)):
+        theta[names.index(f"{k}_{joint}")] = v
+    assert _link_feasibility(ident, theta, 0.5, -1e-10)[joint]["ok"]

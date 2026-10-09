@@ -90,6 +90,21 @@ def pseudo_inertia_matrix_from_p10(p10: np.ndarray) -> np.ndarray:
     return P
 
 
+MASS_BOUND_RTOL = 1e-9
+
+
+def mass_bound_tolerance(mass_min: float) -> float:
+    """Slack for a mass sitting on its lower bound.
+
+    An interior-point SDP solver returns a mass on ``mass_min`` only to its
+    solver accuracy, so a solution at the bound must not be rejected for
+    missing it by rounding. ``1e-9`` relative to ``max(1, mass_min)`` is
+    below any physical mass difference and above double-precision solver
+    noise.
+    """
+    return MASS_BOUND_RTOL * max(1.0, abs(float(mass_min)))
+
+
 def check_p10_feasibility(
     p10: np.ndarray,
     *,

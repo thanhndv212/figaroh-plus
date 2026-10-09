@@ -191,19 +191,39 @@ def _equivalent_base(identif, theta_std: np.ndarray):
 
 
 def _link_feasibility(identif, theta_std, mass_min, psd_eig_tol):
+    """Feasibility of the links that carry an identified parameter.
+
+    Links whose values are only the nominal CAD ones (no parameter in
+    ``params_r``) were not estimated and are not judged. A mass on its lower
+    bound passes within the solver tolerance
+    (:func:`~figaroh.identification.physical_consistency.mass_bound_tolerance`).
+    """
     from figaroh.identification.physical_consistency import (
         check_p10_feasibility,
+        mass_bound_tolerance,
         p10_by_joint_from_param_dict,
     )
+    from figaroh.identification.reconstruction import _INERTIAL_KEYS
 
     names = list(identif.standard_parameter.keys())
+    joints = list(identif.model.names[1:])
+    params_r = getattr(identif, "_params_r_for_recon", None)
+    if params_r is not None:
+        identified = set(params_r)
+        joints = [
+            j for j in joints if any(f"{k}_{j}" in identified for k in _INERTIAL_KEYS)
+        ]
     p10 = p10_by_joint_from_param_dict(
         parameter_dict=dict(zip(names, map(float, theta_std))),
-        joint_names=list(identif.model.names[1:]),
+        joint_names=joints,
     )
     out = {}
     for joint, v in p10.items():
-        rep = check_p10_feasibility(v, mass_min=mass_min, psd_eig_tol=psd_eig_tol)
+        rep = check_p10_feasibility(
+            v,
+            mass_min=mass_min - mass_bound_tolerance(mass_min),
+            psd_eig_tol=psd_eig_tol,
+        )
         out[joint] = {
             "mass": rep.mass,
             "min_eig": rep.min_eig,
