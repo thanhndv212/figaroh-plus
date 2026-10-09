@@ -148,3 +148,49 @@ def test_custom_solver_without_a_prior_solve_does_not_fail(model, traj):
     ident.identif_config.update(select_stage="physical_fit")
     ident.solve_with_custom_solver(decimate=False)
     assert ident.selected.accepted, ident.selected.reason
+
+
+# -- export_urdf: every failure is recorded, a file that cannot load is removed --
+
+
+@pytest.fixture(scope="module")
+def pend():
+    return pin.buildModelFromUrdf(PENDULUM)
+
+
+def _export_ident(pend):
+    pytest.importorskip("picos")
+    ident = _run(pend, _trajectory(pend), select_stage="physical_fit")
+    assert ident.selected.accepted
+    return ident
+
+
+def _export_stage(ident):
+    return {s.stage: s for s in ident.stages}["export"]
+
+
+def test_export_records_a_missing_nominal_file(pend, tmp_path):
+    ident = _export_ident(pend)
+    with pytest.raises(FileNotFoundError):
+        ident.export_urdf(
+            str(tmp_path / "missing.urdf"), output_path=str(tmp_path / "o.urdf")
+        )
+    st = _export_stage(ident)
+    assert st.status == "failed" and "FileNotFoundError" in st.reason
+
+
+def test_export_removes_the_file_when_the_reload_fails(
+    pend, tmp_path, monkeypatch
+):
+    ident = _export_ident(pend)
+
+    def boom(*a, **k):
+        raise RuntimeError("cannot load")
+
+    monkeypatch.setattr(pin, "buildModelFromUrdf", boom)
+    out = tmp_path / "o.urdf"
+    with pytest.raises(RuntimeError, match="cannot load"):
+        ident.export_urdf(PENDULUM, output_path=str(out))
+    assert not out.exists()
+    st = _export_stage(ident)
+    assert st.status == "failed" and "RuntimeError" in st.reason

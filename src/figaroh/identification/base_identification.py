@@ -20,6 +20,7 @@ that can be inherited by any robot type (TIAGo, UR10, MATE, etc.).
 """
 
 import logging
+import os
 import yaml
 import numpy as np
 from abc import ABC, abstractmethod
@@ -2523,10 +2524,17 @@ class BaseIdentification(ABC):
             )
             import pinocchio as pin
 
-            pin.buildModelFromUrdf(out)  # the file must load
+            try:
+                pin.buildModelFromUrdf(out)  # the file must load
+            except Exception:
+                os.remove(out)
+                raise
         except (ValueError, KeyError) as exc:
             record_stage(self, "export", "failed", str(exc))
             raise ValueError(f"export failed: {exc}") from exc
+        except Exception as exc:  # I/O, Pinocchio reload, ...
+            record_stage(self, "export", "failed", f"{type(exc).__name__}: {exc}")
+            raise
         record_stage(
             self,
             "export",
