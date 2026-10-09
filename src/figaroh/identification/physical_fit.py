@@ -531,7 +531,7 @@ def _solve_core(
 
         kw: Dict[str, Any] = {"solver": solver, "verbosity": 0}
         if max_seconds is not None:
-            kw["max_seconds"] = float(max_seconds)
+            kw["timelimit"] = float(max_seconds)  # picos option name
         prob.solve(**kw)
         raw["picos_status"] = str(prob.status)
         raw["status"] = "optimal" if prob.status == "optimal" else str(prob.status)
