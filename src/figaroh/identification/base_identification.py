@@ -2161,14 +2161,24 @@ class BaseIdentification(ABC):
             print(f"  Condition:    {cond_num:.1f} ({cond_label})")
         else:
             print("  Condition:    unavailable")
+        rmse_label = "RMSE:" if sel is None else "RMSE (base fit):"
         print(
-            f"  RMSE:         {result.get('rmse norm (N/m)', float('nan')):.4f}    "
+            f"  {rmse_label:<13s} {result.get('rmse norm (N/m)', float('nan')):.4f}    "
             f"Correlation: {self.correlation:.4f}"
         )
+        selected_info = result.get("selected")
+        if isinstance(selected_info, dict) and "effort_rmse_fit" in selected_info:
+            print(
+                f"  RMSE ({selected_info['stage']} estimate): "
+                f"{selected_info['effort_rmse_fit']:.4f}"
+            )
 
         if per_joint is not None:
             print("-" * 70)
-            print("  Per-Joint Torque Residuals (training set)")
+            heading = "Per-Joint Torque Residuals (training set)"
+            if sel is not None:
+                heading = "Base fit residuals, per joint (training set)"
+            print(f"  {heading}")
             names = per_joint["joint_names"]
             print(
                 f"  {'Joint':<22s} {'Mean':>10s} {'Std':>10s} "
@@ -2181,6 +2191,11 @@ class BaseIdentification(ABC):
                 r = f"{per_joint['rmse'][i]:10.4f}"
                 x = f"{per_joint['max_abs'][i]:10.4f}"
                 print(f"  {names[i]:<22s} {m} {s} {r} {x}")
+            per_joint_sel = (selected_info or {}).get("effort_rmse_fit_per_joint")
+            if per_joint_sel:
+                print(f"  Selected estimate ({selected_info['stage']}) RMSE per joint")
+                for name, value in per_joint_sel.items():
+                    print(f"  {name:<22s} {value:10.4f}")
         else:
             print("-" * 70)
             print("  Per-joint residuals: unavailable")
@@ -2324,9 +2339,18 @@ class BaseIdentification(ABC):
         std_relative = list(std_relative_raw) if std_relative_raw is not None else []
         validation = result.get("validation_metrics")
 
+        # with a non-default select_stage the thresholds judge the selected
+        # estimate, not the base fit it was derived from (#61)
+        fit_rmse = result.get("rmse norm (N/m)", float("nan"))
+        selected_info = result.get("selected")
+        if (
+            isinstance(selected_info, dict)
+            and selected_info.get("effort_rmse_fit") is not None
+        ):
+            fit_rmse = selected_info["effort_rmse_fit"]
         metrics: Dict[str, float] = {
             "condition_number": result.get("condition number", float("nan")),
-            "rmse": result.get("rmse norm (N/m)", float("nan")),
+            "rmse": fit_rmse,
         }
         if validation is not None:
             # per-joint normalised: a pooled correlation is dominated by the
@@ -2388,7 +2412,11 @@ class BaseIdentification(ABC):
                 "finite_parameters": finite_parameters,
                 "finite_prediction": finite_prediction,
                 "finite_measurements": result.get("torque processed"),
-                "finite_fit_rmse": result.get("rmse norm (N/m)"),
+                "finite_fit_rmse": (
+                    fit_rmse
+                    if isinstance(selected_info, dict)
+                    else result.get("rmse norm (N/m)")
+                ),
             },
             independent,
             [f"validation_rmse:{j}" for j in joint_names],
@@ -2636,7 +2664,10 @@ class BaseIdentification(ABC):
                 plt.plot(tau_identified, label="Identified", alpha=0.7)
                 plt.xlabel("Sample")
                 plt.ylabel("Torque (Nm)")
-                plt.title(f"{self.__class__.__name__} Torque Comparison")
+                plt.title(
+                    f"{self.__class__.__name__} Torque Comparison"
+                    + ("" if self.selected is None else " (base fit)")
+                )
                 plt.legend()
                 plt.grid(True, alpha=0.3)
 

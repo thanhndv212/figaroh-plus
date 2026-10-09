@@ -263,3 +263,64 @@ def test_rejected_selection_reason_reaches_the_verdict(model, traj, monkeypatch)
     ]
     assert check.status == "fail"
     assert "physical_fit" in check.reason and "cvxopt: error" in check.reason
+
+
+# -- verify and the reports speak for the selected estimate --
+
+
+@pytest.fixture(scope="module")
+def worse_selected(model, traj):
+    """A physical fit pulled to the nominal model: worse than the base fit."""
+    pytest.importorskip("picos")
+    ident = _run(
+        model,
+        traj,
+        select_stage="physical_fit",
+        physical_fit={"prior_weight": 1e4},
+    )
+    assert ident.selected.accepted, ident.selected.reason
+    return ident
+
+
+def test_verify_judges_the_selected_estimate_not_the_base_fit(worse_selected):
+    ident = worse_selected
+    base = float(ident.result["rmse norm (N/m)"])
+    chosen = float(ident.result["selected"]["effort_rmse_fit"])
+    assert chosen > 1.01 * base
+    limit = {"rmse": {"threshold": (base + chosen) / 2, "comparison": "max"}}
+    v = ident.verify(thresholds=limit, scope="execution")
+    assert v.metrics["rmse"] == pytest.approx(chosen)
+    check = {c.name: c for c in v.checks}
+    assert check["rmse"].status == "fail" and not v.passed
+    assert check["finite_fit_rmse"].value == 1.0
+
+
+def test_default_verify_still_uses_the_base_fit(model, traj):
+    ident = _run(model, traj)
+    v = ident.verify(scope="execution")
+    assert v.metrics["rmse"] == pytest.approx(ident.result["rmse norm (N/m)"])
+
+
+def test_terminal_report_labels_the_base_fit(worse_selected, capsys):
+    worse_selected.print_quality_report()
+    out = capsys.readouterr().out
+    assert "RMSE (base fit)" in out
+    assert "Base fit residuals" in out
+    assert "RMSE (physical_fit estimate)" in out
+    assert "Selected estimate (physical_fit) RMSE per joint" in out
+
+
+def test_default_terminal_report_is_unlabelled(model, traj, capsys):
+    _run(model, traj).print_quality_report()
+    out = capsys.readouterr().out
+    assert "base fit" not in out.lower()
+    assert "  RMSE:         " in out
+
+
+def test_html_report_labels_the_base_fit(worse_selected, tmp_path):
+    path = worse_selected.export_html_report(output_path=str(tmp_path / "r.html"))
+    html = Path(path).read_text()
+    assert "RMSE (base fit)" in html
+    assert "Base fit residuals" in html
+    assert "RMSE (selected estimate)" in html
+    assert "RMSE per joint" in html

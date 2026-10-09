@@ -211,11 +211,19 @@ def _summary_section(result: Dict[str, Any], correlation: float) -> str:
     n_base = len(result.get("base parameters names", []))
     selected = result.get("selected")
     selected_stat = ""
+    rmse_label = "RMSE"
     if isinstance(selected, dict):
+        rmse_label = "RMSE (base fit)"
         selected_stat = f"""
       <div class="stat">
         <div class="stat-label">Reported estimate</div>
         <div class="stat-value">{_esc(_selected_label(selected))}</div>
+      </div>"""
+        if selected.get("effort_rmse_fit") is not None:
+            selected_stat += f"""
+      <div class="stat">
+        <div class="stat-label">RMSE (selected estimate)</div>
+        <div class="stat-value">{selected["effort_rmse_fit"]:.4f}</div>
       </div>"""
     return f"""
     <div class="stat-row">
@@ -228,7 +236,7 @@ def _summary_section(result: Dict[str, Any], correlation: float) -> str:
         <div class="stat-value">{result.get("num samples", 0)}</div>
       </div>
       <div class="stat">
-        <div class="stat-label">RMSE</div>
+        <div class="stat-label">{rmse_label}</div>
         <div class="stat-value">{rmse_norm:.4f}</div>
       </div>
       <div class="stat">
@@ -250,7 +258,36 @@ def _selected_label(selected: Dict[str, Any]) -> str:
     return f"none (requested {selected.get('requested')}: rejected)"
 
 
-def _per_joint_section(per_joint: Optional[Dict[str, Any]]) -> str:
+def _selected_per_joint_table(selected: Optional[Dict[str, Any]]) -> str:
+    """Per-joint RMSE of the selected estimate (empty for the default fit)."""
+    per_joint = (selected or {}).get("effort_rmse_fit_per_joint")
+    if not per_joint:
+        return ""
+    rows = "".join(
+        f"<tr><td>{_esc(name)}</td><td class=\"num\">{value:.4f}</td></tr>"
+        for name, value in per_joint.items()
+    )
+    return f"""
+    <h3>Selected estimate ({_esc(str(selected.get("stage")))}): RMSE per joint</h3>
+    <table class="data">
+      <thead><tr><th>Joint</th><th>RMSE</th></tr></thead>
+      <tbody>{rows}</tbody>
+    </table>
+    """
+
+
+def _per_joint_section(
+    per_joint: Optional[Dict[str, Any]], selected: Optional[Dict[str, Any]] = None
+) -> str:
+    base = _base_per_joint_table(per_joint)
+    if not isinstance(selected, dict):
+        return base
+    return (
+        "<h3>Base fit residuals</h3>" + base + _selected_per_joint_table(selected)
+    )
+
+
+def _base_per_joint_table(per_joint: Optional[Dict[str, Any]]) -> str:
     if not per_joint or not per_joint.get("joint_names"):
         return '<p class="muted">Per-joint residuals unavailable.</p>'
 
@@ -531,7 +568,7 @@ def generate_identification_report(
 
   <section>
     <h2>Per-joint torque residuals</h2>
-    <div class="card">{_per_joint_section(per_joint)}</div>
+    <div class="card">{_per_joint_section(per_joint, result.get("selected"))}</div>
   </section>
 
   <section>
