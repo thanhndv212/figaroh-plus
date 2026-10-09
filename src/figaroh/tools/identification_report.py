@@ -264,7 +264,7 @@ def _selected_per_joint_table(selected: Optional[Dict[str, Any]]) -> str:
     if not per_joint:
         return ""
     rows = "".join(
-        f"<tr><td>{_esc(name)}</td><td class=\"num\">{value:.4f}</td></tr>"
+        f'<tr><td>{_esc(name)}</td><td class="num">{value:.4f}</td></tr>'
         for name, value in per_joint.items()
     )
     return f"""
@@ -282,9 +282,7 @@ def _per_joint_section(
     base = _base_per_joint_table(per_joint)
     if not isinstance(selected, dict):
         return base
-    return (
-        "<h3>Base fit residuals</h3>" + base + _selected_per_joint_table(selected)
-    )
+    return "<h3>Base fit residuals</h3>" + base + _selected_per_joint_table(selected)
 
 
 def _base_per_joint_table(per_joint: Optional[Dict[str, Any]]) -> str:
