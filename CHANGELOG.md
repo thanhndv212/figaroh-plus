@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `identification.select_stage` (`fit`, `reconstruction`, `physical_fit`)
+  chooses the reported, validated, archived and exported estimate. A
+  rejected requested stage is a hard reject (`selected_stage` `none`, verify
+  fails, export refuses). The default is unchanged. New
+  `BaseIdentification.export_urdf`, and `merged_bodies="subtract_fixed"` in
+  the URDF exporter. The direct LMI effort fit is public as
+  `figaroh.identification.physical_fit` (`_physical_comparator` stays as an
+  alias); `ReconstructionResult.effective_method` is new. (#61)
 - Record the log-Cholesky feasibility spike with frozen synthetic trajectories,
   independent physical/Jacobian checks and machine-readable Pinocchio 3.7/4.1
   results. The decision is revise: convergence/scaling must improve before a
