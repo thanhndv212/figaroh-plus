@@ -426,7 +426,8 @@ def test_transmission_joint_is_not_mistaken_for_the_robot_joint(tmp_path):
     import xml.etree.ElementTree as ET
 
     urdf = tmp_path / "with_transmission.urdf"
-    urdf.write_text("""<?xml version="1.0"?>
+    urdf.write_text(
+        """<?xml version="1.0"?>
 <robot name="arm">
   <transmission name="t1">
     <type>transmission_interface/SimpleTransmission</type>
@@ -445,7 +446,8 @@ def test_transmission_joint_is_not_mistaken_for_the_robot_joint(tmp_path):
     <limit lower="-1" upper="1" effort="1" velocity="1"/>
   </joint>
 </robot>
-""")
+"""
+    )
     out = export_urdf(
         str(urdf), {"d_px_joint1": 0.01}, output_path=str(tmp_path / "out.urdf")
     )
