@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import sys
 
 import numpy as np
@@ -58,6 +59,10 @@ BASIS_DEPENDENT = {
 }
 
 
+# insight sentences quote the condition number
+_COND = re.compile(r"(Condition number )[-+0-9.eE]+")
+
+
 def _size(x):
     if isinstance(x, dict) and "shape" in x:
         return x["shape"]
@@ -79,6 +84,8 @@ def _close(a, b, path=""):
             _close(x, y, f"{path}[{i}]")
     elif isinstance(a, float):
         assert b == pytest.approx(a, rel=1e-9, abs=1e-12), path
+    elif isinstance(a, str) and isinstance(b, str):
+        assert _COND.sub(r"\1#", a) == _COND.sub(r"\1#", b), path
     else:
         assert a == b, path
 
