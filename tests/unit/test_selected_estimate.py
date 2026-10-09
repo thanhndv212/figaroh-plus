@@ -7,7 +7,7 @@ import numpy as np
 from figaroh.identification.selection import SelectedEstimate
 
 
-def test_predict_standard_uses_full_regressor_base_uses_reduced_columns():
+def test_predict_uses_the_full_regressor_and_standard_values():
     W = np.arange(12.0).reshape(4, 3)
     std = SelectedEstimate(
         "physical_fit",
@@ -18,18 +18,7 @@ def test_predict_standard_uses_full_regressor_base_uses_reduced_columns():
         names=["a", "b", "c"],
         values=np.array([1.0, 2.0, 3.0]),
     )
-    np.testing.assert_allclose(std.predict(W, W[:, :2]), W @ std.values)
-    base = SelectedEstimate(
-        "fit",
-        "fit",
-        "accepted",
-        "ok",
-        "base",
-        names=["a"],
-        values=np.array([2.0]),
-        base_indices=[1],
-    )
-    np.testing.assert_allclose(base.predict(W, W), W[:, 1] * 2.0)
+    np.testing.assert_allclose(std.predict(W), W @ std.values)
 
 
 def test_as_dict_is_json_and_rejected_reports_none():

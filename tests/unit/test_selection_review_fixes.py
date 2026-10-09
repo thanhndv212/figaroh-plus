@@ -381,3 +381,29 @@ def test_reconstruction_feasibility_accepts_a_mass_on_its_bound(model, traj):
     for k, v in zip(KEYS, _sphere_p10(0.5 - 1e-12)):
         theta[names.index(f"{k}_{joint}")] = v
     assert _link_feasibility(ident, theta, 0.5, -1e-10)[joint]["ok"]
+
+
+# -- cleanups keep behaviour --
+
+
+def test_physical_fit_config_completes_partial_programmatic_configs(model, traj):
+    from figaroh.identification.config import PHYSICAL_FIT_DEFAULTS
+    from figaroh.identification.selection import physical_fit_config
+
+    ident = _Ident(model)
+    assert physical_fit_config(ident) == PHYSICAL_FIT_DEFAULTS
+    ident.identif_config["physical_fit"] = {"mass_min": 0.5}
+    cfg = physical_fit_config(ident)
+    assert cfg["mass_min"] == 0.5 and cfg["solver"] == PHYSICAL_FIT_DEFAULTS["solver"]
+    full = {**PHYSICAL_FIT_DEFAULTS, "mass_min": 0.7}
+    ident.identif_config["physical_fit"] = full
+    assert physical_fit_config(ident) == full
+
+
+def test_one_shared_inertial_key_constant():
+    from figaroh.identification import base_identification as bi
+    from figaroh.identification import physical_fit as pf
+    from figaroh.identification import reconstruction as rc
+
+    assert bi._INERTIAL_KEYS is rc._INERTIAL_KEYS is pf._INERTIAL_KEYS
+    assert not hasattr(bi, "_P10_KEYS") and not hasattr(pf, "_P10_KEYS")

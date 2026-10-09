@@ -59,13 +59,11 @@ from figaroh.identification.physical_consistency import (
     project_p10_lmi,
 )
 from figaroh.identification.reconstruction import (
+    _INERTIAL_KEYS,
     _p10_indices_for_joints,
     reconstruct_full_parameters,
 )
 from figaroh.tools.qrdecomposition import QRDecomposer
-
-_P10_KEYS = ["m", "mx", "my", "mz", "Ixx", "Ixy", "Iyy", "Ixz", "Iyz", "Izz"]
-
 
 # ---------------------------------------------------------------------------
 # Data classes
@@ -218,11 +216,11 @@ def _f(x: Optional[float]) -> Optional[float]:
 def _coord_scale(params: Sequence[str], joints: Sequence[str], prior: np.ndarray):
     scale = np.maximum(np.abs(prior), 1.0)
     for idx in _p10_indices_for_joints(params, joints).values():
-        p = np.array([prior[idx[k]] for k in _P10_KEYS])
+        p = np.array([prior[idx[k]] for k in _INERTIAL_KEYS])
         ms = max(abs(p[0]), 1e-3)
         hs = max(float(np.linalg.norm(p[1:4])), 1e-3)
         is_ = max(float(np.linalg.norm(p[4:10])), 1e-3)
-        for k in _P10_KEYS:
+        for k in _INERTIAL_KEYS:
             scale[idx[k]] = ms if k == "m" else hs if k in ("mx", "my", "mz") else is_
     return scale
 
@@ -339,7 +337,7 @@ def _link_indices(p: ComparatorProblem) -> Dict[str, Dict[str, int]]:
 def _feasibility(p: ComparatorProblem, theta: np.ndarray) -> Dict[str, Dict[str, Any]]:
     out = {}
     for j, idx in _link_indices(p).items():
-        p10 = np.array([theta[idx[k]] for k in _P10_KEYS])
+        p10 = np.array([theta[idx[k]] for k in _INERTIAL_KEYS])
         rep = check_p10_feasibility(
             p10,
             mass_min=p.policy.mass_min - mass_bound_tolerance(p.policy.mass_min),
@@ -592,7 +590,7 @@ def solve_per_link_projection(
         theta = p.theta_prior + D * z
         total = 0.0
         for j, idx in _link_indices(p).items():
-            cols = [idx[k] for k in _P10_KEYS]
+            cols = [idx[k] for k in _INERTIAL_KEYS]
             p10, rep = project_p10_lmi(
                 theta[cols],
                 mass_min=p.policy.mass_min,

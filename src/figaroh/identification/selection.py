@@ -54,8 +54,8 @@ class SelectedEstimate:
         requested: The stage that was asked for.
         status: ``accepted`` or ``rejected``.
         reason: Why, in one line (names the solver(s) and the failed test).
-        space: ``base`` (values are base parameters) or ``standard`` (values
-            are the full standard parameter vector).
+        space: ``standard`` (values are the full standard parameter
+            vector).
         names: Parameter names aligned with ``values``.
         values: The candidate vector; kept for diagnosis when rejected.
         phi_base_equivalent: ``M @ theta`` for a standard candidate
@@ -82,24 +82,17 @@ class SelectedEstimate:
     effective_method: Optional[str] = None
     solvers: List[str] = field(default_factory=list)
     psd_eig_tol: float = -1e-10
-    base_indices: Optional[Sequence[int]] = field(default=None, repr=False)
     extra: Dict[str, Any] = field(default_factory=dict)
 
     @property
     def accepted(self) -> bool:
         return self.status == "accepted"
 
-    def predict(self, W_full: np.ndarray, W_reduced: np.ndarray) -> np.ndarray:
-        """Effort predicted by this estimate.
-
-        A base-space estimate uses the reduced regressor's base columns; a
-        standard-space estimate uses the full regressor. The standard
-        candidates are never evaluated through ``phi_base_equivalent``.
-        """
+    def predict(self, W_full: np.ndarray) -> np.ndarray:
+        """Effort predicted by this estimate: the full regressor times the
+        standard parameter vector (never ``phi_base_equivalent``)."""
         if self.values is None:
             raise ValueError("no estimate values to predict with")
-        if self.space == "base":
-            return W_reduced[:, list(self.base_indices)] @ self.values
         return W_full @ self.values
 
     def as_dict(self) -> Dict[str, Any]:
@@ -156,10 +149,17 @@ def requested_stage(identif) -> str:
 
 
 def physical_fit_config(identif) -> Dict[str, Any]:
+    """The ``physical_fit`` settings with every key present.
+
+    The config parser already merges the defaults; a programmatic config
+    may hold a partial mapping (or none), which is completed here.
+    """
     from figaroh.identification.config import PHYSICAL_FIT_DEFAULTS
 
-    cfg = dict(PHYSICAL_FIT_DEFAULTS)
     raw = (getattr(identif, "identif_config", None) or {}).get("physical_fit")
+    if isinstance(raw, dict) and PHYSICAL_FIT_DEFAULTS.keys() <= raw.keys():
+        return dict(raw)
+    cfg = dict(PHYSICAL_FIT_DEFAULTS)
     if isinstance(raw, dict):
         cfg.update(raw)
     return cfg
@@ -319,19 +319,6 @@ def run_physical_fit(identif) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def _select_fit(identif) -> SelectedEstimate:
-    return SelectedEstimate(
-        stage="fit",
-        requested="fit",
-        status="accepted",
-        reason="base-parameter least-squares fit",
-        space="base",
-        names=list(identif.params_base),
-        values=np.asarray(identif.phi_base, dtype=float),
-        base_indices=list(identif._base_indices),
-    )
-
-
 def _select_reconstruction(identif) -> SelectedEstimate:
     recon = getattr(identif, "_recon_result", None)
     rejected = dict(
@@ -353,7 +340,7 @@ def _select_reconstruction(identif) -> SelectedEstimate:
     pos = {n: i for i, n in enumerate(names)}
     for name, val in recon.as_dict().items():
         theta[pos[name]] = val
-    equiv, rel = _equivalent_base(identif, theta)
+    equiv, _ = _equivalent_base(identif, theta)
     resid_rel = float(
         np.linalg.norm(recon.residual) / max(np.linalg.norm(identif.phi_base), 1e-300)
     )
@@ -439,8 +426,8 @@ def _select_physical_fit(identif) -> SelectedEstimate:
 def select_estimate(identif) -> SelectedEstimate:
     """Build the :class:`SelectedEstimate` for the configured stage."""
     stage = requested_stage(identif)
-    if stage == "fit":
-        return _select_fit(identif)
+    if stage == DEFAULT_STAGE:
+        raise ValueError("select_stage='fit' reports the base fit; nothing to select")
     if stage == "reconstruction":
         return _select_reconstruction(identif)
     if stage == "physical_fit":

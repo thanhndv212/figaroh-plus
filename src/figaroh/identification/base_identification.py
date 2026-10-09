@@ -50,13 +50,11 @@ from figaroh.identification.parameter import (
 )
 from figaroh.tools.solver import LinearSolver
 from figaroh.utils.results_manager import plot_with_fallback
+from figaroh.identification.reconstruction import _INERTIAL_KEYS
 
 # Setup logger for this module
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
-
-
-_P10_KEYS = ("m", "mx", "my", "mz", "Ixx", "Ixy", "Iyy", "Ixz", "Iyz", "Izz")
 
 
 class BaseIdentification(ABC):
@@ -796,9 +794,7 @@ class BaseIdentification(ABC):
         tau_val_nominal = _select_active_joint_rows(W_val_full @ phi_std_vec)
         sel = getattr(self, "selected", None)
         if sel is not None and sel.accepted:
-            tau_val_identif = _select_active_joint_rows(
-                sel.predict(W_val_full, W_val_reduced)
-            )
+            tau_val_identif = _select_active_joint_rows(sel.predict(W_val_full))
         else:
             tau_val_identif = _select_active_joint_rows(W_val_base @ self.phi_base)
 
@@ -1703,9 +1699,8 @@ class BaseIdentification(ABC):
     def _selected_fit_rmse(self, sel):
         """Effort RMSE of a standard-space candidate on the fitted rows."""
         names = list(self.standard_parameter.keys())
-        keep = [
-            i for i in range(len(names)) if i not in set(self._idx_eliminated or [])
-        ]
+        eliminated = set(self._idx_eliminated or [])
+        keep = [i for i in range(len(names)) if i not in eliminated]
         theta_active = np.asarray(sel.values, dtype=float)[keep]
         residual = self._solve_tau - self._solve_W @ theta_active
         n_active = max(len(self.identif_config.get("act_idxv", [])), 1)
@@ -2394,11 +2389,8 @@ class BaseIdentification(ABC):
             if sel.values is not None:
                 finite_parameters = sel.values
                 if sel.space == "standard":
-                    keep = [
-                        i
-                        for i in range(len(sel.names))
-                        if i not in set(self._idx_eliminated or [])
-                    ]
+                    eliminated = set(self._idx_eliminated or [])
+                    keep = [i for i in range(len(sel.names)) if i not in eliminated]
                     finite_prediction = self._solve_W @ np.asarray(sel.values)[keep]
             facts_extra["selected_stage_accepted"] = (
                 bool(sel.accepted),
@@ -2493,7 +2485,7 @@ class BaseIdentification(ABC):
         for jid, joint in enumerate(self.model.names):
             if jid == 0 or "FreeFlyer" in self.model.joints[jid].shortname():
                 continue
-            if any(f"{key}_{joint}" in kept for key in _P10_KEYS):
+            if any(f"{key}_{joint}" in kept for key in _INERTIAL_KEYS):
                 joints.append(joint)
         return joints
 
@@ -2547,7 +2539,7 @@ class BaseIdentification(ABC):
             # body has no URDF joint and non-identified joints keep their
             # nominal values (also when a fixed link is merged into them)
             for joint, p10 in sel.link_p10(self._identified_joints()).items():
-                for key, value in zip(_P10_KEYS, p10):
+                for key, value in zip(_INERTIAL_KEYS, p10):
                     params[f"{key}_{joint}"] = float(value)
             out = export_urdf(
                 nominal_urdf,
