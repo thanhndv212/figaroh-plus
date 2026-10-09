@@ -545,15 +545,26 @@ def _has_mass(link: ET.Element) -> bool:
     return mass is not None and float(mass.get("value", "0")) != 0.0
 
 
-def _resolve_inertial_link(doc: ET.ElementTree, target: str) -> str:
+def _resolve_inertial_link(
+    doc: ET.ElementTree, target: str, merged_bodies: str = "refuse"
+) -> str:
     """The URDF link an inertial parameter ``target`` writes to.
 
     A link name is taken as is. A joint name, as identification emits, means
     Pinocchio's body of that joint, expressed in the joint frame, which the
     URDF child link shares. That body is the child link alone only when no
     massive link is attached to it by fixed joints; Pinocchio merges those
-    in, so such a target is refused rather than written into one link.
+    in. With ``merged_bodies="refuse"`` such a target is refused rather than
+    written into one link; ``"subtract_fixed"`` accepts it (the caller then
+    removes the fixed links' nominal share, see :func:`_subtract_fixed`).
     """
+    link, _ = _resolve_inertial_target(doc, target)
+    return link
+
+
+def _resolve_inertial_target(doc: ET.ElementTree, target: str):
+    """``(link, merged)``: the link written and the fixed-attached massive
+    links Pinocchio merges into the same body (empty for a link name)."""
     link = _find_link(doc, target)
     joint = _find_joint(doc, target)
     if link is not None:
@@ -562,7 +573,7 @@ def _resolve_inertial_link(doc: ET.ElementTree, target: str) -> str:
                 f"Inertial target '{target}' names both a link and a joint "
                 f"with another child link; rename one"
             )
-        return target
+        return target, []
     if joint is None:
         raise ValueError(f"Link or joint '{target}' not found in the URDF")
     if joint.get("type") == "fixed":
@@ -584,13 +595,58 @@ def _resolve_inertial_link(doc: ET.ElementTree, target: str) -> str:
         if _has_mass(_require_link(doc, name)):
             merged.append(name)
         stack.extend(children.get(name, []))
-    if merged:
-        raise ValueError(
-            f"Inertial parameters of joint '{target}' cover link '{child}' "
-            f"and the fixed-attached links {sorted(merged)}; they cannot be "
-            f"written into one URDF link"
-        )
-    return child
+    return child, sorted(merged)
+
+
+def _child_p10(doc: ET.ElementTree, link_name: str) -> np.ndarray:
+    """A URDF link's own inertial as ten standard parameters in its frame.
+
+    Inverse of :func:`_apply_standard_inertial`: mass, ``m*c`` and the
+    inertia about the link-frame origin, in link-frame axes.
+    """
+    inertial = _require_link(doc, link_name).find("inertial")
+    if inertial is None or inertial.find("mass") is None:
+        return np.zeros(10)
+    m = float(inertial.find("mass").get("value", "0"))
+    origin = inertial.find("origin")
+    c = (
+        np.asarray(_get_xyz_array(origin, "xyz"), dtype=float)
+        if origin is not None
+        else np.zeros(3)
+    )
+    rot = (
+        np.asarray(_rpy_to_matrix(_get_xyz_array(origin, "rpy")), dtype=float)
+        if origin is not None
+        else np.eye(3)
+    )
+    tensor = inertial.find("inertia")
+    g = (lambda k: float(tensor.get(k, "0"))) if tensor is not None else (lambda k: 0.0)
+    I_urdf = np.array(
+        [
+            [g("ixx"), g("ixy"), g("ixz")],
+            [g("ixy"), g("iyy"), g("iyz")],
+            [g("ixz"), g("iyz"), g("izz")],
+        ]
+    )
+    I_O = rot @ I_urdf @ rot.T + m * (c @ c * np.eye(3) - np.outer(c, c))
+    return np.array(
+        [m, *(m * c), I_O[0, 0], I_O[0, 1], I_O[1, 1], I_O[0, 2], I_O[1, 2], I_O[2, 2]]
+    )
+
+
+def _subtract_fixed(
+    doc: ET.ElementTree, nominal_model, target: str, child: str, p10_est
+) -> np.ndarray:
+    """The child link's parameters when the body also holds fixed links.
+
+    The identified ``p10_est`` is that of Pinocchio's whole body of joint
+    ``target``. Fixed-attached links keep their CAD values, so the child
+    link receives ``p10_est - (p10_body_nominal - p10_child_nominal)``, all
+    in the joint frame.
+    """
+    jid = nominal_model.getJointId(target)
+    body_nominal = np.asarray(nominal_model.inertias[jid].toDynamicParameters())
+    return np.asarray(p10_est, dtype=float) - (body_nominal - _child_p10(doc, child))
 
 
 def _apply_standard_inertial(
@@ -665,7 +721,11 @@ def _apply_standard_inertial(
 
 
 def _apply_inertials(
-    doc: ET.ElementTree, inertials: dict, allow_infeasible: bool
+    doc: ET.ElementTree,
+    inertials: dict,
+    allow_infeasible: bool,
+    merged_bodies: str = "refuse",
+    nominal_urdf_path=None,
 ) -> None:
     """Apply inertial parameters collected per target (``{target: {key: v}}``).
 
@@ -674,8 +734,19 @@ def _apply_inertials(
     values are never mixed within one link.
     """
     by_link: dict = {}
+    subtract: dict = {}  # child link -> (joint target, fixed-attached links)
     for target, values in inertials.items():
-        link_name = _resolve_inertial_link(doc, target)
+        link_name, fixed = _resolve_inertial_target(doc, target)
+        if fixed:
+            if merged_bodies != "subtract_fixed":
+                raise ValueError(
+                    f"Inertial parameters of joint '{target}' cover link "
+                    f"'{link_name}' and the fixed-attached links {fixed}; "
+                    f"they cannot be written into one URDF link "
+                    f"(merged_bodies='subtract_fixed' removes the fixed "
+                    f"links' nominal share)"
+                )
+            subtract[link_name] = (target, fixed)
         merged = by_link.setdefault(link_name, {})
         for key, value in values.items():
             if key in merged:
@@ -684,8 +755,15 @@ def _apply_inertials(
                 )
             merged[key] = value
 
+    nominal_model = None
     for link_name, values in by_link.items():
         if set(values) == {"m"}:
+            if link_name in subtract:
+                raise ValueError(
+                    f"Joint '{subtract[link_name][0]}': a lone mass cannot be "
+                    f"split between the child and its fixed-attached links; "
+                    f"give all ten standard parameters"
+                )
             _apply_mass(doc, link_name, None, values["m"])
             continue
         missing = [k for k in _INERTIAL_KEYS if k not in values]
@@ -696,6 +774,20 @@ def _apply_inertials(
                 f"parameters or only m_*"
             )
         p10 = [values[k] for k in _INERTIAL_KEYS]
+        if link_name in subtract:
+            target, fixed = subtract[link_name]
+            import pinocchio as pin
+
+            if nominal_model is None:
+                nominal_model = pin.buildModelFromUrdf(str(nominal_urdf_path))
+            p10 = _subtract_fixed(doc, nominal_model, target, link_name, p10)
+            logger.info(
+                "Joint '%s': fixed-attached links %s keep their CAD values; "
+                "link '%s' receives the remainder",
+                target,
+                fixed,
+                link_name,
+            )
         _apply_standard_inertial(doc, link_name, p10, allow_infeasible)
 
 
@@ -806,6 +898,7 @@ def export_urdf(
     output_path: Optional[Union[str, Path]] = None,
     verbose: bool = False,
     allow_infeasible: bool = False,
+    merged_bodies: str = "refuse",
 ) -> str:
     """Apply identified/calibrated **joint-level** parameters to a nominal URDF.
 
@@ -827,6 +920,12 @@ def export_urdf(
         verbose: If True, log which params were applied.
         allow_infeasible: Write a complete inertial set whose pseudo-inertia
             is not positive semidefinite, with a warning, instead of raising.
+        merged_bodies: What to do when an inertial set names a joint whose
+            Pinocchio body also holds massive links attached by fixed joints.
+            ``"refuse"`` (default) raises. ``"subtract_fixed"`` writes the
+            child link ``p10_est - p10_fixed_nominal`` (the fixed links'
+            nominal share, from the nominal model, removed; they keep their
+            CAD values) and refuses a remainder that is not physical.
 
     Returns:
         Absolute path to the modified URDF file (joint params applied).  Use
@@ -843,6 +942,11 @@ def export_urdf(
             *allow_infeasible*) is physically inconsistent. Nothing is
             written then.
     """
+    if merged_bodies not in ("refuse", "subtract_fixed"):
+        raise ValueError(
+            f"merged_bodies must be 'refuse' or 'subtract_fixed', "
+            f"not {merged_bodies!r}"
+        )
     nominal_path = Path(nominal_urdf_path)
     if not nominal_path.exists():
         raise FileNotFoundError(f"URDF not found: {nominal_path}")
@@ -925,7 +1029,7 @@ def export_urdf(
         )
     for target, xyz_rpy in placements.items():
         _apply_joint_placement(doc, target, xyz_rpy)
-    _apply_inertials(doc, inertials, allow_infeasible)
+    _apply_inertials(doc, inertials, allow_infeasible, merged_bodies, nominal_path)
 
     # Write output
     output_path.parent.mkdir(parents=True, exist_ok=True)

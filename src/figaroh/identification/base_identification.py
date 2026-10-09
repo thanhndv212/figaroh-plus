@@ -55,6 +55,9 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 
+_P10_KEYS = ("m", "mx", "my", "mz", "Ixx", "Ixy", "Iyy", "Ixz", "Iyz", "Izz")
+
+
 class BaseIdentification(ABC):
     """
     Base class for robot dynamic parameter identification.
@@ -2429,6 +2432,76 @@ class BaseIdentification(ABC):
             ),
         )
         return verdict
+
+    def export_urdf(
+        self,
+        nominal_urdf,
+        output_path=None,
+        merged_bodies="refuse",
+    ):
+        """Write the selected estimate's link inertials into a URDF.
+
+        Needs ``select_stage`` ``reconstruction`` or ``physical_fit`` and an
+        *accepted* estimate: the base-parameter fit has no per-link
+        inertials, and a rejected estimate is not exported. Either case
+        records stage ``export`` as failed and raises. On success the URDF is
+        written, reloaded with Pinocchio as a check and ``export`` is
+        recorded ``ok`` with the file as artifact.
+
+        Args:
+            nominal_urdf: Path of the nominal URDF the run was based on.
+            output_path: Where to write; default ``<stem>_modified.urdf``
+                beside the nominal one.
+            merged_bodies: ``"refuse"`` (default) or ``"subtract_fixed"`` for
+                joints whose Pinocchio body holds fixed-attached links, see
+                :func:`figaroh.tools.urdf_exporter.export_urdf`.
+
+        Returns:
+            str: Absolute path of the written URDF.
+
+        Raises:
+            ValueError: no accepted standard-space estimate, or the exporter
+                refused the parameters.
+        """
+        from figaroh.tools.stages import record_stage
+        from figaroh.tools.urdf_exporter import export_urdf
+
+        sel = getattr(self, "selected", None)
+        try:
+            if sel is None or sel.space != "standard":
+                raise ValueError(
+                    "the base-parameter fit has no link inertials to export; "
+                    "set select_stage to 'reconstruction' or 'physical_fit'"
+                )
+            if not sel.accepted:
+                raise ValueError(
+                    f"the requested {sel.requested} estimate was rejected "
+                    f"({sel.reason}); nothing to export"
+                )
+            params = {}
+            for joint, p10 in sel.link_p10(list(self.model.names[1:])).items():
+                for key, value in zip(_P10_KEYS, p10):
+                    params[f"{key}_{joint}"] = float(value)
+            out = export_urdf(
+                nominal_urdf,
+                params,
+                output_path=output_path,
+                merged_bodies=merged_bodies,
+            )
+            import pinocchio as pin
+
+            pin.buildModelFromUrdf(out)  # the file must load
+        except (ValueError, KeyError) as exc:
+            record_stage(self, "export", "failed", str(exc))
+            raise ValueError(f"export failed: {exc}") from exc
+        record_stage(
+            self,
+            "export",
+            "ok",
+            f"{sel.stage} link inertials written",
+            artifacts=[out],
+        )
+        return out
 
     def export_verification_report(
         self,
