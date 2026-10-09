@@ -1,6 +1,6 @@
 <!-- Base: `devel` for normal work; `main` only for a release PR from devel or a hotfix.
      Title: Conventional Commits, e.g. "fix(identification): preserve joint ordering".
-     It becomes the squash commit's subject. -->
+     It becomes the merge commit's subject. -->
 
 Closes #
 <!-- Merging into devel does not auto-close: close the issue after merge. Paired change? Link thanhndv212/figaroh-examples#… -->
