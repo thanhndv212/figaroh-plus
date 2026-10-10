@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the URDF exporter. The direct LMI effort fit is public as
   `figaroh.identification.physical_fit` (`_physical_comparator` stays as an
   alias); `ReconstructionResult.effective_method` is new. (#61)
+- `problem.torque_fit_joints` names the active joints whose measured effort
+  is fitted and scored. The other active joints keep their kinematics in the
+  regressor; their effort is left out of the fit, the WLS weights, the
+  per-joint statistics and the validation metrics, which list them under
+  `not_fitted_joints`. Unset, every active joint is fitted as before.
+  (figaroh-examples#68)
 - Record the log-Cholesky feasibility spike with frozen synthetic trajectories,
   independent physical/Jacobian checks and machine-readable Pinocchio 3.7/4.1
   results. The decision is revise: convergence/scaling must improve before a
