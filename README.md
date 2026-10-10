@@ -135,6 +135,10 @@ FIGAROH can optionally project per-joint inertial parameters onto a physically
 consistent set using a convex SDP/LMI based on Pinocchio pseudo-inertia.
 
 - Enable it in config via `identification.physical_consistency.enabled: true`.
+- It projects the identified fit in standard-parameter space, so it also needs
+  `identification.reconstruction.enabled: true`; without it the block is
+  skipped. The projection is reported, not selectable — use
+  `select_stage: physical_fit` for a physically consistent estimate.
 - Requires optional dependencies: `picos` and an SDP solver backend (e.g. `cvxopt`).
 
 ### `figaroh.optimal` — Trajectory & Configuration Optimization
