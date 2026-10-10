@@ -220,6 +220,9 @@ class BaseIdentification(ABC):
             tau_processed, W_processed, decimation_factor if decimate else 1
         )
 
+        # Step 2c: keep only the joints whose effort enters the fit
+        tau_processed, W_processed = self._select_fit_rows(tau_processed, W_processed)
+
         self._reset_solve_state(tau_processed, W_processed, active_params)
 
         # Step 3: Calculate base parameters
@@ -364,6 +367,7 @@ class BaseIdentification(ABC):
             tau_processed, W_processed = self._prepare_undecimated_data(
                 regressor_reduced
             )
+        tau_processed, W_processed = self._select_fit_rows(tau_processed, W_processed)
 
         self._reset_solve_state(tau_processed, W_processed, active_params)
 
@@ -610,6 +614,47 @@ class BaseIdentification(ABC):
         rows = np.tile(kept, n_active)
         return tau[rows], regressor[rows]
 
+    def fit_joints(self):
+        """Active joints whose effort rows enter the fit, in active order.
+
+        ``identif_config["torque_fit_joints"]`` names them; by default every
+        active joint. The other active joints keep their kinematics in the
+        regressor (their motion still loads the fitted joints) but their
+        measured effort is neither fitted nor scored: use it for joints whose
+        effort signal is not trusted (unknown force constant, quantised).
+        """
+        active = list(self.identif_config.get("active_joints", []))
+        chosen = self.identif_config.get("torque_fit_joints")
+        if chosen is None:
+            return active
+        unknown = [j for j in chosen if j not in active]
+        if unknown:
+            raise ValueError(
+                f"torque_fit_joints {unknown} are not active joints {active}"
+            )
+        if not chosen:
+            raise ValueError("torque_fit_joints is empty: nothing to fit")
+        return [j for j in active if j in chosen]
+
+    def _fit_blocks(self):
+        """Positions of the fitted joints' row blocks, in active order."""
+        active = list(self.identif_config.get("active_joints", []))
+        n_active = len(self.identif_config["act_idxv"])
+        if self.identif_config.get("torque_fit_joints") is None:
+            return list(range(n_active))
+        fit = set(self.fit_joints())
+        return [i for i, j in enumerate(active) if j in fit]
+
+    def _select_fit_rows(self, tau, regressor):
+        """Keep the joint-major row blocks of :meth:`fit_joints`."""
+        n_active = len(self.identif_config["act_idxv"])
+        blocks = self._fit_blocks()
+        if len(blocks) == n_active:
+            return tau, regressor
+        n = len(tau) // n_active
+        rows = np.concatenate([np.arange(i * n, (i + 1) * n) for i in blocks])
+        return tau[rows], regressor[rows]
+
     def calculate_full_regressor(self):
         """Build regressor matrix, compute pre-identified values of standard
         parameters, compute joint torques based on pre-identified standard
@@ -805,6 +850,22 @@ class BaseIdentification(ABC):
             :n_rows
         ]
 
+        # only the fitted joints' effort is scored; the others' measured
+        # effort is not trusted (torque_fit_joints)
+        blocks = self._fit_blocks()
+        if len(blocks) != n_active:
+
+            def _fitted(vec):
+                return np.concatenate(
+                    [vec[i * n_val : (i + 1) * n_val] for i in blocks]
+                )
+
+            tau_val_nominal = _fitted(tau_val_nominal)
+            tau_val_identif = _fitted(tau_val_identif)
+            tau_val_measured = _fitted(tau_val_measured)
+            n_active = len(blocks)
+            n_rows = n_active * n_val
+
         # masked samples are left out of the statistics (#55); the
         # per-joint series below keep every sample for plotting
         rows = (
@@ -841,9 +902,9 @@ class BaseIdentification(ABC):
         # Per-joint raw torque series (joint-major blocks of size n_val,
         # same convention as _compute_per_joint_stats) — feeds verify()'s
         # before/after `series` export (Step 3, Feature 6 Phase A).
-        active_joints = self.identif_config.get("active_joints", [])
+        fit_names = self.fit_joints()
         joint_names = [
-            active_joints[i] if i < len(active_joints) else f"joint_{i}"
+            fit_names[i] if i < len(fit_names) else f"joint_{i}"
             for i in range(n_active)
         ]
 
@@ -919,13 +980,21 @@ class BaseIdentification(ABC):
                 "not an independent test",
                 metrics,
             )
-        estimate_stage = {}
+        extra = {}
         if sel is not None:
             # stage whose numbers are in the identified series; a rejected
             # selection leaves the fit's under the legacy keys
-            estimate_stage = {"estimate_stage": sel.stage if sel.accepted else "fit"}
+            extra = {"estimate_stage": sel.stage if sel.accepted else "fit"}
+        not_fitted = [
+            j
+            for j in self.identif_config.get("active_joints", [])
+            if j not in fit_names
+        ]
+        if not_fitted:
+            # their effort was neither fitted nor scored (torque_fit_joints)
+            extra["not_fitted_joints"] = not_fitted
         return {
-            **estimate_stage,
+            **extra,
             "n_val_samples": n_used,
             "validation_source": validation_source,
             "rmse_nominal": nominal_stats["rmse"],
@@ -1458,7 +1527,7 @@ class BaseIdentification(ABC):
         """
         W_b = self.dynamic_regressor_base
         tau = self.tau_noised
-        n_active = len(self.identif_config["act_idxv"])
+        n_active = len(self._fit_blocks())
 
         sig_ro_joint, diag_SIGMA = self._calculate_joint_variances(W_b, tau, n_active)
         self._joint_variances = sig_ro_joint
@@ -1703,9 +1772,9 @@ class BaseIdentification(ABC):
         keep = [i for i in range(len(names)) if i not in eliminated]
         theta_active = np.asarray(sel.values, dtype=float)[keep]
         residual = self._solve_tau - self._solve_W @ theta_active
-        n_active = max(len(self.identif_config.get("act_idxv", [])), 1)
+        n_active = max(len(self._fit_blocks()), 1)
         per = residual.size // n_active
-        active_joints = self.identif_config.get("active_joints", [])
+        active_joints = self.fit_joints()
         per_joint = {}
         for i in range(n_active):
             name = active_joints[i] if i < len(active_joints) else f"joint_{i}"
@@ -2092,12 +2161,12 @@ class BaseIdentification(ABC):
 
         tau_measured = np.asarray(self.result["torque processed"]).flatten()
         tau_estimated = np.asarray(self.result["torque estimated"]).flatten()
-        n_active = len(self.identif_config["act_idxv"])
+        n_active = len(self._fit_blocks())
         if n_active == 0 or tau_measured.size % n_active != 0:
             return None
 
         n_per_joint = tau_measured.size // n_active
-        active_joints = self.identif_config.get("active_joints", [])
+        active_joints = self.fit_joints()
 
         stats = {"joint_names": [], "mean": [], "std": [], "rmse": [], "max_abs": []}
         for i in range(n_active):
@@ -2690,8 +2759,8 @@ class BaseIdentification(ABC):
         if hasattr(self, "results_manager") and self.results_manager is not None:
             plot_with_fallback(
                 lambda: self.results_manager.plot_identification_results(
-                    n_joints=len(self.identif_config["act_idxv"]),
-                    joint_names=self.identif_config.get("active_joints"),
+                    n_joints=len(self._fit_blocks()),
+                    joint_names=self.fit_joints(),
                 ),
                 _basic_plots,
                 logger,

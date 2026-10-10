@@ -358,6 +358,13 @@ def _extract_problem_config(identif_config, problem):
     # QR rank threshold relative to the largest pivot (None: absolute only)
     identif_config["qr_relative_tolerance"] = problem.get("qr_relative_tolerance")
 
+    # Active joints whose effort enters the fit (None: all of them); the
+    # others keep their kinematics in the regressor
+    fit_joints = problem.get("torque_fit_joints")
+    if fit_joints is not None and not isinstance(fit_joints, list):
+        raise ValueError("problem.torque_fit_joints must be a list of joint names")
+    identif_config["torque_fit_joints"] = fit_joints
+
 
 def _extract_mechanical_params(identif_config, mechanics):
     """Extract mechanical parameters (friction, inertia, ratios).
