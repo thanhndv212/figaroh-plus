@@ -144,6 +144,7 @@ points.
 | `embedded_forces` | Express the external wrench in a body-embedded (tool) frame rather than a fixed/world frame | *(no unified equivalent found)* |
 | `qr_relative_tolerance` | *(optional)* QR rank threshold as a fraction of the largest pivot. Columns whose pivot falls below it are treated as unidentifiable instead of fitting noise. Unset: only the absolute `1e-6` threshold applies. `1e-4` is a reasonable start when the log warns about an ill-conditioned base regressor | `problem.qr_relative_tolerance` |
 | `active_joints` | *(optional)* Restrict identification to this explicit subset of joint names, instead of every active joint in the chain | `joints.active_joints` |
+| `torque_fit_joints` | *(optional)* Active joints whose measured effort enters the fit and the fit/validation statistics. The other active joints keep their kinematics in the regressor (their motion still loads the fitted joints), but their effort is neither fitted nor scored; validation lists them under `not_fitted_joints`. Use it for joints whose effort signal is not trusted (unknown force constant, heavy quantisation). Unset: every active joint | `problem.torque_fit_joints` |
 
 ### `processing_params`
 
