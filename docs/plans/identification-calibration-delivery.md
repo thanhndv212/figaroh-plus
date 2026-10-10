@@ -85,7 +85,7 @@ flowchart TD
     D2["<b>D2: Signal audit</b> · #37 ✅<br/>✓ ex#19 ex#20 ex#51"]
     D3["<b>D3: UR10 truth fixture</b> · #38 ✅<br/>✓ #142 #143<br/>✓ ex#21"]
     D4["<b>D4: Physical comparison</b> · #39 ✅<br/>✓ #59 ex#12 ex#22"]
-    D5["<b>D5: Convergence research</b> · #40<br/>✓ #22 (revise) #30 (no-go)<br/>#155"]
+    D5["<b>D5: Convergence research</b> · #40 ✅<br/>✓ #22 (revise) #30 (no-go)"]
     D6["<b>D6: Inertial export</b> · #41 ✅<br/>✓ #60 (PR #138)"]
     D7["<b>D7: Dynamic reference</b> · #42<br/>#61 (code merged, PR #165) #116<br/>ex#23 ex#68 ex#69"]
     C1["<b>C1: Frames/data audit</b> · #43 ✅<br/>✓ ex#24 ex#25"]
@@ -101,7 +101,7 @@ flowchart TD
     S3["<b>S3: Improved experiment design</b> · #49<br/>#65 #90<br/>ex#32"]
     S4["<b>S4: Selective composition</b> · #52<br/>#67"]
     B1["<b>B1: Backend parity</b> · #53<br/>#68<br/>ex#34"]
-    LC1["<b>LC1: Log-Cholesky production</b> · #20<br/>#23 #24 #25<br/>ex#11"]
+    LC1["<b>LC1: Log-Cholesky production</b> · #20<br/>#155 (go gate)<br/>#23 #24 #25<br/>ex#11"]
 
     R --> W1
     R --> W2
@@ -115,7 +115,7 @@ flowchart TD
     D6 --> D7
     D4 --> D7
     D5 -. optional nonlinear path .-> D7
-    D5 -. go decision .-> LC1
+    D5 --> LC1
     W1 --> C1
     W2 --> C1
     C1 --> C2
@@ -140,9 +140,8 @@ flowchart TD
 
     classDef cleared fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
     classDef ready fill:#fff3cd,stroke:#b8860b,color:#5c4400
-    class R,W1,W2,W3,W4,D1,D2,C1,C2,C3,S1,D6,C4,D3,D4 cleared
-    class D5 ready
-    class D7 active
+    class R,W1,W2,W3,W4,D1,D2,C1,C2,C3,S1,D6,C4,D3,D4,D5 cleared
+    class D7,LC1 active
     classDef active fill:#fff3cd,stroke:#b8860b,stroke-width:3px,stroke-dasharray:6 3,color:#5c4400
 ```
 
@@ -157,7 +156,7 @@ research examples outside M1.
 
 ### Implementation status
 
-Status as of 2026-10-06, taken from the GitHub trackers. The trackers stay
+Status as of 2026-10-10, taken from the GitHub trackers. The trackers stay
 authoritative; refresh this table when a tracker closes.
 
 | Package | Status | Closed | Delivered by / remaining |
@@ -172,7 +171,7 @@ authoritative; refresh this table when a tracker closes.
 | **C3** geometric export | ✅ **Cleared** | 2026-10-06 | accepted on core `efd9f69` + examples `2c75f50` |
 | **W3** data/result contracts | ✅ **Cleared** | 2026-10-06 | core #126 (ADR, #54), #128/#130 (contract, #55), #132 (#131), #127 (#125); examples #84 (#17); accepted on core `4ec06d4` + examples `9a9e6d7` |
 | **D3** UR10 truth fixture | ✅ **Cleared** | 2026-10-07 | examples #21 by examples #89/#91 (fixture, frozen protocol v1, UR10 example moved onto it); #142 by #144; #143 by #145 + examples #92 (both added 2026-10-07); accepted on core `2260786` + examples `b23b836` (core 846 passed; examples `validate.py` 16/16, pytest 255 passed) |
-| D5 convergence research | Ready (optional) | — | #22 done via PR #31 (revise); #30 done via #154 (no-go: 8/24 gated fits exhaust 2000 evaluations); #155 (method change for reliable termination) ready, tracker #40 in review |
+| **D5** convergence research | ✅ **Cleared** | 2026-10-10 | #22 by PR #31 (revise); #30 by PR #154 (no-go: 8/24 gated fits exhaust 2000 evaluations). The method change #155 moved to LC1 as its go gate |
 | **D6** inertial export | ✅ **Cleared** | 2026-10-06 | #60 by PR #138; accepted on core `0e6a78c` + examples `a3381bc` (core 817 passed; examples `validate.py` 16/16, pytest 237 passed); merged-body export left to D7 (#61) |
 | **S1** reporting contract | ✅ **Cleared** | 2026-10-06 | core #63 (PR #134), #70, #100, #103 (PR #135); examples #30 (examples PR #85), #36 |
 | **C4** calibration reference | ✅ **Cleared** | 2026-10-06 | examples #29 by examples #88 (`reference_run.py`); #119 by #141 (core support; TIAGo protocol keeps one marker); #120 by #140 + examples #87 (`map` replaces the coefficient); #97–#99 by #127, #137, #139 + examples #86; accepted on core `c80b5fc` + examples `88e2fc2`. Held-out marker RMSE 3.8–4.2 mm; export parity ≤ 2.1e-12 m |
@@ -180,7 +179,8 @@ authoritative; refresh this table when a tracker closes.
 | U1 onboarding | In progress | — | core #66 guideline published; the TIAGo mocap walkthrough can use C4 now; acceptance still waits on D7 |
 | **D4** physical comparison | ✅ **Cleared** | 2026-10-09 | #59 by PR #153 (2026-10-08); examples #12 by examples PR #13; examples #22 by examples PRs #94 and #95 |
 | D7 dynamic reference | **In progress** | — | Library side merged 2026-10-09: #61 by PR #165 (`select_stage`, public `physical_fit`, `export_urdf`, `merged_bodies="subtract_fixed"`; core 926 passed, 6 skipped). #61 stays open until V2 evidence exists. #116 merged by PR #169 and examples #69 by PR #103 (2026-10-10). Open: examples #68, #23 (see [path forward](#path-forward)) |
-| S3, B1, LC1 | Blocked | — | waiting on the upstream packages shown in the graph; S3 and B1 wait on D7 and S2 |
+| LC1 log-Cholesky production | In progress (optional) | — | Go gate #155 (method change) in progress: exploration done on spent seeds, method choice pending, protocol not frozen. #23–#25 and examples #11 wait on its go decision |
+| S3, B1 | Blocked | — | S3 and B1 wait on D7 and S2 |
 | S4 composition (M2) | Blocked | — | W3 cleared; still waits on accepted M1 references |
 
 **Gate summary:** M0's delivery roster (W1, W2, W4) and M1.1 (D1, D2, C1)
@@ -238,7 +238,7 @@ Each extends the D4 physical comparison and none changes the baseline:
 
 | Issue | Study |
 | --- | --- |
-| core #155 | Change the log-Cholesky fitting method for reliable termination (belongs to D5, not D8; `delivery`, ready) |
+| core #155 | Change the log-Cholesky fitting method for reliable termination (belongs to LC1 as its go gate, not D8; `delivery`) |
 | core #157 | Geometric (log-det) regularization for the physical direct fit |
 | core #158 | Geometry-derived physical constraints (mass, CoM, bounding ellipsoid) |
 | core #159 | Manifold-optimization alternative to log-Cholesky |
@@ -301,10 +301,10 @@ to clear a package. Cross-repository milestones need one canonical roster
 (parent issue/project record) linking both repositories, since their individual
 GitHub milestone views do not provide a combined closure record.
 
-D5 is a separate research milestone. Its issues must all meet the agreed
-research criteria to clear D5, but D5 is not required for the supported baseline
-M1 scope. Promoting the nonlinear path adds D5 and #23–#25 to that path's reviewed
-roster; none are silently treated as completed by D7. Basic acquisition/design
+D5 is a separate research milestone, cleared on 2026-10-10 with #22 (revise) and
+#30 (no-go); it was never required for the supported baseline M1 scope. The
+method-change revision #155 moved to LC1 as its go gate. Promoting the nonlinear
+path adds #155 and #23–#25 to that path's reviewed roster; none are silently treated as completed by D7. Basic acquisition/design
 guidance is part of U1; S3 is the later algorithmic improvement milestone.
 
 | ID / canonical tracker | Roadmap outcome / gate | Outcome / justification | Repository and dependencies | Acceptance evidence |
@@ -316,7 +316,7 @@ guidance is part of U1; S3 is the later algorithmic improvement milestone.
 | [D2](https://github.com/thanhndv212/figaroh-plus/issues/37) | M1.1 dynamic | Audit robot signal processing | Separate examples issues for UR10 and TIAGo | Recorded vs inferred timestamps; explicit filter rates/cutoffs/order; torque/current units/signs; trim/decimation index provenance; immutable raw files |
 | [D3](https://github.com/thanhndv212/figaroh-plus/issues/38) | M1.2 dynamic | Fresh UR10 truth fixture and benchmark protocol | Examples; D1/D2 | Save verified true inertias, analytic q/dq/ddq, independent train/validation trajectories and noise seeds; no ground-truth parameter claims from old CSVs |
 | [D4](https://github.com/thanhndv212/figaroh-plus/issues/39) | M1.2 dynamic | Fair physical-estimation comparator | Private core spike + linked examples experiment; D3 | Base OLS, exact reconstruction, direct LMI-constrained effort fit, per-link projection and log-Cholesky; common inputs; comparable objectives and extras policy; separate failures |
-| [D5](https://github.com/thanhndv212/figaroh-plus/issues/40) | M1.2 optional nonlinear research | Convergence/scaling revision | Core #30 (no-go), #155; analytic fixture now, robot evaluation after D3/D4 | Objective/gradient histories, scaling/bounds/prior ablations, multiple starts and justified budget; preserve earlier protocol; the #30 go gates, carried unchanged into #155, govern go |
+| [D5](https://github.com/thanhndv212/figaroh-plus/issues/40) | M1.2 optional nonlinear research | Convergence/scaling revision | Core #22 (revise), #30 (no-go); cleared 2026-10-10, #155 moved to LC1 | Objective/gradient histories, scaling/bounds/prior ablations, multiple starts and justified budget; preserve earlier protocol; the #30 go gates, carried unchanged into #155, govern go |
 | [D6](https://github.com/thanhndv212/figaroh-plus/issues/41) | M1.3 dynamic | Complete inertial export | Core; prior mapping review and known-parameter fixture | Mass/first moments/CoM, origin vs CoM tensor and inertial rotation handled; export/reload matches intended RNEA and physical verdict; unsupported targets fail explicitly |
 | [D7](https://github.com/thanhndv212/figaroh-plus/issues/42) | M1.4 dynamic | Accepted dynamic reference workflow | Core integration + examples; D4/D6/S1; D5 only for optional nonlinear path | Explicit selected stage, fit and genuine validation splits, per-joint units, physical/solver verdict, exported model and archive; successful supported baseline can ship without nonlinear go |
 | [C1](https://github.com/thanhndv212/figaroh-plus/issues/43) | M1.1 calibration | Audit geometric data/frames and reproduction | Examples with focused core fixes; W1/W2 | Named observation frames, translation/rotation units, timestamps, measurement source and split policy; TIAGo and TALOS current behavior captured |
@@ -352,7 +352,7 @@ automatic merging are configured by this setup.
 | [D2](https://github.com/thanhndv212/figaroh-plus/issues/37) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/5) | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/4) |
 | [D3](https://github.com/thanhndv212/figaroh-plus/issues/38) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/6) | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/5) |
 | [D4](https://github.com/thanhndv212/figaroh-plus/issues/39) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/7) | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/6) |
-| [D5](https://github.com/thanhndv212/figaroh-plus/issues/40) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/8) | No examples-owned issues in this roster |
+| [D5](https://github.com/thanhndv212/figaroh-plus/issues/40) | [Closed milestone](https://github.com/thanhndv212/figaroh-plus/milestone/8?closed=1) | No examples-owned issues in this roster |
 | [D6](https://github.com/thanhndv212/figaroh-plus/issues/41) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/9) | No examples-owned issues in this roster |
 | [D7](https://github.com/thanhndv212/figaroh-plus/issues/42) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/10) | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/7) |
 | [C1](https://github.com/thanhndv212/figaroh-plus/issues/43) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/11) | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/8) |
@@ -377,9 +377,10 @@ own examples issue: C5 examples #104–#114 (sub-issues of their studies), D8
 examples #115 (sub-issue of core #160).
 
 **LC1** uses existing core #20 as the canonical conditional-production tracker
-for core #23–#25 and examples #11. D5 owns research #22/#30/#155; its accepted go
-decision is a dependency, not completion of those production issues. LC1 is
-outside baseline M1 closure and introduces no additional production scope.
+for core #23–#25 and examples #11. Its go gate is research issue #155 (moved from
+D5 on 2026-10-10); a go decision there is a dependency, not completion of those
+production issues. LC1 is outside baseline M1 closure and introduces no
+additional production scope.
 
 Initial queue (2026-10-02): D1 / core #32 was the first ready correctness fix,
 delivered by #69. W1, W2, W3, W4, D1, D2, D3, D6, C1, C2, C3, C4 and S1 have since cleared
@@ -387,7 +388,7 @@ delivered by #69. W1, W2, W3, W4, D1, D2, D3, D6, C1, C2, C3, C4 and S1 have sin
 (2026-10-09): calibration is done through M1.4, and D3 and D4 have cleared. The
 critical path is D7 only: examples #69 and #68 (TIAGo inputs and held-out runs),
 then examples #23 (reference command), then closing #61, #42 and U1 acceptance;
-core #116 runs in parallel (see the [path forward](#path-forward)). On the optional path, D5 #30 recorded no-go and #155 (method change) is ready.
+core #116 runs in parallel (see the [path forward](#path-forward)). On the optional path, D5 cleared (#30 no-go) and LC1's go gate #155 (method change) is in progress.
 Select one issue, validate its focused change, open its PR, then await
 review/merge approval.
 
