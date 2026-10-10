@@ -34,6 +34,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The physical-consistency projection projects the identified fit, not the
+  nominal model. It now reads the full-parameter reconstruction, which runs
+  first, and projects only the joints the reconstruction covers. Without
+  `reconstruction` enabled the block is `skipped` and the `physical` stage is
+  `not_run`; it was previously recorded `ok` for a projection of the CAD
+  prior. (#163)
+- A configured `max_seconds` in the SDP reconstruction and the LMI projection
+  is passed to picos as `timelimit`; picos rejected the old option name and
+  the solve was reported as failed. (#164)
 - Base-parameter selection no longer depends on BLAS rounding or on the order
   of regressor columns. `QRDecomposer` picks base columns with the new
   `deterministic_column_pivots`: largest residual first, columns within a
