@@ -465,7 +465,7 @@ def _reconstruct_sdp(
 
     solve_kwargs: Dict[str, Any] = {"solver": solver, "verbosity": 0}
     if max_seconds is not None:
-        solve_kwargs["max_seconds"] = float(max_seconds)
+        solve_kwargs["timelimit"] = float(max_seconds)  # picos option name
 
     problem.solve(**solve_kwargs)
 
