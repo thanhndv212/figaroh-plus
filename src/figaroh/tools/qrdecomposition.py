@@ -38,6 +38,79 @@ TOL_QR = 1e-8
 TOL_BETA = 1e-6
 
 
+#: Columns whose residual norm is within this fraction of the largest are
+#: treated as tied when choosing the next base column (#116).
+TIE_RTOL = 1e-6
+
+
+def deterministic_column_pivots(
+    W: np.ndarray,
+    names: Optional[List[str]] = None,
+    *,
+    tol: float = TOL_QR,
+    relative_tol: Optional[float] = None,
+    tie_rtol: float = TIE_RTOL,
+) -> Tuple[np.ndarray, int]:
+    """Pick independent regressor columns the same way on every machine.
+
+    LAPACK's pivoted QR (``scipy.linalg.qr(pivoting=True)``) takes the column
+    of largest residual norm at each step. Columns whose norms tie to rounding
+    error (common in rigid-body regressors) are then ordered by BLAS noise,
+    so the selected set, and with it ``phi_base``, depends on the platform.
+
+    This greedy selection (Gram-Schmidt on the ``R`` factor, with
+    re-orthogonalisation) takes the largest-residual column too, but treats
+    all columns within ``tie_rtol`` of the largest as tied and picks the one
+    with the smallest name (falling back to the smallest index when ``names``
+    is None). The outcome then depends on the column names, not on their
+    order in ``W`` or on rounding noise below ``tie_rtol``.
+
+    Args:
+        W: Regressor, shape ``(m, n)``.
+        names: Column names, length n. Ties are broken by name.
+        tol: Absolute rank threshold on the residual norm.
+        relative_tol: If set, threshold is ``max(relative_tol * first_pivot,
+            tol)``, as in :meth:`QRDecomposer._find_rank`.
+        tie_rtol: Relative width of the tie band.
+
+    Returns:
+        ``(P, rank)``: a permutation of ``range(n)`` whose first ``rank``
+        entries are the selected columns in selection order, followed by the
+        remaining columns in ascending name (index) order.
+    """
+    n = W.shape[1]
+    if n == 0:
+        return np.empty(0, dtype=int), 0
+    keys = list(names) if names is not None else list(range(n))
+    rank_order = sorted(range(n), key=lambda j: (keys[j], j))
+    prio = np.empty(n, dtype=int)
+    prio[rank_order] = np.arange(n)
+
+    A = np.linalg.qr(np.asarray(W, dtype=float), mode="r")
+    remaining = np.ones(n, dtype=bool)
+    chosen: List[int] = []
+    thr = None
+    for _ in range(min(A.shape[0], n)):
+        norms = np.linalg.norm(A, axis=0)
+        norms[~remaining] = -1.0
+        top = norms.max()
+        if thr is None:
+            thr = tol
+            if relative_tol is not None:
+                thr = max(relative_tol * top, tol)
+        if top <= thr:
+            break
+        tied = np.flatnonzero(norms >= top * (1.0 - tie_rtol))
+        p = int(tied[np.argmin(prio[tied])])
+        chosen.append(p)
+        remaining[p] = False
+        q = A[:, p] / norms[p]
+        for _ in range(2):
+            A -= np.outer(q, q @ A)
+    rest = [j for j in rank_order if remaining[j]]
+    return np.array(chosen + rest, dtype=int), len(chosen)
+
+
 @dataclass
 class QRResult:
     """Structured output of a QR base-parameter decomposition.
@@ -50,7 +123,7 @@ class QRResult:
         base_indices: Column indices into ``params_r`` that form the
             independent (base) set.
         pivot_order: Full pivot permutation used by the pivoting path
-            (``P`` from ``scipy.linalg.qr``); ``None`` for the double path.
+            (from :func:`deterministic_column_pivots`); ``None`` for the double path.
         W_b: Base regressor matrix, shape ``(m, rank)``.
         beta: Dependency coefficient matrix, shape ``(rank, n - rank)``.
             Full precision — not rounded.
@@ -91,7 +164,17 @@ class QRDecomposer:
         tolerance: float = TOL_QR,
         beta_tolerance: float = TOL_BETA,
         relative_tolerance: Optional[float] = None,
+        deterministic: bool = True,
     ):
+        """
+        Args:
+            deterministic: Choose base columns with
+                :func:`deterministic_column_pivots` (default), so ties
+                between equally large columns are broken by parameter name
+                instead of BLAS rounding noise (#116). ``False`` keeps
+                LAPACK's pivoted QR, whose tie order is platform dependent.
+        """
+        self.deterministic = deterministic
         self.tolerance = tolerance
         self.beta_tolerance = beta_tolerance
         self.relative_tolerance = relative_tolerance
@@ -181,12 +264,9 @@ class QRDecomposer:
 
         method_norm = method.strip().lower()
         if method_norm in {"pivoting", "pivot", "qr_pivoting", "qr-pivoting"}:
-            _, R, P = linalg.qr(W_e, pivoting=True, mode="economic")
-            rank = self._find_rank(R)
+            Q, R, P, rank = self._pivoted_qr(W_e, params_r)
             params_sorted = [params_r[P[i]] for i in range(P.shape[0])]
-            R1, Q1, R2 = self._extract_base_components(
-                R, np.linalg.qr(W_e[:, P])[0], rank
-            )
+            R1, Q1, R2 = self._extract_base_components(R, Q, rank)
             beta = np.linalg.solve(R1, R2) if R2.size else np.empty((rank, 0))
             phi_b = np.linalg.solve(R1, Q1.T @ tau)
             W_b = Q1 @ R1
@@ -330,13 +410,10 @@ class QRDecomposer:
               - W_b has shape (m, r) with r = rank(W_e)
               - base_parameters maps expression strings (length r) to values.
         """
-        Q, R, P = linalg.qr(W_e, pivoting=True, mode="economic")
+        Q, R, P, rank = self._pivoted_qr(W_e, params_r)
 
         # Reorder parameters according to pivoting
         params_sorted = [params_r[P[i]] for i in range(P.shape[0])]
-
-        # Find effective rank
-        rank = self._find_rank(R)
 
         # Extract base components
         R1, Q1, R2 = self._extract_base_components(R, Q, rank)
@@ -472,6 +549,28 @@ class QRDecomposer:
 
         return W_b, base_parameters, params_base_expr, phi_b
 
+    def _pivoted_qr(
+        self, W_e: np.ndarray, params_r: List[str]
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, int]:
+        """Deterministic column-pivoted QR: ``(Q, R, P, rank)``.
+
+        ``W_e[:, P] = Q @ R``. The pivots come from
+        :func:`deterministic_column_pivots`, so they do not depend on column
+        order, BLAS or rounding noise (#116). With ``deterministic=False``
+        this is LAPACK's pivoted QR.
+        """
+        if not self.deterministic:
+            Q, R, P = linalg.qr(W_e, pivoting=True, mode="economic")
+            return Q, R, P, self._find_rank(R)
+        P, rank = deterministic_column_pivots(
+            W_e,
+            params_r,
+            tol=self.tolerance,
+            relative_tol=self.relative_tolerance,
+        )
+        Q, R = np.linalg.qr(W_e[:, P], mode="reduced")
+        return Q, R, P, rank
+
     def _find_rank(self, R: np.ndarray) -> int:
         """Find effective numerical rank from an upper-triangular R.
 
@@ -517,8 +616,7 @@ class QRDecomposer:
         dependent.  Both lists are returned sorted in ascending column order so
         the result does not depend on arbitrary column ordering.
         """
-        _, R, P = linalg.qr(W_e, pivoting=True, mode="economic")
-        rank = self._find_rank(R)
+        _, _, P, rank = self._pivoted_qr(W_e, params_r)
         # Sort so the selected columns are deterministic regardless of input ordering
         base_indices = sorted(P[:rank].tolist())
         regroup_indices = sorted(P[rank:].tolist())
@@ -622,8 +720,7 @@ class QRDecomposer:
               - M has shape (r, n) where r is the identified rank
               - base_params_expr is a list[str] of length r
         """
-        _, R, P = linalg.qr(W_e, pivoting=True, mode="economic")
-        rank = self._find_rank(R)
+        _, R, P, rank = self._pivoted_qr(W_e, params_r)
 
         # Dependency coefficients in the pivoted ordering — full precision
         R1 = R[:rank, :rank]
