@@ -238,7 +238,7 @@ def project_p10_lmi(
         "verbosity": int(verbose),
     }
     if max_seconds is not None:
-        solve_kwargs["max_seconds"] = float(max_seconds)
+        solve_kwargs["timelimit"] = float(max_seconds)  # picos option name
 
     t_start = time.perf_counter()
     try:
