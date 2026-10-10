@@ -179,7 +179,7 @@ authoritative; refresh this table when a tracker closes.
 | S2 uncertainty | In progress (M2) | — | core #107 calibration standard errors fixed; #64 open |
 | U1 onboarding | In progress | — | core #66 guideline published; the TIAGo mocap walkthrough can use C4 now; acceptance still waits on D7 |
 | **D4** physical comparison | ✅ **Cleared** | 2026-10-09 | #59 by PR #153 (2026-10-08); examples #12 by examples PR #13; examples #22 by examples PRs #94 and #95 |
-| D7 dynamic reference | **In progress** | — | Library side merged 2026-10-09: #61 by PR #165 (`select_stage`, public `physical_fit`, `export_urdf`, `merged_bodies="subtract_fixed"`; core 926 passed, 6 skipped). #61 stays open until V2 evidence exists. Open: #116, examples #68, #69, #23 (see [path forward](#path-forward)) |
+| D7 dynamic reference | **In progress** | — | Library side merged 2026-10-09: #61 by PR #165 (`select_stage`, public `physical_fit`, `export_urdf`, `merged_bodies="subtract_fixed"`; core 926 passed, 6 skipped). #61 stays open until V2 evidence exists. #116 merged by PR #169 and examples #69 by PR #103 (2026-10-10). Open: examples #68, #23 (see [path forward](#path-forward)) |
 | S3, B1, LC1 | Blocked | — | waiting on the upstream packages shown in the graph; S3 and B1 wait on D7 and S2 |
 | S4 composition (M2) | Blocked | — | W3 cleared; still waits on accepted M1 references |
 
@@ -212,9 +212,9 @@ bug.
 
 | Step | Issue | State | What it needs |
 | --- | --- | --- | --- |
-| 1 | examples #69 — ship the `calibration_slow` and `calibration_weight` runs, default `validation_data_file`, payload scale check | ready | The original 2021-07 bags and the exporter that reproduces the shipped run byte for byte. Do this first: #68's acceptance bar is held-out RMSE on `calibration_slow` no worse than 1.21 |
+| 1 | examples #69 — ship the `calibration_slow` and `calibration_weight` runs, default `validation_data_file`, payload scale check | **done** (PR #103) | The original 2021-07 bags and the exporter that reproduces the shipped run byte for byte. Do this first: #68's acceptance bar is held-out RMSE on `calibration_slow` no worse than 1.21 |
 | 2 | examples #68 — velocity filter model, torso/wrist/arm_1 effort handling, Hey5 URDF, constants in config | ready | The same bags. Seven checklist items, each ships its derived data and analysis in the repository |
-| 3 | core #116 — deterministic base-parameter selection | planned | Independent of 1–2; can run in parallel. Lets the golden tests drop the basis-dependent masks added in PR #165 |
+| 3 | core #116 — deterministic base-parameter selection | **done** (PR #169) | Independent of 1–2; can run in parallel. Lets the golden tests drop the basis-dependent masks added in PR #165 |
 | 4 | examples #23 — headless reference command (UR10 truth protocol with `physical_fit` and export; TIAGo rejected-stage and `arm_7` merged-body cases) | blocked on 1–2 for TIAGo; UR10 part can start now | Needs #61's library side (merged). Acceptance is V3: full `validate.py` |
 | 5 | core #61 — close with the V2 run linked | open | Library side done in PR #165; its acceptance criteria are met, its validation level (V2) waits on step 4 |
 | 6 | D7 tracker #42 — closing review | open | Closes last, after steps 1–5 and the maintainer accepts the integration evidence |
@@ -233,7 +233,7 @@ block D7.
 | core #164 | The SDP reconstruction and LMI projection pass `max_seconds` to picos, which only knows `timelimit`. Fixed for `physical_fit` only |
 
 **Identification study expansion (package D8, research, `status:planned`, outside
-baseline M1).** D8 groups core #157–#161 under one milestone (no tracker yet).
+baseline M1).** D8 groups core #157–#161 and examples #115 under milestone D8 (no tracker yet).
 Each extends the D4 physical comparison and none changes the baseline:
 
 | Issue | Study |
@@ -244,6 +244,7 @@ Each extends the D4 physical comparison and none changes the baseline:
 | core #159 | Manifold-optimization alternative to log-Cholesky |
 | core #160 | Noise-bias estimators (IDIM-IV, DIDIM, TLS) in the physical comparison |
 | core #161 | Bayesian physically consistent identification |
+| examples #115 | TX40: trace the identification CSVs to the original recording and ship the author's 2021 reference identification (data for #160 and the D4 comparison) |
 | examples #70, #71 | TIAGo suspension and backlash research examples; now Phase 3 of C5 (below) |
 
 **Calibration study expansion (package C5, tracker core #167, `status:planned`).** The
@@ -365,13 +366,15 @@ automatic merging are configured by this setup.
 | [U1](https://github.com/thanhndv212/figaroh-plus/issues/51) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/19) | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/16) |
 | [S4](https://github.com/thanhndv212/figaroh-plus/issues/52) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/20) | No examples-owned issues in this roster |
 | [B1](https://github.com/thanhndv212/figaroh-plus/issues/53) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/21) | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/17) |
-| [C5](https://github.com/thanhndv212/figaroh-plus/issues/167) | Milestone to be created | Milestone to be created |
-| D8 (no tracker yet) | Milestone to be created | No examples-owned issues in this roster |
+| [C5](https://github.com/thanhndv212/figaroh-plus/issues/167) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/23) | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/19) |
+| D8 (no tracker yet) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/24) | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/20) |
 | [LC1](https://github.com/thanhndv212/figaroh-plus/issues/20) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/22) | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/18) |
 
 **C5** (calibration studies, tracker core #167) and **D8** (identification studies,
 core #157–#161) were added on 2026-10-09 beneath M2 and are outside baseline M1
-closure. Their milestones are not created yet; link them here when they exist.
+closure. Their milestones were created on 2026-10-10. Each data transfer is its
+own examples issue: C5 examples #104–#114 (sub-issues of their studies), D8
+examples #115 (sub-issue of core #160).
 
 **LC1** uses existing core #20 as the canonical conditional-production tracker
 for core #23–#25 and examples #11. D5 owns research #22/#30/#155; its accepted go

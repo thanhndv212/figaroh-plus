@@ -14,12 +14,13 @@ FIGAROH core. Every study gets a simulated fixture with known truth.
 | --- | --- | --- | --- |
 | Motion-capture reference | TIAGo | Qualisys marker position | 4 frozen sessions (2021-11) |
 | Motion capture | TIAGo Pro | Qualisys marker pose | 3 sessions: 2026-07-01 (44), 07-02 (94), 08-05 (48) |
-| Table contact | TALOS | Flush contact with one table (height, roll, pitch) | Left 21 + 9, right 29 + 9 postures (2022-10/11) |
+| Table contact | TALOS | Flush contact with one table (height, roll, pitch) | Left 21 + 9, right 29 + 9 postures (2022-10/11); provenance and contact evidence: [#113](https://github.com/thanhndv212/figaroh-examples/issues/113) |
 | Hand-eye | UR10 | Flange camera observing a fixed chessboard (6D) | `ur10/data/calibration.csv`, 23 postures, one session |
-| Motion capture across hardware | TIAGo | Qualisys, OptiTrack, Vicon | Qualisys only; OptiTrack (2023-09-12) and Vicon (2023-09-20) not imported |
-| Head camera, chessboard on hand | TIAGo | Head camera observing a hand-held chessboard | Not imported (sessions 2023-10-24 to 2023-11-27) |
-| Backlash surface | TIAGo | Absolute minus relative encoder | One trajectory (2023-07-24) |
-| Suspension base | TIAGo | Base motion and force-plate wrench | One Vicon log; OptiTrack 2023-07 and 2023-09 sessions not imported |
+| Motion capture across hardware | TIAGo | Qualisys, OptiTrack, Vicon | Qualisys 2021-11 only. To import: Qualisys 2021-10-26 [#104](https://github.com/thanhndv212/figaroh-examples/issues/104), OptiTrack 2023-09-12 [#105](https://github.com/thanhndv212/figaroh-examples/issues/105), Vicon 2023-09-20 [#106](https://github.com/thanhndv212/figaroh-examples/issues/106), square-motion validation runs [#107](https://github.com/thanhndv212/figaroh-examples/issues/107) |
+| Head camera, chessboard on hand | TIAGo | Head camera observing a hand-held chessboard | Not imported (sessions 2023-10-24 to 2023-11-27): [#108](https://github.com/thanhndv212/figaroh-examples/issues/108) |
+| Backlash surface | TIAGo | Absolute minus relative encoder | One trajectory (2023-07-24). To import: 2023-03-09 session [#109](https://github.com/thanhndv212/figaroh-examples/issues/109), joint inspections [#110](https://github.com/thanhndv212/figaroh-examples/issues/110) |
+| Suspension base | TIAGo | Base motion and force-plate wrench | One Vicon log. To import: ten more Vicon runs [#111](https://github.com/thanhndv212/figaroh-examples/issues/111), OptiTrack 2023-07 and 2023-09 sessions [#112](https://github.com/thanhndv212/figaroh-examples/issues/112) |
+| Motion capture | TALOS | Marker pose, torso and arms | Not imported (3 sessions, 2022-03-15): [#114](https://github.com/thanhndv212/figaroh-examples/issues/114) |
 
 TIAGo Pro's three sessions are all the data that exists. UR10 has one session.
 
@@ -64,6 +65,7 @@ only some sessions shipped.
 | TIAGo head camera | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
 | TIAGo backlash surface | ~ | ✗ | ✗ | ✗ | ✗ | ✗ | ~ | ~ |
 | TIAGo suspension | ~ | ✗ | ✗ | ✗ | ✗ | ✗ | ~ | ~ |
+| TALOS mocap | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
 
 ## Phases
 
@@ -71,8 +73,17 @@ only some sessions shipped.
 | --- | --- | --- |
 | 0 — Shared tools | Generic simulation harness (measurement model, truth sampler, noise model) generalized from `calibration_truth.py`; generic held-out runner driven by `protocol.yaml`; fix #99 (identifiable set depends on random draws) and #116 (platform-dependent QR ties) | Every later headline number moves when the identifiable set changes; the TALOS two-chain held-out height error already ranges 4.7–12.3 mm across draws |
 | 1 — Data already shipped | TIAGo Pro, TALOS table contact, UR10 hand-eye | Most studies brought to standard for least effort |
-| 2 — Data to import | TIAGo multi-hardware, TIAGo head camera | Each starts with a data audit that can end in "not usable" |
+| 2 — Data to import | TIAGo multi-hardware, TIAGo head camera, TALOS motion capture | Each starts with a data audit that can end in "not usable" |
 | 3 — Beyond geometry | Backlash surface, suspension base | Both depend on the accepted geometric reference and on Phase 2 OptiTrack data |
+
+Each data import is its own figaroh-examples issue, attached as a sub-issue of
+its study (or of the tracker for a new study), and meets the bar set by the
+TIAGo identification shipment (examples #69): source recordings named by
+sha256 and not distributed, a typed extractor that re-creates the shipped files
+byte for byte, frozen roles and hashes in `protocol.yaml`, a data README and an
+inventory entry. Data issues: [#104](https://github.com/thanhndv212/figaroh-examples/issues/104)–[#114](https://github.com/thanhndv212/figaroh-examples/issues/114). Milestones: C5 in
+[figaroh-plus](https://github.com/thanhndv212/figaroh-plus/milestone/23) and
+[figaroh-examples](https://github.com/thanhndv212/figaroh-examples/milestone/19).
 
 Phase 0 changes shared code: plan it with the `architect` agent first and keep
 the TIAGo reference numbers as a regression check. Phase 1 studies can go to
@@ -137,6 +148,15 @@ the `implementer` agent.
   Hardware and date are confounded (arm_5 encoder shifted ~90 mrad between
   2021 and 2023), so the simulation sets the hardware-only expectation first.
 
+### TALOS motion capture (Phase 2)
+
+- **Have:** three torso-arm sessions from 2022-03-15 (left, right, and a
+  second right-arm run) with marker poses and joints; not imported ([#114](https://github.com/thanhndv212/figaroh-examples/issues/114)).
+- **Do:** audit (clocks, frozen samples, tracking loss), extract static
+  postures, freeze; then open the study issue.
+- **Question:** does a measured TALOS calibration agree with the table-contact
+  result, whose observations are assumed rather than measured?
+
 ### TIAGo head camera, chessboard on hand (Phase 2)
 
 - **Have:** sessions 2023-10-24 to 2023-11-27 and PAL's reference
@@ -200,5 +220,7 @@ the `implementer` agent.
 
 1. ~~Open one tracker in figaroh-plus with one issue per study (in
    figaroh-examples) and one for Phase 0.~~ Done: core #167, examples #96–#101.
+1. ~~One issue per data transfer and the C5 milestones.~~ Done 2026-10-10:
+   examples [#104](https://github.com/thanhndv212/figaroh-examples/issues/104)–[#114](https://github.com/thanhndv212/figaroh-examples/issues/114).
 2. Plan Phase 0 with the `architect` agent; fix the TIAGo Pro split in
    parallel.
