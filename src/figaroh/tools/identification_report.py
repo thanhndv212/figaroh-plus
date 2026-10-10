@@ -436,8 +436,9 @@ def _consistency_section(result: Dict[str, Any]) -> str:
     html = f'<div class="stat-row">{"".join(parts)}</div>'
     if pc is not None:
         html += (
-            '<p class="muted">The physical-consistency block is a projection '
-            "of the nominal model, not of the fit (see #163).</p>"
+            '<p class="muted">The physical-consistency block projects the '
+            "reconstructed fit; it is reported only and cannot be selected "
+            "as the estimate.</p>"
         )
     if isinstance(selected, dict):
         html += _selected_block(selected)

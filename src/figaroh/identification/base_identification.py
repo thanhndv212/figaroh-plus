@@ -1679,11 +1679,12 @@ class BaseIdentification(ABC):
             "task type": "identification",
         }
 
-        # Optional physical-consistency post-processing (default-off)
-        self._apply_physical_consistency_if_enabled(identif_results)
-
         # Optional full-parameter reconstruction (default-off, v0.4.2)
         self._apply_reconstruction_if_enabled(identif_results)
+
+        # Optional physical-consistency projection of the reconstructed
+        # fit (default-off); runs after reconstruction, its source (#163)
+        self._apply_physical_consistency_if_enabled(identif_results)
 
         # Optional estimate selection (#61); absent for the default "fit"
         self._select_and_store_estimate()
@@ -1880,10 +1881,13 @@ class BaseIdentification(ABC):
                 dtype=float,
             )
 
-        # Prefer explicitly provided parameter dicts from the solver output,
-        # otherwise fall back to the model's standard parameters.
-        source_label = "standard_parameter"
-        parameter_dict = getattr(self, "standard_parameter", None)
+        # Project the fit, never the nominal prior (#163). The solve gives
+        # base parameters only, so the fit in standard-parameter space is
+        # the full-parameter reconstruction; an explicit dict from the
+        # solver output takes precedence.
+        source_label = None
+        parameter_dict = None
+        fitted_names = None
         if isinstance(identif_results, dict):
             if isinstance(identif_results.get("parameter_dict"), dict):
                 source_label = "identif_results.parameter_dict"
@@ -1891,18 +1895,55 @@ class BaseIdentification(ABC):
             elif isinstance(identif_results.get("standard_parameter_dict"), dict):
                 source_label = "identif_results.standard_parameter_dict"
                 parameter_dict = identif_results["standard_parameter_dict"]
+        recon = getattr(self, "_recon_result", None)
+        if parameter_dict is None and recon is not None:
+            source_label = "reconstruction"
+            fitted_names = recon.as_dict()
+            # Parameters outside the reconstruction keep their nominal
+            # values; only joints the reconstruction covers are projected.
+            parameter_dict = dict(getattr(self, "standard_parameter", None) or {})
+            parameter_dict.update(fitted_names)
 
         if not isinstance(parameter_dict, dict):
             self.result["physical consistency"] = {
                 "enabled": True,
                 "status": "skipped",
-                "reason": "no parameter_dict available",
+                "reason": (
+                    "no standard-parameter estimate of the fit; enable "
+                    "reconstruction to project the identified parameters"
+                ),
             }
             return
 
         joint_names = pc_cfg.get("joints", None)
         if joint_names is None:
             joint_names = list(self.model.names[1:])
+            if fitted_names is not None:
+                inertial = (
+                    "m",
+                    "mx",
+                    "my",
+                    "mz",
+                    "Ixx",
+                    "Ixy",
+                    "Iyy",
+                    "Ixz",
+                    "Iyz",
+                    "Izz",
+                )
+                joint_names = [
+                    j
+                    for j in joint_names
+                    if any(f"{k}_{j}" in fitted_names for k in inertial)
+                ]
+        if not joint_names:
+            self.result["physical consistency"] = {
+                "enabled": True,
+                "status": "skipped",
+                "reason": "no inertial parameters of the fit to project",
+                "source": source_label,
+            }
+            return
 
         try:
             from figaroh.identification.physical_consistency import (

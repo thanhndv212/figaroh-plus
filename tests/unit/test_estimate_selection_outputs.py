@@ -103,4 +103,4 @@ def test_projected_block_is_labelled_as_nominal_projection(model, traj, tmp_path
     text = Path(
         ident.export_html_report(output_path=str(tmp_path / "r.html"))
     ).read_text()
-    assert "projection of the nominal model, not of the fit (see #163)" in text
+    assert "projects the reconstructed fit" in text

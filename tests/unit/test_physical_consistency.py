@@ -394,6 +394,8 @@ class _FakeIdentification:
         self.identif_config = identif_config
         self.model = _FakeModel(joint_names)
         self.standard_parameter = parameter_dict
+        # The projection reads the reconstructed fit (#163)
+        self._recon_result = MagicMock(as_dict=lambda: dict(parameter_dict))
         self.result: dict = {}
 
     # Pull in the real method so we test the actual implementation.
