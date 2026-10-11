@@ -32,6 +32,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   status, three fresh seed sets) before confirmation. The fresh-seed
   confirmation is no-go: 8 of 24 gated fits still hit the budget. (#30)
 
+### Changed
+
+- Rewrite `README.md` for 0.7: a quickstart that runs (the UR10
+  identification reference in figaroh-examples), the identification stages,
+  tested platforms, and links to the documentation site in place of the
+  module tables and an invalid YAML example. The release sequence in
+  `CONTRIBUTING.md` now includes revising both READMEs.
+
 ### Fixed
 
 - The physical-consistency projection projects the identified fit, not the
