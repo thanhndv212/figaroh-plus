@@ -9,6 +9,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.7.0] - 2026-10-11
 
+This release ships the **dynamic identification reference workflow** (roadmap
+M1.2–M1.4, dynamic side; delivery packages D4 and D7): select an
+identification stage, check its physical and solver verdict, verify it on
+held-out data with per-joint units, export a URDF that reloads with RNEA
+parity, and archive the run. The D4 comparison selected the direct LMI effort
+fit (`physical_fit`) as the supported physical baseline; the nonlinear
+log-Cholesky fit is not included (D5 no-go, LC1 #155). Release tracker: #177.
+
+Behaviour changes when upgrading from 0.6.0, detailed in the entries below:
+
+- Base parameters are selected deterministically (#116). `phi_base` is
+  reproducible across platforms and Pinocchio versions and differs from 0.6.0
+  wherever the old pivoting was a tie; `QRDecomposer(deterministic=False)`
+  restores LAPACK pivoting.
+- The physical-consistency projection projects the reconstruction, not the
+  nominal model (#163). Without `reconstruction` enabled it is `skipped` and
+  the `physical` stage is `not_run`; it was recorded `ok`.
+- `identification.select_stage` and `problem.torque_fit_joints` are new and
+  opt-in; unset, results are as before. A rejected requested stage is a hard
+  reject (#61).
+- Package metadata declares the license as Apache-2.0; it declared BSD.
+
+Known limitations: `projected` is not a selectable stage;
+`merged_bodies="subtract_fixed"` refuses on real fits, so the TIAGo reference
+exports a lumped URDF; TIAGo held-out prediction is reported, not gated (no
+ground truth, a temporal held-out block of one recording), and arm_1's torque
+constant is not identifiable from the 2021-07 recordings; export parity shows
+file consistency, not hardware accuracy.
+
 ### Added
 
 - `identification.select_stage` (`fit`, `reconstruction`, `physical_fit`)
