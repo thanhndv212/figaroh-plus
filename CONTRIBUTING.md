@@ -37,7 +37,7 @@ current architecture description.
    report* template (the same forms are used in figaroh-examples). Write it for a
    reader without local context: link its delivery package, define testable
    acceptance criteria and list dependencies as `#N` (same repository) or
-   `thanhndv212/figaroh-examples#N` (the other one), which GitHub links. See [how to read delivery issues](docs/plans/README.md#how-to-read-delivery-issues).
+   `thanhndv212/figaroh-examples#N` (the other one), which GitHub links. See [how to read delivery issues](https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/plans/README.md#how-to-read-delivery-issues).
    Bugs include a minimal reproducer, expected/actual results, environment and
    data provenance. Distinguish wrong numerical results, crashes, unsupported
    behavior and missing dependencies. For docs/CI work, a focused PR can carry
@@ -64,9 +64,10 @@ current architecture description.
 7. The maintainer reviews each PR. Agents must wait for the maintainer's explicit
    approval before merging; passing checks or a request to implement/open a PR
    does not authorize a merge. Address review comments and rerun affected checks.
-   After approval and required checks pass on the current head, squash-merge the
-   focused feature/fix PR. If the approved scope changes materially, obtain a
-   renewed review before merging. Use a
+   After approval and required checks pass on the current head, merge the
+   focused feature/fix PR with a **merge commit** (not squash or rebase), so the
+   PR's individual commits stay in `devel`'s history. If the approved scope
+   changes materially, obtain a renewed review before merging. Use a
    Conventional Commit title, e.g. `fix(identification): preserve joint ordering`.
 8. Close the issue with the merged PR linked. Because `main` is the default
    branch, `Closes #N` may not close it when merging into `devel`. Mark roadmap
@@ -106,6 +107,11 @@ Release sequence:
    workflows. Record unsupported or untested platforms explicitly.
 2. Prepare the version and dated changelog on `devel` through a PR. Keep
    `pyproject.toml` and `src/figaroh/__init__.py` version strings aligned.
+   In the same PR, revise `README.md` against the release: rewrite "What's
+   new", rerun the Quickstart commands, check every claim (features, supported
+   platforms, links) against the code and CI, and remove anything stale. Do
+   the same for the figaroh-examples README (compatibility row, robot table,
+   `requirements.txt` pin) in a paired examples PR.
 3. Open `devel` → `main` and merge with a **merge commit**, preserving shared
    history. Tag/release publishing is a separate maintainer action after the
    release checks; this repository's docs workflow does not publish to PyPI.

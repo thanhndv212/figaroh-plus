@@ -7,6 +7,7 @@ viser-based visual overlay.
 import os
 import sys
 import tempfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import numpy as np
@@ -626,6 +627,24 @@ def test_infeasible_inertial_set_is_refused_unless_allowed(tmp_path, caplog):
     assert reloaded == pytest.approx(p10, abs=1e-10)
 
 
+def test_psd_eig_tol_admits_a_marginal_inertial_set(tmp_path):
+    """A set accepted upstream at a looser tolerance is not refused here."""
+    from figaroh.identification.physical_consistency import check_p10_feasibility
+
+    # flat body (pseudo-inertia eigenvalue 0) pushed just past it
+    p10 = _feasible_p10(1.0, [0.0, 0.0, 0.0], [0.1, 0.1, 0.2], [0.0, 0.0, 0.0])
+    p10[9] += 2e-9
+    min_eig = check_p10_feasibility(p10, psd_eig_tol=-1.0).min_eig
+    assert -1e-8 < min_eig < -1e-10
+    params = _inertial_params("link1", p10)
+    out = tmp_path / "out.urdf"
+
+    with pytest.raises(ValueError, match="not physically consistent"):
+        export_urdf(PENDULUM_URDF, params, output_path=str(out))
+    export_urdf(PENDULUM_URDF, params, output_path=str(out), psd_eig_tol=-1e-8)
+    assert out.exists()
+
+
 @pytest.mark.parametrize("mass", [0.0, -1.0])
 def test_inertial_set_without_positive_mass_is_refused(tmp_path, mass):
     p10 = np.zeros(10)
@@ -657,3 +676,90 @@ def test_same_link_from_link_and_joint_targets_is_refused(tmp_path):
             {"m_link2": 1.0, "m_joint2": 2.0},
             output_path=str(tmp_path / "out.urdf"),
         )
+
+
+# ── merged bodies: merged_bodies="subtract_fixed" (#61) ──
+
+
+def _body_p10(urdf, joint):
+    import pinocchio as pin
+
+    model = pin.buildModelFromUrdf(str(urdf))
+    return np.asarray(model.inertias[model.getJointId(joint)].toDynamicParameters())
+
+
+def _link_inertial(path, link):
+    el = ET.parse(path).getroot().find(f"link[@name='{link}']/inertial")
+    return ET.tostring(el)
+
+
+@pytest.mark.skipif(not TIAGO_URDF.exists(), reason="TIAGo fixture missing")
+def test_subtract_fixed_reloads_as_the_identified_body(tmp_path):
+    """The whole body of arm_7_joint reloads as the identified set while the
+    fixed-attached links keep their CAD inertials."""
+    p10 = 1.05 * _body_p10(TIAGO_URDF, "arm_7_joint")
+    out = tmp_path / "out.urdf"
+    export_urdf(
+        str(TIAGO_URDF),
+        _inertial_params("arm_7_joint", p10),
+        output_path=str(out),
+        merged_bodies="subtract_fixed",
+    )
+    np.testing.assert_allclose(_body_p10(out, "arm_7_joint"), p10, rtol=0, atol=1e-10)
+    nominal_doc = ET.parse(TIAGO_URDF).getroot()
+    merged = [
+        j.find("child").get("link")
+        for j in nominal_doc.findall("joint")
+        if j.get("type") == "fixed"
+        and j.find("child").get("link") != "arm_7_link"
+        and j.find("child").get("link")
+        in {"wrist_ft_link", "wrist_ft_tool_link", "hand_link"}
+    ]
+    assert merged  # the wrist sensor and hand are really attached
+    for link in merged:
+        assert _link_inertial(out, link) == _link_inertial(TIAGO_URDF, link)
+    assert _link_inertial(out, "arm_7_link") != _link_inertial(TIAGO_URDF, "arm_7_link")
+
+
+@pytest.mark.skipif(not TIAGO_URDF.exists(), reason="TIAGo fixture missing")
+def test_subtract_fixed_refuses_an_infeasible_remainder(tmp_path):
+    # a body lighter than the fixed links it contains leaves a negative child
+    p10 = 0.01 * _body_p10(TIAGO_URDF, "arm_7_joint")
+    out = tmp_path / "out.urdf"
+    with pytest.raises(ValueError, match="not positive|not physically consistent"):
+        export_urdf(
+            str(TIAGO_URDF),
+            _inertial_params("arm_7_joint", p10),
+            output_path=str(out),
+            merged_bodies="subtract_fixed",
+        )
+    assert not out.exists()
+
+
+@pytest.mark.skipif(not TIAGO_URDF.exists(), reason="TIAGo fixture missing")
+def test_subtract_fixed_needs_all_ten_parameters(tmp_path):
+    with pytest.raises(ValueError, match="lone mass"):
+        export_urdf(
+            str(TIAGO_URDF),
+            {"m_arm_7_joint": 2.0},
+            output_path=str(tmp_path / "o.urdf"),
+            merged_bodies="subtract_fixed",
+        )
+
+
+def test_subtract_fixed_is_a_noop_for_a_plain_body(tmp_path):
+    p10 = _feasible_p10(1.0, [0.0, 0.0, 0.05], [0.01, 0.01, 0.005], [0.0, 0.0, 0.0])
+    a, b = tmp_path / "a.urdf", tmp_path / "b.urdf"
+    export_urdf(PENDULUM_URDF, _inertial_params("link1", p10), output_path=str(a))
+    export_urdf(
+        PENDULUM_URDF,
+        _inertial_params("link1", p10),
+        output_path=str(b),
+        merged_bodies="subtract_fixed",
+    )
+    assert a.read_text() == b.read_text()
+
+
+def test_unknown_merged_bodies_policy_raises(tmp_path):
+    with pytest.raises(ValueError, match="merged_bodies"):
+        export_urdf(PENDULUM_URDF, {}, merged_bodies="merge")

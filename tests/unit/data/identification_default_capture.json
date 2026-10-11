@@ -1,0 +1,808 @@
+{
+  "result": {
+    "base parameters": {
+      "Ixx_shoulder1_joint + 1.0*Ixx_shoulder2_joint - 1.0*Iyy_shoulder2_joint": 0.01002877890692711,
+      "Ixx_shoulder3_joint - 1.0*mz_shoulder2_joint + 1.0*Iyy_shoulder2_joint - 1.0*mz_shoulder3_joint + 0.5*Ixx_elbow_joint - 0.5*Iyy_elbow_joint + 0.5*Izz_elbow_joint": 1.268319239701011,
+      "Ixx_wrist1_joint + 0.5*Ixx_elbow_joint - 0.5*Iyy_elbow_joint - 0.5*Izz_elbow_joint - 1.0*Izz_wrist1_joint": -0.4992861680940219,
+      "Ixx_wrist2_joint - 0.5*Ixx_elbow_joint + 0.5*Iyy_elbow_joint + 0.5*Izz_elbow_joint + 1.0*Izz_wrist1_joint": 1.7593136620092287,
+      "Ixy_elbow_joint": 0.0003963872169916193,
+      "Ixy_shoulder2_joint": -0.0023534130790412943,
+      "Ixy_shoulder3_joint": 0.0013702779433181888,
+      "Ixy_wrist1_joint": -0.0002868295969994425,
+      "Ixy_wrist2_joint": 0.00023949566702546982,
+      "Ixz_elbow_joint + 1.0*mx_elbow_joint": 0.0019241178972900636,
+      "Ixz_shoulder2_joint": -0.0021291932425068173,
+      "Ixz_shoulder3_joint": 0.0025677142899539,
+      "Ixz_wrist1_joint": 0.00011730628597119505,
+      "Ixz_wrist2_joint": -0.00045520486714215356,
+      "Iyy_shoulder3_joint - 1.0*mz_shoulder2_joint + 1.0*Iyy_shoulder2_joint - 1.0*mz_shoulder3_joint": 0.7711194675003326,
+      "Iyy_wrist1_joint - 0.5*Ixx_elbow_joint + 0.5*Iyy_elbow_joint + 0.5*Izz_elbow_joint": 0.5097949322798417,
+      "Iyy_wrist2_joint": 1.250327501213428,
+      "Iyz_elbow_joint": -0.0011805187566290732,
+      "Iyz_shoulder2_joint": -0.0014540475228221196,
+      "Iyz_shoulder3_joint + 1.0*my_shoulder3_joint": 0.0030712028239176362,
+      "Iyz_wrist1_joint": 4.209042968930962e-05,
+      "Iyz_wrist2_joint": -2.6249153731325303e-05,
+      "Izz_shoulder2_joint - 1.0*Ixx_shoulder2_joint + 1.0*Iyy_shoulder2_joint": 0.012474901141732398,
+      "Izz_shoulder3_joint + 0.5*Ixx_elbow_joint - 0.5*Iyy_elbow_joint + 0.5*Izz_elbow_joint": 1.499434890155842,
+      "Izz_wrist2_joint - 0.5*Ixx_elbow_joint + 0.5*Iyy_elbow_joint + 0.5*Izz_elbow_joint + 1.0*Izz_wrist1_joint": 1.5095746110166297,
+      "m_elbow_joint + 1.0*mz_shoulder2_joint + 1.0*mz_shoulder3_joint - 0.5*Ixx_elbow_joint - 0.5*Iyy_elbow_joint + 0.5*Izz_elbow_joint": 0.743567966317943,
+      "m_wrist1_joint + 0.5*Ixx_elbow_joint + 0.5*Iyy_elbow_joint - 0.5*Izz_elbow_joint + 1.0*m_wrist2_joint": 1.8508173944030397,
+      "mx_shoulder2_joint": -0.002582495746163103,
+      "mx_shoulder3_joint": -0.0022775683857554274,
+      "mx_wrist1_joint + 1.0*mx_elbow_joint": 0.0017450965928866155,
+      "mx_wrist2_joint": 0.0008272170297675514,
+      "my_elbow_joint + 1.0*my_shoulder3_joint": 0.0012992893028732698,
+      "my_shoulder1_joint + 1.0*my_shoulder2_joint": -0.0028669213461801476,
+      "my_wrist1_joint + 1.0*my_wrist2_joint": -0.0001446752394276351,
+      "mz_elbow_joint - 0.5*Ixx_elbow_joint - 0.5*Iyy_elbow_joint + 0.5*Izz_elbow_joint": -0.24988710626411112,
+      "mz_shoulder1_joint": 0.0015193769366741306,
+      "mz_wrist1_joint": 0.001123034584381326,
+      "mz_wrist2_joint": 0.49897846397603396
+    },
+    "base parameters names": [
+      "my_shoulder1_joint + 1.0*my_shoulder2_joint",
+      "mz_shoulder1_joint",
+      "Ixx_shoulder1_joint + 1.0*Ixx_shoulder2_joint - 1.0*Iyy_shoulder2_joint",
+      "mx_shoulder2_joint",
+      "Ixy_shoulder2_joint",
+      "Ixz_shoulder2_joint",
+      "Iyz_shoulder2_joint",
+      "Izz_shoulder2_joint - 1.0*Ixx_shoulder2_joint + 1.0*Iyy_shoulder2_joint",
+      "mx_shoulder3_joint",
+      "Ixx_shoulder3_joint - 1.0*mz_shoulder2_joint + 1.0*Iyy_shoulder2_joint - 1.0*mz_shoulder3_joint + 0.5*Ixx_elbow_joint - 0.5*Iyy_elbow_joint + 0.5*Izz_elbow_joint",
+      "Ixy_shoulder3_joint",
+      "Iyy_shoulder3_joint - 1.0*mz_shoulder2_joint + 1.0*Iyy_shoulder2_joint - 1.0*mz_shoulder3_joint",
+      "Ixz_shoulder3_joint",
+      "Iyz_shoulder3_joint + 1.0*my_shoulder3_joint",
+      "Izz_shoulder3_joint + 0.5*Ixx_elbow_joint - 0.5*Iyy_elbow_joint + 0.5*Izz_elbow_joint",
+      "m_elbow_joint + 1.0*mz_shoulder2_joint + 1.0*mz_shoulder3_joint - 0.5*Ixx_elbow_joint - 0.5*Iyy_elbow_joint + 0.5*Izz_elbow_joint",
+      "my_elbow_joint + 1.0*my_shoulder3_joint",
+      "mz_elbow_joint - 0.5*Ixx_elbow_joint - 0.5*Iyy_elbow_joint + 0.5*Izz_elbow_joint",
+      "Ixy_elbow_joint",
+      "Ixz_elbow_joint + 1.0*mx_elbow_joint",
+      "Iyz_elbow_joint",
+      "m_wrist1_joint + 0.5*Ixx_elbow_joint + 0.5*Iyy_elbow_joint - 0.5*Izz_elbow_joint + 1.0*m_wrist2_joint",
+      "mx_wrist1_joint + 1.0*mx_elbow_joint",
+      "my_wrist1_joint + 1.0*my_wrist2_joint",
+      "mz_wrist1_joint",
+      "Ixx_wrist1_joint + 0.5*Ixx_elbow_joint - 0.5*Iyy_elbow_joint - 0.5*Izz_elbow_joint - 1.0*Izz_wrist1_joint",
+      "Ixy_wrist1_joint",
+      "Iyy_wrist1_joint - 0.5*Ixx_elbow_joint + 0.5*Iyy_elbow_joint + 0.5*Izz_elbow_joint",
+      "Ixz_wrist1_joint",
+      "Iyz_wrist1_joint",
+      "mx_wrist2_joint",
+      "mz_wrist2_joint",
+      "Ixx_wrist2_joint - 0.5*Ixx_elbow_joint + 0.5*Iyy_elbow_joint + 0.5*Izz_elbow_joint + 1.0*Izz_wrist1_joint",
+      "Ixy_wrist2_joint",
+      "Iyy_wrist2_joint",
+      "Ixz_wrist2_joint",
+      "Iyz_wrist2_joint",
+      "Izz_wrist2_joint - 0.5*Ixx_elbow_joint + 0.5*Iyy_elbow_joint + 0.5*Izz_elbow_joint + 1.0*Izz_wrist1_joint"
+    ],
+    "base parameters values": {
+      "shape": [
+        38
+      ],
+      "sum": 10.9350640243282,
+      "sumsq": 16.188222805862747,
+      "first": -0.0028669213461801476,
+      "last": 1.5095746110166297
+    },
+    "base regressor": {
+      "shape": [
+        2400,
+        38
+      ],
+      "sum": -41088.00246449612,
+      "sumsq": 111524425.10686716,
+      "first": 9.809997833113842,
+      "last": -0.9036299461356482
+    },
+    "condition number": 408.55514177301717,
+    "effort rmse": 0.09574368495273027,
+    "num samples": 400,
+    "rmse norm (N/m)": 0.09574368495273027,
+    "stages": [
+      {
+        "artifacts": [],
+        "metrics": {
+          "masked_samples": {
+            "unit": "",
+            "value": 0
+          },
+          "samples": {
+            "unit": "",
+            "value": 400
+          }
+        },
+        "reason": "TrajectoryData, clock recorded, effort ['joint_torque']",
+        "stage": "data",
+        "status": "ok"
+      },
+      {
+        "artifacts": [],
+        "metrics": {
+          "base_parameters": {
+            "unit": "",
+            "value": 38
+          },
+          "effort_rmse": {
+            "unit": "N\u00b7m or N (stacked joints)",
+            "value": 0.09574368495273027
+          },
+          "rows": {
+            "unit": "",
+            "value": 2400
+          }
+        },
+        "reason": "least squares",
+        "stage": "fit",
+        "status": "ok"
+      },
+      {
+        "artifacts": [],
+        "metrics": {
+          "effort_rmse": {
+            "unit": "N\u00b7m or N",
+            "value": 0.0957436849527431
+          },
+          "samples": {
+            "unit": "",
+            "value": 400
+          }
+        },
+        "reason": "no held-out data: evaluated on the identification data, not an independent test",
+        "stage": "validation",
+        "status": "fallback"
+      }
+    ],
+    "std dev of estimated param": {
+      "shape": [
+        38
+      ],
+      "sum": 1457.1299999999999,
+      "sumsq": 219213.15989999997,
+      "first": 32.99,
+      "last": 0.01
+    },
+    "task type": "identification",
+    "torque estimated": {
+      "shape": [
+        2400
+      ],
+      "sum": -16341.492471905762,
+      "sumsq": 37506511.93903509,
+      "first": -456.79892598297687,
+      "last": 24.099917967786556
+    },
+    "torque processed": {
+      "shape": [
+        2400
+      ],
+      "sum": -16342.901647479159,
+      "sumsq": 37506533.93948281,
+      "first": -456.74521236480547,
+      "last": 24.087467764865366
+    },
+    "validation_metrics": {
+      "correlation": 0.9999997058500317,
+      "correlation_normalised": 0.999999726532137,
+      "improvement_pct": 22.708171241674798,
+      "joint_names": [
+        "shoulder1_joint",
+        "shoulder2_joint",
+        "shoulder3_joint",
+        "elbow_joint",
+        "wrist1_joint",
+        "wrist2_joint"
+      ],
+      "max_identified": 1.972426489087752,
+      "max_nominal": 3.4047786705780254,
+      "n_val_samples": 400,
+      "per_joint": {
+        "elbow_joint": {
+          "nrmse": 0.00045092579031055357,
+          "predictive": true,
+          "r2": 0.9999997966659316,
+          "rmse_identified": 0.04056885904588063,
+          "rmse_nominal": 0.029330199120609177,
+          "std_measured": 89.96792802190527,
+          "unit": "N\u00b7m"
+        },
+        "shoulder1_joint": {
+          "nrmse": 0.000868986098435952,
+          "predictive": true,
+          "r2": 0.9999992448631607,
+          "rmse_identified": 0.16472095848878124,
+          "rmse_nominal": 0.2576710416463341,
+          "std_measured": 189.55534361856294,
+          "unit": "N\u00b7m"
+        },
+        "shoulder2_joint": {
+          "nrmse": 0.0007021599615825679,
+          "predictive": true,
+          "r2": 0.9999995069713884,
+          "rmse_identified": 0.11566411701666994,
+          "rmse_nominal": 0.1118608909041938,
+          "std_measured": 164.72616404384496,
+          "unit": "N\u00b7m"
+        },
+        "shoulder3_joint": {
+          "nrmse": 0.0008309187190822663,
+          "predictive": true,
+          "r2": 0.9999993095740822,
+          "rmse_identified": 0.09889815001205711,
+          "rmse_nominal": 0.09560865009074702,
+          "std_measured": 119.02265256617183,
+          "unit": "N\u00b7m"
+        },
+        "wrist1_joint": {
+          "nrmse": 0.0007729283560613203,
+          "predictive": true,
+          "r2": 0.9999994025817563,
+          "rmse_identified": 0.04036653117747511,
+          "rmse_nominal": 0.046400088718753126,
+          "std_measured": 52.22544995395748,
+          "unit": "N\u00b7m"
+        },
+        "wrist2_joint": {
+          "nrmse": 0.0007423331255063379,
+          "predictive": true,
+          "r2": 0.9999994489415308,
+          "rmse_identified": 0.037865602859034134,
+          "rmse_nominal": 0.03171136858149776,
+          "std_measured": 51.00890901669838,
+          "unit": "N\u00b7m"
+        }
+      },
+      "rmse_identified": 0.0957436849527431,
+      "rmse_nominal": 0.12387297142640118,
+      "tau_identified_per_joint": {
+        "elbow_joint": {
+          "shape": [
+            400
+          ],
+          "sum": 4542.679784585182,
+          "sumsq": 3288998.0724385413,
+          "first": 44.768172387850704,
+          "last": 13.778287343687165
+        },
+        "shoulder1_joint": {
+          "shape": [
+            400
+          ],
+          "sum": -11905.169372433897,
+          "sumsq": 14724827.198430488,
+          "first": -456.79892598297585,
+          "last": -66.15942611571059
+        },
+        "shoulder2_joint": {
+          "shape": [
+            400
+          ],
+          "sum": -15253.168527512265,
+          "sumsq": 11436761.714958204,
+          "first": 54.18140359971613,
+          "last": 17.160157626048136
+        },
+        "shoulder3_joint": {
+          "shape": [
+            400
+          ],
+          "sum": 8712.696529228524,
+          "sumsq": 5858079.0635673925,
+          "first": 214.32523349044672,
+          "last": -37.39249561564355
+        },
+        "wrist1_joint": {
+          "shape": [
+            400
+          ],
+          "sum": -4664.499805856317,
+          "sumsq": 1145082.5186833753,
+          "first": -116.40347000217803,
+          "last": 34.09579018353303
+        },
+        "wrist2_joint": {
+          "shape": [
+            400
+          ],
+          "sum": 2225.9689200830458,
+          "sumsq": 1052763.370957128,
+          "first": 35.43039253290234,
+          "last": 24.099917967786563
+        }
+      },
+      "tau_measured_per_joint": {
+        "elbow_joint": {
+          "shape": [
+            400
+          ],
+          "sum": 4542.9797954372225,
+          "sumsq": 3289287.892576268,
+          "first": 44.68596805426306,
+          "last": 13.983584220578365
+        },
+        "shoulder1_joint": {
+          "shape": [
+            400
+          ],
+          "sum": -11902.248117243016,
+          "sumsq": 14726650.093351629,
+          "first": -456.74521236480547,
+          "last": -65.83514221556966
+        },
+        "shoulder2_joint": {
+          "shape": [
+            400
+          ],
+          "sum": -15256.490097669363,
+          "sumsq": 11435784.873490596,
+          "first": 54.02967081141776,
+          "last": 17.58677177772147
+        },
+        "shoulder3_joint": {
+          "shape": [
+            400
+          ],
+          "sum": 8710.703075343828,
+          "sumsq": 5856247.599722071,
+          "first": 214.22330896351286,
+          "last": -37.63526487264348
+        },
+        "wrist1_joint": {
+          "shape": [
+            400
+          ],
+          "sum": -4664.849538205178,
+          "sumsq": 1145401.1021925595,
+          "first": -116.40442963847674,
+          "last": 34.272082403271426
+        },
+        "wrist2_joint": {
+          "shape": [
+            400
+          ],
+          "sum": 2227.0032348573495,
+          "sumsq": 1053162.3781496885,
+          "first": 35.248828269536816,
+          "last": 24.087467764865366
+        }
+      },
+      "tau_nominal_per_joint": {
+        "elbow_joint": {
+          "shape": [
+            400
+          ],
+          "sum": 4541.763563261684,
+          "sumsq": 3289163.735289596,
+          "first": 44.57159748834273,
+          "last": 13.780894860774916
+        },
+        "shoulder1_joint": {
+          "shape": [
+            400
+          ],
+          "sum": -11893.932536837408,
+          "sumsq": 14714254.374199111,
+          "first": -455.219288363747,
+          "last": -66.20505520734235
+        },
+        "shoulder2_joint": {
+          "shape": [
+            400
+          ],
+          "sum": -15254.97698636346,
+          "sumsq": 11436639.40383873,
+          "first": 54.48535455283391,
+          "last": 17.124636687024775
+        },
+        "shoulder3_joint": {
+          "shape": [
+            400
+          ],
+          "sum": 8709.293300489586,
+          "sumsq": 5855608.688772548,
+          "first": 214.0683352403018,
+          "last": -37.39080205296023
+        },
+        "wrist1_joint": {
+          "shape": [
+            400
+          ],
+          "sum": -4664.04250420068,
+          "sumsq": 1145044.9157044182,
+          "first": -116.23944687807514,
+          "last": 34.08860854964798
+        },
+        "wrist2_joint": {
+          "shape": [
+            400
+          ],
+          "sum": 2226.0448528919515,
+          "sumsq": 1053049.485449401,
+          "first": 35.08825141137166,
+          "last": 24.10702519956156
+        }
+      },
+      "unpredictable_joints": [],
+      "validation_source": "identification_data_fallback"
+    }
+  },
+  "verdict": {
+    "checks": [
+      {
+        "comparison": "min",
+        "name": "finite_parameters",
+        "passed": true,
+        "reason": "",
+        "required": true,
+        "status": "pass",
+        "threshold": 1.0,
+        "value": 1.0
+      },
+      {
+        "comparison": "min",
+        "name": "finite_prediction",
+        "passed": true,
+        "reason": "",
+        "required": true,
+        "status": "pass",
+        "threshold": 1.0,
+        "value": 1.0
+      },
+      {
+        "comparison": "min",
+        "name": "finite_measurements",
+        "passed": true,
+        "reason": "",
+        "required": true,
+        "status": "pass",
+        "threshold": 1.0,
+        "value": 1.0
+      },
+      {
+        "comparison": "min",
+        "name": "finite_fit_rmse",
+        "passed": true,
+        "reason": "",
+        "required": true,
+        "status": "pass",
+        "threshold": 1.0,
+        "value": 1.0
+      },
+      {
+        "comparison": "min",
+        "name": "requested_validation_loaded",
+        "passed": true,
+        "reason": "",
+        "required": true,
+        "status": "pass",
+        "threshold": 1.0,
+        "value": 1.0
+      },
+      {
+        "comparison": "min",
+        "name": "matching_torque_shapes",
+        "passed": true,
+        "reason": "",
+        "required": true,
+        "status": "pass",
+        "threshold": 1.0,
+        "value": 1.0
+      }
+    ],
+    "compat": {
+      "active_joints": [
+        "shoulder1_joint",
+        "shoulder2_joint",
+        "shoulder3_joint",
+        "elbow_joint",
+        "wrist1_joint",
+        "wrist2_joint"
+      ],
+      "config_sha256": "unknown",
+      "decimate": false,
+      "sample_count": 400
+    },
+    "insights": [
+      "Condition number 408.6 is moderately conditioned \u2014 usable, but not optimal.",
+      "14 base parameter(s) have >30% relative uncertainty and are poorly identified: my_shoulder1_joint + 1.0*my_shoulder2_joint, mz_shoulder1_joint, mx_shoulder2_joint, Iyz_shoulder2_joint, mx_shoulder3_joint, Iyz_shoulder3_joint + 1.0*my_shoulder3_joint, ....",
+      "No separate validation data provided \u2014 validation metrics fall back to the identification data itself and do NOT test generalization to new trajectories."
+    ],
+    "metrics": {
+      "condition_number": 408.55514177301717,
+      "rmse": 0.09574368495273027,
+      "training_abs_bias:elbow_joint": 0.0007500271301041822,
+      "training_abs_bias:shoulder1_joint": 0.007303137977197679,
+      "training_abs_bias:shoulder2_joint": 0.008303925392745149,
+      "training_abs_bias:shoulder3_joint": 0.004983634711744722,
+      "training_abs_bias:wrist1_joint": 0.0008743308721559928,
+      "training_abs_bias:wrist2_joint": 0.0025857869357594375,
+      "training_peak_error:elbow_joint": 0.20529687689120024,
+      "training_peak_error:shoulder1_joint": 1.972426489087752,
+      "training_peak_error:shoulder2_joint": 0.9626838549920649,
+      "training_peak_error:shoulder3_joint": 0.845328363339604,
+      "training_peak_error:wrist1_joint": 0.39667639918951636,
+      "training_peak_error:wrist2_joint": 0.181564263365523,
+      "training_rmse:elbow_joint": 0.04056885904588063,
+      "training_rmse:shoulder1_joint": 0.16472095848878124,
+      "training_rmse:shoulder2_joint": 0.11566411701666994,
+      "training_rmse:shoulder3_joint": 0.09889815001205711,
+      "training_rmse:wrist1_joint": 0.04036653117747511,
+      "training_rmse:wrist2_joint": 0.037865602859034134,
+      "validation_correlation": 0.999999726532137,
+      "validation_improvement_pct": 22.708171241674798,
+      "validation_unpredictable_joints": 0.0
+    },
+    "passed": true,
+    "policy": {},
+    "scope": "execution",
+    "selected_stage": "fit",
+    "series": {
+      "fitted": {
+        "elbow_joint": {
+          "shape": [
+            400
+          ],
+          "sum": 4542.679784585182,
+          "sumsq": 3288998.0724385413,
+          "first": 44.768172387850704,
+          "last": 13.778287343687165
+        },
+        "shoulder1_joint": {
+          "shape": [
+            400
+          ],
+          "sum": -11905.169372433897,
+          "sumsq": 14724827.198430488,
+          "first": -456.79892598297585,
+          "last": -66.15942611571059
+        },
+        "shoulder2_joint": {
+          "shape": [
+            400
+          ],
+          "sum": -15253.168527512265,
+          "sumsq": 11436761.714958204,
+          "first": 54.18140359971613,
+          "last": 17.160157626048136
+        },
+        "shoulder3_joint": {
+          "shape": [
+            400
+          ],
+          "sum": 8712.696529228524,
+          "sumsq": 5858079.0635673925,
+          "first": 214.32523349044672,
+          "last": -37.39249561564355
+        },
+        "wrist1_joint": {
+          "shape": [
+            400
+          ],
+          "sum": -4664.499805856317,
+          "sumsq": 1145082.5186833753,
+          "first": -116.40347000217803,
+          "last": 34.09579018353303
+        },
+        "wrist2_joint": {
+          "shape": [
+            400
+          ],
+          "sum": 2225.9689200830458,
+          "sumsq": 1052763.370957128,
+          "first": 35.43039253290234,
+          "last": 24.099917967786563
+        }
+      },
+      "joint_names": [
+        "shoulder1_joint",
+        "shoulder2_joint",
+        "shoulder3_joint",
+        "elbow_joint",
+        "wrist1_joint",
+        "wrist2_joint"
+      ],
+      "measured": {
+        "elbow_joint": {
+          "shape": [
+            400
+          ],
+          "sum": 4542.9797954372225,
+          "sumsq": 3289287.892576268,
+          "first": 44.68596805426306,
+          "last": 13.983584220578365
+        },
+        "shoulder1_joint": {
+          "shape": [
+            400
+          ],
+          "sum": -11902.248117243016,
+          "sumsq": 14726650.093351629,
+          "first": -456.74521236480547,
+          "last": -65.83514221556966
+        },
+        "shoulder2_joint": {
+          "shape": [
+            400
+          ],
+          "sum": -15256.490097669363,
+          "sumsq": 11435784.873490596,
+          "first": 54.02967081141776,
+          "last": 17.58677177772147
+        },
+        "shoulder3_joint": {
+          "shape": [
+            400
+          ],
+          "sum": 8710.703075343828,
+          "sumsq": 5856247.599722071,
+          "first": 214.22330896351286,
+          "last": -37.63526487264348
+        },
+        "wrist1_joint": {
+          "shape": [
+            400
+          ],
+          "sum": -4664.849538205178,
+          "sumsq": 1145401.1021925595,
+          "first": -116.40442963847674,
+          "last": 34.272082403271426
+        },
+        "wrist2_joint": {
+          "shape": [
+            400
+          ],
+          "sum": 2227.0032348573495,
+          "sumsq": 1053162.3781496885,
+          "first": 35.248828269536816,
+          "last": 24.087467764865366
+        }
+      },
+      "nominal": {
+        "elbow_joint": {
+          "shape": [
+            400
+          ],
+          "sum": 4541.763563261684,
+          "sumsq": 3289163.735289596,
+          "first": 44.57159748834273,
+          "last": 13.780894860774916
+        },
+        "shoulder1_joint": {
+          "shape": [
+            400
+          ],
+          "sum": -11893.932536837408,
+          "sumsq": 14714254.374199111,
+          "first": -455.219288363747,
+          "last": -66.20505520734235
+        },
+        "shoulder2_joint": {
+          "shape": [
+            400
+          ],
+          "sum": -15254.97698636346,
+          "sumsq": 11436639.40383873,
+          "first": 54.48535455283391,
+          "last": 17.124636687024775
+        },
+        "shoulder3_joint": {
+          "shape": [
+            400
+          ],
+          "sum": 8709.293300489586,
+          "sumsq": 5855608.688772548,
+          "first": 214.0683352403018,
+          "last": -37.39080205296023
+        },
+        "wrist1_joint": {
+          "shape": [
+            400
+          ],
+          "sum": -4664.04250420068,
+          "sumsq": 1145044.9157044182,
+          "first": -116.23944687807514,
+          "last": 34.08860854964798
+        },
+        "wrist2_joint": {
+          "shape": [
+            400
+          ],
+          "sum": 2226.0448528919515,
+          "sumsq": 1053049.485449401,
+          "first": 35.08825141137166,
+          "last": 24.10702519956156
+        }
+      },
+      "time": {
+        "shape": [
+          400
+        ],
+        "sum": 79800.0,
+        "sumsq": 21253400.0,
+        "first": 0.0,
+        "last": 399.0
+      }
+    },
+    "splits": {
+      "training": {
+        "adapter": "",
+        "files": {},
+        "masked_samples": 0,
+        "samples": 400,
+        "session": null
+      },
+      "validation": null,
+      "validation_source": "training_fallback"
+    },
+    "stage_records": [
+      {
+        "artifacts": [],
+        "metrics": {
+          "masked_samples": {
+            "unit": "",
+            "value": 0
+          },
+          "samples": {
+            "unit": "",
+            "value": 400
+          }
+        },
+        "reason": "TrajectoryData, clock recorded, effort ['joint_torque']",
+        "stage": "data",
+        "status": "ok"
+      },
+      {
+        "artifacts": [],
+        "metrics": {
+          "base_parameters": {
+            "unit": "",
+            "value": 38
+          },
+          "effort_rmse": {
+            "unit": "N\u00b7m or N (stacked joints)",
+            "value": 0.09574368495273027
+          },
+          "rows": {
+            "unit": "",
+            "value": 2400
+          }
+        },
+        "reason": "least squares",
+        "stage": "fit",
+        "status": "ok"
+      },
+      {
+        "artifacts": [],
+        "metrics": {
+          "effort_rmse": {
+            "unit": "N\u00b7m or N",
+            "value": 0.0957436849527431
+          },
+          "samples": {
+            "unit": "",
+            "value": 400
+          }
+        },
+        "reason": "no held-out data: evaluated on the identification data, not an independent test",
+        "stage": "validation",
+        "status": "fallback"
+      }
+    ],
+    "stages": {
+      "data": "pass",
+      "data_provenance": "pass",
+      "export": "not_evaluated",
+      "fit": "pass",
+      "numerical_execution": "pass",
+      "physical": "not_evaluated",
+      "prediction": "not_evaluated",
+      "solver": "not_evaluated",
+      "validation": "fallback"
+    },
+    "status": "pass"
+  }
+}

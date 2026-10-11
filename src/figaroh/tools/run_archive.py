@@ -79,6 +79,13 @@ def _extract_parameters(obj: Any) -> Tuple[List[str], List[Any]]:
     """(names, values) of the fitted result — identification and
     calibration objects expose this under different attribute names."""
     result = getattr(obj, "result", None)
+    selected = result.get("selected") if isinstance(result, dict) else None
+    if isinstance(selected, dict):
+        # select_stage asked for another estimate (#61): a rejected one
+        # writes no parameters; the fit goes to fit_parameters.csv
+        if selected.get("status") != "accepted" or selected.get("values") is None:
+            return [], []
+        return list(selected["names"]), list(selected["values"])
     if isinstance(result, dict) and "base parameters names" in result:
         return (
             list(result.get("base parameters names", [])),
@@ -234,6 +241,19 @@ def archive_run(obj: Any, run_dir: Path) -> str:
             writer = csv.writer(f)
             writer.writerow(["parameter", "value"])
             writer.writerows(zip(param_names, param_values))
+
+    result = getattr(obj, "result", None)
+    if isinstance(result, dict) and isinstance(result.get("selected"), dict):
+        # the base-parameter fit stays available beside the selected estimate
+        with open(run_dir / "fit_parameters.csv", "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["parameter", "value"])
+            writer.writerows(
+                zip(
+                    result.get("base parameters names", []),
+                    result.get("base parameters values", []),
+                )
+            )
 
     # Determine the root for index (run_dir is .../root/asset/task/timestamp/)
     root_path = run_dir.parent.parent.parent

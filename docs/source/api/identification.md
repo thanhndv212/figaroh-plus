@@ -30,6 +30,21 @@ identification of robots, including the
     options:
       show_root_heading: false
 
+## physical_fit
+
+Direct LMI effort fit over all standard parameters (public since #61;
+`figaroh.identification._physical_comparator` remains as an alias).
+
+::: figaroh.identification.physical_fit
+    options:
+      show_root_heading: false
+
+## selection
+
+::: figaroh.identification.selection
+    options:
+      show_root_heading: false
+
 ## Physical inertial conventions
 
 Physical-consistency utilities use Pinocchio dynamic-parameter order:

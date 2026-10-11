@@ -29,14 +29,24 @@ def _rank_deficient_regressor(m=60, seed=0):
 
 @pytest.fixture
 def qr_modes(monkeypatch):
-    """Record the ``mode`` of every pivoted scipy QR call in qrdecomposition."""
+    """Record the ``mode`` of every QR call made while selecting base columns.
+
+    Selection is deterministic (#116) and uses numpy's QR; the LAPACK
+    pivoted path is recorded too.
+    """
     modes = []
+    np_qr = np.linalg.qr
+
+    def recording_np_qr(a, mode="reduced"):
+        modes.append(mode)
+        return np_qr(a, mode=mode)
 
     def recording_qr(a, *args, **kwargs):
         if kwargs.get("pivoting"):
             modes.append(kwargs.get("mode", "full"))
         return scipy_linalg.qr(a, *args, **kwargs)
 
+    monkeypatch.setattr(np.linalg, "qr", recording_np_qr)
     monkeypatch.setattr(
         qrdecomposition,
         "linalg",
@@ -55,8 +65,8 @@ def test_pivoted_qr_never_builds_full_q(qr_modes):
     QRDecomposer().decompose(W, params, tau=tau, method="pivoting")
     QRDecomposer().get_base_mapping_matrix_pivoting(W, params)
 
-    assert len(qr_modes) == 4
-    assert "full" not in qr_modes
+    assert len(qr_modes) >= 4
+    assert "full" not in qr_modes and "complete" not in qr_modes
 
 
 def test_base_index_matches_full_mode_qr():

@@ -9,11 +9,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "figaroh"
-version = "0.6.0"
+version = "0.7.0"
 description = "A Python toolbox for dynamics identification and geometric calibration of robots and humans"
 readme = "README.md"
 requires-python = ">=3.8"
-license = { file = "LICENSE" }
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 authors = [
     { name = "Thanh D. V. Nguyen", email = "thanhndv212@gmail.com" },
 ]
@@ -33,7 +34,6 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: BSD License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
@@ -75,6 +75,7 @@ docs = [
     "mkdocs-material>=9.5",
     "mkdocstrings[python]>=0.25",
     "mkdocs-include-markdown-plugin>=6.0",
+    "pymdown-extensions<12.2",
 ]
 examples = [
     "jupyter",

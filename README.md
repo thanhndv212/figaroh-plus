@@ -1,4 +1,5 @@
 # FIGAROH
+
 **F**ree dynamics **I**dentification and **G**eometrical c**A**libration of **RO**bot and **H**uman
 
 <p align="center">
@@ -8,262 +9,161 @@
   <a href="https://deepwiki.com/thanhndv212/figaroh-plus"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"/></a>
 </p>
 
-FIGAROH is a Python toolbox providing efficient and highly flexible frameworks for dynamics identification and geometric calibration of rigid multi-body systems based on the URDF modeling convention. It supports both serial (industrial manipulators) and tree-structure systems (humanoids, mobile manipulators).
+FIGAROH is a Python toolbox for geometric calibration and dynamic parameter
+identification of rigid multi-body systems described by a URDF. It handles
+serial manipulators and tree-structured systems such as humanoids and mobile
+manipulators, and covers the whole loop: design the experiment, fit the
+parameters, validate them on held-out data, and export an updated model.
 
-**📦 Available on PyPI:** `pip install figaroh`
-**📖 Version:** 0.6.0
-
-For contributors: [Roadmap](https://github.com/thanhndv212/figaroh-plus/blob/main/ROADMAP.md), [Architecture](https://github.com/thanhndv212/figaroh-plus/blob/main/ARCHITECTURE.md),
-[Contribution workflow](https://github.com/thanhndv212/figaroh-plus/blob/main/CONTRIBUTING.md), and
-[validation guide](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/development/validation.md).
-
-> Note: This repo is a fork from [gitlab repo](https://gitlab.laas.fr/gepetto/figaroh) of which the author is no longer a contributor.
-
-Working with an AI coding agent? [`skills/`](https://github.com/thanhndv212/figaroh-plus/blob/main/skills/) holds agent skills that set up a FIGAROH task end to end — start with [`skills/figaroh-start`](https://github.com/thanhndv212/figaroh-plus/blob/main/skills/figaroh-start/SKILL.md), which routes to the right package and directory, and [`skills/figaroh-setup-env`](https://github.com/thanhndv212/figaroh-plus/blob/main/skills/figaroh-setup-env/SKILL.md), which ships a `doctor.sh` that verifies your environment before anything runs.
-
----
-
-## Installation
-
-### Quick Installation (Recommended)
-
-Install the core FIGAROH package with all dependencies (except for cyipopt):
+## Install
 
 ```bash
 pip install figaroh
 ```
 
-### Development Installation
+Optimal trajectory generation also needs `cyipopt`, which is not
+pip-installable. Use the conda environment for that, or for development:
 
-For development or local installation from source, choose one of these methods:
-
-**Method 1: Direct pip installation (Simple)**
 ```bash
 git clone https://github.com/thanhndv212/figaroh-plus.git
-cd figaroh
+cd figaroh-plus
+conda env create -f environment.yml
+conda activate figaroh-dev
 pip install -e .
 ```
 
-**Method 2: Conda environment (Recommended for the use of cyipopt)**
-```bash
-git clone https://github.com/thanhndv212/figaroh-plus.git
-cd figaroh
-# Create conda environment with optimization libraries
-conda env create -f environment.yml
-conda activate figaroh-dev
-```
+## Quickstart
 
-### Examples Repository
+FIGAROH's workflow classes are subclassed once per robot. The
+[figaroh-examples](https://github.com/thanhndv212/figaroh-examples) repository
+ships those subclasses, configs and data for each supported robot. The fastest
+way to see a complete run is its UR10 identification reference, which takes a
+few seconds:
+
 ```bash
 git clone https://github.com/thanhndv212/figaroh-examples.git
-cd figaroh-examples && pip install -r requirements.txt
+cd figaroh-examples/examples/ur10
+python identification_reference.py
 ```
 
-| Robot | Tasks |
-|-------|-------|
-| **Staubli TX40** | Dynamic identification |
-| **Universal UR10** | Geometric calibration (RealSense camera) |
-| **TIAGo** | Full workflow: identification + calibration, plus experimental suspension identification and empirical backlash-surface examples |
-| **TIAGo Pro** | Right-arm geometric calibration (contributed by [Clement Pene](https://github.com/clementPene)) |
-| **TALOS Humanoid** | Torso-arm calibration; whole-body leg-torso-arm calibration from single-plane table contact (no external metrology) |
+It fits the UR10 dynamic parameters on a simulated training log, checks the
+prediction error on a separate held-out log, computes a physically consistent
+estimate, exports an identified URDF, and archives the run with its config,
+revisions and an HTML report under `results/runs/`.
 
----
+To use your own robot, follow the
+[Getting Started guide](https://thanhndv212.github.io/figaroh-plus/getting_started/)
+and the [Configuration System](https://thanhndv212.github.io/figaroh-plus/concepts/configuration/)
+page; the examples repository has a
+[new-example guide](https://github.com/thanhndv212/figaroh-examples/blob/main/docs/new-example-guide.md)
+and a scaffold script.
 
-## Key Features
+## What it does
 
-### 🔧 Dynamic Identification
-- Extended dynamic models: friction, actuator inertia, joint offsets
-- Optimal exciting trajectory generation (IPOPT)
-- Multiple parameter estimation algorithms
-- Physically consistent parameters for URDF updates
+**Geometric calibration** (`figaroh.calibration`) estimates joint offsets and
+frame transforms from end-effector measurements: motion capture, cameras,
+laser trackers, or contact with a plane when there is no external metrology.
+Identifiable parameters are found by QR decomposition, and the fit is a
+Levenberg–Marquardt solve with outlier removal.
 
-### 📐 Geometric Calibration
-- Full kinematic parameter estimation (6 DOF per joint)
-- Optimal posture selection via combinatorial optimization
-- Support for cameras, motion capture, planar constraints
-- Direct URDF model updates
+**Dynamic identification** (`figaroh.identification`) fits masses, inertias,
+friction and actuator inertia from joint positions and measured effort. A run
+goes through up to three stages:
 
-### ⚙️ Configuration System
-- **Unified YAML format** with template inheritance
-- **Automatic format detection** (legacy compatibility)
-- **Variable expansion** and validation
-- **Task-specific configs**: calibration, identification, optimal trajectory
+- `fit`: base parameters by least squares, with optional weighted least squares
+  and decimation. Base-parameter selection is deterministic across platforms.
+- `reconstruction`: a full standard-parameter set recovered from the base fit.
+- `physical_fit`: a direct LMI fit constrained to physically consistent
+  inertias.
 
-### 🛠️ Modern Architecture
-- **Proper logging** (NullHandler pattern for libraries)
-- **Abstract base classes** for extensibility
-- **Pinocchio 3.7 and 4.1 compatibility checks**
-- **Cross-platform**: Linux, macOS, Windows
+`identification.select_stage` chooses which stage is reported, validated and
+exported; a requested stage that fails is rejected rather than replaced.
+`problem.torque_fit_joints` restricts the fit to the joints whose effort you
+trust.
 
-### 📊 Reporting & Verification (V&V)
-- **Self-contained HTML diagnostic reports** with an interactive before/after
-  chart — `solve(html_report=True)` / `export_html_report()`
-- **Machine-readable pass/fail verdicts** for CI — `verify()` /
-  `export_verification_report()`, with overridable quality thresholds
-- **Static two-run compare page** — `generate_compare_page()` diffs two
-  exported runs offline, with a mandatory compatibility check before
-  overlaying them
-- See the [Reporting & Verification guide](https://thanhndv212.github.io/figaroh-plus/reporting_and_verification/)
-  for the full walkthrough
----
+**Optimal experiment design** (`figaroh.optimal`) selects well-conditioned
+calibration postures and generates exciting identification trajectories
+(cubic splines optimised with IPOPT under joint, velocity, torque and collision
+limits).
 
-## Core Modules (See more at [Architecture](https://github.com/thanhndv212/figaroh-plus/blob/main/ARCHITECTURE.md))
+**Reporting and verification.** Every run can write a self-contained HTML
+report (`solve(html_report=True)`) and a machine-readable verdict
+(`verify()`). The verdict states its scope: an `execution` PASS means the
+numerics are sound, while a `prediction` PASS needs separate validation data
+and per-joint limits that you declare. `generate_compare_page()` diffs two
+archived runs offline. See
+[Reporting & Verification](https://thanhndv212.github.io/figaroh-plus/reporting_and_verification/).
 
-### `figaroh.calibration` — Geometric Calibration
+**Backends.** Pinocchio is the default dynamics backend; MuJoCo is available
+as an optional backend (`pip install mujoco`). See
+[Backends](https://thanhndv212.github.io/figaroh-plus/concepts/backends/).
 
-**BaseCalibration** provides a complete framework for kinematic parameter calibration:
+## Outputs
 
-- **Automatic parameter identification** using QR decomposition
-- **Robust optimization** with iterative outlier removal (Levenberg-Marquardt)
-- **Unit-aware weighting** for position/orientation measurements
-- **Multiple calibration models**: full kinematic parameters, joint offsets
-- **Sensor support**: cameras, motion capture, planar constraints
+Both tasks write the result back into a copy of your URDF
+(`figaroh.tools.urdf_exporter.export_urdf`), but they change different
+parts of it:
 
-### `figaroh.identification` — Dynamic Identification
+| | Written to the URDF | Not written to the URDF |
+|---|---|---|
+| Calibration | Joint placements: corrected joint offsets and frame transforms | Metrology frames (`base_*`, `pEE*`, `phiEE*`): the pose of the measurement system and the marker or tool. These are returned separately; `frame_settings_doc()` explains them |
+| Identification | Link mass, centre of mass and inertia, joint friction (`BaseIdentification.export_urdf`) | The base-parameter fit, which has no per-link values: export needs `select_stage: reconstruction` or `physical_fit` |
 
-**BaseIdentification** implements the complete dynamic parameter identification workflow:
+The exporter refuses inertias that are not physically consistent unless you
+pass `allow_infeasible=True`. Identification exports only an accepted
+estimate and reloads the written URDF with Pinocchio as a check.
 
-- **Standard + extended parameters**: inertial parameters, friction (viscous/Coulomb), actuator inertia, joint offsets
-- **Regressor-based identification** with base parameter reduction
-- **Multiple solvers**: Least Squares, Weighted LS, Ridge, Lasso, Elastic Net
-- **Decimation and filtering** for signal processing
-- **Quality metrics**: RMSE, correlation, condition number
+Every run can also write:
 
-#### Physical Consistency (optional, default-off)
+- the estimated parameters as YAML, CSV or NPZ (`save_results()`);
+- a self-contained HTML report (`export_html_report()`);
+- a JSON verdict with the scope, per-stage status and each check
+  (`export_verification_report()`).
 
-FIGAROH can optionally project per-joint inertial parameters onto a physically
-consistent set using a convex SDP/LMI based on Pinocchio pseudo-inertia.
+## What's new in 0.7
 
-- Enable it in config via `identification.physical_consistency.enabled: true`.
-- Requires optional dependencies: `picos` and an SDP solver backend (e.g. `cvxopt`).
+- Choose which identification stage is reported and exported with
+  `select_stage`, and export the result with `BaseIdentification.export_urdf`.
+- Fit and score only the joints listed in `torque_fit_joints`.
+- Base-parameter selection is reproducible across macOS, Linux and Pinocchio
+  versions.
 
-### `figaroh.optimal` — Trajectory & Configuration Optimization
+The full list, including fixes and behaviour changes, is in the
+[CHANGELOG](https://github.com/thanhndv212/figaroh-plus/blob/main/CHANGELOG.md).
 
-**BaseOptimalTrajectory** generates exciting trajectories for dynamic identification:
+## Supported platforms
 
-- **IPOPT-based nonlinear optimization** with cyipopt
-- **Cubic spline parameterization** for C² continuous trajectories
-- **Constraint handling**: joint limits, velocity limits, torque limits, self-collision
-- **Cost functions**: condition number minimization, excitation maximization
+| | Tested |
+|---|---|
+| Python | 3.12 |
+| Pinocchio | 3.7 (with ndcurves 2.0.0.1) and 4.1 (with ndcurves 2.3.0) |
+| OS | Linux (CI), macOS (maintainer). Windows is not tested. |
 
-**BaseOptimalCalibration** selects optimal calibration configurations:
+Install Pinocchio and ndcurves together so their native libraries match. Other
+versions within `pin>=3.7,<5` may work but have no CI profile; see the
+[version support decision](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/pinocchio-version-support.md).
 
-- **Combinatorial optimization** from feasible posture pool
-- **Observability-based selection** for maximum information gain
+## Documentation
 
-### `figaroh.tools` — Robotics Utilities
+| | |
+|---|---|
+| [Documentation site](https://thanhndv212.github.io/figaroh-plus/) | Guides, tutorials, configuration reference, API reference |
+| [Tutorials](https://thanhndv212.github.io/figaroh-plus/tutorials/) | Calibration, identification and optimal design walkthroughs |
+| [ARCHITECTURE.md](https://github.com/thanhndv212/figaroh-plus/blob/main/ARCHITECTURE.md) | Package layout and design |
+| [CHANGELOG.md](https://github.com/thanhndv212/figaroh-plus/blob/main/CHANGELOG.md) | Changes by release |
+| [ROADMAP.md](https://github.com/thanhndv212/figaroh-plus/blob/main/ROADMAP.md) | Planned work |
+| [CONTRIBUTING.md](https://github.com/thanhndv212/figaroh-plus/blob/main/CONTRIBUTING.md) | Branches, review, validation and release process |
 
-| Class | Description |
-|-------|-------------|
-| `RegressorBuilder` | Object-oriented regressor computation with configurable parameters |
-| `LinearSolver` | Advanced solver supporting 10+ methods (lstsq, QR, SVD, Ridge, Lasso, etc.) |
-| `QRDecomposer` | QR decomposition with column pivoting for base parameter identification |
-| `CollisionManager` | Pinocchio-based collision detection with visualization |
-| `RobotIPOPTSolver` | High-level IPOPT interface with automatic differentiation |
-| `generate_calibration_report` / `generate_identification_report` | Self-contained HTML diagnostic reports (`tools/report.py`, `tools/identification_report.py`) |
-| `generate_compare_page` | Static, offline two-run compare page (`tools/compare_report.py`) |
+**Working with an AI coding agent?** [`skills/`](https://github.com/thanhndv212/figaroh-plus/blob/main/skills/) holds agent skills
+that set up a calibration, identification, optimal-design or new-robot task
+end to end. Start with [`figaroh-start`](https://github.com/thanhndv212/figaroh-plus/blob/main/skills/figaroh-start/SKILL.md), which
+routes to the right one, and [`figaroh-setup-env`](https://github.com/thanhndv212/figaroh-plus/blob/main/skills/figaroh-setup-env/SKILL.md),
+whose `doctor.sh` checks your environment first.
 
-### `figaroh.utils` — Configuration & Results
+## Citation
 
-| Class | Description |
-|-------|-------------|
-| `UnifiedConfigParser` | YAML parsing with template inheritance and variable expansion |
-| `ResultsManager` | Unified plotting for calibration/identification results |
-| `CubicSpline` | C² continuous spline trajectory generation |
+If you use FIGAROH in your research, please cite:
 
----
-
-## Methodology
-
-FIGAROH implements a systematic workflow for robot calibration and identification:
-
-### Step 1: Configuration Setup
-Define robot parameters, sensor configurations, and task-specific settings in YAML:
-
-```yaml
-# config/robot_config.yaml
-robot:
-  name: "my_robot"
-  urdf_path: "models/robot.urdf"
-
-calibration:
-  start_frame: "base_link"
-  end_frame: "tool0"
-  method: "full_params"
-
-identification:
-  has_friction: true
-  has_actuator_inertia: true
-  active_joints: ["joint1", "joint2", "joint3"]
-
-  physical_consistency:
-    enabled: false
-    solver: "cvxopt"
-    mass_min: 1e-6
-    psd_eig_tol: -1e-10
-    skip_if_feasible: true
-```
-
-### Step 2: Optimal Experiment Design
-Generate exciting trajectories or calibration postures:
-
-- **For identification**: Solve IPOPT optimization to find trajectories maximizing regressor condition
-- **For calibration**: Combinatorial selection of postures maximizing observability
-
-### Step 3: Data Collection & Processing
-`initialize()` loads and validates experimental data (paths come from the
-YAML config, e.g. `measurement_file`):
-
-```python
-calibrator = MyCalibration(robot, "config/robot_config.yaml")
-calibrator.initialize()
-```
-
-### Step 4: Parameter Estimation
-Run identification/calibration, then get a quality report, an optional
-HTML report, and a pass/fail verdict for the same run:
-
-```python
-# Calibration
-calibrator.solve(html_report=True)      # prints + writes results/calibration_report.html
-print(f"RMSE: {calibrator.evaluation_metrics['rmse']:.6f}")
-verdict = calibrator.verify()           # pass/fail against quality thresholds
-
-# Identification
-identifier.solve(decimate=True, decimation_factor=10, html_report=True)
-print(f"Correlation: {identifier.correlation:.4f}")
-verdict = identifier.verify()
-identifier.export_verification_report()  # results/identification_verification.json
-```
-
-### Step 5: Model Update
-Export calibrated/identified parameters to URDF or YAML.
-
----
-
-## Dependencies
-
-| Category | Packages |
-|----------|----------|
-| **Scientific** | numpy, scipy, matplotlib, pandas, numdifftools |
-| **Robotics** | pinocchio (`pin>=3.7,<5`), ndcurves, meshcat |
-| **Config** | pyyaml, rospkg |
-| **Optimization** | cyipopt (conda), picos |
-
-The Pinocchio compatibility matrix pins 3.7.0 with ndcurves 2.0.0.1 and
-4.1.0 with ndcurves 2.3.0 on Python 3.12. Install Pinocchio and ndcurves
-together so their native dependencies agree. Other versions inside the
-declared range are eligible for dependency resolution but have no separate
-CI profile. See the [version support decision](docs/decisions/pinocchio-version-support.md)
-and [validation guide](docs/development/validation.md).
-
----
-
-## Citations
-
-If you use FIGAROH in your research, please cite the following papers:
-
-### Main Reference
 ```bibtex
 @inproceedings{nguyen2023figaroh,
   title={FIGAROH: a Python toolbox for dynamic identification and geometric calibration of robots and humans},
@@ -277,7 +177,9 @@ If you use FIGAROH in your research, please cite the following papers:
 }
 ```
 
-### Related Work
+<details>
+<summary>Related work</summary>
+
 ```bibtex
 @inproceedings{nguyen2024improving,
   title={Improving Operational Accuracy of a Mobile Manipulator by Modeling Geometric and Non-Geometric Parameters},
@@ -298,6 +200,11 @@ If you use FIGAROH in your research, please cite the following papers:
 }
 ```
 
+</details>
+
 ## License
 
-Please refer to the [LICENSE](https://github.com/thanhndv212/figaroh-plus/blob/main/LICENSE) file for licensing information.
+Apache License 2.0; see [LICENSE](https://github.com/thanhndv212/figaroh-plus/blob/main/LICENSE).
+
+FIGAROH started at LAAS-CNRS ([original GitLab repository](https://gitlab.laas.fr/gepetto/figaroh));
+this repository is its maintained continuation.

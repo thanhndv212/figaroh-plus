@@ -1688,13 +1688,20 @@ FIGAROH is already doing (or willing to do) a nonlinear solve.
 the SDP-projection step with an in-loop reparameterization is worth the
 loss of closed-form linearity, before committing to an implementation.
 
+**2026-10-02 update:** Convention fix and Pinocchio 3.7/4.1 support have
+landed on `devel`. The [frozen feasibility spike](log-cholesky-feasibility.md)
+records a **revise** decision: promising boundary-case torque accuracy, but
+19/20 fits exhaust the evaluation budget on both versions. Production
+implementation remains conditional on the convergence/scaling follow-up (#30).
+Runtime independence does not remove the PICOS package dependency.
+
 #### Tasks
 
 | # | Task | Details | Status |
 |---|------|---------|--------|
-| F3.1 | Feasibility spike | Compare SDP-projection vs. log-Cholesky reparameterization on one fixture robot; measure accuracy and runtime cost of going nonlinear | Not started |
-| F3.2 | Decision | Go/no-go write-up based on the spike, appended to this section | Not started |
-| F3.3 | Implementation (if go) | `theta_from_pseudoinertia`/`pi_from_theta`-equivalent in `identification/`, wired as an alternative to `physical_consistency.py` | Not started |
+| F3.1 | Feasibility spike | Compare SDP-projection vs. log-Cholesky reparameterization on one fixture robot; measure accuracy and runtime cost of going nonlinear | Evaluated: see dated spike (#22) |
+| F3.2 | Decision | Go/no-go write-up based on the spike, appended to this section | Revise: convergence gate failed |
+| F3.3 | Implementation (if go) | `theta_from_pseudoinertia`/`pi_from_theta`-equivalent in `identification/`, wired as an alternative to `physical_consistency.py` | Blocked on revised go decision |
 
 ### Feature 4: Black-box rollout refinement stage
 

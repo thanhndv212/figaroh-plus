@@ -7,6 +7,105 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-11
+
+This release ships the **dynamic identification reference workflow** (roadmap
+M1.2–M1.4, dynamic side; delivery packages D4 and D7): select an
+identification stage, check its physical and solver verdict, verify it on
+held-out data with per-joint units, export a URDF that reloads with RNEA
+parity, and archive the run. The D4 comparison selected the direct LMI effort
+fit (`physical_fit`) as the supported physical baseline; the nonlinear
+log-Cholesky fit is not included (D5 no-go, LC1 #155). Release tracker: #177.
+
+Behaviour changes when upgrading from 0.6.0, detailed in the entries below:
+
+- Base parameters are selected deterministically (#116). `phi_base` is
+  reproducible across platforms and Pinocchio versions and differs from 0.6.0
+  wherever the old pivoting was a tie; `QRDecomposer(deterministic=False)`
+  restores LAPACK pivoting.
+- The physical-consistency projection projects the reconstruction, not the
+  nominal model (#163). Without `reconstruction` enabled it is `skipped` and
+  the `physical` stage is `not_run`; it was recorded `ok`.
+- `identification.select_stage` and `problem.torque_fit_joints` are new and
+  opt-in; unset, results are as before. A rejected requested stage is a hard
+  reject (#61).
+- Package metadata declares the license as Apache-2.0; it declared BSD.
+
+Known limitations: `projected` is not a selectable stage;
+`merged_bodies="subtract_fixed"` refuses on real fits, so the TIAGo reference
+exports a lumped URDF; TIAGo held-out prediction is reported, not gated (no
+ground truth, a temporal held-out block of one recording), and arm_1's torque
+constant is not identifiable from the 2021-07 recordings; export parity shows
+file consistency, not hardware accuracy.
+
+### Added
+
+- `identification.select_stage` (`fit`, `reconstruction`, `physical_fit`)
+  chooses the reported, validated, archived and exported estimate. A
+  rejected requested stage is a hard reject (`selected_stage` `none`, verify
+  fails, export refuses). The default is unchanged. New
+  `BaseIdentification.export_urdf`, and `merged_bodies="subtract_fixed"` in
+  the URDF exporter. The direct LMI effort fit is public as
+  `figaroh.identification.physical_fit` (`_physical_comparator` stays as an
+  alias); `ReconstructionResult.effective_method` is new. (#61)
+- `problem.torque_fit_joints` names the active joints whose measured effort
+  is fitted and scored. The other active joints keep their kinematics in the
+  regressor; their effort is left out of the fit, the WLS weights, the
+  per-joint statistics and the validation metrics, which list them under
+  `not_fitted_joints`. Unset, every active joint is fitted as before.
+  (figaroh-examples#68)
+- Record the log-Cholesky feasibility spike with frozen synthetic trajectories,
+  independent physical/Jacobian checks and machine-readable Pinocchio 3.7/4.1
+  results. The decision is revise: convergence/scaling must improve before a
+  production solver is approved. (#22)
+- Diagnose why the log-Cholesky spike's fits stop at their evaluation budget
+  and freeze a revised protocol (budget 2000, convergence by termination
+  status, three fresh seed sets) before confirmation. The fresh-seed
+  confirmation is no-go: 8 of 24 gated fits still hit the budget. (#30)
+
+### Changed
+
+- Rewrite `README.md` for 0.7: a quickstart that runs (the UR10
+  identification reference in figaroh-examples), the identification stages,
+  tested platforms, and links to the documentation site in place of the
+  module tables and an invalid YAML example. The release sequence in
+  `CONTRIBUTING.md` now includes revising both READMEs.
+
+### Fixed
+
+- Package metadata declares the license as `Apache-2.0` (an SPDX
+  `License-Expression`, with `LICENSE` as the license file), matching
+  `LICENSE`. It declared a BSD classifier and copied the whole license text
+  into the `License` field, so PyPI listed the wrong license.
+
+- The physical-consistency projection projects the identified fit, not the
+  nominal model. It now reads the full-parameter reconstruction, which runs
+  first, and projects only the joints the reconstruction covers. Without
+  `reconstruction` enabled the block is `skipped` and the `physical` stage is
+  `not_run`; it was previously recorded `ok` for a projection of the CAD
+  prior. (#163)
+- A configured `max_seconds` in the SDP reconstruction and the LMI projection
+  is passed to picos as `timelimit`; picos rejected the old option name and
+  the solve was reported as failed. (#164)
+- Base-parameter selection no longer depends on BLAS rounding or on the order
+  of regressor columns. `QRDecomposer` picks base columns with the new
+  `deterministic_column_pivots`: largest residual first, columns within a
+  relative `1e-6` of the largest are tied and the smallest parameter name wins.
+  `phi_base` is now reproducible across macOS/Linux and Pinocchio versions
+  (the base parameters it reports differ from before wherever the old
+  selection was a tie). `QRDecomposer(deterministic=False)` restores LAPACK
+  pivoting; geometric calibration keeps it until #113. (#116)
+- Optimal-trajectory plots work for robots whose position and velocity
+  dimensions differ (`nq != nv`, e.g. TIAGo) (#149). Positions were indexed
+  with velocity columns, so the plot failed (`index 24 is out of bounds`) and
+  was skipped with a logged error. Both plot paths now draw only the active
+  joints, positions through each joint's `idx_q` and velocities and
+  accelerations through its `idx_v`, labelled with the joint names.
+  `ResultsManager.plot_optimal_trajectory_results` gains `q_indices` and
+  `v_indices`; without them it plots every column and refuses (logged error)
+  when `nq != nv`. The bottom row no longer gets a second, empty set of axes
+  stacked on it for the time labels.
+
 ## [0.6.0] - 2026-10-07
 
 This release ships the **calibration reference workflow** (roadmap M1.1–M1.4,

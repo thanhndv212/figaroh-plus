@@ -268,3 +268,38 @@ def test_reconstruct_full_parameters_unsupported_method():
     M, _, phi = _make_underdetermined(n=3, r=2)
     with pytest.raises(ValueError, match="Unsupported method"):
         reconstruct_full_parameters((M, phi, ["a", "b", "c"]), method="garbage")
+
+
+# --- effective_method (#61) ---
+
+
+def test_effective_method_nullspace():
+    M, _, phi = _make_underdetermined(n=4, r=2)
+    res = reconstruct_full_parameters((M, phi, [f"q{i}" for i in range(4)]))
+    assert res.effective_method == "nullspace"
+
+
+def test_effective_method_default_none():
+    res = ReconstructionResult(
+        theta_r=np.zeros(1), params_r=["a"], residual=np.zeros(1)
+    )
+    assert res.effective_method is None
+
+
+@pytest.mark.parametrize("method", ["auto", "sdp"])
+def test_effective_method_without_picos(monkeypatch, method):
+    """Auto resolves to nullspace; explicit sdp falls back and says so."""
+    import sys
+
+    M, _, phi = _make_underdetermined(n=3, r=2)
+    monkeypatch.setitem(sys.modules, "picos", None)
+    res = reconstruct_full_parameters(
+        (M, phi, [f"r{i}" for i in range(3)]),
+        method=method,
+        joint_names=["j1"],
+    )
+    assert res.effective_method == "nullspace"
+    if method == "sdp":
+        assert res.status in ("solver_missing", "error")
+    else:
+        assert res.status == "ok"
