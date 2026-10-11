@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- A calibration whose solver failed can no longer be exported silently
+  (#182, M1 G-1). `BaseCalibration.STATUS` is `"FAILED"` instead of
+  `"CALIBRATED"` when the solver did not converge, and `joint_corrections()`
+  (the URDF export gateway), `build_geometric_calibration` and
+  `export_geometric_calibration_yaml` raise `CalibrationError` when the `fit`
+  stage is `failed`, recording stage `export` as failed, as
+  `BaseIdentification.export_urdf` already does. `allow_failed_fit=True`
+  exports for diagnosis: it warns, records `export` as `fallback` and notes
+  the override in the run provenance. A solver failure on the first fit now
+  returns a failed result instead of raising an `UnboundLocalError`. Fits that
+  converged export exactly as before.
+
 ## [0.7.0] - 2026-10-11
 
 This release ships the **dynamic identification reference workflow** (roadmap
