@@ -246,7 +246,7 @@ Each extends the D4 physical comparison and none changes the baseline:
 | examples #70, #71 | TIAGo suspension and backlash research examples; now Phase 3 of C5 (below) |
 
 **Calibration study expansion (package C5, tracker core #167, `status:planned`).** The
-[calibration studies plan](calibration-studies-plan.md) (proposed 2026-10-09)
+[calibration studies plan](https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/plans/calibration-studies-plan.md) (proposed 2026-10-09)
 brings further studies to the TIAGo motion-capture standard. Phase 0 first,
 because every study uses its tools:
 
