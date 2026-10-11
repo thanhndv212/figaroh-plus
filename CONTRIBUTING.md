@@ -37,7 +37,7 @@ current architecture description.
    report* template (the same forms are used in figaroh-examples). Write it for a
    reader without local context: link its delivery package, define testable
    acceptance criteria and list dependencies as `#N` (same repository) or
-   `thanhndv212/figaroh-examples#N` (the other one), which GitHub links. See [how to read delivery issues](docs/plans/README.md#how-to-read-delivery-issues).
+   `thanhndv212/figaroh-examples#N` (the other one), which GitHub links. See [how to read delivery issues](https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/plans/README.md#how-to-read-delivery-issues).
    Bugs include a minimal reproducer, expected/actual results, environment and
    data provenance. Distinguish wrong numerical results, crashes, unsupported
    behavior and missing dependencies. For docs/CI work, a focused PR can carry
