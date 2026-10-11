@@ -324,7 +324,10 @@ class BaseCalibration(ABC):
 
         Side Effects:
             - Updates calibration parameters through optimization
-            - Sets self.STATUS to "CALIBRATED" on successful completion
+            - Sets self.STATUS to "CALIBRATED" when the solver converged
+              and to "FAILED" when it did not (the fit stage is then
+              ``failed`` and the export paths refuse, see
+              :meth:`require_exportable`)
             - May display plots if self.calib_config["PLOT"] is True
 
         See Also:
@@ -1248,12 +1251,14 @@ class BaseCalibration(ABC):
             result = least_squares(
                 self._objective, current_var, method=method, max_nfev=1000
             )
+            PEE_est = self.get_pose_from_measure(result.x)
+            residuals = self._compute_logmap_residuals(self.PEE_measured, PEE_est)
             if not result.success:
+                # returned, not raised: solve() records the fit stage failed
+                # and the export paths refuse it (figaroh-plus#182)
                 logger.warning(f"Optimization failed at fit {iteration + 1}")
                 break
 
-            PEE_est = self.get_pose_from_measure(result.x)
-            residuals = self._compute_logmap_residuals(self.PEE_measured, PEE_est)
             errors = self._sample_position_errors(residuals)
             if outlier_threshold is None or errors is None:
                 break
@@ -1715,8 +1720,8 @@ class BaseCalibration(ABC):
             logger.warning(f"ResultsManager not available: {e}")
             self.results_manager = None
 
-        # Update status
-        self.STATUS = "CALIBRATED"
+        # Update status: the solver outcome, as the fit stage records it
+        self.STATUS = "CALIBRATED" if getattr(result, "success", True) else "FAILED"
 
     def solve_optimisation(
         self,
@@ -1947,8 +1952,53 @@ class BaseCalibration(ABC):
             for i, name in enumerate(names)
         }
 
+    def require_exportable(self, allow_failed_fit: bool = False) -> None:
+        """Refuse to export a calibration whose ``fit`` stage ``failed``.
+
+        The gateway of every calibration export (:meth:`joint_corrections`,
+        hence the URDF export, and ``export_geometric_calibration_yaml``).
+        A failed fit records stage ``export`` as failed and raises
+        :class:`CalibrationError`. ``allow_failed_fit=True`` is the explicit
+        override for a diagnostic export: it logs a warning, records stage
+        ``export`` as ``fallback`` and notes the override in the run
+        provenance. A successful fit is unaffected.
+        """
+        from figaroh.tools.stages import record_stage
+
+        fit = next(
+            (s for s in getattr(self, "stages", None) or [] if s.stage == "fit"), None
+        )
+        if fit is None or fit.status != "failed":
+            return
+        reason = f"the fit failed ({fit.reason or 'solver did not converge'})"
+        if allow_failed_fit:
+            logger.warning(
+                "Exporting from a failed fit (allow_failed_fit=True): %s", reason
+            )
+            record_stage(
+                self,
+                "export",
+                "fallback",
+                f"exported from a failed fit, diagnostic only: {reason}",
+            )
+            prov = getattr(self, "_run_provenance", None)
+            if isinstance(prov, dict):
+                prov["export_override"] = {
+                    "allow_failed_fit": True,
+                    "fit_reason": fit.reason,
+                }
+            return
+        record_stage(self, "export", "failed", reason)
+        raise CalibrationError(
+            f"export failed: {reason}; nothing to export. Pass "
+            f"allow_failed_fit=True for a diagnostic export only."
+        )
+
     def joint_corrections(
-        self, lift: bool = True, drop_unsupported: bool = False
+        self,
+        lift: bool = True,
+        drop_unsupported: bool = False,
+        allow_failed_fit: bool = False,
     ) -> Dict[str, float]:
         """Joint parameter values to write into a URDF (``export_urdf``).
 
@@ -1968,14 +2018,18 @@ class BaseCalibration(ABC):
                 carry (elastic ``k_*``, contact planes, ...). By default
                 they raise, because the reloaded model would then not
                 reproduce the calibration.
+            allow_failed_fit: export although the solver failed, for
+                diagnosis only; see :meth:`require_exportable`.
 
         Raises:
-            CalibrationError: if the fit has parameters that are neither
+            CalibrationError: if the ``fit`` stage ``failed`` (stage
+                ``export`` is recorded as failed), or if the fit has parameters that are neither
                 frames nor kinematic joint corrections, and
                 ``drop_unsupported`` is False.
         """
         from figaroh.tools.urdf_exporter import is_kinematic_correction
 
+        self.require_exportable(allow_failed_fit)
         if lift:
             values = {n: v["value"] for n, v in self.redistribute_parameters().items()}
         else:
@@ -2057,7 +2111,7 @@ class BaseCalibration(ABC):
             plot_3d_poses: 3D visualization of pose comparisons
             calc_stddev: Error statistics computation
         """
-        if self.STATUS != "CALIBRATED":
+        if self.STATUS == "NOT CALIBRATED":
             raise CalibrationError("Calibration not performed yet")
 
         fig1, ax1 = plt.subplots(self.calib_config["NbMarkers"], 1)
@@ -2087,7 +2141,7 @@ class BaseCalibration(ABC):
         Args:
             INCLUDE_UNCALIB (bool): Whether to include uncalibrated poses
         """
-        if self.STATUS != "CALIBRATED":
+        if self.STATUS == "NOT CALIBRATED":
             raise CalibrationError("Calibration not performed yet")
 
         fig2 = plt.figure()
