@@ -1765,10 +1765,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#delivery-progress-2026-10-06" class="md-nav__link">
+  <a href="#delivery-progress-2026-10-11" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Delivery progress (2026-10-06)
+        Delivery progress (2026-10-11)
       
     </span>
   </a>
@@ -2058,10 +2058,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#delivery-progress-2026-10-06" class="md-nav__link">
+  <a href="#delivery-progress-2026-10-11" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Delivery progress (2026-10-06)
+        Delivery progress (2026-10-11)
       
     </span>
   </a>
@@ -2239,10 +2239,14 @@ and then <code>main</code>. The docs site embeds this file directly.</p>
   package D1) is fixed by <a href="https://github.com/thanhndv212/figaroh-plus/pull/69">PR #69</a>,
   merged into <code>devel</code> on 2026-10-02. UR10/TIAGo signal-rate assumptions still
   require separate examples audits (D2) before new scientific benchmark claims.</li>
-<li><a href="https://github.com/thanhndv212/figaroh-plus/pull/31">Core PR #31</a> is open with
-  passing hosted checks and a <strong>revise</strong> feasibility decision. The private
-  experiment is not a production solver. <a href="https://github.com/thanhndv212/figaroh-plus/issues/30">#30</a>
-  must resolve convergence/scaling before #23–#25 proceed.</li>
+<li>Log-Cholesky research (D5) is optional and still open. The feasibility spike
+  (<a href="https://github.com/thanhndv212/figaroh-plus/pull/31">core PR #31</a>, merged)
+  recorded <strong>revise</strong>; the budget/scaling revision
+  (<a href="https://github.com/thanhndv212/figaroh-plus/issues/30">#30</a>) recorded
+  <strong>no-go</strong> because 8 of 24 gated fits still exhaust 2000 evaluations.
+  <a href="https://github.com/thanhndv212/figaroh-plus/issues/155">#155</a> changes the
+  fitting method next. The private experiment is not a production solver, and
+  #23–#25 stay blocked until a go decision.</li>
 <li><a href="https://github.com/thanhndv212/figaroh-examples/pull/13">Examples PR #13</a> is still draft.
   The Hey5 geometry failure was fixed by W1 (every robot loads from a clean
   checkout) and the 3.7 TALOS regression (<a href="https://github.com/thanhndv212/figaroh-examples/issues/14">examples #14</a>)
@@ -2256,16 +2260,20 @@ and then <code>main</code>. The docs site embeds this file directly.</p>
   helpers provide a starting point for a parallel calibration reference.
   New data/result types or composition interfaces require an ADR first.</li>
 </ul>
-<h4 id="delivery-progress-2026-10-06">Delivery progress (2026-10-06)<a class="headerlink" href="#delivery-progress-2026-10-06" title="Permanent link">&para;</a></h4>
+<h4 id="delivery-progress-2026-10-11">Delivery progress (2026-10-11)<a class="headerlink" href="#delivery-progress-2026-10-11" title="Permanent link">&para;</a></h4>
 <p><strong>Cleared:</strong> W1, W2, W4 (M0 delivery roster); D1, D2, C1 (M1.1 inputs);
 C2 (calibration side of M1.2); C3 and D6 (M1.3 export); W3 data/result
 contracts and S1 minimum reporting (M1.4 groundwork); <strong>C4 calibration
-reference</strong> (M1.4). The calibration workstream is complete through M1.4: one
+reference</strong> (M1.4); D4 physical-estimation comparison (M1.2) and <strong>D7
+dynamic reference</strong> (M1.4). The calibration workstream is complete through M1.4: one
 command (<code>examples/tiago/reference_run.py</code>) fits TIAGo mocap, reports
 held-out marker RMSE of 3.8–4.2 mm on three unused sessions, and exports a
 URDF and PAL file that reload within 2.1e-12 m. The dynamic workstream is
-now the critical path: D3 (UR10 truth fixture, frozen protocol v1) and D6 have
-cleared; D4 is next, then D7 and U1 acceptance. Per-package evidence is in the
+complete through M1.4: one command
+(<code>examples/identification_reference.py --robot ur10|tiago</code>) selects the direct
+LMI effort fit, verifies it on held-out splits and exports a URDF that reloads
+within 1e-9. U1 acceptance and the M1 review remain before 1.0. Per-package
+evidence is in the
 <a href="../plans/#implementation-status">implementation status</a>.</p>
 <p>These are dated observations; verify heads and status before beginning work.
 The <a href="../plans/">delivery plan</a> maps
@@ -2331,7 +2339,7 @@ scope, dependencies and closure policy are in the
 <tr>
 <th>Roadmap outcome / gate</th>
 <th>Required delivery milestones in this draft</th>
-<th>Status at 2026-10-06 (✅ = cleared)</th>
+<th>Status at 2026-10-11 (✅ = cleared)</th>
 </tr>
 </thead>
 <tbody>
@@ -2348,7 +2356,7 @@ scope, dependencies and closure policy are in the
 <tr>
 <td>M1.2 estimation</td>
 <td>D3–D4 dynamic truth/comparison; C2 calibration truth/holdout</td>
-<td>✅ <strong>C2, D3</strong>; D4 ready, partly in review (examples #12)</td>
+<td>✅ <strong>C2, D3, D4</strong> all cleared</td>
 </tr>
 <tr>
 <td>M1.3 export</td>
@@ -2358,7 +2366,7 @@ scope, dependencies and closure policy are in the
 <tr>
 <td>M1.4 integrated workflows</td>
 <td>W3 minimum contracts, S1 minimum reports, D7 dynamic reference, C4 calibration reference, U1 verified onboarding</td>
-<td>✅ <strong>W3, S1, C4</strong>; U1 in progress; D7 blocked</td>
+<td>✅ <strong>W3, S1, C4, D7</strong>; U1 in progress</td>
 </tr>
 <tr>
 <td>M2 follow-up</td>
@@ -2373,7 +2381,7 @@ scope, dependencies and closure policy are in the
 <tr>
 <td>Optional nonlinear research</td>
 <td>D5 and linked production #23–#25 when that path is approved; excluded from baseline M1 closure</td>
-<td>D5 ready (#30, PR #31 open)</td>
+<td>D5 open: #22 revise, #30 no-go; #155 (method change) ready</td>
 </tr>
 </tbody>
 </table>
@@ -2481,13 +2489,13 @@ feature in the minor release after its go decision and never holds a release.</p
 <td>0.6.0</td>
 <td>Calibration reference workflow (M1.1–M1.4, calibration side) and shared foundations</td>
 <td>D2, C1–C4, W3, S1; D6 inertial export and D3 fixture fixes, both accepted</td>
-<td>Ready; <a href="https://github.com/thanhndv212/figaroh-plus/issues/146">release tracker #146</a></td>
+<td>Released 2026-10-07 (<a href="https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.6.0">release</a>, <a href="https://github.com/thanhndv212/figaroh-plus/issues/146">tracker #146</a>); examples tag <code>v0.6.0</code></td>
 </tr>
 <tr>
 <td>0.7.0</td>
 <td>Dynamic reference workflow (M1.2–M1.4, dynamic side)</td>
 <td>D4, D7; D5 if it gets a go decision</td>
-<td>Next</td>
+<td>Release in progress; D4 and D7 cleared, D5 not go (LC1 #155); D3 and D6 already shipped in 0.6.0</td>
 </tr>
 <tr>
 <td>1.0.0</td>
@@ -2550,9 +2558,9 @@ issues/PRs in <code>figaroh-examples</code>, with the tested commit pair recorde
 <td>✅ Audits <strong>done in D2</strong>; fresh UR10 truth data <strong>done in D3</strong> (examples #89, frozen protocol v1). Original gate: independent analytic truth and validation trajectories</td>
 </tr>
 <tr>
-<td>Physical estimator comparison and convergence revision</td>
+<td>✅ Physical estimator comparison and convergence revision</td>
 <td>M1.2</td>
-<td>Reuse #30; distinguish exact reconstruction, direct constrained effort fitting, per-link projection and log-Cholesky; freeze metrics/extra-column policies before measurement</td>
+<td><strong>Done in D4</strong> (#39; examples #22 report): direct LMI effort fit selected for D7. Original gate: reuse #30; distinguish exact reconstruction, direct constrained effort fitting, per-link projection and log-Cholesky; freeze metrics/extra-column policies before measurement</td>
 </tr>
 <tr>
 <td>✅ Calibration held-out reference and export parity</td>
@@ -2575,9 +2583,9 @@ issues/PRs in <code>figaroh-examples</code>, with the tested commit pair recorde
 <td><strong>Merged in D6</strong> (#60, PR #138). Original gate: first moments and inertia tensors survive export/reload; mass/CoM conventions and inertia reference frames are tested</td>
 </tr>
 <tr>
-<td>End-to-end reference example</td>
+<td>✅ End-to-end reference example</td>
 <td>M1</td>
-<td>Calibration side ✅ done in C4; dynamic side remains in D7. Connect the existing projection, reconstruction, verification, export and archive APIs; demonstrate improvement on held-out data</td>
+<td>Calibration side ✅ done in C4; dynamic side ✅ <strong>done in D7</strong> (#42). Original gate: connect the existing projection, reconstruction, verification, export and archive APIs; demonstrate improvement on held-out data</td>
 </tr>
 <tr>
 <td>Backend selection in <code>RobotIdentificationSystem</code></td>

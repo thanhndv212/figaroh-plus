@@ -7609,13 +7609,7 @@ robot-specific configuration loading and constraint handling.</p>
 <span class="normal">508</span>
 <span class="normal">509</span>
 <span class="normal">510</span>
-<span class="normal">511</span>
-<span class="normal">512</span>
-<span class="normal">513</span>
-<span class="normal">514</span>
-<span class="normal">515</span>
-<span class="normal">516</span>
-<span class="normal">517</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">511</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Plot optimal trajectory results using unified results manager."""</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">"T_F"</span><span class="p">]:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"No trajectory data to plot"</span><span class="p">)</span>
@@ -7647,28 +7641,20 @@ robot-specific configuration loading and constraint handling.</p>
                 <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">seg_idx</span><span class="p">]</span>
                 <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Segment </span><span class="si">{</span><span class="n">seg_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">"</span>
 
-                <span class="k">for</span> <span class="n">joint_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_joints</span><span class="p">):</span>
-                    <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-                        <span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="p">[:,</span> <span class="n">joint_idx</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span>
-                    <span class="p">)</span>
-                    <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-                        <span class="n">T</span><span class="p">,</span> <span class="n">V</span><span class="p">[:,</span> <span class="n">joint_idx</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span>
-                    <span class="p">)</span>
-                    <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-                        <span class="n">T</span><span class="p">,</span> <span class="n">A</span><span class="p">[:,</span> <span class="n">joint_idx</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span>
-                    <span class="p">)</span>
+                <span class="c1"># P spans nq columns, V and A span nv: index each by</span>
+                <span class="c1"># the active joint's own idx_q / idx_v (#149).</span>
+                <span class="k">for</span> <span class="n">joint_idx</span><span class="p">,</span> <span class="p">(</span><span class="n">iq</span><span class="p">,</span> <span class="n">iv</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+                    <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CB</span><span class="o">.</span><span class="n">act_idxq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">CB</span><span class="o">.</span><span class="n">act_idxv</span><span class="p">)</span>
+                <span class="p">):</span>
+                    <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="p">[:,</span> <span class="n">iq</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+                    <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">V</span><span class="p">[:,</span> <span class="n">iv</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+                    <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">A</span><span class="p">[:,</span> <span class="n">iv</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
 
             <span class="c1"># Set labels and formatting</span>
-            <span class="k">for</span> <span class="n">joint_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_joints</span><span class="p">):</span>
-                <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">"Joint </span><span class="si">{</span><span class="n">joint_idx</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">\n</span><span class="s2">Position (rad)"</span>
-                <span class="p">)</span>
-                <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">"Joint </span><span class="si">{</span><span class="n">joint_idx</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">\n</span><span class="s2">Velocity (rad/s)"</span>
-                <span class="p">)</span>
-                <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">"Joint </span><span class="si">{</span><span class="n">joint_idx</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">\n</span><span class="s2">Acceleration (rad/s²)"</span>
-                <span class="p">)</span>
+            <span class="k">for</span> <span class="n">joint_idx</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CB</span><span class="o">.</span><span class="n">act_Jname</span><span class="p">):</span>
+                <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s2">Position (rad)"</span><span class="p">)</span>
+                <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s2">Velocity (rad/s)"</span><span class="p">)</span>
+                <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s2">Acceleration (rad/s²)"</span><span class="p">)</span>
 
                 <span class="k">if</span> <span class="n">joint_idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
@@ -7707,8 +7693,10 @@ robot-specific configuration loading and constraint handling.</p>
         <span class="n">results_manager</span><span class="o">.</span><span class="n">plot_optimal_trajectory_results</span><span class="p">(</span>
             <span class="n">trajectories</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">,</span>
             <span class="n">condition_number</span><span class="o">=</span><span class="n">condition_number</span><span class="p">,</span>
-            <span class="n">joint_names</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">"Joint </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CB</span><span class="o">.</span><span class="n">act_Jid</span><span class="p">))],</span>
+            <span class="n">joint_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">CB</span><span class="o">.</span><span class="n">act_Jname</span><span class="p">,</span>
             <span class="n">title</span><span class="o">=</span><span class="s2">"Optimal Trajectory Generation Results"</span><span class="p">,</span>
+            <span class="n">q_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">CB</span><span class="o">.</span><span class="n">act_idxq</span><span class="p">,</span>
+            <span class="n">v_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">CB</span><span class="o">.</span><span class="n">act_idxv</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="n">plot_with_fallback</span><span class="p">(</span>
@@ -7736,7 +7724,13 @@ robot-specific configuration loading and constraint handling.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_trajectory.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">519</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
 <span class="normal">520</span>
 <span class="normal">521</span>
 <span class="normal">522</span>
@@ -7802,13 +7796,7 @@ robot-specific configuration loading and constraint handling.</p>
 <span class="normal">582</span>
 <span class="normal">583</span>
 <span class="normal">584</span>
-<span class="normal">585</span>
-<span class="normal">586</span>
-<span class="normal">587</span>
-<span class="normal">588</span>
-<span class="normal">589</span>
-<span class="normal">590</span>
-<span class="normal">591</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s2">"results"</span><span class="p">):</span>
+<span class="normal">585</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s2">"results"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Save optimal trajectory results using unified results manager."""</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">"T_F"</span><span class="p">]:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"No trajectory data to save"</span><span class="p">)</span>
@@ -12833,13 +12821,7 @@ robot-specific configuration loading and constraint handling.</p>
 <span class="normal">508</span>
 <span class="normal">509</span>
 <span class="normal">510</span>
-<span class="normal">511</span>
-<span class="normal">512</span>
-<span class="normal">513</span>
-<span class="normal">514</span>
-<span class="normal">515</span>
-<span class="normal">516</span>
-<span class="normal">517</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">511</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Plot optimal trajectory results using unified results manager."""</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">"T_F"</span><span class="p">]:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"No trajectory data to plot"</span><span class="p">)</span>
@@ -12871,28 +12853,20 @@ robot-specific configuration loading and constraint handling.</p>
                 <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">seg_idx</span><span class="p">]</span>
                 <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Segment </span><span class="si">{</span><span class="n">seg_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">"</span>
 
-                <span class="k">for</span> <span class="n">joint_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_joints</span><span class="p">):</span>
-                    <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-                        <span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="p">[:,</span> <span class="n">joint_idx</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span>
-                    <span class="p">)</span>
-                    <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-                        <span class="n">T</span><span class="p">,</span> <span class="n">V</span><span class="p">[:,</span> <span class="n">joint_idx</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span>
-                    <span class="p">)</span>
-                    <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-                        <span class="n">T</span><span class="p">,</span> <span class="n">A</span><span class="p">[:,</span> <span class="n">joint_idx</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span>
-                    <span class="p">)</span>
+                <span class="c1"># P spans nq columns, V and A span nv: index each by</span>
+                <span class="c1"># the active joint's own idx_q / idx_v (#149).</span>
+                <span class="k">for</span> <span class="n">joint_idx</span><span class="p">,</span> <span class="p">(</span><span class="n">iq</span><span class="p">,</span> <span class="n">iv</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+                    <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CB</span><span class="o">.</span><span class="n">act_idxq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">CB</span><span class="o">.</span><span class="n">act_idxv</span><span class="p">)</span>
+                <span class="p">):</span>
+                    <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="p">[:,</span> <span class="n">iq</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+                    <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">V</span><span class="p">[:,</span> <span class="n">iv</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+                    <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">A</span><span class="p">[:,</span> <span class="n">iv</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
 
             <span class="c1"># Set labels and formatting</span>
-            <span class="k">for</span> <span class="n">joint_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_joints</span><span class="p">):</span>
-                <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">"Joint </span><span class="si">{</span><span class="n">joint_idx</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">\n</span><span class="s2">Position (rad)"</span>
-                <span class="p">)</span>
-                <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">"Joint </span><span class="si">{</span><span class="n">joint_idx</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">\n</span><span class="s2">Velocity (rad/s)"</span>
-                <span class="p">)</span>
-                <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">"Joint </span><span class="si">{</span><span class="n">joint_idx</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">\n</span><span class="s2">Acceleration (rad/s²)"</span>
-                <span class="p">)</span>
+            <span class="k">for</span> <span class="n">joint_idx</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CB</span><span class="o">.</span><span class="n">act_Jname</span><span class="p">):</span>
+                <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s2">Position (rad)"</span><span class="p">)</span>
+                <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s2">Velocity (rad/s)"</span><span class="p">)</span>
+                <span class="n">axes</span><span class="p">[</span><span class="n">joint_idx</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s2">Acceleration (rad/s²)"</span><span class="p">)</span>
 
                 <span class="k">if</span> <span class="n">joint_idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
@@ -12931,8 +12905,10 @@ robot-specific configuration loading and constraint handling.</p>
         <span class="n">results_manager</span><span class="o">.</span><span class="n">plot_optimal_trajectory_results</span><span class="p">(</span>
             <span class="n">trajectories</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">,</span>
             <span class="n">condition_number</span><span class="o">=</span><span class="n">condition_number</span><span class="p">,</span>
-            <span class="n">joint_names</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">"Joint </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CB</span><span class="o">.</span><span class="n">act_Jid</span><span class="p">))],</span>
+            <span class="n">joint_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">CB</span><span class="o">.</span><span class="n">act_Jname</span><span class="p">,</span>
             <span class="n">title</span><span class="o">=</span><span class="s2">"Optimal Trajectory Generation Results"</span><span class="p">,</span>
+            <span class="n">q_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">CB</span><span class="o">.</span><span class="n">act_idxq</span><span class="p">,</span>
+            <span class="n">v_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">CB</span><span class="o">.</span><span class="n">act_idxv</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="n">plot_with_fallback</span><span class="p">(</span>
@@ -12960,7 +12936,13 @@ robot-specific configuration loading and constraint handling.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_trajectory.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">519</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
 <span class="normal">520</span>
 <span class="normal">521</span>
 <span class="normal">522</span>
@@ -13026,13 +13008,7 @@ robot-specific configuration loading and constraint handling.</p>
 <span class="normal">582</span>
 <span class="normal">583</span>
 <span class="normal">584</span>
-<span class="normal">585</span>
-<span class="normal">586</span>
-<span class="normal">587</span>
-<span class="normal">588</span>
-<span class="normal">589</span>
-<span class="normal">590</span>
-<span class="normal">591</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s2">"results"</span><span class="p">):</span>
+<span class="normal">585</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s2">"results"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Save optimal trajectory results using unified results manager."""</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">"T_F"</span><span class="p">]:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"No trajectory data to save"</span><span class="p">)</span>
@@ -13148,7 +13124,13 @@ that can be extended for specific robots.</p>
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>src/figaroh/optimal/base_optimal_trajectory.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">602</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">596</span>
+<span class="normal">597</span>
+<span class="normal">598</span>
+<span class="normal">599</span>
+<span class="normal">600</span>
+<span class="normal">601</span>
+<span class="normal">602</span>
 <span class="normal">603</span>
 <span class="normal">604</span>
 <span class="normal">605</span>
@@ -13172,13 +13154,7 @@ that can be extended for specific robots.</p>
 <span class="normal">623</span>
 <span class="normal">624</span>
 <span class="normal">625</span>
-<span class="normal">626</span>
-<span class="normal">627</span>
-<span class="normal">628</span>
-<span class="normal">629</span>
-<span class="normal">630</span>
-<span class="normal">631</span>
-<span class="normal">632</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">626</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">opt_traj</span><span class="p">,</span>
     <span class="n">n_joints</span><span class="p">,</span>
@@ -13241,9 +13217,9 @@ that can be extended for specific robots.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_trajectory.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">634</span>
-<span class="normal">635</span>
-<span class="normal">636</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_variable_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">628</span>
+<span class="normal">629</span>
+<span class="normal">630</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_variable_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">"""Get variable bounds for optimization."""</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_traj</span><span class="o">.</span><span class="n">constraint_manager</span><span class="o">.</span><span class="n">get_variable_bounds</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
@@ -13268,9 +13244,9 @@ that can be extended for specific robots.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_trajectory.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">638</span>
-<span class="normal">639</span>
-<span class="normal">640</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_constraint_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">632</span>
+<span class="normal">633</span>
+<span class="normal">634</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_constraint_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">"""Get constraint bounds for optimization."""</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_traj</span><span class="o">.</span><span class="n">constraint_manager</span><span class="o">.</span><span class="n">get_constraint_bounds</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Ns</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -13295,15 +13271,15 @@ that can be extended for specific robots.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_trajectory.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">642</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">636</span>
+<span class="normal">637</span>
+<span class="normal">638</span>
+<span class="normal">639</span>
+<span class="normal">640</span>
+<span class="normal">641</span>
+<span class="normal">642</span>
 <span class="normal">643</span>
-<span class="normal">644</span>
-<span class="normal">645</span>
-<span class="normal">646</span>
-<span class="normal">647</span>
-<span class="normal">648</span>
-<span class="normal">649</span>
-<span class="normal">650</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_initial_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="normal">644</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_initial_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Get initial guess from waypoints."""</span>
     <span class="c1"># This will be set when solve() is called with waypoints</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_initial_wps"</span><span class="p">):</span>
@@ -13334,17 +13310,17 @@ that can be extended for specific robots.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_trajectory.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">652</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">646</span>
+<span class="normal">647</span>
+<span class="normal">648</span>
+<span class="normal">649</span>
+<span class="normal">650</span>
+<span class="normal">651</span>
+<span class="normal">652</span>
 <span class="normal">653</span>
 <span class="normal">654</span>
 <span class="normal">655</span>
-<span class="normal">656</span>
-<span class="normal">657</span>
-<span class="normal">658</span>
-<span class="normal">659</span>
-<span class="normal">660</span>
-<span class="normal">661</span>
-<span class="normal">662</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="normal">656</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Objective function: condition number of base regressor matrix."""</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_traj</span><span class="o">.</span><span class="n">objective_function</span><span class="p">(</span>
         <span class="n">X</span><span class="p">,</span>
@@ -13377,11 +13353,11 @@ that can be extended for specific robots.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_trajectory.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">664</span>
-<span class="normal">665</span>
-<span class="normal">666</span>
-<span class="normal">667</span>
-<span class="normal">668</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">658</span>
+<span class="normal">659</span>
+<span class="normal">660</span>
+<span class="normal">661</span>
+<span class="normal">662</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Constraint function for IPOPT."""</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_traj</span><span class="o">.</span><span class="n">constraint_manager</span><span class="o">.</span><span class="n">evaluate_constraints</span><span class="p">(</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Ns</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_cb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vel_wps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">acc_wps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wp_init</span>
@@ -13411,7 +13387,13 @@ every objective evaluation rebuilds the full regressor.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_trajectory.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">670</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">664</span>
+<span class="normal">665</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
+<span class="normal">668</span>
+<span class="normal">669</span>
+<span class="normal">670</span>
 <span class="normal">671</span>
 <span class="normal">672</span>
 <span class="normal">673</span>
@@ -13421,13 +13403,7 @@ every objective evaluation rebuilds the full regressor.</p>
 <span class="normal">677</span>
 <span class="normal">678</span>
 <span class="normal">679</span>
-<span class="normal">680</span>
-<span class="normal">681</span>
-<span class="normal">682</span>
-<span class="normal">683</span>
-<span class="normal">684</span>
-<span class="normal">685</span>
-<span class="normal">686</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="normal">680</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Gradient of the objective by forward finite differences.</span>
 
@@ -13468,7 +13444,13 @@ instead of full automatic differentiation which is too slow.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_trajectory.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">688</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">682</span>
+<span class="normal">683</span>
+<span class="normal">684</span>
+<span class="normal">685</span>
+<span class="normal">686</span>
+<span class="normal">687</span>
+<span class="normal">688</span>
 <span class="normal">689</span>
 <span class="normal">690</span>
 <span class="normal">691</span>
@@ -13498,13 +13480,7 @@ instead of full automatic differentiation which is too slow.</p>
 <span class="normal">715</span>
 <span class="normal">716</span>
 <span class="normal">717</span>
-<span class="normal">718</span>
-<span class="normal">719</span>
-<span class="normal">720</span>
-<span class="normal">721</span>
-<span class="normal">722</span>
-<span class="normal">723</span>
-<span class="normal">724</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="normal">718</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Jacobian of constraints - Custom implementation for better performance.</span>
 
@@ -13616,7 +13592,13 @@ instead of full automatic differentiation which is too slow.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/optimal/base_optimal_trajectory.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">748</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">742</span>
+<span class="normal">743</span>
+<span class="normal">744</span>
+<span class="normal">745</span>
+<span class="normal">746</span>
+<span class="normal">747</span>
+<span class="normal">748</span>
 <span class="normal">749</span>
 <span class="normal">750</span>
 <span class="normal">751</span>
@@ -13698,13 +13680,7 @@ instead of full automatic differentiation which is too slow.</p>
 <span class="normal">827</span>
 <span class="normal">828</span>
 <span class="normal">829</span>
-<span class="normal">830</span>
-<span class="normal">831</span>
-<span class="normal">832</span>
-<span class="normal">833</span>
-<span class="normal">834</span>
-<span class="normal">835</span>
-<span class="normal">836</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve_with_waypoints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wps</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="normal">830</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve_with_waypoints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wps</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve the optimization problem with given initial waypoints.</span>
 

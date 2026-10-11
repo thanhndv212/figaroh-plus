@@ -2141,7 +2141,7 @@ current architecture description.</p>
    report</em> template (the same forms are used in figaroh-examples). Write it for a
    reader without local context: link its delivery package, define testable
    acceptance criteria and list dependencies as <code>#N</code> (same repository) or
-   <code>thanhndv212/figaroh-examples#N</code> (the other one), which GitHub links. See <a href="../../plans/README.md#how-to-read-delivery-issues">how to read delivery issues</a>.
+   <code>thanhndv212/figaroh-examples#N</code> (the other one), which GitHub links. See <a href="https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/plans/README.md#how-to-read-delivery-issues">how to read delivery issues</a>.
    Bugs include a minimal reproducer, expected/actual results, environment and
    data provenance. Distinguish wrong numerical results, crashes, unsupported
    behavior and missing dependencies. For docs/CI work, a focused PR can carry
@@ -2168,9 +2168,10 @@ current architecture description.</p>
 <li>The maintainer reviews each PR. Agents must wait for the maintainer's explicit
    approval before merging; passing checks or a request to implement/open a PR
    does not authorize a merge. Address review comments and rerun affected checks.
-   After approval and required checks pass on the current head, squash-merge the
-   focused feature/fix PR. If the approved scope changes materially, obtain a
-   renewed review before merging. Use a
+   After approval and required checks pass on the current head, merge the
+   focused feature/fix PR with a <strong>merge commit</strong> (not squash or rebase), so the
+   PR's individual commits stay in <code>devel</code>'s history. If the approved scope
+   changes materially, obtain a renewed review before merging. Use a
    Conventional Commit title, e.g. <code>fix(identification): preserve joint ordering</code>.</li>
 <li>Close the issue with the merged PR linked. Because <code>main</code> is the default
    branch, <code>Closes #N</code> may not close it when merging into <code>devel</code>. Mark roadmap
@@ -2220,7 +2221,12 @@ GitHub branch protection/rulesets for server-enforced merge blocking.</p>
    <code>devel</code>. Run full tests, package build/metadata checks and the affected example
    workflows. Record unsupported or untested platforms explicitly.</li>
 <li>Prepare the version and dated changelog on <code>devel</code> through a PR. Keep
-   <code>pyproject.toml</code> and <code>src/figaroh/__init__.py</code> version strings aligned.</li>
+   <code>pyproject.toml</code> and <code>src/figaroh/__init__.py</code> version strings aligned.
+   In the same PR, revise <code>README.md</code> against the release: rewrite "What's
+   new", rerun the Quickstart commands, check every claim (features, supported
+   platforms, links) against the code and CI, and remove anything stale. Do
+   the same for the figaroh-examples README (compatibility row, robot table,
+   <code>requirements.txt</code> pin) in a paired examples PR.</li>
 <li>Open <code>devel</code> → <code>main</code> and merge with a <strong>merge commit</strong>, preserving shared
    history. Tag/release publishing is a separate maintainer action after the
    release checks; this repository's docs workflow does not publish to PyPI.</li>
