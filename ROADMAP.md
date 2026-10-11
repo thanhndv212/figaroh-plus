@@ -71,17 +71,21 @@ and then `main`. The docs site embeds this file directly.
   helpers provide a starting point for a parallel calibration reference.
   New data/result types or composition interfaces require an ADR first.
 
-### Delivery progress (2026-10-06)
+### Delivery progress (2026-10-11)
 
 **Cleared:** W1, W2, W4 (M0 delivery roster); D1, D2, C1 (M1.1 inputs);
 C2 (calibration side of M1.2); C3 and D6 (M1.3 export); W3 data/result
 contracts and S1 minimum reporting (M1.4 groundwork); **C4 calibration
-reference** (M1.4). The calibration workstream is complete through M1.4: one
+reference** (M1.4); D4 physical-estimation comparison (M1.2) and **D7
+dynamic reference** (M1.4). The calibration workstream is complete through M1.4: one
 command (`examples/tiago/reference_run.py`) fits TIAGo mocap, reports
 held-out marker RMSE of 3.8–4.2 mm on three unused sessions, and exports a
 URDF and PAL file that reload within 2.1e-12 m. The dynamic workstream is
-now the critical path: D3 (UR10 truth fixture, frozen protocol v1) and D6 have
-cleared; D4 is next, then D7 and U1 acceptance. Per-package evidence is in the
+complete through M1.4: one command
+(`examples/identification_reference.py --robot ur10|tiago`) selects the direct
+LMI effort fit, verifies it on held-out splits and exports a URDF that reloads
+within 1e-9. U1 acceptance and the M1 review remain before 1.0. Per-package
+evidence is in the
 [implementation status](docs/source/further_reading/plans.md#implementation-status).
 
 These are dated observations; verify heads and status before beginning work.
@@ -120,13 +124,13 @@ that achieve them; issues are their implementation units. Their canonical
 scope, dependencies and closure policy are in the
 [work-package milestone rules](docs/source/further_reading/plans.md#work-package-milestone-rules).
 
-| Roadmap outcome / gate | Required delivery milestones in this draft | Status at 2026-10-06 (✅ = cleared) |
+| Roadmap outcome / gate | Required delivery milestones in this draft | Status at 2026-10-11 (✅ = cleared) |
 | --- | --- | --- |
 | M0 reviewed delivery scope | W1 fixtures, W2 regression diagnosis, W4 engineering process | ✅ **W1, W2, W4 all cleared** |
 | M1.1 inputs | D1–D2 dynamic signals; C1 calibration frames/data | ✅ **D1, D2, C1 all cleared** |
-| M1.2 estimation | D3–D4 dynamic truth/comparison; C2 calibration truth/holdout | ✅ **C2, D3**; D4 ready, partly in review (examples #12) |
+| M1.2 estimation | D3–D4 dynamic truth/comparison; C2 calibration truth/holdout | ✅ **C2, D3, D4** all cleared |
 | M1.3 export | D6 inertial export; C3 geometric export | ✅ **C3, D6** both cleared |
-| M1.4 integrated workflows | W3 minimum contracts, S1 minimum reports, D7 dynamic reference, C4 calibration reference, U1 verified onboarding | ✅ **W3, S1, C4**; U1 in progress; D7 blocked |
+| M1.4 integrated workflows | W3 minimum contracts, S1 minimum reports, D7 dynamic reference, C4 calibration reference, U1 verified onboarding | ✅ **W3, S1, C4, D7**; U1 in progress |
 | M2 follow-up | S2 uncertainty, S3 experiment-design improvements, S4 selective composition; W3 is prerequisite groundwork | ✅ W3 groundwork done; S2 in progress; S3, S4 blocked |
 | M3 backend parity | B1 capabilities and measured parity; broader ports need separately reviewed packages | Blocked on M1 |
 | Optional nonlinear research | D5 and linked production #23–#25 when that path is approved; excluded from baseline M1 closure | D5 open: #22 revise, #30 no-go; #155 (method change) ready |
@@ -184,7 +188,7 @@ feature in the minor release after its go decision and never holds a release.
 |---|---|---|---|
 | 0.5.0 | M0 engineering baseline | W1, W2, W4, D1 | Released 2026-10-03 |
 | 0.6.0 | Calibration reference workflow (M1.1–M1.4, calibration side) and shared foundations | D2, C1–C4, W3, S1; D6 inertial export and D3 fixture fixes, both accepted | Released 2026-10-07 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.6.0), [tracker #146](https://github.com/thanhndv212/figaroh-plus/issues/146)); examples tag `v0.6.0` |
-| 0.7.0 | Dynamic reference workflow (M1.2–M1.4, dynamic side) | D4, D7; D5 if it gets a go decision | Next; D3 and D6 already shipped in 0.6.0 |
+| 0.7.0 | Dynamic reference workflow (M1.2–M1.4, dynamic side) | D4, D7; D5 if it gets a go decision | Release in progress; D4 and D7 cleared, D5 not go (LC1 #155); D3 and D6 already shipped in 0.6.0 |
 | 1.0.0 | M1 accepted | U1 acceptance, M1 review, deprecations removed | After 0.7.0 |
 | 1.1, 1.2 | M2 composable calibration and identification | S2, S3, S4 | Later |
 | 1.x or 2.0 | M3 backend parity | B1 | Later; 2.0 only if the backend API breaks |
@@ -213,12 +217,12 @@ issues/PRs in `figaroh-examples`, with the tested commit pair recorded.
 | ✅ Legacy lint and formatting cleanup | M0 follow-up | **Done in W4** (#81–#85 via #87–#92); full pre-commit is a blocking gate (#93) |
 | ✅ Regressor tests that skip on incompatible mocks | M0 follow-up | **Done in W4** (#58 via #80): obsolete mocks replaced with real-model coverage |
 | ✅ Signal-rate/provenance audits and fresh UR10 truth data | M1.1/M1.2 | ✅ Audits **done in D2**; fresh UR10 truth data **done in D3** (examples #89, frozen protocol v1). Original gate: independent analytic truth and validation trajectories |
-| Physical estimator comparison and convergence revision | M1.2 | Reuse #30; distinguish exact reconstruction, direct constrained effort fitting, per-link projection and log-Cholesky; freeze metrics/extra-column policies before measurement |
+| ✅ Physical estimator comparison and convergence revision | M1.2 | **Done in D4** (#39; examples #22 report): direct LMI effort fit selected for D7. Original gate: reuse #30; distinguish exact reconstruction, direct constrained effort fitting, per-link projection and log-Cholesky; freeze metrics/extra-column policies before measurement |
 | ✅ Calibration held-out reference and export parity | Parallel M1.1–M1.4 | ✅ TALOS #14 diagnosed (W2), held-out reference (C2) and reloaded-model FK parity (C3) **done**; integrated TIAGo reference **done in C4** (examples #29 via examples #88) |
 | General robot/dataset onboarding guide | Parallel M1 / proposed U1 | Data/model inventory → method choice → acquisition/processing → fit interpretation → held-out validation/export; reusable experiment brief; worked dynamic and TIAGo mocap cases; missing-data limitations explicit |
 | ✅ Narrow data/result contract | M1/M2 | **Done in W3** (core #126/#128/#130, examples #84). Original gate: Inventory current adapters; ADR; two consumers; legacy dictionaries/configs remain compatible; proposed types not presented as existing API |
 | ✅ Full inertial URDF export | M1 correctness | **Merged in D6** (#60, PR #138). Original gate: first moments and inertia tensors survive export/reload; mass/CoM conventions and inertia reference frames are tested |
-| End-to-end reference example | M1 | Calibration side ✅ done in C4; dynamic side remains in D7. Connect the existing projection, reconstruction, verification, export and archive APIs; demonstrate improvement on held-out data |
+| ✅ End-to-end reference example | M1 | Calibration side ✅ done in C4; dynamic side ✅ **done in D7** (#42). Original gate: connect the existing projection, reconstruction, verification, export and archive APIs; demonstrate improvement on held-out data |
 | Backend selection in `RobotIdentificationSystem` | M3 correctness | `from_urdf(backend=...)` currently stores a name while loading the usual Robot; selection must change the executing backend or reject unsupported choices |
 | Optional backend/solver coverage | M0/M3 | Record tested dependency versions and skips; broaden OS/Python coverage after the initial Python 3.12 gate |
 
