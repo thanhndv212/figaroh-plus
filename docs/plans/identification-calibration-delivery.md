@@ -87,7 +87,7 @@ flowchart TD
     D4["<b>D4: Physical comparison</b> · #39 ✅<br/>✓ #59 ex#12 ex#22"]
     D5["<b>D5: Convergence research</b> · #40 ✅<br/>✓ #22 (revise) #30 (no-go)"]
     D6["<b>D6: Inertial export</b> · #41 ✅<br/>✓ #60 (PR #138)"]
-    D7["<b>D7: Dynamic reference</b> · #42<br/>#61 (code merged, PR #165) #116<br/>ex#23 ex#68 ex#69"]
+    D7["<b>D7: Dynamic reference</b> · #42<br/>#61✓ #116✓<br/>ex#23✓ ex#68✓ ex#69✓"]
     C1["<b>C1: Frames/data audit</b> · #43 ✅<br/>✓ ex#24 ex#25"]
     C2["<b>C2: Calibration truth/holdout</b> · #44 ✅<br/>✓ #101 #102 #105 #110 #113<br/>✓ ex#26 ex#27 ex#67"]
     C3["<b>C3: Geometric export</b> · #45 ✅<br/>✓ #62 #111 #114 #123<br/>✓ ex#28"]
@@ -140,8 +140,8 @@ flowchart TD
 
     classDef cleared fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
     classDef ready fill:#fff3cd,stroke:#b8860b,color:#5c4400
-    class R,W1,W2,W3,W4,D1,D2,C1,C2,C3,S1,D6,C4,D3,D4,D5 cleared
-    class D7,LC1 active
+    class R,W1,W2,W3,W4,D1,D2,C1,C2,C3,S1,D6,C4,D3,D4,D5,D7 cleared
+    class LC1 active
     classDef active fill:#fff3cd,stroke:#b8860b,stroke-width:3px,stroke-dasharray:6 3,color:#5c4400
 ```
 
@@ -156,7 +156,7 @@ research examples outside M1.
 
 ### Implementation status
 
-Status as of 2026-10-10, taken from the GitHub trackers. The trackers stay
+Status as of 2026-10-11, taken from the GitHub trackers. The trackers stay
 authoritative; refresh this table when a tracker closes.
 
 | Package | Status | Closed | Delivered by / remaining |
@@ -176,18 +176,17 @@ authoritative; refresh this table when a tracker closes.
 | **S1** reporting contract | ✅ **Cleared** | 2026-10-06 | core #63 (PR #134), #70, #100, #103 (PR #135); examples #30 (examples PR #85), #36 |
 | **C4** calibration reference | ✅ **Cleared** | 2026-10-06 | examples #29 by examples #88 (`reference_run.py`); #119 by #141 (core support; TIAGo protocol keeps one marker); #120 by #140 + examples #87 (`map` replaces the coefficient); #97–#99 by #127, #137, #139 + examples #86; accepted on core `c80b5fc` + examples `88e2fc2`. Held-out marker RMSE 3.8–4.2 mm; export parity ≤ 2.1e-12 m |
 | S2 uncertainty | In progress (M2) | — | core #107 calibration standard errors fixed; #64 open |
-| U1 onboarding | In progress | — | core #66 guideline published; the TIAGo mocap walkthrough can use C4 now; acceptance still waits on D7 |
+| U1 onboarding | In progress | — | core #66 guideline published; worked briefs can now use the accepted C4 and D7 evidence |
 | **D4** physical comparison | ✅ **Cleared** | 2026-10-09 | #59 by PR #153 (2026-10-08); examples #12 by examples PR #13; examples #22 by examples PRs #94 and #95 |
-| D7 dynamic reference | **In progress** | — | Library side merged 2026-10-09: #61 by PR #165 (`select_stage`, public `physical_fit`, `export_urdf`, `merged_bodies="subtract_fixed"`; core 926 passed, 6 skipped). #61 stays open until V2 evidence exists. #116 merged by PR #169 and examples #69 by PR #103 (2026-10-10). Open: examples #68, #23 (see [path forward](#path-forward)) |
+| **D7** dynamic reference | ✅ **Cleared** | 2026-10-10 | #61 by PRs #165, #172; #116 by #169 + examples #117; examples #69, #68 by examples #118, #23 by examples #119 (`identification_reference.py`). Accepted on core `658fe99` + examples `663d642` (examples `validate.py` 18/18). UR10 truth and TIAGo select `physical_fit`; export parity ≤ 6.1e-10. Follow-up: `projected` not selectable (#163) |
 | LC1 log-Cholesky production | In progress (optional) | — | Go gate #155 (method change) in progress: exploration done on spent seeds, method choice pending, protocol not frozen. #23–#25 and examples #11 wait on its go decision |
-| S3, B1 | Blocked | — | S3 and B1 wait on D7 and S2 |
+| S3, B1 | Blocked | — | S3 and B1 wait on S2 and M1 acceptance |
 | S4 composition (M2) | Blocked | — | W3 cleared; still waits on accepted M1 references |
 
 **Gate summary:** M0's delivery roster (W1, W2, W4) and M1.1 (D1, D2, C1)
 are cleared. **The calibration workstream is complete through M1.4** (C2, C3,
-C4). On the dynamic side D3, D4 and D6 have cleared. In M1.4, W3, S1 and C4 have
-cleared and D7 is the only package on the critical path: its library side is
-merged (#61, PR #165) and its example evidence is open. U1 acceptance waits on D7.
+C4). **The dynamic workstream is complete through M1.4** (D3, D4, D6, D7),
+released in 0.7.0. U1 acceptance and the M1 review are what remain before 1.0.
 
 Housekeeping: the examples milestones for W1, D2, C1 and W4 have no open issues
 but are still open on GitHub, so they can be closed. The `status:blocked` labels
@@ -204,27 +203,26 @@ export/report code require paired regression coverage and serial integration.
 
 ### Path forward
 
-Status as of 2026-10-09. The trackers stay authoritative.
+Status as of 2026-10-11. The trackers stay authoritative.
 
-**Critical path (D7 → U1 → M1 acceptance).** All upstream packages have cleared
-(D3, D4, D6, S1, W3). What remains is example evidence and one reproducibility
-bug.
+**Critical path (U1 → M1 acceptance).** D7 cleared on 2026-10-10 (steps 1–6
+below, kept as its record); U1 acceptance is next.
 
 | Step | Issue | State | What it needs |
 | --- | --- | --- | --- |
 | 1 | examples #69 — ship the `calibration_slow` and `calibration_weight` runs, default `validation_data_file`, payload scale check | **done** (PR #103) | The original 2021-07 bags and the exporter that reproduces the shipped run byte for byte. Do this first: #68's acceptance bar is held-out RMSE on `calibration_slow` no worse than 1.21 |
-| 2 | examples #68 — velocity filter model, torso/wrist/arm_1 effort handling, Hey5 URDF, constants in config | ready | The same bags. Seven checklist items, each ships its derived data and analysis in the repository |
+| 2 | examples #68 — velocity filter model, torso/wrist/arm_1 effort handling, Hey5 URDF, constants in config | **done** (examples PR #118) | The same bags. Seven checklist items, each ships its derived data and analysis in the repository |
 | 3 | core #116 — deterministic base-parameter selection | **done** (PR #169) | Independent of 1–2; can run in parallel. Lets the golden tests drop the basis-dependent masks added in PR #165 |
-| 4 | examples #23 — headless reference command (UR10 truth protocol with `physical_fit` and export; TIAGo rejected-stage and `arm_7` merged-body cases) | blocked on 1–2 for TIAGo; UR10 part can start now | Needs #61's library side (merged). Acceptance is V3: full `validate.py` |
-| 5 | core #61 — close with the V2 run linked | open | Library side done in PR #165; its acceptance criteria are met, its validation level (V2) waits on step 4 |
-| 6 | D7 tracker #42 — closing review | open | Closes last, after steps 1–5 and the maintainer accepts the integration evidence |
-| 7 | U1 acceptance (examples #33), then M1 acceptance review | blocked on D7 | Worked briefs checked against the accepted evidence |
+| 4 | examples #23 — headless reference command (UR10 truth protocol with `physical_fit` and export; TIAGo rejected-stage and `arm_7` merged-body cases) | **done** (examples PR #119) | Needs #61's library side (merged). Acceptance is V3: full `validate.py` |
+| 5 | core #61 — close with the V2 run linked | **done** (PRs #165, #172) | Library side done in PR #165; its acceptance criteria are met, its validation level (V2) waits on step 4 |
+| 6 | D7 tracker #42 — closing review | **done** (2026-10-10) | Closes last, after steps 1–5 and the maintainer accepts the integration evidence |
+| 7 | U1 acceptance (examples #33), then M1 acceptance review | ready | Worked briefs checked against the accepted evidence |
 
 **After M1 acceptance (M2/M3):** S2 sensitivity (core #64, examples #31), then S3
 experiment design (core #65, #90, examples #32), S4 composition (core #67) and
 B1 backend parity (core #68, examples #34).
 
-**Found along the way (unscheduled, `delivery` label, no package).** These do not
+**Found along the way (unscheduled, `delivery` label, no package).** These did not
 block D7.
 
 | Issue | Defect |
@@ -385,10 +383,9 @@ additional production scope.
 Initial queue (2026-10-02): D1 / core #32 was the first ready correctness fix,
 delivered by #69. W1, W2, W3, W4, D1, D2, D3, D6, C1, C2, C3, C4 and S1 have since cleared
 (see [implementation status](#implementation-status)). Current queue
-(2026-10-09): calibration is done through M1.4, and D3 and D4 have cleared. The
-critical path is D7 only: examples #69 and #68 (TIAGo inputs and held-out runs),
-then examples #23 (reference command), then closing #61, #42 and U1 acceptance;
-core #116 runs in parallel (see the [path forward](#path-forward)). On the optional path, D5 cleared (#30 no-go) and LC1's go gate #155 (method change) is in progress.
+(2026-10-11): calibration and dynamic references are both done through M1.4
+(C4, D7; released in 0.6.0 and 0.7.0). The critical path is U1 acceptance, then
+the M1 review (see the [path forward](#path-forward)). On the optional path, D5 cleared (#30 no-go) and LC1's go gate #155 (method change) is in progress.
 Select one issue, validate its focused change, open its PR, then await
 review/merge approval.
 
