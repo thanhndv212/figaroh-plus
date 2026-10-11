@@ -84,7 +84,7 @@ URDF and PAL file that reload within 2.1e-12 m. The dynamic workstream is
 complete through M1.4: one command
 (`examples/identification_reference.py --robot ur10|tiago`) selects the direct
 LMI effort fit, verifies it on held-out splits and exports a URDF that reloads
-within 1e-9. U1 acceptance and the M1 review remain before 1.0. Per-package
+within 1e-9. U1 onboarding cleared on 2026-10-11; the M1 review remains before 1.0. Per-package
 evidence is in the
 [implementation status](docs/source/further_reading/plans.md#implementation-status).
 
@@ -130,7 +130,7 @@ scope, dependencies and closure policy are in the
 | M1.1 inputs | D1–D2 dynamic signals; C1 calibration frames/data | ✅ **D1, D2, C1 all cleared** |
 | M1.2 estimation | D3–D4 dynamic truth/comparison; C2 calibration truth/holdout | ✅ **C2, D3, D4** all cleared |
 | M1.3 export | D6 inertial export; C3 geometric export | ✅ **C3, D6** both cleared |
-| M1.4 integrated workflows | W3 minimum contracts, S1 minimum reports, D7 dynamic reference, C4 calibration reference, U1 verified onboarding | ✅ **W3, S1, C4, D7**; U1 in progress |
+| M1.4 integrated workflows | W3 minimum contracts, S1 minimum reports, D7 dynamic reference, C4 calibration reference, U1 verified onboarding | ✅ **W3, S1, C4, D7, U1** |
 | M2 follow-up | S2 uncertainty, S3 experiment-design improvements, S4 selective composition; W3 is prerequisite groundwork | ✅ W3 groundwork done; S2 in progress; S3, S4 blocked |
 | M3 backend parity | B1 capabilities and measured parity; broader ports need separately reviewed packages | Blocked on M1 |
 | Optional nonlinear research | D5 and linked production #23–#25 when that path is approved; excluded from baseline M1 closure | D5 open: #22 revise, #30 no-go; #155 (method change) ready |
@@ -189,7 +189,7 @@ feature in the minor release after its go decision and never holds a release.
 | 0.5.0 | M0 engineering baseline | W1, W2, W4, D1 | Released 2026-10-03 |
 | 0.6.0 | Calibration reference workflow (M1.1–M1.4, calibration side) and shared foundations | D2, C1–C4, W3, S1; D6 inertial export and D3 fixture fixes, both accepted | Released 2026-10-07 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.6.0), [tracker #146](https://github.com/thanhndv212/figaroh-plus/issues/146)); examples tag `v0.6.0` |
 | 0.7.0 | Dynamic reference workflow (M1.2–M1.4, dynamic side) | D4, D7 (D5 no-go; LC1 #155 not included) | Released 2026-10-11 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.7.0), [tracker #177](https://github.com/thanhndv212/figaroh-plus/issues/177)); examples tag `v0.7.0` |
-| 1.0.0 | M1 accepted | U1 acceptance, M1 review, deprecations removed | Next |
+| 1.0.0 | M1 accepted | M1 review, deprecations removed | Next |
 | 1.1, 1.2 | M2 composable calibration and identification | S2, S3, S4 | Later |
 | 1.x or 2.0 | M3 backend parity | B1 | Later; 2.0 only if the backend API breaks |
 

@@ -95,7 +95,7 @@ flowchart TD
     C5["<b>C5: Calibration studies</b> · #167<br/>ex#96–#101 ex#70 ex#71"]
     D8["<b>D8: Identification studies</b> (research)<br/>#157–#161"]
     S1["<b>S1: Minimum reporting contract</b> · #47 ✅<br/>✓ #63 #70 #100 #103<br/>✓ ex#30 ex#36"]
-    U1["<b>U1: Onboarding acceptance</b> · #51<br/>✓ #66<br/>ex#33"]
+    U1["<b>U1: Onboarding acceptance</b> · #51<br/>✓ #66<br/>✓ ex#33"]
     A["M1 acceptance review"]
     S2["<b>S2: Sensitivity/uncertainty</b> · #48<br/>✓ #107<br/>open: #64 ex#31"]
     S3["<b>S3: Improved experiment design</b> · #49<br/>#65 #90<br/>ex#32"]
@@ -140,7 +140,7 @@ flowchart TD
 
     classDef cleared fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
     classDef ready fill:#fff3cd,stroke:#b8860b,color:#5c4400
-    class R,W1,W2,W3,W4,D1,D2,C1,C2,C3,S1,D6,C4,D3,D4,D5,D7 cleared
+    class R,W1,W2,W3,W4,D1,D2,C1,C2,C3,S1,D6,C4,D3,D4,D5,D7,U1 cleared
     class LC1 active
     classDef active fill:#fff3cd,stroke:#b8860b,stroke-width:3px,stroke-dasharray:6 3,color:#5c4400
 ```
@@ -176,9 +176,9 @@ authoritative; refresh this table when a tracker closes.
 | **S1** reporting contract | ✅ **Cleared** | 2026-10-06 | core #63 (PR #134), #70, #100, #103 (PR #135); examples #30 (examples PR #85), #36 |
 | **C4** calibration reference | ✅ **Cleared** | 2026-10-06 | examples #29 by examples #88 (`reference_run.py`); #119 by #141 (core support; TIAGo protocol keeps one marker); #120 by #140 + examples #87 (`map` replaces the coefficient); #97–#99 by #127, #137, #139 + examples #86; accepted on core `c80b5fc` + examples `88e2fc2`. Held-out marker RMSE 3.8–4.2 mm; export parity ≤ 2.1e-12 m |
 | S2 uncertainty | In progress (M2) | — | core #107 calibration standard errors fixed; #64 open |
-| U1 onboarding | In progress | — | core #66 guideline published; worked briefs can now use the accepted C4 and D7 evidence |
+| **U1** onboarding | ✅ **Cleared** | 2026-10-11 | core #66 (guideline); examples #33 by examples PR #123: worked briefs for the UR10 truth and TIAGo identification references, TIAGo mocap calibration and a TX40 no-validation-data case, rerun against the accepted D7/C4 evidence on core `779e830` + examples `b167298` (examples `validate.py` 18/18) |
 | **D4** physical comparison | ✅ **Cleared** | 2026-10-09 | #59 by PR #153 (2026-10-08); examples #12 by examples PR #13; examples #22 by examples PRs #94 and #95 |
-| **D7** dynamic reference | ✅ **Cleared** | 2026-10-10 | #61 by PRs #165, #172; #116 by #169 + examples #117; examples #69, #68 by examples #118, #23 by examples #119 (`identification_reference.py`). Accepted on core `658fe99` + examples `663d642` (examples `validate.py` 18/18). UR10 truth and TIAGo select `physical_fit`; export parity ≤ 6.1e-10. Follow-up: `projected` not selectable (#163) |
+| **D7** dynamic reference | ✅ **Cleared** | 2026-10-10 | #61 by PRs #165, #172; #116 by #169 + examples #117; examples #69, #68 by examples #118, #23 by examples #119 (`identification_reference.py`). Accepted on core `658fe99` + examples `663d642` (examples `validate.py` 18/18). UR10 truth and TIAGo select `physical_fit`; export parity ≤ 6.1e-10. Follow-ups #163 and #164 fixed by PR #174 (`projected` stays non-selectable) |
 | LC1 log-Cholesky production | In progress (optional) | — | Go gate #155 (method change) in progress: exploration done on spent seeds, method choice pending, protocol not frozen. #23–#25 and examples #11 wait on its go decision |
 | S3, B1 | Blocked | — | S3 and B1 wait on S2 and M1 acceptance |
 | S4 composition (M2) | Blocked | — | W3 cleared; still waits on accepted M1 references |
@@ -186,7 +186,8 @@ authoritative; refresh this table when a tracker closes.
 **Gate summary:** M0's delivery roster (W1, W2, W4) and M1.1 (D1, D2, C1)
 are cleared. **The calibration workstream is complete through M1.4** (C2, C3,
 C4). **The dynamic workstream is complete through M1.4** (D3, D4, D6, D7),
-released in 0.7.0. U1 acceptance and the M1 review are what remain before 1.0.
+released in 0.7.0. U1 cleared on 2026-10-11; the M1 acceptance review is what
+remains before 1.0.
 
 Housekeeping: the examples milestones for W1, D2, C1 and W4 have no open issues
 but are still open on GitHub, so they can be closed. The `status:blocked` labels
@@ -205,8 +206,9 @@ export/report code require paired regression coverage and serial integration.
 
 Status as of 2026-10-11. The trackers stay authoritative.
 
-**Critical path (U1 → M1 acceptance).** D7 cleared on 2026-10-10 (steps 1–6
-below, kept as its record); U1 acceptance is next.
+**Critical path (M1 acceptance).** D7 cleared on 2026-10-10 (steps 1–6
+below, kept as its record) and U1 on 2026-10-11 (step 7); the M1 acceptance
+review is next.
 
 | Step | Issue | State | What it needs |
 | --- | --- | --- | --- |
@@ -216,19 +218,20 @@ below, kept as its record); U1 acceptance is next.
 | 4 | examples #23 — headless reference command (UR10 truth protocol with `physical_fit` and export; TIAGo rejected-stage and `arm_7` merged-body cases) | **done** (examples PR #119) | Needs #61's library side (merged). Acceptance is V3: full `validate.py` |
 | 5 | core #61 — close with the V2 run linked | **done** (PRs #165, #172) | Library side done in PR #165; its acceptance criteria are met, its validation level (V2) waits on step 4 |
 | 6 | D7 tracker #42 — closing review | **done** (2026-10-10) | Closes last, after steps 1–5 and the maintainer accepts the integration evidence |
-| 7 | U1 acceptance (examples #33), then M1 acceptance review | ready | Worked briefs checked against the accepted evidence |
+| 7 | U1 acceptance (examples #33) | **done** (examples PR #123) | Worked briefs checked against the accepted evidence |
+| 8 | M1 acceptance review | ready | Every M1 package cleared; the maintainer reviews the integrated evidence |
 
 **After M1 acceptance (M2/M3):** S2 sensitivity (core #64, examples #31), then S3
 experiment design (core #65, #90, examples #32), S4 composition (core #67) and
 B1 backend parity (core #68, examples #34).
 
 **Found along the way (unscheduled, `delivery` label, no package).** These did not
-block D7.
+block D7. Both were fixed by PR #174 (merged 2026-10-11) and released in 0.7.0.
 
-| Issue | Defect |
-| --- | --- |
-| core #163 | The physical-consistency projection projects the nominal model, not the fit. PR #165 leaves it unchanged, cannot select it as a stage, and reports relabel it |
-| core #164 | The SDP reconstruction and LMI projection pass `max_seconds` to picos, which only knows `timelimit`. Fixed for `physical_fit` only |
+| Issue | Defect | Fix |
+| --- | --- | --- |
+| core #163 | The physical-consistency projection projected the nominal model, not the fit | ✅ Projects the reconstruction; without `reconstruction` it is `skipped` and the `physical` stage is `not_run`. `projected` stays non-selectable |
+| core #164 | The SDP reconstruction and LMI projection passed `max_seconds` to picos, which only knows `timelimit` | ✅ Passed as `timelimit` in both |
 
 **Identification study expansion (package D8, research, `status:planned`, outside
 baseline M1).** D8 groups core #157–#161 and examples #115 under milestone D8 (no tracker yet).
@@ -384,8 +387,8 @@ Initial queue (2026-10-02): D1 / core #32 was the first ready correctness fix,
 delivered by #69. W1, W2, W3, W4, D1, D2, D3, D6, C1, C2, C3, C4 and S1 have since cleared
 (see [implementation status](#implementation-status)). Current queue
 (2026-10-11): calibration and dynamic references are both done through M1.4
-(C4, D7; released in 0.6.0 and 0.7.0). The critical path is U1 acceptance, then
-the M1 review (see the [path forward](#path-forward)). On the optional path, D5 cleared (#30 no-go) and LC1's go gate #155 (method change) is in progress.
+(C4, D7; released in 0.6.0 and 0.7.0), and U1 cleared on 2026-10-11. The
+critical path is the M1 review (see the [path forward](#path-forward)). On the optional path, D5 cleared (#30 no-go) and LC1's go gate #155 (method change) is in progress.
 Select one issue, validate its focused change, open its PR, then await
 review/merge approval.
 
