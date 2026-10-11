@@ -107,6 +107,11 @@ Release sequence:
    workflows. Record unsupported or untested platforms explicitly.
 2. Prepare the version and dated changelog on `devel` through a PR. Keep
    `pyproject.toml` and `src/figaroh/__init__.py` version strings aligned.
+   In the same PR, revise `README.md` against the release: rewrite "What's
+   new", rerun the Quickstart commands, check every claim (features, supported
+   platforms, links) against the code and CI, and remove anything stale. Do
+   the same for the figaroh-examples README (compatibility row, robot table,
+   `requirements.txt` pin) in a paired examples PR.
 3. Open `devel` → `main` and merge with a **merge commit**, preserving shared
    history. Tag/release publishing is a separate maintainer action after the
    release checks; this repository's docs workflow does not publish to PyPI.
