@@ -42,6 +42,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Package metadata declares the license as `Apache-2.0` (an SPDX
+  `License-Expression`, with `LICENSE` as the license file), matching
+  `LICENSE`. It declared a BSD classifier and copied the whole license text
+  into the `License` field, so PyPI listed the wrong license.
+
 - The physical-consistency projection projects the identified fit, not the
   nominal model. It now reads the full-parameter reconstruction, which runs
   first, and projects only the joints the reconstruction covers. Without
