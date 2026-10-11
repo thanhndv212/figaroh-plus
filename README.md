@@ -98,6 +98,28 @@ archived runs offline. See
 as an optional backend (`pip install mujoco`). See
 [Backends](https://thanhndv212.github.io/figaroh-plus/concepts/backends/).
 
+## Outputs
+
+Both tasks write the result back into a copy of your URDF
+(`figaroh.tools.urdf_exporter.export_urdf`), but they change different
+parts of it:
+
+| | Written to the URDF | Not written to the URDF |
+|---|---|---|
+| Calibration | Joint placements: corrected joint offsets and frame transforms | Metrology frames (`base_*`, `pEE*`, `phiEE*`): the pose of the measurement system and the marker or tool. These are returned separately; `frame_settings_doc()` explains them |
+| Identification | Link mass, centre of mass and inertia, joint friction (`BaseIdentification.export_urdf`) | The base-parameter fit, which has no per-link values: export needs `select_stage: reconstruction` or `physical_fit` |
+
+The exporter refuses inertias that are not physically consistent unless you
+pass `allow_infeasible=True`. Identification exports only an accepted
+estimate and reloads the written URDF with Pinocchio as a check.
+
+Every run can also write:
+
+- the estimated parameters as YAML, CSV or NPZ (`save_results()`);
+- a self-contained HTML report (`export_html_report()`);
+- a JSON verdict with the scope, per-stage status and each check
+  (`export_verification_report()`).
+
 ## What's new in 0.7
 
 - Choose which identification stage is reported and exported with
