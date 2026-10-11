@@ -2096,7 +2096,8 @@ class BaseCalibration(ABC):
         with separate subplots for each marker when multiple markers are used.
 
         Prerequisites:
-            - Calibration must be completed (STATUS == "CALIBRATED")
+            - Calibration must have run (STATUS "CALIBRATED", or "FAILED" to
+              inspect a fit that did not converge)
             - Error analysis must be computed (self._PEE_dist available)
 
         Side Effects:
