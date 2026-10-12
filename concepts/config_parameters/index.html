@@ -1472,6 +1472,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../api/stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public API and stability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../api/calibration/" class="md-nav__link">
         
   
@@ -2159,8 +2187,8 @@ glossary for what each parameter in the <code>calibration:</code> and <code>iden
 sections actually <em>means</em> — units, which pipeline step consumes it, and its
 unified-format equivalent where one exists.</p>
 <p>Field names below match the <strong>legacy flat format</strong>, since that's what you
-see verbatim in a config file (<code>get_param_from_yaml</code> /
-<code>identification.config.get_param_from_yaml</code>). The <strong>Unified path</strong> column
+see verbatim in an existing config file (the legacy format was removed in
+1.0; these are the keys <code>config_migration</code> reads). The <strong>Unified path</strong> column
 gives the equivalent key under <code>tasks.calibration.*</code> /
 <code>tasks.identification.*</code> in the unified format — <code>unified_to_legacy_config</code>
 and <code>unified_to_legacy_identif_config</code> (both in <code>figaroh/src/figaroh/*/config.py</code>)
@@ -2238,7 +2266,7 @@ the layout differs.</p>
 </tr>
 <tr>
 <td><code>coeff_regularize</code></td>
-<td><strong>Deprecated (#120), default 0.</strong> One L2 weight that robot cost functions applied to every joint parameter, penalising metres and radians alike. Core never applies it; a non-zero value raises a <code>DeprecationWarning</code>. Use <code>estimation.method: map</code> instead (priors of physical size per parameter group, <a href="../calibration_estimation/">estimation methods</a>)</td>
+<td><strong>Removed in 1.0 (#120, #185), default 0.</strong> One L2 weight that robot cost functions applied to every joint parameter, penalising metres and radians alike. Core never applied it; a non-zero value is now a <code>ConfigurationError</code> (the migration tool writes 0 and warns). Use <code>estimation.method: map</code> instead (priors of physical size per parameter group, <a href="../calibration_estimation/">estimation methods</a>)</td>
 <td><code>parameters.regularization_coefficient</code></td>
 </tr>
 <tr>
@@ -2529,7 +2557,7 @@ downstream.</p>
 </tr>
 <tr>
 <td><code>sync_joint_motion</code></td>
-<td><strong>Parsed by nothing</strong> — not even read into <code>identif_config</code> by <code>get_param_from_yaml</code>. Effectively decorative today.</td>
+<td><strong>Parsed by nothing</strong> — not even read into <code>identif_config</code> by the legacy parser. Effectively decorative today.</td>
 </tr>
 </tbody>
 </table>
@@ -2585,13 +2613,11 @@ downstream.</p>
 </tbody>
 </table>
 <h2 id="migrating-from-legacy-to-unified-format">Migrating from legacy to unified format<a class="headerlink" href="#migrating-from-legacy-to-unified-format" title="Permanent link">&para;</a></h2>
-<p>Both formats keep working side by side, but loading a legacy config now
-emits a <code>DeprecationWarning</code> (plus a <code>logger.warning</code>) from
-<code>figaroh.calibration.config.get_param_from_yaml</code> /
-<code>figaroh.identification.config.get_param_from_yaml</code> — the single parser
-every legacy-format caller funnels through, whether via
-<code>BaseCalibration</code>/<code>BaseIdentification.load_param</code>, <code>figaroh.utils.config_parser</code>,
-or a custom script calling the legacy parser directly.</p>
+<p>The legacy flat format was removed in 1.0 (it warned since 0.4.6). Loading a
+legacy config, whether via <code>BaseCalibration</code>/<code>BaseIdentification.load_param</code>
+or <code>figaroh.utils.config_parser.get_param_from_yaml</code>, raises a
+<code>ConfigurationError</code> that names the command below. The migration tool itself
+still reads legacy files.</p>
 <p><code>figaroh.utils.config_migration</code> converts a legacy config to unified format
 automatically, using the exact field mapping in the tables above:</p>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>figaroh.utils.config_migration<span class="w"> </span><span class="se">\</span>

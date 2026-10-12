@@ -1298,6 +1298,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../api/stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public API and stability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../api/calibration/" class="md-nav__link">
         
   
@@ -1865,10 +1893,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#should-i-use-the-unified-format-or-the-legacy-format" class="md-nav__link">
+  <a href="#what-happened-to-the-legacy-flat-format" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Should I use the unified format or the legacy format?
+        What happened to the legacy flat format?
       
     </span>
   </a>
@@ -2124,10 +2152,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#should-i-use-the-unified-format-or-the-legacy-format" class="md-nav__link">
+  <a href="#what-happened-to-the-legacy-flat-format" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Should I use the unified format or the legacy format?
+        What happened to the legacy flat format?
       
     </span>
   </a>
@@ -2307,11 +2335,11 @@ Isaac Sim only if you actually want that
 <a href="../../concepts/backends/">backend</a>; <code>figaroh.backends.list_backends()</code>
 reports what's currently available in your environment.</p>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
-<h3 id="should-i-use-the-unified-format-or-the-legacy-format">Should I use the unified format or the legacy format?<a class="headerlink" href="#should-i-use-the-unified-format-or-the-legacy-format" title="Permanent link">&para;</a></h3>
-<p>Use the <a href="../../concepts/configuration/">unified format</a> for anything new —
+<h3 id="what-happened-to-the-legacy-flat-format">What happened to the legacy flat format?<a class="headerlink" href="#what-happened-to-the-legacy-flat-format" title="Permanent link">&para;</a></h3>
+<p>It was removed in 1.0; use the <a href="../../concepts/configuration/">unified format</a> —
 it supports <code>extends:</code> template inheritance, so a robot config only states
-what's actually robot-specific. The legacy flat format still works and
-existing configs don't need migrating, but new examples in
+what's actually robot-specific. Loading an old flat config raises an error naming the converter,
+<code>python -m figaroh.utils.config_migration</code>. The examples in
 <a href="https://github.com/thanhndv212/figaroh-examples">figaroh-examples</a> all use
 the unified format.</p>
 <h3 id="my-robot-config-isnt-picking-up-template-defaults">My robot config isn't picking up template defaults<a class="headerlink" href="#my-robot-config-isnt-picking-up-template-defaults" title="Permanent link">&para;</a></h3>

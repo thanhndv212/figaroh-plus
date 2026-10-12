@@ -1303,6 +1303,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public API and stability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../calibration/" class="md-nav__link">
         
   
@@ -1777,17 +1805,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#figaroh.identification.config.get_param_from_yaml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        get_param_from_yaml
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#figaroh.identification.config.unified_to_legacy_identif_config" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1800,10 +1817,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#figaroh.identification.config.unified_to_legacy_identif_config--legacy_config-has-same-keys-as-get_param_from_yaml-output" class="md-nav__link">
+  <a href="#figaroh.identification.config.unified_to_legacy_identif_config--legacy_config-has-the-identif_config-keys" class="md-nav__link">
     <span class="md-ellipsis">
       
-        legacy_config has same keys as get_param_from_yaml output
+        legacy_config has the identif_config keys
       
     </span>
   </a>
@@ -1812,39 +1829,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#figaroh.identification.config.get_param_from_yaml_legacy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        get_param_from_yaml_legacy
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#figaroh.identification.config.get_param_from_yaml_unified" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        get_param_from_yaml_unified
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#figaroh.identification.config.get_param_from_yaml_with_warning" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        get_param_from_yaml_with_warning
-      
-    </span>
-  </a>
   
 </li>
       
@@ -3053,17 +3037,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#figaroh.identification.config.get_param_from_yaml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        get_param_from_yaml
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#figaroh.identification.config.unified_to_legacy_identif_config" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3076,10 +3049,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#figaroh.identification.config.unified_to_legacy_identif_config--legacy_config-has-same-keys-as-get_param_from_yaml-output" class="md-nav__link">
+  <a href="#figaroh.identification.config.unified_to_legacy_identif_config--legacy_config-has-the-identif_config-keys" class="md-nav__link">
     <span class="md-ellipsis">
       
-        legacy_config has same keys as get_param_from_yaml output
+        legacy_config has the identif_config keys
       
     </span>
   </a>
@@ -3088,39 +3061,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#figaroh.identification.config.get_param_from_yaml_legacy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        get_param_from_yaml_legacy
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#figaroh.identification.config.get_param_from_yaml_unified" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        get_param_from_yaml_unified
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#figaroh.identification.config.get_param_from_yaml_with_warning" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        get_param_from_yaml_with_warning
-      
-    </span>
-  </a>
   
 </li>
       
@@ -3589,7 +3529,8 @@ robot-specific implementations of key methods.</p>
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 68</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 67</span>
+<span class="normal"> 68</span>
 <span class="normal"> 69</span>
 <span class="normal"> 70</span>
 <span class="normal"> 71</span>
@@ -3657,8 +3598,7 @@ robot-specific implementations of key methods.</p>
 <span class="normal">133</span>
 <span class="normal">134</span>
 <span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">config_file</span><span class="o">=</span><span class="s2">"config/robot_config.yaml"</span><span class="p">):</span>
+<span class="normal">136</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">config_file</span><span class="o">=</span><span class="s2">"config/robot_config.yaml"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Initialize base identification with robot model and configuration.</span>
 
 <span class="sd">    Args:</span>
@@ -3962,7 +3902,8 @@ deviations from the WLS fit are stored under
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">155</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">154</span>
+<span class="normal">155</span>
 <span class="normal">156</span>
 <span class="normal">157</span>
 <span class="normal">158</span>
@@ -4087,8 +4028,7 @@ deviations from the WLS fit are stored under
 <span class="normal">277</span>
 <span class="normal">278</span>
 <span class="normal">279</span>
-<span class="normal">280</span>
-<span class="normal">281</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span>
+<span class="normal">280</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">decimate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">decimation_factor</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
@@ -4471,7 +4411,8 @@ phi = identification.solve_with_custom_solver(
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">301</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">300</span>
+<span class="normal">301</span>
 <span class="normal">302</span>
 <span class="normal">303</span>
 <span class="normal">304</span>
@@ -4611,8 +4552,7 @@ phi = identification.solve_with_custom_solver(
 <span class="normal">438</span>
 <span class="normal">439</span>
 <span class="normal">440</span>
-<span class="normal">441</span>
-<span class="normal">442</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve_with_custom_solver</span><span class="p">(</span>
+<span class="normal">441</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve_with_custom_solver</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">method</span><span class="o">=</span><span class="s2">"lstsq"</span><span class="p">,</span>
     <span class="n">regularization</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -4707,9 +4647,9 @@ phi = identification.solve_with_custom_solver(
     <span class="c1"># phi_full[active_indices] = phi_reduced</span>
 
     <span class="c1"># Step 4: Compute base parameters using QR decomposition</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.qrdecomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">double_QR</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">figaroh.tools.qrdecomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">QRDecomposer</span>
 
-    <span class="n">W_base</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">base_parameters</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">phi_std</span> <span class="o">=</span> <span class="n">double_QR</span><span class="p">(</span>
+    <span class="n">W_base</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">base_parameters</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">phi_std</span> <span class="o">=</span> <span class="n">QRDecomposer</span><span class="p">()</span><span class="o">.</span><span class="n">double_decomposition</span><span class="p">(</span>
         <span class="n">tau_processed</span><span class="p">,</span> <span class="n">W_processed</span><span class="p">,</span> <span class="n">active_params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">standard_parameter</span>
     <span class="p">)</span>
     <span class="n">phi_base</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">W_base</span><span class="p">,</span> <span class="n">tau_processed</span><span class="p">)</span>
@@ -4772,9 +4712,8 @@ phi = identification.solve_with_custom_solver(
     <div class="doc doc-contents ">
 
         <p>Load the identification parameters from the yaml file.</p>
-<p>This method supports both legacy YAML format and the new unified
-configuration format. It automatically detects the format type
-and applies the appropriate parser.</p>
+<p>Only the unified configuration format is supported; a legacy flat
+config raises an error naming <code>figaroh.utils.config_migration</code>.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4797,7 +4736,7 @@ and applies the appropriate parser.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Path to configuration file (legacy or unified)</p>
+                <p>Path to a unified configuration file</p>
               </div>
             </td>
             <td>
@@ -4826,7 +4765,8 @@ and applies the appropriate parser.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">444</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">443</span>
+<span class="normal">444</span>
 <span class="normal">445</span>
 <span class="normal">446</span>
 <span class="normal">447</span>
@@ -4852,54 +4792,31 @@ and applies the appropriate parser.</p>
 <span class="normal">467</span>
 <span class="normal">468</span>
 <span class="normal">469</span>
-<span class="normal">470</span>
-<span class="normal">471</span>
-<span class="normal">472</span>
-<span class="normal">473</span>
-<span class="normal">474</span>
-<span class="normal">475</span>
-<span class="normal">476</span>
-<span class="normal">477</span>
-<span class="normal">478</span>
-<span class="normal">479</span>
-<span class="normal">480</span>
-<span class="normal">481</span>
-<span class="normal">482</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_file</span><span class="p">,</span> <span class="n">setting_type</span><span class="o">=</span><span class="s2">"identification"</span><span class="p">):</span>
+<span class="normal">470</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_file</span><span class="p">,</span> <span class="n">setting_type</span><span class="o">=</span><span class="s2">"identification"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Load the identification parameters from the yaml file.</span>
 
-<span class="sd">    This method supports both legacy YAML format and the new unified</span>
-<span class="sd">    configuration format. It automatically detects the format type</span>
-<span class="sd">    and applies the appropriate parser.</span>
+<span class="sd">    Only the unified configuration format is supported; a legacy flat</span>
+<span class="sd">    config raises an error naming ``figaroh.utils.config_migration``.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        config_file (str): Path to configuration file (legacy or unified)</span>
+<span class="sd">        config_file (str): Path to a unified configuration file</span>
 <span class="sd">        setting_type (str): Configuration section to load</span>
 <span class="sd">    """</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_config_file_path</span> <span class="o">=</span> <span class="n">config_file</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading config from </span><span class="si">{</span><span class="n">config_file</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-        <span class="c1"># Check if this is a unified configuration format</span>
-        <span class="k">if</span> <span class="n">is_unified_config</span><span class="p">(</span><span class="n">config_file</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Detected unified configuration format"</span><span class="p">)</span>
-            <span class="c1"># Use unified parser</span>
-            <span class="n">parser</span> <span class="o">=</span> <span class="n">UnifiedConfigParser</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
-            <span class="n">unified_config</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">()</span>
-            <span class="n">unified_identif_config</span> <span class="o">=</span> <span class="n">create_task_config</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_config</span><span class="p">,</span> <span class="n">setting_type</span>
-            <span class="p">)</span>
-            <span class="c1"># Convert unified format to identif_config format</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span> <span class="o">=</span> <span class="n">unified_to_legacy_identif_config</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_identif_config</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Detected legacy configuration format"</span><span class="p">)</span>
-            <span class="c1"># Use legacy format parsing</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">SafeLoader</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span> <span class="o">=</span> <span class="n">get_identification_param_from_yaml</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> <span class="n">config</span><span class="p">[</span><span class="n">setting_type</span><span class="p">]</span>
-            <span class="p">)</span>
+        <span class="c1"># The legacy flat format was removed in 1.0</span>
+        <span class="n">require_unified_config</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">UnifiedConfigParser</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+        <span class="n">unified_config</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">()</span>
+        <span class="n">unified_identif_config</span> <span class="o">=</span> <span class="n">create_task_config</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_config</span><span class="p">,</span> <span class="n">setting_type</span>
+        <span class="p">)</span>
+        <span class="c1"># Convert unified format to the identif_config dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">identif_config</span> <span class="o">=</span> <span class="n">unified_to_legacy_identif_config</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_identif_config</span>
+        <span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error loading config </span><span class="si">{</span><span class="n">config_file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">raise</span>
@@ -5018,7 +4935,19 @@ data exactly as before. Passed through from
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">484</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
 <span class="normal">485</span>
 <span class="normal">486</span>
 <span class="normal">487</span>
@@ -5029,19 +4958,7 @@ data exactly as before. Passed through from
 <span class="normal">492</span>
 <span class="normal">493</span>
 <span class="normal">494</span>
-<span class="normal">495</span>
-<span class="normal">496</span>
-<span class="normal">497</span>
-<span class="normal">498</span>
-<span class="normal">499</span>
-<span class="normal">500</span>
-<span class="normal">501</span>
-<span class="normal">502</span>
-<span class="normal">503</span>
-<span class="normal">504</span>
-<span class="normal">505</span>
-<span class="normal">506</span>
-<span class="normal">507</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
+<span class="normal">495</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_trajectory_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Load and process CSV data.</span>
 
@@ -5087,7 +5004,19 @@ data exactly as before. Passed through from
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">509</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
 <span class="normal">510</span>
 <span class="normal">511</span>
 <span class="normal">512</span>
@@ -5098,19 +5027,7 @@ data exactly as before. Passed through from
 <span class="normal">517</span>
 <span class="normal">518</span>
 <span class="normal">519</span>
-<span class="normal">520</span>
-<span class="normal">521</span>
-<span class="normal">522</span>
-<span class="normal">523</span>
-<span class="normal">524</span>
-<span class="normal">525</span>
-<span class="normal">526</span>
-<span class="normal">527</span>
-<span class="normal">528</span>
-<span class="normal">529</span>
-<span class="normal">530</span>
-<span class="normal">531</span>
-<span class="normal">532</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">truncate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">520</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">truncate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Load and process data"""</span>
     <span class="c1"># Set default filter configuration</span>
     <span class="n">filter_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_config</span>
@@ -5161,7 +5078,19 @@ effort signal is not trusted (unknown force constant, quantised).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">617</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span>
+<span class="normal">611</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
 <span class="normal">618</span>
 <span class="normal">619</span>
 <span class="normal">620</span>
@@ -5169,19 +5098,7 @@ effort signal is not trusted (unknown force constant, quantised).</p>
 <span class="normal">622</span>
 <span class="normal">623</span>
 <span class="normal">624</span>
-<span class="normal">625</span>
-<span class="normal">626</span>
-<span class="normal">627</span>
-<span class="normal">628</span>
-<span class="normal">629</span>
-<span class="normal">630</span>
-<span class="normal">631</span>
-<span class="normal">632</span>
-<span class="normal">633</span>
-<span class="normal">634</span>
-<span class="normal">635</span>
-<span class="normal">636</span>
-<span class="normal">637</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">fit_joints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">625</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">fit_joints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Active joints whose effort rows enter the fit, in active order.</span>
 
 <span class="sd">    ``identif_config["torque_fit_joints"]`` names them; by default every</span>
@@ -5226,18 +5143,18 @@ parameters.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">658</span>
-<span class="normal">659</span>
-<span class="normal">660</span>
-<span class="normal">661</span>
-<span class="normal">662</span>
-<span class="normal">663</span>
-<span class="normal">664</span>
-<span class="normal">665</span>
-<span class="normal">666</span>
-<span class="normal">667</span>
-<span class="normal">668</span>
-<span class="normal">669</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_full_regressor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">646</span>
+<span class="normal">647</span>
+<span class="normal">648</span>
+<span class="normal">649</span>
+<span class="normal">650</span>
+<span class="normal">651</span>
+<span class="normal">652</span>
+<span class="normal">653</span>
+<span class="normal">654</span>
+<span class="normal">655</span>
+<span class="normal">656</span>
+<span class="normal">657</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_full_regressor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Build regressor matrix, compute pre-identified values of standard</span>
 <span class="sd">    parameters, compute joint torques based on pre-identified standard</span>
 <span class="sd">    parameters."""</span>
@@ -5271,7 +5188,19 @@ parameters.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">671</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">659</span>
+<span class="normal">660</span>
+<span class="normal">661</span>
+<span class="normal">662</span>
+<span class="normal">663</span>
+<span class="normal">664</span>
+<span class="normal">665</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
+<span class="normal">668</span>
+<span class="normal">669</span>
+<span class="normal">670</span>
+<span class="normal">671</span>
 <span class="normal">672</span>
 <span class="normal">673</span>
 <span class="normal">674</span>
@@ -5290,19 +5219,7 @@ parameters.</p>
 <span class="normal">687</span>
 <span class="normal">688</span>
 <span class="normal">689</span>
-<span class="normal">690</span>
-<span class="normal">691</span>
-<span class="normal">692</span>
-<span class="normal">693</span>
-<span class="normal">694</span>
-<span class="normal">695</span>
-<span class="normal">696</span>
-<span class="normal">697</span>
-<span class="normal">698</span>
-<span class="normal">699</span>
-<span class="normal">700</span>
-<span class="normal">701</span>
-<span class="normal">702</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">initialize_standard_parameters</span><span class="p">(</span>
+<span class="normal">690</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">initialize_standard_parameters</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Initialize standard parameters for the robot."""</span>
@@ -5356,17 +5273,17 @@ parameters.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">704</span>
-<span class="normal">705</span>
-<span class="normal">706</span>
-<span class="normal">707</span>
-<span class="normal">708</span>
-<span class="normal">709</span>
-<span class="normal">710</span>
-<span class="normal">711</span>
-<span class="normal">712</span>
-<span class="normal">713</span>
-<span class="normal">714</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_reference_torque</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">692</span>
+<span class="normal">693</span>
+<span class="normal">694</span>
+<span class="normal">695</span>
+<span class="normal">696</span>
+<span class="normal">697</span>
+<span class="normal">698</span>
+<span class="normal">699</span>
+<span class="normal">700</span>
+<span class="normal">701</span>
+<span class="normal">702</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_reference_torque</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Compute reference joint torques based on standard parameters and dynamic regressor."""</span>
 
     <span class="c1"># joint torque estimated from p,v,a with std params</span>
@@ -5399,9 +5316,9 @@ parameters.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1213</span>
-<span class="normal">1214</span>
-<span class="normal">1215</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_kinematics_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1201</span>
+<span class="normal">1202</span>
+<span class="normal">1203</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_kinematics_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Process kinematics data (positions, velocities, accelerations) with filtering."""</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">filter_kinematics_data</span><span class="p">(</span><span class="n">filter_config</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -5482,7 +5399,19 @@ parameters.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1217</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1205</span>
+<span class="normal">1206</span>
+<span class="normal">1207</span>
+<span class="normal">1208</span>
+<span class="normal">1209</span>
+<span class="normal">1210</span>
+<span class="normal">1211</span>
+<span class="normal">1212</span>
+<span class="normal">1213</span>
+<span class="normal">1214</span>
+<span class="normal">1215</span>
+<span class="normal">1216</span>
+<span class="normal">1217</span>
 <span class="normal">1218</span>
 <span class="normal">1219</span>
 <span class="normal">1220</span>
@@ -5519,19 +5448,7 @@ parameters.</p>
 <span class="normal">1251</span>
 <span class="normal">1252</span>
 <span class="normal">1253</span>
-<span class="normal">1254</span>
-<span class="normal">1255</span>
-<span class="normal">1256</span>
-<span class="normal">1257</span>
-<span class="normal">1258</span>
-<span class="normal">1259</span>
-<span class="normal">1260</span>
-<span class="normal">1261</span>
-<span class="normal">1262</span>
-<span class="normal">1263</span>
-<span class="normal">1264</span>
-<span class="normal">1265</span>
-<span class="normal">1266</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">filter_kinematics_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">1254</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">filter_kinematics_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Apply filtering to data with configurable parameters.</span>
 
 <span class="sd">    Args:</span>
@@ -5603,14 +5520,14 @@ parameters.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1268</span>
-<span class="normal">1269</span>
-<span class="normal">1270</span>
-<span class="normal">1271</span>
-<span class="normal">1272</span>
-<span class="normal">1273</span>
-<span class="normal">1274</span>
-<span class="normal">1275</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_torque_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1256</span>
+<span class="normal">1257</span>
+<span class="normal">1258</span>
+<span class="normal">1259</span>
+<span class="normal">1260</span>
+<span class="normal">1261</span>
+<span class="normal">1262</span>
+<span class="normal">1263</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_torque_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Process torque data (generic implementation, should be overridden for robot-specific processing)."""</span>
     <span class="c1"># Generic torque processing - robots should override this method</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span><span class="p">[</span><span class="s2">"torques"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -5644,7 +5561,13 @@ physical-consistency / reconstruction status.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2224</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2218</span>
+<span class="normal">2219</span>
+<span class="normal">2220</span>
+<span class="normal">2221</span>
+<span class="normal">2222</span>
+<span class="normal">2223</span>
+<span class="normal">2224</span>
 <span class="normal">2225</span>
 <span class="normal">2226</span>
 <span class="normal">2227</span>
@@ -5781,13 +5704,7 @@ physical-consistency / reconstruction status.</p>
 <span class="normal">2358</span>
 <span class="normal">2359</span>
 <span class="normal">2360</span>
-<span class="normal">2361</span>
-<span class="normal">2362</span>
-<span class="normal">2363</span>
-<span class="normal">2364</span>
-<span class="normal">2365</span>
-<span class="normal">2366</span>
-<span class="normal">2367</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_quality_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">2361</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_quality_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Print a formatted identification quality report to the terminal.</span>
 
 <span class="sd">    Reports condition number, overall torque residual statistics,</span>
@@ -6049,7 +5966,13 @@ HTML file — the visual counterpart of :meth:<code>print_quality_report</code>.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2369</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2363</span>
+<span class="normal">2364</span>
+<span class="normal">2365</span>
+<span class="normal">2366</span>
+<span class="normal">2367</span>
+<span class="normal">2368</span>
+<span class="normal">2369</span>
 <span class="normal">2370</span>
 <span class="normal">2371</span>
 <span class="normal">2372</span>
@@ -6079,13 +6002,7 @@ HTML file — the visual counterpart of :meth:<code>print_quality_report</code>.
 <span class="normal">2396</span>
 <span class="normal">2397</span>
 <span class="normal">2398</span>
-<span class="normal">2399</span>
-<span class="normal">2400</span>
-<span class="normal">2401</span>
-<span class="normal">2402</span>
-<span class="normal">2403</span>
-<span class="normal">2404</span>
-<span class="normal">2405</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">export_html_report</span><span class="p">(</span>
+<span class="normal">2399</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">export_html_report</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"results"</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Export the identification quality report as a self-contained</span>
@@ -6153,7 +6070,13 @@ evidence produces not_evaluated, not PASS. Nonfinite evidence fails.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2407</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2401</span>
+<span class="normal">2402</span>
+<span class="normal">2403</span>
+<span class="normal">2404</span>
+<span class="normal">2405</span>
+<span class="normal">2406</span>
+<span class="normal">2407</span>
 <span class="normal">2408</span>
 <span class="normal">2409</span>
 <span class="normal">2410</span>
@@ -6319,13 +6242,7 @@ evidence produces not_evaluated, not PASS. Nonfinite evidence fails.
 <span class="normal">2570</span>
 <span class="normal">2571</span>
 <span class="normal">2572</span>
-<span class="normal">2573</span>
-<span class="normal">2574</span>
-<span class="normal">2575</span>
-<span class="normal">2576</span>
-<span class="normal">2577</span>
-<span class="normal">2578</span>
-<span class="normal">2579</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">verify</span><span class="p">(</span>
+<span class="normal">2573</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">verify</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">thresholds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">scope</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"prediction"</span><span class="p">,</span>
@@ -6639,7 +6556,13 @@ refused the parameters.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2602</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2596</span>
+<span class="normal">2597</span>
+<span class="normal">2598</span>
+<span class="normal">2599</span>
+<span class="normal">2600</span>
+<span class="normal">2601</span>
+<span class="normal">2602</span>
 <span class="normal">2603</span>
 <span class="normal">2604</span>
 <span class="normal">2605</span>
@@ -6715,13 +6638,7 @@ refused the parameters.</p>
 <span class="normal">2675</span>
 <span class="normal">2676</span>
 <span class="normal">2677</span>
-<span class="normal">2678</span>
-<span class="normal">2679</span>
-<span class="normal">2680</span>
-<span class="normal">2681</span>
-<span class="normal">2682</span>
-<span class="normal">2683</span>
-<span class="normal">2684</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">export_urdf</span><span class="p">(</span>
+<span class="normal">2678</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">export_urdf</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">nominal_urdf</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">output_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -6929,7 +6846,13 @@ refused the parameters.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2693</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2687</span>
+<span class="normal">2688</span>
+<span class="normal">2689</span>
+<span class="normal">2690</span>
+<span class="normal">2691</span>
+<span class="normal">2692</span>
+<span class="normal">2693</span>
 <span class="normal">2694</span>
 <span class="normal">2695</span>
 <span class="normal">2696</span>
@@ -6969,13 +6892,7 @@ refused the parameters.</p>
 <span class="normal">2730</span>
 <span class="normal">2731</span>
 <span class="normal">2732</span>
-<span class="normal">2733</span>
-<span class="normal">2734</span>
-<span class="normal">2735</span>
-<span class="normal">2736</span>
-<span class="normal">2737</span>
-<span class="normal">2738</span>
-<span class="normal">2739</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">export_verification_report</span><span class="p">(</span>
+<span class="normal">2733</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">export_verification_report</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"results"</span><span class="p">,</span>
@@ -7044,7 +6961,13 @@ refused the parameters.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2741</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2735</span>
+<span class="normal">2736</span>
+<span class="normal">2737</span>
+<span class="normal">2738</span>
+<span class="normal">2739</span>
+<span class="normal">2740</span>
+<span class="normal">2741</span>
 <span class="normal">2742</span>
 <span class="normal">2743</span>
 <span class="normal">2744</span>
@@ -7108,13 +7031,7 @@ refused the parameters.</p>
 <span class="normal">2802</span>
 <span class="normal">2803</span>
 <span class="normal">2804</span>
-<span class="normal">2805</span>
-<span class="normal">2806</span>
-<span class="normal">2807</span>
-<span class="normal">2808</span>
-<span class="normal">2809</span>
-<span class="normal">2810</span>
-<span class="normal">2811</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">2805</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Plot identification results using unified results manager."""</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"result"</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"No identification results to plot. Run solve() first."</span><span class="p">)</span>
@@ -7207,7 +7124,13 @@ refused the parameters.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/base_identification.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2813</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2807</span>
+<span class="normal">2808</span>
+<span class="normal">2809</span>
+<span class="normal">2810</span>
+<span class="normal">2811</span>
+<span class="normal">2812</span>
+<span class="normal">2813</span>
 <span class="normal">2814</span>
 <span class="normal">2815</span>
 <span class="normal">2816</span>
@@ -7268,13 +7191,7 @@ refused the parameters.</p>
 <span class="normal">2871</span>
 <span class="normal">2872</span>
 <span class="normal">2873</span>
-<span class="normal">2874</span>
-<span class="normal">2875</span>
-<span class="normal">2876</span>
-<span class="normal">2877</span>
-<span class="normal">2878</span>
-<span class="normal">2879</span>
-<span class="normal">2880</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s2">"results"</span><span class="p">):</span>
+<span class="normal">2874</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s2">"results"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Save identification results using unified results manager."""</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"result"</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"No identification results to save. Run solve() first."</span><span class="p">)</span>
@@ -7480,15 +7397,7 @@ parameters using analytical relationships between them.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/identification_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">46</span>
 <span class="normal">47</span>
 <span class="normal">48</span>
 <span class="normal">49</span>
@@ -7513,7 +7422,15 @@ parameters using analytical relationships between them.</p>
 <span class="normal">68</span>
 <span class="normal">69</span>
 <span class="normal">70</span>
-<span class="normal">71</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">base_param_from_standard</span><span class="p">(</span><span class="n">phi_standard</span><span class="p">,</span> <span class="n">params_base</span><span class="p">):</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">base_param_from_standard</span><span class="p">(</span><span class="n">phi_standard</span><span class="p">,</span> <span class="n">params_base</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Convert standard parameters to base parameters.</span>
 
 <span class="sd">    Takes standard dynamic parameters and calculates the corresponding base</span>
@@ -7656,15 +7573,7 @@ estimate parameter uncertainty.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/identification_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 74</span>
-<span class="normal"> 75</span>
-<span class="normal"> 76</span>
-<span class="normal"> 77</span>
-<span class="normal"> 78</span>
-<span class="normal"> 79</span>
-<span class="normal"> 80</span>
-<span class="normal"> 81</span>
-<span class="normal"> 82</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 82</span>
 <span class="normal"> 83</span>
 <span class="normal"> 84</span>
 <span class="normal"> 85</span>
@@ -7684,7 +7593,15 @@ estimate parameter uncertainty.</p>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
 <span class="normal">101</span>
-<span class="normal">102</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">relative_stdev</span><span class="p">(</span><span class="n">W_b</span><span class="p">,</span> <span class="n">phi_b</span><span class="p">,</span> <span class="n">tau</span><span class="p">):</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">relative_stdev</span><span class="p">(</span><span class="n">W_b</span><span class="p">,</span> <span class="n">phi_b</span><span class="p">,</span> <span class="n">tau</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Calculate relative standard deviation of identified parameters.</span>
 
 <span class="sd">    Implements the residual error method from [Pressé &amp; Gautier 1991] to</span>
@@ -7806,15 +7723,7 @@ parameters from that segment.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/identification_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">113</span>
 <span class="normal">114</span>
 <span class="normal">115</span>
 <span class="normal">116</span>
@@ -7857,7 +7766,15 @@ parameters from that segment.</p>
 <span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
-<span class="normal">156</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">index_in_base_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">id_segments</span><span class="p">):</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">index_in_base_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">id_segments</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Map segment IDs to their base parameters.</span>
 
 <span class="sd">    For each segment ID, finds which base parameters contain inertial</span>
@@ -8066,15 +7983,7 @@ parameters from that segment.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/identification_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">167</span>
 <span class="normal">168</span>
 <span class="normal">169</span>
 <span class="normal">170</span>
@@ -8101,7 +8010,15 @@ parameters from that segment.</p>
 <span class="normal">191</span>
 <span class="normal">192</span>
 <span class="normal">193</span>
-<span class="normal">194</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">weigthed_least_squares</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">phi_b</span><span class="p">,</span> <span class="n">W_b</span><span class="p">,</span> <span class="n">tau_meas</span><span class="p">,</span> <span class="n">tau_est</span><span class="p">,</span> <span class="n">identif_config</span><span class="p">):</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">weigthed_least_squares</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">phi_b</span><span class="p">,</span> <span class="n">W_b</span><span class="p">,</span> <span class="n">tau_meas</span><span class="p">,</span> <span class="n">tau_est</span><span class="p">,</span> <span class="n">identif_config</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Compute weighted least squares solution for parameter identification.</span>
 
 <span class="sd">    Implements iteratively reweighted least squares method from</span>
@@ -8326,15 +8243,7 @@ performed. Both discarded position samples are at the end.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/identification_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">205</span>
 <span class="normal">206</span>
 <span class="normal">207</span>
 <span class="normal">208</span>
@@ -8399,7 +8308,15 @@ performed. Both discarded position samples are at the end.</p>
 <span class="normal">267</span>
 <span class="normal">268</span>
 <span class="normal">269</span>
-<span class="normal">270</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_first_second_order_differentiation</span><span class="p">(</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_first_second_order_differentiation</span><span class="p">(</span>
     <span class="n">model</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">identif_config</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Estimate interval tangent velocities and their coordinate derivatives.</span>
@@ -8592,15 +8509,7 @@ from start and end of filtered signal.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/identification_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">273</span>
-<span class="normal">274</span>
-<span class="normal">275</span>
-<span class="normal">276</span>
-<span class="normal">277</span>
-<span class="normal">278</span>
-<span class="normal">279</span>
-<span class="normal">280</span>
-<span class="normal">281</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">281</span>
 <span class="normal">282</span>
 <span class="normal">283</span>
 <span class="normal">284</span>
@@ -8626,7 +8535,15 @@ from start and end of filtered signal.</p>
 <span class="normal">304</span>
 <span class="normal">305</span>
 <span class="normal">306</span>
-<span class="normal">307</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">low_pass_filter_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">identif_config</span><span class="p">,</span> <span class="n">nbutter</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">low_pass_filter_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">identif_config</span><span class="p">,</span> <span class="n">nbutter</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Apply zero-phase Butterworth low-pass filter to measurement data.</span>
 
 <span class="sd">    Uses scipy's filtfilt for zero-phase digital filtering. Removes high</span>
@@ -8713,291 +8630,6 @@ from start and end of filtered signal.</p>
 <div class="doc doc-object doc-function">
 
 
-<h2 id="figaroh.identification.config.get_param_from_yaml" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">)</span></code>
-
-<a href="#figaroh.identification.config.get_param_from_yaml" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Parse identification parameters from YAML configuration file.</p>
-<p>Extracts robot parameters, problem settings, signal processing options and
-total least squares parameters from a YAML config file.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>robot</code>
-            </td>
-            <td>
-                  <code><span title="pin.RobotWrapper">RobotWrapper</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Robot instance containing model</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>identif_data</code>
-            </td>
-            <td>
-                  <code><span title="dict">dict</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>YAML configuration containing:
-- robot_params: Joint limits, friction, inertia settings
-- problem_params: External wrench, friction, actuator settings
-- processing_params: Sample rate, filter settings
-- tls_params: Load mass and location</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>dict</code></td>            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Parameter dictionary with unified settings</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-<details class="example" open>
-  <summary>Example</summary>
-  <blockquote>
-<blockquote>
-<blockquote>
-<p>config = yaml.safe_load(config_file)
-params = get_param_from_yaml(robot, config)
-print(params["nb_samples"])</p>
-</blockquote>
-</blockquote>
-</blockquote>
-</details>
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/figaroh/identification/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 47</span>
-<span class="normal"> 48</span>
-<span class="normal"> 49</span>
-<span class="normal"> 50</span>
-<span class="normal"> 51</span>
-<span class="normal"> 52</span>
-<span class="normal"> 53</span>
-<span class="normal"> 54</span>
-<span class="normal"> 55</span>
-<span class="normal"> 56</span>
-<span class="normal"> 57</span>
-<span class="normal"> 58</span>
-<span class="normal"> 59</span>
-<span class="normal"> 60</span>
-<span class="normal"> 61</span>
-<span class="normal"> 62</span>
-<span class="normal"> 63</span>
-<span class="normal"> 64</span>
-<span class="normal"> 65</span>
-<span class="normal"> 66</span>
-<span class="normal"> 67</span>
-<span class="normal"> 68</span>
-<span class="normal"> 69</span>
-<span class="normal"> 70</span>
-<span class="normal"> 71</span>
-<span class="normal"> 72</span>
-<span class="normal"> 73</span>
-<span class="normal"> 74</span>
-<span class="normal"> 75</span>
-<span class="normal"> 76</span>
-<span class="normal"> 77</span>
-<span class="normal"> 78</span>
-<span class="normal"> 79</span>
-<span class="normal"> 80</span>
-<span class="normal"> 81</span>
-<span class="normal"> 82</span>
-<span class="normal"> 83</span>
-<span class="normal"> 84</span>
-<span class="normal"> 85</span>
-<span class="normal"> 86</span>
-<span class="normal"> 87</span>
-<span class="normal"> 88</span>
-<span class="normal"> 89</span>
-<span class="normal"> 90</span>
-<span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Parse identification parameters from YAML configuration file.</span>
-
-<span class="sd">    Extracts robot parameters, problem settings, signal processing options and</span>
-<span class="sd">    total least squares parameters from a YAML config file.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        robot (pin.RobotWrapper): Robot instance containing model</span>
-<span class="sd">        identif_data (dict): YAML configuration containing:</span>
-<span class="sd">            - robot_params: Joint limits, friction, inertia settings</span>
-<span class="sd">            - problem_params: External wrench, friction, actuator settings</span>
-<span class="sd">            - processing_params: Sample rate, filter settings</span>
-<span class="sd">            - tls_params: Load mass and location</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        dict: Parameter dictionary with unified settings</span>
-
-<span class="sd">    Example:</span>
-<span class="sd">        &gt;&gt;&gt; config = yaml.safe_load(config_file)</span>
-<span class="sd">        &gt;&gt;&gt; params = get_param_from_yaml(robot, config)</span>
-<span class="sd">        &gt;&gt;&gt; print(params["nb_samples"])</span>
-<span class="sd">    """</span>
-    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">_LEGACY_CONFIG_DEPRECATION_MESSAGE</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-        <span class="s2">"Loading legacy config format — consider migrating (see DeprecationWarning)."</span>
-    <span class="p">)</span>
-
-    <span class="c1"># robot_name: anchor as a reference point for executing</span>
-    <span class="n">robot_name</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span>
-
-    <span class="n">robots_params</span> <span class="o">=</span> <span class="n">identif_data</span><span class="p">[</span><span class="s2">"robot_params"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">problem_params</span> <span class="o">=</span> <span class="n">identif_data</span><span class="p">[</span><span class="s2">"problem_params"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">process_params</span> <span class="o">=</span> <span class="n">identif_data</span><span class="p">[</span><span class="s2">"processing_params"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">tls_params</span> <span class="o">=</span> <span class="n">identif_data</span><span class="p">[</span><span class="s2">"tls_params"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="n">identif_config</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">"robot_name"</span><span class="p">:</span> <span class="n">robot_name</span><span class="p">,</span>
-        <span class="s2">"nb_samples"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">process_params</span><span class="p">[</span><span class="s2">"ts"</span><span class="p">])),</span>
-        <span class="s2">"q_lim_def"</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">"q_lim_def"</span><span class="p">],</span>
-        <span class="s2">"dq_lim_def"</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">"dq_lim_def"</span><span class="p">],</span>
-        <span class="s2">"is_external_wrench"</span><span class="p">:</span> <span class="n">problem_params</span><span class="p">[</span><span class="s2">"is_external_wrench"</span><span class="p">],</span>
-        <span class="s2">"is_joint_torques"</span><span class="p">:</span> <span class="n">problem_params</span><span class="p">[</span><span class="s2">"is_joint_torques"</span><span class="p">],</span>
-        <span class="s2">"force_torque"</span><span class="p">:</span> <span class="n">problem_params</span><span class="p">[</span><span class="s2">"force_torque"</span><span class="p">],</span>
-        <span class="s2">"external_wrench_offsets"</span><span class="p">:</span> <span class="n">problem_params</span><span class="p">[</span><span class="s2">"external_wrench_offsets"</span><span class="p">],</span>
-        <span class="s2">"has_friction"</span><span class="p">:</span> <span class="n">problem_params</span><span class="p">[</span><span class="s2">"has_friction"</span><span class="p">],</span>
-        <span class="s2">"fv"</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">"fv"</span><span class="p">],</span>
-        <span class="s2">"fs"</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">"fs"</span><span class="p">],</span>
-        <span class="s2">"has_actuator_inertia"</span><span class="p">:</span> <span class="n">problem_params</span><span class="p">[</span><span class="s2">"has_actuator_inertia"</span><span class="p">],</span>
-        <span class="s2">"Ia"</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">"Ia"</span><span class="p">],</span>
-        <span class="s2">"has_joint_offset"</span><span class="p">:</span> <span class="n">problem_params</span><span class="p">[</span><span class="s2">"has_joint_offset"</span><span class="p">],</span>
-        <span class="s2">"off"</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">"offset"</span><span class="p">],</span>
-        <span class="s2">"has_coupled_wrist"</span><span class="p">:</span> <span class="n">problem_params</span><span class="p">[</span><span class="s2">"has_coupled_wrist"</span><span class="p">],</span>
-        <span class="s2">"Iam6"</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">"Iam6"</span><span class="p">],</span>
-        <span class="s2">"fvm6"</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">"fvm6"</span><span class="p">],</span>
-        <span class="s2">"fsm6"</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">"fsm6"</span><span class="p">],</span>
-        <span class="s2">"reduction_ratio"</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">"reduction_ratio"</span><span class="p">],</span>
-        <span class="s2">"ratio_essential"</span><span class="p">:</span> <span class="n">robots_params</span><span class="p">[</span><span class="s2">"ratio_essential"</span><span class="p">],</span>
-        <span class="s2">"cut_off_frequency_butterworth"</span><span class="p">:</span> <span class="n">process_params</span><span class="p">[</span>
-            <span class="s2">"cut_off_frequency_butterworth"</span>
-        <span class="p">],</span>
-        <span class="s2">"ts"</span><span class="p">:</span> <span class="n">process_params</span><span class="p">[</span><span class="s2">"ts"</span><span class="p">],</span>
-        <span class="s2">"mass_load"</span><span class="p">:</span> <span class="n">tls_params</span><span class="p">[</span><span class="s2">"mass_load"</span><span class="p">],</span>
-        <span class="s2">"which_body_loaded"</span><span class="p">:</span> <span class="n">tls_params</span><span class="p">[</span><span class="s2">"which_body_loaded"</span><span class="p">],</span>
-    <span class="p">}</span>
-
-    <span class="c1"># Optional physical consistency configuration (v0.4.1, default-off)</span>
-    <span class="n">physical_consistency</span> <span class="o">=</span> <span class="n">identif_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"physical_consistency"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">physical_consistency</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-        <span class="n">physical_consistency</span> <span class="o">=</span> <span class="n">physical_consistency</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">physical_consistency</span> <span class="k">else</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">physical_consistency</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-        <span class="n">identif_config</span><span class="p">[</span><span class="s2">"physical_consistency"</span><span class="p">]</span> <span class="o">=</span> <span class="n">physical_consistency</span>
-
-    <span class="c1"># Optional reconstruction configuration (v0.4.2, default-off)</span>
-    <span class="n">reconstruction</span> <span class="o">=</span> <span class="n">identif_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"reconstruction"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reconstruction</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-        <span class="n">reconstruction</span> <span class="o">=</span> <span class="n">reconstruction</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">reconstruction</span> <span class="k">else</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reconstruction</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-        <span class="n">identif_config</span><span class="p">[</span><span class="s2">"reconstruction"</span><span class="p">]</span> <span class="o">=</span> <span class="n">reconstruction</span>
-
-    <span class="n">_extract_selection_config</span><span class="p">(</span><span class="n">identif_config</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">)</span>
-
-    <span class="c1"># Optional held-out validation dataset (separate from training data,</span>
-    <span class="c1"># never a split of it). Mirrors BaseCalibration's validation_data_file.</span>
-    <span class="n">identif_config</span><span class="p">[</span><span class="s2">"validation_data_file"</span><span class="p">]</span> <span class="o">=</span> <span class="n">identif_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">"validation_data_file"</span><span class="p">,</span> <span class="s2">""</span>
-    <span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">identif_config</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
 <h2 id="figaroh.identification.config.unified_to_legacy_identif_config" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">unified_to_legacy_identif_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_identif_config</span><span class="p">)</span></code>
 
@@ -9007,9 +8639,8 @@ print(params["nb_samples"])</p>
     <div class="doc doc-contents ">
 
         <p>Convert unified identification format to legacy identif_config format.</p>
-<p>Maps the new unified identification configuration structure to produce
-the exact same output as get_param_from_yaml. This ensures backward
-compatibility while using the new unified parser.</p>
+<p>Maps the unified identification configuration structure to the
+<code>identif_config</code> dict the identification classes consume.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -9074,7 +8705,7 @@ compatibility while using the new unified parser.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Identification configuration matching get_param_from_yaml output</p>
+                <p>Identification configuration (<code>identif_config</code>)</p>
               </div>
             </td>
           </tr>
@@ -9091,7 +8722,7 @@ compatibility while using the new unified parser.</p>
 ...                                    "identification")
 legacy_config = unified_to_legacy_identif_config(robot,
 ...                                                  unified_config)</p>
-<h3 id="figaroh.identification.config.unified_to_legacy_identif_config--legacy_config-has-same-keys-as-get_param_from_yaml-output">legacy_config has same keys as get_param_from_yaml output<a class="headerlink" href="#figaroh.identification.config.unified_to_legacy_identif_config--legacy_config-has-same-keys-as-get_param_from_yaml-output" title="Permanent link">&para;</a></h3>
+<h3 id="figaroh.identification.config.unified_to_legacy_identif_config--legacy_config-has-the-identif_config-keys">legacy_config has the identif_config keys<a class="headerlink" href="#figaroh.identification.config.unified_to_legacy_identif_config--legacy_config-has-the-identif_config-keys" title="Permanent link">&para;</a></h3>
 </blockquote>
 </blockquote>
 </blockquote>
@@ -9099,101 +8730,99 @@ legacy_config = unified_to_legacy_identif_config(robot,
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span>
-<span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">unified_to_legacy_identif_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_identif_config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
+<span class="normal"> 40</span>
+<span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">unified_to_legacy_identif_config</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">unified_identif_config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Convert unified identification format to legacy identif_config format.</span>
 
-<span class="sd">    Maps the new unified identification configuration structure to produce</span>
-<span class="sd">    the exact same output as get_param_from_yaml. This ensures backward</span>
-<span class="sd">    compatibility while using the new unified parser.</span>
+<span class="sd">    Maps the unified identification configuration structure to the</span>
+<span class="sd">    ``identif_config`` dict the identification classes consume.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        robot (pin.RobotWrapper): Robot instance containing model and data</span>
 <span class="sd">        unified_identif_config (dict): Configuration from create_task_config</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        dict: Identification configuration matching get_param_from_yaml output</span>
+<span class="sd">        dict: Identification configuration (``identif_config``)</span>
 
 <span class="sd">    Example:</span>
 <span class="sd">        &gt;&gt;&gt; unified_config = create_task_config(robot, parsed_config,</span>
 <span class="sd">        ...                                    "identification")</span>
 <span class="sd">        &gt;&gt;&gt; legacy_config = unified_to_legacy_identif_config(robot,</span>
 <span class="sd">        ...                                                  unified_config)</span>
-<span class="sd">        &gt;&gt;&gt; # legacy_config has same keys as get_param_from_yaml output</span>
+<span class="sd">        &gt;&gt;&gt; # legacy_config has the identif_config keys</span>
 <span class="sd">    """</span>
     <span class="c1"># Initialize output configuration</span>
     <span class="n">identif_config</span> <span class="o">=</span> <span class="p">{}</span>
@@ -9250,313 +8879,6 @@ legacy_config = unified_to_legacy_identif_config(robot,
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">identif_config</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="figaroh.identification.config.get_param_from_yaml_legacy" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">get_param_from_yaml_legacy</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">)</span></code>
-
-<a href="#figaroh.identification.config.get_param_from_yaml_legacy" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Legacy identification parameter parser for backward compatibility.</p>
-<p>This is the original implementation. New code should use the unified
-config parser from figaroh.utils.config_parser.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>robot</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Robot instance</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>identif_data</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Identification data dictionary</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="dict">dict</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Identification configuration dictionary</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/figaroh/identification/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span>
-<span class="normal">418</span>
-<span class="normal">419</span>
-<span class="normal">420</span>
-<span class="normal">421</span>
-<span class="normal">422</span>
-<span class="normal">423</span>
-<span class="normal">424</span>
-<span class="normal">425</span>
-<span class="normal">426</span>
-<span class="normal">427</span>
-<span class="normal">428</span>
-<span class="normal">429</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml_legacy</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Legacy identification parameter parser for backward compatibility.</span>
-
-<span class="sd">    This is the original implementation. New code should use the unified</span>
-<span class="sd">    config parser from figaroh.utils.config_parser.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        robot: Robot instance</span>
-<span class="sd">        identif_data: Identification data dictionary</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        Identification configuration dictionary</span>
-<span class="sd">    """</span>
-    <span class="c1"># Keep the original implementation here for compatibility</span>
-    <span class="k">return</span> <span class="n">get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="figaroh.identification.config.get_param_from_yaml_unified" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">get_param_from_yaml_unified</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">)</span></code>
-
-<a href="#figaroh.identification.config.get_param_from_yaml_unified" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Enhanced parameter parser using unified configuration system.</p>
-<p>This function provides backward compatibility while using the new
-unified configuration parser when possible.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>robot</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Robot instance</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>identif_data</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Configuration data (dict or file path)</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="dict">dict</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Identification configuration dictionary</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/figaroh/identification/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">439</span>
-<span class="normal">440</span>
-<span class="normal">441</span>
-<span class="normal">442</span>
-<span class="normal">443</span>
-<span class="normal">444</span>
-<span class="normal">445</span>
-<span class="normal">446</span>
-<span class="normal">447</span>
-<span class="normal">448</span>
-<span class="normal">449</span>
-<span class="normal">450</span>
-<span class="normal">451</span>
-<span class="normal">452</span>
-<span class="normal">453</span>
-<span class="normal">454</span>
-<span class="normal">455</span>
-<span class="normal">456</span>
-<span class="normal">457</span>
-<span class="normal">458</span>
-<span class="normal">459</span>
-<span class="normal">460</span>
-<span class="normal">461</span>
-<span class="normal">462</span>
-<span class="normal">463</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml_unified</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Enhanced parameter parser using unified configuration system.</span>
-
-<span class="sd">    This function provides backward compatibility while using the new</span>
-<span class="sd">    unified configuration parser when possible.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        robot: Robot instance</span>
-<span class="sd">        identif_data: Configuration data (dict or file path)</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        Identification configuration dictionary</span>
-<span class="sd">    """</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">unified_get_param_from_yaml</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">,</span> <span class="s2">"identification"</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="c1"># Fall back to legacy parser if unified parser fails</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
-
-        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"Unified parser failed (</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">), falling back to legacy parser. "</span>
-            <span class="s2">"Consider updating your configuration format."</span><span class="p">,</span>
-            <span class="ne">UserWarning</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">get_param_from_yaml_legacy</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="figaroh.identification.config.get_param_from_yaml_with_warning" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">get_param_from_yaml_with_warning</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">)</span></code>
-
-<a href="#figaroh.identification.config.get_param_from_yaml_with_warning" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Original function with deprecation notice.</p>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/figaroh/identification/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">466</span>
-<span class="normal">467</span>
-<span class="normal">468</span>
-<span class="normal">469</span>
-<span class="normal">470</span>
-<span class="normal">471</span>
-<span class="normal">472</span>
-<span class="normal">473</span>
-<span class="normal">474</span>
-<span class="normal">475</span>
-<span class="normal">476</span>
-<span class="normal">477</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_param_from_yaml_with_warning</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Original function with deprecation notice."""</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
-
-    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-        <span class="s2">"Direct use of get_param_from_yaml is deprecated. "</span>
-        <span class="s2">"Consider using the unified config parser from "</span>
-        <span class="s2">"figaroh.utils.config_parser"</span><span class="p">,</span>
-        <span class="ne">DeprecationWarning</span><span class="p">,</span>
-        <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="k">return</span> <span class="n">get_param_from_yaml_unified</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="n">identif_data</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -10862,20 +10184,7 @@ so every link keeps its LMI.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/physical_fit.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">241</span>
 <span class="normal">242</span>
 <span class="normal">243</span>
 <span class="normal">244</span>
@@ -10950,7 +10259,20 @@ so every link keeps its LMI.</p>
 <span class="normal">313</span>
 <span class="normal">314</span>
 <span class="normal">315</span>
-<span class="normal">316</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">build_problem</span><span class="p">(</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">build_problem</span><span class="p">(</span>
     <span class="n">Y_std</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">tau</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">params_std</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
@@ -11061,12 +10383,12 @@ so every link keeps its LMI.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/physical_fit.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">558</span>
-<span class="normal">559</span>
-<span class="normal">560</span>
-<span class="normal">561</span>
-<span class="normal">562</span>
-<span class="normal">563</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve_exact_reconstruction</span><span class="p">(</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span>
+<span class="normal">574</span>
+<span class="normal">575</span>
+<span class="normal">576</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve_exact_reconstruction</span><span class="p">(</span>
     <span class="n">p</span><span class="p">:</span> <span class="n">ComparatorProblem</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cvxopt"</span><span class="p">,</span> <span class="o">**</span><span class="n">opts</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SolveRecord</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Objective 1: min ||D(theta-theta0)|| s.t. M_full theta = phi_ols, LMIs."""</span>
@@ -11094,12 +10416,12 @@ so every link keeps its LMI.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/physical_fit.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">566</span>
-<span class="normal">567</span>
-<span class="normal">568</span>
-<span class="normal">569</span>
-<span class="normal">570</span>
-<span class="normal">571</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve_direct_effort_fit</span><span class="p">(</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">579</span>
+<span class="normal">580</span>
+<span class="normal">581</span>
+<span class="normal">582</span>
+<span class="normal">583</span>
+<span class="normal">584</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve_direct_effort_fit</span><span class="p">(</span>
     <span class="n">p</span><span class="p">:</span> <span class="n">ComparatorProblem</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cvxopt"</span><span class="p">,</span> <span class="o">**</span><span class="n">opts</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SolveRecord</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Objective 2: regularised effort fit with the same LMIs, no equality."""</span>
@@ -11127,20 +10449,7 @@ so every link keeps its LMI.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/physical_fit.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">574</span>
-<span class="normal">575</span>
-<span class="normal">576</span>
-<span class="normal">577</span>
-<span class="normal">578</span>
-<span class="normal">579</span>
-<span class="normal">580</span>
-<span class="normal">581</span>
-<span class="normal">582</span>
-<span class="normal">583</span>
-<span class="normal">584</span>
-<span class="normal">585</span>
-<span class="normal">586</span>
-<span class="normal">587</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">587</span>
 <span class="normal">588</span>
 <span class="normal">589</span>
 <span class="normal">590</span>
@@ -11164,7 +10473,20 @@ so every link keeps its LMI.</p>
 <span class="normal">608</span>
 <span class="normal">609</span>
 <span class="normal">610</span>
-<span class="normal">611</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve_per_link_projection</span><span class="p">(</span>
+<span class="normal">611</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve_per_link_projection</span><span class="p">(</span>
     <span class="n">p</span><span class="p">:</span> <span class="n">ComparatorProblem</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cvxopt"</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SolveRecord</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Objective 3: nullspace representative, then per-link LMI projection."""</span>
@@ -11225,20 +10547,7 @@ D2 one-change variants, D3 relaxed equality).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/figaroh/identification/physical_fit.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">627</span>
-<span class="normal">628</span>
-<span class="normal">629</span>
-<span class="normal">630</span>
-<span class="normal">631</span>
-<span class="normal">632</span>
-<span class="normal">633</span>
-<span class="normal">634</span>
-<span class="normal">635</span>
-<span class="normal">636</span>
-<span class="normal">637</span>
-<span class="normal">638</span>
-<span class="normal">639</span>
-<span class="normal">640</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">640</span>
 <span class="normal">641</span>
 <span class="normal">642</span>
 <span class="normal">643</span>
@@ -11298,7 +10607,20 @@ D2 one-change variants, D3 relaxed equality).</p>
 <span class="normal">697</span>
 <span class="normal">698</span>
 <span class="normal">699</span>
-<span class="normal">700</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">diagnose_exact</span><span class="p">(</span>
+<span class="normal">700</span>
+<span class="normal">701</span>
+<span class="normal">702</span>
+<span class="normal">703</span>
+<span class="normal">704</span>
+<span class="normal">705</span>
+<span class="normal">706</span>
+<span class="normal">707</span>
+<span class="normal">708</span>
+<span class="normal">709</span>
+<span class="normal">710</span>
+<span class="normal">711</span>
+<span class="normal">712</span>
+<span class="normal">713</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">diagnose_exact</span><span class="p">(</span>
     <span class="n">p</span><span class="p">:</span> <span class="n">ComparatorProblem</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cvxopt"</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">SolveRecord</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Staged diagnostics for objective 1 (D0 reproduce, D1 phase-I,</span>

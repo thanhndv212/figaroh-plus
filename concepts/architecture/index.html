@@ -1444,6 +1444,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../api/stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public API and stability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../api/calibration/" class="md-nav__link">
         
   
@@ -2280,8 +2308,8 @@ for user-facing behavior. Store metrics with the model/config/data provenance;
 report whether validation is held-out, training-only, simulated or physical.</p>
 <h3 id="configuration-and-extension-rules">Configuration and extension rules<a class="headerlink" href="#configuration-and-extension-rules" title="Permanent link">&para;</a></h3>
 <p><code>UnifiedConfigParser</code> supports YAML inheritance. The workflow-specific config
-adapters translate unified task config into internal dictionaries; legacy config
-remains supported with deprecation warnings and a migration command. The
+adapters translate unified task config into internal dictionaries; the legacy
+flat config was removed in 1.0 and raises an error naming the migration command. The
 <a href="../configuration/">configuration reference</a> owns the schema.</p>
 <p>For a new interface, dependency, result schema or module boundary, add a decision
 record first or in the same PR. Proposed <code>ResidualTerm</code>/<code>LinearRegressorTerm</code>,

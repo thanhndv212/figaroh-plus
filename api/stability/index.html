@@ -1,0 +1,2443 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A Python toolbox for dynamic parameter identification and geometric calibration of robots and humans.">
+      
+      
+      
+        <link rel="canonical" href="https://thanhndv212.github.io/figaroh-plus/api/stability/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../calibration/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Public API and stability - FIGAROH</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#public-api-and-stability" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="FIGAROH" class="md-header__button md-logo" aria-label="FIGAROH" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            FIGAROH
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Public API and stability
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/thanhndv212/figaroh-plus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    thanhndv212/figaroh-plus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting_started/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../concepts/architecture/" class="md-tabs__link">
+          
+  
+  
+  Concepts
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../examples/" class="md-tabs__link">
+          
+  
+  
+  Examples Gallery
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../further_reading/contributing/" class="md-tabs__link">
+          
+  
+  
+  Further Reading
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="FIGAROH" class="md-nav__button md-logo" aria-label="FIGAROH" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    FIGAROH
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/thanhndv212/figaroh-plus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    thanhndv212/figaroh-plus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../example_workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plan, Fit & Validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reporting_and_verification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reporting & Verification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/calibration_walkthrough/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration Walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/calibration_estimation_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration: Choosing What to Estimate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/identification_walkthrough/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identification Walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/optimal_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Optimal Experiment Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concepts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/config_parameters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Parameter Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/calibration_estimation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration Estimation Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integration API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples Gallery
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples Gallery
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/ur10/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UR10
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/tiago/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TIAGo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/talos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TALOS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/staubli_tx40/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Staubli TX40
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/templates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config Templates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public API and stability
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public API and stability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-public-means" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What "public" means
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#top-level-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Top-level packages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supported-entry-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported entry points
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#experimental-areas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Experimental areas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#internal-modules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Internal modules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deprecated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deprecated
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#removed-in-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed in 1.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deprecation-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deprecation policy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#python-versions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python versions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../calibration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../optimal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Optimal
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../measurements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Measurements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Utils
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../visualisation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visualisation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Further Reading
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Further Reading
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../further_reading/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../further_reading/roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../further_reading/plans/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Delivery Plans
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../further_reading/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../further_reading/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../further_reading/decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-public-means" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What "public" means
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#top-level-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Top-level packages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supported-entry-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported entry points
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#experimental-areas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Experimental areas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#internal-modules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Internal modules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deprecated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deprecated
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#removed-in-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed in 1.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deprecation-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deprecation policy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#python-versions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python versions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/thanhndv212/figaroh-plus/edit/main/docs/source/api/stability.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="public-api-and-stability">Public API and stability<a class="headerlink" href="#public-api-and-stability" title="Permanent link">&para;</a></h1>
+<p>This page is the contract for 1.0. It states which names you can build on,
+which are experimental, which are internal, and how a public name is retired.
+The <code>__all__</code> lists in the source match it; a unit test
+(<code>tests/unit/test_public_api.py</code>) fails if they drift apart.</p>
+<h2 id="what-public-means">What "public" means<a class="headerlink" href="#what-public-means" title="Permanent link">&para;</a></h2>
+<p>A name is public when it appears in the <code>__all__</code> of its package or of a
+module this page lists. Anything else is not covered, even when it is
+importable and even when <a href="../">the API reference</a> renders it:</p>
+<ul>
+<li>a name that starts with an underscore;</li>
+<li>a module that starts with an underscore;</li>
+<li>a module or name that is not listed here, such as
+  <code>figaroh.calibration.config</code> or <code>figaroh.identification.selection</code>.</li>
+</ul>
+<p>Public names follow <a href="https://semver.org/">semantic versioning</a>: a breaking
+change to a supported name needs a new major version. Experimental names may
+change in any minor release.</p>
+<h2 id="top-level-packages">Top-level packages<a class="headerlink" href="#top-level-packages" title="Permanent link">&para;</a></h2>
+<p><code>import figaroh</code> imports every package below eagerly, so
+<code>figaroh.tools.robot</code> and friends work after a bare import. The status column
+is the status of the package as a whole; the sections below give the detail.</p>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>figaroh.tools</code></td>
+<td>Supported (<code>robotvisualization</code> is experimental)</td>
+</tr>
+<tr>
+<td><code>figaroh.calibration</code></td>
+<td>Supported</td>
+</tr>
+<tr>
+<td><code>figaroh.identification</code></td>
+<td>Supported</td>
+</tr>
+<tr>
+<td><code>figaroh.measurements</code></td>
+<td>Experimental</td>
+</tr>
+<tr>
+<td><code>figaroh.utils</code></td>
+<td>Supported</td>
+</tr>
+<tr>
+<td><code>figaroh.visualisation</code></td>
+<td>Experimental</td>
+</tr>
+<tr>
+<td><code>figaroh.optimal</code></td>
+<td>Supported</td>
+</tr>
+<tr>
+<td><code>figaroh.data</code></td>
+<td>Supported</td>
+</tr>
+<tr>
+<td><code>figaroh.backends</code></td>
+<td>Supported (Pinocchio); MuJoCo is experimental</td>
+</tr>
+<tr>
+<td><code>figaroh.integration</code></td>
+<td>Experimental</td>
+</tr>
+</tbody>
+</table>
+<h2 id="supported-entry-points">Supported entry points<a class="headerlink" href="#supported-entry-points" title="Permanent link">&para;</a></h2>
+<p>Each line names a package or module and the complete list of its public
+names. For a package, a name that is itself a module (such as <code>calibration_tools</code>)
+means that module is public too and is listed on its own line.</p>
+<ul>
+<li><code>figaroh.calibration</code>: <code>BaseCalibration</code>, <code>calibration_tools</code>, <code>data_loader</code>, <code>parameter</code></li>
+<li><code>figaroh.calibration.calibration_tools</code>: <code>unified_to_legacy_config</code>, <code>get_sup_joints</code>, <code>get_joint_offset</code>, <code>get_fullparam_offset</code>, <code>add_base_name</code>, <code>add_pee_name</code>, <code>add_eemarker_frame</code>, <code>read_config_data</code>, <code>load_data</code>, <code>get_idxq_from_jname</code>, <code>cartesian_to_SE3</code>, <code>xyzquat_to_SE3</code>, <code>get_rel_transform</code>, <code>get_rel_kinreg</code>, <code>get_rel_jac</code>, <code>initialize_variables</code>, <code>calc_updated_fkm</code>, <code>update_joint_placement</code>, <code>apply_joint_offset</code>, <code>random_joint_configuration</code>, <code>estimate_frames_closed_form</code>, <code>measurement_jacobian</code>, <code>select_identifiable_parameters</code>, <code>drop_calibration_parameters</code>, <code>calculate_kinematics_model</code>, <code>calculate_identifiable_kinematics_model</code>, <code>calculate_base_kinematics_regressor</code></li>
+<li><code>figaroh.calibration.parameter</code>: <code>get_joint_offset</code>, <code>get_fullparam_offset</code>, <code>add_base_name</code>, <code>add_pee_name</code>, <code>add_eemarker_frame</code>, <code>FULL_PARAMTPL</code>, <code>JOINT_OFFSETTPL</code>, <code>ELAS_TPL</code>, <code>EE_TPL</code>, <code>BASE_TPL</code></li>
+<li>
+<p><code>figaroh.calibration.data_loader</code>: <code>read_config_data</code>, <code>load_data</code>, <code>get_idxq_from_jname</code></p>
+</li>
+<li>
+<p><code>figaroh.identification</code>: <code>identification_tools</code>, <code>parameter</code>, <code>physical_fit</code>, <code>BaseIdentification</code>, <code>BaseResult</code>, <code>ReconstructionResult</code>, <code>prior_vector_from_dict</code>, <code>reconstruct_from_base</code>, <code>reconstruct_full_parameters</code>, <code>reconstruct_theta_r</code>, <code>run_reconstruction</code>, <code>run_option_a_reconstruction</code>, <code>ProjectionReport</code>, <code>RobotProjectionReport</code>, <code>check_p10_feasibility</code>, <code>is_feasible_link</code>, <code>p10_by_joint_from_param_dict</code>, <code>param_dict_with_p10_by_joint</code>, <code>project_link</code>, <code>project_p10_lmi</code>, <code>project_robot_p10_lmi</code>, <code>pseudo_inertia_matrix_from_p10</code>, <code>CADConstraints</code>, <code>add_mass_bounds</code>, <code>add_com_bounds</code>, <code>add_symmetry_constraints</code>, <code>bounds_from_urdf</code>, <code>build_cad_constraints_from_config</code></p>
+</li>
+<li><code>figaroh.identification.identification_tools</code>: <code>base_param_from_standard</code>, <code>relative_stdev</code>, <code>index_in_base_params</code>, <code>weigthed_least_squares</code>, <code>calculate_first_second_order_differentiation</code>, <code>low_pass_filter_data</code></li>
+<li><code>figaroh.identification.parameter</code>: <code>reorder_inertial_parameters</code>, <code>add_standard_additional_parameters</code>, <code>add_custom_parameters</code>, <code>get_standard_parameters</code>, <code>get_parameter_info</code></li>
+<li>
+<p><code>figaroh.identification.physical_fit</code>: <code>FixedExtras</code>, <code>PhysicalPolicy</code>, <code>ComparatorProblem</code>, <code>SolveRecord</code>, <code>build_problem</code>, <code>solve_exact_reconstruction</code>, <code>solve_direct_effort_fit</code>, <code>solve_per_link_projection</code>, <code>diagnose_exact</code></p>
+</li>
+<li>
+<p><code>figaroh.optimal</code>: <code>BaseOptimalCalibration</code>, <code>BaseOptimalTrajectory</code>, <code>BaseTrajectoryIPOPTProblem</code></p>
+</li>
+<li>
+<p><code>figaroh.data</code>: <code>DataSource</code>, <code>Session</code>, <code>file_sha256</code>, <code>Protocol</code>, <code>ProtocolSession</code>, <code>TrajectoryData</code>, <code>PoseObservations</code>, <code>JOINT_TORQUE</code>, <code>JOINT_FORCE</code>, <code>MOTOR_CURRENT</code>, <code>MOTOR_TORQUE</code>, <code>LOAD_FRACTION</code>, <code>DRIVE_KINDS</code></p>
+</li>
+<li>
+<p><code>figaroh.backends</code>: <code>DynamicsBackend</code>, <code>get_backend</code>, <code>list_backends</code>, <code>get_backend_info</code></p>
+</li>
+<li>
+<p><code>figaroh.backends.pinocchio</code>: <code>PinocchioBackend</code></p>
+</li>
+<li>
+<p><code>figaroh.tools</code>: <code>robot</code>, <code>randomdata</code>, <code>regressor</code>, <code>qrdecomposition</code>, <code>robotvisualization</code>, <code>robotcollisions</code>, <code>robotipopt</code>, <code>urdf_exporter</code>, <code>geometric_calibration_export</code>, <code>export_validation</code>, <code>report</code>, <code>identification_report</code>, <code>compare_report</code>, <code>run_archive</code>, <code>stages</code>, <code>solver</code></p>
+</li>
+<li><code>figaroh.tools.robot</code>: <code>Robot</code>, <code>create_robot</code>, <code>load_robot</code>, <code>get_available_loaders</code>, <code>list_available_robots</code></li>
+<li><code>figaroh.tools.regressor</code>: <code>RegressorConfig</code>, <code>RegressorBuilder</code>, <code>build_regressor_basic</code>, <code>eliminate_non_dynaffect</code>, <code>get_index_eliminate</code>, <code>build_regressor_reduced</code>, <code>build_total_regressor_current</code>, <code>build_total_regressor_wrench</code></li>
+<li><code>figaroh.tools.qrdecomposition</code>: <code>QRDecomposer</code>, <code>QRResult</code>, <code>QR_pivoting</code>, <code>double_QR</code>, <code>get_baseParams</code>, <code>get_baseIndex</code>, <code>build_baseRegressor</code>, <code>cond_num</code>, <code>redistribute_min_norm</code>, <code>propagate_covariance_min_norm</code></li>
+<li><code>figaroh.tools.solver</code>: <code>LinearSolver</code>, <code>solve_linear_system</code></li>
+<li><code>figaroh.tools.urdf_exporter</code>: <code>export_urdf</code>, <code>frame_settings_doc</code></li>
+<li><code>figaroh.tools.geometric_calibration_export</code>: <code>build_geometric_calibration</code>, <code>export_geometric_calibration_yaml</code></li>
+<li><code>figaroh.tools.export_validation</code>: <code>PoseDelta</code>, <code>FkConsistencyResult</code>, <code>PoseError</code>, <code>URDFComparison</code></li>
+<li><code>figaroh.tools.run_archive</code>: <code>compute_run_dir</code>, <code>archive_run</code></li>
+<li><code>figaroh.tools.stages</code>: <code>StageResult</code>, <code>record_stage</code>, <code>stages_as_dicts</code></li>
+<li><code>figaroh.tools.report</code>: <code>generate_calibration_report</code></li>
+<li><code>figaroh.tools.identification_report</code>: <code>generate_identification_report</code></li>
+<li><code>figaroh.tools.compare_report</code>: <code>generate_compare_page</code></li>
+<li><code>figaroh.tools.randomdata</code>: <code>generate_waypoints</code>, <code>generate_waypoints_fext</code>, <code>get_torque_rand</code></li>
+<li><code>figaroh.tools.robotcollisions</code>: <code>add_non_adjacent_pairs</code>, <code>CollisionManager</code>, <code>CollisionWrapper</code></li>
+<li>
+<p><code>figaroh.tools.robotipopt</code>: <code>IPOPTConfig</code>, <code>BaseOptimizationProblem</code>, <code>RobotIPOPTSolver</code>, <code>TrajectoryOptimizationProblem</code>, <code>create_trajectory_solver</code></p>
+</li>
+<li>
+<p><code>figaroh.utils</code>: <code>config_parser</code>, <code>error_handling</code>, <code>ResultsManager</code>, <code>FigarohExampleError</code>, <code>CalibrationError</code>, <code>IdentificationError</code>, <code>handle_calibration_errors</code>, <code>handle_identification_errors</code>, <code>validate_input_data</code>, <code>setup_example_logging</code></p>
+</li>
+<li><code>figaroh.utils.config_parser</code>: <code>UnifiedConfigParser</code>, <code>create_task_config</code>, <code>parse_configuration</code>, <code>get_param_from_yaml</code>, <code>is_unified_config</code>, <code>ConfigurationError</code></li>
+<li><code>figaroh.utils.error_handling</code>: <code>FigarohExampleError</code>, <code>RobotInitializationError</code>, <code>ConfigurationError</code>, <code>DataProcessingError</code>, <code>CalibrationError</code>, <code>IdentificationError</code>, <code>ValidationError</code>, <code>validate_robot_config</code>, <code>validate_trajectory_data</code>, <code>validate_numeric_range</code>, <code>validate_robot_initialization</code>, <code>validate_input_data</code>, <code>handle_calibration_errors</code>, <code>handle_identification_errors</code>, <code>safe_execute</code>, <code>setup_example_logging</code>, <code>ErrorContext</code></li>
+</ul>
+<p>Notes on judgement calls:</p>
+<ul>
+<li><code>figaroh.calibration.calibration_tools</code> is public because the examples
+  build their calibration pipelines on it. The legacy flat-format
+  <code>get_param_from_yaml</code> it used to re-export was removed in 1.0 (see below);
+  <code>figaroh.utils.config_parser.get_param_from_yaml</code> is the parser.</li>
+<li><code>figaroh.identification.physical_fit</code> is the module behind
+  <code>select_stage: physical_fit</code>. Its functions are public; its private
+  helpers are not.</li>
+<li>The <code>figaroh.tools</code> modules <code>randomdata</code>, <code>robotcollisions</code> and
+  <code>robotipopt</code> are public helpers kept for the optimal-design classes.</li>
+</ul>
+<h2 id="experimental-areas">Experimental areas<a class="headerlink" href="#experimental-areas" title="Permanent link">&para;</a></h2>
+<p>These are importable and tested, but they may change or move in a minor
+release, and a call can raise <code>NotImplementedError</code>.</p>
+<ul>
+<li><strong>MuJoCo backend and <code>from_mjcf</code>.</strong> <code>MuJoCoBackend</code> needs the optional
+  <code>mujoco</code> package. <code>RobotIdentificationSystem.from_mjcf</code> raises
+  <code>NotImplementedError</code>: MJCF loading is not supported yet. Genesis and
+  Isaac Sim backends are not shipped; <code>get_backend</code> only names them.</li>
+<li><strong><code>figaroh.integration</code>.</strong> The one-line <code>RobotIdentificationSystem</code>
+  workflow.</li>
+<li><strong><code>figaroh.visualisation</code> and <code>figaroh.tools.robotvisualization</code>.</strong>
+  Meshcat and plotting helpers.</li>
+<li><strong><code>figaroh.measurements</code>.</strong> A measurement container that no shipped
+  workflow uses.</li>
+<li><strong>Log-Cholesky fits (LC1).</strong> The log-Cholesky physical fit is not part of
+  the library: the feasibility spike was a no-go for 0.7.0 (D5, issue 155).
+  If it ships, it ships as an opt-in, experimental method.</li>
+</ul>
+<p>Names in these modules, as they stand today:</p>
+<ul>
+<li><code>figaroh.integration</code>: <code>RobotIdentificationSystem</code>, <code>IdentificationResult</code></li>
+<li><code>figaroh.visualisation</code>: <code>colors</code>, <code>MeshcatVisualizer</code></li>
+<li><code>figaroh.visualisation.colors</code>: <code>rgb2int</code>, <code>material</code>, <code>red</code>, <code>blue</code>, <code>green</code>, <code>yellow</code>, <code>magenta</code>, <code>cyan</code>, <code>white</code>, <code>black</code>, <code>grey</code>, <code>colormap</code></li>
+<li><code>figaroh.backends.mujoco</code>: <code>MuJoCoBackend</code></li>
+<li><code>figaroh.tools.robotvisualization</code>: <code>VisualizationConfig</code>, <code>RobotVisualizer</code>, <code>place</code>, <code>display_COM</code>, <code>display_axes</code>, <code>rotation_matrix_from_vectors</code>, <code>display_force</code>, <code>display_bounding_boxes</code>, <code>display_joints</code></li>
+<li><code>figaroh.measurements</code>: <code>Measurement</code></li>
+</ul>
+<h2 id="internal-modules">Internal modules<a class="headerlink" href="#internal-modules" title="Permanent link">&para;</a></h2>
+<p>These support the public API. Do not import them from outside figaroh; they
+may change or disappear in any release.</p>
+<ul>
+<li>Any module or name that starts with an underscore, for example
+  <code>figaroh.identification._physical_comparator</code> and
+  <code>figaroh.tools._report_common</code>.</li>
+<li><code>figaroh.tools.load_robot</code> (use <code>figaroh.tools.robot</code>, which re-exports
+  <code>load_robot</code>), <code>figaroh.tools.provenance</code>.</li>
+<li><code>figaroh.calibration.config</code>, <code>figaroh.calibration.estimation</code> and
+  <code>figaroh.identification.config</code>, <code>figaroh.identification.selection</code>,
+  <code>figaroh.identification.physical_consistency</code>,
+  <code>figaroh.identification.cad_constraints</code>,
+  <code>figaroh.identification.reconstruction</code> and the other modules not listed
+  above. Their main names are re-exported by the packages that list them.</li>
+<li><code>figaroh.optimal.config</code>, <code>figaroh.optimal.base_parameter</code>,
+  <code>figaroh.optimal.contraints</code>.</li>
+<li><code>figaroh.utils.cubic_spline</code>, <code>figaroh.utils.config_migration</code> (run it as
+  <code>python -m figaroh.utils.config_migration</code>; its functions are internal).</li>
+<li><code>figaroh.data.protocol</code>, <code>figaroh.data.source</code>,
+  <code>figaroh.data.observations</code> and <code>figaroh.data.trajectory</code>: import their
+  names from <code>figaroh.data</code>.</li>
+</ul>
+<h2 id="deprecated">Deprecated<a class="headerlink" href="#deprecated" title="Permanent link">&para;</a></h2>
+<p>These names still work but emit a <code>DeprecationWarning</code>. Each is deprecated
+in 1.0 and scheduled for removal in 2.0.</p>
+<ul>
+<li><code>figaroh.tools.qrdecomposition.QR_pivoting</code> and <code>double_QR</code>: use
+  <code>QRDecomposer.decompose_with_pivoting</code> and
+  <code>QRDecomposer.double_decomposition</code>;</li>
+<li><code>figaroh.tools.robotcollisions.CollisionWrapper</code> (warns on construction):
+  use <code>CollisionManager</code>;</li>
+<li>the module-level wrappers in <code>figaroh.tools.robotvisualization</code> (<code>place</code>,
+  <code>display_COM</code>, <code>display_axes</code>, <code>rotation_matrix_from_vectors</code>,
+  <code>display_force</code>, <code>display_bounding_boxes</code>, <code>display_joints</code>): use the
+  <code>RobotVisualizer</code> methods;</li>
+<li>the convenience wrappers <code>plot_calibration_results</code>,
+  <code>plot_identification_results</code> and <code>save_results</code> in
+  <code>figaroh.utils.results_manager</code>: use the <code>ResultsManager</code> methods of the
+  same names;</li>
+<li>the flat <code>physical_consistency_enabled</code> identification config key: use
+  <code>physical_consistency.enabled</code>.</li>
+</ul>
+<h2 id="removed-in-10">Removed in 1.0<a class="headerlink" href="#removed-in-10" title="Permanent link">&para;</a></h2>
+<p>These warned for at least one minor release and were removed in 1.0 (issue
+185). Each has a migration note in the
+<a href="../../further_reading/changelog/">CHANGELOG</a>.</p>
+<ul>
+<li>the legacy flat configuration format (deprecated since 0.4.6): loading it
+  raises an error naming <code>python -m figaroh.utils.config_migration</code>, which
+  still reads legacy files to convert them. This removes
+  <code>figaroh.calibration.config.get_param_from_yaml</code>,
+  <code>figaroh.identification.config.get_param_from_yaml</code>, their
+  <code>get_param_from_yaml_legacy</code> wrappers and the <code>get_param_from_yaml</code>
+  re-exports of <code>calibration_tools</code> and <code>identification_tools</code>;</li>
+<li><code>get_param_from_yaml_with_warning</code> in the calibration and identification
+  config modules (since 0.2.0);</li>
+<li><code>figaroh.utils.config_parser.get_calibration_param_from_yaml</code> and
+  <code>get_identification_param_from_yaml</code> (since 0.2.0): use
+  <code>get_param_from_yaml</code> with <code>task_type</code>;</li>
+<li>a non-zero <code>regularization_coefficient</code> / <code>coeff_regularize</code> (since 0.6.0):
+  now a <code>ConfigurationError</code>; zero or absent is still accepted.</li>
+</ul>
+<h2 id="deprecation-policy">Deprecation policy<a class="headerlink" href="#deprecation-policy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>A public name is deprecated by emitting a <code>DeprecationWarning</code> that names
+  the replacement. It keeps working for at least one minor release before
+  removal.</li>
+<li>After 1.0, a public name is removed only in a major release.</li>
+<li>Every deprecation and removal has a migration note in the
+  <a href="../../further_reading/changelog/">CHANGELOG</a>.</li>
+<li>Experimental names and internal modules are outside this policy.</li>
+</ul>
+<h2 id="python-versions">Python versions<a class="headerlink" href="#python-versions" title="Permanent link">&para;</a></h2>
+<p><code>requires-python</code> is <code>&gt;=3.10</code>, following Pinocchio's own support window.
+CI tests Python 3.10 (lowest), 3.12 (main) and 3.14 (highest).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "content.code.copy", "content.action.edit", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1303,6 +1303,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public API and stability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../calibration/" class="md-nav__link">
         
   
@@ -3350,7 +3378,10 @@ print(f"RMS error: {results.rms_error}")</p>
 <span class="normal">388</span>
 <span class="normal">389</span>
 <span class="normal">390</span>
-<span class="normal">391</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">identify_parameters</span><span class="p">(</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">identify_parameters</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">config</span><span class="p">,</span>
     <span class="n">data_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -3438,16 +3469,19 @@ print(f"RMS error: {results.rms_error}")</p>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="n">cfg</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="c1"># unified configs nest the task sections under ``tasks:``</span>
+            <span class="n">sections</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tasks"</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"identification"</span><span class="p">,</span> <span class="s2">"calibration"</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">cfg</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="n">section</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
-                    <span class="n">data_dir</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="n">section</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"data_dir"</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">sections</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sections</span><span class="p">[</span><span class="n">section</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">data_dir</span> <span class="o">=</span> <span class="n">sections</span><span class="p">[</span><span class="n">section</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"data_dir"</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">pass</span>
     <span class="k">elif</span> <span class="n">data_dir</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">sections</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tasks"</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"identification"</span><span class="p">,</span> <span class="s2">"calibration"</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">config</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="n">section</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
-                    <span class="n">data_dir</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">section</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"data_dir"</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">sections</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sections</span><span class="p">[</span><span class="n">section</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">data_dir</span> <span class="o">=</span> <span class="n">sections</span><span class="p">[</span><span class="n">section</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"data_dir"</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
 
     <span class="c1"># Create the concrete identification instance</span>
     <span class="n">identification</span> <span class="o">=</span> <span class="n">_SimpleIdentification</span><span class="p">(</span>

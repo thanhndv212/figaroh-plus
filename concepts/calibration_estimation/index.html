@@ -1483,6 +1483,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../api/stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public API and stability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../api/calibration/" class="md-nav__link">
         
   
@@ -2458,8 +2486,8 @@ more precise than it is.</p>
   first, joint parameters, tool point last (as the TIAGo, UR10 and TALOS
   examples do). Classes with extra parameters (e.g. table-contact planes)
   are not supported.</li>
-<li><code>regularization_coefficient</code> is deprecated (#120): it weighted metres and
-  radians alike. Leave it at its default 0; <code>map</code>/<code>map_cv</code> are the
+<li><code>regularization_coefficient</code> was removed in 1.0 (#120): it weighted metres
+  and radians alike. A non-zero value is a <code>ConfigurationError</code>; leave it at 0; <code>map</code>/<code>map_cv</code> are the
   unit-consistent replacement.</li>
 </ul>
 
