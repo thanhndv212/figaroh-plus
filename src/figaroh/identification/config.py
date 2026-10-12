@@ -24,136 +24,35 @@ This module handles all configuration-related functionality including:
 """
 
 import logging
-import warnings
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-_LEGACY_CONFIG_DEPRECATION_MESSAGE = (
-    "Legacy flat config format is deprecated in favor of the unified "
-    "format (extends: + tasks.*). Migrate with: python -m "
-    "figaroh.utils.config_migration --input <legacy.yaml> --output "
-    "<unified.yaml>. See docs/source/concepts/configuration.md."
-)
-
 # Export public API
 __all__ = [
-    "get_param_from_yaml",
     "unified_to_legacy_identif_config",
-    "get_param_from_yaml_legacy",
 ]
-
-
-def get_param_from_yaml(robot, identif_data):
-    """Parse identification parameters from YAML configuration file.
-
-    Extracts robot parameters, problem settings, signal processing options and
-    total least squares parameters from a YAML config file.
-
-    Args:
-        robot (pin.RobotWrapper): Robot instance containing model
-        identif_data (dict): YAML configuration containing:
-            - robot_params: Joint limits, friction, inertia settings
-            - problem_params: External wrench, friction, actuator settings
-            - processing_params: Sample rate, filter settings
-            - tls_params: Load mass and location
-
-    Returns:
-        dict: Parameter dictionary with unified settings
-
-    Example:
-        >>> config = yaml.safe_load(config_file)
-        >>> params = get_param_from_yaml(robot, config)
-        >>> print(params["nb_samples"])
-    """
-    warnings.warn(_LEGACY_CONFIG_DEPRECATION_MESSAGE, DeprecationWarning, stacklevel=2)
-    logger.warning(
-        "Loading legacy config format — consider migrating (see DeprecationWarning)."
-    )
-
-    # robot_name: anchor as a reference point for executing
-    robot_name = robot.model.name
-
-    robots_params = identif_data["robot_params"][0]
-    problem_params = identif_data["problem_params"][0]
-    process_params = identif_data["processing_params"][0]
-    tls_params = identif_data["tls_params"][0]
-
-    identif_config = {
-        "robot_name": robot_name,
-        "nb_samples": int(1 / (process_params["ts"])),
-        "q_lim_def": robots_params["q_lim_def"],
-        "dq_lim_def": robots_params["dq_lim_def"],
-        "is_external_wrench": problem_params["is_external_wrench"],
-        "is_joint_torques": problem_params["is_joint_torques"],
-        "force_torque": problem_params["force_torque"],
-        "external_wrench_offsets": problem_params["external_wrench_offsets"],
-        "has_friction": problem_params["has_friction"],
-        "fv": robots_params["fv"],
-        "fs": robots_params["fs"],
-        "has_actuator_inertia": problem_params["has_actuator_inertia"],
-        "Ia": robots_params["Ia"],
-        "has_joint_offset": problem_params["has_joint_offset"],
-        "off": robots_params["offset"],
-        "has_coupled_wrist": problem_params["has_coupled_wrist"],
-        "Iam6": robots_params["Iam6"],
-        "fvm6": robots_params["fvm6"],
-        "fsm6": robots_params["fsm6"],
-        "reduction_ratio": robots_params["reduction_ratio"],
-        "ratio_essential": robots_params["ratio_essential"],
-        "cut_off_frequency_butterworth": process_params[
-            "cut_off_frequency_butterworth"
-        ],
-        "ts": process_params["ts"],
-        "mass_load": tls_params["mass_load"],
-        "which_body_loaded": tls_params["which_body_loaded"],
-    }
-
-    # Optional physical consistency configuration (v0.4.1, default-off)
-    physical_consistency = identif_data.get("physical_consistency")
-    if isinstance(physical_consistency, list):
-        physical_consistency = physical_consistency[0] if physical_consistency else None
-    if isinstance(physical_consistency, dict):
-        identif_config["physical_consistency"] = physical_consistency
-
-    # Optional reconstruction configuration (v0.4.2, default-off)
-    reconstruction = identif_data.get("reconstruction")
-    if isinstance(reconstruction, list):
-        reconstruction = reconstruction[0] if reconstruction else None
-    if isinstance(reconstruction, dict):
-        identif_config["reconstruction"] = reconstruction
-
-    _extract_selection_config(identif_config, identif_data)
-
-    # Optional held-out validation dataset (separate from training data,
-    # never a split of it). Mirrors BaseCalibration's validation_data_file.
-    identif_config["validation_data_file"] = identif_data.get(
-        "validation_data_file", ""
-    )
-
-    return identif_config
 
 
 def unified_to_legacy_identif_config(robot, unified_identif_config) -> dict:
     """Convert unified identification format to legacy identif_config format.
 
-    Maps the new unified identification configuration structure to produce
-    the exact same output as get_param_from_yaml. This ensures backward
-    compatibility while using the new unified parser.
+    Maps the unified identification configuration structure to the
+    ``identif_config`` dict the identification classes consume.
 
     Args:
         robot (pin.RobotWrapper): Robot instance containing model and data
         unified_identif_config (dict): Configuration from create_task_config
 
     Returns:
-        dict: Identification configuration matching get_param_from_yaml output
+        dict: Identification configuration (``identif_config``)
 
     Example:
         >>> unified_config = create_task_config(robot, parsed_config,
         ...                                    "identification")
         >>> legacy_config = unified_to_legacy_identif_config(robot,
         ...                                                  unified_config)
-        >>> # legacy_config has same keys as get_param_from_yaml output
+        >>> # legacy_config has the identif_config keys
     """
     # Initialize output configuration
     identif_config = {}
@@ -409,73 +308,3 @@ def _extract_load_params(identif_config):
     """
     identif_config["mass_load"] = 0.0
     identif_config["which_body_loaded"] = 0.0
-
-
-# Backward compatibility wrapper for get_param_from_yaml
-def get_param_from_yaml_legacy(robot, identif_data) -> dict:
-    """Legacy identification parameter parser for backward compatibility.
-
-    This is the original implementation. New code should use the unified
-    config parser from figaroh.utils.config_parser.
-
-    Args:
-        robot: Robot instance
-        identif_data: Identification data dictionary
-
-    Returns:
-        Identification configuration dictionary
-    """
-    # Keep the original implementation here for compatibility
-    return get_param_from_yaml(robot, identif_data)
-
-
-# Import the new unified parser as the default
-try:
-    from ..utils.config_parser import (
-        get_param_from_yaml as unified_get_param_from_yaml,
-    )
-
-    # Replace the function with unified version while maintaining signature
-    def get_param_from_yaml_unified(robot, identif_data) -> dict:
-        """Enhanced parameter parser using unified configuration system.
-
-        This function provides backward compatibility while using the new
-        unified configuration parser when possible.
-
-        Args:
-            robot: Robot instance
-            identif_data: Configuration data (dict or file path)
-
-        Returns:
-            Identification configuration dictionary
-        """
-        try:
-            return unified_get_param_from_yaml(robot, identif_data, "identification")
-        except Exception as e:
-            # Fall back to legacy parser if unified parser fails
-            import warnings
-
-            warnings.warn(
-                f"Unified parser failed ({e}), falling back to legacy parser. "
-                "Consider updating your configuration format.",
-                UserWarning,
-            )
-            return get_param_from_yaml_legacy(robot, identif_data)
-
-    # Keep the old function available but with warning
-    def get_param_from_yaml_with_warning(robot, identif_data) -> dict:
-        """Original function with deprecation notice."""
-        import warnings
-
-        warnings.warn(
-            "Direct use of get_param_from_yaml is deprecated. "
-            "Consider using the unified config parser from "
-            "figaroh.utils.config_parser",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return get_param_from_yaml_unified(robot, identif_data)
-
-except ImportError:
-    # If unified parser is not available, keep using original function
-    pass

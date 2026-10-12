@@ -24,37 +24,32 @@ This module handles all configuration-related functionality including:
 """
 
 import logging
-import warnings
+
+from ..utils.error_handling import ConfigurationError
 
 # Setup logger for this module
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-_LEGACY_CONFIG_DEPRECATION_MESSAGE = (
-    "Legacy flat config format is deprecated in favor of the unified "
-    "format (extends: + tasks.*). Migrate with: python -m "
-    "figaroh.utils.config_migration --input <legacy.yaml> --output "
-    "<unified.yaml>. See docs/source/concepts/configuration.md."
-)
-
 
 def regularization_coefficient(value):
-    """``coeff_regularize`` from a config value; deprecated when non-zero.
+    """``coeff_regularize`` from a config value; a non-zero value is an error.
 
-    The coefficient weights ``sqrt(c) * theta`` rows that robot cost
+    The coefficient weighted ``sqrt(c) * theta`` rows that robot cost
     functions appended for every joint parameter, so a metre and a radian
-    were penalised alike (#120). ``estimation.method: map`` replaces it with
-    priors of physical size per parameter group. Core never applies the
-    coefficient; it is kept, default 0, for robot classes that still read it.
+    were penalised alike (#120). It was deprecated in 0.6.0 and removed in
+    1.0: ``estimation.method: map`` replaces it with priors of physical size
+    per parameter group. Zero or absent is accepted and passed through.
+
+    Raises:
+        ConfigurationError: ``value`` is non-zero.
     """
     if value:
-        warnings.warn(
-            f"regularization_coefficient ({value}) is deprecated: it penalises "
-            "metres and radians alike. Use estimation.method: map (priors per "
-            "parameter group, docs/source/concepts/calibration_estimation.md) "
-            "and set the coefficient to 0 (figaroh-plus#120).",
-            DeprecationWarning,
-            stacklevel=3,
+        raise ConfigurationError(
+            f"regularization_coefficient ({value}) was removed in 1.0: it "
+            "penalised metres and radians alike. Remove it (or set it to 0) "
+            "and use estimation.method: map (priors per parameter group, "
+            "docs/source/concepts/calibration_estimation.md; figaroh-plus#120)."
         )
     return value
 
@@ -115,220 +110,18 @@ def get_sup_joints(model, start_frame, end_frame):
     return sup_joints
 
 
-def get_param_from_yaml(robot, calib_data) -> dict:
-    """Parse calibration parameters from YAML configuration file.
-
-    Processes robot and calibration data to build a parameter dictionary containing
-    all necessary settings for robot calibration. Handles configuration of:
-    - Frame identifiers and relationships
-    - Marker/measurement settings
-    - Joint indices and configurations
-    - Non-geometric parameters
-    - Eye-hand calibration setup
-
-    Args:
-        robot (pin.RobotWrapper): Robot instance containing model and data
-        calib_data (dict): Calibration parameters parsed from YAML file containing:
-            - markers: List of marker configurations
-            - calib_level: Calibration model type
-            - base_frame: Starting frame name
-            - tool_frame: End frame name
-            - free_flyer: Whether base is floating
-            - non_geom: Whether to include non-geometric params
-
-    Returns:
-        dict: Parameter dictionary containing:
-            - robot_name: Name of robot model
-            - NbMarkers: Number of markers
-            - measurability: Measurement DOFs per marker
-            - start_frame, end_frame: Frame names
-            - base_to_ref_frame: Optional camera frame
-            - IDX_TOOL: Tool frame index
-            - actJoint_idx: Active joint indices
-            - param_name: List of parameter names
-            - Additional settings from YAML
-
-    Side Effects:
-        Prints warning messages if optional frames undefined
-        Prints final parameter dictionary
-
-    Example:
-        >>> calib_data = yaml.safe_load(config_file)
-        >>> params = get_param_from_yaml(robot, calib_data)
-        >>> print(params['NbMarkers'])
-        2
-    """
-    warnings.warn(_LEGACY_CONFIG_DEPRECATION_MESSAGE, DeprecationWarning, stacklevel=2)
-    logger.warning(
-        "Loading legacy config format — consider migrating (see DeprecationWarning)."
-    )
-    # NOTE: since joint 0 is universe and it is trivial,
-    # indices of joints are different from indices of joint configuration,
-    # different from indices of joint velocities
-    calib_config = dict()
-    robot_name = robot.model.name
-    frames = [f.name for f in robot.model.frames]
-    calib_config["robot_name"] = robot_name
-
-    # End-effector sensing measurability:
-    NbMarkers = len(calib_data["markers"])
-    measurability = calib_data["markers"][0]["measure"]
-    calib_idx = measurability.count(True)
-    calib_config["NbMarkers"] = NbMarkers
-    calib_config["measurability"] = measurability
-    calib_config["calibration_index"] = calib_idx
-
-    # Calibration model
-    calib_config["calib_model"] = calib_data["calib_level"]
-
-    # Get start and end frames
-    start_frame = calib_data["base_frame"]
-    end_frame = calib_data["tool_frame"]
-
-    # Validate frames exist
-    err_msg = "{}_frame {} does not exist"
-    if start_frame not in frames:
-        raise AssertionError(err_msg.format("Start", start_frame))
-    if end_frame not in frames:
-        raise AssertionError(err_msg.format("End", end_frame))
-
-    calib_config["start_frame"] = start_frame
-    calib_config["end_frame"] = end_frame
-
-    # Handle eye-hand calibration frames
-    try:
-        base_to_ref_frame = calib_data["base_to_ref_frame"]
-        ref_frame = calib_data["ref_frame"]
-    except KeyError:
-        base_to_ref_frame = None
-        ref_frame = None
-        logger.warning("base_to_ref_frame and ref_frame are not defined.")
-
-    # Validate base-to-ref frame if provided
-    if base_to_ref_frame is not None:
-        if base_to_ref_frame not in frames:
-            err_msg = "base_to_ref_frame {} does not exist"
-            raise AssertionError(err_msg.format(base_to_ref_frame))
-
-    # Validate ref frame if provided
-    if ref_frame is not None:
-        if ref_frame not in frames:
-            err_msg = "ref_frame {} does not exist"
-            raise AssertionError(err_msg.format(ref_frame))
-
-    calib_config["base_to_ref_frame"] = base_to_ref_frame
-    calib_config["ref_frame"] = ref_frame
-
-    # Get initial poses
-    try:
-        base_pose = calib_data["base_pose"]
-        tip_pose = calib_data["tip_pose"]
-    except KeyError:
-        base_pose = None
-        tip_pose = None
-        logger.warning("base_pose and tip_pose are not defined.")
-
-    calib_config["base_pose"] = base_pose
-    calib_config["tip_pose"] = tip_pose
-
-    # q0: default zero configuration
-    calib_config["q0"] = robot.q0
-    calib_config["NbSample"] = calib_data["nb_sample"]
-
-    # IDX_TOOL: frame ID of the tool
-    IDX_TOOL = robot.model.getFrameId(end_frame)
-    calib_config["IDX_TOOL"] = IDX_TOOL
-
-    # tool_joint: ID of the joint right before the tool's frame (parent)
-    tool_joint = robot.model.frames[IDX_TOOL].parentJoint
-    calib_config["tool_joint"] = tool_joint
-
-    # indices of active joints: from base to tool_joint
-    actJoint_idx = get_sup_joints(robot.model, start_frame, end_frame)
-    calib_config["actJoint_idx"] = actJoint_idx
-
-    # indices of joint configuration corresponding to active joints
-    config_idx = [robot.model.joints[i].idx_q for i in actJoint_idx]
-    calib_config["config_idx"] = config_idx
-
-    # number of active joints
-    NbJoint = len(actJoint_idx)
-    calib_config["NbJoint"] = NbJoint
-
-    # initialize a list of calibrating parameters name
-    param_name = []
-    if calib_data["non_geom"]:
-        # list of elastic gain parameter names
-        elastic_gain = []
-        joint_axes = ["PX", "PY", "PZ", "RX", "RY", "RZ"]
-        for j_id, joint_name in enumerate(robot.model.names.tolist()):
-            if joint_name == "universe":
-                axis_motion = "null"
-            else:
-                # for ii, ax in enumerate(AXIS_MOTION[j_id]):
-                #     if ax == 1:
-                #         axis_motion = axis[ii]
-                shortname = robot.model.joints[
-                    j_id
-                ].shortname()  # ONLY TAKE PRISMATIC AND REVOLUTE JOINT
-                for ja in joint_axes:
-                    if ja in shortname:
-                        axis_motion = ja
-                    elif "RevoluteUnaligned" in shortname:
-                        axis_motion = "RZ"  # hard coded fix for canopies
-
-            elastic_gain.append("k_" + axis_motion + "_" + joint_name)
-        for i in actJoint_idx:
-            param_name.append(elastic_gain[i])
-    calib_config["param_name"] = param_name
-
-    calib_config.update(
-        {
-            "free_flyer": calib_data["free_flyer"],
-            "non_geom": calib_data["non_geom"],
-            "eps": 1e-3,
-            "PLOT": 0,
-            # seeds the structural selection's random configurations (#99)
-            "random_seed": calib_data.get("random_seed", 0),
-        }
-    )
-    try:
-        calib_config.update(
-            {
-                "coeff_regularize": regularization_coefficient(
-                    calib_data["coeff_regularize"]
-                ),
-                "data_file": calib_data["data_file"],
-                "sample_configs_file": calib_data["sample_configs_file"],
-                "outlier_eps": calib_data["outlier_eps"],
-            }
-        )
-    except KeyError:
-        calib_config.update(
-            {
-                "coeff_regularize": None,
-                "data_file": None,
-                "sample_configs_file": None,
-                "outlier_eps": None,
-            }
-        )
-    return calib_config
-
-
 def unified_to_legacy_config(robot, unified_calib_config) -> dict:
     """Convert unified configuration format to legacy calib_config format.
 
-    Maps the new unified configuration structure to the exact format expected
-    by get_param_from_yaml. This ensures backward compatibility while using
-    the new unified parser.
+    Maps the unified configuration structure to the ``calib_config`` dict the
+    calibration classes consume.
 
     Args:
         robot (pin.RobotWrapper): Robot instance containing model and data
         unified_calib_config (dict): Configuration from create_task_config
 
     Returns:
-        dict: Legacy format calibration configuration matching
-              get_param_from_yaml output
+        dict: Calibration configuration dict (``calib_config``)
 
     Raises:
         KeyError: If required fields are missing from unified config
@@ -620,73 +413,3 @@ def _determine_axis_motion(shortname, joint_axes):
         return "RZ"  # Hard-coded fix for canopies and similar robots
 
     return "RZ"  # Default fallback
-
-
-# Backward compatibility wrapper for get_param_from_yaml
-def get_param_from_yaml_legacy(robot, calib_data) -> dict:
-    """Legacy calibration parameter parser - kept for backward compatibility.
-
-    This is the original implementation. New code should use the unified
-    config parser from figaroh.utils.config_parser.
-
-    Args:
-        robot: Robot instance
-        calib_data: Calibration data dictionary
-
-    Returns:
-        Calibration configuration dictionary
-    """
-    # Keep the original implementation here for compatibility
-    return get_param_from_yaml(robot, calib_data)
-
-
-# Import the new unified parser as the default
-try:
-    from ..utils.config_parser import (
-        get_param_from_yaml as unified_get_param_from_yaml,
-    )
-
-    # Replace the function with unified version while maintaining signature
-    def get_param_from_yaml_unified(robot, calib_data) -> dict:
-        """Enhanced parameter parser using unified configuration system.
-
-        This function provides backward compatibility while using the new
-        unified configuration parser when possible.
-
-        Args:
-            robot: Robot instance
-            calib_data: Configuration data (dict or file path)
-
-        Returns:
-            Calibration configuration dictionary
-        """
-        try:
-            return unified_get_param_from_yaml(robot, calib_data, "calibration")
-        except Exception as e:
-            # Fall back to legacy parser if unified parser fails
-            import warnings
-
-            warnings.warn(
-                f"Unified parser failed ({e}), falling back to legacy "
-                "parser. Consider updating your configuration format.",
-                UserWarning,
-            )
-            return get_param_from_yaml_legacy(robot, calib_data)
-
-    # Keep the old function available but with warning
-    def get_param_from_yaml_with_warning(robot, calib_data) -> dict:
-        """Original function with deprecation notice."""
-        import warnings
-
-        warnings.warn(
-            "Direct use of get_param_from_yaml is deprecated. "
-            "Consider using the unified config parser from "
-            "figaroh.utils.config_parser",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return get_param_from_yaml_unified(robot, calib_data)
-
-except ImportError:
-    # If unified parser is not available, keep using original function
-    pass

@@ -1,4 +1,4 @@
-"""regularization_coefficient: default 0, deprecated when set (#120)."""
+"""regularization_coefficient: default 0; non-zero removed in 1.0 (#120, #185)."""
 
 import warnings
 
@@ -8,6 +8,7 @@ from figaroh.calibration.config import (
     _extract_calibration_params,
     regularization_coefficient,
 )
+from figaroh.utils.error_handling import ConfigurationError
 
 
 def _parse(parameters):
@@ -24,13 +25,12 @@ def test_default_is_zero_without_warning():
 
 
 @pytest.mark.parametrize("value", [0, 0.0, None])
-def test_zero_or_unset_does_not_warn(value):
+def test_zero_or_unset_is_accepted(value):
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         assert regularization_coefficient(value) == value
 
 
-def test_nonzero_is_kept_and_points_to_map():
-    with pytest.warns(DeprecationWarning, match="estimation.method: map"):
-        cfg = _parse({"regularization_coefficient": 0.01})
-    assert cfg["coeff_regularize"] == 0.01
+def test_nonzero_is_an_error_pointing_to_map():
+    with pytest.raises(ConfigurationError, match="estimation.method: map"):
+        _parse({"regularization_coefficient": 0.01})

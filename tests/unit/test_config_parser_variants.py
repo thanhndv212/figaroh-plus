@@ -1,15 +1,9 @@
-"""Regressions for #76: variant placement and sectioned legacy dispatch."""
-
-from types import SimpleNamespace
+"""Regressions for #76: variant placement."""
 
 import pytest
 import yaml
 
-from figaroh.utils.config_parser import (
-    UnifiedConfigParser,
-    _parse_legacy_format,
-)
-from figaroh.utils.error_handling import ConfigurationError
+from figaroh.utils.config_parser import UnifiedConfigParser
 
 UNIFIED = {
     "robot": {"name": "arm"},
@@ -68,68 +62,3 @@ def test_base_parse_is_unaffected_by_variants(config_path):
     assert config["tasks"]["calibration"]["parameters"]["calibration_level"] == (
         "full_params"
     )
-
-
-LEGACY_CALIBRATION = {"markers": [], "calib_level": "full_params"}
-LEGACY_IDENTIFICATION = {"robot_params": [{}]}
-
-
-@pytest.fixture
-def parsers(monkeypatch):
-    """Record which legacy parser receives which section."""
-    import figaroh.calibration.calibration_tools as cal
-    import figaroh.identification.identification_tools as idt
-
-    seen = {}
-    monkeypatch.setattr(
-        cal, "get_param_from_yaml", lambda robot, data: seen.setdefault("cal", data)
-    )
-    monkeypatch.setattr(
-        idt, "get_param_from_yaml", lambda robot, data: seen.setdefault("id", data)
-    )
-    return seen
-
-
-ROBOT = SimpleNamespace()
-
-
-def test_sectioned_legacy_file_dispatches_the_requested_section(parsers):
-    sectioned = {
-        "calibration": LEGACY_CALIBRATION,
-        "identification": LEGACY_IDENTIFICATION,
-    }
-    assert _parse_legacy_format(ROBOT, sectioned, "calibration") is LEGACY_CALIBRATION
-    assert (
-        _parse_legacy_format(ROBOT, sectioned, "identification")
-        is LEGACY_IDENTIFICATION
-    )
-
-
-def test_flat_legacy_section_is_still_accepted(parsers):
-    assert (
-        _parse_legacy_format(ROBOT, dict(LEGACY_CALIBRATION), "calibration")
-        == LEGACY_CALIBRATION
-    )
-
-
-def test_auto_with_one_section_selects_it(parsers):
-    assert (
-        _parse_legacy_format(ROBOT, {"calibration": LEGACY_CALIBRATION}, "auto")
-        is LEGACY_CALIBRATION
-    )
-
-
-def test_auto_with_both_sections_requires_an_explicit_task(parsers):
-    sectioned = {
-        "calibration": LEGACY_CALIBRATION,
-        "identification": LEGACY_IDENTIFICATION,
-    }
-    with pytest.raises(ConfigurationError, match="specify task_type"):
-        _parse_legacy_format(ROBOT, sectioned, "auto")
-
-
-def test_missing_requested_section_is_rejected(parsers):
-    with pytest.raises(ConfigurationError, match="Required sections not found"):
-        _parse_legacy_format(
-            ROBOT, {"identification": LEGACY_IDENTIFICATION}, "calibration"
-        )

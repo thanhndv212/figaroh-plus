@@ -31,7 +31,6 @@ from yaml.loader import SafeLoader
 # FIGAROH imports
 from figaroh.calibration.calibration_tools import (
     load_data,
-    get_param_from_yaml,
     unified_to_legacy_config,
     calculate_base_kinematics_regressor,
 )
@@ -40,6 +39,7 @@ from figaroh.utils.config_parser import (
     UnifiedConfigParser,
     create_task_config,
     is_unified_config,
+    require_unified_config,
 )
 
 # Import from shared modules
@@ -297,41 +297,27 @@ class BaseOptimalCalibration(ABC):
     def load_param(self, config_file: str, setting_type: str = "calibration"):
         """Load calibration parameters from YAML configuration file.
 
-        This method supports both legacy YAML format and the new unified
-        configuration format. It automatically detects the format type
-        and applies the appropriate parser.
+        Only the unified configuration format is supported; a legacy flat
+        config raises an error naming ``figaroh.utils.config_migration``.
 
         Args:
-            config_file (str): Path to configuration file (legacy or unified)
+            config_file (str): Path to a unified configuration file
             setting_type (str): Configuration section to load
         """
         try:
             logger.info(f"Loading config from {config_file}")
 
-            # Check if this is a unified configuration format
-            if is_unified_config(config_file):
-                logger.info("Detected unified configuration format")
-                # Use unified parser
-                parser = UnifiedConfigParser(config_file)
-                unified_config = parser.parse()
-                unified_calib_config = create_task_config(
-                    self.robot, unified_config, setting_type
-                )
-                # Convert unified format to legacy calib_config format
-                self.calib_config = unified_to_legacy_config(
-                    self.robot, unified_calib_config
-                )
-            else:
-                logger.info("Detected legacy configuration format")
-                # Use legacy format parsing
-                with open(config_file, "r") as f:
-                    config = yaml.load(f, Loader=SafeLoader)
-
-                if setting_type not in config:
-                    raise KeyError(f"Setting type '{setting_type}' not found in config")
-
-                calib_data = config[setting_type]
-                self.calib_config = get_param_from_yaml(self.robot, calib_data)
+            # The legacy flat format was removed in 1.0
+            require_unified_config(config_file)
+            parser = UnifiedConfigParser(config_file)
+            unified_config = parser.parse()
+            unified_calib_config = create_task_config(
+                self.robot, unified_config, setting_type
+            )
+            # Convert unified format to the calib_config dict
+            self.calib_config = unified_to_legacy_config(
+                self.robot, unified_calib_config
+            )
 
         except FileNotFoundError:
             raise CalibrationError(f"Configuration file not found: {config_file}")
@@ -907,8 +893,7 @@ class BaseOptimalCalibration(ABC):
         """Read ``tasks.optimal_configuration.output.output_file`` if present.
 
         ``load_param`` deliberately loads only the ``calibration`` task, so this
-        reads the optimal task's output setting separately. Best-effort: legacy
-        configs, a missing block, or an unreadable file all yield ``None`` and
+        reads the optimal task's output setting separately. Best-effort: a missing block, or an unreadable file all yield ``None`` and
         leave the default output location in place.
 
         Args:
