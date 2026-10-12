@@ -1,6 +1,6 @@
 # FIGAROH Roadmap
 
-**Evidence refresh: 2026-10-02; delivery status refreshed 2026-10-06. Priority changes below are a tracker scope approved; execution details under review, revision 4.**
+**Evidence refresh: 2026-10-12; delivery status refreshed 2026-10-12. Priority changes below are a tracker scope approved; execution details under review, revision 4.**
 
 Review the [detailed delivery plan](docs/source/further_reading/plans.md)
 before implementation. The user requested calibration improvements in parallel
@@ -37,8 +37,8 @@ and then `main`. The docs site embeds this file directly.
   PR #138, merged 2026-10-06). D6 cleared on 2026-10-06, so the dynamic side
   of the M1.3 export gate is met; the whole gate closes at review.
 - The September identification fixes (#11–#14: CAD inertia lookup, optional
-  regressor blocks, filtering configuration, relative QR threshold) are in
-  `[Unreleased]`. See the changelog for their exact scope.
+  regressor blocks, filtering configuration, relative QR threshold) shipped in
+  0.5.0. See the changelog for their exact scope.
 - The local baseline before this workflow change was **499 passed, 20 skipped**
   in `figaroh-dev` (Python 3.12). This is dated evidence, not a permanent test
   count or a claim about hosted CI. Details and skipped coverage are in the
@@ -58,8 +58,8 @@ and then `main`. The docs site embeds this file directly.
   [#155](https://github.com/thanhndv212/figaroh-plus/issues/155) changes the
   fitting method next. The private experiment is not a production solver, and
   #23–#25 stay blocked until a go decision.
-- [Examples PR #13](https://github.com/thanhndv212/figaroh-examples/pull/13) is still draft.
-  The Hey5 geometry failure was fixed by W1 (every robot loads from a clean
+- [Examples PR #13](https://github.com/thanhndv212/figaroh-examples/pull/13) was merged on
+  2026-10-08. The Hey5 geometry failure was fixed by W1 (every robot loads from a clean
   checkout) and the 3.7 TALOS regression ([examples #14](https://github.com/thanhndv212/figaroh-examples/issues/14))
   was explained and fixed by W2. Completion of a dataset runner is not a
   passing physical-model workflow.
@@ -71,7 +71,7 @@ and then `main`. The docs site embeds this file directly.
   helpers provide a starting point for a parallel calibration reference.
   New data/result types or composition interfaces require an ADR first.
 
-### Delivery progress (2026-10-11)
+### Delivery progress (2026-10-12)
 
 **Cleared:** W1, W2, W4 (M0 delivery roster); D1, D2, C1 (M1.1 inputs);
 C2 (calibration side of M1.2); C3 and D6 (M1.3 export); W3 data/result
@@ -84,9 +84,27 @@ URDF and PAL file that reload within 2.1e-12 m. The dynamic workstream is
 complete through M1.4: one command
 (`examples/identification_reference.py --robot ur10|tiago`) selects the direct
 LMI effort fit, verifies it on held-out splits and exports a URDF that reloads
-within 1e-9. U1 onboarding cleared on 2026-10-11; the M1 review remains before 1.0. Per-package
-evidence is in the
+within 1e-9. U1 onboarding cleared on 2026-10-11. **M1 was accepted on 2026-10-12**
+([review tracker #181](https://github.com/thanhndv212/figaroh-plus/issues/181))
+on core `779e830` + examples `b167298`: closure records ratified (R-1: W1, W2,
+W4, D1, D2, C1, D4, S1, D7), the #97 duplicate closure accepted as completed
+(C-1), and scope accepted (S-1 real-data references at execution scope, with
+held-out error reported, not gated; S-2 TIAGo effort scale and arm_1 constant
+still open; S-3 lumped TIAGo export; S-4 PAL not run on hardware; S-5 TALOS
+contact as a regression consumer). The one code gap, G-1 (a failed calibration
+fit could be exported), is fixed before the release candidate: core #182 by PR
+#187 (`9dba6da` on `devel`) and examples #124 by PR #127 (`20b6377` on `main`).
+Per-package evidence is in the
 [implementation status](docs/source/further_reading/plans.md#implementation-status).
+
+**M0 gate review (accepted 2026-10-12, [tracker #181](https://github.com/thanhndv212/figaroh-plus/issues/181) §9).**
+Existing core gates retained (blocking `Lint`, Core CI and Documentation green);
+examples assets and dependencies reproducible (W1); numerical regressions
+explained (W2); review/merge rules and cleanup applied (W4); exact tested
+commit pairs cited as core `fe7dc51` + examples `b8d9c75` (hosted runs
+37134266859 / 37136143367) and core tag `v0.5.0` (`02f705a`). The pair is not
+clean for the M0 cycle: examples has no `v0.5.0` tag, because pairing started
+at 0.6.0.
 
 These are dated observations; verify heads and status before beginning work.
 The [delivery plan](docs/source/further_reading/plans.md) maps
@@ -110,8 +128,8 @@ linked validation evidence, not just the presence of a module.
 M0's delivery roster for this cycle (W1, W2, W4) has cleared: examples assets
 and hosted CI are reproducible on both Pinocchio profiles, the TALOS regression
 is explained, legacy lint debt is removed and the full pre-commit suite is
-blocking. The M0 gate review itself is still to be recorded. M1 is the proposed
-next integration priority. Calibration reliability improvements run alongside
+blocking. The M0 gate review was accepted on 2026-10-12 (see below). M1 was
+accepted the same day; its record is under Delivery progress below. Calibration reliability improvements run alongside
 dynamic identification; M2 refers to the broader composition architecture,
 not a requirement to postpone all calibration work until dynamics finishes.
 Versions follow the [release plan](#release-plan): each minor release ships one
@@ -124,7 +142,7 @@ that achieve them; issues are their implementation units. Their canonical
 scope, dependencies and closure policy are in the
 [work-package milestone rules](docs/source/further_reading/plans.md#work-package-milestone-rules).
 
-| Roadmap outcome / gate | Required delivery milestones in this draft | Status at 2026-10-11 (✅ = cleared) |
+| Roadmap outcome / gate | Required delivery milestones in this draft | Status at 2026-10-12 (✅ = cleared) |
 | --- | --- | --- |
 | M0 reviewed delivery scope | W1 fixtures, W2 regression diagnosis, W4 engineering process | ✅ **W1, W2, W4 all cleared** |
 | M1.1 inputs | D1–D2 dynamic signals; C1 calibration frames/data | ✅ **D1, D2, C1 all cleared** |
@@ -189,7 +207,7 @@ feature in the minor release after its go decision and never holds a release.
 | 0.5.0 | M0 engineering baseline | W1, W2, W4, D1 | Released 2026-10-03 |
 | 0.6.0 | Calibration reference workflow (M1.1–M1.4, calibration side) and shared foundations | D2, C1–C4, W3, S1; D6 inertial export and D3 fixture fixes, both accepted | Released 2026-10-07 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.6.0), [tracker #146](https://github.com/thanhndv212/figaroh-plus/issues/146)); examples tag `v0.6.0` |
 | 0.7.0 | Dynamic reference workflow (M1.2–M1.4, dynamic side) | D4, D7 (D5 no-go; LC1 #155 not included) | Released 2026-10-11 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.7.0), [tracker #177](https://github.com/thanhndv212/figaroh-plus/issues/177)); examples tag `v0.7.0` |
-| 1.0.0 | M1 accepted | M1 review, deprecations removed | Next |
+| 1.0.0 | M1 accepted | M1 review ✅ (2026-10-12); remaining: public API (#184), deprecation removals (#185, examples #125), RC procedure (#186) | Next |
 | 1.1, 1.2 | M2 composable calibration and identification | S2, S3, S4 | Later |
 | 1.x or 2.0 | M3 backend parity | B1 | Later; 2.0 only if the backend API breaks |
 
@@ -219,7 +237,7 @@ issues/PRs in `figaroh-examples`, with the tested commit pair recorded.
 | ✅ Signal-rate/provenance audits and fresh UR10 truth data | M1.1/M1.2 | ✅ Audits **done in D2**; fresh UR10 truth data **done in D3** (examples #89, frozen protocol v1). Original gate: independent analytic truth and validation trajectories |
 | ✅ Physical estimator comparison and convergence revision | M1.2 | **Done in D4** (#39; examples #22 report): direct LMI effort fit selected for D7. Original gate: reuse #30; distinguish exact reconstruction, direct constrained effort fitting, per-link projection and log-Cholesky; freeze metrics/extra-column policies before measurement |
 | ✅ Calibration held-out reference and export parity | Parallel M1.1–M1.4 | ✅ TALOS #14 diagnosed (W2), held-out reference (C2) and reloaded-model FK parity (C3) **done**; integrated TIAGo reference **done in C4** (examples #29 via examples #88) |
-| General robot/dataset onboarding guide | Parallel M1 / proposed U1 | Data/model inventory → method choice → acquisition/processing → fit interpretation → held-out validation/export; reusable experiment brief; worked dynamic and TIAGo mocap cases; missing-data limitations explicit |
+| ✅ General robot/dataset onboarding guide | Parallel M1 / proposed U1 | **Done in U1** (examples #33 via examples PR #123). Original gate: Data/model inventory → method choice → acquisition/processing → fit interpretation → held-out validation/export; reusable experiment brief; worked dynamic and TIAGo mocap cases; missing-data limitations explicit |
 | ✅ Narrow data/result contract | M1/M2 | **Done in W3** (core #126/#128/#130, examples #84). Original gate: Inventory current adapters; ADR; two consumers; legacy dictionaries/configs remain compatible; proposed types not presented as existing API |
 | ✅ Full inertial URDF export | M1 correctness | **Merged in D6** (#60, PR #138). Original gate: first moments and inertia tensors survive export/reload; mass/CoM conventions and inertia reference frames are tested |
 | ✅ End-to-end reference example | M1 | Calibration side ✅ done in C4; dynamic side ✅ **done in D7** (#42). Original gate: connect the existing projection, reconstruction, verification, export and archive APIs; demonstrate improvement on held-out data |
