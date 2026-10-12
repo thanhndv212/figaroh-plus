@@ -7,8 +7,8 @@ sections actually *means* — units, which pipeline step consumes it, and its
 unified-format equivalent where one exists.
 
 Field names below match the **legacy flat format**, since that's what you
-see verbatim in a config file (`get_param_from_yaml` /
-`identification.config.get_param_from_yaml`). The **Unified path** column
+see verbatim in an existing config file (the legacy format was removed in
+1.0; these are the keys `config_migration` reads). The **Unified path** column
 gives the equivalent key under `tasks.calibration.*` /
 `tasks.identification.*` in the unified format — `unified_to_legacy_config`
 and `unified_to_legacy_identif_config` (both in `figaroh/src/figaroh/*/config.py`)
@@ -31,7 +31,7 @@ the layout differs.
 | `free_flyer` | `True` if the robot's base itself is unconstrained/floating in the model (mobile-base robots with an unknown per-sample base pose) | `kinematics.free_flying_base` |
 | `base_pose` | Initial guess `[x, y, z, roll, pitch, yaw]` (m, rad) for the `base_frame` → world (or anchor → camera, in eye-hand mode) transform being estimated | `measurements.poses.base_pose` |
 | `tip_pose` | Initial guess `[x, y, z, roll, pitch, yaw]` (m, rad) for the `tool_frame` → marker transform being estimated | `measurements.poses.tool_pose` |
-| `coeff_regularize` | **Deprecated (#120), default 0.** One L2 weight that robot cost functions applied to every joint parameter, penalising metres and radians alike. Core never applies it; a non-zero value raises a `DeprecationWarning`. Use `estimation.method: map` instead (priors of physical size per parameter group, [estimation methods](calibration_estimation.md)) | `parameters.regularization_coefficient` |
+| `coeff_regularize` | **Removed in 1.0 (#120, #185), default 0.** One L2 weight that robot cost functions applied to every joint parameter, penalising metres and radians alike. Core never applied it; a non-zero value is now a `ConfigurationError` (the migration tool writes 0 and warns). Use `estimation.method: map` instead (priors of physical size per parameter group, [estimation methods](calibration_estimation.md)) | `parameters.regularization_coefficient` |
 | `outlier_eps` | Position error (**meters**, norm of the measured x/y/z residuals of a sample, worst marker) above which a sample is excluded and the rest refitted, for up to `max_iterations` fits. Rotational components do not take part; with no measured position component nothing is excluded. Excluded samples and their errors are in the evaluation (`excluded_samples`, `excluded_sample_errors`) and the report | `parameters.outlier_threshold` |
 | `random_seed` | Seed for the random configurations that select the identifiable parameter set (default 0). The selection, hence the result, does not depend on any global random state; the seed is recorded in the run provenance | `parameters.random_seed` |
 | `data_file` | Path to the CSV of recorded `(joint configuration, measured marker pose)` samples | `data.source_file` |
@@ -167,7 +167,7 @@ points.
 |---|---|
 | `mass_load` | Known mass (kg) of a test payload attached during a supplementary run, used to refine the identified inertial parameters via total-least-squares |
 | `which_body_loaded` | Index of the link/body in the regressor that carries that payload |
-| `sync_joint_motion` | **Parsed by nothing** — not even read into `identif_config` by `get_param_from_yaml`. Effectively decorative today. |
+| `sync_joint_motion` | **Parsed by nothing** — not even read into `identif_config` by the legacy parser. Effectively decorative today. |
 
 ### `trajectory_params` (optional — used by `optimal_trajectory.py`, not `identification.py`)
 
@@ -186,13 +186,11 @@ points.
 
 ## Migrating from legacy to unified format
 
-Both formats keep working side by side, but loading a legacy config now
-emits a `DeprecationWarning` (plus a `logger.warning`) from
-`figaroh.calibration.config.get_param_from_yaml` /
-`figaroh.identification.config.get_param_from_yaml` — the single parser
-every legacy-format caller funnels through, whether via
-`BaseCalibration`/`BaseIdentification.load_param`, `figaroh.utils.config_parser`,
-or a custom script calling the legacy parser directly.
+The legacy flat format was removed in 1.0 (it warned since 0.4.6). Loading a
+legacy config, whether via `BaseCalibration`/`BaseIdentification.load_param`
+or `figaroh.utils.config_parser.get_param_from_yaml`, raises a
+`ConfigurationError` that names the command below. The migration tool itself
+still reads legacy files.
 
 `figaroh.utils.config_migration` converts a legacy config to unified format
 automatically, using the exact field mapping in the tables above:

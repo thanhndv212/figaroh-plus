@@ -46,12 +46,12 @@ names. For a package, a name that is itself a module (such as `calibration_tools
 means that module is public too and is listed on its own line.
 
 - `figaroh.calibration`: `BaseCalibration`, `calibration_tools`, `data_loader`, `parameter`
-- `figaroh.calibration.calibration_tools`: `get_param_from_yaml`, `unified_to_legacy_config`, `get_sup_joints`, `get_joint_offset`, `get_fullparam_offset`, `add_base_name`, `add_pee_name`, `add_eemarker_frame`, `read_config_data`, `load_data`, `get_idxq_from_jname`, `cartesian_to_SE3`, `xyzquat_to_SE3`, `get_rel_transform`, `get_rel_kinreg`, `get_rel_jac`, `initialize_variables`, `calc_updated_fkm`, `update_joint_placement`, `apply_joint_offset`, `random_joint_configuration`, `estimate_frames_closed_form`, `measurement_jacobian`, `select_identifiable_parameters`, `drop_calibration_parameters`, `calculate_kinematics_model`, `calculate_identifiable_kinematics_model`, `calculate_base_kinematics_regressor`
+- `figaroh.calibration.calibration_tools`: `unified_to_legacy_config`, `get_sup_joints`, `get_joint_offset`, `get_fullparam_offset`, `add_base_name`, `add_pee_name`, `add_eemarker_frame`, `read_config_data`, `load_data`, `get_idxq_from_jname`, `cartesian_to_SE3`, `xyzquat_to_SE3`, `get_rel_transform`, `get_rel_kinreg`, `get_rel_jac`, `initialize_variables`, `calc_updated_fkm`, `update_joint_placement`, `apply_joint_offset`, `random_joint_configuration`, `estimate_frames_closed_form`, `measurement_jacobian`, `select_identifiable_parameters`, `drop_calibration_parameters`, `calculate_kinematics_model`, `calculate_identifiable_kinematics_model`, `calculate_base_kinematics_regressor`
 - `figaroh.calibration.parameter`: `get_joint_offset`, `get_fullparam_offset`, `add_base_name`, `add_pee_name`, `add_eemarker_frame`, `FULL_PARAMTPL`, `JOINT_OFFSETTPL`, `ELAS_TPL`, `EE_TPL`, `BASE_TPL`
 - `figaroh.calibration.data_loader`: `read_config_data`, `load_data`, `get_idxq_from_jname`
 
 - `figaroh.identification`: `identification_tools`, `parameter`, `physical_fit`, `BaseIdentification`, `BaseResult`, `ReconstructionResult`, `prior_vector_from_dict`, `reconstruct_from_base`, `reconstruct_full_parameters`, `reconstruct_theta_r`, `run_reconstruction`, `run_option_a_reconstruction`, `ProjectionReport`, `RobotProjectionReport`, `check_p10_feasibility`, `is_feasible_link`, `p10_by_joint_from_param_dict`, `param_dict_with_p10_by_joint`, `project_link`, `project_p10_lmi`, `project_robot_p10_lmi`, `pseudo_inertia_matrix_from_p10`, `CADConstraints`, `add_mass_bounds`, `add_com_bounds`, `add_symmetry_constraints`, `bounds_from_urdf`, `build_cad_constraints_from_config`
-- `figaroh.identification.identification_tools`: `base_param_from_standard`, `relative_stdev`, `index_in_base_params`, `weigthed_least_squares`, `calculate_first_second_order_differentiation`, `low_pass_filter_data`, `get_param_from_yaml`
+- `figaroh.identification.identification_tools`: `base_param_from_standard`, `relative_stdev`, `index_in_base_params`, `weigthed_least_squares`, `calculate_first_second_order_differentiation`, `low_pass_filter_data`
 - `figaroh.identification.parameter`: `reorder_inertial_parameters`, `add_standard_additional_parameters`, `add_custom_parameters`, `get_standard_parameters`, `get_parameter_info`
 - `figaroh.identification.physical_fit`: `FixedExtras`, `PhysicalPolicy`, `ComparatorProblem`, `SolveRecord`, `build_problem`, `solve_exact_reconstruction`, `solve_direct_effort_fit`, `solve_per_link_projection`, `diagnose_exact`
 
@@ -86,9 +86,9 @@ means that module is public too and is listed on its own line.
 Notes on judgement calls:
 
 - `figaroh.calibration.calibration_tools` is public because the examples
-  build their calibration pipelines on it. Its `get_param_from_yaml` accepts
-  a unified calibration config; the legacy flat format it also reads is
-  deprecated (see below), the function is not.
+  build their calibration pipelines on it. The legacy flat-format
+  `get_param_from_yaml` it used to re-export was removed in 1.0 (see below);
+  `figaroh.utils.config_parser.get_param_from_yaml` is the parser.
 - `figaroh.identification.physical_fit` is the module behind
   `select_stage: physical_fit`. Its functions are public; its private
   helpers are not.
@@ -149,16 +149,29 @@ may change or disappear in any release.
 
 ## Deprecated
 
-These still work, warn, and are scheduled for removal in 1.0 (issue 185):
+Nothing is deprecated at 1.0. Names that still work but are scheduled for
+removal are listed here, with the version that removes them.
 
-- the legacy flat configuration format (since 0.4.6); migrate with
-  `python -m figaroh.utils.config_migration`;
+## Removed in 1.0
+
+These warned for at least one minor release and were removed in 1.0 (issue
+185). Each has a migration note in the
+[CHANGELOG](../further_reading/changelog.md).
+
+- the legacy flat configuration format (deprecated since 0.4.6): loading it
+  raises an error naming `python -m figaroh.utils.config_migration`, which
+  still reads legacy files to convert them. This removes
+  `figaroh.calibration.config.get_param_from_yaml`,
+  `figaroh.identification.config.get_param_from_yaml`, their
+  `get_param_from_yaml_legacy` wrappers and the `get_param_from_yaml`
+  re-exports of `calibration_tools` and `identification_tools`;
 - `get_param_from_yaml_with_warning` in the calibration and identification
   config modules (since 0.2.0);
 - `figaroh.utils.config_parser.get_calibration_param_from_yaml` and
   `get_identification_param_from_yaml` (since 0.2.0): use
   `get_param_from_yaml` with `task_type`;
-- a non-zero `regularization_coefficient` / `coeff_regularize` (since 0.6.0).
+- a non-zero `regularization_coefficient` / `coeff_regularize` (since 0.6.0):
+  now a `ConfigurationError`; zero or absent is still accepted.
 
 ## Deprecation policy
 

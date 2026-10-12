@@ -16,7 +16,7 @@ conda activate figaroh-dev
 pip install -e .
 ```
 
-FIGAROH's configuration system (unified vs. legacy YAML format, template
+FIGAROH's configuration system (the unified YAML format, template
 inheritance) is covered separately in
 [Configuration System](concepts/configuration.md) — read that before writing
 your first robot config.

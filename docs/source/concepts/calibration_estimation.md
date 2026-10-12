@@ -222,6 +222,6 @@ more precise than it is.
   first, joint parameters, tool point last (as the TIAGo, UR10 and TALOS
   examples do). Classes with extra parameters (e.g. table-contact planes)
   are not supported.
-- `regularization_coefficient` is deprecated (#120): it weighted metres and
-  radians alike. Leave it at its default 0; `map`/`map_cv` are the
+- `regularization_coefficient` was removed in 1.0 (#120): it weighted metres
+  and radians alike. A non-zero value is a `ConfigurationError`; leave it at 0; `map`/`map_cv` are the
   unit-consistent replacement.

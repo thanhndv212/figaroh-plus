@@ -154,8 +154,8 @@ report whether validation is held-out, training-only, simulated or physical.
 ## Configuration and extension rules
 
 `UnifiedConfigParser` supports YAML inheritance. The workflow-specific config
-adapters translate unified task config into internal dictionaries; legacy config
-remains supported with deprecation warnings and a migration command. The
+adapters translate unified task config into internal dictionaries; the legacy
+flat config was removed in 1.0 and raises an error naming the migration command. The
 [configuration reference](docs/source/concepts/configuration.md) owns the schema.
 
 For a new interface, dependency, result schema or module boundary, add a decision
