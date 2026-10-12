@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Callable, Dict, Any, Optional, List
 from datetime import datetime
 import logging
+import warnings
 
 try:
     import matplotlib.pyplot as plt
@@ -885,9 +886,14 @@ def plot_with_fallback(
         fallback()
 
 
-# Convenience functions for backward compatibility
+# Deprecated convenience wrappers (removal in 2.0)
 def plot_calibration_results(measured_poses, estimated_poses, residuals, **kwargs):
     """Plot calibration results (convenience function)."""
+    warnings.warn(
+        "plot_calibration_results is deprecated in 1.0, will be removed in 2.0; use ResultsManager.plot_calibration_results",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     manager = ResultsManager("calibration", kwargs.get("robot_name", "robot"))
     manager.plot_calibration_results(
         measured_poses, estimated_poses, residuals, **kwargs
@@ -896,6 +902,11 @@ def plot_calibration_results(measured_poses, estimated_poses, residuals, **kwarg
 
 def plot_identification_results(tau_measured, tau_identified, parameters, **kwargs):
     """Plot identification results (convenience function)."""
+    warnings.warn(
+        "plot_identification_results is deprecated in 1.0, will be removed in 2.0; use ResultsManager.plot_identification_results",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     manager = ResultsManager("identification", kwargs.get("robot_name", "robot"))
     manager.plot_identification_results(
         tau_measured, tau_identified, parameters, **kwargs
@@ -904,5 +915,10 @@ def plot_identification_results(tau_measured, tau_identified, parameters, **kwar
 
 def save_results(results, task_type, output_dir="results", **kwargs):
     """Save results (convenience function)."""
+    warnings.warn(
+        "save_results is deprecated in 1.0, will be removed in 2.0; use ResultsManager.save_results",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     manager = ResultsManager(task_type, kwargs.get("robot_name", "robot"))
     return manager.save_results(results, output_dir, **kwargs)

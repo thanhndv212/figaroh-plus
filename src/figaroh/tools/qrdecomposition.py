@@ -28,6 +28,7 @@ Note:
 The resulting row ordering matches the returned base-parameter expressions.
 """
 
+import warnings
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
@@ -887,7 +888,17 @@ def QR_pivoting(
     params_r: list,
     tol_qr: float = TOL_QR,
 ) -> tuple:
-    """Legacy QR pivoting function for backward compatibility."""
+    """Legacy QR pivoting function.
+
+    .. deprecated:: 1.0
+        Use :meth:`QRDecomposer.decompose_with_pivoting`. Removal in 2.0.
+    """
+    warnings.warn(
+        "QR_pivoting is deprecated in 1.0, will be removed in 2.0; "
+        "use QRDecomposer.decompose_with_pivoting",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     decomposer = QRDecomposer(tolerance=tol_qr)
     return decomposer.decompose_with_pivoting(tau, W_e, params_r)
 
@@ -899,7 +910,17 @@ def double_QR(
     params_std: dict = None,
     tol_qr: float = TOL_QR,
 ) -> tuple:
-    """Legacy double QR function for backward compatibility."""
+    """Legacy double QR function.
+
+    .. deprecated:: 1.0
+        Use :meth:`QRDecomposer.double_decomposition`. Removal in 2.0.
+    """
+    warnings.warn(
+        "double_QR is deprecated in 1.0, will be removed in 2.0; "
+        "use QRDecomposer.double_decomposition",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     decomposer = QRDecomposer(tolerance=tol_qr)
     return decomposer.double_decomposition(tau, W_e, params_r, params_std)
 

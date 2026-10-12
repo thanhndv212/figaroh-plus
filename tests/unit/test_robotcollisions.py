@@ -348,7 +348,8 @@ class TestCollisionWrapper:
     @pytest.fixture
     def collision_wrapper(self, mock_robot):
         """Create a CollisionWrapper instance."""
-        return CollisionWrapper(mock_robot)
+        with pytest.warns(DeprecationWarning, match="CollisionWrapper"):
+            return CollisionWrapper(mock_robot)
 
     def test_legacy_aliases(self, collision_wrapper):
         """Test that legacy aliases are set correctly."""

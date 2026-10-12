@@ -20,6 +20,7 @@ that can be inherited by any robot type (TIAGo, UR10, MATE, etc.).
 """
 
 import logging
+import warnings
 import os
 import numpy as np
 from abc import ABC, abstractmethod
@@ -391,9 +392,9 @@ class BaseIdentification(ABC):
         # phi_full[active_indices] = phi_reduced
 
         # Step 4: Compute base parameters using QR decomposition
-        from figaroh.tools.qrdecomposition import double_QR
+        from figaroh.tools.qrdecomposition import QRDecomposer
 
-        W_base, _, base_parameters, _, phi_std = double_QR(
+        W_base, _, base_parameters, _, phi_std = QRDecomposer().double_decomposition(
             tau_processed, W_processed, active_params, self.standard_parameter
         )
         phi_base = solver.solve(W_base, tau_processed)
@@ -1824,6 +1825,12 @@ class BaseIdentification(ABC):
             "physical_consistency_enabled", None
         )
         if legacy_enabled is not None:
+            warnings.warn(
+                "The flat 'physical_consistency_enabled' key is deprecated in "
+                "1.0, will be removed in 2.0; use physical_consistency.enabled",
+                DeprecationWarning,
+                stacklevel=2,
+            )
             pc_cfg["enabled"] = bool(legacy_enabled)
 
         enabled = bool(pc_cfg.get("enabled", False))

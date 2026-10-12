@@ -16,6 +16,7 @@
 """Enhanced collision detection and visualization utilities."""
 
 import logging
+import warnings
 from typing import List, Optional, Tuple
 import numpy as np
 import pinocchio as pin
@@ -224,9 +225,19 @@ class CollisionManager:
 
 # Backward compatibility wrapper
 class CollisionWrapper(CollisionManager):
-    """Legacy wrapper for backward compatibility."""
+    """Legacy wrapper.
+
+    .. deprecated:: 1.0
+        Use :class:`CollisionManager`. Removal in 2.0.
+    """
 
     def __init__(self, robot, geom_model=None, geom_data=None, viz=None):
+        warnings.warn(
+            "CollisionWrapper is deprecated in 1.0, will be removed in 2.0; "
+            "use CollisionManager",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         super().__init__(robot, geom_model, geom_data, viz)
 
         # Legacy aliases
