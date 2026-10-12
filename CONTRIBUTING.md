@@ -125,6 +125,11 @@ For normal fixes, use `devel` and the next planned release.
 ### Release candidate procedure (1.0.0)
 
 The 1.0.0 soak uses release candidates `v1.0.0rc1`, `v1.0.0rc2`, and so on.
+
+> **Waived for 1.0.0.** On 2026-10-12 the maintainer released 1.0.0 directly
+> through the release sequence above, without a candidate (#192). The
+> evidence of step 3 was still recorded on the release pair. The procedure is
+> kept for a future major release.
 Steps 1–4 of the release sequence above apply unchanged to each candidate;
 the steps below add only what is specific to the RC.
 

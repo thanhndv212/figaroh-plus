@@ -122,8 +122,6 @@ Every run can also write:
 
 ## What's new in 1.0
 
-1.0.0rc1 is a release candidate: install it with `pip install --pre figaroh`.
-
 - A declared public API with a stability policy: the
   [Public API and stability](https://thanhndv212.github.io/figaroh-plus/api/stability/)
   page lists what is supported, what is experimental and what is internal.
