@@ -1,4 +1,6 @@
-# FIGAROH
+<p align="center">
+  <img src="https://raw.githubusercontent.com/thanhndv212/figaroh-plus/main/docs/source/assets/figaroh-banner.svg" alt="FIGAROH" width="720"/>
+</p>
 
 **F**ree dynamics **I**dentification and **G**eometrical c**A**libration of **RO**bot and **H**uman
 

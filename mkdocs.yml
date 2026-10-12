@@ -16,6 +16,8 @@ site_dir: site
 
 theme:
   name: material
+  logo: assets/figaroh-mark-dark.svg
+  favicon: assets/figaroh-mark-light.svg
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
