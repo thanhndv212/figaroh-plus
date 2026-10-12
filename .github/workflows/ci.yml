@@ -37,6 +37,19 @@ jobs:
             pinocchio: '4.1.0'
             ndcurves: '2.3.0'
             mujoco: ''
+          # Lowest and highest supported Python (requires-python >=3.10;
+          # Pinocchio 4.1 ships wheels for cp310-cp314). The other profiles
+          # run on Python 3.12 (environment.yml).
+          - profile: python-3.10
+            python: '3.10'
+            pinocchio: '4.1.0'
+            ndcurves: '2.3.0'
+            mujoco: ''
+          - profile: python-3.14
+            python: '3.14'
+            pinocchio: '4.1.0'
+            ndcurves: '2.3.0'
+            mujoco: ''
           - profile: mujoco-3.9
             pinocchio: '3.7.0'
             ndcurves: '2.0.0.1'
@@ -65,10 +78,14 @@ jobs:
           git -C ../figaroh-examples fetch --depth=1 --filter=blob:none origin "$EXAMPLES_REVISION"
           git -C ../figaroh-examples checkout --detach FETCH_HEAD
           git -C ../figaroh-examples rev-parse HEAD > examples-revision.txt
+      - name: Select the Python version for this profile
+        env:
+          PYTHON_VERSION: ${{ matrix.python || '3.12' }}
+        run: sed "s/^  - python==.*/  - python==${PYTHON_VERSION}/" environment.yml > ci-environment.yml
       - uses: conda-incubator/setup-miniconda@v4
         with:
           miniforge-version: latest
-          environment-file: environment.yml
+          environment-file: ci-environment.yml
           activate-environment: figaroh-dev
       - name: Install development tools
         run: python -m pip install -e '.[dev]' pytest-timeout
