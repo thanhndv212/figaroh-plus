@@ -139,8 +139,8 @@ the steps below add only what is specific to the RC.
    SHAs in the release PR and tracker issue, then record command, environment,
    and pass/fail/skip counts for each item:
    - core `python -m pytest -q -rs`;
-   - hosted CI green on both Pinocchio profiles, 3.7.0 and 4.1.0, on the tagged
-     commit;
+   - core hosted CI green on the tagged commit, and examples CI green on both
+     Pinocchio profiles (3.7.0 and 4.1.0) against that core revision;
    - examples `MPLBACKEND=Agg python validate.py` against that core revision;
    - core `python -m build`, then `twine check dist/*`, then install of the
      wheel into a clean environment (not the editable `figaroh-dev` install)
