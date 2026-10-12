@@ -1,7 +1,7 @@
 # Identification and calibration delivery plan
 
 **Status: Tracker setup approved; execution details under review — revision 4, 2026-10-02.
-Implementation status refreshed 2026-10-09 (after D4 closure and the #61 merge)** (see [implementation status](#implementation-status)).
+Implementation status refreshed 2026-10-12 (after the M1 acceptance review)** (see [implementation status](#implementation-status)).
 Confirmed user preferences: advance calibration alongside dynamic identification;
 TIAGo mocap is the first calibration reference, with TALOS contact as the
 second consumer/regression target. The user authorized GitHub milestone/issue creation on 2026-10-02 and requested
@@ -46,7 +46,7 @@ the modular-terms, Pinocchio-support or log-Cholesky decisions.
 | Current examples have robot-specific loaders and existing reporting/export helpers | Improve adapters and reuse primitives before proposing a new framework |
 
 Sources: core issues #20/#22–#25/#30/#32, core PR #31, examples issues
-#11/#12/#14 and draft PR #13. The examples dynamic report and supplemental
+#11/#12/#14 and PR #13 (merged 2026-10-08). The examples dynamic report and supplemental
 analysis are still local additions on the PR branch. Reports include failed
 solver statuses and preprocessing limitations; they are not scientific go
 approval. Current issue/PR status must be checked when work starts.
@@ -87,7 +87,7 @@ flowchart TD
     D4["<b>D4: Physical comparison</b> · #39 ✅<br/>✓ #59 ex#12 ex#22"]
     D5["<b>D5: Convergence research</b> · #40 ✅<br/>✓ #22 (revise) #30 (no-go)"]
     D6["<b>D6: Inertial export</b> · #41 ✅<br/>✓ #60 (PR #138)"]
-    D7["<b>D7: Dynamic reference</b> · #42<br/>#61✓ #116✓<br/>ex#23✓ ex#68✓ ex#69✓"]
+    D7["<b>D7: Dynamic reference</b> · #42 ✅<br/>#61✓ #116✓<br/>ex#23✓ ex#68✓ ex#69✓"]
     C1["<b>C1: Frames/data audit</b> · #43 ✅<br/>✓ ex#24 ex#25"]
     C2["<b>C2: Calibration truth/holdout</b> · #44 ✅<br/>✓ #101 #102 #105 #110 #113<br/>✓ ex#26 ex#27 ex#67"]
     C3["<b>C3: Geometric export</b> · #45 ✅<br/>✓ #62 #111 #114 #123<br/>✓ ex#28"]
@@ -95,8 +95,8 @@ flowchart TD
     C5["<b>C5: Calibration studies</b> · #167<br/>ex#96–#101 ex#70 ex#71"]
     D8["<b>D8: Identification studies</b> (research)<br/>#157–#161"]
     S1["<b>S1: Minimum reporting contract</b> · #47 ✅<br/>✓ #63 #70 #100 #103<br/>✓ ex#30 ex#36"]
-    U1["<b>U1: Onboarding acceptance</b> · #51<br/>✓ #66<br/>✓ ex#33"]
-    A["M1 acceptance review"]
+    U1["<b>U1: Onboarding acceptance</b> · #51 ✅<br/>✓ #66<br/>✓ ex#33"]
+    A["M1 acceptance review ✅"]
     S2["<b>S2: Sensitivity/uncertainty</b> · #48<br/>✓ #107<br/>open: #64 ex#31"]
     S3["<b>S3: Improved experiment design</b> · #49<br/>#65 #90<br/>ex#32"]
     S4["<b>S4: Selective composition</b> · #52<br/>#67"]
@@ -140,7 +140,7 @@ flowchart TD
 
     classDef cleared fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
     classDef ready fill:#fff3cd,stroke:#b8860b,color:#5c4400
-    class R,W1,W2,W3,W4,D1,D2,C1,C2,C3,S1,D6,C4,D3,D4,D5,D7,U1 cleared
+    class R,W1,W2,W3,W4,D1,D2,C1,C2,C3,S1,D6,C4,D3,D4,D5,D7,U1,A cleared
     class LC1 active
     classDef active fill:#fff3cd,stroke:#b8860b,stroke-width:3px,stroke-dasharray:6 3,color:#5c4400
 ```
@@ -156,7 +156,7 @@ research examples outside M1.
 
 ### Implementation status
 
-Status as of 2026-10-11, taken from the GitHub trackers. The trackers stay
+Status as of 2026-10-12, taken from the GitHub trackers. The trackers stay
 authoritative; refresh this table when a tracker closes.
 
 | Package | Status | Closed | Delivered by / remaining |
@@ -186,14 +186,31 @@ authoritative; refresh this table when a tracker closes.
 **Gate summary:** M0's delivery roster (W1, W2, W4) and M1.1 (D1, D2, C1)
 are cleared. **The calibration workstream is complete through M1.4** (C2, C3,
 C4). **The dynamic workstream is complete through M1.4** (D3, D4, D6, D7),
-released in 0.7.0. U1 cleared on 2026-10-11; the M1 acceptance review is what
-remains before 1.0.
+released in 0.7.0. U1 cleared on 2026-10-11.
 
-Housekeeping: the examples milestones for W1, D2, C1 and W4 have no open issues
-but are still open on GitHub, so they can be closed. The `status:blocked` labels
-on core #61 and tracker #42 were stale after the D4 closure and were set to
-`status:ready` on 2026-10-09. Examples #23 stays `status:blocked` until examples
-#68 and #69 land; its remaining blockers are listed in the [path forward](#path-forward).
+**M1 accepted (2026-10-12; review tracker [#181](https://github.com/thanhndv212/figaroh-plus/issues/181)).** Evidence pair:
+core `779e830` + examples `b167298`. The maintainer ratified the closure
+records (R-1: W1, W2, W4, D1, D2, C1, D4, S1, D7) and accepted the #97
+duplicate closure as completed via #125/#127 (C-1). Scope accepted: S-1 real-data
+references at execution scope (held-out error reported, not gated); S-2 TIAGo
+effort scale and arm_1 constant still open (examples #126); S-3 lumped TIAGo
+export; S-4 PAL not run on hardware; S-5 TALOS contact as a regression consumer.
+G-1 (a failed calibration fit could be exported) is fixed before the release
+candidate: core #182 by PR #187 (`9dba6da` on `devel`) and examples #124 by PR
+#127 (`20b6377` on `main`).
+
+**M0 gate review accepted (2026-10-12, #181 §9).** Clauses: existing core gates
+retained (blocking `Lint`, Core CI and Documentation green); examples assets and
+dependencies reproducible (W1); numerical regressions explained (W2); review and
+merge rules applied (W4); exact tested pairs cited as core `fe7dc51` + examples
+`b8d9c75` (hosted runs 37134266859 / 37136143367) and core tag `v0.5.0`
+(`02f705a`). The pair is not clean for the M0 cycle: examples has no `v0.5.0`
+tag, because pairing started at 0.6.0.
+
+Housekeeping (2026-10-12): empty milestones (core C4 and U1, examples U1 and the
+W1, D2, C1 and W4 ones) and the D1 counter are tracked under #183 (H-2). The
+stale `status:blocked` labels on core #61 and tracker #42, and on examples #23,
+were resolved when D7 cleared.
 
 Log-Cholesky #30 can use the independent analytic core fixture. D1 is fixed
 (#69, merged 2026-10-02) and the D2 audits are complete, so real-dataset work
@@ -204,11 +221,12 @@ export/report code require paired regression coverage and serial integration.
 
 ### Path forward
 
-Status as of 2026-10-11. The trackers stay authoritative.
+Status as of 2026-10-12. The trackers stay authoritative.
 
 **Critical path (M1 acceptance).** D7 cleared on 2026-10-10 (steps 1–6
 below, kept as its record) and U1 on 2026-10-11 (step 7); the M1 acceptance
-review is next.
+review (step 8) was completed on 2026-10-12. Steps 9–12 are what remains
+before 1.0.0.
 
 | Step | Issue | State | What it needs |
 | --- | --- | --- | --- |
@@ -219,7 +237,11 @@ review is next.
 | 5 | core #61 — close with the V2 run linked | **done** (PRs #165, #172) | Library side done in PR #165; its acceptance criteria are met, its validation level (V2) waits on step 4 |
 | 6 | D7 tracker #42 — closing review | **done** (2026-10-10) | Closes last, after steps 1–5 and the maintainer accepts the integration evidence |
 | 7 | U1 acceptance (examples #33) | **done** (examples PR #123) | Worked briefs checked against the accepted evidence |
-| 8 | M1 acceptance review | ready | Every M1 package cleared; the maintainer reviews the integrated evidence |
+| 8 | M1 acceptance review ([#181](https://github.com/thanhndv212/figaroh-plus/issues/181)) | **done** (2026-10-12) | Accepted on core `779e830` + examples `b167298` |
+| 9 | Calibration export refusal (G-1): core #182, examples #124 | **done** (PR #187, examples PR #127) | A failed fit is no longer exported silently |
+| 10 | Public API and stability: core #184 | open | Declare the 1.0 public API |
+| 11 | Deprecation removals: core #185 + examples #125 | open | Remove deprecated features batched into 1.0 |
+| 12 | RC procedure: core #186 | open | Release candidate, soak, then `1.0.0` |
 
 **After M1 acceptance (M2/M3):** S2 sensitivity (core #64, examples #31), then S3
 experiment design (core #65, #90, examples #32), S4 composition (core #67) and
@@ -386,9 +408,10 @@ additional production scope.
 Initial queue (2026-10-02): D1 / core #32 was the first ready correctness fix,
 delivered by #69. W1, W2, W3, W4, D1, D2, D3, D6, C1, C2, C3, C4 and S1 have since cleared
 (see [implementation status](#implementation-status)). Current queue
-(2026-10-11): calibration and dynamic references are both done through M1.4
-(C4, D7; released in 0.6.0 and 0.7.0), and U1 cleared on 2026-10-11. The
-critical path is the M1 review (see the [path forward](#path-forward)). On the optional path, D5 cleared (#30 no-go) and LC1's go gate #155 (method change) is in progress.
+(2026-10-12): calibration and dynamic references are both done through M1.4
+(C4, D7; released in 0.6.0 and 0.7.0), U1 cleared on 2026-10-11 and M1 was
+accepted on 2026-10-12. The critical path is the 1.0 work (see the
+[path forward](#path-forward)). On the optional path, D5 cleared (#30 no-go) and LC1's go gate #155 (method change) is in progress.
 Select one issue, validate its focused change, open its PR, then await
 review/merge approval.
 
