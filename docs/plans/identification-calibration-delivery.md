@@ -208,7 +208,7 @@ merge rules applied (W4); exact tested pairs cited as core `fe7dc51` + examples
 tag, because pairing started at 0.6.0.
 
 Housekeeping (2026-10-12): empty milestones (core C4 and U1, examples U1 and the
-W1, D2, C1 and W4 ones) and the D1 counter are tracked under #183 (H-2). The
+W1, D2, C1 and W4 ones) are closed and the stale D1 counter was refreshed (#183, H-2). The
 stale `status:blocked` labels on core #61 and tracker #42, and on examples #23,
 were resolved when D7 cleared.
 
