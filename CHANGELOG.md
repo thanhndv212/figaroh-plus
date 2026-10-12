@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0rc1] - 2026-10-12
+
+First release candidate for **1.0.0**. Roadmap milestone M1 (trustworthy
+physical-model workflows) is accepted: both reference workflows, calibration
+and dynamic identification, are recorded on core `779e830` + examples
+`b167298` (#181). This candidate declares the public API and its stability
+policy, removes the features deprecated before 1.0, and makes calibration
+refuse to export a failed fit.
+
+Scope notes for 1.0:
+
+- The real-data references (TIAGo calibration and identification, UR10
+  calibration) are verified at **execution scope**: held-out error is
+  reported, not gated. Gated prediction exists only on simulated or synthetic
+  truth (UR10 dynamic truth, TIAGo calibration truth fixture).
+- The TIAGo effort scale reads 13.5 % low, outside its ±10 % diagnostic
+  tolerance; the joint torque constants are tracked in figaroh-examples#126.
+- The TIAGo URDF export is lumped; the PAL calibration export was not run on
+  hardware; TALOS contact calibration is a regression consumer only.
+
+Upgrading from 0.7: convert any legacy flat config once with
+`python -m figaroh.utils.config_migration`, drop a non-zero
+`regularization_coefficient`, and use Python 3.10 or newer (see Removed and
+Changed below).
+
 ### Added
 
 - Public API and stability policy for 1.0 (#184): a new "Public API and

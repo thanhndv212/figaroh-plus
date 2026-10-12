@@ -207,7 +207,7 @@ feature in the minor release after its go decision and never holds a release.
 | 0.5.0 | M0 engineering baseline | W1, W2, W4, D1 | Released 2026-10-03 |
 | 0.6.0 | Calibration reference workflow (M1.1–M1.4, calibration side) and shared foundations | D2, C1–C4, W3, S1; D6 inertial export and D3 fixture fixes, both accepted | Released 2026-10-07 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.6.0), [tracker #146](https://github.com/thanhndv212/figaroh-plus/issues/146)); examples tag `v0.6.0` |
 | 0.7.0 | Dynamic reference workflow (M1.2–M1.4, dynamic side) | D4, D7 (D5 no-go; LC1 #155 not included) | Released 2026-10-11 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.7.0), [tracker #177](https://github.com/thanhndv212/figaroh-plus/issues/177)); examples tag `v0.7.0` |
-| 1.0.0 | M1 accepted | M1 review ✅ (2026-10-12); remaining: public API (#184), deprecation removals (#185, examples #125), RC procedure (#186) | Next |
+| 1.0.0 | M1 accepted | M1 review ✅ (2026-10-12, [#181](https://github.com/thanhndv212/figaroh-plus/issues/181)); public API (#184), deprecation removals (#185, examples #125), G-1 (#182) and RC procedure (#186) done | Release candidate `1.0.0rc1` in preparation ([tracker #192](https://github.com/thanhndv212/figaroh-plus/issues/192)); `devel` frozen 2026-10-12 |
 | 1.1, 1.2 | M2 composable calibration and identification | S2, S3, S4 | Later |
 | 1.x or 2.0 | M3 backend parity | B1 | Later; 2.0 only if the backend API breaks |
 
