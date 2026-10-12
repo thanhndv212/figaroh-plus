@@ -27,7 +27,12 @@ from .error_handling import (
     setup_example_logging,
 )
 
+from . import config_parser
+from . import error_handling
+
 __all__ = [
+    "config_parser",
+    "error_handling",
     "ResultsManager",
     "FigarohExampleError",
     "CalibrationError",

@@ -42,6 +42,12 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 
+__all__ = [
+    "compute_run_dir",
+    "archive_run",
+]
+
+
 def _safe_path_component(value: Any) -> str:
     """Collapse anything that isn't alnum/dash/dot/underscore into '-',
     so a user-supplied asset_id can never escape the archive root or

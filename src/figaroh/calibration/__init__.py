@@ -15,4 +15,14 @@
 
 from .base_calibration import BaseCalibration
 
-__all__ = ["BaseCalibration"]
+# Modules the examples build on; each declares its own ``__all__``.
+from . import calibration_tools
+from . import data_loader
+from . import parameter
+
+__all__ = [
+    "BaseCalibration",
+    "calibration_tools",
+    "data_loader",
+    "parameter",
+]

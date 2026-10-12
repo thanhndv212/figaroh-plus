@@ -21,6 +21,19 @@ import pinocchio as pin
 from dataclasses import dataclass
 
 
+__all__ = [
+    "VisualizationConfig",
+    "RobotVisualizer",
+    "place",
+    "display_COM",
+    "display_axes",
+    "rotation_matrix_from_vectors",
+    "display_force",
+    "display_bounding_boxes",
+    "display_joints",
+]
+
+
 @dataclass
 class VisualizationConfig:
     """Configuration for robot visualization."""

@@ -26,6 +26,9 @@ from . import export_validation
 from . import report
 from . import identification_report
 from . import compare_report
+from . import run_archive
+from . import stages
+from . import solver
 
 # Submodules are imported eagerly so ``figaroh.tools.<module>`` works after
 # ``import figaroh``; __all__ declares them as the package's public surface.
@@ -43,4 +46,7 @@ __all__ = [
     "report",
     "identification_report",
     "compare_report",
+    "run_archive",
+    "stages",
+    "solver",
 ]

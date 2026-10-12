@@ -38,6 +38,14 @@ logger.addHandler(logging.NullHandler())
 # ── Public data classes ─────────────────────────────────────────
 
 
+__all__ = [
+    "PoseDelta",
+    "FkConsistencyResult",
+    "PoseError",
+    "URDFComparison",
+]
+
+
 @dataclass
 class PoseDelta:
     """FK pose difference between two models at a single configuration.

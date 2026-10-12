@@ -10,9 +10,13 @@ from . import measurements
 from . import utils
 from . import visualisation
 from . import optimal
+from . import data
+from . import backends
+from . import integration
 
 # Subpackages are imported eagerly so ``import figaroh`` exposes them as
 # attributes (``figaroh.tools.robot``, ...); __all__ declares that surface.
+# The stability of each one is stated in docs/source/api/stability.md.
 __all__ = [
     "tools",
     "calibration",
@@ -21,6 +25,9 @@ __all__ = [
     "utils",
     "visualisation",
     "optimal",
+    "data",
+    "backends",
+    "integration",
 ]
 
 __version__ = "0.7.0"
