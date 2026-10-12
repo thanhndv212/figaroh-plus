@@ -44,6 +44,10 @@ def polar(r, a):
     return HX + r * math.cos(a), HY + r * math.sin(a)
 
 
+def points(ps):
+    return " ".join(f"{f(x)},{f(y)}" for x, y in ps)
+
+
 def leg(sign):
     a = sign * HALF
     ux, uy = math.cos(math.radians(a)), math.sin(math.radians(a))
@@ -58,8 +62,7 @@ def leg(sign):
         (HX - 10 * nx, HY - 10 * ny),
     ]
     nib = [(ex - 3.5 * nx, ey - 3.5 * ny), tip, (ex + 3.5 * nx, ey + 3.5 * ny)]
-    j = lambda ps: " ".join(f"{f(x)},{f(y)}" for x, y in ps)
-    return j(pts), j(nib)
+    return points(pts), points(nib)
 
 
 def mark(p):
@@ -109,7 +112,7 @@ def mark(p):
 CAP, SW, GAP = 96, 16, 24
 h = SW / 2
 LETTERS = {  # (advance, centre-line paths, overshooting round?)
-    "F": (64, [f"M{h} 0 V{CAP}", f"M0 {h} H64", f"M0 48 H52"]),
+    "F": (64, [f"M{h} 0 V{CAP}", f"M0 {h} H64", "M0 48 H52"]),
     "I": (16, [f"M{h} 0 V{CAP}"]),
     "G": (96, [None]),  # built below
     "A": (80, [f"M-2 {CAP + 16} L40 -24 L82 {CAP + 16}", "M16 68 H64"]),
@@ -118,7 +121,7 @@ LETTERS = {  # (advance, centre-line paths, overshooting round?)
         [f"M{h} {CAP} V{h} H40 A20 20 0 0 1 40 48 H{h}", f"M36 48 L76 {CAP + 16}"],
     ),
     "O": (96, [None]),
-    "H": (80, [f"M{h} 0 V{CAP}", f"M{80 - h} 0 V{CAP}", f"M0 48 H80"]),
+    "H": (80, [f"M{h} 0 V{CAP}", f"M{80 - h} 0 V{CAP}", "M0 48 H80"]),
 }
 
 
