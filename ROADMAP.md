@@ -121,7 +121,7 @@ linked validation evidence, not just the presence of a module.
 | Milestone | Priority | Outcome | Exit criteria |
 |---|---|---|---|
 | M0 — Engineering baseline | Now, continuous | Reproducible review and validation in both repositories | Existing core gates retained; examples assets/dependencies reproducible; numerical regressions explained; review/merge rules and cleanup applied; exact tested commit pairs |
-| M1 — Trustworthy model workflows | Now, proposed parallel tracks | Dynamic and geometric reference workflows with held-out verification and faithful export | Correct signals/frames/units; explicit fit and validation splits; identifiable/physical parameter diagnostics; selected output stage; exported model reload parity; archived report and provenance |
+| M1 — Trustworthy model workflows | ✅ Accepted 2026-10-12 (#181) | Dynamic and geometric reference workflows with held-out verification and faithful export | Correct signals/frames/units; explicit fit and validation splits; identifiable/physical parameter diagnostics; selected output stage; exported model reload parity; archived report and provenance |
 | M2 — Composable calibration and identification | Next, after reference contracts | Reusable data/diagnostic primitives and selective regressor/residual composition | Two concrete consumers; accepted narrow ADR; legacy/default numerical parity; additive result compatibility; no premature broad workflow rewrite |
 | M3 — Backend parity and broader examples | Later, after reference acceptance | Supported backend operations have measured parity | Actual backend selection or rejection; capability matrix; same-input accuracy/runtime comparisons; supported export/validation path; unsupported capabilities explicit |
 
