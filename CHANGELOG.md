@@ -7,6 +7,125 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-12
+
+First stable release. Roadmap milestone M1 (trustworthy
+physical-model workflows) is accepted: both reference workflows, calibration
+and dynamic identification, are recorded on core `779e830` + examples
+`b167298` (#181). This release declares the public API and its stability
+policy, removes the features deprecated before 1.0, and makes calibration
+refuse to export a failed fit.
+
+Scope notes for 1.0:
+
+- The real-data references (TIAGo calibration and identification, UR10
+  calibration) are verified at **execution scope**: held-out error is
+  reported, not gated. Gated prediction exists only on simulated or synthetic
+  truth (UR10 dynamic truth, TIAGo calibration truth fixture).
+- The TIAGo effort scale reads 13.5 % low, outside its ±10 % diagnostic
+  tolerance; the joint torque constants are tracked in figaroh-examples#126.
+- The TIAGo URDF export is lumped; the PAL calibration export was not run on
+  hardware; TALOS contact calibration is a regression consumer only.
+
+Upgrading from 0.7: convert any legacy flat config once with
+`python -m figaroh.utils.config_migration`, drop a non-zero
+`regularization_coefficient`, and use Python 3.10 or newer (see Removed and
+Changed below).
+
+### Added
+
+- Public API and stability policy for 1.0 (#184): a new "Public API and
+  stability" docs page (`docs/source/api/stability.md`) lists the supported
+  entry points per subpackage, the experimental areas (MuJoCo backend and
+  `from_mjcf`, `integration`, `visualisation`, `measurements`, log-Cholesky
+  LC1), the internal modules, the deprecated features and the deprecation
+  policy: a public name warns with `DeprecationWarning` for at least one minor
+  release, is removed only in a major release after 1.0, and has a migration
+  note here.
+- The `__all__` lists now match that page, and a unit test keeps them in sync.
+  `import figaroh` also imports `data`, `backends` and `integration` (about
+  0.1 s more, mostly the optional `mujoco` import when it is installed).
+  `calibration.__all__` adds `calibration_tools`, `data_loader` and
+  `parameter`; `identification.__all__` adds `identification_tools`,
+  `parameter` and `physical_fit`; `tools.__all__` adds `run_archive`,
+  `stages` and `solver`; `utils.__all__` adds `config_parser` and
+  `error_handling`; `optimal.__all__` adds `BaseTrajectoryIPOPTProblem`;
+  `measurements.__all__` is `["Measurement"]`. The public tools, config and
+  error-handling modules gained their own `__all__`. Nothing was renamed or
+  removed; names outside an `__all__` stay importable but are not covered.
+
+### Deprecated
+
+Each warns with `DeprecationWarning` from 1.0 and will be removed in 2.0
+(#185):
+
+- `figaroh.tools.qrdecomposition.QR_pivoting` and `double_QR`: use
+  `QRDecomposer.decompose_with_pivoting` / `double_decomposition`.
+- `figaroh.tools.robotcollisions.CollisionWrapper`: use `CollisionManager`.
+- The module-level wrappers in `figaroh.tools.robotvisualization` (`place`,
+  `display_COM`, `display_axes`, `rotation_matrix_from_vectors`,
+  `display_force`, `display_bounding_boxes`, `display_joints`): use the
+  `RobotVisualizer` methods.
+- `plot_calibration_results`, `plot_identification_results` and
+  `save_results` in `figaroh.utils.results_manager`: use `ResultsManager`.
+- The flat `physical_consistency_enabled` identification config key: use
+  `physical_consistency.enabled`.
+
+### Changed
+
+- `requires-python` is now `>=3.10`, following Pinocchio (conda-forge builds
+  3.8 and 4.1 for Python 3.10-3.14; `pin` 4.1 ships wheels for cp310-cp314).
+  The Python 3.8 and 3.9 classifiers are dropped and 3.13 and 3.14 are added.
+  CI adds Python 3.10 (lowest) and 3.14 (highest) test jobs next to the
+  Python 3.12 jobs. Migration: Python 3.8 and 3.9 users stay on 0.7.x.
+- The package classifier is `Development Status :: 5 - Production/Stable`.
+- `RobotIdentificationSystem.identify_parameters` also reads a `data_dir`
+  stored under `tasks.identification` of a unified config, since the flat
+  `identification:` section it was read from is gone.
+
+### Removed
+
+Features deprecated before 1.0 are removed (#185, paired examples migration
+figaroh-examples#125). Migration notes:
+
+- The legacy flat config format (deprecated since 0.4.6). Loading one through
+  `load_param`, `figaroh.utils.config_parser.get_param_from_yaml` or the
+  optimal-trajectory loader now raises a `ConfigurationError` that names
+  `python -m figaroh.utils.config_migration --input <legacy.yaml> --output
+  <unified.yaml>`; run that once per file. The migration tool still reads
+  legacy files. Also removed with the format:
+  `figaroh.calibration.config.get_param_from_yaml`,
+  `figaroh.identification.config.get_param_from_yaml`, both
+  `get_param_from_yaml_legacy`, and the `get_param_from_yaml` re-exports of
+  `calibration_tools` and `identification_tools`. Use
+  `figaroh.utils.config_parser.get_param_from_yaml` with a unified config.
+- `get_param_from_yaml_with_warning` in `figaroh.calibration.config` and
+  `figaroh.identification.config` (since 0.2.0): call
+  `figaroh.utils.config_parser.get_param_from_yaml`.
+- `figaroh.utils.config_parser.get_calibration_param_from_yaml` and
+  `get_identification_param_from_yaml` (since 0.2.0): call
+  `get_param_from_yaml(robot, data, "calibration")` or
+  `get_param_from_yaml(robot, data, "identification")`.
+- A non-zero `regularization_coefficient` / `coeff_regularize` (since 0.6.0)
+  is a `ConfigurationError`. Remove the key (zero or absent is still
+  accepted) and use `estimation.method: map`, which sets priors of physical
+  size per parameter group. `config_migration` writes 0 and warns when it
+  meets a non-zero legacy `coeff_regularize`.
+
+### Fixed
+
+- A calibration whose solver failed can no longer be exported silently
+  (#182, M1 G-1). `BaseCalibration.STATUS` is `"FAILED"` instead of
+  `"CALIBRATED"` when the solver did not converge, and `joint_corrections()`
+  (the URDF export gateway), `build_geometric_calibration` and
+  `export_geometric_calibration_yaml` raise `CalibrationError` when the `fit`
+  stage is `failed`, recording stage `export` as failed, as
+  `BaseIdentification.export_urdf` already does. `allow_failed_fit=True`
+  exports for diagnosis: it warns, records `export` as `fallback` and notes
+  the override in the run provenance. A solver failure on the first fit now
+  returns a failed result instead of raising an `UnboundLocalError`. Fits that
+  converged export exactly as before.
+
 ## [0.7.0] - 2026-10-11
 
 This release ships the **dynamic identification reference workflow** (roadmap

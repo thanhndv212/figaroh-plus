@@ -5,7 +5,6 @@ This module provides a unified configuration parsing system that supports:
 - Template inheritance and extension
 - Variant configurations
 - Variable expansion
-- Backward compatibility with legacy formats
 - Schema validation
 """
 
@@ -21,6 +20,16 @@ from .error_handling import ConfigurationError
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
+
+
+__all__ = [
+    "UnifiedConfigParser",
+    "create_task_config",
+    "parse_configuration",
+    "get_param_from_yaml",
+    "is_unified_config",
+    "ConfigurationError",
+]
 
 
 @dataclass
@@ -579,7 +588,7 @@ def get_param_from_yaml(
     task_type: str = "auto",
     variant: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Unified parameter parser with backward compatibility.
+    """Unified parameter parser.
 
     Args:
         robot: Robot instance
@@ -591,7 +600,8 @@ def get_param_from_yaml(
         Task-specific parameter dictionary
 
     Raises:
-        ConfigurationError: If parsing fails or task not found
+        ConfigurationError: If parsing fails, the task is not found, or the
+            data is a legacy flat config (removed in 1.0)
     """
     # Handle file path input
     if isinstance(config_data, (str, Path)):
@@ -612,7 +622,7 @@ def get_param_from_yaml(
 
         return create_task_config(robot, unified_config, task_type)
 
-    # Handle dictionary input (could be legacy or unified)
+    # Handle dictionary input (must be unified)
     if not isinstance(config_data, dict):
         raise ConfigurationError("config_data must be a dictionary or file path")
 
@@ -633,74 +643,45 @@ def get_param_from_yaml(
 
         return create_task_config(robot, config_data, task_type)
 
-    # Legacy format - use existing parsers
-    return _parse_legacy_format(robot, config_data, task_type)
+    # Legacy flat format (removed in 1.0)
+    raise legacy_config_error()
 
 
-def _parse_legacy_format(
-    robot, config_data: Dict[str, Any], task_type: str
-) -> Dict[str, Any]:
-    """Parse legacy configuration format using existing parsers.
+LEGACY_CONFIG_REMOVED_MESSAGE = (
+    "The legacy flat config format was removed in 1.0: use the unified format "
+    "(extends: + tasks.*). Convert the file with: python -m "
+    "figaroh.utils.config_migration --input <legacy.yaml> --output "
+    "<unified.yaml>. See docs/source/concepts/configuration.md."
+)
 
-    Accepts either one flat task section or a whole legacy file whose tasks
-    are nested under ``calibration:`` / ``identification:`` keys.
+
+def legacy_config_error(
+    config_file: Optional[Union[str, Path]] = None,
+) -> ConfigurationError:
+    """Build the error raised when a legacy flat config is loaded.
+
+    Args:
+        config_file: Offending file, named in the message when given.
+
+    Returns:
+        An error naming the migration CLI. The caller raises it.
     """
-    sections = [
-        name
-        for name in ("calibration", "identification")
-        if isinstance(config_data.get(name), dict)
-    ]
-    if task_type == "auto" and len(sections) > 1:
-        raise ConfigurationError(
-            "Both calibration and identification sections found. "
-            "Please specify task_type explicitly."
-        )
-    if task_type == "auto" and len(sections) == 1:
-        task_type = sections[0]
-    if task_type in sections:
-        config_data = config_data[task_type]
+    where = f" ({config_file})" if config_file is not None else ""
+    return ConfigurationError(f"{LEGACY_CONFIG_REMOVED_MESSAGE}{where}")
 
-    # Import existing parsers for backward compatibility
-    calibration_indicators = ["markers", "calib_level", "base_frame", "tool_frame"]
-    identification_indicators = ["robot_params", "problem_params", "processing_params"]
 
-    has_calibration = any(key in config_data for key in calibration_indicators)
-    has_identification = any(key in config_data for key in identification_indicators)
+def require_unified_config(config_file: Union[str, Path]) -> None:
+    """Raise unless ``config_file`` is an existing unified-format config.
 
-    # Auto-detect if needed
-    if task_type == "auto":
-        if has_calibration and not has_identification:
-            task_type = "calibration"
-        elif has_identification and not has_calibration:
-            task_type = "identification"
-        elif has_calibration and has_identification:
-            # Both sections present, need explicit task type
-            raise ConfigurationError(
-                "Both calibration and identification sections found. "
-                "Please specify task_type explicitly."
-            )
-        else:
-            raise ConfigurationError(
-                "Cannot determine task type from legacy configuration"
-            )
-
-    if task_type == "calibration" and has_calibration:
-        from ..calibration.calibration_tools import (
-            get_param_from_yaml as legacy_cal_parser,
-        )
-
-        return legacy_cal_parser(robot, config_data)
-    elif task_type == "identification" and has_identification:
-        from ..identification.identification_tools import (
-            get_param_from_yaml as legacy_id_parser,
-        )
-
-        return legacy_id_parser(robot, config_data)
-    else:
-        raise ConfigurationError(
-            f"Cannot parse legacy format for task type: {task_type}. "
-            f"Required sections not found in configuration."
-        )
+    Raises:
+        FileNotFoundError: The file does not exist.
+        ConfigurationError: The file is a legacy flat config (names the
+            migration CLI).
+    """
+    if not Path(config_file).exists():
+        raise FileNotFoundError(f"Configuration file not found: {config_file}")
+    if not is_unified_config(config_file):
+        raise legacy_config_error(config_file)
 
 
 def is_unified_config(config_file: Union[str, Path]) -> bool:
@@ -753,34 +734,3 @@ def is_unified_config(config_file: Union[str, Path]) -> bool:
     except Exception as e:
         logger.warning(f"Error checking config format for {config_file}: {e}")
         return False
-
-
-# Legacy compatibility functions with deprecation warnings
-def get_calibration_param_from_yaml(
-    robot, calib_data: Dict[str, Any]
-) -> Dict[str, Any]:
-    """Legacy function for calibration parameter parsing - DEPRECATED."""
-    import warnings
-
-    warnings.warn(
-        "get_calibration_param_from_yaml is deprecated. "
-        "Use get_param_from_yaml with task_type='calibration'",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    return get_param_from_yaml(robot, calib_data, "calibration")
-
-
-def get_identification_param_from_yaml(
-    robot, identif_data: Dict[str, Any]
-) -> Dict[str, Any]:
-    """Legacy function for identification parameter parsing - DEPRECATED."""
-    import warnings
-
-    warnings.warn(
-        "get_identification_param_from_yaml is deprecated. "
-        "Use get_param_from_yaml with task_type='identification'",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    return get_param_from_yaml(robot, identif_data, "identification")

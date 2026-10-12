@@ -1,8 +1,8 @@
 # Configuration System
 
 FIGAROH uses a flexible YAML-based configuration system that supports both
-a modern unified format (with template inheritance) and a legacy flat
-format. Every robot example in
+the unified format (with template inheritance). The legacy flat format was
+removed in 1.0; see [Legacy format](#legacy-format-removed-in-10). Every robot example in
 [figaroh-examples](https://github.com/thanhndv212/figaroh-examples) ships a
 config under `examples/<robot>/config/`; this page explains the format
 those files follow.
@@ -41,9 +41,18 @@ identification:
     cutoff_frequency: 100.0
 ```
 
-## Legacy format support
+## Legacy format (removed in 1.0)
 
-Existing configurations continue to work without modification:
+Configs in the old flat layout, such as the one below, no longer load: they
+raise an error that names the migration command. Convert them once with
+
+```bash
+python -m figaroh.utils.config_migration --input legacy_config.yaml \
+    --output unified_config.yaml
+```
+
+(see [Migrating from legacy to unified format](config_parameters.md#migrating-from-legacy-to-unified-format)).
+The migration tool still reads this layout:
 
 ```yaml
 # legacy_config.yaml

@@ -31,12 +31,12 @@ reports what's currently available in your environment.
 
 ## Configuration
 
-### Should I use the unified format or the legacy format?
+### What happened to the legacy flat format?
 
-Use the [unified format](../concepts/configuration.md) for anything new —
+It was removed in 1.0; use the [unified format](../concepts/configuration.md) —
 it supports `extends:` template inheritance, so a robot config only states
-what's actually robot-specific. The legacy flat format still works and
-existing configs don't need migrating, but new examples in
+what's actually robot-specific. Loading an old flat config raises an error naming the converter,
+`python -m figaroh.utils.config_migration`. The examples in
 [figaroh-examples](https://github.com/thanhndv212/figaroh-examples) all use
 the unified format.
 

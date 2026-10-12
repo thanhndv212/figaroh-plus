@@ -22,8 +22,6 @@ framework for robot kinematic calibration.
 """
 
 import numpy as np
-import yaml
-from yaml.loader import SafeLoader
 from os.path import abspath
 import matplotlib.pyplot as plt
 import logging
@@ -34,7 +32,6 @@ from typing import Optional, List, Dict, Any, Tuple
 
 # FIGAROH imports
 from figaroh.calibration.calibration_tools import (
-    get_param_from_yaml,
     unified_to_legacy_config,
     calculate_base_kinematics_regressor,
     add_base_name,
@@ -51,7 +48,7 @@ from figaroh.calibration.parameter import BASE_TPL, EE_TPL
 from figaroh.utils.config_parser import (
     UnifiedConfigParser,
     create_task_config,
-    is_unified_config,
+    require_unified_config,
 )
 import pinocchio as pin
 
@@ -324,7 +321,10 @@ class BaseCalibration(ABC):
 
         Side Effects:
             - Updates calibration parameters through optimization
-            - Sets self.STATUS to "CALIBRATED" on successful completion
+            - Sets self.STATUS to "CALIBRATED" when the solver converged
+              and to "FAILED" when it did not (the fit stage is then
+              ``failed`` and the export paths refuse, see
+              :meth:`require_exportable`)
             - May display plots if self.calib_config["PLOT"] is True
 
         See Also:
@@ -437,42 +437,28 @@ class BaseCalibration(ABC):
     def load_param(self, config_file: str, setting_type: str = "calibration"):
         """Load calibration parameters from YAML configuration file.
 
-        This method supports both legacy YAML format and the new unified
-        configuration format. It automatically detects the format type
-        and applies the appropriate parser.
+        Only the unified configuration format is supported; a legacy flat
+        config raises an error naming ``figaroh.utils.config_migration``.
 
         Args:
-            config_file (str): Path to configuration file (legacy or unified)
+            config_file (str): Path to a unified configuration file
             setting_type (str): Configuration section to load
         """
         self._config_file_path = config_file
         try:
             logger.info(f"Loading config from {config_file}")
 
-            # Check if this is a unified configuration format
-            if is_unified_config(config_file):
-                logger.info("Detected unified configuration format")
-                # Use unified parser
-                parser = UnifiedConfigParser(config_file)
-                unified_config = parser.parse()
-                unified_calib_config = create_task_config(
-                    self.robot, unified_config, setting_type
-                )
-                # Convert unified format to legacy calib_config format
-                self.calib_config = unified_to_legacy_config(
-                    self.robot, unified_calib_config
-                )
-            else:
-                logger.info("Detected legacy configuration format")
-                # Use legacy format parsing
-                with open(config_file, "r") as f:
-                    config = yaml.load(f, Loader=SafeLoader)
-
-                if setting_type not in config:
-                    raise KeyError(f"Setting type '{setting_type}' not found in config")
-
-                calib_data = config[setting_type]
-                self.calib_config = get_param_from_yaml(self.robot, calib_data)
+            # The legacy flat format was removed in 1.0
+            require_unified_config(config_file)
+            parser = UnifiedConfigParser(config_file)
+            unified_config = parser.parse()
+            unified_calib_config = create_task_config(
+                self.robot, unified_config, setting_type
+            )
+            # Convert unified format to the calib_config dict
+            self.calib_config = unified_to_legacy_config(
+                self.robot, unified_calib_config
+            )
 
         except FileNotFoundError:
             raise CalibrationError(f"Configuration file not found: {config_file}")
@@ -1248,12 +1234,14 @@ class BaseCalibration(ABC):
             result = least_squares(
                 self._objective, current_var, method=method, max_nfev=1000
             )
+            PEE_est = self.get_pose_from_measure(result.x)
+            residuals = self._compute_logmap_residuals(self.PEE_measured, PEE_est)
             if not result.success:
+                # returned, not raised: solve() records the fit stage failed
+                # and the export paths refuse it (figaroh-plus#182)
                 logger.warning(f"Optimization failed at fit {iteration + 1}")
                 break
 
-            PEE_est = self.get_pose_from_measure(result.x)
-            residuals = self._compute_logmap_residuals(self.PEE_measured, PEE_est)
             errors = self._sample_position_errors(residuals)
             if outlier_threshold is None or errors is None:
                 break
@@ -1715,8 +1703,8 @@ class BaseCalibration(ABC):
             logger.warning(f"ResultsManager not available: {e}")
             self.results_manager = None
 
-        # Update status
-        self.STATUS = "CALIBRATED"
+        # Update status: the solver outcome, as the fit stage records it
+        self.STATUS = "CALIBRATED" if getattr(result, "success", True) else "FAILED"
 
     def solve_optimisation(
         self,
@@ -1947,8 +1935,53 @@ class BaseCalibration(ABC):
             for i, name in enumerate(names)
         }
 
+    def require_exportable(self, allow_failed_fit: bool = False) -> None:
+        """Refuse to export a calibration whose ``fit`` stage ``failed``.
+
+        The gateway of every calibration export (:meth:`joint_corrections`,
+        hence the URDF export, and ``export_geometric_calibration_yaml``).
+        A failed fit records stage ``export`` as failed and raises
+        :class:`CalibrationError`. ``allow_failed_fit=True`` is the explicit
+        override for a diagnostic export: it logs a warning, records stage
+        ``export`` as ``fallback`` and notes the override in the run
+        provenance. A successful fit is unaffected.
+        """
+        from figaroh.tools.stages import record_stage
+
+        fit = next(
+            (s for s in getattr(self, "stages", None) or [] if s.stage == "fit"), None
+        )
+        if fit is None or fit.status != "failed":
+            return
+        reason = f"the fit failed ({fit.reason or 'solver did not converge'})"
+        if allow_failed_fit:
+            logger.warning(
+                "Exporting from a failed fit (allow_failed_fit=True): %s", reason
+            )
+            record_stage(
+                self,
+                "export",
+                "fallback",
+                f"exported from a failed fit, diagnostic only: {reason}",
+            )
+            prov = getattr(self, "_run_provenance", None)
+            if isinstance(prov, dict):
+                prov["export_override"] = {
+                    "allow_failed_fit": True,
+                    "fit_reason": fit.reason,
+                }
+            return
+        record_stage(self, "export", "failed", reason)
+        raise CalibrationError(
+            f"export failed: {reason}; nothing to export. Pass "
+            f"allow_failed_fit=True for a diagnostic export only."
+        )
+
     def joint_corrections(
-        self, lift: bool = True, drop_unsupported: bool = False
+        self,
+        lift: bool = True,
+        drop_unsupported: bool = False,
+        allow_failed_fit: bool = False,
     ) -> Dict[str, float]:
         """Joint parameter values to write into a URDF (``export_urdf``).
 
@@ -1968,14 +2001,18 @@ class BaseCalibration(ABC):
                 carry (elastic ``k_*``, contact planes, ...). By default
                 they raise, because the reloaded model would then not
                 reproduce the calibration.
+            allow_failed_fit: export although the solver failed, for
+                diagnosis only; see :meth:`require_exportable`.
 
         Raises:
-            CalibrationError: if the fit has parameters that are neither
+            CalibrationError: if the ``fit`` stage ``failed`` (stage
+                ``export`` is recorded as failed), or if the fit has parameters that are neither
                 frames nor kinematic joint corrections, and
                 ``drop_unsupported`` is False.
         """
         from figaroh.tools.urdf_exporter import is_kinematic_correction
 
+        self.require_exportable(allow_failed_fit)
         if lift:
             values = {n: v["value"] for n, v in self.redistribute_parameters().items()}
         else:
@@ -2042,7 +2079,8 @@ class BaseCalibration(ABC):
         with separate subplots for each marker when multiple markers are used.
 
         Prerequisites:
-            - Calibration must be completed (STATUS == "CALIBRATED")
+            - Calibration must have run (STATUS "CALIBRATED", or "FAILED" to
+              inspect a fit that did not converge)
             - Error analysis must be computed (self._PEE_dist available)
 
         Side Effects:
@@ -2057,7 +2095,7 @@ class BaseCalibration(ABC):
             plot_3d_poses: 3D visualization of pose comparisons
             calc_stddev: Error statistics computation
         """
-        if self.STATUS != "CALIBRATED":
+        if self.STATUS == "NOT CALIBRATED":
             raise CalibrationError("Calibration not performed yet")
 
         fig1, ax1 = plt.subplots(self.calib_config["NbMarkers"], 1)
@@ -2087,7 +2125,7 @@ class BaseCalibration(ABC):
         Args:
             INCLUDE_UNCALIB (bool): Whether to include uncalibrated poses
         """
-        if self.STATUS != "CALIBRATED":
+        if self.STATUS == "NOT CALIBRATED":
             raise CalibrationError("Calibration not performed yet")
 
         fig2 = plt.figure()

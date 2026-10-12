@@ -61,6 +61,12 @@ _AXIS_SUFFIX = ["dx", "dy", "dz", "droll", "dpitch", "dyaw"]
 _JOINT_SUFFIX = "_joint"
 
 
+__all__ = [
+    "build_geometric_calibration",
+    "export_geometric_calibration_yaml",
+]
+
+
 def _urdf_origin(model, joint: str) -> pin.SE3:
     """The joint's URDF ``<origin>``, recovered from a Pinocchio model.
 
@@ -179,6 +185,7 @@ def build_geometric_calibration(
     *,
     min_sigma: Optional[float] = None,
     nominal_urdf: Optional[str] = None,
+    allow_failed_fit: bool = False,
 ) -> Dict[str, Dict[str, Dict[str, float]]]:
     """Build a PAL ``robot_state_publisher.geometric_calibration`` dict
     from a solved ``BaseCalibration`` instance's redistributed parameters.
@@ -207,14 +214,22 @@ def build_geometric_calibration(
             (figaroh-plus#123). Without it they are recovered from
             ``calibrator.model``, which is exact unless an origin's rpy is
             at or near pitch = +-pi/2 or has |pitch| > pi/2.
+        allow_failed_fit: export although the ``fit`` stage ``failed``,
+            for diagnosis only (warned and recorded; see
+            ``BaseCalibration.require_exportable``).
 
     Returns:
         ``{"robot_state_publisher": {"geometric_calibration": {key: value}}}``
 
     Raises:
-        CalibrationError: Propagated from ``redistribute_parameters()`` if
-            ``solve()``/``create_param_list()`` haven't run.
+        CalibrationError: The ``fit`` stage ``failed`` (``export`` is
+            recorded as failed), or propagated from
+            ``redistribute_parameters()`` if ``solve()``/
+            ``create_param_list()`` haven't run.
     """
+    require = getattr(calibrator, "require_exportable", None)
+    if require is not None:
+        require(allow_failed_fit)
     redistributed = calibrator.redistribute_parameters()
 
     corrections: Dict[str, np.ndarray] = {}
@@ -264,6 +279,7 @@ def export_geometric_calibration_yaml(
     min_sigma: Optional[float] = None,
     header_comment: Optional[str] = None,
     nominal_urdf: Optional[str] = None,
+    allow_failed_fit: bool = False,
 ) -> str:
     """:func:`build_geometric_calibration` + write as YAML, PAL deploy-ready.
 
@@ -279,12 +295,16 @@ def export_geometric_calibration_yaml(
         header_comment: Optional single-line comment written above the
             YAML document (e.g. source data file, sample count, RMSE), for
             provenance.
+        allow_failed_fit: See :func:`build_geometric_calibration`.
 
     Returns:
         ``output_path``, unchanged, for chaining.
     """
     data = build_geometric_calibration(
-        calibrator, min_sigma=min_sigma, nominal_urdf=nominal_urdf
+        calibrator,
+        min_sigma=min_sigma,
+        nominal_urdf=nominal_urdf,
+        allow_failed_fit=allow_failed_fit,
     )
     with open(output_path, "w") as f:
         if header_comment:

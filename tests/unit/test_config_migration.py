@@ -99,6 +99,14 @@ class TestLegacyCalibrationToUnified:
         assert task["data"]["number_of_samples"] == 42
         assert "eye_hand" not in task
 
+    def test_removed_regularization_migrates_to_zero(self, caplog):
+        """coeff_regularize is an error in 1.0; the migrated config stays loadable."""
+        with caplog.at_level("WARNING"):
+            unified = legacy_calibration_to_unified(LEGACY_CALIB_BASIC)
+        params = unified["tasks"]["calibration"]["parameters"]
+        assert params["regularization_coefficient"] == 0.0
+        assert "coeff_regularize" in caplog.text
+
     def test_eye_hand_fields(self):
         legacy = dict(LEGACY_CALIB_BASIC, base_to_ref_frame="link1", ref_frame="link1")
         unified = legacy_calibration_to_unified(legacy)

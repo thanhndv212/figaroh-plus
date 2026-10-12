@@ -120,13 +120,19 @@ Every run can also write:
 - a JSON verdict with the scope, per-stage status and each check
   (`export_verification_report()`).
 
-## What's new in 0.7
+## What's new in 1.0
 
-- Choose which identification stage is reported and exported with
-  `select_stage`, and export the result with `BaseIdentification.export_urdf`.
-- Fit and score only the joints listed in `torque_fit_joints`.
-- Base-parameter selection is reproducible across macOS, Linux and Pinocchio
-  versions.
+- A declared public API with a stability policy: the
+  [Public API and stability](https://thanhndv212.github.io/figaroh-plus/api/stability/)
+  page lists what is supported, what is experimental and what is internal.
+  Deprecated names now warn for at least one minor release and are removed
+  only in a major release.
+- Features deprecated before 1.0 are removed, including the legacy flat config
+  format. Convert old files once with
+  `python -m figaroh.utils.config_migration --input old.yaml --output new.yaml`.
+- Calibration refuses to export a fit whose solver failed, as identification
+  already did. Pass `allow_failed_fit=True` to export one for diagnosis.
+- Python 3.10 to 3.14 are supported; 3.8 and 3.9 users stay on 0.7.x.
 
 The full list, including fixes and behaviour changes, is in the
 [CHANGELOG](https://github.com/thanhndv212/figaroh-plus/blob/main/CHANGELOG.md).
@@ -135,7 +141,7 @@ The full list, including fixes and behaviour changes, is in the
 
 | | Tested |
 |---|---|
-| Python | 3.12 |
+| Python | 3.10, 3.12 and 3.14 (3.11 and 3.13 are supported but not tested) |
 | Pinocchio | 3.7 (with ndcurves 2.0.0.1) and 4.1 (with ndcurves 2.3.0) |
 | OS | Linux (CI), macOS (maintainer). Windows is not tested. |
 

@@ -517,6 +517,11 @@ _COMPARE_DRIVER_SCRIPT = """
 """
 
 
+__all__ = [
+    "generate_compare_page",
+]
+
+
 def generate_compare_page(
     output_path: Optional[str] = None, title: Optional[str] = None
 ) -> str:

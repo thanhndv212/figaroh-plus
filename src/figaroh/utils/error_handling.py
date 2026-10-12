@@ -18,6 +18,27 @@ F = TypeVar("F", bound=Callable[..., Any])
 
 
 # Custom Exception Classes
+__all__ = [
+    "FigarohExampleError",
+    "RobotInitializationError",
+    "ConfigurationError",
+    "DataProcessingError",
+    "CalibrationError",
+    "IdentificationError",
+    "ValidationError",
+    "validate_robot_config",
+    "validate_trajectory_data",
+    "validate_numeric_range",
+    "validate_robot_initialization",
+    "validate_input_data",
+    "handle_calibration_errors",
+    "handle_identification_errors",
+    "safe_execute",
+    "setup_example_logging",
+    "ErrorContext",
+]
+
+
 class FigarohExampleError(Exception):
     """Base exception for FIGAROH examples."""
 

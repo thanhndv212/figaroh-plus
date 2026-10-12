@@ -17,6 +17,9 @@ subpackage:
 | [Utils](utils.md) | Config parser, cubic spline, results manager, error handling, legacy-to-unified config migration |
 | [Visualisation](visualisation.md) | Plotting and viser-based visualization helpers |
 
+The supported names, experimental areas and the deprecation policy are on
+[Public API and stability](stability.md).
+
 New to the library? Start with [Concepts](../concepts/architecture.md) for
 the architectural picture these modules fit into, or the
 [Tutorials](../tutorials/index.md) for a task-driven walkthrough.

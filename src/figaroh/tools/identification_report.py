@@ -54,6 +54,11 @@ CONDITION_MODERATE_THRESHOLD = 100.0
 LOW_CORRELATION_WARN = 0.9
 
 
+__all__ = [
+    "generate_identification_report",
+]
+
+
 def _condition_label(cond_num: float) -> str:
     if math.isnan(cond_num):
         return "unavailable"

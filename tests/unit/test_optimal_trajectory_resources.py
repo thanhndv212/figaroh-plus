@@ -16,7 +16,7 @@ from scipy import linalg as scipy_linalg
 
 from figaroh.optimal.base_optimal_trajectory import BaseTrajectoryIPOPTProblem
 from figaroh.tools import qrdecomposition
-from figaroh.tools.qrdecomposition import QR_pivoting, QRDecomposer, get_baseIndex
+from figaroh.tools.qrdecomposition import QRDecomposer, get_baseIndex
 from figaroh.utils.cubic_spline import calc_torque
 
 
@@ -61,7 +61,7 @@ def test_pivoted_qr_never_builds_full_q(qr_modes):
     tau = W @ np.arange(1.0, 8.0)
 
     get_baseIndex(W, params)
-    QR_pivoting(tau, W, params)
+    QRDecomposer().decompose_with_pivoting(tau, W, params)
     QRDecomposer().decompose(W, params, tau=tau, method="pivoting")
     QRDecomposer().get_base_mapping_matrix_pivoting(W, params)
 

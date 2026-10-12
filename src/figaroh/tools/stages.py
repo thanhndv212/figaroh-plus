@@ -31,6 +31,13 @@ STATUSES = ("ok", "failed", "fallback", "not_run")
 SCHEMA_VERSION = 1
 
 
+__all__ = [
+    "StageResult",
+    "record_stage",
+    "stages_as_dicts",
+]
+
+
 @dataclass
 class StageResult:
     stage: str

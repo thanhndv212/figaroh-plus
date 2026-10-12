@@ -171,6 +171,15 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 
+__all__ = [
+    "IPOPTConfig",
+    "BaseOptimizationProblem",
+    "RobotIPOPTSolver",
+    "TrajectoryOptimizationProblem",
+    "create_trajectory_solver",
+]
+
+
 @dataclass
 class IPOPTConfig:
     """

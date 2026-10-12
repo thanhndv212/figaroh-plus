@@ -122,6 +122,64 @@ For an urgent released-code bug, branch `fix/<issue>-<slug>` from `main`, target
 `main`, validate and make a patch release, then back-merge into `devel`.
 For normal fixes, use `devel` and the next planned release.
 
+### Release candidate procedure (1.0.0)
+
+The 1.0.0 soak uses release candidates `v1.0.0rc1`, `v1.0.0rc2`, and so on.
+
+> **Waived for 1.0.0.** On 2026-10-12 the maintainer released 1.0.0 directly
+> through the release sequence above, without a candidate (#192). The
+> evidence of step 3 was still recorded on the release pair. The procedure is
+> kept for a future major release.
+Steps 1–4 of the release sequence above apply unchanged to each candidate;
+the steps below add only what is specific to the RC.
+
+1. **Freeze `devel`.** Announce the freeze on the release tracker issue. From
+   then on only fixes for soak blockers land on `devel`, each as a focused PR.
+2. **Open the release PR into `main`.** Set the version to `1.0.0rc1` in
+   `pyproject.toml` and `src/figaroh/__init__.py`, add the dated changelog
+   section, and update the README as in release sequence step 2. Merge
+   `devel` → `main` with a merge commit, then tag `v1.0.0rc1` on that merge
+   commit.
+3. **Collect evidence on one core/examples pair.** Record both exact commit
+   SHAs in the release PR and tracker issue, then record command, environment,
+   and pass/fail/skip counts for each item:
+   - core `python -m pytest -q -rs`;
+   - core hosted CI green on the tagged commit, and examples CI green on both
+     Pinocchio profiles (3.7.0 and 4.1.0) against that core revision;
+   - examples `MPLBACKEND=Agg python validate.py` against that core revision;
+   - core `python -m build`, then `twine check dist/*`, then install of the
+     wheel into a clean environment (not the editable `figaroh-dev` install)
+     and an import check;
+   - `python -m mkdocs build` from the repository root.
+4. **Build once and publish back to back.** Build the sdist and wheel once from
+   the `v1.0.0rc1` tag. The maintainer runs `twine upload` personally; upload
+   the same files to PyPI and immediately attach them to the GitHub pre-release:
+   ```bash
+   gh release create v1.0.0rc1 --prerelease --target <full 40-character commit SHA> dist/*
+   ```
+   Use the full commit SHA for `--target`, not a branch or short SHA. Do not
+   rebuild between the two uploads.
+5. **Verify checksums.** Compare the sha256 of the PyPI files with the sha256
+   of the GitHub assets (`gh release download v1.0.0rc1`) and with the local
+   `dist/` files. All three must match before the RC is announced.
+6. **Pin examples to the RC.** During the RC, the figaroh-examples dependency
+   pin (`requirements.txt`, README compatibility row) is
+   `figaroh>=1.0.0rc1,<1.1`, merged to that repository's `main` through its
+   own PR.
+7. **Soak with fixes only.** Only soak-blocking fixes land on frozen `devel`.
+   Each fix is released as the next candidate (`v1.0.0rc2`, …) and repeats
+   step 3 in full and steps 4–5 for the new tag.
+8. **End the soak** when both conditions hold: no new blocking issue has been
+   opened for the period the maintainer sets for this RC (`<N days>`, recorded
+   on the tracker issue), and the examples CI passes against the RC installed
+   from PyPI.
+9. **Release 1.0.0.** Repeat the release sequence for version `1.0.0`
+   (steps 1–3, same build-once and checksum rules, without `--prerelease`)
+   and tag `v1.0.0`. Tag the paired figaroh-examples revision `v1.0.0`. The
+   existing `>=1.0.0rc1,<1.1` pin already admits 1.0.0, so no pin change is
+   needed unless the maintainer decides otherwise. Finish with the back-merge
+   in release sequence step 4.
+
 ## Definition of done
 
 - Acceptance criteria are met with evidence, including regression coverage.

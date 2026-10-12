@@ -1,21 +1,25 @@
-"""Deprecation warning tests for the legacy config parsers.
+"""Removed in 1.0: the legacy flat config format and its deprecated parsers.
 
-Both figaroh.calibration.config.get_param_from_yaml and
-figaroh.identification.config.get_param_from_yaml are the single funnel
-every legacy-format caller goes through (BaseCalibration/BaseIdentification's
-load_param, figaroh.utils.config_parser's legacy branch, and custom scripts
-that call them directly) -- so warning here covers every caller.
+Loading a legacy flat config must raise an error naming the migration CLI
+(``python -m figaroh.utils.config_migration``); the deprecated entry points
+are gone.
 """
 
 import pytest
+import yaml
 
 try:
     import pinocchio as pin
 except ImportError:
     pytest.skip("Pinocchio not available", allow_module_level=True)
 
-from figaroh.calibration.config import get_param_from_yaml as calib_get_param
-from figaroh.identification.config import get_param_from_yaml as identif_get_param
+import figaroh.calibration.config as calib_config_mod
+import figaroh.identification.config as identif_config_mod
+import figaroh.utils.config_parser as config_parser
+from figaroh.utils.config_parser import get_param_from_yaml, require_unified_config
+from figaroh.utils.error_handling import ConfigurationError
+
+CLI = "python -m figaroh.utils.config_migration"
 
 
 class _Robot:
@@ -36,7 +40,7 @@ LEGACY_CALIB = {
     "free_flyer": False,
     "base_pose": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
     "tip_pose": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-    "coeff_regularize": 0.01,
+    "coeff_regularize": 0.0,
     "outlier_eps": 0.05,
     "data_file": "data/calib.csv",
     "sample_configs_file": None,
@@ -83,22 +87,49 @@ LEGACY_IDENTIF = {
 }
 
 
-def test_legacy_calibration_parser_warns(two_joint_urdf):
-    robot = _Robot(pin.buildModelFromUrdf(two_joint_urdf))
-    with pytest.warns(DeprecationWarning, match="Legacy flat config format"):
-        calib_get_param(robot, LEGACY_CALIB)
+@pytest.mark.parametrize(
+    "module, name",
+    [
+        (calib_config_mod, "get_param_from_yaml"),
+        (calib_config_mod, "get_param_from_yaml_legacy"),
+        (calib_config_mod, "get_param_from_yaml_with_warning"),
+        (identif_config_mod, "get_param_from_yaml"),
+        (identif_config_mod, "get_param_from_yaml_legacy"),
+        (identif_config_mod, "get_param_from_yaml_with_warning"),
+        (config_parser, "get_calibration_param_from_yaml"),
+        (config_parser, "get_identification_param_from_yaml"),
+    ],
+)
+def test_deprecated_entry_points_are_removed(module, name):
+    assert not hasattr(module, name)
 
 
-def test_legacy_identification_parser_warns(two_joint_urdf):
+@pytest.mark.parametrize("task", ["calibration", "identification"])
+def test_legacy_dict_raises_with_migration_hint(two_joint_urdf, task):
     robot = _Robot(pin.buildModelFromUrdf(two_joint_urdf))
-    with pytest.warns(DeprecationWarning, match="Legacy flat config format"):
-        identif_get_param(robot, LEGACY_IDENTIF)
+    legacy = LEGACY_CALIB if task == "calibration" else LEGACY_IDENTIF
+    for data in (legacy, {task: legacy}):
+        with pytest.raises(ConfigurationError, match="config_migration") as exc:
+            get_param_from_yaml(robot, data, task)
+        assert CLI in str(exc.value)
+
+
+def test_legacy_file_raises_with_migration_hint(tmp_path):
+    path = tmp_path / "legacy.yaml"
+    path.write_text(yaml.safe_dump({"calibration": LEGACY_CALIB}))
+    with pytest.raises(ConfigurationError, match="legacy.yaml") as exc:
+        require_unified_config(path)
+    assert CLI in str(exc.value)
+
+
+def test_missing_file_is_not_reported_as_legacy(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        require_unified_config(tmp_path / "absent.yaml")
 
 
 def test_unified_calibration_does_not_warn(two_joint_urdf, recwarn):
-    """No false positive: parsing an already-unified task config (the
-    dict shape unified_to_legacy_config expects) must not trigger the
-    legacy-format deprecation warning."""
+    """Parsing an already-unified task config (the dict shape
+    unified_to_legacy_config expects) raises no deprecation warning."""
     from figaroh.calibration.config import unified_to_legacy_config
 
     robot = _Robot(pin.buildModelFromUrdf(two_joint_urdf))

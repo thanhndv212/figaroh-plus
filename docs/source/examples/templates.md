@@ -69,7 +69,7 @@ print(config["robot"]["name"])
 ## See also
 
 - [Configuration System](../concepts/configuration.md) — the conceptual
-  model (unified vs. legacy format, `extends:` merge rules).
+  model (the unified format, `extends:` merge rules).
 - `examples/create_example.sh` — scaffolds a new robot folder (config
   included) from the TIAGo layout.
 - Real-world configs extending these templates:
