@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-12
+
+Documentation and housekeeping release. No library code changed; the
+figaroh-examples `v1.0.0` tag remains the validated pair.
+
+### Added
+
+- FIGAROH logo: the mark and a README banner in `docs/source/assets/`, used by
+  the README, the docs home page and the docs site header and favicon.
+  `docs/development/make_logo.py` regenerates them (#198).
+
+### Changed
+
+- Copyright notices updated to 2026 for the maintainer and corrected to
+  2022–2024 for CNRS/Toward SAS; `CONTRIBUTING.md` release step 2 now checks
+  that the notices include the release year (#197).
+- `ROADMAP.md` records the 1.0.0 release (#196).
+
 ## [1.0.0] - 2026-10-12
 
 First stable release. Roadmap milestone M1 (trustworthy
