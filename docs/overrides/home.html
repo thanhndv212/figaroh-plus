@@ -1,0 +1,203 @@
+{#-
+  Landing page. Selected by `template: home.html` in docs/source/index.md.
+  Sections sit in the `tabs` block so their backgrounds can run full width;
+  the main column is collapsed on this page (it still holds the mobile drawer).
+-#}
+{% extends "main.html" %}
+
+{% block tabs %}
+{{ super() }}
+<style>
+  /* The main column only keeps the (hidden on desktop) sidebars, which hold
+     the mobile drawer; collapse it so the footer follows the landing. */
+  .md-main { flex-grow: 0; }
+  .md-main__inner { margin-top: 0; height: 0; }
+</style>
+<div class="md-typeset fg-landing">
+
+  <section class="fg-hero">
+    <div class="fg-wrap fg-hero__grid">
+      <div class="fg-hero__copy">
+        <span class="fg-kicker">Robot calibration · Dynamic identification · Experiment design</span>
+        <h1>Turn your URDF and sensor logs into a model you can trust.</h1>
+        <p class="fg-hero__sub">FIGAROH fits joint offsets, frame transforms, masses, inertias and friction from your measurements, plans the experiments that make them identifiable, and gives every result a pass/fail verdict.</p>
+        <div class="fg-hero__ctas">
+          <a class="fg-btn fg-btn--primary" href="{{ 'start/quickstart/' | url }}">Get started in 5 minutes →</a>
+          <a class="fg-btn" href="{{ 'agents/' | url }}">Use with an AI agent</a>
+        </div>
+        <button type="button" class="fg-install" data-fg-copy="pip install figaroh" aria-label="Copy install command">
+          <span><span class="fg-install__prompt">$</span> pip install figaroh</span>
+          <span class="fg-install__label" data-fg-copy-label>Copy</span>
+        </button>
+      </div>
+
+      <div class="fg-codecard">
+        <div class="fg-codecard__tabs" role="tablist" aria-label="Example">
+          <button type="button" role="tab" aria-selected="true">Terminal</button>
+          <button type="button" role="tab" aria-selected="false">Python</button>
+        </div>
+        <div class="fg-codecard__panel" role="tabpanel">
+<pre>$ git clone https://github.com/thanhndv212/figaroh-examples
+$ cd figaroh-examples/examples/ur10
+$ python calibration.py --calibrate-only --no-plot</pre>
+        </div>
+        <div class="fg-codecard__panel" role="tabpanel" hidden>
+<pre>from figaroh.tools.robot import load_robot
+from examples.ur10.utils.ur10_tools import UR10Calibration
+
+robot = load_robot("urdf/ur10_robot.urdf", load_by_urdf=True)
+cal = UR10Calibration(robot, "config/ur10_unified_config.yaml")
+cal.initialize()
+cal.solve(html_report=True)
+print(cal.verify(scope="execution").passed)</pre>
+        </div>
+        <div class="fg-codecard__foot"><span>→ HTML report</span><span>→ verification JSON</span><span>→ updated URDF</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="fg-section fg-section--tint">
+    <div class="fg-wrap">
+      <h2>What do you want to do?</h2>
+      <p class="fg-section__lead">Pick a goal. You get what you need, what you get back, and the command that runs it.</p>
+
+      <div class="fg-tasks">
+        <button type="button" class="fg-task" data-task="cal" aria-pressed="true">
+          <span class="fg-task__kicker">Geometry</span>
+          <span class="fg-task__title">Calibrate a robot</span>
+          <span class="fg-task__blurb">Correct joint offsets and frame transforms from measured poses.</span>
+        </button>
+        <button type="button" class="fg-task" data-task="ident" aria-pressed="false">
+          <span class="fg-task__kicker">Dynamics</span>
+          <span class="fg-task__title">Identify dynamics</span>
+          <span class="fg-task__blurb">Fit masses, inertias, friction and actuator inertia from motion and torque logs.</span>
+        </button>
+        <button type="button" class="fg-task" data-task="opt" aria-pressed="false">
+          <span class="fg-task__kicker">Before you record</span>
+          <span class="fg-task__title">Design the experiment</span>
+          <span class="fg-task__blurb">Generate postures and exciting trajectories that make the parameters identifiable.</span>
+        </button>
+        <button type="button" class="fg-task" data-task="robot" aria-pressed="false">
+          <span class="fg-task__kicker">Your hardware</span>
+          <span class="fg-task__title">Add my own robot</span>
+          <span class="fg-task__blurb">Scaffold a robot folder with URDF, config and a tools subclass.</span>
+        </button>
+      </div>
+
+      <div class="fg-detail" data-task="cal">
+        <div><h3>You'll need</h3><ul>
+          <li class="fg-need">A URDF of your robot</li>
+          <li class="fg-need">Measured marker poses (mocap, laser tracker) with joint positions, as CSV</li>
+          <li class="fg-need">A YAML config that extends a robot template</li></ul></div>
+        <div><h3>You'll get</h3><ul>
+          <li class="fg-get">Identified offsets and transforms, with uncertainty for prior-based methods</li>
+          <li class="fg-get">An updated URDF</li>
+          <li class="fg-get">HTML report and a pass/fail verdict</li></ul></div>
+        <div><h3>Run it</h3>
+<pre>cd figaroh-examples/examples/ur10
+python calibration.py --calibrate-only --no-plot</pre>
+          <a href="{{ 'workflows/calibration/' | url }}">Step-by-step calibration guide →</a></div>
+      </div>
+      <div class="fg-detail" data-task="ident" hidden>
+        <div><h3>You'll need</h3><ul>
+          <li class="fg-need">A URDF of your robot</li>
+          <li class="fg-need">Joint positions and torques from an exciting motion, as CSV</li>
+          <li class="fg-need">A separate recording for validation</li></ul></div>
+        <div><h3>You'll get</h3><ul>
+          <li class="fg-get">Base parameters, optionally a physically consistent full set</li>
+          <li class="fg-get">Held-out torque prediction per joint</li>
+          <li class="fg-get">HTML report and a pass/fail verdict</li></ul></div>
+        <div><h3>Run it</h3>
+<pre>cd figaroh-examples/examples/ur10
+python identification.py</pre>
+          <a href="{{ 'workflows/identification/' | url }}">Step-by-step identification guide →</a></div>
+      </div>
+      <div class="fg-detail" data-task="opt" hidden>
+        <div><h3>You'll need</h3><ul>
+          <li class="fg-need">A URDF with joint limits</li>
+          <li class="fg-need">The calibration or identification config you plan to use</li>
+          <li class="fg-need">cyipopt for trajectories (conda only)</li></ul></div>
+        <div><h3>You'll get</h3><ul>
+          <li class="fg-get">A small set of well-conditioned postures</li>
+          <li class="fg-get">Exciting trajectories within limits</li>
+          <li class="fg-get">Conditioning compared with your current design</li></ul></div>
+        <div><h3>Run it</h3>
+<pre>python optimal_config.py      # calibration
+python optimal_trajectory.py  # identification</pre>
+          <a href="{{ 'tutorials/optimal_design/' | url }}">Experiment design guide →</a></div>
+      </div>
+      <div class="fg-detail" data-task="robot" hidden>
+        <div><h3>You'll need</h3><ul>
+          <li class="fg-need">Your URDF and its description package</li>
+          <li class="fg-need">The joints you will move</li>
+          <li class="fg-need">Which task you want first</li></ul></div>
+        <div><h3>You'll get</h3><ul>
+          <li class="fg-get">examples/&lt;robot&gt;/ with config, data/ and utils/</li>
+          <li class="fg-get">A config that extends a shared template</li>
+          <li class="fg-get">A starting point that runs end to end</li></ul></div>
+        <div><h3>Run it</h3>
+<pre>cd figaroh-examples/examples
+./create_example.sh my_robot</pre>
+          <a href="{{ 'workflows/new-robot/' | url }}">Add-your-robot guide →</a></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="fg-section">
+    <div class="fg-wrap">
+      <h2>One workflow, five steps</h2>
+      <p class="fg-section__lead">Calibration and identification follow the same path. Each step explains the choices you make and how you know it worked.</p>
+      <ol class="fg-steps">
+        <li><span class="fg-steps__n">01</span><span class="fg-steps__t">Plan</span><span class="fg-steps__d">State the goal, list your data, choose what to estimate.</span></li>
+        <li><span class="fg-steps__n">02</span><span class="fg-steps__t">Design</span><span class="fg-steps__d">Generate postures or trajectories that excite the parameters.</span></li>
+        <li><span class="fg-steps__n">03</span><span class="fg-steps__t">Configure</span><span class="fg-steps__d">Write a YAML config that extends a shared template.</span></li>
+        <li><span class="fg-steps__n">04</span><span class="fg-steps__t">Fit</span><span class="fg-steps__d">Run the solver. Read conditioning and residuals.</span></li>
+        <li><span class="fg-steps__n">05</span><span class="fg-steps__t">Verify</span><span class="fg-steps__d">Check held-out data. Get a report and a verdict.</span></li>
+      </ol>
+      <p style="margin-top:1.4rem"><a class="fg-btn" href="{{ 'workflows/' | url }}">Open the workflow guides →</a></p>
+    </div>
+  </section>
+
+  <section class="fg-section fg-section--navy">
+    <div class="fg-wrap fg-agent">
+      <div class="fg-agent__copy">
+        <span class="fg-agent__kicker">Built for coding agents</span>
+        <h2>Ask your agent. It already knows the workflow.</h2>
+        <p class="fg-section__lead">FIGAROH ships agent skills. They check your environment, pick the right config template, run the task and read the report back to you, in Claude Code or any agent that reads Markdown instructions.</p>
+        <p><a class="fg-btn fg-btn--gold" href="{{ 'agents/' | url }}">Set up your agent →</a></p>
+      </div>
+      <div class="fg-agent__chat" aria-label="Example agent session">
+        <div class="fg-agent__you"><span>you</span><span>Calibrate my UR10 with the mocap poses in data/poses.csv and tell me if it passes.</span></div>
+        <div class="fg-agent__rule"></div>
+        <div class="fg-agent__log">
+          <span><b>skill</b> figaroh-start → routes to calibration</span>
+          <span><b>skill</b> figaroh-setup-env → doctor.sh checks the environment</span>
+          <span><b>skill</b> figaroh-setup-calibration → config from template</span>
+          <span><b>run</b>&nbsp;&nbsp; python calibration.py</span>
+          <span><b>read</b>&nbsp; verification JSON → verdict</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="fg-section">
+    <div class="fg-wrap">
+      <div class="fg-section__head">
+        <div>
+          <h2>Start from a robot that already works</h2>
+          <p class="fg-section__lead">Every example ships its URDF, config, data and expected results.</p>
+        </div>
+        <a class="fg-btn" href="https://github.com/thanhndv212/figaroh-examples">Browse figaroh-examples →</a>
+      </div>
+      <div class="fg-robots">
+        <a class="fg-robot" href="{{ 'examples/ur10/' | url }}"><span class="fg-robot__name">UR10</span><span class="fg-robot__kind">Fixed-base arm</span><span class="fg-robot__does">Calibration · Identification · Design</span></a>
+        <a class="fg-robot" href="{{ 'examples/tiago/' | url }}"><span class="fg-robot__name">TIAGo</span><span class="fg-robot__kind">Mobile manipulator</span><span class="fg-robot__does">Calibration · Identification · Design</span></a>
+        <a class="fg-robot" href="{{ 'examples/talos/' | url }}"><span class="fg-robot__name">TALOS</span><span class="fg-robot__kind">Humanoid</span><span class="fg-robot__does">Calibration</span></a>
+        <a class="fg-robot" href="{{ 'examples/staubli_tx40/' | url }}"><span class="fg-robot__name">Stäubli TX40</span><span class="fg-robot__kind">Fixed-base arm</span><span class="fg-robot__does">Identification</span></a>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block container %}{% endblock %}

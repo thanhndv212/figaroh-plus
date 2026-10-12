@@ -17,6 +17,15 @@ serial manipulators and tree-structured systems such as humanoids and mobile
 manipulators, and covers the whole loop: design the experiment, fit the
 parameters, validate them on held-out data, and export an updated model.
 
+<p align="center">
+  <a href="https://thanhndv212.github.io/figaroh-plus/"><img src="https://raw.githubusercontent.com/thanhndv212/figaroh-plus/main/docs/source/assets/landing-desktop.png" alt="FIGAROH documentation landing page" width="820"/></a>
+</p>
+
+Start with the [documentation](https://thanhndv212.github.io/figaroh-plus/):
+step-by-step [workflow guides](https://thanhndv212.github.io/figaroh-plus/workflows/),
+a [quickstart](https://thanhndv212.github.io/figaroh-plus/start/quickstart/) and
+setup for [AI coding agents](https://thanhndv212.github.io/figaroh-plus/agents/).
+
 ## Install
 
 ```bash

@@ -18,6 +18,7 @@ repos:
     -   id: check-ast
     -   id: check-merge-conflict
     -   id: check-yaml
+        args: [--unsafe]
     -   id: debug-statements
     -   id: trailing-whitespace
 -   repo: https://github.com/psf/black

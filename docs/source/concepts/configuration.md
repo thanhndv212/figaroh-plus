@@ -13,33 +13,37 @@ The modern unified format provides better organization and template
 inheritance:
 
 ```yaml
-# modern_config.yaml
-inherit_from: "templates/base_robot.yaml"
+# config/ur10_unified_config.yaml (abridged)
+extends: "../../templates/manipulator_robot.yaml"
 
 robot:
-  name: "tiago"
-  urdf_path: "urdf/tiago.urdf"
+  name: "ur10"
+  properties:
+    joints:
+      active_joints: ["shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint",
+                      "wrist_1_joint", "wrist_2_joint", "wrist_3_joint"]
 
-calibration:
-  method: "full_params"
-  sensor_type: "camera"
+tasks:
+  calibration:
+    parameters:
+      calibration_level: "full_params"
+    kinematics:
+      tool_frame: "wrist_3_link"
+    measurements:
+      markers:
+        - reference_joint: "wrist_3_joint"
+          measurable_dof: [true, true, true, true, true, true]
+    data:
+      source_file: "data/calibration.csv"
 
-  markers:
-    - ref_joint: "wrist_3_joint"
-      position: [0.1, 0.0, 0.05]
-      measure: [true, true, true, true, true, true]
-
-identification:
-  mechanics:
-    friction_coefficients:
-      viscous: [0.01, 0.02, 0.015]
-      static: [0.001, 0.002, 0.0015]
-    actuator_inertias: [0.1, 0.15, 0.12]
-
-  signal_processing:
-    sampling_frequency: 5000.0
-    cutoff_frequency: 100.0
+  identification:
+    signal_processing:
+      sampling_frequency: 100.0
+      cutoff_frequency: 10.0
 ```
+
+`extends:` takes a path relative to the config file. The child overrides
+only the keys it sets; everything else comes from the template chain.
 
 ## Legacy format (removed in 1.0)
 
