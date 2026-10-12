@@ -112,6 +112,15 @@ Release sequence:
    platforms, links) against the code and CI, and remove anything stale. Do
    the same for the figaroh-examples README (compatibility row, robot table,
    `requirements.txt` pin) in a paired examples PR.
+   Also check that the maintainer's copyright notices, both the source file
+   headers and `LICENSE`, end at the release year. In both repositories this
+   command must print nothing:
+   ```bash
+   git grep -nE "Copyright (\[2021-[0-9]{4}\] Thanh Nguyen|[0-9-]+ Thanh D\. V\. Nguyen)" \
+     | grep -v "$(date +%Y)"
+   ```
+   Third-party notices (CNRS/Toward SAS, PAL Robotics fixtures) keep their
+   own years.
 3. Open `devel` → `main` and merge with a **merge commit**, preserving shared
    history. Tag/release publishing is a separate maintainer action after the
    release checks; this repository's docs workflow does not publish to PyPI.
