@@ -90,6 +90,19 @@ def _predict(model, calib):
 N_SEEDS = 30
 
 
+def _raw_joint_diff(a, b):
+    """Largest difference of the unlifted joint corrections of two fits.
+
+    Representatives can differ only in base or tip rows, which leave the
+    joint corrections equal; such a pair does not exercise the lift.
+    """
+    ra, rb = a.joint_corrections(lift=False), b.joint_corrections(lift=False)
+    return max(
+        (abs(ra.get(n, 0.0) - rb.get(n, 0.0)) for n in set(ra) | set(rb)),
+        default=0.0,
+    )
+
+
 @pytest.fixture(scope="module")
 def two_fits(tiago_model):
     """Two seeds that pick different representatives for the same model.
@@ -107,13 +120,17 @@ def two_fits(tiago_model):
         rows = set(calib.calib_config["base_mapping_row_names_full"])
         for other, other_pred in zip(fits, preds):
             other_rows = set(other.calib_config["base_mapping_row_names_full"])
-            if np.abs(pred - other_pred).max() < 1e-8 and rows != other_rows:
+            if (
+                np.abs(pred - other_pred).max() < 1e-8
+                and rows != other_rows
+                and _raw_joint_diff(other, calib) > 1e-6
+            ):
                 return other, calib
         fits.append(calib)
         preds.append(pred)
     pytest.skip(
         f"no two seeds in 0-{N_SEEDS - 1} gave the same model with different "
-        "representatives on this platform (QR tie-breaks, figaroh-plus#113)"
+        "joint representatives on this platform (QR tie-breaks, figaroh-plus#113)"
     )
 
 
