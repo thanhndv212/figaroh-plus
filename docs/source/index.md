@@ -1,5 +1,7 @@
 # Welcome to FIGAROH's documentation!
 
+![FIGAROH](assets/figaroh-banner.svg)
+
 **FIGAROH** (Free dynamics Identification and Geometrical cAlibration of
 RObot and Human) is a comprehensive Python toolbox for robot calibration
 and identification.
