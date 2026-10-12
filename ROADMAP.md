@@ -92,7 +92,7 @@ W4, D1, D2, C1, D4, S1, D7), the #97 duplicate closure accepted as completed
 held-out error reported, not gated; S-2 TIAGo effort scale and arm_1 constant
 still open; S-3 lumped TIAGo export; S-4 PAL not run on hardware; S-5 TALOS
 contact as a regression consumer). The one code gap, G-1 (a failed calibration
-fit could be exported), is fixed before the release candidate: core #182 by PR
+fit could be exported), is fixed before 1.0.0: core #182 by PR
 #187 (`9dba6da` on `devel`) and examples #124 by PR #127 (`20b6377` on `main`).
 Per-package evidence is in the
 [implementation status](docs/source/further_reading/plans.md#implementation-status).
@@ -195,7 +195,7 @@ and a core/examples revision pair, and those records are its evidence.
 |---|---|
 | **0.MINOR** (before 1.0) | One roadmap outcome or gate side is accepted |
 | **0.x.PATCH** | Wrong-result or crash fixes with no behaviour change, from a `main` hotfix branch, then merged back into `devel` |
-| **1.0.0** | M1 accepted (both reference workflows), public API declared, deprecated features removed; a release candidate first |
+| **1.0.0** | M1 accepted (both reference workflows), public API declared, deprecated features removed; a release candidate first (waived by the maintainer for 1.0.0 on 2026-10-12, #192) |
 | **After 1.0** | M2 additions are minor releases; removing a deprecated feature is a major release |
 
 A deprecated feature warns for at least one minor release before it is removed;
@@ -207,7 +207,7 @@ feature in the minor release after its go decision and never holds a release.
 | 0.5.0 | M0 engineering baseline | W1, W2, W4, D1 | Released 2026-10-03 |
 | 0.6.0 | Calibration reference workflow (M1.1–M1.4, calibration side) and shared foundations | D2, C1–C4, W3, S1; D6 inertial export and D3 fixture fixes, both accepted | Released 2026-10-07 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.6.0), [tracker #146](https://github.com/thanhndv212/figaroh-plus/issues/146)); examples tag `v0.6.0` |
 | 0.7.0 | Dynamic reference workflow (M1.2–M1.4, dynamic side) | D4, D7 (D5 no-go; LC1 #155 not included) | Released 2026-10-11 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.7.0), [tracker #177](https://github.com/thanhndv212/figaroh-plus/issues/177)); examples tag `v0.7.0` |
-| 1.0.0 | M1 accepted | M1 review ✅ (2026-10-12, [#181](https://github.com/thanhndv212/figaroh-plus/issues/181)); public API (#184), deprecation removals (#185, examples #125), G-1 (#182) and RC procedure (#186) done | Release candidate `1.0.0rc1` in preparation ([tracker #192](https://github.com/thanhndv212/figaroh-plus/issues/192)); `devel` frozen 2026-10-12 |
+| 1.0.0 | M1 accepted | M1 review ✅ (2026-10-12, [#181](https://github.com/thanhndv212/figaroh-plus/issues/181)); public API (#184), deprecation removals (#185, examples #125), G-1 (#182) and RC procedure (#186) done Release in preparation without a release candidate (maintainer decision; [tracker #192](https://github.com/thanhndv212/figaroh-plus/issues/192)); `devel` frozen 2026-10-12 |
 | 1.1, 1.2 | M2 composable calibration and identification | S2, S3, S4 | Later |
 | 1.x or 2.0 | M3 backend parity | B1 | Later; 2.0 only if the backend API breaks |
 

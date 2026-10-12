@@ -7,12 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0rc1] - 2026-10-12
+## [1.0.0] - 2026-10-12
 
-First release candidate for **1.0.0**. Roadmap milestone M1 (trustworthy
+First stable release. Roadmap milestone M1 (trustworthy
 physical-model workflows) is accepted: both reference workflows, calibration
 and dynamic identification, are recorded on core `779e830` + examples
-`b167298` (#181). This candidate declares the public API and its stability
+`b167298` (#181). This release declares the public API and its stability
 policy, removes the features deprecated before 1.0, and makes calibration
 refuse to export a failed fit.
 
