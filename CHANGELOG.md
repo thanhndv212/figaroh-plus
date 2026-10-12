@@ -37,6 +37,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   CI adds Python 3.10 (lowest) and 3.14 (highest) test jobs next to the
   Python 3.12 jobs. Migration: Python 3.8 and 3.9 users stay on 0.7.x.
 - The package classifier is `Development Status :: 5 - Production/Stable`.
+- `RobotIdentificationSystem.identify_parameters` also reads a `data_dir`
+  stored under `tasks.identification` of a unified config, since the flat
+  `identification:` section it was read from is gone.
+
+### Removed
+
+Features deprecated before 1.0 are removed (#185, paired examples migration
+figaroh-examples#125). Migration notes:
+
+- The legacy flat config format (deprecated since 0.4.6). Loading one through
+  `load_param`, `figaroh.utils.config_parser.get_param_from_yaml` or the
+  optimal-trajectory loader now raises a `ConfigurationError` that names
+  `python -m figaroh.utils.config_migration --input <legacy.yaml> --output
+  <unified.yaml>`; run that once per file. The migration tool still reads
+  legacy files. Also removed with the format:
+  `figaroh.calibration.config.get_param_from_yaml`,
+  `figaroh.identification.config.get_param_from_yaml`, both
+  `get_param_from_yaml_legacy`, and the `get_param_from_yaml` re-exports of
+  `calibration_tools` and `identification_tools`. Use
+  `figaroh.utils.config_parser.get_param_from_yaml` with a unified config.
+- `get_param_from_yaml_with_warning` in `figaroh.calibration.config` and
+  `figaroh.identification.config` (since 0.2.0): call
+  `figaroh.utils.config_parser.get_param_from_yaml`.
+- `figaroh.utils.config_parser.get_calibration_param_from_yaml` and
+  `get_identification_param_from_yaml` (since 0.2.0): call
+  `get_param_from_yaml(robot, data, "calibration")` or
+  `get_param_from_yaml(robot, data, "identification")`.
+- A non-zero `regularization_coefficient` / `coeff_regularize` (since 0.6.0)
+  is a `ConfigurationError`. Remove the key (zero or absent is still
+  accepted) and use `estimation.method: map`, which sets priors of physical
+  size per parameter group. `config_migration` writes 0 and warns when it
+  meets a non-zero legacy `coeff_regularize`.
 
 ### Fixed
 
