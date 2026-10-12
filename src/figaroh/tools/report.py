@@ -55,6 +55,11 @@ logger.addHandler(logging.NullHandler())
 OUTLIER_WARN_PCT = 10.0
 
 
+__all__ = [
+    "generate_calibration_report",
+]
+
+
 def _build_insights(
     eval_: Dict[str, Any],
     n_samples: int,

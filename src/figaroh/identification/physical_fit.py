@@ -70,6 +70,19 @@ from figaroh.tools.qrdecomposition import QRDecomposer
 # ---------------------------------------------------------------------------
 
 
+__all__ = [
+    "FixedExtras",
+    "PhysicalPolicy",
+    "ComparatorProblem",
+    "SolveRecord",
+    "build_problem",
+    "solve_exact_reconstruction",
+    "solve_direct_effort_fit",
+    "solve_per_link_projection",
+    "diagnose_exact",
+]
+
+
 @dataclass(frozen=True)
 class FixedExtras:
     """Parameters held fixed (e.g. friction); their effort is subtracted.

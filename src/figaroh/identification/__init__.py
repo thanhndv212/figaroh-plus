@@ -50,7 +50,15 @@ from .cad_constraints import (  # noqa: F401
     build_cad_constraints_from_config,
 )
 
+# Modules the examples build on; each declares its own ``__all__``.
+from . import identification_tools  # noqa: F401
+from . import parameter  # noqa: F401
+from . import physical_fit  # noqa: F401
+
 __all__ = [
+    "identification_tools",
+    "parameter",
+    "physical_fit",
     "BaseIdentification",
     "BaseResult",
     "ReconstructionResult",

@@ -61,6 +61,12 @@ _AXIS_SUFFIX = ["dx", "dy", "dz", "droll", "dpitch", "dyaw"]
 _JOINT_SUFFIX = "_joint"
 
 
+__all__ = [
+    "build_geometric_calibration",
+    "export_geometric_calibration_yaml",
+]
+
+
 def _urdf_origin(model, joint: str) -> pin.SE3:
     """The joint's URDF ``<origin>``, recovered from a Pinocchio model.
 

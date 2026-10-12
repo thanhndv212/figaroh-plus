@@ -25,6 +25,13 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 
+__all__ = [
+    "add_non_adjacent_pairs",
+    "CollisionManager",
+    "CollisionWrapper",
+]
+
+
 def add_non_adjacent_pairs(model, geom_model) -> int:
     """Add a collision pair for every two geometries on non-adjacent bodies.
 

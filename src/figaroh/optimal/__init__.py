@@ -6,6 +6,13 @@ optimization for robotic systems.
 """
 
 from .base_optimal_calibration import BaseOptimalCalibration
-from .base_optimal_trajectory import BaseOptimalTrajectory
+from .base_optimal_trajectory import (
+    BaseOptimalTrajectory,
+    BaseTrajectoryIPOPTProblem,
+)
 
-__all__ = ["BaseOptimalCalibration", "BaseOptimalTrajectory"]
+__all__ = [
+    "BaseOptimalCalibration",
+    "BaseOptimalTrajectory",
+    "BaseTrajectoryIPOPTProblem",
+]

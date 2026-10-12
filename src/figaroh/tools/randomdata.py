@@ -17,6 +17,13 @@ import pinocchio as pin
 import numpy as np
 
 
+__all__ = [
+    "generate_waypoints",
+    "generate_waypoints_fext",
+    "get_torque_rand",
+]
+
+
 def generate_waypoints(N, robot, mlow, mhigh):
     """Generate random values for joint positions, velocities, accelerations.
 

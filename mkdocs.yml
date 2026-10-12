@@ -91,6 +91,7 @@ nav:
       - Config Templates: examples/templates.md
   - API Reference:
       - Overview: api/index.md
+      - Public API and stability: api/stability.md
       - Calibration: api/calibration.md
       - Identification: api/identification.md
       - Optimal: api/optimal.md

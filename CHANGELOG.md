@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Public API and stability policy for 1.0 (#184): a new "Public API and
+  stability" docs page (`docs/source/api/stability.md`) lists the supported
+  entry points per subpackage, the experimental areas (MuJoCo backend and
+  `from_mjcf`, `integration`, `visualisation`, `measurements`, log-Cholesky
+  LC1), the internal modules, the deprecated features and the deprecation
+  policy: a public name warns with `DeprecationWarning` for at least one minor
+  release, is removed only in a major release after 1.0, and has a migration
+  note here.
+- The `__all__` lists now match that page, and a unit test keeps them in sync.
+  `import figaroh` also imports `data`, `backends` and `integration` (about
+  0.1 s more, mostly the optional `mujoco` import when it is installed).
+  `calibration.__all__` adds `calibration_tools`, `data_loader` and
+  `parameter`; `identification.__all__` adds `identification_tools`,
+  `parameter` and `physical_fit`; `tools.__all__` adds `run_archive`,
+  `stages` and `solver`; `utils.__all__` adds `config_parser` and
+  `error_handling`; `optimal.__all__` adds `BaseTrajectoryIPOPTProblem`;
+  `measurements.__all__` is `["Measurement"]`. The public tools, config and
+  error-handling modules gained their own `__all__`. Nothing was renamed or
+  removed; names outside an `__all__` stay importable but are not covered.
+
+### Changed
+
+- `requires-python` is now `>=3.10`, following Pinocchio (conda-forge builds
+  3.8 and 4.1 for Python 3.10-3.14; `pin` 4.1 ships wheels for cp310-cp314).
+  The Python 3.8 and 3.9 classifiers are dropped and 3.13 and 3.14 are added.
+  CI adds Python 3.10 (lowest) and 3.14 (highest) test jobs next to the
+  Python 3.12 jobs. Migration: Python 3.8 and 3.9 users stay on 0.7.x.
+- The package classifier is `Development Status :: 5 - Production/Stable`.
+
 ### Fixed
 
 - A calibration whose solver failed can no longer be exported silently

@@ -238,6 +238,12 @@ for prefix, style, cat, idx in _METROLOGY_REGISTRY:
         _FRAME_PREFIX_NOSEP_MAP.append((prefix, entry))
 
 
+__all__ = [
+    "export_urdf",
+    "frame_settings_doc",
+]
+
+
 def _parse_param_name(name: str) -> Optional[tuple]:
     """Parse a joint-level parameter name.
 
