@@ -19,7 +19,7 @@ import pinocchio as pin
 from typing import Dict, List, Tuple
 
 from figaroh.optimal.config import COLLISION_DEFAULTS
-from figaroh.tools.robotcollisions import CollisionWrapper, add_non_adjacent_pairs
+from figaroh.tools.robotcollisions import CollisionManager, add_non_adjacent_pairs
 from figaroh.utils.cubic_spline import calc_torque
 
 # Setup logger for this module
@@ -76,7 +76,7 @@ class TrajectoryConstraintManager:
                 "Trajectory collision is not enforced: the robot has no "
                 "collision geometry pairs"
             )
-        self.collision_wrapper = CollisionWrapper(robot=robot, viz=None)
+        self.collision_wrapper = CollisionManager(robot=robot, viz=None)
         self.n_pairs = len(geom.collisionPairs) if geom is not None else 0
         if self.n_pairs:
             # screening data (margin = screen) and checking data (margin)

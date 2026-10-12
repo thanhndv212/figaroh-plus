@@ -29,6 +29,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   error-handling modules gained their own `__all__`. Nothing was renamed or
   removed; names outside an `__all__` stay importable but are not covered.
 
+### Deprecated
+
+Each warns with `DeprecationWarning` from 1.0 and will be removed in 2.0
+(#185):
+
+- `figaroh.tools.qrdecomposition.QR_pivoting` and `double_QR`: use
+  `QRDecomposer.decompose_with_pivoting` / `double_decomposition`.
+- `figaroh.tools.robotcollisions.CollisionWrapper`: use `CollisionManager`.
+- The module-level wrappers in `figaroh.tools.robotvisualization` (`place`,
+  `display_COM`, `display_axes`, `rotation_matrix_from_vectors`,
+  `display_force`, `display_bounding_boxes`, `display_joints`): use the
+  `RobotVisualizer` methods.
+- `plot_calibration_results`, `plot_identification_results` and
+  `save_results` in `figaroh.utils.results_manager`: use `ResultsManager`.
+- The flat `physical_consistency_enabled` identification config key: use
+  `physical_consistency.enabled`.
+
 ### Changed
 
 - `requires-python` is now `>=3.10`, following Pinocchio (conda-forge builds

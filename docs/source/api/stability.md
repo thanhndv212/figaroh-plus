@@ -149,8 +149,24 @@ may change or disappear in any release.
 
 ## Deprecated
 
-Nothing is deprecated at 1.0. Names that still work but are scheduled for
-removal are listed here, with the version that removes them.
+These names still work but emit a `DeprecationWarning`. Each is deprecated
+in 1.0 and scheduled for removal in 2.0.
+
+- `figaroh.tools.qrdecomposition.QR_pivoting` and `double_QR`: use
+  `QRDecomposer.decompose_with_pivoting` and
+  `QRDecomposer.double_decomposition`;
+- `figaroh.tools.robotcollisions.CollisionWrapper` (warns on construction):
+  use `CollisionManager`;
+- the module-level wrappers in `figaroh.tools.robotvisualization` (`place`,
+  `display_COM`, `display_axes`, `rotation_matrix_from_vectors`,
+  `display_force`, `display_bounding_boxes`, `display_joints`): use the
+  `RobotVisualizer` methods;
+- the convenience wrappers `plot_calibration_results`,
+  `plot_identification_results` and `save_results` in
+  `figaroh.utils.results_manager`: use the `ResultsManager` methods of the
+  same names;
+- the flat `physical_consistency_enabled` identification config key: use
+  `physical_consistency.enabled`.
 
 ## Removed in 1.0
 

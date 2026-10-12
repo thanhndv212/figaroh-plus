@@ -146,7 +146,8 @@ class TestBackwardCompatibility:
         params = ["p1", "p2", "p3", "p4", "p5"]
 
         try:
-            W_b, base_params = QR_pivoting(tau, W, params)
+            with pytest.warns(DeprecationWarning, match="QR_pivoting"):
+                W_b, base_params = QR_pivoting(tau, W, params)
 
             assert isinstance(W_b, np.ndarray)
             assert isinstance(base_params, dict)
@@ -162,12 +163,14 @@ class TestBackwardCompatibility:
         params = ["p1", "p2", "p3", "p4", "p5"]
 
         try:
-            result = double_QR(tau, W, params)
+            with pytest.warns(DeprecationWarning, match="double_QR"):
+                result = double_QR(tau, W, params)
             assert len(result) == 4  # W_b, base_parameters, params_base, phi_b
 
             # Test with standard parameters
             params_std = {p: np.random.randn() for p in params}
-            result_with_std = double_QR(tau, W, params, params_std)
+            with pytest.warns(DeprecationWarning, match="double_QR"):
+                result_with_std = double_QR(tau, W, params, params_std)
             assert len(result_with_std) == 5  # Additional phi_std
         except Exception as e:
             pytest.skip(f"Legacy double_QR not implemented: {e}")
@@ -190,7 +193,8 @@ class TestBackwardCompatibility:
 
         # Test with legacy function
         try:
-            W_b_legacy, base_params_legacy = QR_pivoting(tau, W, params)
+            with pytest.warns(DeprecationWarning, match="QR_pivoting"):
+                W_b_legacy, base_params_legacy = QR_pivoting(tau, W, params)
 
             # Check that results are approximately equal
             np.testing.assert_allclose(W_b_new, W_b_legacy, rtol=1e-10)

@@ -15,6 +15,7 @@
 
 """Enhanced robot visualization utilities with better performance."""
 
+import warnings
 from typing import List, Optional
 import numpy as np
 import pinocchio as pin
@@ -238,9 +239,18 @@ class RobotVisualizer:
         return np.eye(3) + vx + vx @ vx * ((1 - c) / (s**2))
 
 
-# Backward compatibility functions
+# Deprecated module-level wrappers (removal in 2.0)
+def _warn_deprecated(name: str, replacement: str) -> None:
+    warnings.warn(
+        f"{name} is deprecated in 1.0, will be removed in 2.0; " f"use {replacement}",
+        DeprecationWarning,
+        stacklevel=3,
+    )
+
+
 def place(viz, name: str, M: pin.SE3) -> None:
     """Legacy placement function."""
+    _warn_deprecated("place", "viz.viewer.gui.applyConfiguration directly")
     viz.viewer.gui.applyConfiguration(name, pin.SE3ToXYZQUATtuple(M))
 
 
@@ -248,24 +258,28 @@ def display_COM(
     model: pin.Model, data: pin.Data, viz, q: np.ndarray, IDX: list
 ) -> None:
     """Legacy COM display function."""
+    _warn_deprecated("display_COM", "RobotVisualizer.display_com")
     visualizer = RobotVisualizer(model, data, viz)
     visualizer.display_com(q, IDX)
 
 
 def display_axes(model: pin.Model, data: pin.Data, viz, q: np.ndarray) -> None:
     """Legacy axes display function."""
+    _warn_deprecated("display_axes", "RobotVisualizer.display_axes")
     visualizer = RobotVisualizer(model, data, viz)
     visualizer.display_axes(q)
 
 
 def rotation_matrix_from_vectors(vec1: np.ndarray, vec2: np.ndarray) -> np.ndarray:
     """Legacy rotation function."""
+    _warn_deprecated("rotation_matrix_from_vectors", "RobotVisualizer")
     visualizer = RobotVisualizer(None, None, None)
     return visualizer._rotation_from_vectors(vec1, vec2)
 
 
 def display_force(viz, phi: pin.Force, M_se3: pin.SE3) -> None:
     """Legacy force display function."""
+    _warn_deprecated("display_force", "RobotVisualizer.display_force")
     visualizer = RobotVisualizer(None, None, viz)
     visualizer.display_force(phi, M_se3)
 
@@ -280,11 +294,13 @@ def display_bounding_boxes(
     IDX: list,
 ) -> None:
     """Legacy bounding box display function."""
+    _warn_deprecated("display_bounding_boxes", "RobotVisualizer.display_bounding_boxes")
     visualizer = RobotVisualizer(model, data, viz)
     visualizer.display_bounding_boxes(q, COM_min, COM_max, IDX)
 
 
 def display_joints(viz, model: pin.Model, data: pin.Data, q: np.ndarray) -> None:
     """Legacy joint display function."""
+    _warn_deprecated("display_joints", "RobotVisualizer.display_joints")
     visualizer = RobotVisualizer(model, data, viz)
     visualizer.display_joints(q)

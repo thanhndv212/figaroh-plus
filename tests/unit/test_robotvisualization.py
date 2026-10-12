@@ -305,7 +305,8 @@ class TestBackwardCompatibilityFunctions:
         ) as mock_convert:
             mock_convert.return_value = [0, 0, 0, 0, 0, 0, 1]
 
-            place(mock_viz, "test_object", mock_se3)
+            with pytest.warns(DeprecationWarning, match="place"):
+                place(mock_viz, "test_object", mock_se3)
 
             mock_viz.viewer.gui.applyConfiguration.assert_called_once_with(
                 "test_object", [0, 0, 0, 0, 0, 0, 1]
@@ -323,7 +324,8 @@ class TestBackwardCompatibilityFunctions:
         mock_visualizer = Mock()
         mock_visualizer_class.return_value = mock_visualizer
 
-        display_COM(mock_model, mock_data, mock_viz, q, idx)
+        with pytest.warns(DeprecationWarning, match="display_COM"):
+            display_COM(mock_model, mock_data, mock_viz, q, idx)
 
         mock_visualizer_class.assert_called_once_with(mock_model, mock_data, mock_viz)
         mock_visualizer.display_com.assert_called_once_with(q, idx)
@@ -339,7 +341,8 @@ class TestBackwardCompatibilityFunctions:
         mock_visualizer = Mock()
         mock_visualizer_class.return_value = mock_visualizer
 
-        display_axes(mock_model, mock_data, mock_viz, q)
+        with pytest.warns(DeprecationWarning, match="display_axes"):
+            display_axes(mock_model, mock_data, mock_viz, q)
 
         mock_visualizer_class.assert_called_once_with(mock_model, mock_data, mock_viz)
         mock_visualizer.display_axes.assert_called_once_with(q)
@@ -354,7 +357,8 @@ class TestBackwardCompatibilityFunctions:
         mock_visualizer._rotation_from_vectors.return_value = np.eye(3)
         mock_visualizer_class.return_value = mock_visualizer
 
-        result = rotation_matrix_from_vectors(vec1, vec2)
+        with pytest.warns(DeprecationWarning, match="rotation_matrix_from_vectors"):
+            result = rotation_matrix_from_vectors(vec1, vec2)
         np.testing.assert_allclose(result, np.eye(3))
 
         mock_visualizer_class.assert_called_once_with(None, None, None)
@@ -370,7 +374,8 @@ class TestBackwardCompatibilityFunctions:
         mock_visualizer = Mock()
         mock_visualizer_class.return_value = mock_visualizer
 
-        display_force(mock_viz, mock_force, mock_se3)
+        with pytest.warns(DeprecationWarning, match="display_force"):
+            display_force(mock_viz, mock_force, mock_se3)
 
         mock_visualizer_class.assert_called_once_with(None, None, mock_viz)
         mock_visualizer.display_force.assert_called_once_with(mock_force, mock_se3)
@@ -389,9 +394,10 @@ class TestBackwardCompatibilityFunctions:
         mock_visualizer = Mock()
         mock_visualizer_class.return_value = mock_visualizer
 
-        display_bounding_boxes(
-            mock_viz, mock_model, mock_data, q, com_min, com_max, idx
-        )
+        with pytest.warns(DeprecationWarning, match="display_bounding_boxes"):
+            display_bounding_boxes(
+                mock_viz, mock_model, mock_data, q, com_min, com_max, idx
+            )
 
         mock_visualizer_class.assert_called_once_with(mock_model, mock_data, mock_viz)
         mock_visualizer.display_bounding_boxes.assert_called_once_with(
@@ -409,7 +415,8 @@ class TestBackwardCompatibilityFunctions:
         mock_visualizer = Mock()
         mock_visualizer_class.return_value = mock_visualizer
 
-        display_joints(mock_viz, mock_model, mock_data, q)
+        with pytest.warns(DeprecationWarning, match="display_joints"):
+            display_joints(mock_viz, mock_model, mock_data, q)
 
         mock_visualizer_class.assert_called_once_with(mock_model, mock_data, mock_viz)
         mock_visualizer.display_joints.assert_called_once_with(q)
