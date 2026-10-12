@@ -35,7 +35,6 @@ from ..tools.qrdecomposition import (
 
 # Import configuration functions and constants from config module
 from .config import (
-    get_param_from_yaml,
     unified_to_legacy_config,
     get_sup_joints,
 )
@@ -68,7 +67,6 @@ logger.addHandler(logging.NullHandler())
 TOL_QR = 1e-8
 # Re-export for backward compatibility
 __all__ = [
-    "get_param_from_yaml",
     "unified_to_legacy_config",
     "get_sup_joints",
     "get_joint_offset",

@@ -21,7 +21,6 @@ that can be inherited by any robot type (TIAGo, UR10, MATE, etc.).
 
 import logging
 import os
-import yaml
 import numpy as np
 from abc import ABC, abstractmethod
 import dataclasses
@@ -30,13 +29,12 @@ from typing import Any, Dict, Optional
 
 # FIGAROH imports
 from figaroh.identification.identification_tools import (
-    get_param_from_yaml as get_identification_param_from_yaml,
     unified_to_legacy_identif_config,
 )
 from figaroh.utils.config_parser import (
     UnifiedConfigParser,
     create_task_config,
-    is_unified_config,
+    require_unified_config,
 )
 from figaroh.tools.regressor import (
     build_regressor_basic,
@@ -444,39 +442,28 @@ class BaseIdentification(ABC):
     def load_param(self, config_file, setting_type="identification"):
         """Load the identification parameters from the yaml file.
 
-        This method supports both legacy YAML format and the new unified
-        configuration format. It automatically detects the format type
-        and applies the appropriate parser.
+        Only the unified configuration format is supported; a legacy flat
+        config raises an error naming ``figaroh.utils.config_migration``.
 
         Args:
-            config_file (str): Path to configuration file (legacy or unified)
+            config_file (str): Path to a unified configuration file
             setting_type (str): Configuration section to load
         """
         self._config_file_path = config_file
         try:
             logger.info(f"Loading config from {config_file}")
 
-            # Check if this is a unified configuration format
-            if is_unified_config(config_file):
-                logger.info("Detected unified configuration format")
-                # Use unified parser
-                parser = UnifiedConfigParser(config_file)
-                unified_config = parser.parse()
-                unified_identif_config = create_task_config(
-                    self.robot, unified_config, setting_type
-                )
-                # Convert unified format to identif_config format
-                self.identif_config = unified_to_legacy_identif_config(
-                    self.robot, unified_identif_config
-                )
-            else:
-                logger.info("Detected legacy configuration format")
-                # Use legacy format parsing
-                with open(config_file, "r") as f:
-                    config = yaml.load(f, Loader=yaml.SafeLoader)
-                self.identif_config = get_identification_param_from_yaml(
-                    self.robot, config[setting_type]
-                )
+            # The legacy flat format was removed in 1.0
+            require_unified_config(config_file)
+            parser = UnifiedConfigParser(config_file)
+            unified_config = parser.parse()
+            unified_identif_config = create_task_config(
+                self.robot, unified_config, setting_type
+            )
+            # Convert unified format to the identif_config dict
+            self.identif_config = unified_to_legacy_identif_config(
+                self.robot, unified_identif_config
+            )
         except Exception as e:
             logger.error(f"Error loading config {config_file}: {e}")
             raise

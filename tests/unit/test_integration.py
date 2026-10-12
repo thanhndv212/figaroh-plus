@@ -6,6 +6,7 @@ import tempfile
 import os
 
 from figaroh.integration import RobotIdentificationSystem, IdentificationResult
+from figaroh.utils.config_migration import convert_legacy_to_unified
 
 # ============================================================================
 # Tests for RobotIdentificationSystem
@@ -119,6 +120,16 @@ class TestIdentificationResult:
 # ============================================================================
 
 
+def _unified(identification):
+    """Unified config for ``identification`` (legacy-shaped dict), no template."""
+    doc = convert_legacy_to_unified({"identification": identification})
+    doc.pop("extends", None)
+    doc.setdefault("robot", {})["name"] = "test_robot"
+    if "data_dir" in identification:
+        doc["tasks"]["identification"]["data_dir"] = identification["data_dir"]
+    return doc
+
+
 class TestIdentifyParameters:
     """Test identify_parameters error cases."""
 
@@ -186,9 +197,7 @@ class TestIdentifyParameters:
         """identify_parameters with data_dir but no CSV files raises error."""
         # Create a temporary directory without data files
         with tempfile.TemporaryDirectory() as tmpdir:
-            config_data = {
-                "identification": self._make_identif_config(tmpdir),
-            }
+            config_data = _unified(self._make_identif_config(tmpdir))
 
             # Write config to temp file
             with tempfile.NamedTemporaryFile(
@@ -211,7 +220,7 @@ class TestIdentifyParameters:
         # Create config without data_dir
         base_cfg = self._make_identif_config(None)
         del base_cfg["data_dir"]
-        config_data = {"identification": base_cfg}
+        config_data = _unified(base_cfg)
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             import yaml

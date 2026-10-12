@@ -14,17 +14,15 @@
 # limitations under the License.
 
 import logging
-import yaml
 from typing import Dict, Tuple, Any
 
 from figaroh.identification.identification_tools import (
-    get_param_from_yaml as get_identification_param_from_yaml,
     unified_to_legacy_identif_config,
 )
 from figaroh.utils.config_parser import (
     UnifiedConfigParser,
     create_task_config,
-    is_unified_config,
+    require_unified_config,
 )
 
 # Setup logger for this module
@@ -59,47 +57,19 @@ def load_param(robot, config_file: str) -> Tuple[Dict[str, Any], Any]:
     try:
         logger.info(f"Loading config from {config_file}")
 
-        # Check if this is a unified configuration format
-        if is_unified_config(config_file):
-            logger.info("Detected unified configuration format")
-            # Use unified parser
-            parser = UnifiedConfigParser(config_file)
-            unified_config = parser.parse()
-            unified_identif_config = create_task_config(
-                robot, unified_config, "identification"
-            )
-            # Convert unified format to identif_config format
-            identif_config = unified_to_legacy_identif_config(
-                robot, unified_identif_config
-            )
-            unified_traj_config = create_task_config(
-                robot, unified_config, "optimal_trajectory"
-            )
-            trajectory_config = create_config(unified_traj_config)
-
-        else:
-            logger.info("Detected legacy configuration format")
-            # Use legacy format parsing
-            with open(config_file, "r") as f:
-                config = yaml.load(f, Loader=yaml.SafeLoader)
-            identif_config = get_identification_param_from_yaml(
-                robot, config["identification"]
-            )
-            traj_params = config["identification"].get("trajectory_params", [{}])[0]
-
-            # Set default values if not present in config
-            trajectory_config = {
-                "n_wps": traj_params.get("n_wps", 5),
-                "freq": traj_params.get("freq", 100),
-                "t_s": traj_params.get("t_s", 2.0),
-                "soft_lim": traj_params.get("soft_lim", 0.05),
-                "max_attempts": traj_params.get("max_attempts", 1000),
-                "max_iterations": traj_params.get("max_iterations", 200),
-                "segment_attempts": traj_params.get("segment_attempts", 1),
-            }
-            trajectory_config.update(
-                {k: traj_params.get(k, v) for k, v in COLLISION_DEFAULTS.items()}
-            )
+        # The legacy flat format was removed in 1.0
+        require_unified_config(config_file)
+        parser = UnifiedConfigParser(config_file)
+        unified_config = parser.parse()
+        unified_identif_config = create_task_config(
+            robot, unified_config, "identification"
+        )
+        # Convert unified format to identif_config format
+        identif_config = unified_to_legacy_identif_config(robot, unified_identif_config)
+        unified_traj_config = create_task_config(
+            robot, unified_config, "optimal_trajectory"
+        )
+        trajectory_config = create_config(unified_traj_config)
         return trajectory_config, identif_config
 
     except FileNotFoundError:

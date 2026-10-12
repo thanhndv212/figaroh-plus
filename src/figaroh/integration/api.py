@@ -339,16 +339,19 @@ class RobotIdentificationSystem:
             try:
                 with open(config_file, "r") as f:
                     cfg = yaml.safe_load(f)
+                # unified configs nest the task sections under ``tasks:``
+                sections = cfg.get("tasks", cfg)
                 for section in ("identification", "calibration"):
-                    if section in cfg and isinstance(cfg[section], dict):
-                        data_dir = cfg[section].get("data_dir", data_dir)
+                    if section in sections and isinstance(sections[section], dict):
+                        data_dir = sections[section].get("data_dir", data_dir)
             except Exception:
                 pass
         elif data_dir is None and not isinstance(config, str):
             if isinstance(config, dict):
+                sections = config.get("tasks", config)
                 for section in ("identification", "calibration"):
-                    if section in config and isinstance(config[section], dict):
-                        data_dir = config[section].get("data_dir", data_dir)
+                    if section in sections and isinstance(sections[section], dict):
+                        data_dir = sections[section].get("data_dir", data_dir)
 
         # Create the concrete identification instance
         identification = _SimpleIdentification(

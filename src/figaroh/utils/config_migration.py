@@ -85,13 +85,23 @@ def legacy_calibration_to_unified(calib_data: Dict[str, Any]) -> Dict[str, Any]:
         for m in markers
     ]
 
+    coeff = calib_data.get("coeff_regularize", 0.0)
+    if coeff:
+        logger.warning(
+            "coeff_regularize (%s) was removed in 1.0: the migrated config "
+            "sets regularization_coefficient to 0. Use estimation.method: map "
+            "(docs/source/concepts/calibration_estimation.md).",
+            coeff,
+        )
+        coeff = 0.0
+
     calibration_task: Dict[str, Any] = {
         "enabled": True,
         "type": "kinematic_calibration",
         "parameters": {
             "calibration_level": calib_data.get("calib_level", "full_params"),
             "include_non_geometric": bool(calib_data.get("non_geom", False)),
-            "regularization_coefficient": calib_data.get("coeff_regularize", 0.0),
+            "regularization_coefficient": coeff,
             "outlier_threshold": calib_data.get("outlier_eps", 0.05),
         },
         "kinematics": {
@@ -363,6 +373,8 @@ def self_check(
         }
         for legacy_key, (recovered_key, default) in checks.items():
             expected = original.get(legacy_key, default)
+            if legacy_key == "coeff_regularize":
+                expected = 0.0  # removed in 1.0: migrated as 0
             got = recovered.get(recovered_key, default)
             if expected != got:
                 mismatches[f"calibration.{legacy_key}"] = {
