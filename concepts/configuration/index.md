@@ -1,0 +1,126 @@
+# Configuration System
+
+FIGAROH uses a flexible YAML-based configuration system that supports both the unified format (with template inheritance). The legacy flat format was removed in 1.0; see [Legacy format](#legacy-format-removed-in-10). Every robot example in [figaroh-examples](https://github.com/thanhndv212/figaroh-examples) ships a config under `examples/<robot>/config/`; this page explains the format those files follow.
+
+## Unified configuration format
+
+The modern unified format provides better organization and template inheritance:
+
+```
+# config/ur10_unified_config.yaml (abridged)
+extends: "../../templates/manipulator_robot.yaml"
+
+robot:
+  name: "ur10"
+  properties:
+    joints:
+      active_joints: ["shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint",
+                      "wrist_1_joint", "wrist_2_joint", "wrist_3_joint"]
+
+tasks:
+  calibration:
+    parameters:
+      calibration_level: "full_params"
+    kinematics:
+      tool_frame: "wrist_3_link"
+    measurements:
+      markers:
+        - reference_joint: "wrist_3_joint"
+          measurable_dof: [true, true, true, true, true, true]
+    data:
+      source_file: "data/calibration.csv"
+
+  identification:
+    signal_processing:
+      sampling_frequency: 100.0
+      cutoff_frequency: 10.0
+```
+
+`extends:` takes a path relative to the config file. The child overrides only the keys it sets; everything else comes from the template chain.
+
+## Legacy format (removed in 1.0)
+
+Configs in the old flat layout, such as the one below, no longer load: they raise an error that names the migration command. Convert them once with
+
+```
+python -m figaroh.utils.config_migration --input legacy_config.yaml \
+    --output unified_config.yaml
+```
+
+(see [Migrating from legacy to unified format](https://thanhndv212.github.io/figaroh-plus/concepts/config_parameters/#migrating-from-legacy-to-unified-format)). The migration tool still reads this layout:
+
+```
+# legacy_config.yaml
+calibration:
+  calib_level: full_params
+  markers:
+    - ref_joint: wrist_3_joint
+      measure: [True, True, True, True, True, True]
+
+identification:
+  robot_params:
+    - fv: [0.01, 0.02, 0.015]
+      fs: [0.001, 0.002, 0.0015]
+  processing_params:
+    - ts: 0.0002
+      cut_off_frequency_butterworth: 100.0
+```
+
+## Parsing a config
+
+```
+from figaroh.utils.config_parser import UnifiedConfigParser
+
+# Parse any configuration format
+parser = UnifiedConfigParser("config/robot_config.yaml")
+config = parser.parse()
+
+# Create task-specific configuration
+calib_config = parser.create_task_config(robot, config, "calibration")
+identif_config = parser.create_task_config(robot, config, "identification")
+```
+
+## Template inheritance
+
+The unified format's real power is `extends:` — a robot config file references a shared template so it only needs to specify what's actually robot-specific. Templates and real examples live in [figaroh-examples/examples/templates](https://github.com/thanhndv212/figaroh-examples/tree/main/examples/templates):
+
+| Template                 | Extends                  | For                                                                                                                              |
+| ------------------------ | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `base_robot_config.yaml` | — (root of the chain)    | Defines the full schema (`meta`, `robot`, `tasks`, `environment`, `custom`); every other template extends this                   |
+| `manipulator_robot.yaml` | `base_robot_config.yaml` | Fixed-base serial arms (UR10, Staubli TX40, KUKA) — no mobile base, wrist-mounted 6-DOF marker default                           |
+| `humanoid_robot.yaml`    | `base_robot_config.yaml` | Humanoid / mobile manipulators (TIAGo, TALOS) — coupled wrists, mobile base, head camera + F/T sensors, 1000 Hz default sampling |
+
+A robot config points at the template that matches its kinematic shape:
+
+```
+# examples/ur10/config/ur10_unified_config.yaml
+extends: "../../templates/manipulator_robot.yaml"
+
+robot:
+  name: "ur10"
+  properties:
+    joints:
+      active_joints: ["shoulder_pan_joint", "shoulder_lift_joint", "..."]
+    mechanics:
+      reduction_ratios: [50.0, 50.0, 50.0, 50.0, 50.0, 50.0]
+```
+
+`UnifiedConfigParser` resolves the chain (robot config → template → `base_robot_config.yaml`) and deep-merges it:
+
+- **Scalars** (strings, numbers, booleans): the more specific file wins.
+- **Dictionaries**: merged recursively — keys only in the template are kept, keys only in the robot config are added.
+- **Lists**: replaced entirely, not merged — a robot's `markers:` list replaces the template's, it doesn't append to it.
+
+### Creating a new robot config
+
+1. Pick the template that matches your robot: `manipulator_robot.yaml` for a fixed-base arm, `humanoid_robot.yaml` for a humanoid or mobile manipulator, `base_robot_config.yaml` directly for anything else.
+1. Point a new config at it with `extends:` and fill in only what differs (joint names, limits, friction coefficients, marker configuration).
+1. Set `tasks.<task>.enabled: true` for each task your robot supports.
+
+`examples/create_example.sh <robot_name>` in figaroh-examples scaffolds this structure for you from the TIAGo layout — see the [Examples Gallery](https://thanhndv212.github.io/figaroh-plus/examples/templates/index.md) for the full inheritance rules and worked examples.
+
+## Next steps
+
+- [Configuration Parameter Reference](https://thanhndv212.github.io/figaroh-plus/concepts/config_parameters/index.md) — what each `calibration:`/`identification:` field actually means, its units, and which pipeline step consumes it.
+- [Tutorials](https://thanhndv212.github.io/figaroh-plus/tutorials/index.md) walk through a full calibration and identification run using these configs.
+- [Examples Gallery → Config Templates](https://thanhndv212.github.io/figaroh-plus/examples/templates/index.md) has the complete override rules and best practices for template authors.

@@ -1,0 +1,72 @@
+# FIGAROH
+
+> A Python toolbox for dynamic parameter identification and geometric calibration of robots and humans.
+
+FIGAROH is a Python toolbox for geometric calibration, dynamic parameter identification and optimal experiment design of robots. Runnable robot examples live in the figaroh-examples repository. Agent skills ship in the figaroh repository under skills/.
+
+## Start
+
+- [Quickstart](https://thanhndv212.github.io/figaroh-plus/start/quickstart/index.md)
+- [Installation](https://thanhndv212.github.io/figaroh-plus/getting_started/index.md)
+
+## Workflows
+
+- [Overview](https://thanhndv212.github.io/figaroh-plus/workflows/index.md)
+- [Calibrate a robot](https://thanhndv212.github.io/figaroh-plus/workflows/calibration/index.md)
+- [Identify dynamics](https://thanhndv212.github.io/figaroh-plus/workflows/identification/index.md)
+- [Add your robot](https://thanhndv212.github.io/figaroh-plus/workflows/new-robot/index.md)
+- [Plan, fit & verify](https://thanhndv212.github.io/figaroh-plus/example_workflow/index.md)
+- [Reports & verdicts](https://thanhndv212.github.io/figaroh-plus/reporting_and_verification/index.md)
+- [Overview](https://thanhndv212.github.io/figaroh-plus/tutorials/index.md)
+- [Calibration: choosing what to estimate](https://thanhndv212.github.io/figaroh-plus/tutorials/calibration_estimation_guide/index.md)
+- [Calibration walkthrough](https://thanhndv212.github.io/figaroh-plus/tutorials/calibration_walkthrough/index.md)
+- [Identification walkthrough](https://thanhndv212.github.io/figaroh-plus/tutorials/identification_walkthrough/index.md)
+- [Experiment design](https://thanhndv212.github.io/figaroh-plus/tutorials/optimal_design/index.md)
+
+## AI agents
+
+- [Overview](https://thanhndv212.github.io/figaroh-plus/agents/index.md)
+- [Skills](https://thanhndv212.github.io/figaroh-plus/agents/skills/index.md)
+
+## Concepts
+
+- [Architecture](https://thanhndv212.github.io/figaroh-plus/concepts/architecture/index.md)
+- [Backends](https://thanhndv212.github.io/figaroh-plus/concepts/backends/index.md)
+- [Calibration estimation methods](https://thanhndv212.github.io/figaroh-plus/concepts/calibration_estimation/index.md)
+- [Config keys](https://thanhndv212.github.io/figaroh-plus/concepts/config_parameters/index.md)
+- [Configuration system](https://thanhndv212.github.io/figaroh-plus/concepts/configuration/index.md)
+- [Integration API](https://thanhndv212.github.io/figaroh-plus/concepts/integration/index.md)
+
+## Examples
+
+- [Overview](https://thanhndv212.github.io/figaroh-plus/examples/index.md)
+- [Stäubli TX40](https://thanhndv212.github.io/figaroh-plus/examples/staubli_tx40/index.md)
+- [TALOS](https://thanhndv212.github.io/figaroh-plus/examples/talos/index.md)
+- [Config templates](https://thanhndv212.github.io/figaroh-plus/examples/templates/index.md)
+- [TIAGo](https://thanhndv212.github.io/figaroh-plus/examples/tiago/index.md)
+- [UR10](https://thanhndv212.github.io/figaroh-plus/examples/ur10/index.md)
+
+## API reference
+
+- [Overview](https://thanhndv212.github.io/figaroh-plus/api/index.md)
+- [Backends](https://thanhndv212.github.io/figaroh-plus/api/backends/index.md)
+- [Calibration](https://thanhndv212.github.io/figaroh-plus/api/calibration/index.md)
+- [Data contract](https://thanhndv212.github.io/figaroh-plus/api/data/index.md)
+- [Identification](https://thanhndv212.github.io/figaroh-plus/api/identification/index.md)
+- [Integration](https://thanhndv212.github.io/figaroh-plus/api/integration/index.md)
+- [Measurements](https://thanhndv212.github.io/figaroh-plus/api/measurements/index.md)
+- [Optimal](https://thanhndv212.github.io/figaroh-plus/api/optimal/index.md)
+- [Public API and stability](https://thanhndv212.github.io/figaroh-plus/api/stability/index.md)
+- [Tools](https://thanhndv212.github.io/figaroh-plus/api/tools/index.md)
+- [Utils](https://thanhndv212.github.io/figaroh-plus/api/utils/index.md)
+- [Visualisation](https://thanhndv212.github.io/figaroh-plus/api/visualisation/index.md)
+
+## Project
+
+- [Changelog](https://thanhndv212.github.io/figaroh-plus/further_reading/changelog/index.md)
+- [Contributing](https://thanhndv212.github.io/figaroh-plus/further_reading/contributing/index.md)
+- [Design decisions](https://thanhndv212.github.io/figaroh-plus/further_reading/decisions/index.md)
+- [FAQ](https://thanhndv212.github.io/figaroh-plus/further_reading/faq/index.md)
+- [Delivery plans](https://thanhndv212.github.io/figaroh-plus/further_reading/plans/index.md)
+- [Roadmap](https://thanhndv212.github.io/figaroh-plus/further_reading/roadmap/index.md)
+

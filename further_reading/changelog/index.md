@@ -1,0 +1,708 @@
+# Changelog
+
+The canonical changelog lives at the repository root ([`CHANGELOG.md`](https://github.com/thanhndv212/figaroh-plus/blob/main/CHANGELOG.md)) so it stays next to the code it describes. This page embeds it directly so the same content is browsable as part of the docs site, without a second copy to keep in sync.
+
+## Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+### [Unreleased]
+
+### [1.0.2] - 2026-10-13
+
+Documentation release. No library code changed; the figaroh-examples `v1.0.0` tag remains the validated pair.
+
+#### Added
+
+- Documentation site redesigned around user journeys (#201): a landing page with a task picker, Start / Workflows / AI agents / Concepts / Reference / Project navigation, five-step calibration and identification guides (Plan, Design, Configure, Fit, Verify) with an example/own-robot toggle and choice cards, Quickstart and "Add your robot" pages.
+- AI agents section: agent setup, environment doctor, prompt library and skills reference; the site publishes `llms.txt` and `llms-full.txt` (`mkdocs-llmstxt`, added to the `docs` extra) and every page has a Copy as Markdown button.
+- README screenshot of the documentation landing page.
+
+#### Changed
+
+- pre-commit `check-yaml` runs with `--unsafe` so `mkdocs.yml` can use mkdocs-material `!!python/name` tags.
+
+### [1.0.1] - 2026-10-12
+
+Documentation and housekeeping release. No library code changed; the figaroh-examples `v1.0.0` tag remains the validated pair.
+
+#### Added
+
+- FIGAROH logo: the mark and a README banner in `docs/source/assets/`, used by the README, the docs home page and the docs site header and favicon. `docs/development/make_logo.py` regenerates them (#198).
+
+#### Changed
+
+- Copyright notices updated to 2026 for the maintainer and corrected to 2022–2024 for CNRS/Toward SAS; `CONTRIBUTING.md` release step 2 now checks that the notices include the release year (#197).
+- `ROADMAP.md` records the 1.0.0 release (#196).
+
+### [1.0.0] - 2026-10-12
+
+First stable release. Roadmap milestone M1 (trustworthy physical-model workflows) is accepted: both reference workflows, calibration and dynamic identification, are recorded on core `779e830` + examples `b167298` (#181). This release declares the public API and its stability policy, removes the features deprecated before 1.0, and makes calibration refuse to export a failed fit.
+
+Scope notes for 1.0:
+
+- The real-data references (TIAGo calibration and identification, UR10 calibration) are verified at **execution scope**: held-out error is reported, not gated. Gated prediction exists only on simulated or synthetic truth (UR10 dynamic truth, TIAGo calibration truth fixture).
+- The TIAGo effort scale reads 13.5 % low, outside its ±10 % diagnostic tolerance; the joint torque constants are tracked in figaroh-examples#126.
+- The TIAGo URDF export is lumped; the PAL calibration export was not run on hardware; TALOS contact calibration is a regression consumer only.
+
+Upgrading from 0.7: convert any legacy flat config once with `python -m figaroh.utils.config_migration`, drop a non-zero `regularization_coefficient`, and use Python 3.10 or newer (see Removed and Changed below).
+
+#### Added
+
+- Public API and stability policy for 1.0 (#184): a new "Public API and stability" docs page (`docs/source/api/stability.md`) lists the supported entry points per subpackage, the experimental areas (MuJoCo backend and `from_mjcf`, `integration`, `visualisation`, `measurements`, log-Cholesky LC1), the internal modules, the deprecated features and the deprecation policy: a public name warns with `DeprecationWarning` for at least one minor release, is removed only in a major release after 1.0, and has a migration note here.
+- The `__all__` lists now match that page, and a unit test keeps them in sync. `import figaroh` also imports `data`, `backends` and `integration` (about 0.1 s more, mostly the optional `mujoco` import when it is installed). `calibration.__all__` adds `calibration_tools`, `data_loader` and `parameter`; `identification.__all__` adds `identification_tools`, `parameter` and `physical_fit`; `tools.__all__` adds `run_archive`, `stages` and `solver`; `utils.__all__` adds `config_parser` and `error_handling`; `optimal.__all__` adds `BaseTrajectoryIPOPTProblem`; `measurements.__all__` is `["Measurement"]`. The public tools, config and error-handling modules gained their own `__all__`. Nothing was renamed or removed; names outside an `__all__` stay importable but are not covered.
+
+#### Deprecated
+
+Each warns with `DeprecationWarning` from 1.0 and will be removed in 2.0 (#185):
+
+- `figaroh.tools.qrdecomposition.QR_pivoting` and `double_QR`: use `QRDecomposer.decompose_with_pivoting` / `double_decomposition`.
+- `figaroh.tools.robotcollisions.CollisionWrapper`: use `CollisionManager`.
+- The module-level wrappers in `figaroh.tools.robotvisualization` (`place`, `display_COM`, `display_axes`, `rotation_matrix_from_vectors`, `display_force`, `display_bounding_boxes`, `display_joints`): use the `RobotVisualizer` methods.
+- `plot_calibration_results`, `plot_identification_results` and `save_results` in `figaroh.utils.results_manager`: use `ResultsManager`.
+- The flat `physical_consistency_enabled` identification config key: use `physical_consistency.enabled`.
+
+#### Changed
+
+- `requires-python` is now `>=3.10`, following Pinocchio (conda-forge builds 3.8 and 4.1 for Python 3.10-3.14; `pin` 4.1 ships wheels for cp310-cp314). The Python 3.8 and 3.9 classifiers are dropped and 3.13 and 3.14 are added. CI adds Python 3.10 (lowest) and 3.14 (highest) test jobs next to the Python 3.12 jobs. Migration: Python 3.8 and 3.9 users stay on 0.7.x.
+- The package classifier is `Development Status :: 5 - Production/Stable`.
+- `RobotIdentificationSystem.identify_parameters` also reads a `data_dir` stored under `tasks.identification` of a unified config, since the flat `identification:` section it was read from is gone.
+
+#### Removed
+
+Features deprecated before 1.0 are removed (#185, paired examples migration figaroh-examples#125). Migration notes:
+
+- The legacy flat config format (deprecated since 0.4.6). Loading one through `load_param`, `figaroh.utils.config_parser.get_param_from_yaml` or the optimal-trajectory loader now raises a `ConfigurationError` that names `python -m figaroh.utils.config_migration --input <legacy.yaml> --output <unified.yaml>`; run that once per file. The migration tool still reads legacy files. Also removed with the format: `figaroh.calibration.config.get_param_from_yaml`, `figaroh.identification.config.get_param_from_yaml`, both `get_param_from_yaml_legacy`, and the `get_param_from_yaml` re-exports of `calibration_tools` and `identification_tools`. Use `figaroh.utils.config_parser.get_param_from_yaml` with a unified config.
+- `get_param_from_yaml_with_warning` in `figaroh.calibration.config` and `figaroh.identification.config` (since 0.2.0): call `figaroh.utils.config_parser.get_param_from_yaml`.
+- `figaroh.utils.config_parser.get_calibration_param_from_yaml` and `get_identification_param_from_yaml` (since 0.2.0): call `get_param_from_yaml(robot, data, "calibration")` or `get_param_from_yaml(robot, data, "identification")`.
+- A non-zero `regularization_coefficient` / `coeff_regularize` (since 0.6.0) is a `ConfigurationError`. Remove the key (zero or absent is still accepted) and use `estimation.method: map`, which sets priors of physical size per parameter group. `config_migration` writes 0 and warns when it meets a non-zero legacy `coeff_regularize`.
+
+#### Fixed
+
+- A calibration whose solver failed can no longer be exported silently (#182, M1 G-1). `BaseCalibration.STATUS` is `"FAILED"` instead of `"CALIBRATED"` when the solver did not converge, and `joint_corrections()` (the URDF export gateway), `build_geometric_calibration` and `export_geometric_calibration_yaml` raise `CalibrationError` when the `fit` stage is `failed`, recording stage `export` as failed, as `BaseIdentification.export_urdf` already does. `allow_failed_fit=True` exports for diagnosis: it warns, records `export` as `fallback` and notes the override in the run provenance. A solver failure on the first fit now returns a failed result instead of raising an `UnboundLocalError`. Fits that converged export exactly as before.
+
+### [0.7.0] - 2026-10-11
+
+This release ships the **dynamic identification reference workflow** (roadmap M1.2–M1.4, dynamic side; delivery packages D4 and D7): select an identification stage, check its physical and solver verdict, verify it on held-out data with per-joint units, export a URDF that reloads with RNEA parity, and archive the run. The D4 comparison selected the direct LMI effort fit (`physical_fit`) as the supported physical baseline; the nonlinear log-Cholesky fit is not included (D5 no-go, LC1 #155). Release tracker: #177.
+
+Behaviour changes when upgrading from 0.6.0, detailed in the entries below:
+
+- Base parameters are selected deterministically (#116). `phi_base` is reproducible across platforms and Pinocchio versions and differs from 0.6.0 wherever the old pivoting was a tie; `QRDecomposer(deterministic=False)` restores LAPACK pivoting.
+- The physical-consistency projection projects the reconstruction, not the nominal model (#163). Without `reconstruction` enabled it is `skipped` and the `physical` stage is `not_run`; it was recorded `ok`.
+- `identification.select_stage` and `problem.torque_fit_joints` are new and opt-in; unset, results are as before. A rejected requested stage is a hard reject (#61).
+- Package metadata declares the license as Apache-2.0; it declared BSD.
+
+Known limitations: `projected` is not a selectable stage; `merged_bodies="subtract_fixed"` refuses on real fits, so the TIAGo reference exports a lumped URDF; TIAGo held-out prediction is reported, not gated (no ground truth, a temporal held-out block of one recording), and arm_1's torque constant is not identifiable from the 2021-07 recordings; export parity shows file consistency, not hardware accuracy.
+
+#### Added
+
+- `identification.select_stage` (`fit`, `reconstruction`, `physical_fit`) chooses the reported, validated, archived and exported estimate. A rejected requested stage is a hard reject (`selected_stage` `none`, verify fails, export refuses). The default is unchanged. New `BaseIdentification.export_urdf`, and `merged_bodies="subtract_fixed"` in the URDF exporter. The direct LMI effort fit is public as `figaroh.identification.physical_fit` (`_physical_comparator` stays as an alias); `ReconstructionResult.effective_method` is new. (#61)
+- `problem.torque_fit_joints` names the active joints whose measured effort is fitted and scored. The other active joints keep their kinematics in the regressor; their effort is left out of the fit, the WLS weights, the per-joint statistics and the validation metrics, which list them under `not_fitted_joints`. Unset, every active joint is fitted as before. (figaroh-examples#68)
+- Record the log-Cholesky feasibility spike with frozen synthetic trajectories, independent physical/Jacobian checks and machine-readable Pinocchio 3.7/4.1 results. The decision is revise: convergence/scaling must improve before a production solver is approved. (#22)
+- Diagnose why the log-Cholesky spike's fits stop at their evaluation budget and freeze a revised protocol (budget 2000, convergence by termination status, three fresh seed sets) before confirmation. The fresh-seed confirmation is no-go: 8 of 24 gated fits still hit the budget. (#30)
+
+#### Changed
+
+- Rewrite `README.md` for 0.7: a quickstart that runs (the UR10 identification reference in figaroh-examples), the identification stages, tested platforms, and links to the documentation site in place of the module tables and an invalid YAML example. The release sequence in `CONTRIBUTING.md` now includes revising both READMEs.
+
+#### Fixed
+
+- Package metadata declares the license as `Apache-2.0` (an SPDX `License-Expression`, with `LICENSE` as the license file), matching `LICENSE`. It declared a BSD classifier and copied the whole license text into the `License` field, so PyPI listed the wrong license.
+- The physical-consistency projection projects the identified fit, not the nominal model. It now reads the full-parameter reconstruction, which runs first, and projects only the joints the reconstruction covers. Without `reconstruction` enabled the block is `skipped` and the `physical` stage is `not_run`; it was previously recorded `ok` for a projection of the CAD prior. (#163)
+- A configured `max_seconds` in the SDP reconstruction and the LMI projection is passed to picos as `timelimit`; picos rejected the old option name and the solve was reported as failed. (#164)
+- Base-parameter selection no longer depends on BLAS rounding or on the order of regressor columns. `QRDecomposer` picks base columns with the new `deterministic_column_pivots`: largest residual first, columns within a relative `1e-6` of the largest are tied and the smallest parameter name wins. `phi_base` is now reproducible across macOS/Linux and Pinocchio versions (the base parameters it reports differ from before wherever the old selection was a tie). `QRDecomposer(deterministic=False)` restores LAPACK pivoting; geometric calibration keeps it until #113. (#116)
+- Optimal-trajectory plots work for robots whose position and velocity dimensions differ (`nq != nv`, e.g. TIAGo) (#149). Positions were indexed with velocity columns, so the plot failed (`index 24 is out of bounds`) and was skipped with a logged error. Both plot paths now draw only the active joints, positions through each joint's `idx_q` and velocities and accelerations through its `idx_v`, labelled with the joint names. `ResultsManager.plot_optimal_trajectory_results` gains `q_indices` and `v_indices`; without them it plots every column and refuses (logged error) when `nq != nv`. The bottom row no longer gets a second, empty set of axes stacked on it for the time labels.
+
+### [0.6.0] - 2026-10-07
+
+This release ships the **calibration reference workflow** (roadmap M1.1–M1.4, calibration side; delivery packages D2, C1–C4, W3 and S1) and the inertial URDF export (D6), with the core fixes found by the UR10 truth fixture (D3:
+
+## 142, #143). The dynamic identification reference (D4, D7) is not in this
+
+release; it is planned for 0.7.0. Release tracker: #146.
+
+Behaviour changes when upgrading from 0.5.0, detailed in the entries below:
+
+- `solve(outlier_threshold=...)` is a position error in metres (it was a number of standard deviations) and outliers are now excluded (#98).
+- `regularization_coefficient` is deprecated and defaults to 0; use `estimation.method: map` (#120). It is planned for removal in 1.0.
+- Exciting-trajectory optimisation adds collision constraints for robots without an SRDF and checks clearance along the whole spline (#143); such robots may need a collision-free joint range (UR10 example: `joint_box`).
+- Results change on rerun: base parameters at full precision (#142), a seeded identifiable-parameter selection (#99), and corrected `full_params` and `joint_offset` semantics (#101, #110).
+- `export_urdf` refuses what it cannot write instead of skipping it (#62) and writes complete inertial sets (#60).
+
+Known limitations: calibration accuracy is demonstrated on TIAGo mocap only (held-out marker RMSE 3.8–4.2 mm); nothing is applied to a running robot, and export parity shows file consistency, not hardware accuracy; inertial export is verified with known parameters, not yet with identified ones.
+
+#### Added
+
+- Calibration with several points of one rigid body per sample (#119). Each `measurements.markers` entry is a point on the same tool frame with its own offset (`pEEx_k`, ...); rows are marker-major, as the CSV loader already ordered them. `calc_updated_fkm` no longer raises for `NbMarkers > 1`; the closed-form frame guess fits the base frame and all point offsets; the structural selection uses all six pose components when there are several points; metrics, validation, outlier distances and plots count every point of every sample; the terminal and HTML validation tables list the position RMSE of each point. The loader now refuses non-finite marker measurements (e.g. an occluded point), naming the CSV rows. Several points identify the same joint parameters as one and roughly halve standard errors; they did not improve held-out prediction on the TIAGo mocap reference, so examples adopt them case by case (`docs/source/concepts/config_parameters.md`, "Several points on the tool").
+- Inertial URDF export (#60): `export_urdf` writes identified standard inertial parameters (`m_`, `mx_`…`mz_`, `Ixx_`…`Izz_`, Pinocchio `toDynamicParameters()` convention) as URDF mass, centre of mass and centre-of-mass tensor (parallel-axis theorem), keeping an existing inertial `rpy`. Targets may be links or moving joints (as identification names them). Partial sets, joints whose Pinocchio body merges fixed-attached massive links, `m <= 0` and, unless `allow_infeasible=True`, physically inconsistent sets are refused; each link's physical verdict is logged. Previously these names raised (#62).
+- Identification validation per joint (#103): `validation_metrics` gains `per_joint` (RMSE identified/nominal in the joint's unit, N for prismatic, N·m for revolute; measured std; normalised RMSE; R²; `predictive`), `unpredictable_joints` (held-out RMSE not below the measured std: no better than a constant) and `correlation_normalised` (correlation of per-joint standardised signals). The verdict's `validation_correlation` now uses the normalised value, and `validation_unpredictable_joints` counts flagged joints; the pooled `correlation` is kept. Terminal and HTML reports show the per-joint table and flag unpredictable joints.
+- Stage-aware verdicts and reports (#63).
+- `verify()` separates per-stage verdicts: `verdict.stages` gains `data`, `fit`, `validation` (`fallback` on training data, never held-out evidence), `physical` and `export` beside the existing scoped entries.
+- New verdict fields: `stage_records`, `selected_stage`, `splits` (the files and sessions that trained and validated the run).
+- Provenance records the figaroh checkout's own commit (`software.figaroh_revision`) beside the working directory's (`git_commit`), so a run names its core/examples pair.
+- The terminal and HTML reports show the stages and data; the run archive index carries the stage verdicts.
+- Fixed: the exported verification JSON's `stages` (the scoped status map) was overwritten by the stage records; they are now under `stage_records`.
+- `figaroh.data`: data contract types from the accepted decision record `docs/decisions/data-result-contract.md` (#55, part 1 of 2; additive).
+- `TrajectoryData` (identification): time with a `recorded`/`assumed` clock, joint names, per-signal origin, effort in its recorded units with a per-joint kind and unit (`joint_torque` N·m, `joint_force` N, `motor_current`, ...), the conversion applied, the recorded signal, and a valid-sample mask. `check_effort(model, drive_gain_joints)` refuses effort that is not joint effort unless a drive gain is identified.
+- `PoseObservations` (calibration): postures with named points or poses, their frame, measurability, mask and sessions; constraint-only datasets (contact) declare a constraint instead of zero "measurements". `from_csv`/`to_legacy` reproduce `load_data` exactly, with deleted rows masked instead, and leave `calib_config` unchanged.
+- `DataSource` and `Session` (files with sha256, adapter, recording identity) and `Protocol` (versioned roles per session, checked against the files' sha256).
+- Data contract: `TrajectoryData.sample_index` / `PoseObservations.sample_index` record each sample's source row (default `0..n-1`; `from_csv` sets CSV rows, so masked postures are named by row), and `PoseObservations.select_points(names)` restricts observations to some tracked points, e.g. one of TIAGo's four mocap points (#131).
+- The base classes use the data contract (#55, part 2).
+- `BaseIdentification`: `load_trajectory_data()` may return a `TrajectoryData`. Its effort is checked against the model (drive-side kinds are refused: no drive-gain parameter exists yet), and its mask leaves samples out of the regressor rows after filtering and differentiation (with decimation, decimated sample `k` is sample `k * factor`). A subclass returning one must convert the effort with `TrajectoryData.converted()`, not override `process_torque_data()`. Legacy dicts work as before.
+- `BaseCalibration.load_data_set()` reads the CSV through `PoseObservations` (same arrays as `load_data`); `del_list` rows are masked, and `calibrator.observations` keeps every posture.
+- `figaroh.tools.stages`: each run records `data`, `fit`, `validation` (`fallback` when evaluated on training data), `physical` and `export` (`failed` when `joint_corrections()` refuses parameters) stages on `obj.stages`, in the results dict under `"stages"`, in the run archive's `stages.json`, and in the verification JSON, which also gains `schema_version`.
+- Identification results gain `"effort rmse"` (N·m or N); the mislabelled `"rmse norm (N/m)"` is kept for existing readers.
+- `BaseCalibration.metrology_frames()`: the fitted base frame and tool point, which a URDF does not carry; applied outside an exported URDF they reproduce the calibrated forward kinematics. Tested on a known TIAGo correction fixture for both levels and three methods, on fitted and unused postures (#62).
+- `BaseCalibration.joint_corrections(lift=True)`: the joint corrections to write into a URDF, the same values the PAL export uses (#111).
+- Calibration estimation methods, chosen per robot and dataset with `parameters.estimation.method` (#113); the default `structural` is unchanged.
+- `excitation`: select over every joint parameter on the measured postures and drop those whose predicted standard error exceeds `excitation_k` times their expected size.
+- `map`: estimate every joint parameter with Gaussian priors of the expected sizes (`priors`); posterior standard deviations in `std_dev`.
+- `map_cv` / `cv_subset`: prior scale or parameter-set size chosen by k-fold cross-validation over the training postures; no robot-specific sizes needed.
+- Diagnostics in `calib_config["estimation_report"]`; guide in `docs/source/concepts/calibration_estimation.md`.
+
+#### Changed
+
+- `regularization_coefficient` (`calib_config["coeff_regularize"]`) is deprecated and defaults to 0 instead of 0.01 (#120). Robot cost functions appended `sqrt(c) * theta` rows for every joint parameter, so a metre and a radian were penalised alike. Core never applies the coefficient; a non-zero value now raises a `DeprecationWarning` pointing to `estimation.method: map`, which places priors of physical size on each parameter group. Design record: `docs/decisions/calibration-regularisation.md`. The figaroh-examples robots drop their regularisation rows in the paired PR.
+- PAL `geometric_calibration` export (`build_geometric_calibration`, `export_geometric_calibration_yaml`) fixed and given `nominal_urdf` (#123).
+- **Joint offsets exported:** `joint_offset`-level corrections (`offsetRZ_*` etc.) were dropped, so the TIAGo reference wrote an empty `geometric_calibration`.
+- **Deltas against the URDF origin:** they were taken against Pinocchio's joint placement, which merges preceding fixed joints (wrong frame behind a rotated fixed joint, e.g. UR10 `shoulder_pan_joint`).
+- **Exact rpy:** the rpy delta is solved so that the origin's rpy as written plus the delta is the corrected rotation, including at pitch +-pi/2 (TIAGo arm_4..arm_6). Pass `nominal_urdf`; without it the origin is recovered from the model. Where the joint axis is the axis roll and yaw share at pitch +-pi/2, no small rpy delta exists and the exact one trades roll against yaw (e.g. `droll` -pi/2, `dyaw` +pi/2): the same small rotation.
+- **Behaviour change:** PAL files gain the joint-offset keys; values behind rotated fixed joints change.
+- `export_urdf` refuses what it cannot write instead of skipping it (#62). A correction for a joint or link missing from the URDF, inertia tensors, first moments, legacy `off_*`, and a joint with both `offset*` and `d_*` now raise `ValueError`; no file is written. `joint_corrections()` raises `CalibrationError` for fitted parameters a URDF cannot carry (elastic, contact planes); pass `drop_unsupported=True` to export the kinematic corrections only. Values are written with 12 significant digits instead of 6.
+- **Behaviour change:** calls that relied on the logged skip now fail. Exported URDF text changes in the trailing digits.
+- `redistribute_parameters()` (and so the PAL `geometric_calibration` export and the HTML report) lifts `structural` base parameters by a weighted minimum-norm lift instead of the Moore-Penrose one (#111).
+- **Why:** the old lift weighed metres and radians equally, ignored the rows the fit held at zero (base-frame and dropped rows), so it did not reproduce the fit, and the PAL export removed "the first six rows" by position instead.
+- **Now:** expected sizes from `parameters.estimation.priors` weight the lift; base-frame and dropped rows are held at 0; Gauss-Newton steps make the lifted model reproduce the fit at the measured postures (skipped, first order only, when the calibrator has non-joint parameters such as contact planes). The result does not depend on which representative the QR chose. The PAL export no longer excludes the first joint's parameters.
+- **Behaviour change:** PAL and report values for `structural` change.
+- Calibration drops joint parameters that the estimated base/tip frames absorb, starts the frames at a closed-form estimate, and selects parameters deterministically (#102, #99).
+- **Absorbed parameters dropped:** after the structural selection, `BaseCalibration.create_param_list` builds the full measurement Jacobian at the measured configurations (configured measurability, base and tip columns included) and drops every joint parameter that is a combination of the frames and the joint parameters before it (`eliminate_absorbed_parameters`, tolerance 1e-4 on unit-normalised columns). The names are kept in `calib_config["absorbed_param_name"]`. TIAGo mocap: `joint_offset` drops the torso and arm_1 (rank 14/14 instead of 14/16); `full_params` drops the tool-absorbed `d_pz_arm_7_joint` (with #110; before it, 4–9 parameters including an RPY near-singularity).
+- **Closed-form start:** `solve_optimisation` starts unknown base/tip frames at `estimate_frames_closed_form` (Kabsch / chordal mean alternated with linear least squares) instead of zero.
+- **Deterministic draw:** the structural random configurations come from a seeded NumPy generator (`calib_config["random_seed"]`, default 0) instead of Pinocchio's global RNG.
+- **Behaviour change:** the calibrated parameter set is smaller when frames are estimated. Set `calib_config["eliminate_absorbed_parameters"] = False` for the previous set.
+- `full_params` placement errors `d_{px,py,pz,phix,phiy,phiz}_<joint>` now act in the joint frame, `placement · SE3(exp3(d_phi), d_p)`, the convention of the kinematic regressor that selects the base parameters (#110).
+- **Cause:** `update_joint_placement` added `d_p*` to the parent-frame translation and `d_phi*` to the placement's RPY angles. Wherever the nominal placement is rotated, the fitted model then had different dependencies from the ones selection assumed: FK derivatives differed from the regressor columns by O(1) on TIAGo arm_1–arm_7 and UR10 shoulder_pan, shoulder_lift, wrist_2 and wrist_3.
+- **Effect:** TIAGo mocap `full_params` (figaroh-examples held-out protocol, macOS): 31 instead of 28 parameters, norm RMSE 1.64 / 3.07 / 2.83 / 2.44 mm (training / validation / two confirmation sets) instead of 1.75 / 3.68 / 3.35 / 2.89 mm.
+- **Export:** `export_urdf` applies a joint's six `d_*` values together as `origin · SE3(exp3(d_phi), d_p)`; `build_geometric_calibration` converts them to PAL origin xyz/RPY deltas against the nominal placement.
+- **Behaviour change:** `full_params` values from earlier versions use the old convention and are not comparable on rotated placements (UR10, Talos, TIAGo). `joint_offset` is unaffected.
+
+#### Fixed
+
+- The exciting-trajectory optimiser enforces collision clearance along the trajectory (#143). Its collision constraint was empty when the robot's geometry model had no collision pairs (no SRDF, as for the UR10): every two geometries on non-adjacent bodies are now paired (`srdf` removes pairs). Collision was checked at waypoints only, so splines crossed obstacles between them; initial guesses and every solved segment must now keep `collision_margin` along the whole spline (`collision_check_frequency`, default 200 Hz), and `collision_checks_per_interval` adds check points inside the constraint. `collision_screen` computes exact distances only for nearby pairs. Robots whose trajectories crossed obstacles now need a collision-free joint range (UR10 example: `joint_box`).
+- Identified base parameters are returned at full precision (#142). `QRDecomposer` rounded `phi_b` to six decimals on every path, and the base values computed from priors to five; both weighted-least-squares refinements rounded to six. Small base parameters (UR10 wrist terms are ~1e-5) lost up to 5 %, and noise-free effort was fitted to ~5e-6 N·m instead of rounding error. Rounding remains only in displayed text.
+- Calibration's identifiable parameter set no longer depends on global random state (#99). The structural selection draws its random configurations from a generator seeded by the new `parameters.random_seed` (default 0, legacy `random_seed`), and the seed is recorded in the run provenance. Repeated runs in one process give the same parameter set and result, whatever ran before. The seeded draw itself landed with #102.
+- Calibration outlier removal now removes outliers (#98). The loop in `BaseCalibration.solve()` used to flag samples by a 3-sigma rule and refit the same full dataset, while the configured `parameters.outlier_threshold` was unused. Samples whose position error exceeds `outlier_threshold` (metres, `outlier_eps`; rotational components do not take part) are now excluded from the fit and the rest refitted, for up to `max_iterations` fits. `solve(outlier_threshold=...)` now overrides the config in metres (default `None`: the config; it was a number of standard deviations). RMSE, MAE, max error, per-DOF statistics and the residual degrees of freedom cover the kept samples; the evaluation adds `excluded_samples`, `excluded_sample_errors` and `outlier_threshold`, and the terminal and HTML reports list them. The `fit` stage metric `flagged_outliers` is now `excluded_outliers`.
+- Calibration quality reports label residual rows from `measurability` (#100). A contact calibration measuring `[z, roll, pitch]` was printed as `X/Y/Z (mm)` with the two rotations folded into "Position RMSE". Rows are now named and scaled per measured component (mm for positions, deg for rotations), position/orientation aggregates cover only the measured components of each kind (NaN and "not measured" when none), and `verify()` picks `position_rmse_mm`/`orientation_rmse_deg` from the measured kinds rather than the component count. With no residual degrees of freedom, `calc_stddev()` reports the uncertainty as not estimable (NaN, a warning, `residual_dof` in the evaluation metrics) instead of dividing by zero. Reports no longer claim there is no validation data when a subclass evaluates its held-out set itself.
+- `calc_updated_fkm` with an empty parameter list (nominal FK) raised `UnboundLocalError`; it now returns the nominal model's measured frame (#129).
+- URDF export wrote corrections into `<transmission>` joints instead of the robot joint when a transmission came first in the file (#114).
+- **Cause:** `_find_joint` searched every `<joint>` in the document; ros_control `<transmission>` blocks contain `<joint name=...>` too. It now searches only the `<robot>` element's direct children (same for links).
+- **Effect:** figaroh-examples UR10 exports were identical to the nominal URDF (its transmissions precede the joints); TIAGo and Talos were not affected.
+- Calibration parameter standard errors (`std_dev`, `std_pctg`, the covariance behind `redistribute_parameters`) were ~100× too small (#107).
+- **Cause:** `calc_stddev` estimated the residual variance as `result.cost**2 / (m - n)`, but `least_squares`' `cost` is already `0.5 * sum(fun**2)`.
+- **Fix:** it now uses `sum(r**2) / (m - n)` over the measurement residuals, excluding regularisation rows a subclass `cost_function` appends. The covariance still uses the full Jacobian.
+- **TIAGo mocap:** arm_5's offset SE goes from 0.088 to 10.1 mrad. The PAL "conservative (≥ 2σ)" YAML keeps 19 of 41 `full_params` corrections instead of all 41.
+- `add_base_name` shifts `base_mapping_slice` when it prepends the base names at `joint_offset` level; the slice pointed six entries too early.
+- Calibration held-out data (`validation_data_file`) works (#105).
+- **Config key read:** `tasks.calibration.data.validation_data_file` is now read from the unified config. Before, only a CLI override reached `calib_config`.
+- **Training count preserved:** loading the validation CSV no longer overwrites the training `calib_config["NbSample"]`. A larger validation set crashed `solve()`, and a smaller one silently truncated training.
+- **Unpack order fixed:** `_load_validation_data` no longer swaps poses and joint configurations.
+- **All samples used:** validation metrics now evaluate every validation sample (`_compute_logmap_residuals` takes `n_samples`).
+- **Failures logged:** a validation file that fails to load now logs a warning instead of being skipped silently.
+- Calibration `joint_offset` parameters (`offset{PX,PY,PZ,RX,RY,RZ}_<joint>`) are now offsets of the joint configuration, `q + offset` (#101). They were added to the joint placement's parent-frame RPY, a rotation about the parent axis, which differs from a joint offset whenever the joint axis is not the parent's: up to 47 mm at the TIAGo tool for 0.05 rad on arm_2. New `calibration_tools.apply_joint_offset` composes the offset in the joint frame; elastic deflections (`k_*`, `non_geom`) use it too, and placements are restored exactly after each FK evaluation. `full_params` (`d_p*`, `d_phi*`) is unchanged. **Behaviour change:** `joint_offset` results from ≤ 0.5.0 on joints whose axis is not the parent's z are not joint offsets; refit them. On the corrected TIAGo 2021-11-30 mocap data the fit now returns arm_5 −49.7 mrad and arm_2/arm_6 near zero, instead of +22.8 / −31.7 mrad.
+- `export_urdf` writes joint offsets into the joint `<origin>` (about the joint's own axis), so the reloaded URDF reproduces `q + offset`. They were written to `<calibration rising>`, which Pinocchio and robot_state_publisher ignore, so exported joint offsets had no effect on reload (#101).
+
+### [0.5.0] - 2026-10-03
+
+#### Changed
+
+- The blocking `Lint` job runs every pre-commit hook on the full tree instead of only on changed files, and the advisory `Lint backlog` job is removed: the legacy lint debt inventoried in #57 was cleared in #81-#85.
+- Replace universal quality gates with scoped execution/prediction verification; preserve diagnostic metrics, record incomplete required evidence, reject nonfinite results, and require explicit per-output limits for prediction acceptance. (#70) **Behaviour change:** `verify()` without `scope` now means prediction acceptance, so callers that only checked `.passed` get `False` (not evaluated) unless they supply separately loaded validation data and limits; pass `scope="execution"` for numerical-execution checks. The default thresholds are now empty, and training-data fallback metrics are named `training_*`.
+- Bound Pinocchio to `pin>=3.7,<5`, replace deprecated frame-parent access, and add explicit Pinocchio 3.7.0 / 4.1.0 CI profiles with compatible ndcurves versions. Constraints apply before environment creation; CI checks native imports, installed versions and dependency consistency.
+- Require one focused PR per completed issue and explicit maintainer approval before agents merge, with the policy recorded in CONTRIBUTING, AGENTS and the PR review checklist.
+- Reorganize the roadmap around delivery outcomes and exit gates, preserve its previous detailed planning snapshot in an archive, and replace the architecture inventory with a source-audited description of current contracts and limits.
+- Document the `devel` integration / `main` release workflow in CONTRIBUTING, refresh agent guidance, and add issue/PR templates and a design-decision index.
+- Add Python 3.12 core and MuJoCo 3.9/3.14 test jobs, critical whole-tree lint, changed-file pre-commit checks, and an advisory report of existing lint debt. Documentation builds now check PRs to both development and release branches; installation failures propagate, and deployment only runs on pushes to `main`. CI fetches the pinned examples mesh fixtures required by the full suite and fixes a platform-sensitive QR precision assertion to use absolute tolerance.
+
+#### Fixed
+
+- Optimal trajectory generation no longer exhausts memory or the time budget (figaroh-examples#50). Pivoted QR in `qrdecomposition` uses economic mode instead of building a full m×m Q (13.7 GB for UR10 at setup; TIAGo was killed). The trajectory problem uses forward-difference objective gradients instead of numdifftools, `calc_torque` calls RNEA once per sample instead of once per joint, and initial waypoint steps are clamped to the velocity limits so the feasibility search succeeds. Per-sample constraint-check messages are DEBUG, not WARNING.
+- `RobotIPOPTSolver` no longer reports IPOPT status -1 (maximum iterations exceeded) as success. **Behaviour change:** a trajectory segment that stops at the iteration limit is kept only if its final iterate is feasible; it is then marked `converged: False` with a warning. The iteration cap is configurable as `problem.max_iterations` (default 200).
+- Configuration variants that `extends` a section (e.g. `tasks.calibration`) now override that section. They were merged into the configuration root, so the selected task silently kept its base values (#76).
+- `figaroh.utils.config_parser.get_param_from_yaml()` accepts whole legacy files with `calibration:` / `identification:` sections and dispatches the requested one; `task_type="auto"` selects a single present section and still requires an explicit task when both exist (#76).
+- Configuration differentiation now estimates acceleration for every tangent coordinate, including the last fixed-base joint. Derivative widths use `nv` rather than `nq` or effort-selection flags, supporting quaternion/continuous joints through model/backend differences. Uneven intervals use velocity midpoint times; malformed/nonpositive/nonfinite intervals fail explicitly. The legacy trailing-two-sample trim and interval velocity alignment remain. Older UR10 dataset fits remain preprocessing-limited until torque-generation provenance and sampling/filter assumptions are audited separately. (#32)
+- Physical-consistency fallback, SDP projection and SDP reconstruction now distinguish link-origin rotational inertia from the second-moment block of pseudo-inertia. Projection weights and returned p10 entries remain in dynamic-parameter coordinates; reconstruction enforces inertia triangle inequalities as well as positive mass. Previously SDP fits could accept physically invalid inertias. First-moment projection weights now penalize each component independently instead of only a weighted sum, preventing changes to feasible nonzero-CoM inputs. URDF reconstruction priors now use link-origin tensor entries via Pinocchio's dynamic-parameter conversion, including the parallel-axis contribution of a nonzero CoM. (#21)
+- MuJoCo mass-matrix evaluation now supports both `mj_fullM` signatures: the pre-3.10 `(model, destination, qM)` form and the newer `(model, data, destination)` form. This fixes failures with recent MuJoCo versions that removed `data.qM`.
+- `get_standard_parameters` read each joint's CAD inertia from the body before it (`model.inertias[i]` instead of `[i + 1]`), so `tau_ref`, the nominal validation torque/`improvement_pct` and the reconstruction prior were all off by one body. Base parameters were unaffected. (#11)
+- Regressor extra columns (`fv`, `fs`, `Ia`, `off`) are now laid out from the enabled flags instead of fixed offsets. Previously any combination other than "friction only" or "all three" raised `IndexError`. `add_standard_additional_parameters` now only emits enabled blocks, so parameter keys always line up with regressor columns. With friction only, the parameter dict no longer carries unused `Ia_*`/`off_*` keys. (#12)
+- Unified config: `signal_processing.sampling_frequency`, `cutoff_frequency` and `filter_order` now default the filter's `f_sample`/`f_butter`/`nbutter`, which were stuck at 100 Hz / 2 Hz / 4. Explicit `filter_params` still win. A cutoff at or above Nyquist raises `ValueError`. (#13)
+
+#### Added
+
+- Trajectory optimisation can retry a failed segment from a new initial guess: `problem.segment_attempts` (default 1, no retry). See figaroh-examples#60.
+- `tasks.identification.problem.qr_relative_tolerance`: QR rank threshold as a fraction of the largest pivot. Default unset (unchanged behaviour). A warning suggests it when the base regressor's condition number exceeds 1e6. (#14)
+
+### [0.4.8] - 2026-09-07
+
+#### Added
+
+- `skills`: New `skills/` directory shipping six agent skills that take a user from a fresh clone to a running task, so an AI coding agent can set each task up without first re-deriving the workspace layout. Mirrored in `figaroh-examples/skills/` (same content, paths resolved against `$FIGAROH_WS`, the directory holding both repos side by side):
+- `figaroh-start` — the router. Maps the workspace (which of the sibling repos owns what), carries a robot x task x config matrix, states the two path rules every example script depends on (run from `examples/<robot>/`; `package_dirs="../../models"`), and dispatches to the skill below.
+- `figaroh-setup-env` — environment bootstrap, with an executable `scripts/doctor.sh`: read-only, exits 0/1, locates the workspace root on its own, and prints a specific remedy per failure. It checks the failure that is otherwise invisible — whether `import figaroh` resolves to the local `src/` tree or to a shadowing site-packages copy.
+- `figaroh-setup-calibration`, `figaroh-setup-identification`, `figaroh-setup-optimal` — one per task: required inputs, the exact config block, the real CLI flag surface, how to read the run archive, and a failure/cause/fix table. The data contracts are documented from `calibration/data_loader.py` and each robot's `load_trajectory_data()` rather than from prose, because both are derived rather than fixed: calibration CSV columns follow each marker's `measurable_dof`, and identification has no single schema at all.
+- `figaroh-setup-new-robot` — onboarding a robot with no example folder, from description package to `validate.py --robot <robot>` exiting 0. The set is self-contained by design: it assumes only `figaroh` and `figaroh-examples`, references no other package or checkout, and points at repo directories rather than at skills outside the set.
+- `docs`: README now points at `skills/` for agent-assisted setup.
+
+#### Fixed
+
+- `tools`: `build_total_regressor_wrench` raised `NameError` on every call. Its signature named the settings dict `param` while the body read `identif_config` three times -- an incomplete rename that made the exported function unusable. Renamed the parameter to `identif_config`, matching both the body and the sibling `build_total_regressor_current`. Nothing called it and nothing tested it, which is how a fully broken public function went unnoticed; `tests/unit/test_regressor_wrench.py` now covers it (7 tests, verified to fail if the rename is reverted).
+- `optimal`: `BaseOptimalCalibration.save_results` reported `configuration_count` as `len(self.optimal_configurations)`, which counts the dict's keys (always 2) rather than the selected configurations. A UR10 run wrote `configuration_count: 2` to the summary CSV while printing "Selected 73" to stdout. Added `count_optimal_configurations()` and used it, so the saved summary now matches what the run reports.
+- `optimal`: the D-optimality determinant root was saved under the key `condition_number`, which is a different quantity entirely and made the CSV actively misleading. Renamed to `d_optimality_detroot`. **Breaking** for anything reading that column out of a saved optimal-calibration CSV/YAML.
+- `optimal`: `tasks.optimal_configuration.output.output_file` was silently ignored — `load_param` only ever loads the `calibration` task, so the optimal task's own `output` block never reached the object, and `save_results` hardcoded `results/`. The configured directory is now honoured (the filename stays managed/timestamped), falling back to `results/` when unset, so existing behaviour is unchanged for configs that do not set it.
+
+#### Tests
+
+- `tests/unit/test_optimal_results.py`: 17 new tests covering the three fixes above — configuration counting, output-directory resolution, and reading the optimal task's output block (including the YAML `None`-as-string trap, legacy configs, and missing files). `save_results` previously had no coverage.
+- `tests/unit/test_regressor_wrench.py`: 7 new tests calling `build_total_regressor_wrench` for real — output shapes, finiteness, `mass_load` scaling, and `which_body_loaded` block selection. Verified to fail with the original `NameError` if the fix is reverted.
+
+#### Changed
+
+- `build`: Pinned the build backend to `hatchling<1.32`. 1.32.0 emits `Metadata-Version: 2.5`, which the current release toolchain rejects -- `twine check` fails with "'2.5' is not a valid metadata version" because `packaging` 25.0 recognises only up to 2.4. Every hatchling through 1.31 emits 2.4. `requires` was previously unpinned, so each build silently took whatever was newest; this also makes release builds reproducible.
+- `docs`: Updated README's Examples Repository table with recent `figaroh-examples` additions: TIAGo Pro right-arm geometric calibration (contributed by Clement Pene), TALOS's single-plane table-contact whole-body calibration (no longer "to be released" — it shipped), and TIAGo's new experimental suspension-identification and empirical-backlash-surface examples.
+- `docs`: Split `docs/decisions/tiago-suspension-backlash-and-modular-terms-plan.md` (an uncommitted working draft) into two focused documents reflecting their different implementation status: `tiago-suspension-backlash-examples.md` (**done** — the TIAGo suspension-identification and empirical-backlash-surface examples shipped in `figaroh-examples` PR #9, with an implementation summary, concrete real-data results, and known gaps against the original plan) and `modular-linear-residual-terms-plan.md` (still **proposed** — the generic `LinearRegressorTerm`/`ResidualTerm`/`WeightPolicy` architecture and the unbuilt physical/stateful backlash model). Also corrected `ROADMAP.md` §8.2's stale "not started" status for the suspension port (superseded by the new document) and added both new documents to `ROADMAP.md`'s References table and `docs/source/further_reading/decisions.md`'s index.
+- `docs`: Consolidated `docs/decisions/` from 8 documents to 6 by merging related comparisons/analyses/reviews into single multi-part documents, each carrying its own verified implementation-status section rather than trusting the original "no implementation yet"/status-line claims:
+- `external-tool-comparisons.md` — Part A (`robot_calibration` comparison
+  - calibration-composability adaptation roadmap), Part B (MuJoCo `sysid` comparison), Part C (the full reporting/verification infrastructure build-out that Part B's comparison produced).
+- `tiago-calibration-and-port-review.md` — Part A (TIAGo/TIAGo Pro structural & statistical calibration analysis, redistribution rationale), Part B (eye-hand + suspension identification port review).
+- Remaining decision docs renamed to consistent kebab-case filenames (`figaroh-examples-improvement_plan.md`, `urdf_exporter.md`, `validation-quality-report.md`), with stale status markers corrected against the current codebase (e.g. `IMPROVEMENT_PLAN.md`'s Phase 7 was falsely marked all-complete; only 1 of 4 items actually was).
+- `docs`: Rewrote `ROADMAP.md` (v2.0 → v2.1) as a single coherent document: added a table of contents, a References section linking every roadmap track to its source `docs/decisions/` document, and a consolidated Estimated Timeline spanning all tracks. Added three tracks that previously existed only as detailed decision docs with no roadmap-level rollup — **Track C** (Reporting, Verification & Quality Infrastructure), **Track D** (Calibration Layer Composability, `robot_calibration`-inspired), **Track E** (Example Ecosystem Parity & Robot Ports). Re-verified every Track A/B status marker against the codebase and test suite rather than carrying the prior draft forward; corrected one stale claim (`integration/api.py`/`RobotIdentificationSystem` is implemented, was marked "not started"). Removed the old per-version "Revision History" section, which had drifted into duplicating this changelog, in favor of a short roadmap-document-only history.
+- `docs`: Added **Track F — Deployment & Sim-to-Real Integration** to `ROADMAP.md`, explicitly marked as ongoing research rather than a committed track. Sourced from a new `docs/decisions/sim2real-modelbased-deployment.md` positioning document (moved in from a working draft), which proposes a model-based deployment/control layer for RL/IL policies as FIGAROH's headline value proposition alongside its existing identification/calibration role. Cross-referenced its phase-level overlaps with existing tracks (backend cross-validation, online identification, URDF/friction export) so they supersede rather than duplicate the corresponding Track A/B/D/E items, and flagged ecosystem-integration questions (e.g. mjlab, motion-retargeting libraries) as open research, not yet scoped into any phase.
+
+### [0.4.7] - 2026-08-07
+
+#### Added
+
+- `feat(calibration)`: `BaseCalibration.redistribute_parameters()` — minimum-norm redistribution of fitted base-parameter values (and their covariance) onto the full standard-parameter set, via `figaroh.tools.qrdecomposition.redistribute_min_norm`/ `propagate_covariance_min_norm` (Moore-Penrose pseudoinverse of the base-mapping matrix `M`, `phi_base = M @ theta_r`). Previously, `calculate_base_kinematics_regressor` already computed this combination internally but discarded it, deploying each fitted value under one arbitrary representative parameter name with the rest of its redundant group implicitly left at 0 — this is one choice among infinitely many that reproduce the same fit. Redistribution spreads the fitted value across the whole group instead (round-trips exactly to the same predictions), and the propagated covariance flags which directions are genuinely underdetermined rather than reporting false precision. Opt-in; no change to existing `solve()`/report behavior. See `docs/decisions/tiago-calibration-and-port-review.md` Part A §A.8 for the full motivation and literature context.
+- `feat(report)`: the HTML calibration report now includes a "Redistributed standard parameters" section, calling the above `redistribute_parameters()` on the live calibrator and rendering it through the same `_param_uncertainty_section` table used for the base-only fit — degrades to a muted "not available" message rather than failing when redistribution isn't possible for a given run.
+- `feat(tools)`: `figaroh.tools.geometric_calibration_export` — `build_geometric_calibration()`/`export_geometric_calibration_yaml()` produce the PAL Robotics `robot_state_publisher.geometric_calibration` runtime-correction YAML (the format hand-curated to date in `figaroh_tiagoPro/data/master_calibration_*.yaml`) directly from a solved `BaseCalibration` instance's redistributed parameters, with an optional `min_sigma` threshold reproducing the "conservative" (≥2σ) deploy variant. Reuses `urdf_exporter._parse_param_name` for joint/axis parsing; excludes the co-estimated-base-merged parameter block structurally (via `base_mapping_row_names`) rather than by name pattern, so it's robust to whatever display renaming a `BaseCalibration` subclass applies to `calib_config["param_name"]`.
+- `feat(examples)`: `tiago`, `tiago_pro`, `ur10`, and `talos` example calibration scripts now export `master_calibration.yaml` (full) and `master_calibration_conservative.yaml` (≥2σ) to the run directory by default alongside `report.html`, via the new `geometric_calibration_export` module — new `--geometric-calibration-yaml` CLI flag (default on) to opt out, mirroring the existing `--html-report` flag.
+- `feat(report)`: both the "Parameter uncertainty" table (base-only fit) and the new "Redistributed standard parameters" table now show each parameter's actual identified **value**, not just its standard error — `_param_uncertainty_section` gained an optional `values` column, and `BaseCalibration`'s stored evaluation metrics gained `param_values` (`result.x`) alongside the existing `param_stdev`/`param_stddev_percentage` so the report has a value to show. The identification report's base-parameter table picks up the same column for free (`phi_base` was already computed there, just not threaded through to the table). Backward compatible: a caller/older run without `param_values` renders "—" instead of failing.
+
+### [0.4.6] - 2026-08-06
+
+#### Fixed
+
+- `fix(calibration)`: `calc_updated_fkm` now supports joint elasticity (`non_geom`) and camera/ref-frame base composition — capabilities previously implemented only in a second, dead-code function, `update_forward_kinematics` (zero callers in `figaroh`/`figaroh-examples`), which had regressed relative to its own predecessor and was deleted as part of this fix:
+- The base/camera transform (`bMo`/`wMo`) was computed but never composed into the returned pose.
+- Elasticity indexing (`xyz_rpy[elas_id + 3]`) went out of bounds for any rotary joint — i.e. every revolute joint.
+- The elasticity parameter-match loop reused a stale `key` left over from an unrelated earlier loop instead of iterating its own.
+- The per-sample pose write was gated on a parameter-count bookkeeping variable that accumulated across the whole sample loop instead of resetting per sample, silently zeroing out later samples.
+- (Found while implementing the merge) the elasticity branch also read `data.oMf`/`get_rel_transform` without re-running forward kinematics after perturbing `model.jointPlacements` for the deflection, so the elastic offset never actually reached the output pose — fixed by re-running FK before computing `oMee`.
+- `calc_updated_fkm` previously silently ignored `calib_config["non_geom"]` entirely (every real caller uses this function, not the dead one) — it now actually applies elasticity when the flag is set.
+- `NbMarkers > 1` now raises `NotImplementedError` instead of silently logging a warning and falling back to an identity marker transform.
+- Verified against the TIAGo Pro reference calibration dataset (`figaroh-examples/examples/tiago_pro`, 94 samples): the existing `full_params`/`known_baseframe=False` geometric path is numerically unchanged (bit-identical output for a fixed parameter set and data).
+- `fix(config)`: `unified_to_legacy_config` read `parameters.free_flyer`, a key the unified schema never defines (the template puts it at `kinematics.free_flying_base`) — a unified config setting `free_flying_base: true` was silently ignored, always resolving to `free_flyer=False`. Extraction moved to `_extract_frame_info`, reading the correct key.
+- `fix(config)`: eye-hand calibration (`base_to_ref_frame`/`ref_frame`) had no unified-format equivalent, even though the schema template already reserved `tasks.calibration.eye_hand.{camera_frame,reference_frame}` for it — `unified_to_legacy_config` just never read that section. Added `_extract_eye_hand_params`, wired in.
+- `fix(calibration)`: `BaseCalibration` reported RMSE/MAE two different ways that could disagree by exactly `sqrt(n_dofs)` depending on which number you looked at — `_evaluate_solution`'s `evaluation_metrics["rmse"]`/`["mae"]` flattened every x/y/z/... residual component into one list (a "mean of squared components" convention), while `_compute_per_dof_stats`'s `pos_rmse_mm`/`orient_rmse_deg` and the validation table reduced each sample's residual vector to one Euclidean-norm distance first, then aggregated. For position-only calibration these differed by exactly `sqrt(3)`, always. Converged `_evaluate_solution`, `_detect_outliers`, and `_store_optimization_results`'s `_PEE_dist` onto the per-sample-distance convention — the physically meaningful one (an actual 3D positioning error in mm) and the one most of the report already used. Outlier detection is unaffected (scale-invariant comparison). Also added `pos_mae_mm`/`orient_mae_deg` to `_compute_per_dof_stats`'s "overall" block (RMSE already had a position/orientation split; MAE didn't), surfaced as "Position MAE"/"Orientation MAE" in both the terminal quality report and the HTML report (`report.py`). Re-verified against tiago, tiago_pro, ur10, and talos calibration runs.
+- `fix(calibration)`: `calc_stddev()` ran *after* `_compute_parameter_correlation()` in `BaseCalibration`, but correlation reads `self._C_param`, which `calc_stddev()` is what sets — on a fresh instance's first `solve()`, correlation silently returned `[]` instead of the actual pairs. Reordered so `calc_stddev()` runs first.
+
+#### Added
+
+- `feat(config)`: Legacy flat config format (`calibration:`/`identification:` top-level sections) is now deprecated in favor of the unified format — loading one emits a `DeprecationWarning` (+ `logger.warning`) from `figaroh.calibration.config.get_param_from_yaml` / `figaroh.identification.config.get_param_from_yaml`, the single parser every legacy-format caller funnels through regardless of entry point.
+- `feat(utils)`: `figaroh.utils.config_migration` — converts a legacy config to unified format automatically (`python -m figaroh.utils.config_migration --input legacy.yaml --output unified.yaml`), including the eye-hand and free-flyer fields fixed above. An optional `--urdf` flag runs a round-trip self-check (converts, then re-parses through the real `unified_to_legacy_*config` and diffs against the original) rather than trusting the conversion blindly. Fields with no unified-format consumer today are preserved under `custom:` instead of silently dropped. See "Migrating from legacy to unified format" in `docs/source/concepts/config_parameters.md`.
+
+### [0.4.5] - 2026-07-13
+
+#### Added
+
+- `feat(identification)`: Weighted least squares (WLS) support — `BaseIdentification.solve(wls=True)` refines the OLS base-parameter estimate with iteratively-weighted least squares (Gautier, 1997) before computing quality metrics, so the terminal/HTML report and `verify()` verdict reflect the WLS-refined parameters rather than a stale OLS estimate. Config-driven via `identification.problem.wls` in the unified YAML config, following the existing `has_friction`/`has_joint_offset` pattern.
+- `feat(tooling)`: `figaroh.tools.provenance` and `figaroh.tools.run_archive` — every calibration/identification run now carries a provenance record (git commit, config hash, timestamps, robot/asset identity), and `archive_run()` writes each run to a timestamped `results/runs/<robot>/<task>/<timestamp>/` directory (config snapshot, provenance JSON, report) instead of overwriting a single `results/` path.
+- `feat(validation)`: When no separate validation dataset is configured, calibration and identification now fall back to evaluating validation metrics against the training data itself — rather than silently omitting the validation section — with an explicit warning surfaced in the terminal report, HTML report, and machine-readable insights.
+- `feat(reporting)`: Self-contained HTML diagnostic reports for both calibration and identification.
+- `figaroh.tools.report.generate_calibration_report()` / `BaseCalibration.export_html_report()` — summary, auto-generated insights, per-DOF residual table, parameter uncertainty bars, correlation section, validation section.
+- `figaroh.tools.identification_report.generate_identification_report()` / `BaseIdentification.export_html_report()` — same shape, adapted to identification's per-joint torque residuals and base-parameter uncertainty.
+- `figaroh.tools._report_common` — shared HTML/CSS kernel (styling, escaping, insight/uncertainty/correlation section builders) reused by both generators.
+- Opt-in via `solve(html_report=True)` on both base classes, matching the existing `plotting`/`save_results` flag pattern.
+- `feat(identification)`: `BaseIdentification.print_quality_report()` — terminal quality report (condition number, RMSE, per-joint residuals, base-parameter uncertainty, validation, physical-consistency/ reconstruction status), the identification analogue of calibration's existing terminal report.
+- `feat(identification)`: Held-out validation support for identification, mirroring calibration's — a genuinely separate dataset via `identification.data.validation_data_file`, never a runtime split of training data.
+- `feat(reporting)`: Machine-readable verification verdicts.
+- `VerificationVerdict` / `ThresholdCheck` (`figaroh.tools._report_common`) — a structured pass/fail against per-metric thresholds, with provenance (git commit, config hash, timestamp).
+- `verify(thresholds=None)` and `export_verification_report(output_path=None, output_dir="results", thresholds=None)` added to both `BaseCalibration` and `BaseIdentification`. Default thresholds cover condition number and, when validation data is configured, validation-set RMSE/correlation/ improvement — every threshold is overridable per call. A threshold whose metric isn't computable is skipped, not failed.
+- Called explicitly (not from inside `solve()`) — verification is opt-in output computed from already-stored results.
+- `feat(reporting)`: Interactive before/after panel embedded in both HTML reports — a zoomable, hoverable overlay of nominal vs. fitted vs. measured values, rendered as hand-rolled inline SVG (no new dependency).
+- `feat(reporting)`: `figaroh.tools.compare_report.generate_compare_page()` — a static, self-contained, offline HTML page that loads two exported verification JSON files client-side and renders a per-metric diff table plus an overlaid before/after chart, gated by a mandatory compatibility check (domain, joint/DOF names, `decimate`, sample count) with an explicit "compare anyway" override on mismatch. No backend, no run history.
+- `fix(results_manager)`: `plot_identification_results()` reshaped 1D torque arrays as `reshape(-1, 1)`, silently collapsing a multi-joint, joint-major-flattened array into a single mislabeled trace. Now accepts explicit `n_joints`/`joint_names` and reshapes joint-major (`reshape(n_joints, -1).T`) when provided.
+- `refactor(results_manager)`: `plot_with_fallback()` helper deduplicates the four near-identical try/except plotting blocks across `BaseCalibration`, `BaseIdentification`, `BaseOptimalCalibration`, and `BaseOptimalTrajectory`.
+
+#### Fixed
+
+- `fix(calibration)`: `BaseCalibration.calc_stddev()` computed the calibrated-parameter count (`self.nvars`) once in `__init__`, before `initialize()` populated the actual parameter list — leaving it stuck at 0 and silently producing empty `std_dev`/`std_pctg` lists. The "Parameter uncertainty" section was therefore always empty in both the terminal and HTML calibration reports. Now derives the count from the solved parameter vector (`len(result.x)`) at computation time.
+- `fix(identification)`: `_compute_validation_metrics()`'s before/after torque chart sliced the first `n_active` joint-blocks off the full-model regressor, which is only correct when the active/identified joints are exactly DOFs `0..n_active-1`. For robots identifying a strict subset of joints (e.g. TIAGo: torso+arm out of many more DOFs), this silently returned the wrong joints' nominal/identified torque predictions — visible as identical nominal/fitted curves and wildly wrong magnitudes in the before/after chart. Now indexes by the actual `act_idxv` DOF indices, mirroring the row-selection already used correctly in `_decimate_regressor_matrix`.
+- `fix(identification)`: `_apply_weighted_least_squares()` sliced the stacked regressor into `model.nv` equal blocks to estimate per-joint residual variance, which is only correct when every model joint is identified. For subset-identified robots (TIAGo: `model.nv=24`, 8 joints identified), this misaligned the slicing entirely, producing an RMSE ~2000x worse than plain OLS. Now uses `len(identif_config["act_idxv"])`, the same quantity `_decimate_regressor_matrix` already uses.
+- `fix(identification)`: `_prepare_undecimated_data()` flattened torque data sample-major while regressor rows are joint-major, corrupting `solve(decimate=False)`'s correlation/RMSE (0.44 vs 0.966 on identical data pre-fix).
+- `fix(reporting)`: the before/after HTML panel's joint/DOF dropdown rendered its options twice — once server-side in the generated HTML, once again client-side via JS — so every entry appeared duplicated in the selector.
+- `fix(reporting)`: the before/after HTML panel embedded the full validation-set series inline with no cap; for large validation sets (e.g. a fallback-to-full-training-data run with ~45k samples) this produced multi-MB HTML pages whose SVG path strings were too large to render reliably in the browser. Now uniformly subsampled to at most 3000 points, with the displayed sample count disclosed in the chart caption.
+- `fix(export_validation)`: the interactive viser GUI's speed/pose/opacity sliders crashed with `AttributeError: 'GuiEvent' object has no attribute 'value'` on every drag — `GuiEvent` exposes the changed control via `.target`, not `.value` directly.
+
+Full design history and rationale: [`docs/decisions/external-tool-comparisons.md`](https://github.com/thanhndv212/figaroh-plus/blob/main/docs/decisions/external-tool-comparisons.md) Part C.
+
+### [0.4.4] - 2026-06-27
+
+#### Added
+
+- `feat(calibration)`: Add validation data support for ground-truth FK testing.
+- `_load_validation_data(path)` — load a separate validation measurement CSV.
+- `_compute_validation_metrics()` — compare nominal vs calibrated FK against held-out measurements; reports position/orientation RMSE, max error, and improvement percentage.
+- Validation data path configurable via YAML (`validation_data_file`) or CLI (`--validation-data`) in example scripts.
+- `feat(calibration)`: Add comprehensive statistical quality report.
+- `print_quality_report()` — formatted terminal table with convergence status, per-DOF residuals (X/Y/Z/rx/ry/rz with R²), overall RMSE, validation metrics, parameter uncertainty (top 5), and strongly correlated pairs (|ρ| > 0.8).
+- `_compute_per_dof_stats()` — mean, std, RMSE, max, R² per kinematic DOF.
+- `_compute_condition_number()` — condition number of Jacobian with well/moderate/ill-conditioned label.
+- `_compute_parameter_correlation()` — flags parameter pairs with |ρ| > 0.8 from the covariance matrix.
+- Report printed automatically after `solve()` completes.
+- `feat(calibration)`: Add `position_frame='body'|'world'` option to `_compute_logmap_residuals()` — choose body-frame or world-frame position error.
+- `feat(urdf_exporter)`: New module `figaroh.tools.urdf_exporter` for applying calibrated joint parameters to URDF files with 12 joint-level categories.
+- `feat(export_validation)`: New module `figaroh.tools.export_validation` with `URDFComparison` class — FK consistency checks, interactive viser visualization (trajectory animation, static overlay, error plots, replay controls).
+- `feat(backends)`: Multi-simulator backend architecture.
+- `PinocchioBackend` — 371 lines wrapping all Pinocchio dynamics/kinematics calls.
+- `MuJoCoBackend` — 441 lines with URDF→MJCF auto-conversion.
+- `DynamicsBackend` abstract interface with 9 abstract + 6 optional methods.
+- `RobotIdentificationSystem` high-level integration API.
+- `feat(tests)`: Cross-backend validation suite, backend unit tests (32 Pinocchio
+- 13 MuJoCo), TIAGo integration test fixture, URDF exporter tests.
+- `docs`: Combined ROADMAP.md (Track A + Track B), comprehensive architecture docs, ADR for calibration validation plan.
+
+#### Fixed
+
+- `fix(calibration)`: Replace element-wise RPY subtraction with proper SE3 log-map pose error in `_compute_logmap_residuals()` — geometrically correct orientation residuals without singularity issues.
+- `fix(backends)`: MuJoCoBackend regressor (delegates to Pinocchio analytical), Coriolis matrix (finite-difference Jacobian/2), mass matrix (adds missing `mj_forward` call).
+
+#### Changed
+
+- `breaking(export_validation)`: Rename `trajectory_errors()` → `fk_consistency_check()` and `TrajectoryErrors` → `FkConsistencyResult` — clarifies this is a file-integrity check, NOT ground-truth FK validation.
+- `chore`: Add black formatter to pre-commit hooks.
+- `chore`: Modernize pyproject.toml with dev dependencies and tool configs.
+
+#### Tests
+
+- 293 passed, 20 skipped, 0 failed (from 208 passed with 4 pre-existing failures).
+- New: `test_backends.py` (45 tests), `test_cross_backend.py` (integration), `test_tiago_fixture.py` (287 lines), `test_urdf_exporter.py` (296 lines), `test_integration.py` (250 lines).
+
+### [0.4.3] - 2026-06-02
+
+#### Added
+
+- `feat(cad_constraints)`: New module `figaroh.identification.cad_constraints` with convex CAD-informed constraints for inertial parameter identification.
+- `CADConstraints` dataclass — container for per-link mass bounds, first-moment (CoM) bounds, and symmetry equality constraints.
+- `add_mass_bounds(cad, joint, *, m_min, m_max)` — add box constraint `m_min ≤ m_j ≤ m_max` for a link.
+- `add_com_bounds(cad, joint, *, axis, h_min, h_max)` — add first-moment (linear) box constraint `h_min ≤ h_k ≤ h_max` for axis `k ∈ {x,y,z}`.
+- `add_symmetry_constraints(cad, joint_a, joint_b, *, keys)` — add equality constraints between inertial parameters of two symmetric links.
+- `bounds_from_urdf(model, ...)` — derive mass and CoM bounds automatically from Pinocchio model URDF inertials (CAD data source strategy).
+- `build_cad_constraints_from_config(cfg, *, model)` — build `CADConstraints` from a YAML config sub-dict; returns `None` when empty (safe default-off).
+- `apply_cad_constraints_to_problem(problem, theta, params_r, cad)` — inject CAD constraints into a picos `Problem` for the full-robot SDP.
+- `feat(physical_consistency)`: `project_p10_lmi` gains optional `mass_bounds` and `com_bounds` kwargs — per-link box constraints on the SDP.
+- `feat(physical_consistency)`: `project_robot_p10_lmi` gains optional `cad_constraints` kwarg — passes per-link bounds to `project_p10_lmi`.
+- `feat(reconstruction)`: `_reconstruct_sdp` and `reconstruct_full_parameters` gain optional `cad_constraints` kwarg — injects CAD constraints after the per-joint LMI loop in the full-robot SDP.
+- `feat(base_identification)`: Both `_apply_physical_consistency_if_enabled` and `_apply_reconstruction_if_enabled` hooks parse `cad_constraints` from config and pass the result to the underlying solvers.
+- Example YAML comment block for `cad_constraints` in `figaroh-examples/examples/templates/manipulator_robot.yaml`.
+
+#### Changed
+
+- All new parameters are optional with safe defaults — fully backward-compatible.
+
+### [0.4.2] - Unreleased
+
+#### Added
+
+- `feat(reconstruction)`: `ReconstructionResult.status` — outcome code (`"ok"`, `"solver_missing"`, `"error"`) on every result
+- `feat(reconstruction)`: `ReconstructionResult.base_residual_norm` — L2 norm of the base constraint residual `M θ − φ_base` (scalar, always set)
+- `feat(reconstruction)`: `ReconstructionResult.objective` — SDP objective value for Option B (`None` for nullspace)
+- `feat(reconstruction)`: `BaseResult` frozen dataclass — structured container for `(M, phi_base, params_r)` as input to `reconstruct_full_parameters()`
+- `feat(reconstruction)`: `reconstruct_full_parameters()` — unified entry point with `method="nullspace" | "sdp" | "auto"` dispatch
+- `feat(reconstruction)`: Option B SDP (`method="sdp"`) — minimises `‖diag(w)(θ−θ₀)‖²` subject to `M θ = φ_base` and per-joint pseudo-inertia LMI `P_j ≽ 0` via Schur-complement epigraph (requires picos + cvxopt/mosek)
+- `feat(reconstruction)`: `method="auto"` — silently falls back to nullspace when picos is not installed; `status="solver_missing"` when picos unavailable and `method="sdp"` was requested explicitly
+- `feat(reconstruction)`: `_load_prior_from_urdf()` — builds flat prior dict from Pinocchio model inertias (`prior_source="urdf"`)
+- `feat(reconstruction)`: `_load_prior_from_yaml()` — loads prior from a flat YAML file (`prior_source="yaml"`)
+- `feat(identification)`: `_apply_reconstruction_if_enabled()` hook in `BaseIdentification._store_results()` — called after physical consistency; stores result under `self.result["reconstruction"]`
+- `feat(identification)`: `_calculate_base_parameters()` now uses `QRDecomposer` directly to expose `self._M_matrix` / `self._params_r_for_recon` for downstream reconstruction; result dict includes `"M"` and `"params_r"` keys
+- `feat(config)`: `reconstruction` block parsed from both legacy YAML (`get_param_from_yaml`) and unified config (`unified_to_legacy_identif_config`)
+- `feat(identification/__init__)`: `BaseResult` and `reconstruct_full_parameters` added to public exports and `__all__`
+- `tests`: 13 new unit tests in `tests/unit/test_reconstruction.py` covering new fields, BaseResult, prior helpers, `_p10_indices_for_joints`, nullspace end-to-end, auto fallback, YAML prior, and unsupported method error
+
+#### Fixed
+
+- `fix(reconstruction)`: alternation loop in `run_reconstruction` now correctly unpacks `project_robot_p10_lmi()` as `(projected_p10_dict, robot_report)`; removes `AttributeError: tuple has no attribute 'p10_by_joint'`
+- `fix(identification)`: `"projected parameters"` key (space) renamed to `"projected_parameters"` (underscore) in `_apply_physical_consistency_if_enabled` result dict for consistency with `"raw_parameters"` and Python conventions
+- `fix(tools/robotcollisions)`: `print_collision_pairs()` uses `print()` instead of `logger.info()` so output is visible in interactive use and captured by tests
+- `fix(tools/solver)`: `LinearSolver._print_solution_info()` uses `print()` instead of `logger.info()` so verbose output is visible in interactive use and captured by tests
+
+### [0.4.1] - Unreleased
+
+#### Added
+
+- `feat(physical-consistency)`: `is_feasible_link()` — public alias for `check_p10_feasibility()` matching roadmap spec naming
+- `feat(physical-consistency)`: `project_link()` — public alias for `project_p10_lmi()` matching roadmap spec naming
+- `feat(physical-consistency)`: `ProjectionReport.runtime` — per-link solve time (seconds) recorded via `time.perf_counter()` around `problem.solve()`
+- `feat(physical-consistency)`: `weights` keyword argument to `project_robot_p10_lmi()` for passing a 10-element weight vector to all per-link projection calls
+- `feat(config)`: `weights.mode: "auto" | "manual"` parsed from the `physical_consistency` YAML block in `_apply_physical_consistency_if_enabled`
+- `feat(config)`: `weights.manual.{m, h, Sigma}` per-group manual weights built into a 10-element array and forwarded to `project_robot_p10_lmi`
+- `feat(identification)`: `physical consistency` result dict now stores both `raw_parameters` (pre-projection) and `projected_parameters` (post-projection) as separate keys, preserving the original identified values for comparison
+- `tests`: 28 unit tests in `tests/unit/test_physical_consistency.py` covering TC-1 through TC-12 (projection correctness, aliases, runtime, robot aggregation) plus 3 config-wiring tests for weights and raw/projected separation
+
+#### Fixed
+
+- `fix(physical-consistency)`: SDP formulation in `project_p10_lmi` no longer uses the picos 2.x-incompatible `pc.vstack`, `pc.multiply`, or `pc.sum_squares` functions; replaced with element-wise objective using `pc.SquaredNorm` and explicit sigma-entry loop
+- `fix(physical-consistency)`: solver keyword `verbose=` replaced with `verbosity=` (picos 2.x API); eliminates `DeprecationWarning` on every call
+- `fix(physical-consistency)`: feasibility check after projection uses a relaxed `psd_eig_tol=-1e-8` tolerance to absorb inevitable SDP solver numerical noise, preventing valid projections from being reported as `"infeasible"` due to tiny eigenvalue violations (~1e-9)
+
+### [0.3.1] - 2026-04-01
+
+#### Added
+
+- `feat(physical-consistency)`: optional projection of inertial parameters onto a physically consistent set (`identification/physical_consistency.py`)
+- `feat(reconstruction)`: reconstruction utilities — `run_reconstruction` and `run_option_a_reconstruction` entry points (`identification/reconstruction.py`)
+- `feat(qrdecomposition)`: `get_M` / `get_M_labels` methods for retrieving the stored base mapping matrix after decomposition
+- `feat(qrdecomposition)`: `QRResult` dataclass for structured, full-precision decomposition output (rank, base_indices, W_b, beta, M, phi_b, diag_R, cond_R1, method, …)
+- `feat(qrdecomposition)`: `relative_tolerance` constructor parameter for scale-invariant rank detection (threshold relative to largest pivot)
+- `feat(qrdecomposition)`: `get_diagnostics()` method returning rank, diag_R, cond_R1, and method after every decomposition
+- `feat(qrdecomposition)`: `decompose()` unified entry point returning a `QRResult`; delegates to pivoting or double path based on `method` argument
+- `feat(identification)`: enhanced parameter management with standard and custom parameter support in `BaseIdentification`
+
+#### Fixed
+
+- `fix(qrdecomposition)`: `_find_rank` now correctly returns 0 for zero/empty matrices (previously returned row count, causing phantom base parameters)
+- `fix(reconstruction)`: add missing `run_option_a_reconstruction` alias that blocked package-level import
+
+#### Changed
+
+- `refactor(qrdecomposition)`: replace non-pivoted `numpy.linalg.qr` with `scipy.linalg.qr(..., pivoting=True)` in `_identify_base_parameters` — permutation-stable, deterministic basis selection
+- `refactor(qrdecomposition)`: remove premature `np.around` from `beta` in all code paths; rounding deferred to display-only `_build_parameter_expressions`
+- `refactor(qrdecomposition)`: remove fragile `assert np.allclose(W_base, W_b)`
+- `refactor(qrdecomposition)`: enhanced docstrings and nominal-parameter handling
+- `refactor(identification)`: patch filter configuration management in `BaseIdentification`
+- `refactor(calibration)`: update deprecated `Frame.parent` → `Frame.parentJoint` for Pinocchio 3.x compatibility
+- `refactor(logging)`: replace print statements with `logging` calls across calibration and identification modules
+- `refactor(config)`: rename `load_from_yaml` → `load_param` for clarity
+
+#### Tests
+
+- `test(qrdecomposition)`: `TestNumericalImprovements` suite — 14 new tests, 23/23 total pass (rank-zero, relative tolerance, permutation stability ×20, mapping matrix property, column space, diagnostics, QRResult structure, full-precision beta)
+- `test(reconstruction)`: unit tests for reconstruction utilities
+
+______________________________________________________________________
+
+### [0.3.0] - 2025-12-09
+
+#### Added
+
+- **Advanced Linear Solver (`figaroh.tools.solver`)**: Comprehensive multivariate linear solver for robot parameter identification
+- Multiple solving methods: lstsq, QR, SVD, Ridge, Lasso, Elastic Net, Tikhonov, constrained, robust, weighted
+- Regularization support: L1 (Lasso), L2 (Ridge), Elastic Net, custom Tikhonov
+- Constraint handling: Box constraints (bounds), linear equality/inequality constraints
+- Robust regression with iterative reweighting for outlier resistance
+- Comprehensive solution quality metrics (RMSE, R², condition number, residuals)
+- Optimized for dense, large, thin matrices typical in robot dynamics
+- Full unit test coverage (18 tests) with robot identification scenarios
+- **Module Reorganization**: Better code organization and separation of concerns
+- **Calibration module restructuring**:
+  - `calibration/config.py`: Configuration parsing and YAML handling (624 lines)
+  - `calibration/parameter.py`: Parameter management utilities (240 lines)
+  - `calibration/data_loader.py`: Data loading and I/O operations (160 lines)
+- **Identification module restructuring**:
+  - `identification/config.py`: Configuration parsing for identification (334 lines)
+  - `identification/parameter.py`: Parameter management for identification (388 lines)
+- Maintains 100% backward compatibility through re-exports
+- **BaseIdentification Enhancement**:
+- `solve_with_custom_solver()`: New method using advanced linear solver with regularization and constraints
+- Flexible solving with multiple methods and custom constraints
+- Support for physical parameter bounds (e.g., positive masses/inertias)
+
+#### Improved
+
+- **Parameter Ordering**: Changed to Pinocchio dynamic parameter ordering for consistency
+- New order: [Ixx, Ixy, Ixz, Iyy, Iyz, Izz, mx, my, mz, m]
+- Previous order: [m, mx, my, mz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz]
+- **Regressor Module**: Cleaned up build_basic_regressor methods
+- Removed unused `tau` parameter for better API clarity
+- Improved method signatures and documentation
+- **Code Quality**: Significant reduction in code duplication
+- `calibration_tools.py`: Reduced from ~1500 to ~630 lines (-58%)
+- `identification_tools.py`: Reduced from ~900 to ~295 lines (-67%)
+- Modular design with clear single responsibilities
+
+#### Fixed
+
+- Parameter naming: Changed from numbered indices to parent joint names for clarity
+- Regressor handling: Better support for additional columns in regressor matrices
+- Results manager imports and formatting issues
+
+#### Technical Details
+
+- **Files Changed**: 21 files
+- **Lines Added**: +3,372
+- **Lines Removed**: -1,604
+- **Net Change**: +1,768 lines
+- **Test Coverage**: All 18 new solver tests passing
+
+### [0.2.4] - 2025-09-08
+
+#### Changed
+
+- **Optional Dependencies**: Removed `cyipopt` from required dependencies
+- cyipopt is now truly optional and loaded only when IPOPT optimization is used
+- Users can install without cyipopt and still use all other features
+- Install cyipopt separately when needed: `pip install cyipopt` or via conda environment
+
+#### Improved
+
+- **Installation Flexibility**: Package now installs without requiring heavy optimization dependencies
+- **Error Handling**: Better error messages when optional dependencies are missing
+
+### [0.2.3] - 2025-09-08
+
+#### Added
+
+- **Streamlined Dependencies**: All core dependencies now available via PyPI with automatic installation
+- **Lazy Loading**: Optional dependencies (cyipopt) now loaded only when needed to improve startup time
+- **Enhanced Installation Notes**: Clear documentation of simplified dependency management
+
+#### Improved
+
+- **Dependency Management**: Complete cleanup and optimization of package dependencies
+- Removed redundant `requirements.txt` and `setup.py` files
+- Consolidated all dependencies in `pyproject.toml`
+- Updated to use PyPI versions of robotics libraries (`pin` for Pinocchio)
+- **Installation Process**: Significantly simplified installation with better cross-platform compatibility
+- **Documentation**: Comprehensive README updates reflecting modern packaging standards
+- Combined development installation methods for clarity
+- Added official Pinocchio repository reference
+- Updated dependency documentation with descriptions
+- **Performance**: Faster module loading through localized imports
+- **Environment Setup**: Streamlined conda environment with minimal dependencies
+
+#### Enhanced
+
+- **Import Strategy**: Localized cyipopt import to specific functions for better error handling
+- **Error Messages**: More informative import error messages with installation instructions
+- **Package Structure**: Modern Python packaging standards with pyproject.toml-only approach
+
+#### Removed
+
+- **Redundant Files**: Eliminated `requirements.txt` and `setup.py` in favor of modern `pyproject.toml`
+- **Unnecessary Dependencies**: Cleaned up unused dependencies for leaner installation
+
+#### Fixed
+
+- **Package Name**: Corrected dependency references (e.g., proper use of `pin` for Pinocchio PyPI version)
+- **Installation Conflicts**: Resolved potential conflicts between conda and pip installations
+
+### [0.2.0] - 2025-09-05
+
+#### Added
+
+- **Unified Configuration System**: Complete overhaul of configuration management
+- New `UnifiedConfigParser` with YAML template inheritance
+- Automatic format detection for seamless legacy compatibility
+- Advanced parameter mapping between configuration formats
+- Comprehensive configuration validation with helpful error messages
+- **Enhanced Base Classes**: Modern object-oriented workflow management
+- `BaseCalibration`: Standardized calibration workflow with unified config support
+- `BaseIdentification`: Standardized identification workflow with unified config support
+- Automatic configuration format detection and conversion
+- **Advanced Regressor Builder**: Complete redesign of regressor computation
+- `RegressorBuilder`: Object-oriented, extensible regressor construction
+- `RegressorConfig`: Configuration dataclass for regressor parameters
+- Enhanced input validation and error handling
+- Support for joint torque and external wrench modes
+- **Configuration Format Mapping**: Seamless format conversion utilities
+- `unified_to_legacy_config`: Calibration parameter mapping function
+- `unified_to_legacy_identif_config`: Identification parameter mapping function
+- Perfect compatibility with existing legacy configurations
+
+#### Improved
+
+- **Parameter Processing**: Enhanced parameter handling with better defaults
+- **Error Messages**: More informative validation and error reporting
+- **Documentation**: Comprehensive updates to README and module documentation
+- **Code Organization**: Better structured modules with clear responsibilities
+- **Type Safety**: Added type hints throughout the codebase
+
+#### Enhanced
+
+- **Cross-Platform Support**: Improved compatibility across operating systems
+- **Input Validation**: Robust parameter validation and type checking
+- **Template System**: Flexible configuration template inheritance
+- **Backward Compatibility**: Full support for existing legacy configurations
+
+#### Removed
+
+- **quadprog dependency**: Removed unused quadprog dependency to reduce package size
+
+#### Fixed
+
+- **Configuration Parsing**: Resolved edge cases in YAML parsing
+- **Parameter Mapping**: Accurate conversion between configuration formats
+- **Validation Logic**: Improved configuration validation accuracy
+- **Error Handling**: Better error recovery and user feedback
+
+#### Technical Improvements
+
+- Modern Python practices with dataclasses and type hints
+- Enhanced error handling with custom exception classes
+- Improved testing framework with comprehensive validation
+- Better code documentation and examples
+
+#### Documentation
+
+- Updated README with modern API examples
+- Enhanced configuration system documentation
+- New API usage patterns and best practices
+- Comprehensive module documentation updates
+
+### [0.1.0] - 2025-01-25
+
+#### Added
+
+- Initial release of FIGAROH package
+- Dynamic identification algorithms for rigid multi-body systems
+- Geometric calibration algorithms for serial and tree-structure robots
+- Support for URDF modeling convention
+- Optimal trajectory generation for dynamic identification
+- Optimal posture generation for geometric calibration
+- Integration with Pinocchio for efficient computations
+- Support for various optimization algorithms
+- Data filtering and pre-processing utilities
+- Model parameter update utilities
+
+#### Features
+
+- **Dynamic Identification**:
+- Dynamic model including friction, actuator inertia, and joint torque offset
+- Continuous optimal exciting trajectory generation
+- Multiple parameter estimation algorithms
+- Physically consistent standard inertial parameters calculation
+- **Geometric Calibration**:
+- Full kinematic parameter calibration
+- Optimal calibration posture generation via combinatorial optimization
+- Support for external sensors (cameras, motion capture)
+- Non-external methods (planar constraints)
+
+#### Dependencies
+
+- Core scientific computing: numpy, scipy, matplotlib, pandas
+- Robotics: pinocchio (via conda)
+- Optimization: cyipopt (via conda)
+- Visualization: meshcat
+- Additional: numdifftools, ndcurves, rospkg
+
+#### Documentation
+
+- Comprehensive README with installation and usage instructions
+- Examples moved to separate repository (figaroh-examples)
+- API documentation structure prepared
+
+#### Notes
+
+- Examples and URDF models moved to separate repository for clean package distribution
+- Package optimized for PyPI distribution
+- Supports Python 3.8+
