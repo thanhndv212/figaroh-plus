@@ -16,37 +16,57 @@ site_dir: site
 
 theme:
   name: material
-  logo: assets/figaroh-mark-dark.svg
+  custom_dir: docs/overrides
+  logo: assets/figaroh-mark-light.svg
   favicon: assets/figaroh-mark-light.svg
+  font:
+    text: IBM Plex Sans
+    code: IBM Plex Mono
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
   features:
     - navigation.tabs
     - navigation.sections
+    - navigation.footer
     - navigation.top
-    - content.code.copy
-    - content.action.edit
+    - toc.follow
+    - search.highlight
     - search.suggest
+    - content.code.copy
+    - content.tabs.link
+    - content.action.edit
+
+extra_css:
+  - stylesheets/figaroh.css
+extra_javascript:
+  - javascripts/figaroh.js
 
 markdown_extensions:
   - admonition
+  - attr_list
+  - md_in_html
   - pymdownx.details
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.highlight
   - pymdownx.inlinehilite
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - tables
   - toc:
       permalink: true
@@ -64,50 +84,88 @@ plugins:
             show_root_heading: true
             merge_init_into_class: true
             members_order: source
+  # Writes llms.txt, llms-full.txt and a Markdown copy of each listed page
+  # (used by the "Copy as Markdown" page action and by coding agents).
+  - llmstxt:
+      markdown_description: >-
+        FIGAROH is a Python toolbox for geometric calibration, dynamic
+        parameter identification and optimal experiment design of robots.
+        Runnable robot examples live in the figaroh-examples repository.
+        Agent skills ship in the figaroh repository under skills/.
+      full_output: llms-full.txt
+      sections:
+        Start:
+          - start/*.md
+          - getting_started.md
+        Workflows:
+          - workflows/*.md
+          - example_workflow.md
+          - reporting_and_verification.md
+          - tutorials/*.md
+        AI agents:
+          - agents/*.md
+        Concepts:
+          - concepts/*.md
+        Examples:
+          - examples/*.md
+        API reference:
+          - api/*.md
+        Project:
+          - further_reading/*.md
 
 nav:
   - Home: index.md
-  - User Guide:
-      - Getting Started: getting_started.md
-      - Plan, Fit & Validate: example_workflow.md
-      - Reporting & Verification: reporting_and_verification.md
+  - Start:
+      - Quickstart: start/quickstart.md
+      - Installation: getting_started.md
+      - FAQ: further_reading/faq.md
+  - Workflows:
+      - Overview: workflows/index.md
+      - Calibrate a robot: workflows/calibration.md
+      - Identify dynamics: workflows/identification.md
+      - Add your robot: workflows/new-robot.md
+      - Plan, fit & verify: example_workflow.md
+      - Reports & verdicts: reporting_and_verification.md
       - Tutorials:
           - Overview: tutorials/index.md
-          - Calibration Walkthrough: tutorials/calibration_walkthrough.md
-          - "Calibration: Choosing What to Estimate": tutorials/calibration_estimation_guide.md
-          - Identification Walkthrough: tutorials/identification_walkthrough.md
-          - Optimal Experiment Design: tutorials/optimal_design.md
+          - Calibration walkthrough: tutorials/calibration_walkthrough.md
+          - "Calibration: choosing what to estimate": tutorials/calibration_estimation_guide.md
+          - Identification walkthrough: tutorials/identification_walkthrough.md
+          - Experiment design: tutorials/optimal_design.md
+  - AI agents:
+      - Overview: agents/index.md
+      - Skills: agents/skills.md
   - Concepts:
       - Architecture: concepts/architecture.md
-      - Configuration System: concepts/configuration.md
-      - Configuration Parameter Reference: concepts/config_parameters.md
-      - Calibration Estimation Methods: concepts/calibration_estimation.md
+      - Configuration system: concepts/configuration.md
+      - Calibration estimation methods: concepts/calibration_estimation.md
       - Backends: concepts/backends.md
       - Integration API: concepts/integration.md
-  - Examples Gallery:
-      - Overview: examples/index.md
-      - UR10: examples/ur10.md
-      - TIAGo: examples/tiago.md
-      - TALOS: examples/talos.md
-      - Staubli TX40: examples/staubli_tx40.md
-      - Config Templates: examples/templates.md
-  - API Reference:
-      - Overview: api/index.md
-      - Public API and stability: api/stability.md
-      - Calibration: api/calibration.md
-      - Identification: api/identification.md
-      - Optimal: api/optimal.md
-      - Backends: api/backends.md
-      - Integration: api/integration.md
-      - Data contract: api/data.md
-      - Measurements: api/measurements.md
-      - Tools: api/tools.md
-      - Utils: api/utils.md
-      - Visualisation: api/visualisation.md
-  - Further Reading:
-      - Contributing: further_reading/contributing.md
-      - Roadmap: further_reading/roadmap.md
-      - Delivery Plans: further_reading/plans.md
+  - Reference:
+      - Config keys: concepts/config_parameters.md
+      - Examples gallery:
+          - Overview: examples/index.md
+          - UR10: examples/ur10.md
+          - TIAGo: examples/tiago.md
+          - TALOS: examples/talos.md
+          - Stäubli TX40: examples/staubli_tx40.md
+          - Config templates: examples/templates.md
+      - Python API:
+          - Overview: api/index.md
+          - Public API and stability: api/stability.md
+          - Calibration: api/calibration.md
+          - Identification: api/identification.md
+          - Optimal: api/optimal.md
+          - Backends: api/backends.md
+          - Integration: api/integration.md
+          - Data contract: api/data.md
+          - Measurements: api/measurements.md
+          - Tools: api/tools.md
+          - Utils: api/utils.md
+          - Visualisation: api/visualisation.md
+  - Project:
       - Changelog: further_reading/changelog.md
-      - FAQ: further_reading/faq.md
-      - Design Decisions: further_reading/decisions.md
+      - Roadmap: further_reading/roadmap.md
+      - Delivery plans: further_reading/plans.md
+      - Contributing: further_reading/contributing.md
+      - Design decisions: further_reading/decisions.md

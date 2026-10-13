@@ -9,7 +9,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "figaroh"
-version = "1.0.1"
+version = "1.0.2"
 description = "A Python toolbox for dynamics identification and geometric calibration of robots and humans"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -75,6 +75,7 @@ docs = [
     "mkdocs-material>=9.5",
     "mkdocstrings[python]>=0.25",
     "mkdocs-include-markdown-plugin>=6.0",
+    "mkdocs-llmstxt>=0.5",
     "pymdown-extensions<12.2",
 ]
 examples = [
