@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-10-13
+
+Documentation release. No library code changed; the figaroh-examples
+`v1.0.0` tag remains the validated pair.
+
+### Added
+
+- Documentation site redesigned around user journeys (#201): a landing page
+  with a task picker, Start / Workflows / AI agents / Concepts / Reference /
+  Project navigation, five-step calibration and identification guides
+  (Plan, Design, Configure, Fit, Verify) with an example/own-robot toggle and
+  choice cards, Quickstart and "Add your robot" pages.
+- AI agents section: agent setup, environment doctor, prompt library and
+  skills reference; the site publishes `llms.txt` and `llms-full.txt`
+  (`mkdocs-llmstxt`, added to the `docs` extra) and every page has a
+  Copy as Markdown button.
+- README screenshot of the documentation landing page.
+
+### Changed
+
+- pre-commit `check-yaml` runs with `--unsafe` so `mkdocs.yml` can use
+  mkdocs-material `!!python/name` tags.
+
 ## [1.0.1] - 2026-10-12
 
 Documentation and housekeeping release. No library code changed; the
