@@ -399,8 +399,9 @@ def _determine_axis_motion(joint):
 
     Aligned joints (``JointModelRZ``, ``JointModelPX``, the continuous
     ``JointModelRUBZ``) give their axis directly. An unaligned joint is
-    accepted when its axis is a coordinate axis up to sign (a negative axis
-    flips the sign of the fitted compliance); any other axis, and any joint
+    accepted when its axis is a coordinate axis up to sign (the deflection
+    follows the axis sign, so the compliance keeps its physical sign; see
+    ``calc_updated_fkm``); any other axis, and any joint
     that is not one-DOF, raises rather than fit a deflection about the
     wrong axis (#206).
 

@@ -212,3 +212,77 @@ class TestElasticAxis:
         assert _build_elastic_param_names(robot, active) == ["k_RZ_b", "k_RX_c"]
         with pytest.raises(ValueError, match="not a coordinate axis"):
             _build_elastic_param_names(robot, [model.getJointId("a")])
+
+
+class TestCompliancePhysicalSign:
+    """k is the physical compliance: the joint moves q -> q + k * tau,
+    whichever way its axis points in the joint frame."""
+
+    HORIZONTAL_Z = pin.SE3(pin.rpy.rpyToMatrix(np.pi / 2, 0.0, 0.0), np.zeros(3))
+
+    @pytest.mark.parametrize(
+        "joint, placement, name",
+        [
+            (pin.JointModelRZ(), HORIZONTAL_Z, "k_RZ_j"),
+            (
+                pin.JointModelRevoluteUnaligned(np.array([0.0, 0.0, -1.0])),
+                HORIZONTAL_Z,
+                "k_RZ_j",
+            ),
+            (pin.JointModelRY(), pin.SE3.Identity(), "k_RY_j"),
+            (
+                pin.JointModelRevoluteUnaligned(np.array([0.0, -1.0, 0.0])),
+                pin.SE3.Identity(),
+                "k_RY_j",
+            ),
+            (pin.JointModelPZ(), pin.SE3.Identity(), "k_PZ_j"),
+            (
+                pin.JointModelPrismaticUnaligned(np.array([0.0, 0.0, -1.0])),
+                pin.SE3.Identity(),
+                "k_PZ_j",
+            ),
+        ],
+    )
+    def test_deflection_is_compliance_times_torque_along_the_axis(
+        self, joint, placement, name
+    ):
+        model = pin.Model()
+        j = model.addJoint(0, joint, placement, "j")
+        com = pin.SE3(np.eye(3), np.array([0.2, 0.05, 0.1]))
+        model.appendBodyToJoint(j, pin.Inertia.FromSphere(1.5, 0.05), com)
+        model.addJointFrame(j)
+        model.addFrame(
+            pin.Frame(
+                "tip",
+                j,
+                model.getFrameId("j"),
+                pin.SE3(np.eye(3), np.array([0.3, 0.1, 0.0])),
+                pin.FrameType.OP_FRAME,
+            )
+        )
+        q = np.array([0.4])
+        k = 0.02
+        tau = pin.computeGeneralizedGravity(model, model.createData(), q)
+        assert abs(tau[0]) > 0.1  # the joint is loaded
+
+        pee = calc_updated_fkm(
+            model,
+            model.createData(),
+            np.array([k]),
+            q[None, :],
+            _config(model, [name], ["j"]),
+        )
+        assert pee == pytest.approx(_pose(model, q + k * tau), abs=1e-9)
+
+    def test_name_off_the_joint_axis_is_refused(self):
+        model = _chain(
+            ["j"], [pin.JointModelRevoluteUnaligned(np.array([0.0, 0.0, -1.0]))]
+        )
+        with pytest.raises(ValueError, match="not the axis"):
+            calc_updated_fkm(
+                model,
+                model.createData(),
+                np.array([0.01]),
+                np.array([[0.3]]),
+                _config(model, ["k_RX_j"], ["j"]),
+            )
