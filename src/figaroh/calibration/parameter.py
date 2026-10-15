@@ -28,6 +28,8 @@ dictionaries, including:
 import numpy as np
 import pinocchio as pin
 
+from .config import _determine_axis_motion
+
 # Constants for parameter templates
 FULL_PARAMTPL = ["d_px", "d_py", "d_pz", "d_phix", "d_phiy", "d_phiz"]
 JOINT_OFFSETTPL = [
@@ -101,9 +103,15 @@ def get_joint_offset(model, joint_names):
     for id, joint in enumerate(joints):
         name = joint_names[id]
         shortname = joint.shortname()
-        if model.name == "canopies":
-            if "RevoluteUnaligned" in shortname:
-                shortname = shortname.replace("RevoluteUnaligned", "RZ")
+        # an unaligned joint about a coordinate axis (up to sign) is named
+        # after that axis; calc_updated_fkm applies the offset with the axis
+        # sign, so it is q + offset (#205). A tilted axis keeps its name and
+        # is refused there if it is calibrated.
+        if shortname.endswith("Unaligned"):
+            try:
+                shortname = "JointModel" + _determine_axis_motion(joint)
+            except ValueError:
+                pass
         for i in range(joint.nv):
             if i > 0:
                 offset_param = (
