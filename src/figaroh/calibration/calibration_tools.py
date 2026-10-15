@@ -442,8 +442,24 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
                             j_name, axis, key
                         )
                     )
-                xyz_rpy[axis_id] += param_dict[key]
+                value = param_dict[key]
+                if calib_config["calib_model"] == "joint_offset":
+                    # an unaligned joint about -z moves by -q about z (#205)
+                    value *= _axis_sign(model, j_id, axis_id)
+                xyz_rpy[axis_id] += value
                 updated_params.append(key)
+        # get_joint_offset keeps the shortname of an unaligned joint whose
+        # axis is tilted: no frame axis to offset it about
+        shortname = model.joints[j_id].shortname()
+        if (
+            calib_config["calib_model"] == "joint_offset"
+            and shortname.endswith("Unaligned")
+            and f"{shortname.replace('JointModel', 'offset')}_{j_name}" in param_dict
+        ):
+            raise ValueError(
+                f"joint_offset: {j_name} is a {shortname} whose axis is not "
+                "a coordinate axis; its offset is not supported (#205)"
+            )
 
         # update joint placement: full_params perturb the placement in the
         # parent frame; joint offsets act about the joint's own axes (q + offset)
