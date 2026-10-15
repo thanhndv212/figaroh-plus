@@ -166,11 +166,16 @@ def add_base_name(calib_config):
 
     Side Effects:
         Modifies calib_config["param_name"] in place by:
-        - For full_params: Replaces first 6 entries with base parameters
+        - For full_params: Replaces the first 6 structural base parameters
+          (from ``base_mapping_slice``, after any elastic ``k_*`` names)
+          with base parameters
         - For joint_offset: Prepends base parameters to list
     """
     if calib_config["calib_model"] == "full_params":
-        calib_config["param_name"][0:6] = BASE_TPL
+        # the structural parameters start after any non-geometric names
+        # (elastic k_*, #206); without them the slice starts at 0
+        start = calib_config.get("base_mapping_slice", (0, 0))[0]
+        calib_config["param_name"][start : start + len(BASE_TPL)] = BASE_TPL
     elif calib_config["calib_model"] == "joint_offset":
         calib_config["param_name"] = BASE_TPL + calib_config["param_name"]
         # base_mapping_slice is positional: prepending shifts it
