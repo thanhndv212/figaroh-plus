@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The structural parameter selection can follow the first independent
+  columns in joint order, so the selected names no longer depend on
+  `random_seed` (#204). `estimation.structural_selection: ordered` (new
+  `QRDecomposer(ordered=True)` and `ordered_column_basis`) replaces LAPACK's
+  largest-residual-first pivoting, which swaps equivalent columns between
+  draws. The span is unchanged, but chains that share parameters by name
+  (TALOS two-chain: shared torso axes, held-out z moved by about 1.5 mm
+  across `random_seed` 0-4) need the same basis for every draw. The default
+  stays `lapack`, so existing results are unchanged.
 - Joint elasticity (`include_non_geometric`) now works beyond fixed-base,
   aligned, distinctly named chains (#206):
   - `add_base_name` renames the first structural parameters at

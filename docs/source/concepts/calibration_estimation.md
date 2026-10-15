@@ -31,6 +31,7 @@ tasks:
       calibration_level: full_params      # or joint_offset
       estimation:
         method: map_cv                    # structural | excitation | map | map_cv | cv_subset
+        structural_selection: lapack      # structural: lapack | ordered
         priors:                           # expected error sizes (1 sigma)
           translation: 1.0e-3             # m
           rotation: 2.0e-3                # rad
@@ -68,6 +69,17 @@ drops those the estimated frames absorb on the measured postures
   platforms (figaroh-plus#113); weakly excited parameters are estimated
   freely.
 - **Use when:** you need results comparable with an earlier run.
+
+`structural_selection` chooses among exactly dependent columns. `lapack`
+(default) takes the largest residual first, so the selected names follow the
+random draw (`random_seed`): the span is the same, the basis is not. That
+does not matter for one chain, but it does when chains share parameters by
+name (the TALOS two-chain fit swapped its shared torso axes between draws
+and moved the held-out height error by about 1.5 mm, figaroh-plus#204).
+`ordered` takes the first independent columns in joint order, the same for
+every draw. The choice of order is still a convention: it fixes which of
+several equivalent bases is fitted, and the regularisation and the name
+sharing depend on that basis.
 
 ### `excitation`
 
