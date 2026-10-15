@@ -24,6 +24,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     fitted `k` is the physical compliance for negative axes too.
 
   Rigid calibration results are unchanged.
+- `calib_model: joint_offset` works on robots with an unaligned revolute or
+  prismatic joint, such as TIAGo Pro `arm_right_6` (#205). The offset is
+  named after the joint's coordinate axis (`offsetRZ_<joint>` for a `±z`
+  axis) and applied with the axis sign, so it is `q + offset`. The
+  `canopies`-only rename is gone; for a `-z` joint on that model the
+  fitted offset changes sign. A joint whose axis is not a coordinate axis
+  raises a `ValueError` if its offset is calibrated.
 
 ## [1.0.2] - 2026-10-13
 
