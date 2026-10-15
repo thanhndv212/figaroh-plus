@@ -243,3 +243,31 @@ def test_logmap_residual_across_yaw_wrap():
     estimated = np.array([0, 0, 0, 0, 0, -np.pi + eps])
     res = calib._compute_logmap_residuals(measured, estimated)
     assert np.linalg.norm(res[3:]) == pytest.approx(2 * eps, abs=1e-9)
+
+
+# ── draw-independent structural selection (#204) ────────────────
+
+
+def _selection_for_seed(model, seed, selection):
+    cfg = _tiago_config(model, "full_params", [True] * 3 + [False] * 3)
+    cfg["NbSample"] = 20
+    cfg["random_seed"] = seed
+    cfg["estimation"] = {"structural_selection": selection}
+    return _selected_parameters(model, cfg)
+
+
+def test_ordered_selection_ignores_the_random_draw(tiago_model):
+    """LAPACK pivoting follows ``random_seed``; ``ordered`` does not."""
+    seeds = range(5)
+    lapack = [_selection_for_seed(tiago_model, s, "lapack") for s in seeds]
+    ordered = [_selection_for_seed(tiago_model, s, "ordered") for s in seeds]
+    # the problem is a real one: the default selection moves with the draw
+    assert len({tuple(sel) for sel in lapack}) > 1
+    assert len({tuple(sel) for sel in ordered}) == 1
+    # same number of base parameters either way
+    assert {len(sel) for sel in lapack} == {len(ordered[0])}
+
+
+def test_structural_selection_rejects_unknown_value(tiago_model):
+    with pytest.raises(ValueError, match="structural_selection"):
+        _selection_for_seed(tiago_model, 0, "nope")
