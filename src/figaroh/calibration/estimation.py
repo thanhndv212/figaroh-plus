@@ -20,7 +20,11 @@
 ``structural`` (default)
     The structural base parameters from random configurations, then the
     data-level elimination of frame-absorbed parameters (#102). Unchanged
-    behaviour.
+    behaviour. ``structural_selection`` picks how the independent columns
+    are chosen among exactly dependent ones: ``lapack`` (default) takes the
+    largest residual first, so the selected names follow the random draw
+    (``random_seed``); ``ordered`` takes the first independent columns in
+    joint order, which is the same for every draw (#204).
 ``excitation``
     Start from every joint parameter of the calibration level, drop exact
     dependencies on the measured postures, then remove, one at a time, the
@@ -67,6 +71,7 @@ from .parameter import BASE_TPL, add_pee_name, get_fullparam_offset, get_joint_o
 logger = logging.getLogger(__name__)
 
 METHODS = ("structural", "excitation", "map", "map_cv", "cv_subset")
+STRUCTURAL_SELECTIONS = ("lapack", "ordered")
 GROUPS = ("translation", "rotation", "joint_offset", "prismatic_offset")
 DEFAULT_PRIORS = {
     "translation": 1e-3,  # m, placement translation
@@ -86,6 +91,7 @@ DEFAULTS = {
     "cv_sizes": None,
     "cv_rule": "min",
     "dependency_tol": 1e-7,
+    "structural_selection": "lapack",
 }
 _BASE_MAPPING_KEYS = (
     "base_mapping_matrix",
@@ -111,6 +117,11 @@ def settings(calib_config: dict) -> dict:
     unknown = set(out["priors"]) - set(GROUPS)
     if unknown:
         raise EstimationError(f"unknown prior groups {sorted(unknown)}")
+    if out["structural_selection"] not in STRUCTURAL_SELECTIONS:
+        raise EstimationError(
+            "estimation.structural_selection must be one of "
+            f"{', '.join(STRUCTURAL_SELECTIONS)}"
+        )
     if out["cv_rule"] not in ("min", "one_se"):
         raise EstimationError("estimation.cv_rule must be 'min' or 'one_se'")
     return out

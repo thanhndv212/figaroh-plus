@@ -126,6 +126,58 @@ def deterministic_column_pivots(
     return np.array(chosen + rest, dtype=int), len(chosen)
 
 
+def ordered_column_basis(
+    W: np.ndarray,
+    *,
+    tol: float = TOL_QR,
+    relative_tol: Optional[float] = None,
+) -> Tuple[np.ndarray, int]:
+    """Pick the first independent columns of ``W``, in column order.
+
+    A column joins the basis when its residual, after projecting out the
+    columns already kept, exceeds the threshold. The kept set depends only
+    on the span structure of ``W`` taken in the given order, not on column
+    norms: when the rank gap is clear, a different random draw of the rows
+    selects the same columns. LAPACK's pivoted QR and
+    :func:`deterministic_column_pivots` take the largest residual first, so
+    among exactly dependent columns the one that wins follows the draw.
+
+    Args:
+        W: Regressor, shape ``(m, n)``.
+        tol: Absolute threshold on the residual norm.
+        relative_tol: If set, the threshold is ``max(relative_tol * largest
+            column norm, tol)``.
+
+    Returns:
+        ``(P, rank)``: a permutation of ``range(n)`` whose first ``rank``
+        entries are the kept columns in ascending index order, followed by
+        the others in ascending index order.
+    """
+    W = np.asarray(W, dtype=float)
+    n = W.shape[1]
+    if n == 0:
+        return np.empty(0, dtype=int), 0
+    A = np.linalg.qr(W, mode="r")
+    thr = tol
+    if relative_tol is not None:
+        thr = max(relative_tol * np.linalg.norm(A, axis=0).max(), tol)
+    basis = np.zeros((A.shape[0], 0))
+    chosen: List[int] = []
+    for j in range(n):
+        if len(chosen) == A.shape[0]:
+            break
+        v = A[:, j].copy()
+        for _ in range(2):  # re-orthogonalise
+            v -= basis @ (basis.T @ v)
+        norm = np.linalg.norm(v)
+        if norm > thr:
+            chosen.append(j)
+            basis = np.column_stack([basis, v / norm])
+    kept = set(chosen)
+    rest = [j for j in range(n) if j not in kept]
+    return np.array(chosen + rest, dtype=int), len(chosen)
+
+
 @dataclass
 class QRResult:
     """Structured output of a QR base-parameter decomposition.
@@ -180,9 +232,15 @@ class QRDecomposer:
         beta_tolerance: float = TOL_BETA,
         relative_tolerance: Optional[float] = None,
         deterministic: bool = True,
+        ordered: bool = False,
     ):
         """
         Args:
+            ordered: Choose the first independent columns in the order of
+                ``params_r`` (:func:`ordered_column_basis`) instead of the
+                largest residual first. The base set is then a property of
+                the column order and span, not of the rows drawn (#204).
+                Takes precedence over ``deterministic``.
             deterministic: Choose base columns with
                 :func:`deterministic_column_pivots` (default), so ties
                 between equally large columns are broken by parameter name
@@ -190,6 +248,7 @@ class QRDecomposer:
                 LAPACK's pivoted QR, whose tie order is platform dependent.
         """
         self.deterministic = deterministic
+        self.ordered = ordered
         self.tolerance = tolerance
         self.beta_tolerance = beta_tolerance
         self.relative_tolerance = relative_tolerance
@@ -574,6 +633,12 @@ class QRDecomposer:
         order, BLAS or rounding noise (#116). With ``deterministic=False``
         this is LAPACK's pivoted QR.
         """
+        if self.ordered:
+            P, rank = ordered_column_basis(
+                W_e, tol=self.tolerance, relative_tol=self.relative_tolerance
+            )
+            Q, R = np.linalg.qr(W_e[:, P], mode="reduced")
+            return Q, R, P, rank
         if not self.deterministic:
             Q, R, P = linalg.qr(W_e, pivoting=True, mode="economic")
             return Q, R, P, self._find_rank(R)

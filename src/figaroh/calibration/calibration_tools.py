@@ -881,9 +881,22 @@ def calculate_base_kinematics_regressor(
     # (random-config) regressor covers both, since the base/dependent
     # column split is a property of the kinematic chain, not of any
     # particular dataset.
-    # LAPACK pivoting: calibration selection is made deterministic in #113,
-    # not here, so calibration results stay as they were.
-    decomposer = QRDecomposer(tolerance=tol_qr, deterministic=False)
+    # LAPACK pivoting by default: calibration selection is made deterministic
+    # in #113, not here, so calibration results stay as they were.
+    # ``estimation.structural_selection: ordered`` takes the first
+    # independent columns in joint order instead, so the selected names do
+    # not depend on the random draw (#204).
+    selection = (calib_config.get("estimation") or {}).get(
+        "structural_selection", "lapack"
+    )
+    if selection not in ("lapack", "ordered"):
+        raise ValueError(
+            f"estimation.structural_selection '{selection}' not in "
+            "lapack, ordered"
+        )
+    decomposer = QRDecomposer(
+        tolerance=tol_qr, deterministic=False, ordered=selection == "ordered"
+    )
     M, paramsrand_base, idx_base, _ = decomposer.get_base_mapping_matrix_double(
         Rrand_e, paramsrand_e
     )
