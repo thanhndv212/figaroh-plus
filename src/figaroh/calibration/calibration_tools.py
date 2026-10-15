@@ -471,7 +471,7 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
                                 j_name, key, elas
                             )
                         )
-                    elastic_map[j_id] = (key, elas_id)
+                    elastic_map[j_id] = (key, elas_id, _axis_sign(model, j_id, elas_id))
                     updated_params.append(key)
 
     # check if all parameters are updated to the model
@@ -503,11 +503,15 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
             geometric_placements = {
                 j_id: model.jointPlacements[j_id].copy() for j_id in elastic_map
             }
-            for j_id, (key, elas_id) in elastic_map.items():
+            for j_id, (key, elas_id, sign) in elastic_map.items():
                 xyz_rpy = np.zeros(6)
                 # the joint's velocity index, not j_id - 1: they differ after
-                # a free-flyer or any multi-DOF joint (#206)
-                xyz_rpy[elas_id] = param_dict[key] * tau[model.joints[j_id].idx_v]
+                # a free-flyer or any multi-DOF joint (#206). The deflection
+                # k * tau is along the joint axis, i.e. q -> q + k * tau, so
+                # k is the physical compliance; sign maps it to the joint
+                # frame axis apply_joint_offset acts on.
+                tau_j = tau[model.joints[j_id].idx_v]
+                xyz_rpy[elas_id] = sign * param_dict[key] * tau_j
                 model = apply_joint_offset(model, j_id, xyz_rpy)
 
             # jointPlacements changed: data.oMf is stale until FK is redone
@@ -578,6 +582,24 @@ def update_joint_placement(model, joint_idx, xyz_rpy):
     delta = pin.SE3(pin.exp3(xyz_rpy[3:6]), xyz_rpy[0:3])
     model.jointPlacements[joint_idx] = model.jointPlacements[joint_idx] * delta
     return model
+
+
+def _axis_sign(model, j_id, elas_id):
+    """Sign of a joint's motion axis along the frame axis of ``ELAS_TPL[elas_id]``.
+
+    +1 for aligned joints. An unaligned joint about ``[0, 0, -1]`` moves by
+    ``-q`` about the joint frame z, so its deflection is applied with -1 (#206).
+    """
+    axis = getattr(model.joints[j_id].extract(), "axis", None)
+    if axis is None:
+        return 1.0
+    sign = float(np.sign(axis[elas_id % 3]))
+    if sign == 0.0:
+        raise ValueError(
+            f"joint elasticity: {ELAS_TPL[elas_id]} is not the axis "
+            f"{np.asarray(axis).tolist()} of joint {model.names[j_id]}"
+        )
+    return sign
 
 
 def apply_joint_offset(model, joint_idx, offset):

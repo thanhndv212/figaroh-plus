@@ -19,7 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     no longer takes the parameters of `joint10`;
   - an unaligned joint gets its actual coordinate axis (a `-z` axis maps to
     `RZ`); any other axis, or a joint that is not one-DOF, raises a
-    `ValueError` instead of silently using `RZ`.
+    `ValueError` instead of silently using `RZ`;
+  - the deflection follows the joint axis (`q -> q + k * tau`), so the
+    fitted `k` is the physical compliance for negative axes too.
 
   Rigid calibration results are unchanged.
 
