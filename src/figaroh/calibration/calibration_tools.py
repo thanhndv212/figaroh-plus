@@ -891,8 +891,7 @@ def calculate_base_kinematics_regressor(
     )
     if selection not in ("lapack", "ordered"):
         raise ValueError(
-            f"estimation.structural_selection '{selection}' not in "
-            "lapack, ordered"
+            f"estimation.structural_selection '{selection}' not in " "lapack, ordered"
         )
     decomposer = QRDecomposer(
         tolerance=tol_qr, deterministic=False, ordered=selection == "ordered"
