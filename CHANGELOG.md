@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Joint elasticity (`include_non_geometric`) now works beyond fixed-base,
+  aligned, distinctly named chains (#206):
+  - `add_base_name` renames the first structural parameters at
+    `base_mapping_slice[0]` instead of overwriting the elastic `k_*` names;
+  - the gravity torque is read at the joint's velocity index, not
+    `j_id - 1` (wrong after a free-flyer or multi-DOF joint);
+  - geometric and elastic parameter names are matched exactly, so `joint1`
+    no longer takes the parameters of `joint10`;
+  - an unaligned joint gets its actual coordinate axis (a `-z` axis maps to
+    `RZ`); any other axis, or a joint that is not one-DOF, raises a
+    `ValueError` instead of silently using `RZ`.
+
+  Rigid calibration results are unchanged.
+
 ## [1.0.2] - 2026-10-13
 
 Documentation release. No library code changed; the figaroh-examples

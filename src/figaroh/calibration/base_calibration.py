@@ -562,10 +562,10 @@ class BaseCalibration(ABC):
         rows = list(cfg["base_mapping_row_names"])
         cfg["base_mapping_matrix_full"] = np.array(cfg["base_mapping_matrix"])
         cfg["base_mapping_row_names_full"] = rows
-        start, _ = cfg["base_mapping_slice"]
         frame_rows = []
         if cfg["calib_model"] == "full_params" and not cfg["known_baseframe"]:
-            frame_rows = rows[: max(0, len(BASE_TPL) - start)]
+            # add_base_name renames the slice's first rows (#206)
+            frame_rows = rows[: len(BASE_TPL)]
         cfg["base_frame_row_names"] = frame_rows
 
     def _frame_param_names(self) -> List[str]:

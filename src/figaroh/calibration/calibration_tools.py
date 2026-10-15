@@ -430,21 +430,20 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
         xyz_rpy = np.zeros(6)
         j_name = model.names[j_id]
 
-        # check joint name in param dict
-        for key in param_dict.keys():
-            if j_name in key:
-
-                # update xyz_rpy with kinematic errors based on identifiable axis
-                for axis_id, axis in enumerate(axis_tpl):
-                    if axis in key:
-                        if verbose == 1:
-                            logger.debug(
-                                "Updating [{}] joint placement at axis {} with [{}]".format(
-                                    j_name, axis, key
-                                )
-                            )
-                        xyz_rpy[axis_id] += param_dict[key]
-                        updated_params.append(key)
+        # update xyz_rpy with kinematic errors based on identifiable axis;
+        # names are "<template>_<joint>", matched exactly (a substring match
+        # gives joint_1 the parameters of joint_10, #206)
+        for axis_id, axis in enumerate(axis_tpl):
+            key = f"{axis}_{j_name}"
+            if key in param_dict:
+                if verbose == 1:
+                    logger.debug(
+                        "Updating [{}] joint placement at axis {} with [{}]".format(
+                            j_name, axis, key
+                        )
+                    )
+                xyz_rpy[axis_id] += param_dict[key]
+                updated_params.append(key)
 
         # update joint placement: full_params perturb the placement in the
         # parent frame; joint offsets act about the joint's own axes (q + offset)
@@ -457,22 +456,23 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
     # see _build_elastic_param_names), matched once here since the mapping
     # joint -> param is static; the deflection itself is gravity-torque
     # dependent and recomputed per sample below.
+    # Names are matched exactly: a substring match would give joint_1 the
+    # gain of joint_10 (#206).
     elastic_map = {}
     if calib_config.get("non_geom"):
         for j_id in calib_config["actJoint_idx"]:
             j_name = model.names[j_id]
-            for key in param_dict.keys():
-                if j_name in key:
-                    for elas_id, elas in enumerate(ELAS_TPL):
-                        if elas in key:
-                            if verbose == 1:
-                                logger.debug(
-                                    "Joint [{}] elastic gain [{}] on axis {}".format(
-                                        j_name, key, elas
-                                    )
-                                )
-                            elastic_map[j_id] = (key, elas_id)
-                            updated_params.append(key)
+            for elas_id, elas in enumerate(ELAS_TPL):
+                key = f"{elas}_{j_name}"
+                if key in param_dict:
+                    if verbose == 1:
+                        logger.debug(
+                            "Joint [{}] elastic gain [{}] on axis {}".format(
+                                j_name, key, elas
+                            )
+                        )
+                    elastic_map[j_id] = (key, elas_id)
+                    updated_params.append(key)
 
     # check if all parameters are updated to the model
     assert len(updated_params) == len(
@@ -505,7 +505,9 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
             }
             for j_id, (key, elas_id) in elastic_map.items():
                 xyz_rpy = np.zeros(6)
-                xyz_rpy[elas_id] = param_dict[key] * tau[j_id - 1]
+                # the joint's velocity index, not j_id - 1: they differ after
+                # a free-flyer or any multi-DOF joint (#206)
+                xyz_rpy[elas_id] = param_dict[key] * tau[model.joints[j_id].idx_v]
                 model = apply_joint_offset(model, j_id, xyz_rpy)
 
             # jointPlacements changed: data.oMf is stale until FK is redone
