@@ -203,7 +203,7 @@ more precise than it is.
 ## Outputs
 
 - `calib_config["estimation_report"]` (also `calibrator.estimation_report`):
-  the method, candidates, exactly dependent parameters, the noise and its
+  the method, candidates, nuisance parameters, exactly dependent parameters, the noise and its
   source, the priors, and per method the removal order with ratios, the
   cross-validation curve and the chosen factor or size.
 - `calibrator.std_dev`: for `map`/`map_cv`, posterior standard deviations;
@@ -226,14 +226,55 @@ more precise than it is.
   outside a reloaded URDF they reproduce the calibrated forward kinematics,
   for every method and both levels (figaroh-plus#62).
 
+## Custom measurement models
+
+The non-structural methods do not assume an end-effector pose. A calibrator
+that measures something else (a distance to a plane, a contact gap) plugs in
+through three `BaseCalibration` hooks (figaroh-plus#210):
+
+- `nuisance_param_names()`: the parameters fitted freely besides the joints,
+  with no prior and never removed. Default: the unknown base and tool
+  frames. A table-contact calibrator returns its plane and contact-offset
+  parameters. They come after the joint parameters in `param_name` (the base
+  frame, if any, stays first).
+- `measurement_jacobian(names, x)`: the derivative of the measured quantity,
+  used to drop exact dependencies. Default: a central difference of
+  `get_pose_from_measure`, so overriding `get_pose_from_measure` is often
+  enough. For an exact derivative, chain the measurement's derivative onto
+  `calibration_tools.chain_jacobian`, the Pinocchio-built Jacobian of the
+  chain placement at the `full_params` level.
+- `per_sample_attributes`: names of attributes with one entry per sample
+  (e.g. `("session_ids",)`), sliced with `q_measured` in the
+  cross-validation folds.
+
+The calibrator must keep this contract:
+
+- the first `len(PEE_measured)` entries of `cost_function` are the
+  measurement residuals, DOF-major (every sample of the first measured
+  component, then the next); rows after them are ignored, and
+  regularisation belongs in priors, not appended rows;
+- parameters are read by name from `calib_config["param_name"]`;
+- all per-sample state is `q_measured`, `PEE_measured` or listed in
+  `per_sample_attributes`, and `NbSample` follows the slice;
+- the nuisance parameters are identifiable on the data. Two nuisance
+  parameters with the same effect (a plane height and a probe length)
+  raise "nuisance parameters are not identifiable on this data: fix a
+  gauge"; remove one or fix its value. With `map_cv` and `cv_subset` the
+  check also runs on each fold's training samples, so a session with too
+  few postures for every fold to determine its parameters raises: reduce
+  `cv_folds` or record more postures.
+
 ## Limits
 
 - Not supported with `include_non_geometric` (elastic parameters); use
   `structural`.
-- The robot's `cost_function` must keep the parameter layout: base frame
-  first, joint parameters, tool point last (as the TIAGo, UR10 and TALOS
-  examples do). Classes with extra parameters (e.g. table-contact planes)
-  are not supported.
+- The robot's `cost_function` must read parameters by name, or keep the
+  layout: base frame first, joint parameters, then the other nuisance
+  parameters (tool point by default), as the TIAGo, UR10 and TALOS examples
+  do. See [Custom measurement models](#custom-measurement-models).
+- Per-session nuisance parameters are not split across folds: a fold that
+  misses a session raises instead of leaving its parameters undetermined.
+- `chain_jacobian` covers `full_params`; not `joint_offset` or elasticity.
 - `regularization_coefficient` was removed in 1.0 (#120): it weighted metres
   and radians alike. A non-zero value is a `ConfigurationError`; leave it at 0; `map`/`map_cv` are the
   unit-consistent replacement.

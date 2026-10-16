@@ -43,7 +43,9 @@
     Nested parameter sets in the ``excitation`` removal order; the set size
     is chosen by k-fold cross-validation over the training postures.
 
-The base and tool frames are always estimated freely (no prior). Noise is
+Nuisance parameters are always estimated freely (no prior): by default the
+base and tool frames, or what the calibrator's
+:meth:`~BaseCalibration.nuisance_param_names` returns (#210). Noise is
 ``noise_std`` in the units of the cost function's measurement residuals
 (metres for position unless the robot's cost function weights them), or,
 when ``None``, estimated from a free fit of the identifiable parameters.
@@ -66,7 +68,7 @@ from .calibration_tools import (
     measurement_jacobian,
     select_identifiable_parameters,
 )
-from .parameter import BASE_TPL, add_pee_name, get_fullparam_offset, get_joint_offset
+from .parameter import BASE_TPL, get_fullparam_offset, get_joint_offset
 
 logger = logging.getLogger(__name__)
 
@@ -168,11 +170,14 @@ def prior_group(name: str, model) -> Optional[str]:
     return "joint_offset"
 
 
-def prior_std(names: Sequence[str], model, priors: Dict[str, float]) -> np.ndarray:
-    """Expected size per parameter; ``inf`` for frame parameters."""
+def prior_std(
+    names: Sequence[str], model, priors: Dict[str, float], nuisance=()
+) -> np.ndarray:
+    """Expected size per parameter; ``inf`` for frame and nuisance parameters."""
+    nuisance = set(nuisance)
     out = []
     for n in names:
-        group = prior_group(n, model)
+        group = None if n in nuisance else prior_group(n, model)
         out.append(np.inf if group is None else float(priors[group]))
     return np.array(out)
 
@@ -180,22 +185,38 @@ def prior_std(names: Sequence[str], model, priors: Dict[str, float]) -> np.ndarr
 # ── fitting helpers ─────────────────────────────────────────────
 
 
+def _sample_rows(n: int, ndof: int, idx) -> np.ndarray:
+    """Rows of a DOF-major measurement vector that belong to samples ``idx``."""
+    idx = np.asarray(idx)
+    return np.concatenate([d * n + idx for d in range(ndof)])
+
+
 @contextmanager
 def _samples(calib, idx):
-    """Restrict the calibrator's measurements to sample indices ``idx``."""
+    """Restrict the calibrator's measurements to sample indices ``idx``.
+
+    Slices ``q_measured``, ``PEE_measured`` and every attribute named in
+    ``calib.per_sample_attributes`` (first axis), and sets ``NbSample``.
+    """
     cfg = calib.calib_config
     n = cfg["NbSample"]
     pee = np.asarray(calib.PEE_measured)
     ndof = pee.size // n
+    extra = tuple(getattr(calib, "per_sample_attributes", ()))
     saved = (calib.q_measured, calib.PEE_measured, n)
+    saved_extra = {a: getattr(calib, a) for a in extra}
     idx = np.asarray(idx)
     calib.q_measured = np.asarray(calib.q_measured)[idx]
-    calib.PEE_measured = np.concatenate([pee[d * n + idx] for d in range(ndof)])
+    calib.PEE_measured = pee[_sample_rows(n, ndof, idx)]
+    for a, value in saved_extra.items():
+        setattr(calib, a, np.asarray(value)[idx])
     cfg["NbSample"] = len(idx)
     try:
         yield
     finally:
         calib.q_measured, calib.PEE_measured, cfg["NbSample"] = saved
+        for a, value in saved_extra.items():
+            setattr(calib, a, value)
 
 
 @contextmanager
@@ -254,22 +275,62 @@ def _cv_error(calib, names, weights_fn, folds) -> np.ndarray:
 # ── selection ───────────────────────────────────────────────────
 
 
-def identifiable(calib, names, frames, tol) -> List[str]:
-    """Drop exact dependencies on the measured postures (frames kept)."""
-    cfg = calib.calib_config
+def check_nuisance(J, names, nuisance, tol, where="on this data") -> None:
+    """Raise when the nuisance columns of ``J`` are dependent among themselves.
+
+    Nuisance parameters get no prior, so a direction they share would drift
+    freely instead of being fixed by the data.
+    """
+    if not nuisance:
+        return
+    cols = [names.index(n) for n in nuisance]
+    _, dependent = select_identifiable_parameters(J[:, cols], nuisance, tol=tol)
+    if dependent:
+        raise EstimationError(
+            f"nuisance parameters are not identifiable {where}: fix a gauge "
+            f"(dependent on the others: {dependent})"
+        )
+
+
+def identifiable(calib, names, nuisance, tol):
+    """Drop exact dependencies on the measured postures (nuisance kept).
+
+    Returns the kept names and the measurement Jacobian over ``names``
+    (:meth:`BaseCalibration.measurement_jacobian`). Raises when the nuisance
+    parameters are dependent among themselves (:func:`check_nuisance`).
+    """
     x0 = _start(calib, names)
-    J = measurement_jacobian(
-        calib.model, calib.data, x0, calib.q_measured, dict(cfg, param_name=names)
-    )
-    kept, _ = select_identifiable_parameters(J, names, frames, tol=tol)
-    return kept
+    J = calib.measurement_jacobian(names, x0)
+    check_nuisance(J, names, nuisance, tol)
+    kept, _ = select_identifiable_parameters(J, names, nuisance, tol=tol)
+    return kept, J
+
+
+def _check_folds(J, names, nuisance, folds, n, tol) -> None:
+    """Every CV training set must determine the nuisance parameters.
+
+    A fold whose training samples miss, for example, every posture of one
+    session leaves that session's nuisance parameters undetermined.
+    """
+    ndof = J.shape[0] // n
+    for k, test in enumerate(folds):
+        train = np.setdiff1d(np.arange(n), test)
+        check_nuisance(
+            J[_sample_rows(n, ndof, train)],
+            names,
+            nuisance,
+            tol,
+            where=f"on the training samples of CV fold {k} (reduce cv_folds or "
+            "add samples)",
+        )
 
 
 def excitation_order(J, names, frames, prior, noise, k=None):
     """Backward elimination by predicted standard error / expected size.
 
-    Returns (kept, removed in order, ratio at removal). With ``k`` None the
-    elimination runs until only frames remain.
+    ``frames`` are the nuisance parameters, never removed. Returns (kept,
+    removed in order, ratio at removal). With ``k`` None the elimination runs
+    until only ``frames`` remain.
     """
     active = list(names)
     removed, ratios = [], []
@@ -296,7 +357,31 @@ def _canonical(order, names):
 
 
 def configure(calib) -> dict:
-    """Set ``param_name`` and prior weights for a non-structural method."""
+    """Set ``param_name`` and prior weights for a non-structural method.
+
+    The candidates are every joint parameter of the calibration level plus
+    the calibrator's nuisance parameters
+    (:meth:`BaseCalibration.nuisance_param_names`, by default the unknown
+    base and tool frames), which get no prior. A calibrator with its own
+    measurement model (not an end-effector pose) works here when it keeps
+    this contract (#210):
+
+    - the first ``len(PEE_measured)`` entries of ``cost_function`` are the
+      measurement residuals, laid out DOF-major (all samples of the first
+      measured component, then the next), with no regularisation rows
+      appended (use priors, #120); later rows are ignored;
+    - parameters are read by name from ``calib_config["param_name"]``, which
+      this function changes;
+    - :meth:`BaseCalibration.measurement_jacobian` is the derivative of the
+      quantity measured (by default a finite difference of
+      :meth:`BaseCalibration.get_pose_from_measure`);
+    - all per-sample state is ``q_measured``, ``PEE_measured`` or an
+      attribute named in ``per_sample_attributes``, so that the
+      cross-validation folds can slice it; ``NbSample`` follows the slice;
+    - the nuisance parameters are identifiable on the data, and on every
+      fold's training samples for ``map_cv`` and ``cv_subset``; otherwise
+      :class:`EstimationError` asks for a gauge.
+    """
     cfg = calib.calib_config
     est = settings(cfg)
     if cfg.get("non_geom"):
@@ -311,18 +396,21 @@ def configure(calib) -> dict:
         )
     model = calib.model
     candidates = joint_candidates(model, cfg)
-    base = [] if cfg["known_baseframe"] else list(BASE_TPL)
-    cfg["param_name"] = base + candidates
-    if not cfg["known_tipframe"]:
-        add_pee_name(cfg)
-    all_names = list(cfg["param_name"])
+    nuisance = list(calib.nuisance_param_names())
+    clash = sorted(set(nuisance) & set(candidates))
+    if clash:
+        raise EstimationError(f"nuisance parameters {clash} are joint parameters")
+    # base frame first, the other nuisance parameters last: the layout the
+    # robot cost functions read
+    head = [n for n in nuisance if n in BASE_TPL]
+    all_names = head + candidates + [n for n in nuisance if n not in head]
+    cfg["param_name"] = list(all_names)
     for key in _BASE_MAPPING_KEYS:
         cfg.pop(key, None)
-    frames = calib._frame_param_names()
-    prior = prior_std(all_names, model, est["priors"])
+    prior = prior_std(all_names, model, est["priors"], nuisance)
     prior_of = dict(zip(all_names, prior))
 
-    ident = identifiable(calib, all_names, frames, est["dependency_tol"])
+    ident, J_all = identifiable(calib, all_names, nuisance, est["dependency_tol"])
     prelim = _fit(calib, ident)
     n_meas = len(calib.PEE_measured)
     noise, noise_source = est["noise_std"], "given"
@@ -337,6 +425,7 @@ def configure(calib) -> dict:
     report = {
         "method": est["method"],
         "candidates": candidates,
+        "nuisance": nuisance,
         "dependent": [n for n in all_names if n not in ident],
         "noise_std": noise,
         "noise_source": noise_source,
@@ -351,13 +440,17 @@ def configure(calib) -> dict:
         return np.where(np.isfinite(s), noise / s, 0.0)
 
     method = est["method"]
+    if method in ("map_cv", "cv_subset"):
+        n = cfg["NbSample"]
+        folds = _folds(n, est["cv_folds"], est["cv_seed"])
+        _check_folds(J_all, all_names, nuisance, folds, n, est["dependency_tol"])
     final, w = None, None
     if method in ("excitation", "cv_subset"):
         J = prelim.jac[:n_meas]
         prior_ident = np.array([prior_of[n] for n in ident])
         k = est["excitation_k"] if method == "excitation" else None
         kept, removed, ratios = excitation_order(
-            J, ident, frames, prior_ident, noise, k
+            J, ident, nuisance, prior_ident, noise, k
         )
         report["removal_order"] = list(zip(removed, ratios))
         if method == "excitation":
@@ -368,7 +461,7 @@ def configure(calib) -> dict:
     elif method == "map":
         final, w = all_names, weights(all_names)
     elif method == "map_cv":
-        scale = _choose_scale(calib, all_names, weights, est, report)
+        scale = _choose_scale(calib, all_names, weights, est, report, nuisance)
         report["prior_scale"] = scale
         final, w = all_names, weights(all_names, scale)
 
@@ -389,7 +482,7 @@ def configure(calib) -> dict:
     return report
 
 
-def _choose_scale(calib, names, weights, est, report) -> Dict[str, float]:
+def _choose_scale(calib, names, weights, est, report, nuisance=()) -> Dict[str, float]:
     folds = _folds(calib.calib_config["NbSample"], est["cv_folds"], est["cv_seed"])
     grid = [float(m) for m in est["cv_multipliers"]]
     curve = {}
@@ -404,7 +497,9 @@ def _choose_scale(calib, names, weights, est, report) -> Dict[str, float]:
     best = min(grid, key=lambda m: score({g: m for g in GROUPS}))
     scale = {g: best for g in GROUPS}
     if est["cv_per_group"]:
-        present = {prior_group(n, calib.model) for n in names} - {None}
+        present = {prior_group(n, calib.model) for n in names if n not in nuisance} - {
+            None
+        }
         for _ in range(2):
             for g in GROUPS:
                 if g not in present:
