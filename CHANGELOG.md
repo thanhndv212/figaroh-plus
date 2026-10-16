@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The non-structural estimation methods (`map`, `map_cv`, `excitation`,
+  `cv_subset`) work with calibrators that measure something other than an
+  end-effector pose, such as the TALOS table-contact gap (#210). New
+  `BaseCalibration` hooks: `nuisance_param_names()` (parameters fitted
+  without a prior, by default the unknown base and tool frames),
+  `measurement_jacobian(names, x)` (by default a central difference of
+  `get_pose_from_measure`) and `per_sample_attributes` (sliced with
+  `q_measured` in the cross-validation folds). Dependent nuisance
+  parameters raise "fix a gauge", also per CV fold. New
+  `calibration_tools.chain_jacobian`: the exact `full_params` Jacobian of
+  the chain placement from Pinocchio's kinematic regressor. Results of the
+  existing pose calibrators are unchanged.
+
 ### Fixed
 
 - The structural parameter selection can follow the first independent
