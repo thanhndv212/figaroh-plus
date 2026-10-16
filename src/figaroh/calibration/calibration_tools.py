@@ -1090,6 +1090,86 @@ def measurement_jacobian(model, data, var, q, calib_config, step=1e-6):
     return np.column_stack(cols)
 
 
+def chain_jacobian(model, data, var, q, calib_config):
+    """Exact Jacobian of the chain placement w.r.t. ``full_params`` parameters.
+
+    The chain placement is ``oMee``, the ``start_frame`` -> ``end_frame``
+    transform of :func:`calc_updated_fkm` with the joint corrections in
+    ``var`` applied (base and tool frames excluded). Its variation is the
+    twist in the end frame (Pinocchio ``LOCAL``): ``oMee(x + dx) ~= oMee(x) *
+    exp6(J dx)``, rows linear then angular. Built on
+    ``pin.computeFrameKinematicRegressor(..., LOCAL)`` and, per joint, the
+    derivative of ``SE3(exp3(phi), p)`` (:func:`update_joint_placement`):
+    ``exp3(phi)^T`` for the translation and ``Jexp3(phi)`` for the rotation
+    vector (figaroh-plus#210). A calibrator measuring something composed on
+    ``oMee`` chains its own derivative onto this one.
+
+    Args:
+        model (pin.Model): Robot model (restored on return)
+        data (pin.Data): Robot data
+        var (ndarray): Values of ``calib_config["param_name"]``
+        q (ndarray): (n_samples, nq) joint configurations
+        calib_config (dict): ``calib_model`` must be ``full_params``
+
+    Returns:
+        ndarray: (n_samples, 6, len(var)). Columns of names that are not
+        joint parameters of an active joint (e.g. base, tool or the
+        calibrator's own parameters) are zero.
+    """
+    if calib_config["calib_model"] != "full_params":
+        raise ValueError("chain_jacobian supports calib_model 'full_params' only")
+    if calib_config.get("non_geom"):
+        raise ValueError("chain_jacobian does not support joint elasticity")
+    names = list(calib_config["param_name"])
+    var = np.asarray(var, dtype=float)
+    assert len(var) == len(names), "Length of variables != length of params"
+    index = {n: i for i, n in enumerate(names)}
+    q = np.atleast_2d(q)
+
+    saved = {j: model.jointPlacements[j].copy() for j in calib_config["actJoint_idx"]}
+    blocks = []  # (joint id, axis ids, column ids, 6x6 local derivative)
+    try:
+        for j_id in calib_config["actJoint_idx"]:
+            j_name = model.names[j_id]
+            xyz_rpy = np.zeros(6)
+            axes, cols = [], []
+            for axis_id, axis in enumerate(FULL_PARAMTPL):
+                key = f"{axis}_{j_name}"
+                if key in index:
+                    xyz_rpy[axis_id] = var[index[key]]
+                    axes.append(axis_id)
+                    cols.append(index[key])
+            update_joint_placement(model, j_id, xyz_rpy)
+            if cols:
+                d = np.zeros((6, 6))
+                d[:3, :3] = pin.exp3(xyz_rpy[3:6]).T
+                d[3:, 3:] = pin.Jexp3(xyz_rpy[3:6])
+                blocks.append((j_id, axes, cols, d))
+
+        start_id = model.getFrameId(calib_config["start_frame"])
+        end_id = model.getFrameId(calib_config["end_frame"])
+        J = np.zeros((len(q), 6, len(var)))
+        for i, qi in enumerate(q):
+            pin.forwardKinematics(model, data, qi)
+            pin.updateFramePlacements(model, data)
+            reg_e = pin.computeFrameKinematicRegressor(model, data, end_id, pin.LOCAL)
+            if start_id == 0:  # universe: does not move, and Pinocchio rejects it
+                reg_s = np.zeros_like(reg_e)
+            else:
+                reg_s = pin.computeFrameKinematicRegressor(
+                    model, data, start_id, pin.LOCAL
+                )
+            # oMee = oMs^-1 oMe: its local twist is d_e - Ad(eMs) d_s
+            eMs = data.oMf[end_id].actInv(data.oMf[start_id])
+            reg = reg_e - eMs.action @ reg_s
+            for j_id, axes, cols, d in blocks:
+                J[i][:, cols] = reg[:, 6 * (j_id - 1) : 6 * j_id] @ d[:, axes]
+    finally:
+        for j_id, placement in saved.items():
+            model.jointPlacements[j_id] = placement
+    return J
+
+
 def select_identifiable_parameters(jacobian, names, always_keep=(), tol=1e-4):
     """Split parameters into identifiable and absorbed ones, deterministically.
 

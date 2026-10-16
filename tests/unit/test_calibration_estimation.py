@@ -17,6 +17,8 @@ from figaroh.calibration import estimation
 from figaroh.calibration.base_calibration import BaseCalibration
 from figaroh.calibration.calibration_tools import (
     calc_updated_fkm,
+    cartesian_to_SE3,
+    chain_jacobian,
     random_joint_configuration,
 )
 from figaroh.calibration.config import unified_to_legacy_config
@@ -291,3 +293,41 @@ def test_excitation_order_ignores_column_order(tiago_model):
     )
     assert removed_p == removed
     assert set(kept_p) == set(kept)
+
+
+# ── exact chain Jacobian (#210) ─────────────────────────────────
+
+
+@pytest.mark.parametrize("start", ["universe", "base_link"])
+def test_chain_jacobian_matches_finite_differences(tiago_model, start):
+    calib = _calibrator(tiago_model, "full_params", {"method": "map"}, n=3)
+    cfg = dict(calib.calib_config, start_frame=start)
+    names = estimation.joint_candidates(tiago_model, cfg)
+    cfg.update(param_name=names, measurability=[True] * 6, calibration_index=6)
+    x = np.random.default_rng(1).normal(0.0, 1e-2, len(names))
+    J = chain_jacobian(tiago_model, calib.data, x, calib.q_measured, cfg)
+    assert J.shape == (3, 6, len(names))
+
+    def poses(v):
+        p = calc_updated_fkm(tiago_model, calib.data, v, calib.q_measured, cfg)
+        p = p.reshape(6, -1)
+        return [cartesian_to_SE3(p[:, i]) for i in range(p.shape[1])]
+
+    base, h = poses(x), 1e-6
+    for k in range(len(names)):
+        dx = np.zeros_like(x)
+        dx[k] = h
+        hi, lo = poses(x + dx), poses(x - dx)
+        for i, M in enumerate(base):
+            fd = (
+                pin.log6(M.actInv(hi[i])).vector - pin.log6(M.actInv(lo[i])).vector
+            ) / (2 * h)
+            np.testing.assert_allclose(J[i][:, k], fd, atol=1e-7)
+    with pytest.raises(ValueError, match="full_params"):
+        chain_jacobian(
+            tiago_model,
+            calib.data,
+            x,
+            calib.q_measured,
+            dict(cfg, calib_model="joint_offset"),
+        )
