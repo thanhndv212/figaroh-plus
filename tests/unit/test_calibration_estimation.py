@@ -226,6 +226,56 @@ def test_given_noise_is_used(tiago_model):
     assert report["noise_std"] == 1e-3 and report["noise_source"] == "given"
 
 
+def _count_fits(monkeypatch):
+    calls = []
+    fit = estimation._fit
+
+    def counting(calib, names, weights=None, **kw):
+        calls.append(weights is None)
+        return fit(calib, names, weights, **kw)
+
+    monkeypatch.setattr(estimation, "_fit", counting)
+    return calls
+
+
+@pytest.mark.parametrize("method", ["map", "map_cv"])
+def test_given_noise_skips_the_preliminary_fit(tiago_model, monkeypatch, method):
+    # figaroh-plus#211: the free fit only feeds the noise estimate and the
+    # excitation Jacobian; map and map_cv with noise_std given use neither
+    calls = _count_fits(monkeypatch)
+    est = {"method": method, "noise_std": 1e-3, "cv_multipliers": [1.0]}
+    calib = _calibrator(tiago_model, "joint_offset", est)
+    calib.create_param_list()
+    report = calib.calib_config["estimation_report"]
+    # map_cv's fold fits carry prior weights; no unweighted fit ran
+    assert not any(calls)
+    assert report["prelim_converged"] is None and report["prelim_nfev"] == 0
+
+
+@pytest.mark.parametrize(
+    "est",
+    [{"method": "map"}, {"method": "excitation", "noise_std": 1e-3}],
+)
+def test_preliminary_fit_runs_when_used(tiago_model, monkeypatch, est):
+    calls = _count_fits(monkeypatch)
+    calib = _calibrator(tiago_model, "joint_offset", est)
+    calib.create_param_list()
+    report = calib.calib_config["estimation_report"]
+    assert calls == [True]
+    assert report["prelim_converged"] is True and report["prelim_nfev"] > 0
+
+
+def test_unconverged_preliminary_fit_warns(tiago_model, monkeypatch, caplog):
+    monkeypatch.setattr(estimation, "PRELIM_MAX_NFEV", 2)
+    calib = _calibrator(tiago_model, "joint_offset", {"method": "map"})
+    with caplog.at_level("WARNING", logger=estimation.__name__):
+        calib.create_param_list()
+    report = calib.calib_config["estimation_report"]
+    assert report["prelim_converged"] is False
+    assert 0 < report["prelim_nfev"]
+    assert "did not converge" in caplog.text and "noise_std" in caplog.text
+
+
 def test_non_structural_methods_need_data(tiago_model):
     calib = _calibrator(tiago_model, "joint_offset", {"method": "map"})
     del calib.PEE_measured
