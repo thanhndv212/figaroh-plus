@@ -49,6 +49,9 @@ base and tool frames, or what the calibrator's
 ``noise_std`` in the units of the cost function's measurement residuals
 (metres for position unless the robot's cost function weights them), or,
 when ``None``, estimated from a free fit of the identifiable parameters.
+That fit also gives ``excitation`` and ``cv_subset`` their Jacobian; it is
+skipped for ``map`` and ``map_cv`` when ``noise_std`` is given, and a fit
+that stops unconverged is logged and reported as ``prelim_converged`` (#211).
 Selection runs once, in :meth:`BaseCalibration.create_param_list`; the
 choices and diagnostics are stored in ``calib_config["estimation_report"]``.
 See the guide ``docs/source/concepts/calibration_estimation.md``.
@@ -95,6 +98,9 @@ DEFAULTS = {
     "dependency_tol": 1e-7,
     "structural_selection": "lapack",
 }
+# evaluation cap of the free fit behind the noise estimate and the
+# excitation Jacobian (#211)
+PRELIM_MAX_NFEV = 2000
 _BASE_MAPPING_KEYS = (
     "base_mapping_matrix",
     "base_mapping_param_names",
@@ -236,13 +242,13 @@ def _start(calib, names):
     return np.array([guess.get(n, 0.0) for n in names])
 
 
-def _fit(calib, names, weights=None):
+def _fit(calib, names, weights=None, max_nfev=2000):
     """Least squares of the calibrator's objective over ``names``."""
     with _params(calib, names, weights):
         x0 = _start(calib, names)
         m = len(calib._objective(x0))
         method = "lm" if m >= len(names) else "trf"
-        return least_squares(calib._objective, x0, method=method, max_nfev=2000)
+        return least_squares(calib._objective, x0, method=method, max_nfev=max_nfev)
 
 
 def _measurement_rms(calib, names, x) -> float:
@@ -411,15 +417,31 @@ def configure(calib) -> dict:
     prior_of = dict(zip(all_names, prior))
 
     ident, J_all = identifiable(calib, all_names, nuisance, est["dependency_tol"])
-    prelim = _fit(calib, ident)
+    method = est["method"]
     n_meas = len(calib.PEE_measured)
     noise, noise_source = est["noise_std"], "given"
-    if noise is None:
-        dof = n_meas - len(ident)
-        if dof <= 0:
-            raise EstimationError(
-                "too few measurements to estimate the noise; set estimation.noise_std"
+    dof = n_meas - len(ident)
+    if noise is None and dof <= 0:
+        raise EstimationError(
+            "too few measurements to estimate the noise; set estimation.noise_std"
+        )
+    # the free fit feeds only the noise estimate and the excitation
+    # Jacobian; skip it when neither is needed (#211)
+    prelim = None
+    if noise is None or method in ("excitation", "cv_subset"):
+        prelim = _fit(calib, ident, max_nfev=PRELIM_MAX_NFEV)
+        if not prelim.success:
+            logger.warning(
+                "estimation '%s': the free fit of the %d identifiable "
+                "parameters did not converge (%s, %d evaluations); its noise "
+                "estimate and excitation Jacobian are unreliable. Set "
+                "estimation.noise_std to skip it for map and map_cv.",
+                method,
+                len(ident),
+                prelim.message,
+                prelim.nfev,
             )
+    if noise is None:
         noise = float(np.sqrt(np.sum(prelim.fun[:n_meas] ** 2) / dof))
         noise_source = "estimated (free fit of the identifiable parameters)"
     report = {
@@ -430,6 +452,9 @@ def configure(calib) -> dict:
         "noise_std": noise,
         "noise_source": noise_source,
         "priors": est["priors"],
+        # None: the free fit did not run
+        "prelim_converged": None if prelim is None else bool(prelim.success),
+        "prelim_nfev": 0 if prelim is None else int(prelim.nfev),
     }
 
     def weights(names, scale=None):
@@ -439,7 +464,6 @@ def configure(calib) -> dict:
         )
         return np.where(np.isfinite(s), noise / s, 0.0)
 
-    method = est["method"]
     if method in ("map_cv", "cv_subset"):
         n = cfg["NbSample"]
         folds = _folds(n, est["cv_folds"], est["cv_seed"])
