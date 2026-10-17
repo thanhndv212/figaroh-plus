@@ -24,6 +24,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The free fit that non-structural estimation methods run before selecting
+  parameters no longer fails silently (#211). It is skipped for `map` and
+  `map_cv` when `estimation.noise_std` is given, since neither its noise
+  estimate nor its Jacobian is used then. When it stops unconverged (on
+  TALOS table contact it hit the 2000-evaluation cap after 311 s), it logs a
+  warning that suggests setting `noise_std`, and `estimation_report` records
+  `prelim_converged` and `prelim_nfev`. Fits that ran before are unchanged.
 - The structural parameter selection can follow the first independent
   columns in joint order, so the selected names no longer depend on
   `random_seed` (#204). `estimation.structural_selection: ordered` (new
