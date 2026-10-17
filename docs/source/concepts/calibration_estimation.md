@@ -200,11 +200,19 @@ it is `null`, FIGAROH fits the identifiable parameters freely and uses
 deflection), which is usually what you want: it keeps the data from looking
 more precise than it is.
 
+That free fit is capped at 2000 evaluations. On a nearly square, weakly
+determined problem (TALOS table contact: 63 residuals, 52 parameters) it can
+stop before converging; FIGAROH then logs a warning and the report shows
+`prelim_converged: false`. Give `noise_std` in that case: `map` and `map_cv`
+then skip the free fit altogether. `excitation` and `cv_subset` always run
+it, because they rank parameters with its Jacobian.
+
 ## Outputs
 
 - `calib_config["estimation_report"]` (also `calibrator.estimation_report`):
   the method, candidates, nuisance parameters, exactly dependent parameters, the noise and its
-  source, the priors, and per method the removal order with ratios, the
+  source, the priors, whether the free fit converged (`prelim_converged`,
+  `None` when it was skipped) and its evaluation count (`prelim_nfev`), and per method the removal order with ratios, the
   cross-validation curve and the chosen factor or size.
 - `calibrator.std_dev`: for `map`/`map_cv`, posterior standard deviations;
   a value close to the prior means the data did not inform that parameter.
