@@ -92,7 +92,7 @@ flowchart TD
     C2["<b>C2: Calibration truth/holdout</b> · #44 ✅<br/>✓ #101 #102 #105 #110 #113<br/>✓ ex#26 ex#27 ex#67"]
     C3["<b>C3: Geometric export</b> · #45 ✅<br/>✓ #62 #111 #114 #123<br/>✓ ex#28"]
     C4["<b>C4: Calibration reference</b> · #46 ✅<br/>✓ #97 #98 #99 #119 #120<br/>✓ ex#29"]
-    C5["<b>C5: Calibration studies</b> · #167<br/>✓ ex#96 ex#97 ex#98<br/>open: ex#99–#101 ex#70 ex#71"]
+    C5["<b>C5: Calibration studies</b> · #167<br/>✓ ex#96 ex#97 ex#98 ex#99 ex#104<br/>open: ex#100 ex#101 ex#70 ex#71"]
     D8["<b>D8: Identification studies</b> (research)<br/>#157–#161"]
     S1["<b>S1: Minimum reporting contract</b> · #47 ✅<br/>✓ #63 #70 #100 #103<br/>✓ ex#30 ex#36"]
     U1["<b>U1: Onboarding acceptance</b> · #51 ✅<br/>✓ #66<br/>✓ ex#33"]
@@ -179,7 +179,7 @@ authoritative; refresh this table when a tracker closes.
 | **U1** onboarding | ✅ **Cleared** | 2026-10-11 | core #66 (guideline); examples #33 by examples PR #123: worked briefs for the UR10 truth and TIAGo identification references, TIAGo mocap calibration and a TX40 no-validation-data case, rerun against the accepted D7/C4 evidence on core `779e830` + examples `b167298` (examples `validate.py` 18/18) |
 | **D4** physical comparison | ✅ **Cleared** | 2026-10-09 | #59 by PR #153 (2026-10-08); examples #12 by examples PR #13; examples #22 by examples PRs #94 and #95 |
 | **D7** dynamic reference | ✅ **Cleared** | 2026-10-10 | #61 by PRs #165, #172; #116 by #169 + examples #117; examples #69, #68 by examples #118, #23 by examples #119 (`identification_reference.py`). Accepted on core `658fe99` + examples `663d642` (examples `validate.py` 18/18). UR10 truth and TIAGo select `physical_fit`; export parity ≤ 6.1e-10. Follow-ups #163 and #164 fixed by PR #174 (`projected` stays non-selectable) |
-| C5 calibration studies (M2) | In progress | — | Phase 0 examples #96 (PR #133); Phase 1 examples #97 (PR #135), #98 (PRs #134, #138) done. Remaining: UR10 hand-eye examples #99; Phase 2 #100, #101, #114; Phase 3 #70, #71 |
+| C5 calibration studies (M2) | In progress | — | Phase 0 examples #96 (PR #133); Phase 1 examples #97 (PR #135), #98 (PRs #134, #138), #99 (PR #140) done; Phase 2 data #104 (PR #139) done. Remaining: Phase 2 #100 (data #105–#107), #101 (data #108), #114; Phase 3 #70, #71 |
 | LC1 log-Cholesky production | In progress (optional) | — | Go gate #155 (method change) in progress: exploration done on spent seeds, method choice pending, protocol not frozen. #23–#25 and examples #11 wait on its go decision |
 | S3, B1 | Blocked | — | S3 and B1 wait on S2 and M1 acceptance |
 | S4 composition (M2) | Blocked | — | W3 cleared; still waits on accepted M1 references |
@@ -281,7 +281,7 @@ because every study uses its tools:
 | 0 | examples #96 ✓ | Shared simulation and held-out harness (confirms the identifiable-set fixes #99 and #113 hold) |
 | 1 | examples #97 ✓ | TIAGo Pro motion capture |
 | 1 | examples #98 ✓ | TALOS table contact |
-| 1 | examples #99 | UR10 hand-eye (k-fold within one session) |
+| 1 | examples #99 ✓ | UR10 hand-eye (k-fold within one session) |
 | 2 | examples #100 | TIAGo motion capture across hardware (audit first) |
 | 2 | examples #101 | TIAGo head camera, chessboard on hand (audit first) |
 | 3 | examples #71, #70 | TIAGo backlash surface and suspension base (existing issues, to be attached to C5) |

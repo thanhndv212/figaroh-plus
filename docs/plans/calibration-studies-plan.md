@@ -17,8 +17,8 @@ FIGAROH core. Every study gets a simulated fixture with known truth.
 | Motion-capture reference | TIAGo | Qualisys marker position | 4 frozen sessions (2021-11) |
 | Motion capture | TIAGo Pro | Qualisys marker pose | 3 sessions: 2026-07-01 (44), 07-02 (94), 08-05 (48) |
 | Table contact | TALOS | Flush contact with one table (height, roll, pitch) | Left 21 + 9, right 29 + 9 postures (2022-10/11); provenance and contact evidence: [#113](https://github.com/thanhndv212/figaroh-examples/issues/113) |
-| Hand-eye | UR10 | Flange camera observing a fixed chessboard (6D) | `ur10/data/calibration.csv`, 23 postures, one session |
-| Motion capture across hardware | TIAGo | Qualisys, OptiTrack, Vicon | Qualisys 2021-11 only. To import: Qualisys 2021-10-26 [#104](https://github.com/thanhndv212/figaroh-examples/issues/104), OptiTrack 2023-09-12 [#105](https://github.com/thanhndv212/figaroh-examples/issues/105), Vicon 2023-09-20 [#106](https://github.com/thanhndv212/figaroh-examples/issues/106), square-motion validation runs [#107](https://github.com/thanhndv212/figaroh-examples/issues/107) |
+| Hand-eye | UR10 | Flange camera observing a fixed chessboard (6D) | `ur10/data/calibration.csv`, 23 postures, one session; frozen (examples #99, PR #140) |
+| Motion capture across hardware | TIAGo | Qualisys, OptiTrack, Vicon | Qualisys 2021-11 and 2021-10-26 ([#104](https://github.com/thanhndv212/figaroh-examples/issues/104), PR #139; frozen, not evaluated until the study). To import: OptiTrack 2023-09-12 [#105](https://github.com/thanhndv212/figaroh-examples/issues/105), Vicon 2023-09-20 [#106](https://github.com/thanhndv212/figaroh-examples/issues/106), square-motion validation runs [#107](https://github.com/thanhndv212/figaroh-examples/issues/107) |
 | Head camera, chessboard on hand | TIAGo | Head camera observing a hand-held chessboard | Not imported (sessions 2023-10-24 to 2023-11-27): [#108](https://github.com/thanhndv212/figaroh-examples/issues/108) |
 | Backlash surface | TIAGo | Absolute minus relative encoder | One trajectory (2023-07-24). To import: 2023-03-09 session [#109](https://github.com/thanhndv212/figaroh-examples/issues/109), joint inspections [#110](https://github.com/thanhndv212/figaroh-examples/issues/110) |
 | Suspension base | TIAGo | Base motion and force-plate wrench | One Vicon log. To import: ten more Vicon runs [#111](https://github.com/thanhndv212/figaroh-examples/issues/111), OptiTrack 2023-07 and 2023-09 sessions [#112](https://github.com/thanhndv212/figaroh-examples/issues/112) |
@@ -63,7 +63,7 @@ closure; the audit columns of the other rows date from 2026-10-09.
 | TIAGo mocap (reference) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | TIAGo Pro mocap (done: examples #97, PR #135) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | TALOS table contact (done: examples #98, PR #138) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| UR10 hand-eye | ~ | ~ | ✗ | ✗ | ✗ | ✓ | ~ | ✗ |
+| UR10 hand-eye (done: examples #99, PR #140; k-fold within one session) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | TIAGo multi-hardware | ~ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
 | TIAGo head camera | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
 | TIAGo backlash surface | ~ | ✗ | ✗ | ✗ | ✗ | ✗ | ~ | ~ |
@@ -229,5 +229,8 @@ the `implementer` agent.
 1. ~~Phase 1 TIAGo Pro and TALOS table contact.~~ Done: examples #97 by
    examples PR #135 (2026-10-15); examples #113 by examples PR #134 and
    examples #98 by examples PR #138 (2026-10-18).
-2. Phase 1 UR10 hand-eye (examples #99), and Phase 2 data audits
-   (examples #104–#108, #114) alongside it.
+1. ~~Phase 1 UR10 hand-eye.~~ Done 2026-10-19: examples #99 by examples
+   PR #140. First Phase 2 import done the same day: examples #104 by
+   examples PR #139.
+2. Phase 2 data imports examples #105 → #106 → #107, then study #100;
+   #114 alongside; #108, then study #101, last.
