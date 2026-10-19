@@ -1,7 +1,9 @@
 # Calibration studies plan
 
-**Status:** Proposed, 2026-10-09. Tracker opened 2026-10-09 as core #167 (package C5) with
+**Status:** In progress. Proposed 2026-10-09; tracker core #167 (package C5) with
 examples #96–#101; backlash (#71) and suspension (#70) are existing issues.
+Phase 0 and two of the three Phase 1 studies are done (2026-10-18); UR10 hand-eye
+and Phase 2 remain.
 
 **Scope:** improve the existing real-data calibration and identification
 studies in `figaroh-examples` so that each meets the standard set by the TIAGo
@@ -53,13 +55,14 @@ already does.
 ## Current state
 
 ✓ done, ~ partial, ✗ missing. Partial data means shipped but not frozen, or
-only some sessions shipped.
+only some sessions shipped. Rows for finished studies show their state at
+closure; the audit columns of the other rows date from 2026-10-09.
 
 | Study | 1 Data | 2 Config | 3 Simulated | 4 Held-out | 5 Baseline | 6 Provenance | 7 Tests | 8 Note |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | TIAGo mocap (reference) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| TIAGo Pro mocap | ~ | ✗ | ✗ | ✗ | ✗ | ~ | ~ | ~ |
-| TALOS table contact | ~ | ✗ | ~ | ✓ | ✗ | ~ | ~ | ~ |
+| TIAGo Pro mocap (done: examples #97, PR #135) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| TALOS table contact (done: examples #98, PR #138) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | UR10 hand-eye | ~ | ~ | ✗ | ✗ | ✗ | ✓ | ~ | ✗ |
 | TIAGo multi-hardware | ~ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
 | TIAGo head camera | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
@@ -222,5 +225,9 @@ the `implementer` agent.
    figaroh-examples) and one for Phase 0.~~ Done: core #167, examples #96–#101.
 1. ~~One issue per data transfer and the C5 milestones.~~ Done 2026-10-10:
    examples [#104](https://github.com/thanhndv212/figaroh-examples/issues/104)–[#114](https://github.com/thanhndv212/figaroh-examples/issues/114).
-2. Plan Phase 0 with the `architect` agent; fix the TIAGo Pro split in
-   parallel.
+1. ~~Phase 0 shared harness.~~ Done 2026-10-14: examples #96 by examples PR #133.
+1. ~~Phase 1 TIAGo Pro and TALOS table contact.~~ Done: examples #97 by
+   examples PR #135 (2026-10-15); examples #113 by examples PR #134 and
+   examples #98 by examples PR #138 (2026-10-18).
+2. Phase 1 UR10 hand-eye (examples #99), and Phase 2 data audits
+   (examples #104–#108, #114) alongside it.
