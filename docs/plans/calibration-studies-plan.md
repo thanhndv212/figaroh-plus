@@ -2,8 +2,11 @@
 
 **Status:** In progress. Proposed 2026-10-09; tracker core #167 (package C5) with
 examples #96–#101; backlash (#71) and suspension (#70) are existing issues.
-Phase 0 and two of the three Phase 1 studies are done (2026-10-18); UR10 hand-eye
-and Phase 2 remain.
+Phases 0–3 are done except one study: every study issue (#96–#101, #70, #71)
+and every data issue (#104–#114) is closed, the last (#112) on 2026-10-25. The
+TALOS motion-capture study, examples
+[#172](https://github.com/thanhndv212/figaroh-examples/issues/172) (opened
+2026-10-25 on the #114 data), remains; C5 closes after it.
 
 **Scope:** improve the existing real-data calibration and identification
 studies in `figaroh-examples` so that each meets the standard set by the TIAGo
@@ -18,11 +21,11 @@ FIGAROH core. Every study gets a simulated fixture with known truth.
 | Motion capture | TIAGo Pro | Qualisys marker pose | 3 sessions: 2026-07-01 (44), 07-02 (94), 08-05 (48) |
 | Table contact | TALOS | Flush contact with one table (height, roll, pitch) | Left 21 + 9, right 29 + 9 postures (2022-10/11); provenance and contact evidence: [#113](https://github.com/thanhndv212/figaroh-examples/issues/113) |
 | Hand-eye | UR10 | Flange camera observing a fixed chessboard (6D) | `ur10/data/calibration.csv`, 23 postures, one session; frozen (examples #99, PR #140) |
-| Motion capture across hardware | TIAGo | Qualisys, OptiTrack, Vicon | Qualisys 2021-11 and 2021-10-26 ([#104](https://github.com/thanhndv212/figaroh-examples/issues/104), PR #139; frozen, not evaluated until the study). To import: OptiTrack 2023-09-12 [#105](https://github.com/thanhndv212/figaroh-examples/issues/105), Vicon 2023-09-20 [#106](https://github.com/thanhndv212/figaroh-examples/issues/106), square-motion validation runs [#107](https://github.com/thanhndv212/figaroh-examples/issues/107) |
-| Head camera, chessboard on hand | TIAGo | Head camera observing a hand-held chessboard | Not imported (sessions 2023-10-24 to 2023-11-27): [#108](https://github.com/thanhndv212/figaroh-examples/issues/108) |
-| Backlash surface | TIAGo | Absolute minus relative encoder | One trajectory (2023-07-24). To import: 2023-03-09 session [#109](https://github.com/thanhndv212/figaroh-examples/issues/109), joint inspections [#110](https://github.com/thanhndv212/figaroh-examples/issues/110) |
-| Suspension base | TIAGo | Base motion and force-plate wrench | One Vicon log. To import: ten more Vicon runs [#111](https://github.com/thanhndv212/figaroh-examples/issues/111), OptiTrack 2023-07 and 2023-09 sessions [#112](https://github.com/thanhndv212/figaroh-examples/issues/112) |
-| Motion capture | TALOS | Marker pose, torso and arms | Not imported (3 sessions, 2022-03-15): [#114](https://github.com/thanhndv212/figaroh-examples/issues/114) |
+| Motion capture across hardware | TIAGo | Qualisys, OptiTrack, Vicon | Qualisys 2021-11 and 2021-10-26 ([#104](https://github.com/thanhndv212/figaroh-examples/issues/104), PR #139), OptiTrack 2023-09-12 ([#105](https://github.com/thanhndv212/figaroh-examples/issues/105), PR #144), Vicon 2023-09-20 runs 1508 and 1607 ([#106](https://github.com/thanhndv212/figaroh-examples/issues/106), PR #145), seven square-motion validation runs ([#107](https://github.com/thanhndv212/figaroh-examples/issues/107), PR #146); all frozen |
+| Head camera, chessboard on hand | TIAGo | Head camera observing a hand-held chessboard | Sessions 2023-10-27 to 2023-11-27, two robots ([#108](https://github.com/thanhndv212/figaroh-examples/issues/108), PRs #150, #151; PAL tool CSVs are the camera source; 10-24 and 10-25 not usable); frozen |
+| Backlash surface | TIAGo | Absolute minus relative encoder | 2023-07-24 trajectory (training) and 2023-03-09 session ([#109](https://github.com/thanhndv212/figaroh-examples/issues/109), PR #154; validation); arm_5/arm_6 joint inspections ([#110](https://github.com/thanhndv212/figaroh-examples/issues/110), PR #157; diagnostic); frozen |
+| Suspension base | TIAGo | Base motion and force-plate wrench | Eleven CREPS Vicon runs 2023-09-20 ([#111](https://github.com/thanhndv212/figaroh-examples/issues/111), PR #158); 22 OptiTrack oscillation runs 2023-07/09 without force plate ([#112](https://github.com/thanhndv212/figaroh-examples/issues/112), PR #171); frozen |
+| Motion capture | TALOS | Qualisys, 3 bodies (waist, upper body, end effector) | Left 56 training, right 39 validation, right 23 confirmation static postures, 2022-03-15 ([#114](https://github.com/thanhndv212/figaroh-examples/issues/114), PR #147; body attachments unknown); frozen. Study: [#172](https://github.com/thanhndv212/figaroh-examples/issues/172) |
 
 TIAGo Pro's three sessions are all the data that exists. UR10 has one session.
 
@@ -56,7 +59,9 @@ already does.
 
 ✓ done, ~ partial, ✗ missing. Partial data means shipped but not frozen, or
 only some sessions shipped. Rows for finished studies show their state at
-closure; the audit columns of the other rows date from 2026-10-09.
+closure; the TALOS mocap row dates from 2026-10-25. The suspension study writes
+goldens and its note but no `results/runs/` record or `report.html`; the
+maintainer accepted this as a disclosed limit on 2026-10-25 (negative result).
 
 | Study | 1 Data | 2 Config | 3 Simulated | 4 Held-out | 5 Baseline | 6 Provenance | 7 Tests | 8 Note |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -64,11 +69,11 @@ closure; the audit columns of the other rows date from 2026-10-09.
 | TIAGo Pro mocap (done: examples #97, PR #135) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | TALOS table contact (done: examples #98, PR #138) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | UR10 hand-eye (done: examples #99, PR #140; k-fold within one session) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| TIAGo multi-hardware | ~ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
-| TIAGo head camera | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
-| TIAGo backlash surface | ~ | ✗ | ✗ | ✗ | ✗ | ✗ | ~ | ~ |
-| TIAGo suspension | ~ | ✗ | ✗ | ✗ | ✗ | ✗ | ~ | ~ |
-| TALOS mocap | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| TIAGo multi-hardware (done: examples #100, PRs #148, #149) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| TIAGo head camera (done: examples #101, PRs #152, #153) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| TIAGo backlash surface (done: examples #71, PRs #159, #160; validation-level) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| TIAGo suspension (done: examples #70, PRs #161–#164; no suspension parameter identified) | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ |
+| TALOS mocap (open: examples #172) | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
 
 ## Phases
 
@@ -153,10 +158,14 @@ the `implementer` agent.
 
 ### TALOS motion capture (Phase 2)
 
-- **Have:** three torso-arm sessions from 2022-03-15 (left, right, and a
-  second right-arm run) with marker poses and joints; not imported ([#114](https://github.com/thanhndv212/figaroh-examples/issues/114)).
-- **Do:** audit (clocks, frozen samples, tracking loss), extract static
-  postures, freeze; then open the study issue.
+- **Have:** three torso-arm sessions from 2022-03-15, shipped and frozen as
+  static postures ([#114](https://github.com/thanhndv212/figaroh-examples/issues/114),
+  PR #147): left 56 (training), right 39 (validation), right 23 (confirmation).
+  Body attachment links, base pose and sensor hardware are unknown.
+- **Do:** study issue [#172](https://github.com/thanhndv212/figaroh-examples/issues/172):
+  resolve or disclose the unknown attachments, pre-register (roles span two
+  arms, so only the shared torso transfers to held-out data), simulated
+  fixture, frames-only baseline, comparison with table contact.
 - **Question:** does a measured TALOS calibration agree with the table-contact
   result, whose observations are assumed rather than measured?
 
@@ -232,5 +241,9 @@ the `implementer` agent.
 1. ~~Phase 1 UR10 hand-eye.~~ Done 2026-10-19: examples #99 by examples
    PR #140. First Phase 2 import done the same day: examples #104 by
    examples PR #139.
-2. Phase 2 data imports examples #105 → #106 → #107, then study #100;
-   #114 alongside; #108, then study #101, last.
+1. ~~Phase 2 data imports and studies.~~ Done: #105–#107 (PRs #144–#146),
+   then study #100 (PRs #148, #149); #114 (PR #147); #108 (PRs #150, #151),
+   then study #101 (PRs #152, #153).
+1. ~~Phase 3.~~ Done: data #109–#111 (PRs #154, #157, #158), study #71 (PRs
+   #159, #160), study #70 (PRs #161–#164), data #112 (PR #171, 2026-10-25).
+2. TALOS motion-capture study #172, then the C5 closing review on core #167.
