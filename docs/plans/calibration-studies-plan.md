@@ -2,11 +2,11 @@
 
 **Status:** In progress. Proposed 2026-10-09; tracker core #167 (package C5) with
 examples #96–#101; backlash (#71) and suspension (#70) are existing issues.
-Phases 0–3 are done except one study: every study issue (#96–#101, #70, #71)
-and every data issue (#104–#114) is closed, the last (#112) on 2026-10-25. The
-TALOS motion-capture study, examples
-[#172](https://github.com/thanhndv212/figaroh-examples/issues/172) (opened
-2026-10-25 on the #114 data), remains; C5 closes after it.
+Phases 0–3 are done: every study issue (#96–#101, #70, #71, #172) and every
+data issue (#104–#114) is closed. The last study, TALOS motion capture
+(examples [#172](https://github.com/thanhndv212/figaroh-examples/issues/172)),
+closed 2026-10-26 by examples PR #173. Remaining: the C5 closing review on
+core #167.
 
 **Scope:** improve the existing real-data calibration and identification
 studies in `figaroh-examples` so that each meets the standard set by the TIAGo
@@ -59,7 +59,7 @@ already does.
 
 ✓ done, ~ partial, ✗ missing. Partial data means shipped but not frozen, or
 only some sessions shipped. Rows for finished studies show their state at
-closure; the TALOS mocap row dates from 2026-10-25. The suspension study writes
+closure. The suspension study writes
 goldens and its note but no `results/runs/` record or `report.html`; the
 maintainer accepted this as a disclosed limit on 2026-10-25 (negative result).
 
@@ -73,7 +73,7 @@ maintainer accepted this as a disclosed limit on 2026-10-25 (negative result).
 | TIAGo head camera (done: examples #101, PRs #152, #153) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | TIAGo backlash surface (done: examples #71, PRs #159, #160; validation-level) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | TIAGo suspension (done: examples #70, PRs #161–#164; no suspension parameter identified) | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ |
-| TALOS mocap (open: examples #172) | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| TALOS mocap (done: examples #172, PR #173; disagrees with table contact) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 ## Phases
 
@@ -168,6 +168,12 @@ the `implementer` agent.
   fixture, frames-only baseline, comparison with table contact.
 - **Question:** does a measured TALOS calibration agree with the table-contact
   result, whose observations are assumed rather than measured?
+- **Result** (examples PR #173): no. `map` was selected by k-fold (4.58 mm
+  against 8.04 mm for the registration-only baseline). Held-out validation and
+  confirmation are neutral: the shared torso parameters stay at their prior.
+  Table-contact and mocap fits predict poses 15.3 mm apart. Disclosed limit:
+  every model has about 37.6 mm error on the confirmation session, cause
+  unexplained.
 
 ### TIAGo head camera, chessboard on hand (Phase 2)
 
@@ -246,4 +252,7 @@ the `implementer` agent.
    then study #101 (PRs #152, #153).
 1. ~~Phase 3.~~ Done: data #109–#111 (PRs #154, #157, #158), study #71 (PRs
    #159, #160), study #70 (PRs #161–#164), data #112 (PR #171, 2026-10-25).
-2. TALOS motion-capture study #172, then the C5 closing review on core #167.
+1. ~~TALOS motion-capture study.~~ Done 2026-10-26: examples #172 by
+   examples PR #173.
+2. C5 closing review on core #167: integration evidence in the closing
+   comment, maintainer acceptance, then the tracker closes.

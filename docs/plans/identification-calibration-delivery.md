@@ -92,7 +92,7 @@ flowchart TD
     C2["<b>C2: Calibration truth/holdout</b> · #44 ✅<br/>✓ #101 #102 #105 #110 #113<br/>✓ ex#26 ex#27 ex#67"]
     C3["<b>C3: Geometric export</b> · #45 ✅<br/>✓ #62 #111 #114 #123<br/>✓ ex#28"]
     C4["<b>C4: Calibration reference</b> · #46 ✅<br/>✓ #97 #98 #99 #119 #120<br/>✓ ex#29"]
-    C5["<b>C5: Calibration studies</b> · #167<br/>✓ ex#96–ex#101 ex#70 ex#71<br/>✓ data ex#104–ex#114<br/>open: ex#172"]
+    C5["<b>C5: Calibration studies</b> · #167<br/>✓ ex#96–ex#101 ex#70 ex#71 ex#172<br/>✓ data ex#104–ex#114<br/>closing review pending"]
     D8["<b>D8: Identification studies</b> (research)<br/>#157–#161"]
     S1["<b>S1: Minimum reporting contract</b> · #47 ✅<br/>✓ #63 #70 #100 #103<br/>✓ ex#30 ex#36"]
     U1["<b>U1: Onboarding acceptance</b> · #51 ✅<br/>✓ #66<br/>✓ ex#33"]
@@ -156,7 +156,7 @@ research examples outside M1.
 
 ### Implementation status
 
-Status as of 2026-10-12 (C5 row 2026-10-25), taken from the GitHub trackers. The trackers stay
+Status as of 2026-10-12 (C5 row 2026-10-26), taken from the GitHub trackers. The trackers stay
 authoritative; refresh this table when a tracker closes.
 
 | Package | Status | Closed | Delivered by / remaining |
@@ -179,7 +179,7 @@ authoritative; refresh this table when a tracker closes.
 | **U1** onboarding | ✅ **Cleared** | 2026-10-11 | core #66 (guideline); examples #33 by examples PR #123: worked briefs for the UR10 truth and TIAGo identification references, TIAGo mocap calibration and a TX40 no-validation-data case, rerun against the accepted D7/C4 evidence on core `779e830` + examples `b167298` (examples `validate.py` 18/18) |
 | **D4** physical comparison | ✅ **Cleared** | 2026-10-09 | #59 by PR #153 (2026-10-08); examples #12 by examples PR #13; examples #22 by examples PRs #94 and #95 |
 | **D7** dynamic reference | ✅ **Cleared** | 2026-10-10 | #61 by PRs #165, #172; #116 by #169 + examples #117; examples #69, #68 by examples #118, #23 by examples #119 (`identification_reference.py`). Accepted on core `658fe99` + examples `663d642` (examples `validate.py` 18/18). UR10 truth and TIAGo select `physical_fit`; export parity ≤ 6.1e-10. Follow-ups #163 and #164 fixed by PR #174 (`projected` stays non-selectable) |
-| C5 calibration studies (M2) | In progress | — | Phases 0–3 done: studies examples #96–#101, #71, #70 and data #104–#114 (last, #112 by examples PR #171, 2026-10-25). Suspension (#70) has no run record (requirement 6), accepted as a disclosed limit. Remaining: TALOS motion-capture study examples #172 (on data #114). Core #204, #205, #215 left the milestone as unscheduled follow-ups |
+| C5 calibration studies (M2) | In progress | — | Phases 0–3 done: studies examples #96–#101, #71, #70 and data #104–#114 (last, #112 by examples PR #171, 2026-10-25). Suspension (#70) has no run record (requirement 6), accepted as a disclosed limit. TALOS motion capture examples #172 (on data #114) done 2026-10-26 by examples PR #173. Remaining: the closing review on #167. Core #204, #205, #215 left the milestone as unscheduled follow-ups |
 | LC1 log-Cholesky production | In progress (optional) | — | Go gate #155 (method change) in progress: exploration done on spent seeds, method choice pending, protocol not frozen. #23–#25 and examples #11 wait on its go decision |
 | S3, B1 | Blocked | — | S3 and B1 wait on S2 and M1 acceptance |
 | S4 composition (M2) | Blocked | — | W3 cleared; still waits on accepted M1 references |
@@ -271,7 +271,7 @@ Each extends the D4 physical comparison and none changes the baseline:
 | examples #115 | TX40: trace the identification CSVs to the original recording and ship the author's 2021 reference identification (data for #160 and the D4 comparison) |
 | examples #70, #71 | TIAGo suspension and backlash research examples; now Phase 3 of C5 (below) |
 
-**Calibration study expansion (package C5, tracker core #167, in progress; only examples #172 remains).** The
+**Calibration study expansion (package C5, tracker core #167, in progress; all studies done, closing review pending).** The
 [calibration studies plan](https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/plans/calibration-studies-plan.md) (proposed 2026-10-09)
 brings further studies to the TIAGo motion-capture standard. Phase 0 first,
 because every study uses its tools:
@@ -284,7 +284,7 @@ because every study uses its tools:
 | 1 | examples #99 ✓ | UR10 hand-eye (k-fold within one session) |
 | 2 | examples #100 ✓ | TIAGo motion capture across hardware (audit first) |
 | 2 | examples #101 ✓ | TIAGo head camera, chessboard on hand (audit first) |
-| 2 | examples #172 | TALOS motion capture (data #114 ✓) |
+| 2 | examples #172 ✓ | TALOS motion capture (data #114 ✓) |
 | 3 | examples #71 ✓, #70 ✓ | TIAGo backlash surface and suspension base |
 
 C5 is separate from M1: no study depends on D7, and the TIAGo motion-capture
