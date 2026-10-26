@@ -303,7 +303,9 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
           ``param_name`` (unknown base frame, e.g. ``known_baseframe=False``),
           estimated via a known camera/ref-frame anchor when
           ``calib_config["base_to_ref_frame"]``/``"ref_frame"`` are set (e.g.
-          eye-hand calibration), or identity otherwise.
+          eye-hand calibration), or identity otherwise. The anchor chain
+          from ``start_frame`` to ``base_to_ref_frame`` is evaluated at each
+          sample, so it may move (e.g. a head camera).
         - ``oMee``: start frame to end frame, through the updated kinematic
           chain (``full_params``/``joint_offset`` geometric error
           parameters), optionally including joint elasticity when
@@ -373,8 +375,11 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
 
     # 1/ calc transformation from the world frame to start frame: wMo
     base_to_ref_frame = calib_config.get("base_to_ref_frame")
+    cam_to_ref = None
     if base_to_ref_frame is not None:
-        # known chain anchor + unknown camera/ref pose (e.g. eye-hand calib)
+        # known chain anchor + unknown camera/ref pose (e.g. eye-hand calib);
+        # wMo = b_to_cam * cam_to_ref is formed per sample below, since the
+        # chain to the camera can move between samples (head camera, #217)
         start_f = calib_config["ref_frame"]
         base_tf = np.zeros(6)
         for key in param_dict.keys():
@@ -382,12 +387,9 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
                 if base_ax in key:
                     base_tf[base_id] = param_dict[key]
                     updated_params.append(key)
-        b_to_cam = get_rel_transform(
-            model, data, calib_config["start_frame"], base_to_ref_frame
-        )
         ref_to_cam = cartesian_to_SE3(base_tf)
         cam_to_ref = ref_to_cam.actInv(pin.SE3.Identity())
-        wMo = b_to_cam * cam_to_ref
+        wMo = None
     elif base_param_incl:
         # fully unknown world (measurement) frame to start frame transform
         base_tf = np.zeros(6)
@@ -544,6 +546,14 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
                 model.jointPlacements[j_id] = placement
         else:
             oMee = get_rel_transform(model, data, start_f, end_f)
+
+        # camera anchor from this sample's kinematics, the same data.oMf
+        # as oMee (#217)
+        if cam_to_ref is not None:
+            b_to_cam = get_rel_transform(
+                model, data, calib_config["start_frame"], base_to_ref_frame
+            )
+            wMo = b_to_cam * cam_to_ref
 
         # calculate transformation from world frame to each marker frame
         wMee = wMo * oMee

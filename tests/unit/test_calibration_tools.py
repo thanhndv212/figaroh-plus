@@ -132,6 +132,52 @@ class TestBaseFrameComposition:
         # parameter would have had *no* effect on the output at all
         assert not np.allclose(pee_identity_anchor, pee_offset_anchor)
 
+    @pytest.mark.parametrize("last_fk_sample", [0, 2])
+    def test_moving_camera_anchor_follows_each_sample(
+        self, two_joint_urdf, last_fk_sample
+    ):
+        # camera on link1 moves with joint1 between samples (a head camera,
+        # #217); the anchor must be evaluated at each sample, not from
+        # whatever data.oMf the caller left behind
+        model = pin.buildModelFromUrdf(two_joint_urdf)
+        data = model.createData()
+        j1 = model.getJointId("joint1")
+        j2 = model.getJointId("joint2")
+
+        param_name = [
+            "base_px",
+            "base_py",
+            "base_pz",
+            "base_phix",
+            "base_phiy",
+            "base_phiz",
+        ]
+        q = np.array([[0.0, 0.2], [0.7, -0.4], [-0.5, 0.9]])
+        calib_config = _base_calib_config(
+            start_frame="base_link",
+            end_frame="link2",
+            base_to_ref_frame="link1",
+            ref_frame="link1",
+            actJoint_idx=[j1, j2],
+            measurability=[True] * 6,
+            calibration_index=6,
+            param_name=param_name,
+            NbSample=len(q),
+        )
+
+        pin.framesForwardKinematics(model, data, q[last_fk_sample])
+        pee = calc_updated_fkm(model, data, np.zeros(6), q, calib_config)
+
+        # zero camera pose: the camera transform cancels, leaving the
+        # base_link -> link2 pose of each sample
+        expected = np.zeros((6, len(q)))
+        for i, q_i in enumerate(q):
+            pin.framesForwardKinematics(model, data, q_i)
+            sMe = get_rel_transform(model, data, "base_link", "link2")
+            expected[:3, i] = sMe.translation
+            expected[3:, i] = pin.rpy.matrixToRpy(sMe.rotation)
+        np.testing.assert_allclose(pee, expected.flatten("C"), atol=1e-12)
+
 
 class TestElasticity:
     """non_geom=True: gravity-torque-driven per-joint deflection."""
