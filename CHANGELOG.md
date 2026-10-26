@@ -24,6 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `calc_updated_fkm` evaluates the eye-hand camera anchor
+  (`start_frame` to `base_to_ref_frame`) at each sample (#217). It was
+  read once from whatever `data.oMf` held at call time, so a camera on a
+  moving chain (a head camera) gave every sample the anchor of one
+  configuration, wrong by the head motion and dependent on call order.
+  Results with a rigidly mounted camera are unchanged.
 - The free fit that non-structural estimation methods run before selecting
   parameters no longer fails silently (#211). It is skipped for `map` and
   `map_cv` when `estimation.noise_std` is given, since neither its noise
