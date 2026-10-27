@@ -301,3 +301,60 @@ def test_segment_must_be_collision_free_between_check_points(monkeypatch, clear)
     np.testing.assert_allclose(
         problem.opt_traj.constraint_manager.checked, [[0.0, 0.5, 0.25]]
     )
+
+
+def _roundoff_collinear_regressor(m=2000, seed=0):
+    """Columns 0-3 independent, column 4 = column 3 up to round-off.
+
+    The leading pivot is about 1e5 and the collinear pivot about 1e-7: above
+    the old absolute 1e-8 threshold, but 1e-12 of the largest pivot. This is
+    ``Izz_joint_2`` next to ``Ia_joint_2`` on the Staubli TX40 (#218).
+    """
+    rng = np.random.default_rng(seed)
+    W = 1e3 * rng.standard_normal((m, 4))
+    near = W[:, 3] + 1e-9 * rng.standard_normal(m)
+    return np.column_stack([W, near])
+
+
+def _base_computer(identif_config):
+    from figaroh.optimal.base_parameter import BaseParameterComputer
+
+    computer = BaseParameterComputer.__new__(BaseParameterComputer)
+    computer.identif_config = identif_config
+    return computer
+
+
+def test_trajectory_base_indices_drop_roundoff_collinear_column():
+    W = _roundoff_collinear_regressor()
+    params = [f"p{i}" for i in range(W.shape[1])]
+
+    # The old absolute 1e-8 threshold keeps the collinear column.
+    assert len(get_baseIndex(W, params)) == 5
+
+    idx_b = _base_computer({})._base_indices(W, params)
+
+    assert len(idx_b) == 4
+    assert np.linalg.cond(W[:, idx_b]) < 10
+
+
+def test_trajectory_base_indices_match_identification():
+    from figaroh.identification.identification_tools import (
+        identification_qr_decomposer,
+    )
+
+    W = _roundoff_collinear_regressor()
+    # Column 5's own direction is ~1e-5 of the largest pivot: kept by the
+    # absolute threshold, dropped by a relative 1e-4, so the configured
+    # tolerance decides.
+    weak = 1e-2 * np.random.default_rng(1).standard_normal(W.shape[0])
+    W = np.column_stack([W, W[:, 0] + weak])
+    params = [f"p{i}" for i in range(W.shape[1])]
+
+    for rel, n_base in ((None, 5), (1e-4, 4)):
+        config = {"qr_relative_tolerance": rel}
+        decomposer = identification_qr_decomposer(config)
+        decomposer.double_decomposition(np.zeros(W.shape[0]), W, params)
+        idx_b = _base_computer(config)._base_indices(W, params)
+
+        assert idx_b.tolist() == list(decomposer.get_base_indices())
+        assert len(idx_b) == n_base

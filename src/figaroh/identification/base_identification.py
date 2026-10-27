@@ -1430,15 +1430,18 @@ class BaseIdentification(ABC):
         Returns:
             dict: Results from QR decomposition
         """
-        from figaroh.tools.qrdecomposition import QRDecomposer
+        from figaroh.identification.identification_tools import (
+            IDENTIFICATION_TOL_QR,
+            identification_qr_decomposer,
+        )
 
         # Perform QR decomposition using explicit decomposer to access M matrix
         # Rank threshold: absolute ``tol_qr``, or, when
         # ``qr_relative_tolerance`` is set, that fraction of the largest
         # pivot (scale-independent; the absolute value stays as a floor).
-        decomposer = QRDecomposer(
-            tolerance=getattr(self, "tol_qr", 1e-6),
-            relative_tolerance=self.identif_config.get("qr_relative_tolerance"),
+        decomposer = identification_qr_decomposer(
+            self.identif_config,
+            tolerance=getattr(self, "tol_qr", IDENTIFICATION_TOL_QR),
         )
         W_base, base_param_dict, base_parameters, phi_base, phi_std = (
             decomposer.double_decomposition(

@@ -18,6 +18,8 @@ import numpy as np
 from scipy import signal
 import operator
 
+from figaroh.tools.qrdecomposition import QRDecomposer
+
 # Import configuration parsing functions
 from .config import (  # noqa: F401
     unified_to_legacy_identif_config,
@@ -41,6 +43,32 @@ __all__ = [
     "calculate_first_second_order_differentiation",
     "low_pass_filter_data",
 ]
+
+# Absolute QR rank threshold of the identification fit.
+IDENTIFICATION_TOL_QR = 1e-6
+
+
+def identification_qr_decomposer(identif_config, tolerance=IDENTIFICATION_TOL_QR):
+    """Return the QR decomposer that chooses the identification's base columns.
+
+    The rank threshold is the absolute ``tolerance`` or, when
+    ``identif_config["qr_relative_tolerance"]`` is set, that fraction of the
+    largest pivot, with ``tolerance`` as a floor. The identification fit and
+    the optimal-trajectory design both build their decomposer here, so the
+    trajectory objective is the condition number of the regressor the
+    identification fits (#218).
+
+    Args:
+        identif_config (dict): Identification configuration.
+        tolerance (float): Absolute rank threshold.
+
+    Returns:
+        QRDecomposer: Decomposer with the identification's thresholds.
+    """
+    return QRDecomposer(
+        tolerance=tolerance,
+        relative_tolerance=identif_config.get("qr_relative_tolerance"),
+    )
 
 
 def base_param_from_standard(phi_standard, params_base):
