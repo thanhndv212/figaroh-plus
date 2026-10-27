@@ -24,6 +24,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- At `full_params` with an unknown base frame, the base frame replaces the
+  six base parameters that span the first joint's placement, not the first
+  six base parameters (#204). With the default `structural_selection:
+  lapack`, the Staubli TX40 selection grouped `d_phiz_joint_1` with joint
+  2, so the old rename replaced the independent `d_px_joint_2`: 29 of 30
+  parameters were fitted, and the noise-free held-out error was 0.38 mm
+  instead of exact. `calculate_base_kinematics_regressor` records the
+  replaced parameters in `base_frame_absorbed_rows`. A base frame with an
+  unobserved direction now raises. Results are unchanged wherever the first
+  six base parameters already spanned the first joint's placement, which
+  includes every `ordered` selection.
 - `calc_updated_fkm` evaluates the eye-hand camera anchor
   (`start_frame` to `base_to_ref_frame`) at each sample (#217). It was
   read once from whatever `data.oMf` held at call time, so a camera on a
