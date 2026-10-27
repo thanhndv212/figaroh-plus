@@ -37,7 +37,8 @@ tasks:
           rotation: 2.0e-3                # rad
           joint_offset: 2.0e-2            # rad, revolute joint-angle offset
           prismatic_offset: 2.0e-3        # m
-        noise_std: null                   # residual units; null = estimated
+        noise_std: null                   # residual units; null = estimated;
+                                          # or one per component, or per_component
         excitation_k: 1.0                 # excitation only
         cv_folds: 5                       # map_cv, cv_subset
         cv_seed: 0
@@ -207,11 +208,50 @@ stop before converging; FIGAROH then logs a warning and the report shows
 then skip the free fit altogether. `excitation` and `cv_subset` always run
 it, because they rank parameters with its Jacobian.
 
+### Noise per measurement component
+
+One σ is wrong when the measurement components differ in noise or units: a
+camera pose is noisier along the depth axis than across the image; a contact
+measurement mixes a height in metres with angles in radians. `noise_std` then
+takes one value per component, in the order of the cost function's
+measurement residuals (for example 6 for a pose, 3 for a position):
+
+```yaml
+estimation:
+  method: map
+  noise_std: [3.0e-4, 3.0e-4, 1.5e-3, 1.7e-3, 1.7e-3, 4.4e-4]
+```
+
+FIGAROH divides each component's residual rows by its σ and multiplies them
+by the smallest σ, before the fit, the prior weights and the covariance.
+Every method of this page then works unchanged, at that smallest noise
+level. A scalar, or equal values, leave the problem exactly as before.
+
+`noise_std: per_component` estimates the vector instead: the free fit of the
+identifiable parameters is weighted once by a first estimate and refitted,
+and each component gets √(RSS_c / (N − n/c)) over its N residuals (c
+components share the n parameters' degrees of freedom). Like the scalar
+estimate, this is **noise plus model error**: unmodelled systematic error
+inflates σ, which strengthens the prior. The report says so in
+`noise_source`. Per-sample noise levels are not offered: fitted from the
+same residuals as the parameters, they would hand the samples that disagree
+with the model to the prior, which is outlier rejection in disguise.
+
+When the noise is fixed in a sensor frame that turns with the posture, a
+calibrator can set `noise_rotation`, one rotation Rᵢ per sample over the
+components (shape `(N, c, c)`); sample i's covariance is then
+Rᵢ diag(σ²) Rᵢᵀ, and `per_component` estimates σ in the sensor frame. The
+rotations are sliced with the samples by the cross-validation folds. For
+example, the UR10 cost function's orientation residual is the body-frame
+angle-axis error, so a rotation noise fixed in the board frame has
+Rᵢ = R_measᵀ on those three components.
+
 ## Outputs
 
 - `calib_config["estimation_report"]` (also `calibrator.estimation_report`):
   the method, candidates, nuisance parameters, exactly dependent parameters, the noise and its
-  source, the priors, whether the free fit converged (`prelim_converged`,
+  source (a list per component when whitened, with `noise_std_ref`, the level
+  the problem keeps, and `noise_rotated`), the priors, whether the free fit converged (`prelim_converged`,
   `None` when it was skipped) and its evaluation count (`prelim_nfev`), and per method the removal order with ratios, the
   cross-validation curve and the chosen factor or size.
 - `calibrator.std_dev`: for `map`/`map_cv`, posterior standard deviations;
