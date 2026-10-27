@@ -174,16 +174,41 @@ def add_base_name(calib_config):
 
     Side Effects:
         Modifies calib_config["param_name"] in place by:
-        - For full_params: Replaces the first 6 structural base parameters
-          (from ``base_mapping_slice``, after any elastic ``k_*`` names)
-          with base parameters
+        - For full_params: Renames the base parameters the base frame
+          replaces (``base_frame_absorbed_rows``, from
+          ``calculate_base_kinematics_regressor``) to the base frame
+          parameters, and records them in ``base_frame_row_names``. Without
+          that key (a hand-built config), the first 6 structural base
+          parameters (from ``base_mapping_slice``, after any elastic
+          ``k_*`` names) are renamed.
         - For joint_offset: Prepends base parameters to list
+
+    Raises:
+        ValueError: At full_params, if the base frame does not replace
+            exactly six base parameters (some of its directions are not
+            observed).
     """
     if calib_config["calib_model"] == "full_params":
         # the structural parameters start after any non-geometric names
         # (elastic k_*, #206); without them the slice starts at 0
-        start = calib_config.get("base_mapping_slice", (0, 0))[0]
-        calib_config["param_name"][start : start + len(BASE_TPL)] = BASE_TPL
+        start, end = calib_config.get("base_mapping_slice", (0, 0))
+        absorbed = calib_config.get("base_frame_absorbed_rows")
+        if absorbed is None:
+            calib_config["param_name"][start : start + len(BASE_TPL)] = BASE_TPL
+            return
+        # renaming the first six by position dropped an independent
+        # parameter when the selection grouped one of the first joint's
+        # placement parameters with a later joint (#204)
+        if len(absorbed) != len(BASE_TPL):
+            raise ValueError(
+                f"the base frame replaces {len(absorbed)} base parameters "
+                f"({absorbed}), not {len(BASE_TPL)}: the measurements do not "
+                "observe every base frame direction. Set known_baseframe."
+            )
+        names = calib_config["param_name"]
+        for row, base_name in zip(absorbed, BASE_TPL):
+            names[names.index(row, start, end)] = base_name
+        calib_config["base_frame_row_names"] = list(absorbed)
     elif calib_config["calib_model"] == "joint_offset":
         calib_config["param_name"] = BASE_TPL + calib_config["param_name"]
         # base_mapping_slice is positional: prepending shifts it

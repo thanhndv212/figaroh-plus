@@ -79,7 +79,9 @@ and moved the held-out height error by about 1.5 mm, figaroh-plus#204).
 `ordered` takes the first independent columns in joint order, the same for
 every draw. The choice of order is still a convention: it fixes which of
 several equivalent bases is fitted, and the regularisation and the name
-sharing depend on that basis.
+sharing depend on that basis. Either way, at `full_params` with an unknown
+base frame, the base frame replaces the six base parameters that span the
+first joint's placement, whichever columns the selection kept for it.
 
 ### `excitation`
 
