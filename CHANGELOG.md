@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The `dev` extra excludes pytest 9.2.0, which stops with an internal
+  error at session start on Python 3.10 (`NodeId` has no `_str_cache`).
 - The optimal-trajectory design chooses its base columns as the
   identification does (#218): absolute threshold 1e-6, plus
   `qr_relative_tolerance` when set. It used an absolute 1e-8, which on the
