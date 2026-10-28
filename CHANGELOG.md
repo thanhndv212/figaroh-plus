@@ -24,6 +24,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The optimal-trajectory design chooses its base columns as the
+  identification does (#218): absolute threshold 1e-6, plus
+  `qr_relative_tolerance` when set. It used an absolute 1e-8, which on the
+  Staubli TX40 kept `Izz_joint_2` next to the collinear `Ia_joint_2` (pivot
+  3e-13 of the largest) and held every trajectory's base-regressor
+  condition number near 1e13, leaving IPOPT nothing to optimise. The TX40
+  random probe now keeps the 58 columns the identification fits, at
+  condition number 964.
 - `calc_updated_fkm` evaluates the eye-hand camera anchor
   (`start_frame` to `base_to_ref_frame`) at each sample (#217). It was
   read once from whatever `data.oMf` held at call time, so a camera on a
