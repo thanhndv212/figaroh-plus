@@ -198,6 +198,13 @@ class BaseCalibration(ABC):
     #: methods (e.g. a session id per posture, figaroh-plus#210).
     per_sample_attributes: Tuple[str, ...] = ()
 
+    #: Optional per-sample sensor-frame rotations, shape
+    #: ``(NbSample, n_components, n_components)``: with a per-component
+    #: ``estimation.noise_std``, sample i's measurement covariance is
+    #: ``R_i diag(noise_std**2) R_i^T`` (figaroh-plus#215). Sliced with the
+    #: samples by the cross-validation folds.
+    noise_rotation: Optional[np.ndarray] = None
+
     @handle_calibration_errors
     def __init__(self, robot, config_file: str, del_list: List[int] = None):
         """Initialize robot calibration framework.
@@ -1204,9 +1211,11 @@ class BaseCalibration(ABC):
 
         The robot's :meth:`cost_function`, plus ``w * var`` when the
         estimation method sets prior weights (``map``, ``map_cv``,
-        figaroh-plus#113); ``w`` is 0 for frame parameters.
+        figaroh-plus#113); ``w`` is 0 for frame parameters. Measurement
+        rows are whitened when the estimation set per-component noise
+        (:func:`~figaroh.calibration.estimation.whiten`, figaroh-plus#215).
         """
-        residuals = self.cost_function(var)
+        residuals = estimation.whiten(self, self.cost_function(var))
         excluded = getattr(self, "_excluded_rows", None)
         if excluded is not None and len(excluded):
             # excluded outlier samples (figaroh-plus#98): constant zero rows,

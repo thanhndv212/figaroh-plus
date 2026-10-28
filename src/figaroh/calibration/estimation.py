@@ -49,6 +49,9 @@ base and tool frames, or what the calibrator's
 ``noise_std`` in the units of the cost function's measurement residuals
 (metres for position unless the robot's cost function weights them), or,
 when ``None``, estimated from a free fit of the identifiable parameters.
+``noise_std`` may also be one value per measurement component, given or
+estimated (``per_component``); the measurement residuals are then whitened
+before the fit, the prior weighting and the covariance (#215).
 That fit also gives ``excitation`` and ``cv_subset`` their Jacobian; it is
 skipped for ``map`` and ``map_cv`` when ``noise_std`` is given, and a fit
 that stops unconverged is logged and reported as ``prelim_converged`` (#211).
@@ -76,6 +79,8 @@ from .parameter import BASE_TPL, get_fullparam_offset, get_joint_offset
 logger = logging.getLogger(__name__)
 
 METHODS = ("structural", "excitation", "map", "map_cv", "cv_subset")
+#: ``noise_std`` value asking for one noise estimate per measurement component
+PER_COMPONENT = "per_component"
 STRUCTURAL_SELECTIONS = ("lapack", "ordered")
 GROUPS = ("translation", "rotation", "joint_offset", "prismatic_offset")
 DEFAULT_PRIORS = {
@@ -107,6 +112,8 @@ _BASE_MAPPING_KEYS = (
     "base_mapping_row_names",
     "base_mapping_slice",
 )
+# per-component whitening read by :func:`whiten` (#215)
+_NOISE_KEYS = ("measurement_noise_std", "measurement_noise_ref")
 
 
 class EstimationError(ValueError):
@@ -132,7 +139,114 @@ def settings(calib_config: dict) -> dict:
         )
     if out["cv_rule"] not in ("min", "one_se"):
         raise EstimationError("estimation.cv_rule must be 'min' or 'one_se'")
+    _check_noise_setting(out["noise_std"])
     return out
+
+
+def _check_noise_setting(noise) -> None:
+    if noise is None or (isinstance(noise, str) and noise == PER_COMPONENT):
+        return
+    if isinstance(noise, str):
+        raise EstimationError(
+            f"estimation.noise_std must be a number, a list of numbers, null "
+            f"or '{PER_COMPONENT}', not '{noise}'"
+        )
+    values = np.asarray(noise, dtype=float)
+    if values.ndim > 1 or values.size == 0:
+        raise EstimationError("estimation.noise_std must be a number or a flat list")
+    if not np.all(np.isfinite(values) & (values > 0)):
+        raise EstimationError("estimation.noise_std values must be positive")
+
+
+# ── measurement noise per component (#215) ──────────────────────
+
+
+def n_components(calib) -> int:
+    """Measurement components per sample: ``len(PEE_measured) / NbSample``."""
+    n = calib.calib_config["NbSample"]
+    m = len(calib.PEE_measured)
+    if n <= 0 or m % n:
+        raise EstimationError(
+            f"{m} measurements are not a whole number of components for " f"{n} samples"
+        )
+    return m // n
+
+
+def _noise_rotation(calib, n_comp=None):
+    """The calibrator's per-sample sensor-frame rotations, or None."""
+    R = getattr(calib, "noise_rotation", None)
+    if R is None:
+        return None
+    R = np.asarray(R, dtype=float)
+    if n_comp is not None:
+        n = calib.calib_config["NbSample"]
+        if R.shape != (n, n_comp, n_comp):
+            raise EstimationError(
+                f"noise_rotation has shape {R.shape}, expected "
+                f"({n}, {n_comp}, {n_comp}): one rotation per sample over "
+                "the measurement components"
+            )
+        if not np.allclose(R @ np.swapaxes(R, 1, 2), np.eye(n_comp), atol=1e-9):
+            raise EstimationError("noise_rotation matrices must be orthonormal")
+    return R
+
+
+def whiten(calib, rows, sigma=None, ref=None):
+    """Measurement rows of ``rows`` (residuals or Jacobian) whitened.
+
+    Off (``rows`` returned as is) unless ``configure`` set unequal
+    per-component noise (``calib_config["measurement_noise_std"]``). The
+    first ``len(PEE_measured)`` rows, DOF-major, are scaled by
+    ``ref / sigma_c`` of their component, with ``ref`` the smallest sigma
+    (``measurement_noise_ref``): the problem keeps one noise level ``ref``
+    for the priors and the covariance. With per-sample rotations
+    (``calib.noise_rotation``, R_i) the sensor-frame covariance
+    Sigma = diag(sigma**2) becomes R_i Sigma R_i^T, and sample i's rows are
+    multiplied by ref * R_i diag(1/sigma) R_i^T. Later rows are unchanged.
+    ``sigma`` and ``ref`` override the configured values.
+    """
+    cfg = calib.calib_config
+    if sigma is None:
+        sigma = cfg.get("measurement_noise_std")
+        ref = cfg.get("measurement_noise_ref")
+    if sigma is None:
+        return rows
+    sigma = np.asarray(sigma, dtype=float)
+    rows = np.array(rows, dtype=float)
+    n, c = cfg["NbSample"], len(sigma)
+    head = rows[: n * c].reshape((c, n) + rows.shape[1:])
+    scale = (ref / sigma).reshape((c, 1) + (1,) * (head.ndim - 2))
+    R = _noise_rotation(calib)
+    if R is None:
+        head = head * scale
+    else:
+        sensor = np.einsum("ikc,ki...->ci...", R, head)
+        head = np.einsum("ikc,ci...->ki...", R, sensor * scale)
+    rows[: n * c] = head.reshape((n * c,) + rows.shape[1:])
+    return rows
+
+
+def component_noise(calib, residuals, n_params) -> np.ndarray:
+    """Noise per measurement component from free-fit residuals.
+
+    Each component's rows share the ``n_params`` degrees of freedom equally,
+    so ``sigma_c = sqrt(sum r_c**2 / (NbSample - n_params / n_components))``.
+    With ``calib.noise_rotation`` the residuals are first expressed in the
+    sensor frame. The residuals hold the unmodelled systematic error too: the
+    estimate is noise plus model error.
+    """
+    n, c = calib.calib_config["NbSample"], n_components(calib)
+    r = np.asarray(residuals, dtype=float)[: n * c].reshape(c, n)
+    R = _noise_rotation(calib)
+    if R is not None:
+        r = np.einsum("ikc,ki->ci", R, r)
+    dof = n - n_params / c
+    if dof <= 0:
+        raise EstimationError(
+            "too few samples to estimate the noise per component; set "
+            "estimation.noise_std"
+        )
+    return np.sqrt(np.sum(r**2, axis=1) / dof)
 
 
 # ── candidates and priors ──────────────────────────────────────
@@ -209,6 +323,10 @@ def _samples(calib, idx):
     pee = np.asarray(calib.PEE_measured)
     ndof = pee.size // n
     extra = tuple(getattr(calib, "per_sample_attributes", ()))
+    if getattr(calib, "noise_rotation", None) is not None and (
+        "noise_rotation" not in extra
+    ):
+        extra += ("noise_rotation",)
     saved = (calib.q_measured, calib.PEE_measured, n)
     saved_extra = {a: getattr(calib, a) for a in extra}
     idx = np.asarray(idx)
@@ -253,7 +371,8 @@ def _fit(calib, names, weights=None, max_nfev=2000):
 
 def _measurement_rms(calib, names, x) -> float:
     with _params(calib, names):
-        r = np.asarray(calib.cost_function(x))[: len(calib.PEE_measured)]
+        r = np.asarray(whiten(calib, calib.cost_function(x)))
+        r = r[: len(calib.PEE_measured)]
     return float(np.sqrt(np.mean(r**2)))
 
 
@@ -411,7 +530,7 @@ def configure(calib) -> dict:
     head = [n for n in nuisance if n in BASE_TPL]
     all_names = head + candidates + [n for n in nuisance if n not in head]
     cfg["param_name"] = list(all_names)
-    for key in _BASE_MAPPING_KEYS:
+    for key in _BASE_MAPPING_KEYS + _NOISE_KEYS:
         cfg.pop(key, None)
     prior = prior_std(all_names, model, est["priors"], nuisance)
     prior_of = dict(zip(all_names, prior))
@@ -419,16 +538,30 @@ def configure(calib) -> dict:
     ident, J_all = identifiable(calib, all_names, nuisance, est["dependency_tol"])
     method = est["method"]
     n_meas = len(calib.PEE_measured)
+    n_comp = n_components(calib)
+    rotation = _noise_rotation(calib, n_comp)
     noise, noise_source = est["noise_std"], "given"
+    per_component = isinstance(noise, str)
+    sigma = None  # one noise per component, when not one scalar
+    if not per_component and np.ndim(noise) == 1:
+        sigma = np.asarray(noise, dtype=float)
+        if len(sigma) != n_comp:
+            raise EstimationError(
+                f"estimation.noise_std has {len(sigma)} values; the "
+                f"measurements have {n_comp} components per sample"
+            )
+        noise = _set_component_noise(cfg, sigma)
     dof = n_meas - len(ident)
-    if noise is None and dof <= 0:
+    if (noise is None or per_component) and dof <= 0:
         raise EstimationError(
             "too few measurements to estimate the noise; set estimation.noise_std"
         )
     # the free fit feeds only the noise estimate and the excitation
     # Jacobian; skip it when neither is needed (#211)
     prelim = None
-    if noise is None or method in ("excitation", "cv_subset"):
+    # per-component row weights of the free fit, hence of its Jacobian
+    prelim_weight = _row_weight(cfg, n_comp)
+    if noise is None or per_component or method in ("excitation", "cv_subset"):
         prelim = _fit(calib, ident, max_nfev=PRELIM_MAX_NFEV)
         if not prelim.success:
             logger.warning(
@@ -441,21 +574,46 @@ def configure(calib) -> dict:
                 prelim.message,
                 prelim.nfev,
             )
-    if noise is None:
+    if per_component:
+        # the unweighted fit lets the noisiest component pull the others'
+        # residuals: estimate again after one fit weighted by the first
+        # estimate (further rounds change it by well under 1%)
+        sigma = component_noise(calib, prelim.fun, len(ident))
+        _set_component_noise(cfg, sigma)
+        if cfg.get("measurement_noise_std") is not None:
+            prelim = _fit(calib, ident, max_nfev=PRELIM_MAX_NFEV)
+            with _params(calib, ident):
+                raw = calib.cost_function(prelim.x)
+            prelim_weight = _row_weight(cfg, n_comp)
+            sigma = component_noise(calib, raw, len(ident))
+            for key in _NOISE_KEYS:
+                cfg.pop(key, None)
+        noise = _set_component_noise(cfg, sigma)
+        noise_source = (
+            "estimated per component (free fit of the identifiable "
+            "parameters): noise plus model error"
+        )
+    elif noise is None:
         noise = float(np.sqrt(np.sum(prelim.fun[:n_meas] ** 2) / dof))
         noise_source = "estimated (free fit of the identifiable parameters)"
+    whitened = cfg.get("measurement_noise_std") is not None
     report = {
         "method": est["method"],
         "candidates": candidates,
         "nuisance": nuisance,
         "dependent": [n for n in all_names if n not in ident],
-        "noise_std": noise,
+        # one value, or one per measurement component (then whitened
+        # to the smallest, ``noise_std_ref``)
+        "noise_std": [float(v) for v in sigma] if whitened else noise,
         "noise_source": noise_source,
         "priors": est["priors"],
         # None: the free fit did not run
         "prelim_converged": None if prelim is None else bool(prelim.success),
         "prelim_nfev": 0 if prelim is None else int(prelim.nfev),
     }
+    if whitened:
+        report["noise_std_ref"] = noise
+        report["noise_rotated"] = rotation is not None
 
     def weights(names, scale=None):
         scale = scale or {}
@@ -470,7 +628,11 @@ def configure(calib) -> dict:
         _check_folds(J_all, all_names, nuisance, folds, n, est["dependency_tol"])
     final, w = None, None
     if method in ("excitation", "cv_subset"):
+        # reweight the free fit's Jacobian to the final whitening
+        ratio = _row_weight(cfg, n_comp) / prelim_weight
         J = prelim.jac[:n_meas]
+        if np.any(ratio != 1.0):
+            J = whiten(calib, J, sigma=1.0 / ratio, ref=1.0)
         prior_ident = np.array([prior_of[n] for n in ident])
         k = est["excitation_k"] if method == "excitation" else None
         kept, removed, ratios = excitation_order(
@@ -504,6 +666,30 @@ def configure(calib) -> dict:
         noise_source,
     )
     return report
+
+
+def _row_weight(cfg, n_comp) -> np.ndarray:
+    """Per-component weights :func:`whiten` applies (ones when off)."""
+    sigma = cfg.get("measurement_noise_std")
+    if sigma is None:
+        return np.ones(n_comp)
+    return cfg["measurement_noise_ref"] / np.asarray(sigma, dtype=float)
+
+
+def _set_component_noise(cfg, sigma) -> float:
+    """Turn on whitening for unequal ``sigma``; return the problem's noise.
+
+    Equal values are one scalar noise: no whitening, so the scalar results
+    are reproduced exactly (a rotation of an isotropic covariance is the
+    same covariance).
+    """
+    sigma = np.asarray(sigma, dtype=float)
+    ref = float(np.min(sigma))
+    if np.all(sigma == ref):
+        return ref
+    cfg["measurement_noise_std"] = [float(v) for v in sigma]
+    cfg["measurement_noise_ref"] = ref
+    return ref
 
 
 def _choose_scale(calib, names, weights, est, report, nuisance=()) -> Dict[str, float]:

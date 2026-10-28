@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `estimation.noise_std` accepts one value per measurement component, or
+  `per_component` to estimate them from the free fit (#215). Unequal
+  values whiten the measurement residuals to the smallest σ before the
+  fit, the prior weights and the covariance of `map`, `map_cv`,
+  `excitation` and `cv_subset`. A calibrator can set
+  `BaseCalibration.noise_rotation` (one rotation per sample) for noise
+  fixed in a sensor frame. A scalar, or equal values, give the same
+  results as before; `null` still estimates one scalar. The report records
+  the per-component σ, `noise_std_ref` and `noise_rotated`, and labels an
+  estimate as noise plus model error. On the UR10 hand-eye synthetic
+  truth (×1 noise, 5 seeds, `map`), the sensor-frame σ cuts the held-out
+  error from 1.94 mm / 0.112° to 1.68 mm / 0.077°.
+
 - The non-structural estimation methods (`map`, `map_cv`, `excitation`,
   `cv_subset`) work with calibrators that measure something other than an
   end-effector pose, such as the TALOS table-contact gap (#210). New
@@ -24,6 +37,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The `dev` extra excludes pytest 9.2.0, which stops with an internal
+  error at session start on Python 3.10 (`NodeId` has no `_str_cache`).
+- The optimal-trajectory design chooses its base columns as the
+  identification does (#218): absolute threshold 1e-6, plus
+  `qr_relative_tolerance` when set. It used an absolute 1e-8, which on the
+  Staubli TX40 kept `Izz_joint_2` next to the collinear `Ia_joint_2` (pivot
+  3e-13 of the largest) and held every trajectory's base-regressor
+  condition number near 1e13, leaving IPOPT nothing to optimise. The TX40
+  random probe now keeps the 58 columns the identification fits, at
+  condition number 964.
 - At `full_params` with an unknown base frame, the base frame replaces the
   six base parameters that span the first joint's placement, not the first
   six base parameters (#204). With the default `structural_selection:

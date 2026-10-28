@@ -17,12 +17,14 @@ import logging
 import numpy as np
 from typing import Tuple
 
-from figaroh.identification.identification_tools import get_standard_parameters
+from figaroh.identification.identification_tools import (
+    get_standard_parameters,
+    identification_qr_decomposer,
+)
 from figaroh.utils.cubic_spline import (
     CubicSpline,
     WaypointsGeneration,
 )
-from figaroh.tools.qrdecomposition import get_baseIndex
 from figaroh.tools.regressor import (
     build_regressor_basic,
     build_regressor_reduced,
@@ -105,7 +107,19 @@ class BaseParameterComputer:
         # Convert to numpy arrays
         idx_e_ = np.array(idx_e_, dtype=int)
         W_e_ = build_regressor_reduced(W, idx_e_)
-        idx_base_ = get_baseIndex(W_e_, par_r_)
-        idx_base_ = np.array(idx_base_, dtype=int)
+        idx_base_ = self._base_indices(W_e_, par_r_)
 
         return idx_e_, idx_base_
+
+    def _base_indices(self, W_e, params_r) -> np.ndarray:
+        """Base columns of ``W_e``, chosen as the identification chooses them.
+
+        The trajectory objective is the condition number of these columns,
+        so they must be the ones the identification fits (#218). An absolute
+        threshold alone would keep a collinear column whose pivot is
+        round-off next to a large leading pivot and pin the condition
+        number near 1e13 whatever the trajectory.
+        """
+        decomposer = identification_qr_decomposer(self.identif_config)
+        idx_base, _ = decomposer._identify_base_parameters(W_e, list(params_r))
+        return np.array(idx_base, dtype=int)
