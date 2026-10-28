@@ -576,9 +576,9 @@ class BaseCalibration(ABC):
         cfg["base_mapping_row_names_full"] = rows
         frame_rows = []
         if cfg["calib_model"] == "full_params" and not cfg["known_baseframe"]:
-            # add_base_name renames the slice's first rows (#206)
-            frame_rows = rows[: len(BASE_TPL)]
-        cfg["base_frame_row_names"] = frame_rows
+            # add_base_name renames the first joint's placement (#204)
+            frame_rows = cfg.get("base_frame_row_names") or rows[: len(BASE_TPL)]
+        cfg["base_frame_row_names"] = list(frame_rows)
 
     def _frame_param_names(self) -> List[str]:
         """Base and tip frame parameters present in ``param_name``."""

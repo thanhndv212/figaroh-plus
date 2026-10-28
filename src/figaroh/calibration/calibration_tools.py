@@ -31,6 +31,7 @@ from ..tools.regressor import eliminate_non_dynaffect
 from ..tools.qrdecomposition import (
     QRDecomposer,
     build_baseRegressor,
+    ordered_column_basis,
 )
 
 # Import configuration functions and constants from config module
@@ -941,8 +942,55 @@ def calculate_base_kinematics_regressor(
     calib_config["base_mapping_param_names"] = list(paramsrand_e)
     calib_config["base_mapping_row_names"] = [paramsrand_e[j] for j in idx_base]
     calib_config["base_mapping_slice"] = (_base_slice_start, _base_slice_end)
+    if calib_config["calib_model"] == "full_params":
+        calib_config["base_frame_absorbed_rows"] = rows_absorbed_by_base_frame(
+            Rrand_sel,
+            list(geo_params_sel),
+            Rrand_b,
+            calib_config["base_mapping_row_names"],
+            paramsrand_e,
+            tol=tol_qr,
+        )
 
     return Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e
+
+
+def rows_absorbed_by_base_frame(R, names, R_b, base_rows, params_e, tol=TOL_QR):
+    """Base parameters that an unknown base frame replaces at full_params.
+
+    The base frame moves the placement of the chain's first joint, so its
+    six directions are that joint's six placement columns. Put first, ahead
+    of the base columns, they make as many base columns dependent: those
+    are the parameters the base frame replaces. They are the first joint's
+    own parameters when the selection kept them, or columns equal to them
+    (on TIAGo the prismatic torso's ``d_px`` is ``arm_1``'s). Picking the
+    first six base parameters instead dropped an independent one when the
+    selection grouped a first-joint parameter with a later joint (#204).
+
+    Args:
+        R (ndarray): Structural regressor, one column per name in ``names``.
+        names (list): Parameter names of the columns of ``R``.
+        R_b (ndarray): Base regressor, one column per ``base_rows`` entry.
+        base_rows (list): Base parameter names.
+        params_e (list): Parameters left after elimination, in joint order;
+            the first one's joint is the chain's first joint.
+        tol (float): Absolute rank threshold.
+
+    Returns:
+        list: Base parameter names the base frame replaces, in base order.
+    """
+    first = None
+    for name in params_e:
+        tpl = next((t for t in FULL_PARAMTPL if name.startswith(t + "_")), None)
+        if tpl is not None:
+            first = name[len(tpl) + 1 :]
+            break
+    if first is None:
+        return []
+    own = [names.index(f"{tpl}_{first}") for tpl in FULL_PARAMTPL]
+    P, rank = ordered_column_basis(np.hstack([R[:, own], R_b]), tol=tol)
+    kept = set(P[:rank].tolist())
+    return [row for k, row in enumerate(base_rows) if len(own) + k not in kept]
 
 
 # FRAME INITIALISATION AND DATA-LEVEL IDENTIFIABILITY
