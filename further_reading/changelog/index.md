@@ -10,6 +10,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### [Unreleased]
 
+### [1.1.0] - 2026-10-29
+
+Calibration estimation improvements and the fixes found by the C5 calibration studies (accepted 2026-10-26, #167). Several fixes correct wrong results in 1.0.x, so they ship now instead of waiting for M2, which moves to 1.2 and later (#228). The paired figaroh-examples tag is `v1.1.0`.
+
+Upgrading from 1.0: no configuration change is required, but some results change.
+
+- `calib_model: joint_offset` names offsets after the joint's coordinate axis (`offsetRZ_<joint>`), and on a `-z` joint the fitted offset changes sign (#205). Rename stored offsets for those joints.
+- With an unknown base frame at `full_params` and the default `structural_selection: lapack`, a fit whose first six base parameters did not span the first joint's placement now fits every parameter (#204). Its results change; set `structural_selection: ordered` for names that do not depend on `random_seed`.
+- Optimal trajectories are designed on the identification's base columns (#218), so designed trajectories change.
+- Joint elasticity (`include_non_geometric`) fits change on chains with a free-flyer, multi-DOF or negative-axis joint (#206). A joint axis that is not a coordinate axis now raises a `ValueError` where it was treated as `RZ`.
+
+#### Added
+
+- `estimation.noise_std` accepts one value per measurement component, or `per_component` to estimate them from the free fit (#215). Unequal values whiten the measurement residuals to the smallest σ before the fit, the prior weights and the covariance of `map`, `map_cv`, `excitation` and `cv_subset`. A calibrator can set `BaseCalibration.noise_rotation` (one rotation per sample) for noise fixed in a sensor frame. A scalar, or equal values, give the same results as before; `null` still estimates one scalar. The report records the per-component σ, `noise_std_ref` and `noise_rotated`, and labels an estimate as noise plus model error. On the UR10 hand-eye synthetic truth (×1 noise, 5 seeds, `map`), the sensor-frame σ cuts the held-out error from 1.94 mm / 0.112° to 1.68 mm / 0.077°.
+- The non-structural estimation methods (`map`, `map_cv`, `excitation`, `cv_subset`) work with calibrators that measure something other than an end-effector pose, such as the TALOS table-contact gap (#210). New `BaseCalibration` hooks: `nuisance_param_names()` (parameters fitted without a prior, by default the unknown base and tool frames), `measurement_jacobian(names, x)` (by default a central difference of `get_pose_from_measure`) and `per_sample_attributes` (sliced with `q_measured` in the cross-validation folds). Dependent nuisance parameters raise "fix a gauge", also per CV fold. New `calibration_tools.chain_jacobian`: the exact `full_params` Jacobian of the chain placement from Pinocchio's kinematic regressor. Results of the existing pose calibrators are unchanged.
+
+#### Fixed
+
+- `Detmax.main_algo` records the configurations it selects in `cur_set` and `opt_set` (#90); it returned only the criterion history and left `cur_set` empty. Its add step now draws only from candidates outside the subset (it could re-add a selected one), an exchange is kept only if the criterion strictly increases (a stale candidate could loop forever), and the history starts with the initial subset's criterion. `init_set` gives a fixed starting subset. No core workflow calls `Detmax`.
+- The `dev` extra excludes pytest 9.2.0, which stops with an internal error at session start on Python 3.10 (`NodeId` has no `_str_cache`).
+- The optimal-trajectory design chooses its base columns as the identification does (#218): absolute threshold 1e-6, plus `qr_relative_tolerance` when set. It used an absolute 1e-8, which on the Staubli TX40 kept `Izz_joint_2` next to the collinear `Ia_joint_2` (pivot 3e-13 of the largest) and held every trajectory's base-regressor condition number near 1e13, leaving IPOPT nothing to optimise. The TX40 random probe now keeps the 58 columns the identification fits, at condition number 964.
+- At `full_params` with an unknown base frame, the base frame replaces the six base parameters that span the first joint's placement, not the first six base parameters (#204). With the default `structural_selection: lapack`, the Staubli TX40 selection grouped `d_phiz_joint_1` with joint 2, so the old rename replaced the independent `d_px_joint_2`: 29 of 30 parameters were fitted, and the noise-free held-out error was 0.38 mm instead of exact. `calculate_base_kinematics_regressor` records the replaced parameters in `base_frame_absorbed_rows`. A base frame with an unobserved direction now raises. Results are unchanged wherever the first six base parameters already spanned the first joint's placement, which includes every `ordered` selection.
+- `calc_updated_fkm` evaluates the eye-hand camera anchor (`start_frame` to `base_to_ref_frame`) at each sample (#217). It was read once from whatever `data.oMf` held at call time, so a camera on a moving chain (a head camera) gave every sample the anchor of one configuration, wrong by the head motion and dependent on call order. Results with a rigidly mounted camera are unchanged.
+- The free fit that non-structural estimation methods run before selecting parameters no longer fails silently (#211). It is skipped for `map` and `map_cv` when `estimation.noise_std` is given, since neither its noise estimate nor its Jacobian is used then. When it stops unconverged (on TALOS table contact it hit the 2000-evaluation cap after 311 s), it logs a warning that suggests setting `noise_std`, and `estimation_report` records `prelim_converged` and `prelim_nfev`. Fits that ran before are unchanged.
+- The structural parameter selection can follow the first independent columns in joint order, so the selected names no longer depend on `random_seed` (#204). `estimation.structural_selection: ordered` (new `QRDecomposer(ordered=True)` and `ordered_column_basis`) replaces LAPACK's largest-residual-first pivoting, which swaps equivalent columns between draws. The span is unchanged, but chains that share parameters by name (TALOS two-chain: shared torso axes, held-out z moved by about 1.5 mm across `random_seed` 0-4) need the same basis for every draw. The default stays `lapack`, so existing results are unchanged.
+- Joint elasticity (`include_non_geometric`) now works beyond fixed-base, aligned, distinctly named chains (#206):
+- `add_base_name` renames the first structural parameters at `base_mapping_slice[0]` instead of overwriting the elastic `k_*` names;
+- the gravity torque is read at the joint's velocity index, not `j_id - 1` (wrong after a free-flyer or multi-DOF joint);
+- geometric and elastic parameter names are matched exactly, so `joint1` no longer takes the parameters of `joint10`;
+- an unaligned joint gets its actual coordinate axis (a `-z` axis maps to `RZ`); any other axis, or a joint that is not one-DOF, raises a `ValueError` instead of silently using `RZ`;
+- the deflection follows the joint axis (`q -> q + k * tau`), so the fitted `k` is the physical compliance for negative axes too.
+
+Rigid calibration results are unchanged.
+
+- `calib_model: joint_offset` works on robots with an unaligned revolute or prismatic joint, such as TIAGo Pro `arm_right_6` (#205). The offset is named after the joint's coordinate axis (`offsetRZ_<joint>` for a `±z` axis) and applied with the axis sign, so it is `q + offset`. The `canopies`-only rename is gone; for a `-z` joint on that model the fitted offset changes sign. A joint whose axis is not a coordinate axis raises a `ValueError` if its offset is calibrated.
+
 ### [1.0.2] - 2026-10-13
 
 Documentation release. No library code changed; the figaroh-examples `v1.0.0` tag remains the validated pair.

@@ -49,7 +49,7 @@ parameters:
 Optional keys and their defaults are listed in the [reference page](https://thanhndv212.github.io/figaroh-plus/concepts/calibration_estimation/index.md). The ones you are most likely to set:
 
 - `priors` — expected error sizes per group (`translation` m, `rotation` rad, `joint_offset` rad, `prismatic_offset` m). Used by `map` and `excitation`; `map_cv` only uses their ratios.
-- `noise_std` — measurement noise in the units of your cost function's residuals. Leave `null` to estimate it from the data (recommended unless you have a reason to trust a sensor specification more than your residuals).
+- `noise_std` — measurement noise in the units of your cost function's residuals. Leave `null` to estimate it from the data (recommended unless you have a reason to trust a sensor specification more than your residuals). When the components differ in noise or units (a camera's depth axis, a height mixed with angles), give one value per component or `per_component`; see [Noise per measurement component](https://thanhndv212.github.io/figaroh-plus/concepts/calibration_estimation/#noise-per-measurement-component).
 - `cv_folds`, `cv_seed` — cross-validation over your training postures.
 - `cv_rule: one_se` — with `cv_subset`, prefer the smallest set within one standard error of the best.
 

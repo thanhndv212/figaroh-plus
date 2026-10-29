@@ -1540,6 +1540,51 @@ def save_results(self, output_dir="results"):
 
 ## identification_tools
 
+## `identification_qr_decomposer(identif_config, tolerance=IDENTIFICATION_TOL_QR)`
+
+Return the QR decomposer that chooses the identification's base columns.
+
+The rank threshold is the absolute `tolerance` or, when `identif_config["qr_relative_tolerance"]` is set, that fraction of the largest pivot, with `tolerance` as a floor. The identification fit and the optimal-trajectory design both build their decomposer here, so the trajectory objective is the condition number of the regressor the identification fits (#218).
+
+Parameters:
+
+| Name             | Type    | Description                   | Default                 |
+| ---------------- | ------- | ----------------------------- | ----------------------- |
+| `identif_config` | `dict`  | Identification configuration. | *required*              |
+| `tolerance`      | `float` | Absolute rank threshold.      | `IDENTIFICATION_TOL_QR` |
+
+Returns:
+
+| Name           | Type | Description                                      |
+| -------------- | ---- | ------------------------------------------------ |
+| `QRDecomposer` |      | Decomposer with the identification's thresholds. |
+
+Source code in `src/figaroh/identification/identification_tools.py`
+
+```
+def identification_qr_decomposer(identif_config, tolerance=IDENTIFICATION_TOL_QR):
+    """Return the QR decomposer that chooses the identification's base columns.
+
+    The rank threshold is the absolute ``tolerance`` or, when
+    ``identif_config["qr_relative_tolerance"]`` is set, that fraction of the
+    largest pivot, with ``tolerance`` as a floor. The identification fit and
+    the optimal-trajectory design both build their decomposer here, so the
+    trajectory objective is the condition number of the regressor the
+    identification fits (#218).
+
+    Args:
+        identif_config (dict): Identification configuration.
+        tolerance (float): Absolute rank threshold.
+
+    Returns:
+        QRDecomposer: Decomposer with the identification's thresholds.
+    """
+    return QRDecomposer(
+        tolerance=tolerance,
+        relative_tolerance=identif_config.get("qr_relative_tolerance"),
+    )
+```
+
 ## `base_param_from_standard(phi_standard, params_base)`
 
 Convert standard parameters to base parameters.

@@ -3688,34 +3688,46 @@ def get_critD(self, set):
     return float(pc.DetRootN(infor_mat))
 ```
 
-### `main_algo()`
+### `main_algo(init_set=None)`
 
 Execute the main determinant maximization algorithm.
 
-Implements the greedy exchange algorithm for D-optimal experimental design. The algorithm alternates between adding configurations that maximally improve the determinant and removing configurations whose absence minimally degrades the determinant.
+Implements the DETMAX single-exchange algorithm for D-optimal experimental design. Each exchange adds the candidate outside the current subset that most increases the criterion, then removes the member whose absence decreases it least.
 
 Algorithm Steps:
 
-1. Initialize random subset of target size from candidate pool
-1. Exchange Loop: a. ADD PHASE: Find configuration that maximally improves criterion b. REMOVE PHASE: Find configuration whose removal minimally hurts c. Update current subset and criterion value
-1. Repeat until convergence (no beneficial exchanges)
+1. Start from `init_set`, or a random subset of target size
+1. Exchange Loop: a. ADD PHASE: among the candidates not in the subset, add the one that maximally improves the criterion b. REMOVE PHASE: remove the member whose removal minimally hurts c. Keep the exchange only if the criterion strictly increased
+1. Repeat until no exchange improves the criterion
 1. Return optimization history
 
 Convergence Condition
 
-The algorithm stops when the optimal configuration to add equals the optimal configuration to remove, indicating no further improvement is possible.
+The algorithm stops when the exchange would remove the configuration it just added, or would not increase the criterion. Each kept exchange strictly increases the criterion, so the loop terminates. The result is a local optimum of this add-then-remove step, not necessarily of every pairwise swap.
+
+Parameters:
+
+| Name       | Type   | Description                                                                                                       | Default |
+| ---------- | ------ | ----------------------------------------------------------------------------------------------------------------- | ------- |
+| `init_set` | `list` | Starting subset of NbChosen distinct candidate indices. Defaults to a random sample drawn with the random module. | `None`  |
 
 Returns:
 
-| Name   | Type | Description                                                                                                  |
-| ------ | ---- | ------------------------------------------------------------------------------------------------------------ |
-| `list` |      | History of D-optimality criterion values throughout the optimization process. Last value is final criterion. |
+| Name   | Type | Description                                                                                                                                                |
+| ------ | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `list` |      | History of D-optimality criterion values throughout the optimization process, starting with the initial subset's criterion. Last value is final criterion. |
+
+Raises:
+
+| Type         | Description                                                                                       |
+| ------------ | ------------------------------------------------------------------------------------------------- |
+| `ValueError` | If NbChosen is not smaller than the pool size, or init_set is not NbChosen distinct pool indices. |
 
 Side Effects
 
-- Updates self.cur_set with final optimal configuration subset
-- Updates self.opt_critD with complete optimization history
-- Uses random initialization (results may vary between runs)
+- Sets self.cur_set and self.opt_set to the final subset
+- Sets self.opt_critD to the optimization history
+- Uses random initialization (results may vary between runs) unless `init_set` is given
 
 Complexity
 
@@ -3727,41 +3739,55 @@ Example
 
 Note
 
-The algorithm may converge to different local optima depending on random initialization. For critical applications, consider running multiple times with different seeds.
+The algorithm may converge to different local optima depending on the initial subset. For critical applications, consider running it from several starting subsets.
 
 Source code in `src/figaroh/optimal/base_optimal_calibration.py`
 
 ```
-def main_algo(self):
+def main_algo(self, init_set=None):
     """Execute the main determinant maximization algorithm.
 
-    Implements the greedy exchange algorithm for D-optimal experimental
-    design. The algorithm alternates between adding configurations that
-    maximally improve the determinant and removing configurations whose
-    absence minimally degrades the determinant.
+    Implements the DETMAX single-exchange algorithm for D-optimal
+    experimental design. Each exchange adds the candidate outside the
+    current subset that most increases the criterion, then removes the
+    member whose absence decreases it least.
 
     Algorithm Steps:
-    1. Initialize random subset of target size from candidate pool
+    1. Start from ``init_set``, or a random subset of target size
     2. Exchange Loop:
-       a. ADD PHASE: Find configuration that maximally improves criterion
-       b. REMOVE PHASE: Find configuration whose removal minimally hurts
-       c. Update current subset and criterion value
-    3. Repeat until convergence (no beneficial exchanges)
+       a. ADD PHASE: among the candidates not in the subset, add the one
+          that maximally improves the criterion
+       b. REMOVE PHASE: remove the member whose removal minimally hurts
+       c. Keep the exchange only if the criterion strictly increased
+    3. Repeat until no exchange improves the criterion
     4. Return optimization history
 
     Convergence Condition:
-        The algorithm stops when the optimal configuration to add
-        equals the optimal configuration to remove, indicating no
-        further improvement is possible.
+        The algorithm stops when the exchange would remove the
+        configuration it just added, or would not increase the
+        criterion. Each kept exchange strictly increases the criterion,
+        so the loop terminates. The result is a local optimum of this
+        add-then-remove step, not necessarily of every pairwise swap.
+
+    Args:
+        init_set (list, optional): Starting subset of ``NbChosen``
+            distinct candidate indices. Defaults to a random sample
+            drawn with the ``random`` module.
 
     Returns:
         list: History of D-optimality criterion values throughout
-             the optimization process. Last value is final criterion.
+             the optimization process, starting with the initial
+             subset's criterion. Last value is final criterion.
+
+    Raises:
+        ValueError: If ``NbChosen`` is not smaller than the pool size, or
+            ``init_set`` is not ``NbChosen`` distinct pool indices.
 
     Side Effects:
-        - Updates self.cur_set with final optimal configuration subset
-        - Updates self.opt_critD with complete optimization history
+        - Sets self.cur_set and self.opt_set to the final subset
+        - Sets self.opt_critD to the optimization history
         - Uses random initialization (results may vary between runs)
+          unless ``init_set`` is given
 
     Complexity:
         O(max_iterations × candidate_pool_size × target_subset_size)
@@ -3777,51 +3803,54 @@ def main_algo(self):
 
     Note:
         The algorithm may converge to different local optima depending
-        on random initialization. For critical applications, consider
-        running multiple times with different seeds.
+        on the initial subset. For critical applications, consider
+        running it from several starting subsets.
     """
     import random
 
     # get all indices in the pool
     pool_idx = tuple(self.pool.keys())
+    if not 0 < self.nd < len(pool_idx):
+        raise ValueError(
+            f"NbChosen must be between 1 and {len(pool_idx) - 1} "
+            f"for a pool of {len(pool_idx)} candidates, got {self.nd}"
+        )
 
-    # initialize a random set
-    cur_set = random.sample(pool_idx, self.nd)
-    updated_pool = list(set(pool_idx) - set(self.cur_set))
+    if init_set is None:
+        cur_set = random.sample(pool_idx, self.nd)
+    else:
+        cur_set = list(init_set)
+        if len(set(cur_set)) != self.nd or not set(cur_set) <= set(pool_idx):
+            raise ValueError(
+                f"init_set must hold {self.nd} distinct candidate indices"
+            )
 
-    # adding samples from remaining pool: k = 1
-    opt_k = updated_pool[0]
-    opt_critD = self.get_critD(cur_set)
-    rm_j = cur_set[0]
+    cur_critD = self.get_critD(cur_set)
+    self.opt_critD = [cur_critD]
 
-    while opt_k != rm_j:
+    while True:
+        # add: the best candidate among those not yet selected
+        outside = [k for k in pool_idx if k not in cur_set]
+        opt_k = max(outside, key=lambda k: self.get_critD(cur_set + [k]))
+        added = cur_set + [opt_k]
 
-        # add
-        for k in updated_pool:
-            cur_set.append(k)
-            cur_critD = self.get_critD(cur_set)
-            if opt_critD < cur_critD:
-                opt_critD = cur_critD
-                opt_k = k
-            cur_set.remove(k)
-        cur_set.append(opt_k)
-        opt_critD = self.get_critD(cur_set)
+        # remove: the member whose absence leaves the largest criterion
+        rm_j = max(
+            added,
+            key=lambda j: self.get_critD([i for i in added if i != j]),
+        )
+        if rm_j == opt_k:
+            break
+        new_set = [i for i in added if i != rm_j]
+        new_critD = self.get_critD(new_set)
+        if new_critD <= cur_critD:
+            break
 
-        # remove
-        delta_critD = opt_critD
-        rm_j = cur_set[0]
-        for j in cur_set:
-            rm_set = cur_set.copy()
-            rm_set.remove(j)
-            cur_delta_critD = opt_critD - self.get_critD(rm_set)
+        cur_set, cur_critD = new_set, new_critD
+        self.opt_critD.append(cur_critD)
 
-            if cur_delta_critD < delta_critD:
-                delta_critD = cur_delta_critD
-                rm_j = j
-        cur_set.remove(rm_j)
-        opt_critD = self.get_critD(cur_set)
-
-        self.opt_critD.append(opt_critD)
+    self.cur_set = cur_set
+    self.opt_set = list(cur_set)
     return self.opt_critD
 ```
 

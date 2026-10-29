@@ -16,12 +16,14 @@ tasks:
       calibration_level: full_params      # or joint_offset
       estimation:
         method: map_cv                    # structural | excitation | map | map_cv | cv_subset
+        structural_selection: lapack      # structural: lapack | ordered
         priors:                           # expected error sizes (1 sigma)
           translation: 1.0e-3             # m
           rotation: 2.0e-3                # rad
           joint_offset: 2.0e-2            # rad, revolute joint-angle offset
           prismatic_offset: 2.0e-3        # m
-        noise_std: null                   # residual units; null = estimated
+        noise_std: null                   # residual units; null = estimated;
+                                          # or one per component, or per_component
         excitation_k: 1.0                 # excitation only
         cv_folds: 5                       # map_cv, cv_subset
         cv_seed: 0
@@ -43,6 +45,8 @@ Selects base parameters by a QR decomposition on random configurations, then dro
 - **Pros:** unchanged behaviour; results comparable with earlier versions.
 - **Cons:** the structural step does not see the measured marker point, so it can drop parameters the data identifies; ties between equal columns are broken by floating-point details, so the selected set can differ between platforms (figaroh-plus#113); weakly excited parameters are estimated freely.
 - **Use when:** you need results comparable with an earlier run.
+
+`structural_selection` chooses among exactly dependent columns. `lapack` (default) takes the largest residual first, so the selected names follow the random draw (`random_seed`): the span is the same, the basis is not. That does not matter for one chain, but it does when chains share parameters by name (the TALOS two-chain fit swapped its shared torso axes between draws and moved the held-out height error by about 1.5 mm, figaroh-plus#204). `ordered` takes the first independent columns in joint order, the same for every draw. The choice of order is still a convention: it fixes which of several equivalent bases is fitted, and the regularisation and the name sharing depend on that basis. Either way, at `full_params` with an unknown base frame, the base frame replaces the six base parameters that span the first joint's placement, whichever columns the selection kept for it.
 
 ### `excitation`
 
@@ -115,9 +119,27 @@ This is one robot, one posture plan and no model mismatch (no backlash or deflec
 
 `noise_std` is in the units of your cost function's measurement residuals: metres for positions, unless the robot's `cost_function` weights them. When it is `null`, FIGAROH fits the identifiable parameters freely and uses √(RSS / (m − n)). That estimate includes unmodelled effects (backlash, deflection), which is usually what you want: it keeps the data from looking more precise than it is.
 
+That free fit is capped at 2000 evaluations. On a nearly square, weakly determined problem (TALOS table contact: 63 residuals, 52 parameters) it can stop before converging; FIGAROH then logs a warning and the report shows `prelim_converged: false`. Give `noise_std` in that case: `map` and `map_cv` then skip the free fit altogether. `excitation` and `cv_subset` always run it, because they rank parameters with its Jacobian.
+
+### Noise per measurement component
+
+One σ is wrong when the measurement components differ in noise or units: a camera pose is noisier along the depth axis than across the image; a contact measurement mixes a height in metres with angles in radians. `noise_std` then takes one value per component, in the order of the cost function's measurement residuals (for example 6 for a pose, 3 for a position):
+
+```
+estimation:
+  method: map
+  noise_std: [3.0e-4, 3.0e-4, 1.5e-3, 1.7e-3, 1.7e-3, 4.4e-4]
+```
+
+FIGAROH divides each component's residual rows by its σ and multiplies them by the smallest σ, before the fit, the prior weights and the covariance. Every method of this page then works unchanged, at that smallest noise level. A scalar, or equal values, leave the problem exactly as before.
+
+`noise_std: per_component` estimates the vector instead: the free fit of the identifiable parameters is weighted once by a first estimate and refitted, and each component gets √(RSS_c / (N − n/c)) over its N residuals (c components share the n parameters' degrees of freedom). Like the scalar estimate, this is **noise plus model error**: unmodelled systematic error inflates σ, which strengthens the prior. The report says so in `noise_source`. Per-sample noise levels are not offered: fitted from the same residuals as the parameters, they would hand the samples that disagree with the model to the prior, which is outlier rejection in disguise.
+
+When the noise is fixed in a sensor frame that turns with the posture, a calibrator can set `noise_rotation`, one rotation Rᵢ per sample over the components (shape `(N, c, c)`); sample i's covariance is then Rᵢ diag(σ²) Rᵢᵀ, and `per_component` estimates σ in the sensor frame. The rotations are sliced with the samples by the cross-validation folds. For example, the UR10 cost function's orientation residual is the body-frame angle-axis error, so a rotation noise fixed in the board frame has Rᵢ = R_measᵀ on those three components.
+
 ## Outputs
 
-- `calib_config["estimation_report"]` (also `calibrator.estimation_report`): the method, candidates, exactly dependent parameters, the noise and its source, the priors, and per method the removal order with ratios, the cross-validation curve and the chosen factor or size.
+- `calib_config["estimation_report"]` (also `calibrator.estimation_report`): the method, candidates, nuisance parameters, exactly dependent parameters, the noise and its source (a list per component when whitened, with `noise_std_ref`, the level the problem keeps, and `noise_rotated`), the priors, whether the free fit converged (`prelim_converged`, `None` when it was skipped) and its evaluation count (`prelim_nfev`), and per method the removal order with ratios, the cross-validation curve and the chosen factor or size.
 - `calibrator.std_dev`: for `map`/`map_cv`, posterior standard deviations; a value close to the prior means the data did not inform that parameter.
 - `redistribute_parameters()` / `joint_corrections()` (used by the PAL export, and for the URDF via `export_urdf(nominal, calibrator.joint_corrections())`):
 - `structural`: a weighted minimum-norm lift of the fitted base parameters onto every joint parameter, with the expected sizes (`priors`) as weights and base-frame and dropped rows held at 0; refined so the lifted model reproduces the fit at the measured postures (figaroh-plus#111). It does not depend on which representative the QR chose.
@@ -127,8 +149,25 @@ This is one robot, one posture plan and no model mismatch (no backlash or deflec
 
 - `metrology_frames()`: the fitted base frame and tool point. They describe the measurement setup, so they are not written into the URDF; applied outside a reloaded URDF they reproduce the calibrated forward kinematics, for every method and both levels (figaroh-plus#62).
 
+## Custom measurement models
+
+The non-structural methods do not assume an end-effector pose. A calibrator that measures something else (a distance to a plane, a contact gap) plugs in through three `BaseCalibration` hooks (figaroh-plus#210):
+
+- `nuisance_param_names()`: the parameters fitted freely besides the joints, with no prior and never removed. Default: the unknown base and tool frames. A table-contact calibrator returns its plane and contact-offset parameters. They come after the joint parameters in `param_name` (the base frame, if any, stays first).
+- `measurement_jacobian(names, x)`: the derivative of the measured quantity, used to drop exact dependencies. Default: a central difference of `get_pose_from_measure`, so overriding `get_pose_from_measure` is often enough. For an exact derivative, chain the measurement's derivative onto `calibration_tools.chain_jacobian`, the Pinocchio-built Jacobian of the chain placement at the `full_params` level.
+- `per_sample_attributes`: names of attributes with one entry per sample (e.g. `("session_ids",)`), sliced with `q_measured` in the cross-validation folds.
+
+The calibrator must keep this contract:
+
+- the first `len(PEE_measured)` entries of `cost_function` are the measurement residuals, DOF-major (every sample of the first measured component, then the next); rows after them are ignored, and regularisation belongs in priors, not appended rows;
+- parameters are read by name from `calib_config["param_name"]`;
+- all per-sample state is `q_measured`, `PEE_measured` or listed in `per_sample_attributes`, and `NbSample` follows the slice;
+- the nuisance parameters are identifiable on the data. Two nuisance parameters with the same effect (a plane height and a probe length) raise "nuisance parameters are not identifiable on this data: fix a gauge"; remove one or fix its value. With `map_cv` and `cv_subset` the check also runs on each fold's training samples, so a session with too few postures for every fold to determine its parameters raises: reduce `cv_folds` or record more postures.
+
 ## Limits
 
 - Not supported with `include_non_geometric` (elastic parameters); use `structural`.
-- The robot's `cost_function` must keep the parameter layout: base frame first, joint parameters, tool point last (as the TIAGo, UR10 and TALOS examples do). Classes with extra parameters (e.g. table-contact planes) are not supported.
+- The robot's `cost_function` must read parameters by name, or keep the layout: base frame first, joint parameters, then the other nuisance parameters (tool point by default), as the TIAGo, UR10 and TALOS examples do. See [Custom measurement models](#custom-measurement-models).
+- Per-session nuisance parameters are not split across folds: a fold that misses a session raises instead of leaving its parameters undetermined.
+- `chain_jacobian` covers `full_params`; not `joint_offset` or elasticity.
 - `regularization_coefficient` was removed in 1.0 (#120): it weighted metres and radians alike. A non-zero value is a `ConfigurationError`; leave it at 0; `map`/`map_cv` are the unit-consistent replacement.

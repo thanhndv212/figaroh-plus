@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/figaroh-mark-light.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
@@ -31,10 +31,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -3167,7 +3167,7 @@ samples and geometric pose/contact observations as separate payloads.</p>
     C2["&lt;b&gt;C2: Calibration truth/holdout&lt;/b&gt; · #44 ✅&lt;br/&gt;✓ #101 #102 #105 #110 #113&lt;br/&gt;✓ ex#26 ex#27 ex#67"]
     C3["&lt;b&gt;C3: Geometric export&lt;/b&gt; · #45 ✅&lt;br/&gt;✓ #62 #111 #114 #123&lt;br/&gt;✓ ex#28"]
     C4["&lt;b&gt;C4: Calibration reference&lt;/b&gt; · #46 ✅&lt;br/&gt;✓ #97 #98 #99 #119 #120&lt;br/&gt;✓ ex#29"]
-    C5["&lt;b&gt;C5: Calibration studies&lt;/b&gt; · #167&lt;br/&gt;ex#96–#101 ex#70 ex#71"]
+    C5["&lt;b&gt;C5: Calibration studies&lt;/b&gt; · #167&lt;br/&gt;✓ ex#96–ex#101 ex#70 ex#71 ex#172&lt;br/&gt;✓ data ex#104–ex#114&lt;br/&gt;✓ accepted 2026-10-26"]
     D8["&lt;b&gt;D8: Identification studies&lt;/b&gt; (research)&lt;br/&gt;#157–#161"]
     S1["&lt;b&gt;S1: Minimum reporting contract&lt;/b&gt; · #47 ✅&lt;br/&gt;✓ #63 #70 #100 #103&lt;br/&gt;✓ ex#30 ex#36"]
     U1["&lt;b&gt;U1: Onboarding acceptance&lt;/b&gt; · #51 ✅&lt;br/&gt;✓ #66&lt;br/&gt;✓ ex#33"]
@@ -3228,7 +3228,7 @@ issues are open. Two open examples issues have no package yet: ex#70 (TIAGo
 suspension real-data fit) and ex#71 (TIAGo backlash surface); both are
 research examples outside M1.</p>
 <h4 id="implementation-status">Implementation status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h4>
-<p>Status as of 2026-10-12, taken from the GitHub trackers. The trackers stay
+<p>Status as of 2026-10-12 (C5 row 2026-10-29), taken from the GitHub trackers. The trackers stay
 authoritative; refresh this table when a tracker closes.</p>
 <table>
 <thead>
@@ -3347,6 +3347,12 @@ authoritative; refresh this table when a tracker closes.</p>
 <td>✅ <strong>Cleared</strong></td>
 <td>2026-10-10</td>
 <td>#61 by PRs #165, #172; #116 by #169 + examples #117; examples #69, #68 by examples #118, #23 by examples #119 (<code>identification_reference.py</code>). Accepted on core <code>658fe99</code> + examples <code>663d642</code> (examples <code>validate.py</code> 18/18). UR10 truth and TIAGo select <code>physical_fit</code>; export parity ≤ 6.1e-10. Follow-ups #163 and #164 fixed by PR #174 (<code>projected</code> stays non-selectable)</td>
+</tr>
+<tr>
+<td><strong>C5</strong> calibration studies (M2)</td>
+<td>✅ <strong>Cleared</strong></td>
+<td>2026-10-26</td>
+<td>Phases 0–3 done: studies examples #96–#101, #71, #70 and data #104–#114 (last, #112 by examples PR #171, 2026-10-25). Suspension (#70) has no run record (requirement 6), accepted as a disclosed limit. TALOS motion capture examples #172 (on data #114) done 2026-10-26 by examples PR #173. Closing review accepted on #167 the same day. Follow-ups core #204, #205, #215 and #217 are fixed on <code>devel</code></td>
 </tr>
 <tr>
 <td>LC1 log-Cholesky production</td>
@@ -3560,7 +3566,7 @@ Each extends the D4 physical comparison and none changes the baseline:</p>
 </tr>
 </tbody>
 </table>
-<p><strong>Calibration study expansion (package C5, tracker core #167, <code>status:planned</code>).</strong> The
+<p><strong>Calibration study expansion (package C5, tracker core #167, accepted 2026-10-26).</strong> The
 <a href="https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/plans/calibration-studies-plan.md">calibration studies plan</a> (proposed 2026-10-09)
 brings further studies to the TIAGo motion-capture standard. Phase 0 first,
 because every study uses its tools:</p>
@@ -3575,38 +3581,43 @@ because every study uses its tools:</p>
 <tbody>
 <tr>
 <td>0</td>
-<td>examples #96</td>
+<td>examples #96 ✓</td>
 <td>Shared simulation and held-out harness (confirms the identifiable-set fixes #99 and #113 hold)</td>
 </tr>
 <tr>
 <td>1</td>
-<td>examples #97</td>
+<td>examples #97 ✓</td>
 <td>TIAGo Pro motion capture</td>
 </tr>
 <tr>
 <td>1</td>
-<td>examples #98</td>
+<td>examples #98 ✓</td>
 <td>TALOS table contact</td>
 </tr>
 <tr>
 <td>1</td>
-<td>examples #99</td>
+<td>examples #99 ✓</td>
 <td>UR10 hand-eye (k-fold within one session)</td>
 </tr>
 <tr>
 <td>2</td>
-<td>examples #100</td>
+<td>examples #100 ✓</td>
 <td>TIAGo motion capture across hardware (audit first)</td>
 </tr>
 <tr>
 <td>2</td>
-<td>examples #101</td>
+<td>examples #101 ✓</td>
 <td>TIAGo head camera, chessboard on hand (audit first)</td>
 </tr>
 <tr>
+<td>2</td>
+<td>examples #172 ✓</td>
+<td>TALOS motion capture (data #114 ✓)</td>
+</tr>
+<tr>
 <td>3</td>
-<td>examples #71, #70</td>
-<td>TIAGo backlash surface and suspension base (existing issues, to be attached to C5)</td>
+<td>examples #71 ✓, #70 ✓</td>
+<td>TIAGo backlash surface and suspension base</td>
 </tr>
 </tbody>
 </table>
@@ -4241,10 +4252,10 @@ cannot silently become the selected exported model.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
       
         <script src="../../javascripts/figaroh.js"></script>
       

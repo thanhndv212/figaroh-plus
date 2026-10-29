@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/figaroh-mark-light.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
@@ -31,10 +31,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -2621,7 +2621,11 @@ likely to set:</p>
   <code>map_cv</code> only uses their ratios.</li>
 <li><code>noise_std</code> — measurement noise in the units of your cost function's
   residuals. Leave <code>null</code> to estimate it from the data (recommended unless you
-  have a reason to trust a sensor specification more than your residuals).</li>
+  have a reason to trust a sensor specification more than your residuals).
+  When the components differ in noise or units (a camera's depth axis, a
+  height mixed with angles), give one value per component or
+  <code>per_component</code>; see
+  <a href="../../concepts/calibration_estimation/#noise-per-measurement-component">Noise per measurement component</a>.</li>
 <li><code>cv_folds</code>, <code>cv_seed</code> — cross-validation over your training postures.</li>
 <li><code>cv_rule: one_se</code> — with <code>cv_subset</code>, prefer the smallest set within one
   standard error of the best.</li>
@@ -2815,10 +2819,10 @@ mismatch, so it complements real held-out data rather than replacing it.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
       
         <script src="../../javascripts/figaroh.js"></script>
       

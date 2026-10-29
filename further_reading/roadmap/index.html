@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/figaroh-mark-light.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
@@ -31,10 +31,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -2655,7 +2655,7 @@ so it stays next to the code it tracks. This page embeds it directly so the
 same content is browsable as part of the docs site, without a second copy
 to keep in sync.</p>
 <h2 id="figaroh-roadmap">FIGAROH Roadmap<a class="headerlink" href="#figaroh-roadmap" title="Permanent link">&para;</a></h2>
-<p><strong>Evidence refresh: 2026-10-12; delivery status refreshed 2026-10-12. Priority changes below are a tracker scope approved; execution details under review, revision 4.</strong></p>
+<p><strong>Evidence refresh: 2026-10-12; delivery status refreshed 2026-10-29. Priority changes below are a tracker scope approved; execution details under review, revision 4.</strong></p>
 <p>Review the <a href="../plans/">detailed delivery plan</a>
 before implementation. The user requested calibration improvements in parallel
 with dynamic identification, with TIAGo mocap as the first calibration reference
@@ -2746,6 +2746,13 @@ fit could be exported), is fixed before 1.0.0: core #182 by PR</p>
 <h2 id="187-9dba6da-on-devel-and-examples-124-by-pr-127-20b6377-on-main">187 (<code>9dba6da</code> on <code>devel</code>) and examples #124 by PR #127 (<code>20b6377</code> on <code>main</code>).<a class="headerlink" href="#187-9dba6da-on-devel-and-examples-124-by-pr-127-20b6377-on-main" title="Permanent link">&para;</a></h2>
 <p>Per-package evidence is in the
 <a href="../plans/#implementation-status">implementation status</a>.</p>
+<p><strong>Since 1.0 (2026-10-29).</strong> C5 calibration studies, which bring every
+real-data calibration study in <code>figaroh-examples</code> to the TIAGo mocap
+standard, were accepted on 2026-10-26
+(<a href="https://github.com/thanhndv212/figaroh-plus/issues/167">tracker #167</a>);
+it added no core features. D8 collects optional identification research
+(#157–#161) outside baseline M1. <code>devel</code> carries post-1.0 fixes not yet
+released; the changelog's Unreleased section lists them.</p>
 <p><strong>M0 gate review (accepted 2026-10-12, <a href="https://github.com/thanhndv212/figaroh-plus/issues/181">tracker #181</a> §9).</strong>
 Existing core gates retained (blocking <code>Lint</code>, Core CI and Documentation green);
 examples assets and dependencies reproducible (W1); numerical regressions
@@ -2818,7 +2825,7 @@ scope, dependencies and closure policy are in the
 <tr>
 <th>Roadmap outcome / gate</th>
 <th>Required delivery milestones in this draft</th>
-<th>Status at 2026-10-12 (✅ = cleared)</th>
+<th>Status at 2026-10-29 (✅ = cleared)</th>
 </tr>
 </thead>
 <tbody>
@@ -2850,17 +2857,27 @@ scope, dependencies and closure policy are in the
 <tr>
 <td>M2 follow-up</td>
 <td>S2 uncertainty, S3 experiment-design improvements, S4 selective composition; W3 is prerequisite groundwork</td>
-<td>✅ W3 groundwork done; S2 in progress; S3, S4 blocked</td>
+<td>✅ W3 groundwork done; S2 in progress; S3, S4 blocked (except S3 bug #90, ready)</td>
 </tr>
 <tr>
 <td>M3 backend parity</td>
 <td>B1 capabilities and measured parity; broader ports need separately reviewed packages</td>
-<td>Blocked on M1</td>
+<td>Planned; M1 accepted, not started</td>
 </tr>
 <tr>
 <td>Optional nonlinear research</td>
 <td>D5 and linked production #23–#25 when that path is approved; excluded from baseline M1 closure</td>
 <td>D5 open: #22 revise, #30 no-go; #155 (method change) ready</td>
+</tr>
+<tr>
+<td>Calibration studies (after M1)</td>
+<td>C5: every calibration study to the TIAGo mocap standard</td>
+<td>✅ <strong>C5</strong> accepted 2026-10-26 (#167)</td>
+</tr>
+<tr>
+<td>Optional identification research</td>
+<td>D8: #157–#161 and examples #115; excluded from baseline M1</td>
+<td>Open, planned</td>
 </tr>
 </tbody>
 </table>
@@ -2983,7 +3000,25 @@ feature in the minor release after its go decision and never holds a release.</p
 <td></td>
 </tr>
 <tr>
-<td>1.1, 1.2</td>
+<td>1.0.1</td>
+<td>Documentation and housekeeping</td>
+<td>none (no library code)</td>
+<td>Released 2026-10-12; examples <code>v1.0.0</code> remains the pair</td>
+</tr>
+<tr>
+<td>1.0.2</td>
+<td>Documentation</td>
+<td>none (no library code)</td>
+<td>Released 2026-10-13; examples <code>v1.0.0</code> remains the pair</td>
+</tr>
+<tr>
+<td>1.1.0</td>
+<td>Calibration estimation improvements and C5 follow-up fixes</td>
+<td>none (fixes and additions since 1.0.2; maintainer decision 2026-10-29)</td>
+<td>Released 2026-10-29 (<a href="https://github.com/thanhndv212/figaroh-plus/issues/228">tracker #228</a>); examples tag <code>v1.1.0</code></td>
+</tr>
+<tr>
+<td>1.2 and later</td>
 <td>M2 composable calibration and identification</td>
 <td>S2, S3, S4</td>
 <td>Later</td>
@@ -3240,10 +3275,10 @@ dependencies and measurable exit criteria are accepted.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
       
         <script src="../../javascripts/figaroh.js"></script>
       

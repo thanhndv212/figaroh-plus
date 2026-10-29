@@ -3183,15 +3183,16 @@ Attributes:
 | `diag_R`                 | `ndarray`             | Absolute diagonal of R at the factorisation point, shape (min(m, n),). Useful for stability diagnostics.             |
 | `cond_R1`                | `float`               | Condition number of the R[:rank, :rank] block. Measures how well-conditioned the base part of the factorisation is.  |
 
-## `QRDecomposer(tolerance=TOL_QR, beta_tolerance=TOL_BETA, relative_tolerance=None, deterministic=True)`
+## `QRDecomposer(tolerance=TOL_QR, beta_tolerance=TOL_BETA, relative_tolerance=None, deterministic=True, ordered=False)`
 
 Enhanced QR decomposition handler for robot parameter identification.
 
 Parameters:
 
-| Name            | Type   | Description                                                                                                                                                                                                                                             | Default |
-| --------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| `deterministic` | `bool` | Choose base columns with :func:deterministic_column_pivots (default), so ties between equally large columns are broken by parameter name instead of BLAS rounding noise (#116). False keeps LAPACK's pivoted QR, whose tie order is platform dependent. | `True`  |
+| Name            | Type   | Description                                                                                                                                                                                                                                                        | Default |
+| --------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| `ordered`       | `bool` | Choose the first independent columns in the order of params_r (:func:ordered_column_basis) instead of the largest residual first. The base set is then a property of the column order and span, not of the rows drawn (#204). Takes precedence over deterministic. | `False` |
+| `deterministic` | `bool` | Choose base columns with :func:deterministic_column_pivots (default), so ties between equally large columns are broken by parameter name instead of BLAS rounding noise (#116). False keeps LAPACK's pivoted QR, whose tie order is platform dependent.            | `True`  |
 
 Source code in `src/figaroh/tools/qrdecomposition.py`
 
@@ -3202,9 +3203,15 @@ def __init__(
     beta_tolerance: float = TOL_BETA,
     relative_tolerance: Optional[float] = None,
     deterministic: bool = True,
+    ordered: bool = False,
 ):
     """
     Args:
+        ordered: Choose the first independent columns in the order of
+            ``params_r`` (:func:`ordered_column_basis`) instead of the
+            largest residual first. The base set is then a property of
+            the column order and span, not of the rows drawn (#204).
+            Takes precedence over ``deterministic``.
         deterministic: Choose base columns with
             :func:`deterministic_column_pivots` (default), so ties
             between equally large columns are broken by parameter name
@@ -3212,6 +3219,7 @@ def __init__(
             LAPACK's pivoted QR, whose tie order is platform dependent.
     """
     self.deterministic = deterministic
+    self.ordered = ordered
     self.tolerance = tolerance
     self.beta_tolerance = beta_tolerance
     self.relative_tolerance = relative_tolerance
@@ -4055,6 +4063,83 @@ def deterministic_column_pivots(
         for _ in range(2):
             A -= np.outer(q, q @ A)
     rest = [j for j in rank_order if remaining[j]]
+    return np.array(chosen + rest, dtype=int), len(chosen)
+```
+
+## `ordered_column_basis(W, *, tol=TOL_QR, relative_tol=None)`
+
+Pick the first independent columns of `W`, in column order.
+
+A column joins the basis when its residual, after projecting out the columns already kept, exceeds the threshold. The kept set depends only on the span structure of `W` taken in the given order, not on column norms: when the rank gap is clear, a different random draw of the rows selects the same columns. LAPACK's pivoted QR and :func:`deterministic_column_pivots` take the largest residual first, so among exactly dependent columns the one that wins follows the draw.
+
+Parameters:
+
+| Name           | Type              | Description                                                            | Default    |
+| -------------- | ----------------- | ---------------------------------------------------------------------- | ---------- |
+| `W`            | `ndarray`         | Regressor, shape (m, n).                                               | *required* |
+| `tol`          | `float`           | Absolute threshold on the residual norm.                               | `TOL_QR`   |
+| `relative_tol` | `Optional[float]` | If set, the threshold is max(relative_tol * largest column norm, tol). | `None`     |
+
+Returns:
+
+| Type                  | Description                                                        |
+| --------------------- | ------------------------------------------------------------------ |
+| `ndarray`             | (P, rank): a permutation of range(n) whose first rank              |
+| `int`                 | entries are the kept columns in ascending index order, followed by |
+| `Tuple[ndarray, int]` | the others in ascending index order.                               |
+
+Source code in `src/figaroh/tools/qrdecomposition.py`
+
+```
+def ordered_column_basis(
+    W: np.ndarray,
+    *,
+    tol: float = TOL_QR,
+    relative_tol: Optional[float] = None,
+) -> Tuple[np.ndarray, int]:
+    """Pick the first independent columns of ``W``, in column order.
+
+    A column joins the basis when its residual, after projecting out the
+    columns already kept, exceeds the threshold. The kept set depends only
+    on the span structure of ``W`` taken in the given order, not on column
+    norms: when the rank gap is clear, a different random draw of the rows
+    selects the same columns. LAPACK's pivoted QR and
+    :func:`deterministic_column_pivots` take the largest residual first, so
+    among exactly dependent columns the one that wins follows the draw.
+
+    Args:
+        W: Regressor, shape ``(m, n)``.
+        tol: Absolute threshold on the residual norm.
+        relative_tol: If set, the threshold is ``max(relative_tol * largest
+            column norm, tol)``.
+
+    Returns:
+        ``(P, rank)``: a permutation of ``range(n)`` whose first ``rank``
+        entries are the kept columns in ascending index order, followed by
+        the others in ascending index order.
+    """
+    W = np.asarray(W, dtype=float)
+    n = W.shape[1]
+    if n == 0:
+        return np.empty(0, dtype=int), 0
+    A = np.linalg.qr(W, mode="r")
+    thr = tol
+    if relative_tol is not None:
+        thr = max(relative_tol * np.linalg.norm(A, axis=0).max(), tol)
+    basis = np.zeros((A.shape[0], 0))
+    chosen: List[int] = []
+    for j in range(n):
+        if len(chosen) == A.shape[0]:
+            break
+        v = A[:, j].copy()
+        for _ in range(2):  # re-orthogonalise
+            v -= basis @ (basis.T @ v)
+        norm = np.linalg.norm(v)
+        if norm > thr:
+            chosen.append(j)
+            basis = np.column_stack([basis, v / norm])
+    kept = set(chosen)
+    rest = [j for j in range(n) if j not in kept]
     return np.array(chosen + rest, dtype=int), len(chosen)
 ```
 

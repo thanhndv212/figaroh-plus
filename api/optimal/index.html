@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/figaroh-mark-light.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
@@ -31,10 +31,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -13136,7 +13136,7 @@ print(f"D-optimality: {criterion:.6f}")</p>
 
 
 <h3 id="figaroh.optimal.base_optimal_calibration.Detmax.main_algo" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">main_algo</span><span class="p">()</span></code>
+            <code class="highlight language-python"><span class="n">main_algo</span><span class="p">(</span><span class="n">init_set</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#figaroh.optimal.base_optimal_calibration.Detmax.main_algo" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -13144,26 +13144,62 @@ print(f"D-optimality: {criterion:.6f}")</p>
     <div class="doc doc-contents ">
 
         <p>Execute the main determinant maximization algorithm.</p>
-<p>Implements the greedy exchange algorithm for D-optimal experimental
-design. The algorithm alternates between adding configurations that
-maximally improve the determinant and removing configurations whose
-absence minimally degrades the determinant.</p>
+<p>Implements the DETMAX single-exchange algorithm for D-optimal
+experimental design. Each exchange adds the candidate outside the
+current subset that most increases the criterion, then removes the
+member whose absence decreases it least.</p>
 <p>Algorithm Steps:
-1. Initialize random subset of target size from candidate pool
+1. Start from <code>init_set</code>, or a random subset of target size
 2. Exchange Loop:
-   a. ADD PHASE: Find configuration that maximally improves criterion
-   b. REMOVE PHASE: Find configuration whose removal minimally hurts
-   c. Update current subset and criterion value
-3. Repeat until convergence (no beneficial exchanges)
+   a. ADD PHASE: among the candidates not in the subset, add the one
+      that maximally improves the criterion
+   b. REMOVE PHASE: remove the member whose removal minimally hurts
+   c. Keep the exchange only if the criterion strictly increased
+3. Repeat until no exchange improves the criterion
 4. Return optimization history</p>
 
 
 <details class="convergence-condition" open>
   <summary>Convergence Condition</summary>
-  <p>The algorithm stops when the optimal configuration to add
-equals the optimal configuration to remove, indicating no
-further improvement is possible.</p>
+  <p>The algorithm stops when the exchange would remove the
+configuration it just added, or would not increase the
+criterion. Each kept exchange strictly increases the criterion,
+so the loop terminates. The result is a local optimum of this
+add-then-remove step, not necessarily of every pairwise swap.</p>
 </details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>init_set</code>
+            </td>
+            <td>
+                  <code><span title="list">list</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Starting subset of <code>NbChosen</code>
+distinct candidate indices. Defaults to a random sample
+drawn with the <code>random</code> module.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
     <p><span class="doc-section-title">Returns:</span></p>
     <table>
@@ -13180,7 +13216,32 @@ further improvement is possible.</p>
             <td>
               <div class="doc-md-description">
                 <p>History of D-optimality criterion values throughout
- the optimization process. Last value is final criterion.</p>
+ the optimization process, starting with the initial
+ subset's criterion. Last value is final criterion.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>NbChosen</code> is not smaller than the pool size, or
+<code>init_set</code> is not <code>NbChosen</code> distinct pool indices.</p>
               </div>
             </td>
           </tr>
@@ -13191,9 +13252,10 @@ further improvement is possible.</p>
 <details class="side-effects" open>
   <summary>Side Effects</summary>
   <ul>
-<li>Updates self.cur_set with final optimal configuration subset</li>
-<li>Updates self.opt_critD with complete optimization history</li>
-<li>Uses random initialization (results may vary between runs)</li>
+<li>Sets self.cur_set and self.opt_set to the final subset</li>
+<li>Sets self.opt_critD to the optimization history</li>
+<li>Uses random initialization (results may vary between runs)
+  unless <code>init_set</code> is given</li>
 </ul>
 </details>
 
@@ -13222,8 +13284,8 @@ print(f"Final criterion: {history[-1]:.6f}")</p>
 <details class="note" open>
   <summary>Note</summary>
   <p>The algorithm may converge to different local optima depending
-on random initialization. For critical applications, consider
-running multiple times with different seeds.</p>
+on the initial subset. For critical applications, consider
+running it from several starting subsets.</p>
 </details>
 
             <details class="mkdocstrings-source">
@@ -13318,36 +13380,67 @@ running multiple times with different seeds.</p>
 <span class="normal">1330</span>
 <span class="normal">1331</span>
 <span class="normal">1332</span>
-<span class="normal">1333</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main_algo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">1333</span>
+<span class="normal">1334</span>
+<span class="normal">1335</span>
+<span class="normal">1336</span>
+<span class="normal">1337</span>
+<span class="normal">1338</span>
+<span class="normal">1339</span>
+<span class="normal">1340</span>
+<span class="normal">1341</span>
+<span class="normal">1342</span>
+<span class="normal">1343</span>
+<span class="normal">1344</span>
+<span class="normal">1345</span>
+<span class="normal">1346</span>
+<span class="normal">1347</span>
+<span class="normal">1348</span>
+<span class="normal">1349</span>
+<span class="normal">1350</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main_algo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_set</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Execute the main determinant maximization algorithm.</span>
 
-<span class="sd">    Implements the greedy exchange algorithm for D-optimal experimental</span>
-<span class="sd">    design. The algorithm alternates between adding configurations that</span>
-<span class="sd">    maximally improve the determinant and removing configurations whose</span>
-<span class="sd">    absence minimally degrades the determinant.</span>
+<span class="sd">    Implements the DETMAX single-exchange algorithm for D-optimal</span>
+<span class="sd">    experimental design. Each exchange adds the candidate outside the</span>
+<span class="sd">    current subset that most increases the criterion, then removes the</span>
+<span class="sd">    member whose absence decreases it least.</span>
 
 <span class="sd">    Algorithm Steps:</span>
-<span class="sd">    1. Initialize random subset of target size from candidate pool</span>
+<span class="sd">    1. Start from ``init_set``, or a random subset of target size</span>
 <span class="sd">    2. Exchange Loop:</span>
-<span class="sd">       a. ADD PHASE: Find configuration that maximally improves criterion</span>
-<span class="sd">       b. REMOVE PHASE: Find configuration whose removal minimally hurts</span>
-<span class="sd">       c. Update current subset and criterion value</span>
-<span class="sd">    3. Repeat until convergence (no beneficial exchanges)</span>
+<span class="sd">       a. ADD PHASE: among the candidates not in the subset, add the one</span>
+<span class="sd">          that maximally improves the criterion</span>
+<span class="sd">       b. REMOVE PHASE: remove the member whose removal minimally hurts</span>
+<span class="sd">       c. Keep the exchange only if the criterion strictly increased</span>
+<span class="sd">    3. Repeat until no exchange improves the criterion</span>
 <span class="sd">    4. Return optimization history</span>
 
 <span class="sd">    Convergence Condition:</span>
-<span class="sd">        The algorithm stops when the optimal configuration to add</span>
-<span class="sd">        equals the optimal configuration to remove, indicating no</span>
-<span class="sd">        further improvement is possible.</span>
+<span class="sd">        The algorithm stops when the exchange would remove the</span>
+<span class="sd">        configuration it just added, or would not increase the</span>
+<span class="sd">        criterion. Each kept exchange strictly increases the criterion,</span>
+<span class="sd">        so the loop terminates. The result is a local optimum of this</span>
+<span class="sd">        add-then-remove step, not necessarily of every pairwise swap.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        init_set (list, optional): Starting subset of ``NbChosen``</span>
+<span class="sd">            distinct candidate indices. Defaults to a random sample</span>
+<span class="sd">            drawn with the ``random`` module.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        list: History of D-optimality criterion values throughout</span>
-<span class="sd">             the optimization process. Last value is final criterion.</span>
+<span class="sd">             the optimization process, starting with the initial</span>
+<span class="sd">             subset's criterion. Last value is final criterion.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If ``NbChosen`` is not smaller than the pool size, or</span>
+<span class="sd">            ``init_set`` is not ``NbChosen`` distinct pool indices.</span>
 
 <span class="sd">    Side Effects:</span>
-<span class="sd">        - Updates self.cur_set with final optimal configuration subset</span>
-<span class="sd">        - Updates self.opt_critD with complete optimization history</span>
+<span class="sd">        - Sets self.cur_set and self.opt_set to the final subset</span>
+<span class="sd">        - Sets self.opt_critD to the optimization history</span>
 <span class="sd">        - Uses random initialization (results may vary between runs)</span>
+<span class="sd">          unless ``init_set`` is given</span>
 
 <span class="sd">    Complexity:</span>
 <span class="sd">        O(max_iterations × candidate_pool_size × target_subset_size)</span>
@@ -13363,51 +13456,54 @@ running multiple times with different seeds.</p>
 
 <span class="sd">    Note:</span>
 <span class="sd">        The algorithm may converge to different local optima depending</span>
-<span class="sd">        on random initialization. For critical applications, consider</span>
-<span class="sd">        running multiple times with different seeds.</span>
+<span class="sd">        on the initial subset. For critical applications, consider</span>
+<span class="sd">        running it from several starting subsets.</span>
 <span class="sd">    """</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
 
     <span class="c1"># get all indices in the pool</span>
     <span class="n">pool_idx</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">nd</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">pool_idx</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"NbChosen must be between 1 and </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">pool_idx</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2"> "</span>
+            <span class="sa">f</span><span class="s2">"for a pool of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">pool_idx</span><span class="p">)</span><span class="si">}</span><span class="s2"> candidates, got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">nd</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
 
-    <span class="c1"># initialize a random set</span>
-    <span class="n">cur_set</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">pool_idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nd</span><span class="p">)</span>
-    <span class="n">updated_pool</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">pool_idx</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_set</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">init_set</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cur_set</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">pool_idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nd</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cur_set</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">init_set</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">cur_set</span><span class="p">))</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nd</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">cur_set</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">pool_idx</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"init_set must hold </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">nd</span><span class="si">}</span><span class="s2"> distinct candidate indices"</span>
+            <span class="p">)</span>
 
-    <span class="c1"># adding samples from remaining pool: k = 1</span>
-    <span class="n">opt_k</span> <span class="o">=</span> <span class="n">updated_pool</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">opt_critD</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_critD</span><span class="p">(</span><span class="n">cur_set</span><span class="p">)</span>
-    <span class="n">rm_j</span> <span class="o">=</span> <span class="n">cur_set</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">cur_critD</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_critD</span><span class="p">(</span><span class="n">cur_set</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">opt_critD</span> <span class="o">=</span> <span class="p">[</span><span class="n">cur_critD</span><span class="p">]</span>
 
-    <span class="k">while</span> <span class="n">opt_k</span> <span class="o">!=</span> <span class="n">rm_j</span><span class="p">:</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="c1"># add: the best candidate among those not yet selected</span>
+        <span class="n">outside</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">pool_idx</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cur_set</span><span class="p">]</span>
+        <span class="n">opt_k</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">outside</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_critD</span><span class="p">(</span><span class="n">cur_set</span> <span class="o">+</span> <span class="p">[</span><span class="n">k</span><span class="p">]))</span>
+        <span class="n">added</span> <span class="o">=</span> <span class="n">cur_set</span> <span class="o">+</span> <span class="p">[</span><span class="n">opt_k</span><span class="p">]</span>
 
-        <span class="c1"># add</span>
-        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">updated_pool</span><span class="p">:</span>
-            <span class="n">cur_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-            <span class="n">cur_critD</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_critD</span><span class="p">(</span><span class="n">cur_set</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">opt_critD</span> <span class="o">&lt;</span> <span class="n">cur_critD</span><span class="p">:</span>
-                <span class="n">opt_critD</span> <span class="o">=</span> <span class="n">cur_critD</span>
-                <span class="n">opt_k</span> <span class="o">=</span> <span class="n">k</span>
-            <span class="n">cur_set</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-        <span class="n">cur_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">opt_k</span><span class="p">)</span>
-        <span class="n">opt_critD</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_critD</span><span class="p">(</span><span class="n">cur_set</span><span class="p">)</span>
+        <span class="c1"># remove: the member whose absence leaves the largest criterion</span>
+        <span class="n">rm_j</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+            <span class="n">added</span><span class="p">,</span>
+            <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">j</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_critD</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">added</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">j</span><span class="p">]),</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">rm_j</span> <span class="o">==</span> <span class="n">opt_k</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">new_set</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">added</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">rm_j</span><span class="p">]</span>
+        <span class="n">new_critD</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_critD</span><span class="p">(</span><span class="n">new_set</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">new_critD</span> <span class="o">&lt;=</span> <span class="n">cur_critD</span><span class="p">:</span>
+            <span class="k">break</span>
 
-        <span class="c1"># remove</span>
-        <span class="n">delta_critD</span> <span class="o">=</span> <span class="n">opt_critD</span>
-        <span class="n">rm_j</span> <span class="o">=</span> <span class="n">cur_set</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">cur_set</span><span class="p">:</span>
-            <span class="n">rm_set</span> <span class="o">=</span> <span class="n">cur_set</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="n">rm_set</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
-            <span class="n">cur_delta_critD</span> <span class="o">=</span> <span class="n">opt_critD</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_critD</span><span class="p">(</span><span class="n">rm_set</span><span class="p">)</span>
+        <span class="n">cur_set</span><span class="p">,</span> <span class="n">cur_critD</span> <span class="o">=</span> <span class="n">new_set</span><span class="p">,</span> <span class="n">new_critD</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opt_critD</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cur_critD</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">cur_delta_critD</span> <span class="o">&lt;</span> <span class="n">delta_critD</span><span class="p">:</span>
-                <span class="n">delta_critD</span> <span class="o">=</span> <span class="n">cur_delta_critD</span>
-                <span class="n">rm_j</span> <span class="o">=</span> <span class="n">j</span>
-        <span class="n">cur_set</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">rm_j</span><span class="p">)</span>
-        <span class="n">opt_critD</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_critD</span><span class="p">(</span><span class="n">cur_set</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">opt_critD</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">opt_critD</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">cur_set</span> <span class="o">=</span> <span class="n">cur_set</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">opt_set</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cur_set</span><span class="p">)</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_critD</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -15164,10 +15260,10 @@ instead of full automatic differentiation which is too slow.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
       
         <script src="../../javascripts/figaroh.js"></script>
       

@@ -1127,7 +1127,7 @@ parameters:
 Optional keys and their defaults are listed in the [reference page](https://thanhndv212.github.io/figaroh-plus/concepts/calibration_estimation/index.md). The ones you are most likely to set:
 
 - `priors` — expected error sizes per group (`translation` m, `rotation` rad, `joint_offset` rad, `prismatic_offset` m). Used by `map` and `excitation`; `map_cv` only uses their ratios.
-- `noise_std` — measurement noise in the units of your cost function's residuals. Leave `null` to estimate it from the data (recommended unless you have a reason to trust a sensor specification more than your residuals).
+- `noise_std` — measurement noise in the units of your cost function's residuals. Leave `null` to estimate it from the data (recommended unless you have a reason to trust a sensor specification more than your residuals). When the components differ in noise or units (a camera's depth axis, a height mixed with angles), give one value per component or `per_component`; see [Noise per measurement component](https://thanhndv212.github.io/figaroh-plus/concepts/calibration_estimation/#noise-per-measurement-component).
 - `cv_folds`, `cv_seed` — cross-validation over your training postures.
 - `cv_rule: one_se` — with `cv_subset`, prefer the smallest set within one standard error of the best.
 
@@ -1712,12 +1712,14 @@ tasks:
       calibration_level: full_params      # or joint_offset
       estimation:
         method: map_cv                    # structural | excitation | map | map_cv | cv_subset
+        structural_selection: lapack      # structural: lapack | ordered
         priors:                           # expected error sizes (1 sigma)
           translation: 1.0e-3             # m
           rotation: 2.0e-3                # rad
           joint_offset: 2.0e-2            # rad, revolute joint-angle offset
           prismatic_offset: 2.0e-3        # m
-        noise_std: null                   # residual units; null = estimated
+        noise_std: null                   # residual units; null = estimated;
+                                          # or one per component, or per_component
         excitation_k: 1.0                 # excitation only
         cv_folds: 5                       # map_cv, cv_subset
         cv_seed: 0
@@ -1739,6 +1741,8 @@ Selects base parameters by a QR decomposition on random configurations, then dro
 - **Pros:** unchanged behaviour; results comparable with earlier versions.
 - **Cons:** the structural step does not see the measured marker point, so it can drop parameters the data identifies; ties between equal columns are broken by floating-point details, so the selected set can differ between platforms (figaroh-plus#113); weakly excited parameters are estimated freely.
 - **Use when:** you need results comparable with an earlier run.
+
+`structural_selection` chooses among exactly dependent columns. `lapack` (default) takes the largest residual first, so the selected names follow the random draw (`random_seed`): the span is the same, the basis is not. That does not matter for one chain, but it does when chains share parameters by name (the TALOS two-chain fit swapped its shared torso axes between draws and moved the held-out height error by about 1.5 mm, figaroh-plus#204). `ordered` takes the first independent columns in joint order, the same for every draw. The choice of order is still a convention: it fixes which of several equivalent bases is fitted, and the regularisation and the name sharing depend on that basis. Either way, at `full_params` with an unknown base frame, the base frame replaces the six base parameters that span the first joint's placement, whichever columns the selection kept for it.
 
 ### `excitation`
 
@@ -1811,9 +1815,27 @@ This is one robot, one posture plan and no model mismatch (no backlash or deflec
 
 `noise_std` is in the units of your cost function's measurement residuals: metres for positions, unless the robot's `cost_function` weights them. When it is `null`, FIGAROH fits the identifiable parameters freely and uses √(RSS / (m − n)). That estimate includes unmodelled effects (backlash, deflection), which is usually what you want: it keeps the data from looking more precise than it is.
 
+That free fit is capped at 2000 evaluations. On a nearly square, weakly determined problem (TALOS table contact: 63 residuals, 52 parameters) it can stop before converging; FIGAROH then logs a warning and the report shows `prelim_converged: false`. Give `noise_std` in that case: `map` and `map_cv` then skip the free fit altogether. `excitation` and `cv_subset` always run it, because they rank parameters with its Jacobian.
+
+### Noise per measurement component
+
+One σ is wrong when the measurement components differ in noise or units: a camera pose is noisier along the depth axis than across the image; a contact measurement mixes a height in metres with angles in radians. `noise_std` then takes one value per component, in the order of the cost function's measurement residuals (for example 6 for a pose, 3 for a position):
+
+```
+estimation:
+  method: map
+  noise_std: [3.0e-4, 3.0e-4, 1.5e-3, 1.7e-3, 1.7e-3, 4.4e-4]
+```
+
+FIGAROH divides each component's residual rows by its σ and multiplies them by the smallest σ, before the fit, the prior weights and the covariance. Every method of this page then works unchanged, at that smallest noise level. A scalar, or equal values, leave the problem exactly as before.
+
+`noise_std: per_component` estimates the vector instead: the free fit of the identifiable parameters is weighted once by a first estimate and refitted, and each component gets √(RSS_c / (N − n/c)) over its N residuals (c components share the n parameters' degrees of freedom). Like the scalar estimate, this is **noise plus model error**: unmodelled systematic error inflates σ, which strengthens the prior. The report says so in `noise_source`. Per-sample noise levels are not offered: fitted from the same residuals as the parameters, they would hand the samples that disagree with the model to the prior, which is outlier rejection in disguise.
+
+When the noise is fixed in a sensor frame that turns with the posture, a calibrator can set `noise_rotation`, one rotation Rᵢ per sample over the components (shape `(N, c, c)`); sample i's covariance is then Rᵢ diag(σ²) Rᵢᵀ, and `per_component` estimates σ in the sensor frame. The rotations are sliced with the samples by the cross-validation folds. For example, the UR10 cost function's orientation residual is the body-frame angle-axis error, so a rotation noise fixed in the board frame has Rᵢ = R_measᵀ on those three components.
+
 ## Outputs
 
-- `calib_config["estimation_report"]` (also `calibrator.estimation_report`): the method, candidates, exactly dependent parameters, the noise and its source, the priors, and per method the removal order with ratios, the cross-validation curve and the chosen factor or size.
+- `calib_config["estimation_report"]` (also `calibrator.estimation_report`): the method, candidates, nuisance parameters, exactly dependent parameters, the noise and its source (a list per component when whitened, with `noise_std_ref`, the level the problem keeps, and `noise_rotated`), the priors, whether the free fit converged (`prelim_converged`, `None` when it was skipped) and its evaluation count (`prelim_nfev`), and per method the removal order with ratios, the cross-validation curve and the chosen factor or size.
 - `calibrator.std_dev`: for `map`/`map_cv`, posterior standard deviations; a value close to the prior means the data did not inform that parameter.
 - `redistribute_parameters()` / `joint_corrections()` (used by the PAL export, and for the URDF via `export_urdf(nominal, calibrator.joint_corrections())`):
 - `structural`: a weighted minimum-norm lift of the fitted base parameters onto every joint parameter, with the expected sizes (`priors`) as weights and base-frame and dropped rows held at 0; refined so the lifted model reproduces the fit at the measured postures (figaroh-plus#111). It does not depend on which representative the QR chose.
@@ -1823,10 +1845,27 @@ This is one robot, one posture plan and no model mismatch (no backlash or deflec
 
 - `metrology_frames()`: the fitted base frame and tool point. They describe the measurement setup, so they are not written into the URDF; applied outside a reloaded URDF they reproduce the calibrated forward kinematics, for every method and both levels (figaroh-plus#62).
 
+## Custom measurement models
+
+The non-structural methods do not assume an end-effector pose. A calibrator that measures something else (a distance to a plane, a contact gap) plugs in through three `BaseCalibration` hooks (figaroh-plus#210):
+
+- `nuisance_param_names()`: the parameters fitted freely besides the joints, with no prior and never removed. Default: the unknown base and tool frames. A table-contact calibrator returns its plane and contact-offset parameters. They come after the joint parameters in `param_name` (the base frame, if any, stays first).
+- `measurement_jacobian(names, x)`: the derivative of the measured quantity, used to drop exact dependencies. Default: a central difference of `get_pose_from_measure`, so overriding `get_pose_from_measure` is often enough. For an exact derivative, chain the measurement's derivative onto `calibration_tools.chain_jacobian`, the Pinocchio-built Jacobian of the chain placement at the `full_params` level.
+- `per_sample_attributes`: names of attributes with one entry per sample (e.g. `("session_ids",)`), sliced with `q_measured` in the cross-validation folds.
+
+The calibrator must keep this contract:
+
+- the first `len(PEE_measured)` entries of `cost_function` are the measurement residuals, DOF-major (every sample of the first measured component, then the next); rows after them are ignored, and regularisation belongs in priors, not appended rows;
+- parameters are read by name from `calib_config["param_name"]`;
+- all per-sample state is `q_measured`, `PEE_measured` or listed in `per_sample_attributes`, and `NbSample` follows the slice;
+- the nuisance parameters are identifiable on the data. Two nuisance parameters with the same effect (a plane height and a probe length) raise "nuisance parameters are not identifiable on this data: fix a gauge"; remove one or fix its value. With `map_cv` and `cv_subset` the check also runs on each fold's training samples, so a session with too few postures for every fold to determine its parameters raises: reduce `cv_folds` or record more postures.
+
 ## Limits
 
 - Not supported with `include_non_geometric` (elastic parameters); use `structural`.
-- The robot's `cost_function` must keep the parameter layout: base frame first, joint parameters, tool point last (as the TIAGo, UR10 and TALOS examples do). Classes with extra parameters (e.g. table-contact planes) are not supported.
+- The robot's `cost_function` must read parameters by name, or keep the layout: base frame first, joint parameters, then the other nuisance parameters (tool point by default), as the TIAGo, UR10 and TALOS examples do. See [Custom measurement models](#custom-measurement-models).
+- Per-session nuisance parameters are not split across folds: a fold that misses a session raises instead of leaving its parameters undetermined.
+- `chain_jacobian` covers `full_params`; not `joint_offset` or elasticity.
 - `regularization_coefficient` was removed in 1.0 (#120): it weighted metres and radians alike. A non-zero value is a `ConfigurationError`; leave it at 0; `map`/`map_cv` are the unit-consistent replacement.
 
 # Configuration Parameter Reference
@@ -1911,7 +1950,7 @@ Eye-hand / camera calibration now has a unified-format equivalent
 | `is_inertia_regressor`    | Include the rigid-body inertial-parameter regressor block                                                                                                                                                                                                                                                                                                                                                                                    | *(no unified equivalent found — always derived)* |
 | `has_coupled_wrist`       | Last two wrist joints share differential actuation → adds the `Iam6`/`fvm6`/`fsm6` terms and a coupling transform to the regressor                                                                                                                                                                                                                                                                                                           | `coupling.has_coupled_wrist`                     |
 | `embedded_forces`         | Express the external wrench in a body-embedded (tool) frame rather than a fixed/world frame                                                                                                                                                                                                                                                                                                                                                  | *(no unified equivalent found)*                  |
-| `qr_relative_tolerance`   | *(optional)* QR rank threshold as a fraction of the largest pivot. Columns whose pivot falls below it are treated as unidentifiable instead of fitting noise. Unset: only the absolute `1e-6` threshold applies. `1e-4` is a reasonable start when the log warns about an ill-conditioned base regressor                                                                                                                                     | `problem.qr_relative_tolerance`                  |
+| `qr_relative_tolerance`   | *(optional)* QR rank threshold as a fraction of the largest pivot. Columns whose pivot falls below it are treated as unidentifiable instead of fitting noise. Unset: only the absolute `1e-6` threshold applies. `1e-4` is a reasonable start when the log warns about an ill-conditioned base regressor. The optimal-trajectory design uses the same threshold to choose the columns it conditions                                          | `problem.qr_relative_tolerance`                  |
 | `active_joints`           | *(optional)* Restrict identification to this explicit subset of joint names, instead of every active joint in the chain                                                                                                                                                                                                                                                                                                                      | `joints.active_joints`                           |
 | `torque_fit_joints`       | *(optional)* Active joints whose measured effort enters the fit and the fit/validation statistics. The other active joints keep their kinematics in the regressor (their motion still loads the fitted joints), but their effort is neither fitted nor scored; validation lists them under `not_fitted_joints`. Use it for joints whose effort signal is not trusted (unknown force constant, heavy quantisation). Unset: every active joint | `problem.torque_fit_joints`                      |
 
@@ -5124,6 +5163,71 @@ def create_param_list(self, q: Optional[np.ndarray] = None):
         raise CalibrationError(f"Parameter list creation failed: {e}")
 ```
 
+### `nuisance_param_names()`
+
+Parameters the estimation methods fit freely, besides the joints.
+
+Used by `estimation.method` other than `structural` (figaroh-plus#210): they get no prior and are never removed. The default is the unknown base frame (`BASE_TPL`) and tool frames (`EE_TPL` per marker and measured component). A calibrator with its own measurement model returns its own (e.g. a table pose); they must be identifiable on the data.
+
+Source code in `src/figaroh/calibration/base_calibration.py`
+
+```
+def nuisance_param_names(self) -> List[str]:
+    """Parameters the estimation methods fit freely, besides the joints.
+
+    Used by ``estimation.method`` other than ``structural``
+    (figaroh-plus#210): they get no prior and are never removed. The
+    default is the unknown base frame (``BASE_TPL``) and tool frames
+    (``EE_TPL`` per marker and measured component). A calibrator with
+    its own measurement model returns its own (e.g. a table pose); they
+    must be identifiable on the data.
+    """
+    cfg = self.calib_config
+    names = [] if cfg["known_baseframe"] else list(BASE_TPL)
+    if not cfg["known_tipframe"]:
+        tip = dict(cfg, param_name=[])
+        add_pee_name(tip)
+        names += tip["param_name"]
+    return names
+```
+
+### `measurement_jacobian(names, x, step=1e-06)`
+
+Jacobian of the measured quantity w.r.t. parameters `names` at `x`.
+
+Rows follow `PEE_measured` (DOF-major), columns `names`. The default is a central difference of :meth:`get_pose_from_measure` with `param_name` set to `names`. Override it with an exact derivative when one is available, e.g. chaining the measurement's derivative onto :func:`chain_jacobian` (figaroh-plus#210).
+
+Source code in `src/figaroh/calibration/base_calibration.py`
+
+```
+def measurement_jacobian(
+    self, names: List[str], x: np.ndarray, step: float = 1e-6
+) -> np.ndarray:
+    """Jacobian of the measured quantity w.r.t. parameters ``names`` at ``x``.
+
+    Rows follow ``PEE_measured`` (DOF-major), columns ``names``. The
+    default is a central difference of :meth:`get_pose_from_measure`
+    with ``param_name`` set to ``names``. Override it with an exact
+    derivative when one is available, e.g. chaining the measurement's
+    derivative onto :func:`chain_jacobian` (figaroh-plus#210).
+    """
+    cfg = self.calib_config
+    saved = cfg["param_name"]
+    cfg["param_name"] = list(names)
+    x = np.asarray(x, dtype=float)
+    try:
+        cols = []
+        for j in range(len(x)):
+            dx = np.zeros_like(x)
+            dx[j] = step
+            hi = self.get_pose_from_measure(x + dx)
+            lo = self.get_pose_from_measure(x - dx)
+            cols.append((hi - lo) / (2 * step))
+    finally:
+        cfg["param_name"] = saved
+    return np.column_stack(cols)
+```
+
 ### `initial_frame_guess()`
 
 Closed-form guess for the unknown base and tip frames.
@@ -7085,9 +7189,15 @@ def get_joint_offset(model, joint_names):
     for id, joint in enumerate(joints):
         name = joint_names[id]
         shortname = joint.shortname()
-        if model.name == "canopies":
-            if "RevoluteUnaligned" in shortname:
-                shortname = shortname.replace("RevoluteUnaligned", "RZ")
+        # an unaligned joint about a coordinate axis (up to sign) is named
+        # after that axis; calc_updated_fkm applies the offset with the axis
+        # sign, so it is q + offset (#205). A tilted axis keeps its name and
+        # is refused there if it is calibrated.
+        if shortname.endswith("Unaligned"):
+            try:
+                shortname = "JointModel" + _determine_axis_motion(joint)
+            except ValueError:
+                pass
         for i in range(joint.nv):
             if i > 0:
                 offset_param = (
@@ -7178,8 +7288,14 @@ Side Effects
 
 Modifies calib_config["param_name"] in place by:
 
-- For full_params: Replaces first 6 entries with base parameters
+- For full_params: Renames the base parameters the base frame replaces (`base_frame_absorbed_rows`, from `calculate_base_kinematics_regressor`) to the base frame parameters, and records them in `base_frame_row_names`. Without that key (a hand-built config), the first 6 structural base parameters (from `base_mapping_slice`, after any elastic `k_*` names) are renamed.
 - For joint_offset: Prepends base parameters to list
+
+Raises:
+
+| Type         | Description                                                                                                               |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `ValueError` | At full_params, if the base frame does not replace exactly six base parameters (some of its directions are not observed). |
 
 Source code in `src/figaroh/calibration/parameter.py`
 
@@ -7197,11 +7313,41 @@ def add_base_name(calib_config):
 
     Side Effects:
         Modifies calib_config["param_name"] in place by:
-        - For full_params: Replaces first 6 entries with base parameters
+        - For full_params: Renames the base parameters the base frame
+          replaces (``base_frame_absorbed_rows``, from
+          ``calculate_base_kinematics_regressor``) to the base frame
+          parameters, and records them in ``base_frame_row_names``. Without
+          that key (a hand-built config), the first 6 structural base
+          parameters (from ``base_mapping_slice``, after any elastic
+          ``k_*`` names) are renamed.
         - For joint_offset: Prepends base parameters to list
+
+    Raises:
+        ValueError: At full_params, if the base frame does not replace
+            exactly six base parameters (some of its directions are not
+            observed).
     """
     if calib_config["calib_model"] == "full_params":
-        calib_config["param_name"][0:6] = BASE_TPL
+        # the structural parameters start after any non-geometric names
+        # (elastic k_*, #206); without them the slice starts at 0
+        start, end = calib_config.get("base_mapping_slice", (0, 0))
+        absorbed = calib_config.get("base_frame_absorbed_rows")
+        if absorbed is None:
+            calib_config["param_name"][start : start + len(BASE_TPL)] = BASE_TPL
+            return
+        # renaming the first six by position dropped an independent
+        # parameter when the selection grouped one of the first joint's
+        # placement parameters with a later joint (#204)
+        if len(absorbed) != len(BASE_TPL):
+            raise ValueError(
+                f"the base frame replaces {len(absorbed)} base parameters "
+                f"({absorbed}), not {len(BASE_TPL)}: the measurements do not "
+                "observe every base frame direction. Set known_baseframe."
+            )
+        names = calib_config["param_name"]
+        for row, base_name in zip(absorbed, BASE_TPL):
+            names[names.index(row, start, end)] = base_name
+        calib_config["base_frame_row_names"] = list(absorbed)
     elif calib_config["calib_model"] == "joint_offset":
         calib_config["param_name"] = BASE_TPL + calib_config["param_name"]
         # base_mapping_slice is positional: prepending shifts it
@@ -7902,7 +8048,7 @@ wMf = wMo * oMee * eeMf
 
 where
 
-- `wMo`: world (measurement) frame to the kinematic chain's start frame. Estimated directly when `BASE_TPL` params are present in `param_name` (unknown base frame, e.g. `known_baseframe=False`), estimated via a known camera/ref-frame anchor when `calib_config["base_to_ref_frame"]`/`"ref_frame"` are set (e.g. eye-hand calibration), or identity otherwise.
+- `wMo`: world (measurement) frame to the kinematic chain's start frame. Estimated directly when `BASE_TPL` params are present in `param_name` (unknown base frame, e.g. `known_baseframe=False`), estimated via a known camera/ref-frame anchor when `calib_config["base_to_ref_frame"]`/`"ref_frame"` are set (e.g. eye-hand calibration), or identity otherwise. The anchor chain from `start_frame` to `base_to_ref_frame` is evaluated at each sample, so it may move (e.g. a head camera).
 - `oMee`: start frame to end frame, through the updated kinematic chain (`full_params`/`joint_offset` geometric error parameters), optionally including joint elasticity when `calib_config["non_geom"]` is set — a per-joint compliance parameter (`ELAS_TPL`) that adds a gravity-torque-proportional deflection about that joint's own motion axis, then reverts it, on every sample.
 - `eeMf`: end frame to the measured marker frame (`EE_TPL` params), or identity if not estimated. With several markers (`NbMarkers` > 1, e.g. the points of one rigid body), each marker `k` has its own `eeMf_k` (`pEEx_k` ... `phiEEz_k`) on the same tool frame, and its rows follow marker `k - 1`'s (figaroh-plus#119).
 
@@ -7947,7 +8093,9 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
           ``param_name`` (unknown base frame, e.g. ``known_baseframe=False``),
           estimated via a known camera/ref-frame anchor when
           ``calib_config["base_to_ref_frame"]``/``"ref_frame"`` are set (e.g.
-          eye-hand calibration), or identity otherwise.
+          eye-hand calibration), or identity otherwise. The anchor chain
+          from ``start_frame`` to ``base_to_ref_frame`` is evaluated at each
+          sample, so it may move (e.g. a head camera).
         - ``oMee``: start frame to end frame, through the updated kinematic
           chain (``full_params``/``joint_offset`` geometric error
           parameters), optionally including joint elasticity when
@@ -8017,8 +8165,11 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
 
     # 1/ calc transformation from the world frame to start frame: wMo
     base_to_ref_frame = calib_config.get("base_to_ref_frame")
+    cam_to_ref = None
     if base_to_ref_frame is not None:
-        # known chain anchor + unknown camera/ref pose (e.g. eye-hand calib)
+        # known chain anchor + unknown camera/ref pose (e.g. eye-hand calib);
+        # wMo = b_to_cam * cam_to_ref is formed per sample below, since the
+        # chain to the camera can move between samples (head camera, #217)
         start_f = calib_config["ref_frame"]
         base_tf = np.zeros(6)
         for key in param_dict.keys():
@@ -8026,12 +8177,9 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
                 if base_ax in key:
                     base_tf[base_id] = param_dict[key]
                     updated_params.append(key)
-        b_to_cam = get_rel_transform(
-            model, data, calib_config["start_frame"], base_to_ref_frame
-        )
         ref_to_cam = cartesian_to_SE3(base_tf)
         cam_to_ref = ref_to_cam.actInv(pin.SE3.Identity())
-        wMo = b_to_cam * cam_to_ref
+        wMo = None
     elif base_param_incl:
         # fully unknown world (measurement) frame to start frame transform
         base_tf = np.zeros(6)
@@ -8074,21 +8222,36 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
         xyz_rpy = np.zeros(6)
         j_name = model.names[j_id]
 
-        # check joint name in param dict
-        for key in param_dict.keys():
-            if j_name in key:
-
-                # update xyz_rpy with kinematic errors based on identifiable axis
-                for axis_id, axis in enumerate(axis_tpl):
-                    if axis in key:
-                        if verbose == 1:
-                            logger.debug(
-                                "Updating [{}] joint placement at axis {} with [{}]".format(
-                                    j_name, axis, key
-                                )
-                            )
-                        xyz_rpy[axis_id] += param_dict[key]
-                        updated_params.append(key)
+        # update xyz_rpy with kinematic errors based on identifiable axis;
+        # names are "<template>_<joint>", matched exactly (a substring match
+        # gives joint_1 the parameters of joint_10, #206)
+        for axis_id, axis in enumerate(axis_tpl):
+            key = f"{axis}_{j_name}"
+            if key in param_dict:
+                if verbose == 1:
+                    logger.debug(
+                        "Updating [{}] joint placement at axis {} with [{}]".format(
+                            j_name, axis, key
+                        )
+                    )
+                value = param_dict[key]
+                if calib_config["calib_model"] == "joint_offset":
+                    # an unaligned joint about -z moves by -q about z (#205)
+                    value *= _axis_sign(model, j_id, axis_id)
+                xyz_rpy[axis_id] += value
+                updated_params.append(key)
+        # get_joint_offset keeps the shortname of an unaligned joint whose
+        # axis is tilted: no frame axis to offset it about
+        shortname = model.joints[j_id].shortname()
+        if (
+            calib_config["calib_model"] == "joint_offset"
+            and shortname.endswith("Unaligned")
+            and f"{shortname.replace('JointModel', 'offset')}_{j_name}" in param_dict
+        ):
+            raise ValueError(
+                f"joint_offset: {j_name} is a {shortname} whose axis is not "
+                "a coordinate axis; its offset is not supported (#205)"
+            )
 
         # update joint placement: full_params perturb the placement in the
         # parent frame; joint offsets act about the joint's own axes (q + offset)
@@ -8101,22 +8264,23 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
     # see _build_elastic_param_names), matched once here since the mapping
     # joint -> param is static; the deflection itself is gravity-torque
     # dependent and recomputed per sample below.
+    # Names are matched exactly: a substring match would give joint_1 the
+    # gain of joint_10 (#206).
     elastic_map = {}
     if calib_config.get("non_geom"):
         for j_id in calib_config["actJoint_idx"]:
             j_name = model.names[j_id]
-            for key in param_dict.keys():
-                if j_name in key:
-                    for elas_id, elas in enumerate(ELAS_TPL):
-                        if elas in key:
-                            if verbose == 1:
-                                logger.debug(
-                                    "Joint [{}] elastic gain [{}] on axis {}".format(
-                                        j_name, key, elas
-                                    )
-                                )
-                            elastic_map[j_id] = (key, elas_id)
-                            updated_params.append(key)
+            for elas_id, elas in enumerate(ELAS_TPL):
+                key = f"{elas}_{j_name}"
+                if key in param_dict:
+                    if verbose == 1:
+                        logger.debug(
+                            "Joint [{}] elastic gain [{}] on axis {}".format(
+                                j_name, key, elas
+                            )
+                        )
+                    elastic_map[j_id] = (key, elas_id, _axis_sign(model, j_id, elas_id))
+                    updated_params.append(key)
 
     # check if all parameters are updated to the model
     assert len(updated_params) == len(
@@ -8147,9 +8311,15 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
             geometric_placements = {
                 j_id: model.jointPlacements[j_id].copy() for j_id in elastic_map
             }
-            for j_id, (key, elas_id) in elastic_map.items():
+            for j_id, (key, elas_id, sign) in elastic_map.items():
                 xyz_rpy = np.zeros(6)
-                xyz_rpy[elas_id] = param_dict[key] * tau[j_id - 1]
+                # the joint's velocity index, not j_id - 1: they differ after
+                # a free-flyer or any multi-DOF joint (#206). The deflection
+                # k * tau is along the joint axis, i.e. q -> q + k * tau, so
+                # k is the physical compliance; sign maps it to the joint
+                # frame axis apply_joint_offset acts on.
+                tau_j = tau[model.joints[j_id].idx_v]
+                xyz_rpy[elas_id] = sign * param_dict[key] * tau_j
                 model = apply_joint_offset(model, j_id, xyz_rpy)
 
             # jointPlacements changed: data.oMf is stale until FK is redone
@@ -8166,6 +8336,14 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
                 model.jointPlacements[j_id] = placement
         else:
             oMee = get_rel_transform(model, data, start_f, end_f)
+
+        # camera anchor from this sample's kinematics, the same data.oMf
+        # as oMee (#217)
+        if cam_to_ref is not None:
+            b_to_cam = get_rel_transform(
+                model, data, calib_config["start_frame"], base_to_ref_frame
+            )
+            wMo = b_to_cam * cam_to_ref
 
         # calculate transformation from world frame to each marker frame
         wMee = wMo * oMee
@@ -8630,9 +8808,21 @@ def calculate_base_kinematics_regressor(
     # (random-config) regressor covers both, since the base/dependent
     # column split is a property of the kinematic chain, not of any
     # particular dataset.
-    # LAPACK pivoting: calibration selection is made deterministic in #113,
-    # not here, so calibration results stay as they were.
-    decomposer = QRDecomposer(tolerance=tol_qr, deterministic=False)
+    # LAPACK pivoting by default: calibration selection is made deterministic
+    # in #113, not here, so calibration results stay as they were.
+    # ``estimation.structural_selection: ordered`` takes the first
+    # independent columns in joint order instead, so the selected names do
+    # not depend on the random draw (#204).
+    selection = (calib_config.get("estimation") or {}).get(
+        "structural_selection", "lapack"
+    )
+    if selection not in ("lapack", "ordered"):
+        raise ValueError(
+            f"estimation.structural_selection '{selection}' not in lapack, ordered"
+        )
+    decomposer = QRDecomposer(
+        tolerance=tol_qr, deterministic=False, ordered=selection == "ordered"
+    )
     M, paramsrand_base, idx_base, _ = decomposer.get_base_mapping_matrix_double(
         Rrand_e, paramsrand_e
     )
@@ -8668,8 +8858,81 @@ def calculate_base_kinematics_regressor(
     calib_config["base_mapping_param_names"] = list(paramsrand_e)
     calib_config["base_mapping_row_names"] = [paramsrand_e[j] for j in idx_base]
     calib_config["base_mapping_slice"] = (_base_slice_start, _base_slice_end)
+    if calib_config["calib_model"] == "full_params":
+        calib_config["base_frame_absorbed_rows"] = rows_absorbed_by_base_frame(
+            Rrand_sel,
+            list(geo_params_sel),
+            Rrand_b,
+            calib_config["base_mapping_row_names"],
+            paramsrand_e,
+            tol=tol_qr,
+        )
 
     return Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e
+```
+
+## `rows_absorbed_by_base_frame(R, names, R_b, base_rows, params_e, tol=TOL_QR)`
+
+Base parameters that an unknown base frame replaces at full_params.
+
+The base frame moves the placement of the chain's first joint, so its six directions are that joint's six placement columns. Put first, ahead of the base columns, they make as many base columns dependent: those are the parameters the base frame replaces. They are the first joint's own parameters when the selection kept them, or columns equal to them (on TIAGo the prismatic torso's `d_px` is `arm_1`'s). Picking the first six base parameters instead dropped an independent one when the selection grouped a first-joint parameter with a later joint (#204).
+
+Parameters:
+
+| Name        | Type      | Description                                                                                          | Default    |
+| ----------- | --------- | ---------------------------------------------------------------------------------------------------- | ---------- |
+| `R`         | `ndarray` | Structural regressor, one column per name in names.                                                  | *required* |
+| `names`     | `list`    | Parameter names of the columns of R.                                                                 | *required* |
+| `R_b`       | `ndarray` | Base regressor, one column per base_rows entry.                                                      | *required* |
+| `base_rows` | `list`    | Base parameter names.                                                                                | *required* |
+| `params_e`  | `list`    | Parameters left after elimination, in joint order; the first one's joint is the chain's first joint. | *required* |
+| `tol`       | `float`   | Absolute rank threshold.                                                                             | `TOL_QR`   |
+
+Returns:
+
+| Name   | Type | Description                                                  |
+| ------ | ---- | ------------------------------------------------------------ |
+| `list` |      | Base parameter names the base frame replaces, in base order. |
+
+Source code in `src/figaroh/calibration/calibration_tools.py`
+
+```
+def rows_absorbed_by_base_frame(R, names, R_b, base_rows, params_e, tol=TOL_QR):
+    """Base parameters that an unknown base frame replaces at full_params.
+
+    The base frame moves the placement of the chain's first joint, so its
+    six directions are that joint's six placement columns. Put first, ahead
+    of the base columns, they make as many base columns dependent: those
+    are the parameters the base frame replaces. They are the first joint's
+    own parameters when the selection kept them, or columns equal to them
+    (on TIAGo the prismatic torso's ``d_px`` is ``arm_1``'s). Picking the
+    first six base parameters instead dropped an independent one when the
+    selection grouped a first-joint parameter with a later joint (#204).
+
+    Args:
+        R (ndarray): Structural regressor, one column per name in ``names``.
+        names (list): Parameter names of the columns of ``R``.
+        R_b (ndarray): Base regressor, one column per ``base_rows`` entry.
+        base_rows (list): Base parameter names.
+        params_e (list): Parameters left after elimination, in joint order;
+            the first one's joint is the chain's first joint.
+        tol (float): Absolute rank threshold.
+
+    Returns:
+        list: Base parameter names the base frame replaces, in base order.
+    """
+    first = None
+    for name in params_e:
+        tpl = next((t for t in FULL_PARAMTPL if name.startswith(t + "_")), None)
+        if tpl is not None:
+            first = name[len(tpl) + 1 :]
+            break
+    if first is None:
+        return []
+    own = [names.index(f"{tpl}_{first}") for tpl in FULL_PARAMTPL]
+    P, rank = ordered_column_basis(np.hstack([R[:, own], R_b]), tol=tol)
+    kept = set(P[:rank].tolist())
+    return [row for k, row in enumerate(base_rows) if len(own) + k not in kept]
 ```
 
 ## `random_joint_configuration(model, rng)`
@@ -8871,6 +9134,113 @@ def measurement_jacobian(model, data, var, q, calib_config, step=1e-6):
     return np.column_stack(cols)
 ```
 
+## `chain_jacobian(model, data, var, q, calib_config)`
+
+Exact Jacobian of the chain placement w.r.t. `full_params` parameters.
+
+The chain placement is `oMee`, the `start_frame` -> `end_frame` transform of :func:`calc_updated_fkm` with the joint corrections in `var` applied (base and tool frames excluded). Its variation is the twist in the end frame (Pinocchio `LOCAL`): `oMee(x + dx) ~= oMee(x) * exp6(J dx)`, rows linear then angular. Built on `pin.computeFrameKinematicRegressor(..., LOCAL)` and, per joint, the derivative of `SE3(exp3(phi), p)` (:func:`update_joint_placement`): `exp3(phi)^T` for the translation and `Jexp3(phi)` for the rotation vector (figaroh-plus#210). A calibrator measuring something composed on `oMee` chains its own derivative onto this one.
+
+Parameters:
+
+| Name           | Type      | Description                          | Default    |
+| -------------- | --------- | ------------------------------------ | ---------- |
+| `model`        | `Model`   | Robot model (restored on return)     | *required* |
+| `data`         | `Data`    | Robot data                           | *required* |
+| `var`          | `ndarray` | Values of calib_config["param_name"] | *required* |
+| `q`            | `ndarray` | (n_samples, nq) joint configurations | *required* |
+| `calib_config` | `dict`    | calib_model must be full_params      | *required* |
+
+Returns:
+
+| Name      | Type | Description                                                 |
+| --------- | ---- | ----------------------------------------------------------- |
+| `ndarray` |      | (n_samples, 6, len(var)). Columns of names that are not     |
+|           |      | joint parameters of an active joint (e.g. base, tool or the |
+|           |      | calibrator's own parameters) are zero.                      |
+
+Source code in `src/figaroh/calibration/calibration_tools.py`
+
+```
+def chain_jacobian(model, data, var, q, calib_config):
+    """Exact Jacobian of the chain placement w.r.t. ``full_params`` parameters.
+
+    The chain placement is ``oMee``, the ``start_frame`` -> ``end_frame``
+    transform of :func:`calc_updated_fkm` with the joint corrections in
+    ``var`` applied (base and tool frames excluded). Its variation is the
+    twist in the end frame (Pinocchio ``LOCAL``): ``oMee(x + dx) ~= oMee(x) *
+    exp6(J dx)``, rows linear then angular. Built on
+    ``pin.computeFrameKinematicRegressor(..., LOCAL)`` and, per joint, the
+    derivative of ``SE3(exp3(phi), p)`` (:func:`update_joint_placement`):
+    ``exp3(phi)^T`` for the translation and ``Jexp3(phi)`` for the rotation
+    vector (figaroh-plus#210). A calibrator measuring something composed on
+    ``oMee`` chains its own derivative onto this one.
+
+    Args:
+        model (pin.Model): Robot model (restored on return)
+        data (pin.Data): Robot data
+        var (ndarray): Values of ``calib_config["param_name"]``
+        q (ndarray): (n_samples, nq) joint configurations
+        calib_config (dict): ``calib_model`` must be ``full_params``
+
+    Returns:
+        ndarray: (n_samples, 6, len(var)). Columns of names that are not
+        joint parameters of an active joint (e.g. base, tool or the
+        calibrator's own parameters) are zero.
+    """
+    if calib_config["calib_model"] != "full_params":
+        raise ValueError("chain_jacobian supports calib_model 'full_params' only")
+    if calib_config.get("non_geom"):
+        raise ValueError("chain_jacobian does not support joint elasticity")
+    names = list(calib_config["param_name"])
+    var = np.asarray(var, dtype=float)
+    assert len(var) == len(names), "Length of variables != length of params"
+    index = {n: i for i, n in enumerate(names)}
+    q = np.atleast_2d(q)
+
+    saved = {j: model.jointPlacements[j].copy() for j in calib_config["actJoint_idx"]}
+    blocks = []  # (joint id, axis ids, column ids, 6x6 local derivative)
+    try:
+        for j_id in calib_config["actJoint_idx"]:
+            j_name = model.names[j_id]
+            xyz_rpy = np.zeros(6)
+            axes, cols = [], []
+            for axis_id, axis in enumerate(FULL_PARAMTPL):
+                key = f"{axis}_{j_name}"
+                if key in index:
+                    xyz_rpy[axis_id] = var[index[key]]
+                    axes.append(axis_id)
+                    cols.append(index[key])
+            update_joint_placement(model, j_id, xyz_rpy)
+            if cols:
+                d = np.zeros((6, 6))
+                d[:3, :3] = pin.exp3(xyz_rpy[3:6]).T
+                d[3:, 3:] = pin.Jexp3(xyz_rpy[3:6])
+                blocks.append((j_id, axes, cols, d))
+
+        start_id = model.getFrameId(calib_config["start_frame"])
+        end_id = model.getFrameId(calib_config["end_frame"])
+        J = np.zeros((len(q), 6, len(var)))
+        for i, qi in enumerate(q):
+            pin.forwardKinematics(model, data, qi)
+            pin.updateFramePlacements(model, data)
+            reg_e = pin.computeFrameKinematicRegressor(model, data, end_id, pin.LOCAL)
+            if start_id == 0:  # universe: does not move, and Pinocchio rejects it
+                reg_s = np.zeros_like(reg_e)
+            else:
+                reg_s = pin.computeFrameKinematicRegressor(
+                    model, data, start_id, pin.LOCAL
+                )
+            # oMee = oMs^-1 oMe: its local twist is d_e - Ad(eMs) d_s
+            eMs = data.oMf[end_id].actInv(data.oMf[start_id])
+            reg = reg_e - eMs.action @ reg_s
+            for j_id, axes, cols, d in blocks:
+                J[i][:, cols] = reg[:, 6 * (j_id - 1) : 6 * j_id] @ d[:, axes]
+    finally:
+        for j_id, placement in saved.items():
+            model.jointPlacements[j_id] = placement
+    return J
+```
+
 ## `select_identifiable_parameters(jacobian, names, always_keep=(), tol=0.0001)`
 
 Split parameters into identifiable and absorbed ones, deterministically.
@@ -8983,9 +9353,9 @@ Choosing which calibration parameters to estimate, and how (#113).
 
 `calib_config["estimation"]["method"]` selects one of:
 
-`structural` (default) The structural base parameters from random configurations, then the data-level elimination of frame-absorbed parameters (#102). Unchanged behaviour. `excitation` Start from every joint parameter of the calibration level, drop exact dependencies on the measured postures, then remove, one at a time, the parameter whose predicted standard error is largest relative to its expected size, while that ratio exceeds `excitation_k`. Kept parameters are estimated freely. `map` Estimate every joint parameter with a zero-mean Gaussian prior of the given expected sizes (`priors`). Weakly excited directions stay near nominal; nothing is dropped. `map_cv` `map` with the prior sizes scaled by a factor chosen by k-fold cross-validation over the training postures (optionally one factor per parameter group). Needs no robot-specific sizes. `cv_subset` Nested parameter sets in the `excitation` removal order; the set size is chosen by k-fold cross-validation over the training postures.
+`structural` (default) The structural base parameters from random configurations, then the data-level elimination of frame-absorbed parameters (#102). Unchanged behaviour. `structural_selection` picks how the independent columns are chosen among exactly dependent ones: `lapack` (default) takes the largest residual first, so the selected names follow the random draw (`random_seed`); `ordered` takes the first independent columns in joint order, which is the same for every draw (#204). `excitation` Start from every joint parameter of the calibration level, drop exact dependencies on the measured postures, then remove, one at a time, the parameter whose predicted standard error is largest relative to its expected size, while that ratio exceeds `excitation_k`. Kept parameters are estimated freely. `map` Estimate every joint parameter with a zero-mean Gaussian prior of the given expected sizes (`priors`). Weakly excited directions stay near nominal; nothing is dropped. `map_cv` `map` with the prior sizes scaled by a factor chosen by k-fold cross-validation over the training postures (optionally one factor per parameter group). Needs no robot-specific sizes. `cv_subset` Nested parameter sets in the `excitation` removal order; the set size is chosen by k-fold cross-validation over the training postures.
 
-The base and tool frames are always estimated freely (no prior). Noise is `noise_std` in the units of the cost function's measurement residuals (metres for position unless the robot's cost function weights them), or, when `None`, estimated from a free fit of the identifiable parameters. Selection runs once, in :meth:`BaseCalibration.create_param_list`; the choices and diagnostics are stored in `calib_config["estimation_report"]`. See the guide `docs/source/concepts/calibration_estimation.md`.
+Nuisance parameters are always estimated freely (no prior): by default the base and tool frames, or what the calibrator's :meth:`~BaseCalibration.nuisance_param_names` returns (#210). Noise is `noise_std` in the units of the cost function's measurement residuals (metres for position unless the robot's cost function weights them), or, when `None`, estimated from a free fit of the identifiable parameters. `noise_std` may also be one value per measurement component, given or estimated (`per_component`); the measurement residuals are then whitened before the fit, the prior weighting and the covariance (#215). That fit also gives `excitation` and `cv_subset` their Jacobian; it is skipped for `map` and `map_cv` when `noise_std` is given, and a fit that stops unconverged is logged and reported as `prelim_converged` (#211). Selection runs once, in :meth:`BaseCalibration.create_param_list`; the choices and diagnostics are stored in `calib_config["estimation_report"]`. See the guide `docs/source/concepts/calibration_estimation.md`.
 
 ## `EstimationError`
 
@@ -9012,9 +9382,109 @@ def settings(calib_config: dict) -> dict:
     unknown = set(out["priors"]) - set(GROUPS)
     if unknown:
         raise EstimationError(f"unknown prior groups {sorted(unknown)}")
+    if out["structural_selection"] not in STRUCTURAL_SELECTIONS:
+        raise EstimationError(
+            "estimation.structural_selection must be one of "
+            f"{', '.join(STRUCTURAL_SELECTIONS)}"
+        )
     if out["cv_rule"] not in ("min", "one_se"):
         raise EstimationError("estimation.cv_rule must be 'min' or 'one_se'")
+    _check_noise_setting(out["noise_std"])
     return out
+```
+
+## `n_components(calib)`
+
+Measurement components per sample: `len(PEE_measured) / NbSample`.
+
+Source code in `src/figaroh/calibration/estimation.py`
+
+```
+def n_components(calib) -> int:
+    """Measurement components per sample: ``len(PEE_measured) / NbSample``."""
+    n = calib.calib_config["NbSample"]
+    m = len(calib.PEE_measured)
+    if n <= 0 or m % n:
+        raise EstimationError(
+            f"{m} measurements are not a whole number of components for " f"{n} samples"
+        )
+    return m // n
+```
+
+## `whiten(calib, rows, sigma=None, ref=None)`
+
+Measurement rows of `rows` (residuals or Jacobian) whitened.
+
+Off (`rows` returned as is) unless `configure` set unequal per-component noise (`calib_config["measurement_noise_std"]`). The first `len(PEE_measured)` rows, DOF-major, are scaled by `ref / sigma_c` of their component, with `ref` the smallest sigma (`measurement_noise_ref`): the problem keeps one noise level `ref` for the priors and the covariance. With per-sample rotations (`calib.noise_rotation`, R_i) the sensor-frame covariance Sigma = diag(sigma\*\*2) becomes R_i Sigma R_i^T, and sample i's rows are multiplied by ref * R_i diag(1/sigma) R_i^T. Later rows are unchanged. `sigma` and `ref` override the configured values.
+
+Source code in `src/figaroh/calibration/estimation.py`
+
+```
+def whiten(calib, rows, sigma=None, ref=None):
+    """Measurement rows of ``rows`` (residuals or Jacobian) whitened.
+
+    Off (``rows`` returned as is) unless ``configure`` set unequal
+    per-component noise (``calib_config["measurement_noise_std"]``). The
+    first ``len(PEE_measured)`` rows, DOF-major, are scaled by
+    ``ref / sigma_c`` of their component, with ``ref`` the smallest sigma
+    (``measurement_noise_ref``): the problem keeps one noise level ``ref``
+    for the priors and the covariance. With per-sample rotations
+    (``calib.noise_rotation``, R_i) the sensor-frame covariance
+    Sigma = diag(sigma**2) becomes R_i Sigma R_i^T, and sample i's rows are
+    multiplied by ref * R_i diag(1/sigma) R_i^T. Later rows are unchanged.
+    ``sigma`` and ``ref`` override the configured values.
+    """
+    cfg = calib.calib_config
+    if sigma is None:
+        sigma = cfg.get("measurement_noise_std")
+        ref = cfg.get("measurement_noise_ref")
+    if sigma is None:
+        return rows
+    sigma = np.asarray(sigma, dtype=float)
+    rows = np.array(rows, dtype=float)
+    n, c = cfg["NbSample"], len(sigma)
+    head = rows[: n * c].reshape((c, n) + rows.shape[1:])
+    scale = (ref / sigma).reshape((c, 1) + (1,) * (head.ndim - 2))
+    R = _noise_rotation(calib)
+    if R is None:
+        head = head * scale
+    else:
+        sensor = np.einsum("ikc,ki...->ci...", R, head)
+        head = np.einsum("ikc,ci...->ki...", R, sensor * scale)
+    rows[: n * c] = head.reshape((n * c,) + rows.shape[1:])
+    return rows
+```
+
+## `component_noise(calib, residuals, n_params)`
+
+Noise per measurement component from free-fit residuals.
+
+Each component's rows share the `n_params` degrees of freedom equally, so `sigma_c = sqrt(sum r_c**2 / (NbSample - n_params / n_components))`. With `calib.noise_rotation` the residuals are first expressed in the sensor frame. The residuals hold the unmodelled systematic error too: the estimate is noise plus model error.
+
+Source code in `src/figaroh/calibration/estimation.py`
+
+```
+def component_noise(calib, residuals, n_params) -> np.ndarray:
+    """Noise per measurement component from free-fit residuals.
+
+    Each component's rows share the ``n_params`` degrees of freedom equally,
+    so ``sigma_c = sqrt(sum r_c**2 / (NbSample - n_params / n_components))``.
+    With ``calib.noise_rotation`` the residuals are first expressed in the
+    sensor frame. The residuals hold the unmodelled systematic error too: the
+    estimate is noise plus model error.
+    """
+    n, c = calib.calib_config["NbSample"], n_components(calib)
+    r = np.asarray(residuals, dtype=float)[: n * c].reshape(c, n)
+    R = _noise_rotation(calib)
+    if R is not None:
+        r = np.einsum("ikc,ki->ci", R, r)
+    dof = n - n_params / c
+    if dof <= 0:
+        raise EstimationError(
+            "too few samples to estimate the noise per component; set "
+            "estimation.noise_std"
+        )
+    return np.sqrt(np.sum(r**2, axis=1) / dof)
 ```
 
 ## `joint_candidates(model, calib_config)`
@@ -9058,45 +9528,79 @@ def prior_group(name: str, model) -> Optional[str]:
     return "joint_offset"
 ```
 
-## `prior_std(names, model, priors)`
+## `prior_std(names, model, priors, nuisance=())`
 
-Expected size per parameter; `inf` for frame parameters.
+Expected size per parameter; `inf` for frame and nuisance parameters.
 
 Source code in `src/figaroh/calibration/estimation.py`
 
 ```
-def prior_std(names: Sequence[str], model, priors: Dict[str, float]) -> np.ndarray:
-    """Expected size per parameter; ``inf`` for frame parameters."""
+def prior_std(
+    names: Sequence[str], model, priors: Dict[str, float], nuisance=()
+) -> np.ndarray:
+    """Expected size per parameter; ``inf`` for frame and nuisance parameters."""
+    nuisance = set(nuisance)
     out = []
     for n in names:
-        group = prior_group(n, model)
+        group = None if n in nuisance else prior_group(n, model)
         out.append(np.inf if group is None else float(priors[group]))
     return np.array(out)
 ```
 
-## `identifiable(calib, names, frames, tol)`
+## `check_nuisance(J, names, nuisance, tol, where='on this data')`
 
-Drop exact dependencies on the measured postures (frames kept).
+Raise when the nuisance columns of `J` are dependent among themselves.
+
+Nuisance parameters get no prior, so a direction they share would drift freely instead of being fixed by the data.
 
 Source code in `src/figaroh/calibration/estimation.py`
 
 ```
-def identifiable(calib, names, frames, tol) -> List[str]:
-    """Drop exact dependencies on the measured postures (frames kept)."""
-    cfg = calib.calib_config
+def check_nuisance(J, names, nuisance, tol, where="on this data") -> None:
+    """Raise when the nuisance columns of ``J`` are dependent among themselves.
+
+    Nuisance parameters get no prior, so a direction they share would drift
+    freely instead of being fixed by the data.
+    """
+    if not nuisance:
+        return
+    cols = [names.index(n) for n in nuisance]
+    _, dependent = select_identifiable_parameters(J[:, cols], nuisance, tol=tol)
+    if dependent:
+        raise EstimationError(
+            f"nuisance parameters are not identifiable {where}: fix a gauge "
+            f"(dependent on the others: {dependent})"
+        )
+```
+
+## `identifiable(calib, names, nuisance, tol)`
+
+Drop exact dependencies on the measured postures (nuisance kept).
+
+Returns the kept names and the measurement Jacobian over `names` (:meth:`BaseCalibration.measurement_jacobian`). Raises when the nuisance parameters are dependent among themselves (:func:`check_nuisance`).
+
+Source code in `src/figaroh/calibration/estimation.py`
+
+```
+def identifiable(calib, names, nuisance, tol):
+    """Drop exact dependencies on the measured postures (nuisance kept).
+
+    Returns the kept names and the measurement Jacobian over ``names``
+    (:meth:`BaseCalibration.measurement_jacobian`). Raises when the nuisance
+    parameters are dependent among themselves (:func:`check_nuisance`).
+    """
     x0 = _start(calib, names)
-    J = measurement_jacobian(
-        calib.model, calib.data, x0, calib.q_measured, dict(cfg, param_name=names)
-    )
-    kept, _ = select_identifiable_parameters(J, names, frames, tol=tol)
-    return kept
+    J = calib.measurement_jacobian(names, x0)
+    check_nuisance(J, names, nuisance, tol)
+    kept, _ = select_identifiable_parameters(J, names, nuisance, tol=tol)
+    return kept, J
 ```
 
 ## `excitation_order(J, names, frames, prior, noise, k=None)`
 
 Backward elimination by predicted standard error / expected size.
 
-Returns (kept, removed in order, ratio at removal). With `k` None the elimination runs until only frames remain.
+`frames` are the nuisance parameters, never removed. Returns (kept, removed in order, ratio at removal). With `k` None the elimination runs until only `frames` remain.
 
 Source code in `src/figaroh/calibration/estimation.py`
 
@@ -9104,8 +9608,9 @@ Source code in `src/figaroh/calibration/estimation.py`
 def excitation_order(J, names, frames, prior, noise, k=None):
     """Backward elimination by predicted standard error / expected size.
 
-    Returns (kept, removed in order, ratio at removal). With ``k`` None the
-    elimination runs until only frames remain.
+    ``frames`` are the nuisance parameters, never removed. Returns (kept,
+    removed in order, ratio at removal). With ``k`` None the elimination runs
+    until only ``frames`` remain.
     """
     active = list(names)
     removed, ratios = [], []
@@ -9130,11 +9635,43 @@ def excitation_order(J, names, frames, prior, noise, k=None):
 
 Set `param_name` and prior weights for a non-structural method.
 
+The candidates are every joint parameter of the calibration level plus the calibrator's nuisance parameters (:meth:`BaseCalibration.nuisance_param_names`, by default the unknown base and tool frames), which get no prior. A calibrator with its own measurement model (not an end-effector pose) works here when it keeps this contract (#210):
+
+- the first `len(PEE_measured)` entries of `cost_function` are the measurement residuals, laid out DOF-major (all samples of the first measured component, then the next), with no regularisation rows appended (use priors, #120); later rows are ignored;
+- parameters are read by name from `calib_config["param_name"]`, which this function changes;
+- :meth:`BaseCalibration.measurement_jacobian` is the derivative of the quantity measured (by default a finite difference of :meth:`BaseCalibration.get_pose_from_measure`);
+- all per-sample state is `q_measured`, `PEE_measured` or an attribute named in `per_sample_attributes`, so that the cross-validation folds can slice it; `NbSample` follows the slice;
+- the nuisance parameters are identifiable on the data, and on every fold's training samples for `map_cv` and `cv_subset`; otherwise :class:`EstimationError` asks for a gauge.
+
 Source code in `src/figaroh/calibration/estimation.py`
 
 ```
 def configure(calib) -> dict:
-    """Set ``param_name`` and prior weights for a non-structural method."""
+    """Set ``param_name`` and prior weights for a non-structural method.
+
+    The candidates are every joint parameter of the calibration level plus
+    the calibrator's nuisance parameters
+    (:meth:`BaseCalibration.nuisance_param_names`, by default the unknown
+    base and tool frames), which get no prior. A calibrator with its own
+    measurement model (not an end-effector pose) works here when it keeps
+    this contract (#210):
+
+    - the first ``len(PEE_measured)`` entries of ``cost_function`` are the
+      measurement residuals, laid out DOF-major (all samples of the first
+      measured component, then the next), with no regularisation rows
+      appended (use priors, #120); later rows are ignored;
+    - parameters are read by name from ``calib_config["param_name"]``, which
+      this function changes;
+    - :meth:`BaseCalibration.measurement_jacobian` is the derivative of the
+      quantity measured (by default a finite difference of
+      :meth:`BaseCalibration.get_pose_from_measure`);
+    - all per-sample state is ``q_measured``, ``PEE_measured`` or an
+      attribute named in ``per_sample_attributes``, so that the
+      cross-validation folds can slice it; ``NbSample`` follows the slice;
+    - the nuisance parameters are identifiable on the data, and on every
+      fold's training samples for ``map_cv`` and ``cv_subset``; otherwise
+      :class:`EstimationError` asks for a gauge.
+    """
     cfg = calib.calib_config
     est = settings(cfg)
     if cfg.get("non_geom"):
@@ -9149,37 +9686,99 @@ def configure(calib) -> dict:
         )
     model = calib.model
     candidates = joint_candidates(model, cfg)
-    base = [] if cfg["known_baseframe"] else list(BASE_TPL)
-    cfg["param_name"] = base + candidates
-    if not cfg["known_tipframe"]:
-        add_pee_name(cfg)
-    all_names = list(cfg["param_name"])
-    for key in _BASE_MAPPING_KEYS:
+    nuisance = list(calib.nuisance_param_names())
+    clash = sorted(set(nuisance) & set(candidates))
+    if clash:
+        raise EstimationError(f"nuisance parameters {clash} are joint parameters")
+    # base frame first, the other nuisance parameters last: the layout the
+    # robot cost functions read
+    head = [n for n in nuisance if n in BASE_TPL]
+    all_names = head + candidates + [n for n in nuisance if n not in head]
+    cfg["param_name"] = list(all_names)
+    for key in _BASE_MAPPING_KEYS + _NOISE_KEYS:
         cfg.pop(key, None)
-    frames = calib._frame_param_names()
-    prior = prior_std(all_names, model, est["priors"])
+    prior = prior_std(all_names, model, est["priors"], nuisance)
     prior_of = dict(zip(all_names, prior))
 
-    ident = identifiable(calib, all_names, frames, est["dependency_tol"])
-    prelim = _fit(calib, ident)
+    ident, J_all = identifiable(calib, all_names, nuisance, est["dependency_tol"])
+    method = est["method"]
     n_meas = len(calib.PEE_measured)
+    n_comp = n_components(calib)
+    rotation = _noise_rotation(calib, n_comp)
     noise, noise_source = est["noise_std"], "given"
-    if noise is None:
-        dof = n_meas - len(ident)
-        if dof <= 0:
+    per_component = isinstance(noise, str)
+    sigma = None  # one noise per component, when not one scalar
+    if not per_component and np.ndim(noise) == 1:
+        sigma = np.asarray(noise, dtype=float)
+        if len(sigma) != n_comp:
             raise EstimationError(
-                "too few measurements to estimate the noise; set estimation.noise_std"
+                f"estimation.noise_std has {len(sigma)} values; the "
+                f"measurements have {n_comp} components per sample"
             )
+        noise = _set_component_noise(cfg, sigma)
+    dof = n_meas - len(ident)
+    if (noise is None or per_component) and dof <= 0:
+        raise EstimationError(
+            "too few measurements to estimate the noise; set estimation.noise_std"
+        )
+    # the free fit feeds only the noise estimate and the excitation
+    # Jacobian; skip it when neither is needed (#211)
+    prelim = None
+    # per-component row weights of the free fit, hence of its Jacobian
+    prelim_weight = _row_weight(cfg, n_comp)
+    if noise is None or per_component or method in ("excitation", "cv_subset"):
+        prelim = _fit(calib, ident, max_nfev=PRELIM_MAX_NFEV)
+        if not prelim.success:
+            logger.warning(
+                "estimation '%s': the free fit of the %d identifiable "
+                "parameters did not converge (%s, %d evaluations); its noise "
+                "estimate and excitation Jacobian are unreliable. Set "
+                "estimation.noise_std to skip it for map and map_cv.",
+                method,
+                len(ident),
+                prelim.message,
+                prelim.nfev,
+            )
+    if per_component:
+        # the unweighted fit lets the noisiest component pull the others'
+        # residuals: estimate again after one fit weighted by the first
+        # estimate (further rounds change it by well under 1%)
+        sigma = component_noise(calib, prelim.fun, len(ident))
+        _set_component_noise(cfg, sigma)
+        if cfg.get("measurement_noise_std") is not None:
+            prelim = _fit(calib, ident, max_nfev=PRELIM_MAX_NFEV)
+            with _params(calib, ident):
+                raw = calib.cost_function(prelim.x)
+            prelim_weight = _row_weight(cfg, n_comp)
+            sigma = component_noise(calib, raw, len(ident))
+            for key in _NOISE_KEYS:
+                cfg.pop(key, None)
+        noise = _set_component_noise(cfg, sigma)
+        noise_source = (
+            "estimated per component (free fit of the identifiable "
+            "parameters): noise plus model error"
+        )
+    elif noise is None:
         noise = float(np.sqrt(np.sum(prelim.fun[:n_meas] ** 2) / dof))
         noise_source = "estimated (free fit of the identifiable parameters)"
+    whitened = cfg.get("measurement_noise_std") is not None
     report = {
         "method": est["method"],
         "candidates": candidates,
+        "nuisance": nuisance,
         "dependent": [n for n in all_names if n not in ident],
-        "noise_std": noise,
+        # one value, or one per measurement component (then whitened
+        # to the smallest, ``noise_std_ref``)
+        "noise_std": [float(v) for v in sigma] if whitened else noise,
         "noise_source": noise_source,
         "priors": est["priors"],
+        # None: the free fit did not run
+        "prelim_converged": None if prelim is None else bool(prelim.success),
+        "prelim_nfev": 0 if prelim is None else int(prelim.nfev),
     }
+    if whitened:
+        report["noise_std_ref"] = noise
+        report["noise_rotated"] = rotation is not None
 
     def weights(names, scale=None):
         scale = scale or {}
@@ -9188,14 +9787,21 @@ def configure(calib) -> dict:
         )
         return np.where(np.isfinite(s), noise / s, 0.0)
 
-    method = est["method"]
+    if method in ("map_cv", "cv_subset"):
+        n = cfg["NbSample"]
+        folds = _folds(n, est["cv_folds"], est["cv_seed"])
+        _check_folds(J_all, all_names, nuisance, folds, n, est["dependency_tol"])
     final, w = None, None
     if method in ("excitation", "cv_subset"):
+        # reweight the free fit's Jacobian to the final whitening
+        ratio = _row_weight(cfg, n_comp) / prelim_weight
         J = prelim.jac[:n_meas]
+        if np.any(ratio != 1.0):
+            J = whiten(calib, J, sigma=1.0 / ratio, ref=1.0)
         prior_ident = np.array([prior_of[n] for n in ident])
         k = est["excitation_k"] if method == "excitation" else None
         kept, removed, ratios = excitation_order(
-            J, ident, frames, prior_ident, noise, k
+            J, ident, nuisance, prior_ident, noise, k
         )
         report["removal_order"] = list(zip(removed, ratios))
         if method == "excitation":
@@ -9206,7 +9812,7 @@ def configure(calib) -> dict:
     elif method == "map":
         final, w = all_names, weights(all_names)
     elif method == "map_cv":
-        scale = _choose_scale(calib, all_names, weights, est, report)
+        scale = _choose_scale(calib, all_names, weights, est, report, nuisance)
         report["prior_scale"] = scale
         final, w = all_names, weights(all_names, scale)
 
@@ -9647,9 +10253,15 @@ def get_joint_offset(model, joint_names):
     for id, joint in enumerate(joints):
         name = joint_names[id]
         shortname = joint.shortname()
-        if model.name == "canopies":
-            if "RevoluteUnaligned" in shortname:
-                shortname = shortname.replace("RevoluteUnaligned", "RZ")
+        # an unaligned joint about a coordinate axis (up to sign) is named
+        # after that axis; calc_updated_fkm applies the offset with the axis
+        # sign, so it is q + offset (#205). A tilted axis keeps its name and
+        # is refused there if it is calibrated.
+        if shortname.endswith("Unaligned"):
+            try:
+                shortname = "JointModel" + _determine_axis_motion(joint)
+            except ValueError:
+                pass
         for i in range(joint.nv):
             if i > 0:
                 offset_param = (
@@ -9740,8 +10352,14 @@ Side Effects
 
 Modifies calib_config["param_name"] in place by:
 
-- For full_params: Replaces first 6 entries with base parameters
+- For full_params: Renames the base parameters the base frame replaces (`base_frame_absorbed_rows`, from `calculate_base_kinematics_regressor`) to the base frame parameters, and records them in `base_frame_row_names`. Without that key (a hand-built config), the first 6 structural base parameters (from `base_mapping_slice`, after any elastic `k_*` names) are renamed.
 - For joint_offset: Prepends base parameters to list
+
+Raises:
+
+| Type         | Description                                                                                                               |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `ValueError` | At full_params, if the base frame does not replace exactly six base parameters (some of its directions are not observed). |
 
 Source code in `src/figaroh/calibration/parameter.py`
 
@@ -9759,11 +10377,41 @@ def add_base_name(calib_config):
 
     Side Effects:
         Modifies calib_config["param_name"] in place by:
-        - For full_params: Replaces first 6 entries with base parameters
+        - For full_params: Renames the base parameters the base frame
+          replaces (``base_frame_absorbed_rows``, from
+          ``calculate_base_kinematics_regressor``) to the base frame
+          parameters, and records them in ``base_frame_row_names``. Without
+          that key (a hand-built config), the first 6 structural base
+          parameters (from ``base_mapping_slice``, after any elastic
+          ``k_*`` names) are renamed.
         - For joint_offset: Prepends base parameters to list
+
+    Raises:
+        ValueError: At full_params, if the base frame does not replace
+            exactly six base parameters (some of its directions are not
+            observed).
     """
     if calib_config["calib_model"] == "full_params":
-        calib_config["param_name"][0:6] = BASE_TPL
+        # the structural parameters start after any non-geometric names
+        # (elastic k_*, #206); without them the slice starts at 0
+        start, end = calib_config.get("base_mapping_slice", (0, 0))
+        absorbed = calib_config.get("base_frame_absorbed_rows")
+        if absorbed is None:
+            calib_config["param_name"][start : start + len(BASE_TPL)] = BASE_TPL
+            return
+        # renaming the first six by position dropped an independent
+        # parameter when the selection grouped one of the first joint's
+        # placement parameters with a later joint (#204)
+        if len(absorbed) != len(BASE_TPL):
+            raise ValueError(
+                f"the base frame replaces {len(absorbed)} base parameters "
+                f"({absorbed}), not {len(BASE_TPL)}: the measurements do not "
+                "observe every base frame direction. Set known_baseframe."
+            )
+        names = calib_config["param_name"]
+        for row, base_name in zip(absorbed, BASE_TPL):
+            names[names.index(row, start, end)] = base_name
+        calib_config["base_frame_row_names"] = list(absorbed)
     elif calib_config["calib_model"] == "joint_offset":
         calib_config["param_name"] = BASE_TPL + calib_config["param_name"]
         # base_mapping_slice is positional: prepending shifts it
@@ -12134,6 +12782,51 @@ def save_results(self, output_dir="results"):
 ```
 
 ## identification_tools
+
+## `identification_qr_decomposer(identif_config, tolerance=IDENTIFICATION_TOL_QR)`
+
+Return the QR decomposer that chooses the identification's base columns.
+
+The rank threshold is the absolute `tolerance` or, when `identif_config["qr_relative_tolerance"]` is set, that fraction of the largest pivot, with `tolerance` as a floor. The identification fit and the optimal-trajectory design both build their decomposer here, so the trajectory objective is the condition number of the regressor the identification fits (#218).
+
+Parameters:
+
+| Name             | Type    | Description                   | Default                 |
+| ---------------- | ------- | ----------------------------- | ----------------------- |
+| `identif_config` | `dict`  | Identification configuration. | *required*              |
+| `tolerance`      | `float` | Absolute rank threshold.      | `IDENTIFICATION_TOL_QR` |
+
+Returns:
+
+| Name           | Type | Description                                      |
+| -------------- | ---- | ------------------------------------------------ |
+| `QRDecomposer` |      | Decomposer with the identification's thresholds. |
+
+Source code in `src/figaroh/identification/identification_tools.py`
+
+```
+def identification_qr_decomposer(identif_config, tolerance=IDENTIFICATION_TOL_QR):
+    """Return the QR decomposer that chooses the identification's base columns.
+
+    The rank threshold is the absolute ``tolerance`` or, when
+    ``identif_config["qr_relative_tolerance"]`` is set, that fraction of the
+    largest pivot, with ``tolerance`` as a floor. The identification fit and
+    the optimal-trajectory design both build their decomposer here, so the
+    trajectory objective is the condition number of the regressor the
+    identification fits (#218).
+
+    Args:
+        identif_config (dict): Identification configuration.
+        tolerance (float): Absolute rank threshold.
+
+    Returns:
+        QRDecomposer: Decomposer with the identification's thresholds.
+    """
+    return QRDecomposer(
+        tolerance=tolerance,
+        relative_tolerance=identif_config.get("qr_relative_tolerance"),
+    )
+```
 
 ## `base_param_from_standard(phi_standard, params_base)`
 
@@ -17782,34 +18475,46 @@ def get_critD(self, set):
     return float(pc.DetRootN(infor_mat))
 ```
 
-### `main_algo()`
+### `main_algo(init_set=None)`
 
 Execute the main determinant maximization algorithm.
 
-Implements the greedy exchange algorithm for D-optimal experimental design. The algorithm alternates between adding configurations that maximally improve the determinant and removing configurations whose absence minimally degrades the determinant.
+Implements the DETMAX single-exchange algorithm for D-optimal experimental design. Each exchange adds the candidate outside the current subset that most increases the criterion, then removes the member whose absence decreases it least.
 
 Algorithm Steps:
 
-1. Initialize random subset of target size from candidate pool
-1. Exchange Loop: a. ADD PHASE: Find configuration that maximally improves criterion b. REMOVE PHASE: Find configuration whose removal minimally hurts c. Update current subset and criterion value
-1. Repeat until convergence (no beneficial exchanges)
+1. Start from `init_set`, or a random subset of target size
+1. Exchange Loop: a. ADD PHASE: among the candidates not in the subset, add the one that maximally improves the criterion b. REMOVE PHASE: remove the member whose removal minimally hurts c. Keep the exchange only if the criterion strictly increased
+1. Repeat until no exchange improves the criterion
 1. Return optimization history
 
 Convergence Condition
 
-The algorithm stops when the optimal configuration to add equals the optimal configuration to remove, indicating no further improvement is possible.
+The algorithm stops when the exchange would remove the configuration it just added, or would not increase the criterion. Each kept exchange strictly increases the criterion, so the loop terminates. The result is a local optimum of this add-then-remove step, not necessarily of every pairwise swap.
+
+Parameters:
+
+| Name       | Type   | Description                                                                                                       | Default |
+| ---------- | ------ | ----------------------------------------------------------------------------------------------------------------- | ------- |
+| `init_set` | `list` | Starting subset of NbChosen distinct candidate indices. Defaults to a random sample drawn with the random module. | `None`  |
 
 Returns:
 
-| Name   | Type | Description                                                                                                  |
-| ------ | ---- | ------------------------------------------------------------------------------------------------------------ |
-| `list` |      | History of D-optimality criterion values throughout the optimization process. Last value is final criterion. |
+| Name   | Type | Description                                                                                                                                                |
+| ------ | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `list` |      | History of D-optimality criterion values throughout the optimization process, starting with the initial subset's criterion. Last value is final criterion. |
+
+Raises:
+
+| Type         | Description                                                                                       |
+| ------------ | ------------------------------------------------------------------------------------------------- |
+| `ValueError` | If NbChosen is not smaller than the pool size, or init_set is not NbChosen distinct pool indices. |
 
 Side Effects
 
-- Updates self.cur_set with final optimal configuration subset
-- Updates self.opt_critD with complete optimization history
-- Uses random initialization (results may vary between runs)
+- Sets self.cur_set and self.opt_set to the final subset
+- Sets self.opt_critD to the optimization history
+- Uses random initialization (results may vary between runs) unless `init_set` is given
 
 Complexity
 
@@ -17821,41 +18526,55 @@ Example
 
 Note
 
-The algorithm may converge to different local optima depending on random initialization. For critical applications, consider running multiple times with different seeds.
+The algorithm may converge to different local optima depending on the initial subset. For critical applications, consider running it from several starting subsets.
 
 Source code in `src/figaroh/optimal/base_optimal_calibration.py`
 
 ```
-def main_algo(self):
+def main_algo(self, init_set=None):
     """Execute the main determinant maximization algorithm.
 
-    Implements the greedy exchange algorithm for D-optimal experimental
-    design. The algorithm alternates between adding configurations that
-    maximally improve the determinant and removing configurations whose
-    absence minimally degrades the determinant.
+    Implements the DETMAX single-exchange algorithm for D-optimal
+    experimental design. Each exchange adds the candidate outside the
+    current subset that most increases the criterion, then removes the
+    member whose absence decreases it least.
 
     Algorithm Steps:
-    1. Initialize random subset of target size from candidate pool
+    1. Start from ``init_set``, or a random subset of target size
     2. Exchange Loop:
-       a. ADD PHASE: Find configuration that maximally improves criterion
-       b. REMOVE PHASE: Find configuration whose removal minimally hurts
-       c. Update current subset and criterion value
-    3. Repeat until convergence (no beneficial exchanges)
+       a. ADD PHASE: among the candidates not in the subset, add the one
+          that maximally improves the criterion
+       b. REMOVE PHASE: remove the member whose removal minimally hurts
+       c. Keep the exchange only if the criterion strictly increased
+    3. Repeat until no exchange improves the criterion
     4. Return optimization history
 
     Convergence Condition:
-        The algorithm stops when the optimal configuration to add
-        equals the optimal configuration to remove, indicating no
-        further improvement is possible.
+        The algorithm stops when the exchange would remove the
+        configuration it just added, or would not increase the
+        criterion. Each kept exchange strictly increases the criterion,
+        so the loop terminates. The result is a local optimum of this
+        add-then-remove step, not necessarily of every pairwise swap.
+
+    Args:
+        init_set (list, optional): Starting subset of ``NbChosen``
+            distinct candidate indices. Defaults to a random sample
+            drawn with the ``random`` module.
 
     Returns:
         list: History of D-optimality criterion values throughout
-             the optimization process. Last value is final criterion.
+             the optimization process, starting with the initial
+             subset's criterion. Last value is final criterion.
+
+    Raises:
+        ValueError: If ``NbChosen`` is not smaller than the pool size, or
+            ``init_set`` is not ``NbChosen`` distinct pool indices.
 
     Side Effects:
-        - Updates self.cur_set with final optimal configuration subset
-        - Updates self.opt_critD with complete optimization history
+        - Sets self.cur_set and self.opt_set to the final subset
+        - Sets self.opt_critD to the optimization history
         - Uses random initialization (results may vary between runs)
+          unless ``init_set`` is given
 
     Complexity:
         O(max_iterations × candidate_pool_size × target_subset_size)
@@ -17871,51 +18590,54 @@ def main_algo(self):
 
     Note:
         The algorithm may converge to different local optima depending
-        on random initialization. For critical applications, consider
-        running multiple times with different seeds.
+        on the initial subset. For critical applications, consider
+        running it from several starting subsets.
     """
     import random
 
     # get all indices in the pool
     pool_idx = tuple(self.pool.keys())
+    if not 0 < self.nd < len(pool_idx):
+        raise ValueError(
+            f"NbChosen must be between 1 and {len(pool_idx) - 1} "
+            f"for a pool of {len(pool_idx)} candidates, got {self.nd}"
+        )
 
-    # initialize a random set
-    cur_set = random.sample(pool_idx, self.nd)
-    updated_pool = list(set(pool_idx) - set(self.cur_set))
+    if init_set is None:
+        cur_set = random.sample(pool_idx, self.nd)
+    else:
+        cur_set = list(init_set)
+        if len(set(cur_set)) != self.nd or not set(cur_set) <= set(pool_idx):
+            raise ValueError(
+                f"init_set must hold {self.nd} distinct candidate indices"
+            )
 
-    # adding samples from remaining pool: k = 1
-    opt_k = updated_pool[0]
-    opt_critD = self.get_critD(cur_set)
-    rm_j = cur_set[0]
+    cur_critD = self.get_critD(cur_set)
+    self.opt_critD = [cur_critD]
 
-    while opt_k != rm_j:
+    while True:
+        # add: the best candidate among those not yet selected
+        outside = [k for k in pool_idx if k not in cur_set]
+        opt_k = max(outside, key=lambda k: self.get_critD(cur_set + [k]))
+        added = cur_set + [opt_k]
 
-        # add
-        for k in updated_pool:
-            cur_set.append(k)
-            cur_critD = self.get_critD(cur_set)
-            if opt_critD < cur_critD:
-                opt_critD = cur_critD
-                opt_k = k
-            cur_set.remove(k)
-        cur_set.append(opt_k)
-        opt_critD = self.get_critD(cur_set)
+        # remove: the member whose absence leaves the largest criterion
+        rm_j = max(
+            added,
+            key=lambda j: self.get_critD([i for i in added if i != j]),
+        )
+        if rm_j == opt_k:
+            break
+        new_set = [i for i in added if i != rm_j]
+        new_critD = self.get_critD(new_set)
+        if new_critD <= cur_critD:
+            break
 
-        # remove
-        delta_critD = opt_critD
-        rm_j = cur_set[0]
-        for j in cur_set:
-            rm_set = cur_set.copy()
-            rm_set.remove(j)
-            cur_delta_critD = opt_critD - self.get_critD(rm_set)
+        cur_set, cur_critD = new_set, new_critD
+        self.opt_critD.append(cur_critD)
 
-            if cur_delta_critD < delta_critD:
-                delta_critD = cur_delta_critD
-                rm_j = j
-        cur_set.remove(rm_j)
-        opt_critD = self.get_critD(cur_set)
-
-        self.opt_critD.append(opt_critD)
+    self.cur_set = cur_set
+    self.opt_set = list(cur_set)
     return self.opt_critD
 ```
 
@@ -21968,15 +22690,16 @@ Attributes:
 | `diag_R`                 | `ndarray`             | Absolute diagonal of R at the factorisation point, shape (min(m, n),). Useful for stability diagnostics.             |
 | `cond_R1`                | `float`               | Condition number of the R[:rank, :rank] block. Measures how well-conditioned the base part of the factorisation is.  |
 
-## `QRDecomposer(tolerance=TOL_QR, beta_tolerance=TOL_BETA, relative_tolerance=None, deterministic=True)`
+## `QRDecomposer(tolerance=TOL_QR, beta_tolerance=TOL_BETA, relative_tolerance=None, deterministic=True, ordered=False)`
 
 Enhanced QR decomposition handler for robot parameter identification.
 
 Parameters:
 
-| Name            | Type   | Description                                                                                                                                                                                                                                             | Default |
-| --------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| `deterministic` | `bool` | Choose base columns with :func:deterministic_column_pivots (default), so ties between equally large columns are broken by parameter name instead of BLAS rounding noise (#116). False keeps LAPACK's pivoted QR, whose tie order is platform dependent. | `True`  |
+| Name            | Type   | Description                                                                                                                                                                                                                                                        | Default |
+| --------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| `ordered`       | `bool` | Choose the first independent columns in the order of params_r (:func:ordered_column_basis) instead of the largest residual first. The base set is then a property of the column order and span, not of the rows drawn (#204). Takes precedence over deterministic. | `False` |
+| `deterministic` | `bool` | Choose base columns with :func:deterministic_column_pivots (default), so ties between equally large columns are broken by parameter name instead of BLAS rounding noise (#116). False keeps LAPACK's pivoted QR, whose tie order is platform dependent.            | `True`  |
 
 Source code in `src/figaroh/tools/qrdecomposition.py`
 
@@ -21987,9 +22710,15 @@ def __init__(
     beta_tolerance: float = TOL_BETA,
     relative_tolerance: Optional[float] = None,
     deterministic: bool = True,
+    ordered: bool = False,
 ):
     """
     Args:
+        ordered: Choose the first independent columns in the order of
+            ``params_r`` (:func:`ordered_column_basis`) instead of the
+            largest residual first. The base set is then a property of
+            the column order and span, not of the rows drawn (#204).
+            Takes precedence over ``deterministic``.
         deterministic: Choose base columns with
             :func:`deterministic_column_pivots` (default), so ties
             between equally large columns are broken by parameter name
@@ -21997,6 +22726,7 @@ def __init__(
             LAPACK's pivoted QR, whose tie order is platform dependent.
     """
     self.deterministic = deterministic
+    self.ordered = ordered
     self.tolerance = tolerance
     self.beta_tolerance = beta_tolerance
     self.relative_tolerance = relative_tolerance
@@ -22840,6 +23570,83 @@ def deterministic_column_pivots(
         for _ in range(2):
             A -= np.outer(q, q @ A)
     rest = [j for j in rank_order if remaining[j]]
+    return np.array(chosen + rest, dtype=int), len(chosen)
+```
+
+## `ordered_column_basis(W, *, tol=TOL_QR, relative_tol=None)`
+
+Pick the first independent columns of `W`, in column order.
+
+A column joins the basis when its residual, after projecting out the columns already kept, exceeds the threshold. The kept set depends only on the span structure of `W` taken in the given order, not on column norms: when the rank gap is clear, a different random draw of the rows selects the same columns. LAPACK's pivoted QR and :func:`deterministic_column_pivots` take the largest residual first, so among exactly dependent columns the one that wins follows the draw.
+
+Parameters:
+
+| Name           | Type              | Description                                                            | Default    |
+| -------------- | ----------------- | ---------------------------------------------------------------------- | ---------- |
+| `W`            | `ndarray`         | Regressor, shape (m, n).                                               | *required* |
+| `tol`          | `float`           | Absolute threshold on the residual norm.                               | `TOL_QR`   |
+| `relative_tol` | `Optional[float]` | If set, the threshold is max(relative_tol * largest column norm, tol). | `None`     |
+
+Returns:
+
+| Type                  | Description                                                        |
+| --------------------- | ------------------------------------------------------------------ |
+| `ndarray`             | (P, rank): a permutation of range(n) whose first rank              |
+| `int`                 | entries are the kept columns in ascending index order, followed by |
+| `Tuple[ndarray, int]` | the others in ascending index order.                               |
+
+Source code in `src/figaroh/tools/qrdecomposition.py`
+
+```
+def ordered_column_basis(
+    W: np.ndarray,
+    *,
+    tol: float = TOL_QR,
+    relative_tol: Optional[float] = None,
+) -> Tuple[np.ndarray, int]:
+    """Pick the first independent columns of ``W``, in column order.
+
+    A column joins the basis when its residual, after projecting out the
+    columns already kept, exceeds the threshold. The kept set depends only
+    on the span structure of ``W`` taken in the given order, not on column
+    norms: when the rank gap is clear, a different random draw of the rows
+    selects the same columns. LAPACK's pivoted QR and
+    :func:`deterministic_column_pivots` take the largest residual first, so
+    among exactly dependent columns the one that wins follows the draw.
+
+    Args:
+        W: Regressor, shape ``(m, n)``.
+        tol: Absolute threshold on the residual norm.
+        relative_tol: If set, the threshold is ``max(relative_tol * largest
+            column norm, tol)``.
+
+    Returns:
+        ``(P, rank)``: a permutation of ``range(n)`` whose first ``rank``
+        entries are the kept columns in ascending index order, followed by
+        the others in ascending index order.
+    """
+    W = np.asarray(W, dtype=float)
+    n = W.shape[1]
+    if n == 0:
+        return np.empty(0, dtype=int), 0
+    A = np.linalg.qr(W, mode="r")
+    thr = tol
+    if relative_tol is not None:
+        thr = max(relative_tol * np.linalg.norm(A, axis=0).max(), tol)
+    basis = np.zeros((A.shape[0], 0))
+    chosen: List[int] = []
+    for j in range(n):
+        if len(chosen) == A.shape[0]:
+            break
+        v = A[:, j].copy()
+        for _ in range(2):  # re-orthogonalise
+            v -= basis @ (basis.T @ v)
+        norm = np.linalg.norm(v)
+        if norm > thr:
+            chosen.append(j)
+            basis = np.column_stack([basis, v / norm])
+    kept = set(chosen)
+    rest = [j for j in range(n) if j not in kept]
     return np.array(chosen + rest, dtype=int), len(chosen)
 ```
 
@@ -29164,6 +29971,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### [Unreleased]
 
+### [1.1.0] - 2026-10-29
+
+Calibration estimation improvements and the fixes found by the C5 calibration studies (accepted 2026-10-26, #167). Several fixes correct wrong results in 1.0.x, so they ship now instead of waiting for M2, which moves to 1.2 and later (#228). The paired figaroh-examples tag is `v1.1.0`.
+
+Upgrading from 1.0: no configuration change is required, but some results change.
+
+- `calib_model: joint_offset` names offsets after the joint's coordinate axis (`offsetRZ_<joint>`), and on a `-z` joint the fitted offset changes sign (#205). Rename stored offsets for those joints.
+- With an unknown base frame at `full_params` and the default `structural_selection: lapack`, a fit whose first six base parameters did not span the first joint's placement now fits every parameter (#204). Its results change; set `structural_selection: ordered` for names that do not depend on `random_seed`.
+- Optimal trajectories are designed on the identification's base columns (#218), so designed trajectories change.
+- Joint elasticity (`include_non_geometric`) fits change on chains with a free-flyer, multi-DOF or negative-axis joint (#206). A joint axis that is not a coordinate axis now raises a `ValueError` where it was treated as `RZ`.
+
+#### Added
+
+- `estimation.noise_std` accepts one value per measurement component, or `per_component` to estimate them from the free fit (#215). Unequal values whiten the measurement residuals to the smallest σ before the fit, the prior weights and the covariance of `map`, `map_cv`, `excitation` and `cv_subset`. A calibrator can set `BaseCalibration.noise_rotation` (one rotation per sample) for noise fixed in a sensor frame. A scalar, or equal values, give the same results as before; `null` still estimates one scalar. The report records the per-component σ, `noise_std_ref` and `noise_rotated`, and labels an estimate as noise plus model error. On the UR10 hand-eye synthetic truth (×1 noise, 5 seeds, `map`), the sensor-frame σ cuts the held-out error from 1.94 mm / 0.112° to 1.68 mm / 0.077°.
+- The non-structural estimation methods (`map`, `map_cv`, `excitation`, `cv_subset`) work with calibrators that measure something other than an end-effector pose, such as the TALOS table-contact gap (#210). New `BaseCalibration` hooks: `nuisance_param_names()` (parameters fitted without a prior, by default the unknown base and tool frames), `measurement_jacobian(names, x)` (by default a central difference of `get_pose_from_measure`) and `per_sample_attributes` (sliced with `q_measured` in the cross-validation folds). Dependent nuisance parameters raise "fix a gauge", also per CV fold. New `calibration_tools.chain_jacobian`: the exact `full_params` Jacobian of the chain placement from Pinocchio's kinematic regressor. Results of the existing pose calibrators are unchanged.
+
+#### Fixed
+
+- `Detmax.main_algo` records the configurations it selects in `cur_set` and `opt_set` (#90); it returned only the criterion history and left `cur_set` empty. Its add step now draws only from candidates outside the subset (it could re-add a selected one), an exchange is kept only if the criterion strictly increases (a stale candidate could loop forever), and the history starts with the initial subset's criterion. `init_set` gives a fixed starting subset. No core workflow calls `Detmax`.
+- The `dev` extra excludes pytest 9.2.0, which stops with an internal error at session start on Python 3.10 (`NodeId` has no `_str_cache`).
+- The optimal-trajectory design chooses its base columns as the identification does (#218): absolute threshold 1e-6, plus `qr_relative_tolerance` when set. It used an absolute 1e-8, which on the Staubli TX40 kept `Izz_joint_2` next to the collinear `Ia_joint_2` (pivot 3e-13 of the largest) and held every trajectory's base-regressor condition number near 1e13, leaving IPOPT nothing to optimise. The TX40 random probe now keeps the 58 columns the identification fits, at condition number 964.
+- At `full_params` with an unknown base frame, the base frame replaces the six base parameters that span the first joint's placement, not the first six base parameters (#204). With the default `structural_selection: lapack`, the Staubli TX40 selection grouped `d_phiz_joint_1` with joint 2, so the old rename replaced the independent `d_px_joint_2`: 29 of 30 parameters were fitted, and the noise-free held-out error was 0.38 mm instead of exact. `calculate_base_kinematics_regressor` records the replaced parameters in `base_frame_absorbed_rows`. A base frame with an unobserved direction now raises. Results are unchanged wherever the first six base parameters already spanned the first joint's placement, which includes every `ordered` selection.
+- `calc_updated_fkm` evaluates the eye-hand camera anchor (`start_frame` to `base_to_ref_frame`) at each sample (#217). It was read once from whatever `data.oMf` held at call time, so a camera on a moving chain (a head camera) gave every sample the anchor of one configuration, wrong by the head motion and dependent on call order. Results with a rigidly mounted camera are unchanged.
+- The free fit that non-structural estimation methods run before selecting parameters no longer fails silently (#211). It is skipped for `map` and `map_cv` when `estimation.noise_std` is given, since neither its noise estimate nor its Jacobian is used then. When it stops unconverged (on TALOS table contact it hit the 2000-evaluation cap after 311 s), it logs a warning that suggests setting `noise_std`, and `estimation_report` records `prelim_converged` and `prelim_nfev`. Fits that ran before are unchanged.
+- The structural parameter selection can follow the first independent columns in joint order, so the selected names no longer depend on `random_seed` (#204). `estimation.structural_selection: ordered` (new `QRDecomposer(ordered=True)` and `ordered_column_basis`) replaces LAPACK's largest-residual-first pivoting, which swaps equivalent columns between draws. The span is unchanged, but chains that share parameters by name (TALOS two-chain: shared torso axes, held-out z moved by about 1.5 mm across `random_seed` 0-4) need the same basis for every draw. The default stays `lapack`, so existing results are unchanged.
+- Joint elasticity (`include_non_geometric`) now works beyond fixed-base, aligned, distinctly named chains (#206):
+- `add_base_name` renames the first structural parameters at `base_mapping_slice[0]` instead of overwriting the elastic `k_*` names;
+- the gravity torque is read at the joint's velocity index, not `j_id - 1` (wrong after a free-flyer or multi-DOF joint);
+- geometric and elastic parameter names are matched exactly, so `joint1` no longer takes the parameters of `joint10`;
+- an unaligned joint gets its actual coordinate axis (a `-z` axis maps to `RZ`); any other axis, or a joint that is not one-DOF, raises a `ValueError` instead of silently using `RZ`;
+- the deflection follows the joint axis (`q -> q + k * tau`), so the fitted `k` is the physical compliance for negative axes too.
+
+Rigid calibration results are unchanged.
+
+- `calib_model: joint_offset` works on robots with an unaligned revolute or prismatic joint, such as TIAGo Pro `arm_right_6` (#205). The offset is named after the joint's coordinate axis (`offsetRZ_<joint>` for a `±z` axis) and applied with the axis sign, so it is `q + offset`. The `canopies`-only rename is gone; for a `-z` joint on that model the fitted offset changes sign. A joint whose axis is not a coordinate axis raises a `ValueError` if its offset is calibrated.
+
 ### [1.0.2] - 2026-10-13
 
 Documentation release. No library code changed; the figaroh-examples `v1.0.0` tag remains the validated pair.
@@ -30141,7 +30984,7 @@ flowchart TD
     C2["<b>C2: Calibration truth/holdout</b> · #44 ✅<br/>✓ #101 #102 #105 #110 #113<br/>✓ ex#26 ex#27 ex#67"]
     C3["<b>C3: Geometric export</b> · #45 ✅<br/>✓ #62 #111 #114 #123<br/>✓ ex#28"]
     C4["<b>C4: Calibration reference</b> · #46 ✅<br/>✓ #97 #98 #99 #119 #120<br/>✓ ex#29"]
-    C5["<b>C5: Calibration studies</b> · #167<br/>ex#96–#101 ex#70 ex#71"]
+    C5["<b>C5: Calibration studies</b> · #167<br/>✓ ex#96–ex#101 ex#70 ex#71 ex#172<br/>✓ data ex#104–ex#114<br/>✓ accepted 2026-10-26"]
     D8["<b>D8: Identification studies</b> (research)<br/>#157–#161"]
     S1["<b>S1: Minimum reporting contract</b> · #47 ✅<br/>✓ #63 #70 #100 #103<br/>✓ ex#30 ex#36"]
     U1["<b>U1: Onboarding acceptance</b> · #51 ✅<br/>✓ #66<br/>✓ ex#33"]
@@ -30198,31 +31041,32 @@ Legend: **green ✅ = tracker cleared** (closure record confirmed); **amber = re
 
 #### Implementation status
 
-Status as of 2026-10-12, taken from the GitHub trackers. The trackers stay authoritative; refresh this table when a tracker closes.
+Status as of 2026-10-12 (C5 row 2026-10-29), taken from the GitHub trackers. The trackers stay authoritative; refresh this table when a tracker closes.
 
-| Package                          | Status                 | Closed     | Delivered by / remaining                                                                                                                                                                                                                                                                                                                                                         |
-| -------------------------------- | ---------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **W1** fixtures                  | ✅ **Cleared**         | 2026-10-03 | examples #44, #57, #61, #62: hosted examples CI on both Pinocchio profiles; every robot loads from a clean checkout                                                                                                                                                                                                                                                              |
-| **W2** TALOS regression          | ✅ **Cleared**         | 2026-10-03 | examples #46, #54: examples #14 explained; deterministic TALOS fixtures and noise-floor held-out checks                                                                                                                                                                                                                                                                          |
-| **W4** engineering process       | ✅ **Cleared**         | 2026-10-03 | core #71, #74, #80, #86–#93; examples #37, #40, #47: templates, real-model regressor tests, lint debt removed, full pre-commit blocking                                                                                                                                                                                                                                          |
-| **D1** acceleration              | ✅ **Cleared**         | 2026-10-02 | core #69 (fixes #32)                                                                                                                                                                                                                                                                                                                                                             |
-| **D2** signal audit              | ✅ **Cleared**         | 2026-10-03 | examples #19/#20 UR10 and TIAGo audits, examples #35                                                                                                                                                                                                                                                                                                                             |
-| **C1** frames/data audit         | ✅ **Cleared**         | 2026-10-03 | examples #24/#25 TIAGo and TALOS audits; its follow-ups #97–#99 were moved to C4 and closed there                                                                                                                                                                                                                                                                                |
-| **C2** calibration truth/holdout | ✅ **Cleared**         | 2026-10-05 | accepted on core `a991bf3` + examples `c791ecd`; deferred items moved to #119/#120 (C4)                                                                                                                                                                                                                                                                                          |
-| **C3** geometric export          | ✅ **Cleared**         | 2026-10-06 | accepted on core `efd9f69` + examples `2c75f50`                                                                                                                                                                                                                                                                                                                                  |
-| **W3** data/result contracts     | ✅ **Cleared**         | 2026-10-06 | core #126 (ADR, #54), #128/#130 (contract, #55), #132 (#131), #127 (#125); examples #84 (#17); accepted on core `4ec06d4` + examples `9a9e6d7`                                                                                                                                                                                                                                   |
-| **D3** UR10 truth fixture        | ✅ **Cleared**         | 2026-10-07 | examples #21 by examples #89/#91 (fixture, frozen protocol v1, UR10 example moved onto it); #142 by #144; #143 by #145 + examples #92 (both added 2026-10-07); accepted on core `2260786` + examples `b23b836` (core 846 passed; examples `validate.py` 16/16, pytest 255 passed)                                                                                                |
-| **D5** convergence research      | ✅ **Cleared**         | 2026-10-10 | #22 by PR #31 (revise); #30 by PR #154 (no-go: 8/24 gated fits exhaust 2000 evaluations). The method change #155 moved to LC1 as its go gate                                                                                                                                                                                                                                     |
-| **D6** inertial export           | ✅ **Cleared**         | 2026-10-06 | #60 by PR #138; accepted on core `0e6a78c` + examples `a3381bc` (core 817 passed; examples `validate.py` 16/16, pytest 237 passed); merged-body export left to D7 (#61)                                                                                                                                                                                                          |
-| **S1** reporting contract        | ✅ **Cleared**         | 2026-10-06 | core #63 (PR #134), #70, #100, #103 (PR #135); examples #30 (examples PR #85), #36                                                                                                                                                                                                                                                                                               |
-| **C4** calibration reference     | ✅ **Cleared**         | 2026-10-06 | examples #29 by examples #88 (`reference_run.py`); #119 by #141 (core support; TIAGo protocol keeps one marker); #120 by #140 + examples #87 (`map` replaces the coefficient); #97–#99 by #127, #137, #139 + examples #86; accepted on core `c80b5fc` + examples `88e2fc2`. Held-out marker RMSE 3.8–4.2 mm; export parity ≤ 2.1e-12 m                                           |
-| S2 uncertainty                   | In progress (M2)       | —          | core #107 calibration standard errors fixed; #64 open                                                                                                                                                                                                                                                                                                                            |
-| **U1** onboarding                | ✅ **Cleared**         | 2026-10-11 | core #66 (guideline); examples #33 by examples PR #123: worked briefs for the UR10 truth and TIAGo identification references, TIAGo mocap calibration and a TX40 no-validation-data case, rerun against the accepted D7/C4 evidence on core `779e830` + examples `b167298` (examples `validate.py` 18/18)                                                                        |
-| **D4** physical comparison       | ✅ **Cleared**         | 2026-10-09 | #59 by PR #153 (2026-10-08); examples #12 by examples PR #13; examples #22 by examples PRs #94 and #95                                                                                                                                                                                                                                                                           |
-| **D7** dynamic reference         | ✅ **Cleared**         | 2026-10-10 | #61 by PRs #165, #172; #116 by #169 + examples #117; examples #69, #68 by examples #118, #23 by examples #119 (`identification_reference.py`). Accepted on core `658fe99` + examples `663d642` (examples `validate.py` 18/18). UR10 truth and TIAGo select `physical_fit`; export parity ≤ 6.1e-10. Follow-ups #163 and #164 fixed by PR #174 (`projected` stays non-selectable) |
-| LC1 log-Cholesky production      | In progress (optional) | —          | Go gate #155 (method change) in progress: exploration done on spent seeds, method choice pending, protocol not frozen. #23–#25 and examples #11 wait on its go decision                                                                                                                                                                                                          |
-| S3, B1                           | Blocked                | —          | S3 and B1 wait on S2 and M1 acceptance                                                                                                                                                                                                                                                                                                                                           |
-| S4 composition (M2)              | Blocked                | —          | W3 cleared; still waits on accepted M1 references                                                                                                                                                                                                                                                                                                                                |
+| Package                          | Status                 | Closed     | Delivered by / remaining                                                                                                                                                                                                                                                                                                                                                                                     |
+| -------------------------------- | ---------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **W1** fixtures                  | ✅ **Cleared**         | 2026-10-03 | examples #44, #57, #61, #62: hosted examples CI on both Pinocchio profiles; every robot loads from a clean checkout                                                                                                                                                                                                                                                                                          |
+| **W2** TALOS regression          | ✅ **Cleared**         | 2026-10-03 | examples #46, #54: examples #14 explained; deterministic TALOS fixtures and noise-floor held-out checks                                                                                                                                                                                                                                                                                                      |
+| **W4** engineering process       | ✅ **Cleared**         | 2026-10-03 | core #71, #74, #80, #86–#93; examples #37, #40, #47: templates, real-model regressor tests, lint debt removed, full pre-commit blocking                                                                                                                                                                                                                                                                      |
+| **D1** acceleration              | ✅ **Cleared**         | 2026-10-02 | core #69 (fixes #32)                                                                                                                                                                                                                                                                                                                                                                                         |
+| **D2** signal audit              | ✅ **Cleared**         | 2026-10-03 | examples #19/#20 UR10 and TIAGo audits, examples #35                                                                                                                                                                                                                                                                                                                                                         |
+| **C1** frames/data audit         | ✅ **Cleared**         | 2026-10-03 | examples #24/#25 TIAGo and TALOS audits; its follow-ups #97–#99 were moved to C4 and closed there                                                                                                                                                                                                                                                                                                            |
+| **C2** calibration truth/holdout | ✅ **Cleared**         | 2026-10-05 | accepted on core `a991bf3` + examples `c791ecd`; deferred items moved to #119/#120 (C4)                                                                                                                                                                                                                                                                                                                      |
+| **C3** geometric export          | ✅ **Cleared**         | 2026-10-06 | accepted on core `efd9f69` + examples `2c75f50`                                                                                                                                                                                                                                                                                                                                                              |
+| **W3** data/result contracts     | ✅ **Cleared**         | 2026-10-06 | core #126 (ADR, #54), #128/#130 (contract, #55), #132 (#131), #127 (#125); examples #84 (#17); accepted on core `4ec06d4` + examples `9a9e6d7`                                                                                                                                                                                                                                                               |
+| **D3** UR10 truth fixture        | ✅ **Cleared**         | 2026-10-07 | examples #21 by examples #89/#91 (fixture, frozen protocol v1, UR10 example moved onto it); #142 by #144; #143 by #145 + examples #92 (both added 2026-10-07); accepted on core `2260786` + examples `b23b836` (core 846 passed; examples `validate.py` 16/16, pytest 255 passed)                                                                                                                            |
+| **D5** convergence research      | ✅ **Cleared**         | 2026-10-10 | #22 by PR #31 (revise); #30 by PR #154 (no-go: 8/24 gated fits exhaust 2000 evaluations). The method change #155 moved to LC1 as its go gate                                                                                                                                                                                                                                                                 |
+| **D6** inertial export           | ✅ **Cleared**         | 2026-10-06 | #60 by PR #138; accepted on core `0e6a78c` + examples `a3381bc` (core 817 passed; examples `validate.py` 16/16, pytest 237 passed); merged-body export left to D7 (#61)                                                                                                                                                                                                                                      |
+| **S1** reporting contract        | ✅ **Cleared**         | 2026-10-06 | core #63 (PR #134), #70, #100, #103 (PR #135); examples #30 (examples PR #85), #36                                                                                                                                                                                                                                                                                                                           |
+| **C4** calibration reference     | ✅ **Cleared**         | 2026-10-06 | examples #29 by examples #88 (`reference_run.py`); #119 by #141 (core support; TIAGo protocol keeps one marker); #120 by #140 + examples #87 (`map` replaces the coefficient); #97–#99 by #127, #137, #139 + examples #86; accepted on core `c80b5fc` + examples `88e2fc2`. Held-out marker RMSE 3.8–4.2 mm; export parity ≤ 2.1e-12 m                                                                       |
+| S2 uncertainty                   | In progress (M2)       | —          | core #107 calibration standard errors fixed; #64 open                                                                                                                                                                                                                                                                                                                                                        |
+| **U1** onboarding                | ✅ **Cleared**         | 2026-10-11 | core #66 (guideline); examples #33 by examples PR #123: worked briefs for the UR10 truth and TIAGo identification references, TIAGo mocap calibration and a TX40 no-validation-data case, rerun against the accepted D7/C4 evidence on core `779e830` + examples `b167298` (examples `validate.py` 18/18)                                                                                                    |
+| **D4** physical comparison       | ✅ **Cleared**         | 2026-10-09 | #59 by PR #153 (2026-10-08); examples #12 by examples PR #13; examples #22 by examples PRs #94 and #95                                                                                                                                                                                                                                                                                                       |
+| **D7** dynamic reference         | ✅ **Cleared**         | 2026-10-10 | #61 by PRs #165, #172; #116 by #169 + examples #117; examples #69, #68 by examples #118, #23 by examples #119 (`identification_reference.py`). Accepted on core `658fe99` + examples `663d642` (examples `validate.py` 18/18). UR10 truth and TIAGo select `physical_fit`; export parity ≤ 6.1e-10. Follow-ups #163 and #164 fixed by PR #174 (`projected` stays non-selectable)                             |
+| **C5** calibration studies (M2)  | ✅ **Cleared**         | 2026-10-26 | Phases 0–3 done: studies examples #96–#101, #71, #70 and data #104–#114 (last, #112 by examples PR #171, 2026-10-25). Suspension (#70) has no run record (requirement 6), accepted as a disclosed limit. TALOS motion capture examples #172 (on data #114) done 2026-10-26 by examples PR #173. Closing review accepted on #167 the same day. Follow-ups core #204, #205, #215 and #217 are fixed on `devel` |
+| LC1 log-Cholesky production      | In progress (optional) | —          | Go gate #155 (method change) in progress: exploration done on spent seeds, method choice pending, protocol not frozen. #23–#25 and examples #11 wait on its go decision                                                                                                                                                                                                                                      |
+| S3, B1                           | Blocked                | —          | S3 and B1 wait on S2 and M1 acceptance                                                                                                                                                                                                                                                                                                                                                                       |
+| S4 composition (M2)              | Blocked                | —          | W3 cleared; still waits on accepted M1 references                                                                                                                                                                                                                                                                                                                                                            |
 
 **Gate summary:** M0's delivery roster (W1, W2, W4) and M1.1 (D1, D2, C1) are cleared. **The calibration workstream is complete through M1.4** (C2, C3, C4). **The dynamic workstream is complete through M1.4** (D3, D4, D6, D7), released in 0.7.0. U1 cleared on 2026-10-11.
 
@@ -30279,17 +31123,18 @@ Status as of 2026-10-12. The trackers stay authoritative.
 | examples #115     | TX40: trace the identification CSVs to the original recording and ship the author's 2021 reference identification (data for #160 and the D4 comparison) |
 | examples #70, #71 | TIAGo suspension and backlash research examples; now Phase 3 of C5 (below)                                                                              |
 
-**Calibration study expansion (package C5, tracker core #167, `status:planned`).** The [calibration studies plan](https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/plans/calibration-studies-plan.md) (proposed 2026-10-09) brings further studies to the TIAGo motion-capture standard. Phase 0 first, because every study uses its tools:
+**Calibration study expansion (package C5, tracker core #167, accepted 2026-10-26).** The [calibration studies plan](https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/plans/calibration-studies-plan.md) (proposed 2026-10-09) brings further studies to the TIAGo motion-capture standard. Phase 0 first, because every study uses its tools:
 
-| Phase | Issue             | Study                                                                                          |
-| ----- | ----------------- | ---------------------------------------------------------------------------------------------- |
-| 0     | examples #96      | Shared simulation and held-out harness (confirms the identifiable-set fixes #99 and #113 hold) |
-| 1     | examples #97      | TIAGo Pro motion capture                                                                       |
-| 1     | examples #98      | TALOS table contact                                                                            |
-| 1     | examples #99      | UR10 hand-eye (k-fold within one session)                                                      |
-| 2     | examples #100     | TIAGo motion capture across hardware (audit first)                                             |
-| 2     | examples #101     | TIAGo head camera, chessboard on hand (audit first)                                            |
-| 3     | examples #71, #70 | TIAGo backlash surface and suspension base (existing issues, to be attached to C5)             |
+| Phase | Issue                 | Study                                                                                          |
+| ----- | --------------------- | ---------------------------------------------------------------------------------------------- |
+| 0     | examples #96 ✓        | Shared simulation and held-out harness (confirms the identifiable-set fixes #99 and #113 hold) |
+| 1     | examples #97 ✓        | TIAGo Pro motion capture                                                                       |
+| 1     | examples #98 ✓        | TALOS table contact                                                                            |
+| 1     | examples #99 ✓        | UR10 hand-eye (k-fold within one session)                                                      |
+| 2     | examples #100 ✓       | TIAGo motion capture across hardware (audit first)                                             |
+| 2     | examples #101 ✓       | TIAGo head camera, chessboard on hand (audit first)                                            |
+| 2     | examples #172 ✓       | TALOS motion capture (data #114 ✓)                                                             |
+| 3     | examples #71 ✓, #70 ✓ | TIAGo backlash surface and suspension base                                                     |
 
 C5 is separate from M1: no study depends on D7, and the TIAGo motion-capture reference numbers are its regression check. Phase 2 needs the original 2023 recordings from the maintainer.
 
@@ -30482,7 +31327,7 @@ The canonical roadmap lives at the repository root ([`ROADMAP.md`](https://githu
 
 ## FIGAROH Roadmap
 
-**Evidence refresh: 2026-10-12; delivery status refreshed 2026-10-12. Priority changes below are a tracker scope approved; execution details under review, revision 4.**
+**Evidence refresh: 2026-10-12; delivery status refreshed 2026-10-29. Priority changes below are a tracker scope approved; execution details under review, revision 4.**
 
 Review the [detailed delivery plan](https://thanhndv212.github.io/figaroh-plus/further_reading/plans/index.md) before implementation. The user requested calibration improvements in parallel with dynamic identification, with TIAGo mocap as the first calibration reference and TALOS contact as the second consumer/regression target. Proposed work is not an accepted API, completed feature or authorization to implement/merge.
 
@@ -30514,6 +31359,8 @@ This file owns priorities and milestone exit criteria. [GitHub issues](https://g
 
 Per-package evidence is in the [implementation status](https://thanhndv212.github.io/figaroh-plus/further_reading/plans/#implementation-status).
 
+**Since 1.0 (2026-10-29).** C5 calibration studies, which bring every real-data calibration study in `figaroh-examples` to the TIAGo mocap standard, were accepted on 2026-10-26 ([tracker #167](https://github.com/thanhndv212/figaroh-plus/issues/167)); it added no core features. D8 collects optional identification research (#157–#161) outside baseline M1. `devel` carries post-1.0 fixes not yet released; the changelog's Unreleased section lists them.
+
 **M0 gate review (accepted 2026-10-12, [tracker #181](https://github.com/thanhndv212/figaroh-plus/issues/181) §9).** Existing core gates retained (blocking `Lint`, Core CI and Documentation green); examples assets and dependencies reproducible (W1); numerical regressions explained (W2); review/merge rules and cleanup applied (W4); exact tested commit pairs cited as core `fe7dc51` + examples `b8d9c75` (hosted runs 37134266859 / 37136143367) and core tag `v0.5.0` (`02f705a`). The pair is not clean for the M0 cycle: examples has no `v0.5.0` tag, because pairing started at 0.6.0.
 
 These are dated observations; verify heads and status before beginning work. The [delivery plan](https://thanhndv212.github.io/figaroh-plus/further_reading/plans/index.md) maps concrete work to existing modules and both repositories. Numerical limitations must be reproduced and classified rather than waived to obtain a green check.
@@ -30535,16 +31382,18 @@ M0's delivery roster for this cycle (W1, W2, W4) has cleared: examples assets an
 
 M0–M3 describe strategic outcomes. Work packages are the delivery milestones that achieve them; issues are their implementation units. Their canonical scope, dependencies and closure policy are in the [work-package milestone rules](https://thanhndv212.github.io/figaroh-plus/further_reading/plans/#work-package-milestone-rules).
 
-| Roadmap outcome / gate      | Required delivery milestones in this draft                                                                       | Status at 2026-10-12 (✅ = cleared)                        |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| M0 reviewed delivery scope  | W1 fixtures, W2 regression diagnosis, W4 engineering process                                                     | ✅ **W1, W2, W4 all cleared**                              |
-| M1.1 inputs                 | D1–D2 dynamic signals; C1 calibration frames/data                                                                | ✅ **D1, D2, C1 all cleared**                              |
-| M1.2 estimation             | D3–D4 dynamic truth/comparison; C2 calibration truth/holdout                                                     | ✅ **C2, D3, D4** all cleared                              |
-| M1.3 export                 | D6 inertial export; C3 geometric export                                                                          | ✅ **C3, D6** both cleared                                 |
-| M1.4 integrated workflows   | W3 minimum contracts, S1 minimum reports, D7 dynamic reference, C4 calibration reference, U1 verified onboarding | ✅ **W3, S1, C4, D7, U1**                                  |
-| M2 follow-up                | S2 uncertainty, S3 experiment-design improvements, S4 selective composition; W3 is prerequisite groundwork       | ✅ W3 groundwork done; S2 in progress; S3, S4 blocked      |
-| M3 backend parity           | B1 capabilities and measured parity; broader ports need separately reviewed packages                             | Blocked on M1                                              |
-| Optional nonlinear research | D5 and linked production #23–#25 when that path is approved; excluded from baseline M1 closure                   | D5 open: #22 revise, #30 no-go; #155 (method change) ready |
+| Roadmap outcome / gate           | Required delivery milestones in this draft                                                                       | Status at 2026-10-29 (✅ = cleared)                                              |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| M0 reviewed delivery scope       | W1 fixtures, W2 regression diagnosis, W4 engineering process                                                     | ✅ **W1, W2, W4 all cleared**                                                    |
+| M1.1 inputs                      | D1–D2 dynamic signals; C1 calibration frames/data                                                                | ✅ **D1, D2, C1 all cleared**                                                    |
+| M1.2 estimation                  | D3–D4 dynamic truth/comparison; C2 calibration truth/holdout                                                     | ✅ **C2, D3, D4** all cleared                                                    |
+| M1.3 export                      | D6 inertial export; C3 geometric export                                                                          | ✅ **C3, D6** both cleared                                                       |
+| M1.4 integrated workflows        | W3 minimum contracts, S1 minimum reports, D7 dynamic reference, C4 calibration reference, U1 verified onboarding | ✅ **W3, S1, C4, D7, U1**                                                        |
+| M2 follow-up                     | S2 uncertainty, S3 experiment-design improvements, S4 selective composition; W3 is prerequisite groundwork       | ✅ W3 groundwork done; S2 in progress; S3, S4 blocked (except S3 bug #90, ready) |
+| M3 backend parity                | B1 capabilities and measured parity; broader ports need separately reviewed packages                             | Planned; M1 accepted, not started                                                |
+| Optional nonlinear research      | D5 and linked production #23–#25 when that path is approved; excluded from baseline M1 closure                   | D5 open: #22 revise, #30 no-go; #155 (method change) ready                       |
+| Calibration studies (after M1)   | C5: every calibration study to the TIAGo mocap standard                                                          | ✅ **C5** accepted 2026-10-26 (#167)                                             |
+| Optional identification research | D8: #157–#161 and examples #115; excluded from baseline M1                                                       | Open, planned                                                                    |
 
 A delivery milestone is cleared only when **all included issues meet their acceptance criteria**, required changes are reviewed/merged, and milestone-level integration evidence is accepted. Deferred or administratively closed issues are not completed work; scope changes require review and preserve the original roster/history. Each roadmap gate closes only when all required delivery milestones and its own exit criteria pass. M0's delivery roster is scoped per cycle; ongoing maintenance does not prevent acceptance of that reviewed cycle.
 
@@ -30576,14 +31425,17 @@ Versions follow roadmap outcomes, not commit counts. A release ships what has be
 
 A deprecated feature warns for at least one minor release before it is removed; removals are batched into 1.0. Optional research (D5/LC1) ships as an opt-in feature in the minor release after its go decision and never holds a release.
 
-| Version    | Outcome                                                                             | Delivery packages                                                                                                                                                                                                                                                                                                                                                                                                                                   | Status                                                                                                                                                                                          |
-| ---------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.5.0      | M0 engineering baseline                                                             | W1, W2, W4, D1                                                                                                                                                                                                                                                                                                                                                                                                                                      | Released 2026-10-03                                                                                                                                                                             |
-| 0.6.0      | Calibration reference workflow (M1.1–M1.4, calibration side) and shared foundations | D2, C1–C4, W3, S1; D6 inertial export and D3 fixture fixes, both accepted                                                                                                                                                                                                                                                                                                                                                                           | Released 2026-10-07 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.6.0), [tracker #146](https://github.com/thanhndv212/figaroh-plus/issues/146)); examples tag `v0.6.0` |
-| 0.7.0      | Dynamic reference workflow (M1.2–M1.4, dynamic side)                                | D4, D7 (D5 no-go; LC1 #155 not included)                                                                                                                                                                                                                                                                                                                                                                                                            | Released 2026-10-11 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.7.0), [tracker #177](https://github.com/thanhndv212/figaroh-plus/issues/177)); examples tag `v0.7.0` |
-| 1.0.0      | M1 accepted                                                                         | M1 review ✅ (2026-10-12, [#181](https://github.com/thanhndv212/figaroh-plus/issues/181)); public API (#184), deprecation removals (#185, examples #125), G-1 (#182) and RC procedure (#186) done. Released 2026-10-12 without a release candidate (maintainer decision; [release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v1.0.0), [tracker #192](https://github.com/thanhndv212/figaroh-plus/issues/192)); examples tag `v1.0.0` |                                                                                                                                                                                                 |
-| 1.1, 1.2   | M2 composable calibration and identification                                        | S2, S3, S4                                                                                                                                                                                                                                                                                                                                                                                                                                          | Later                                                                                                                                                                                           |
-| 1.x or 2.0 | M3 backend parity                                                                   | B1                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Later; 2.0 only if the backend API breaks                                                                                                                                                       |
+| Version       | Outcome                                                                             | Delivery packages                                                                                                                                                                                                                                                                                                                                                                                                                                   | Status                                                                                                                                                                                          |
+| ------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.5.0         | M0 engineering baseline                                                             | W1, W2, W4, D1                                                                                                                                                                                                                                                                                                                                                                                                                                      | Released 2026-10-03                                                                                                                                                                             |
+| 0.6.0         | Calibration reference workflow (M1.1–M1.4, calibration side) and shared foundations | D2, C1–C4, W3, S1; D6 inertial export and D3 fixture fixes, both accepted                                                                                                                                                                                                                                                                                                                                                                           | Released 2026-10-07 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.6.0), [tracker #146](https://github.com/thanhndv212/figaroh-plus/issues/146)); examples tag `v0.6.0` |
+| 0.7.0         | Dynamic reference workflow (M1.2–M1.4, dynamic side)                                | D4, D7 (D5 no-go; LC1 #155 not included)                                                                                                                                                                                                                                                                                                                                                                                                            | Released 2026-10-11 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.7.0), [tracker #177](https://github.com/thanhndv212/figaroh-plus/issues/177)); examples tag `v0.7.0` |
+| 1.0.0         | M1 accepted                                                                         | M1 review ✅ (2026-10-12, [#181](https://github.com/thanhndv212/figaroh-plus/issues/181)); public API (#184), deprecation removals (#185, examples #125), G-1 (#182) and RC procedure (#186) done. Released 2026-10-12 without a release candidate (maintainer decision; [release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v1.0.0), [tracker #192](https://github.com/thanhndv212/figaroh-plus/issues/192)); examples tag `v1.0.0` |                                                                                                                                                                                                 |
+| 1.0.1         | Documentation and housekeeping                                                      | none (no library code)                                                                                                                                                                                                                                                                                                                                                                                                                              | Released 2026-10-12; examples `v1.0.0` remains the pair                                                                                                                                         |
+| 1.0.2         | Documentation                                                                       | none (no library code)                                                                                                                                                                                                                                                                                                                                                                                                                              | Released 2026-10-13; examples `v1.0.0` remains the pair                                                                                                                                         |
+| 1.1.0         | Calibration estimation improvements and C5 follow-up fixes                          | none (fixes and additions since 1.0.2; maintainer decision 2026-10-29)                                                                                                                                                                                                                                                                                                                                                                              | Released 2026-10-29 ([tracker #228](https://github.com/thanhndv212/figaroh-plus/issues/228)); examples tag `v1.1.0`                                                                             |
+| 1.2 and later | M2 composable calibration and identification                                        | S2, S3, S4                                                                                                                                                                                                                                                                                                                                                                                                                                          | Later                                                                                                                                                                                           |
+| 1.x or 2.0    | M3 backend parity                                                                   | B1                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Later; 2.0 only if the backend API breaks                                                                                                                                                       |
 
 Each release is tracked by a core release issue. It lists the packages in scope and what is excluded, freezes `devel`, and records the release-candidate evidence on one core/examples pair: core tests, hosted CI on both Pinocchio profiles, examples `validate.py`, package build with `twine check` and a clean wheel install, and the docs build. The release PR bumps both version strings and dates the changelog with a scope paragraph, behaviour changes, migration notes and limitations. The [release sequence](https://github.com/thanhndv212/figaroh-plus/blob/devel/CONTRIBUTING.md#merge-and-release-gates) then merges `devel` into `main` with a merge commit (branch deletion off); one build from the `vX.Y.Z` tag goes to PyPI and the GitHub release, with matching sha256. The examples repository pins `figaroh>=X.Y,<X.(Y+1)` and is tagged `vX.Y.Z` as the paired revision. Finally `main` is merged back into `devel`.
 

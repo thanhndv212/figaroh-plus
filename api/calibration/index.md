@@ -634,6 +634,71 @@ def create_param_list(self, q: Optional[np.ndarray] = None):
         raise CalibrationError(f"Parameter list creation failed: {e}")
 ```
 
+### `nuisance_param_names()`
+
+Parameters the estimation methods fit freely, besides the joints.
+
+Used by `estimation.method` other than `structural` (figaroh-plus#210): they get no prior and are never removed. The default is the unknown base frame (`BASE_TPL`) and tool frames (`EE_TPL` per marker and measured component). A calibrator with its own measurement model returns its own (e.g. a table pose); they must be identifiable on the data.
+
+Source code in `src/figaroh/calibration/base_calibration.py`
+
+```
+def nuisance_param_names(self) -> List[str]:
+    """Parameters the estimation methods fit freely, besides the joints.
+
+    Used by ``estimation.method`` other than ``structural``
+    (figaroh-plus#210): they get no prior and are never removed. The
+    default is the unknown base frame (``BASE_TPL``) and tool frames
+    (``EE_TPL`` per marker and measured component). A calibrator with
+    its own measurement model returns its own (e.g. a table pose); they
+    must be identifiable on the data.
+    """
+    cfg = self.calib_config
+    names = [] if cfg["known_baseframe"] else list(BASE_TPL)
+    if not cfg["known_tipframe"]:
+        tip = dict(cfg, param_name=[])
+        add_pee_name(tip)
+        names += tip["param_name"]
+    return names
+```
+
+### `measurement_jacobian(names, x, step=1e-06)`
+
+Jacobian of the measured quantity w.r.t. parameters `names` at `x`.
+
+Rows follow `PEE_measured` (DOF-major), columns `names`. The default is a central difference of :meth:`get_pose_from_measure` with `param_name` set to `names`. Override it with an exact derivative when one is available, e.g. chaining the measurement's derivative onto :func:`chain_jacobian` (figaroh-plus#210).
+
+Source code in `src/figaroh/calibration/base_calibration.py`
+
+```
+def measurement_jacobian(
+    self, names: List[str], x: np.ndarray, step: float = 1e-6
+) -> np.ndarray:
+    """Jacobian of the measured quantity w.r.t. parameters ``names`` at ``x``.
+
+    Rows follow ``PEE_measured`` (DOF-major), columns ``names``. The
+    default is a central difference of :meth:`get_pose_from_measure`
+    with ``param_name`` set to ``names``. Override it with an exact
+    derivative when one is available, e.g. chaining the measurement's
+    derivative onto :func:`chain_jacobian` (figaroh-plus#210).
+    """
+    cfg = self.calib_config
+    saved = cfg["param_name"]
+    cfg["param_name"] = list(names)
+    x = np.asarray(x, dtype=float)
+    try:
+        cols = []
+        for j in range(len(x)):
+            dx = np.zeros_like(x)
+            dx[j] = step
+            hi = self.get_pose_from_measure(x + dx)
+            lo = self.get_pose_from_measure(x - dx)
+            cols.append((hi - lo) / (2 * step))
+    finally:
+        cfg["param_name"] = saved
+    return np.column_stack(cols)
+```
+
 ### `initial_frame_guess()`
 
 Closed-form guess for the unknown base and tip frames.
@@ -2595,9 +2660,15 @@ def get_joint_offset(model, joint_names):
     for id, joint in enumerate(joints):
         name = joint_names[id]
         shortname = joint.shortname()
-        if model.name == "canopies":
-            if "RevoluteUnaligned" in shortname:
-                shortname = shortname.replace("RevoluteUnaligned", "RZ")
+        # an unaligned joint about a coordinate axis (up to sign) is named
+        # after that axis; calc_updated_fkm applies the offset with the axis
+        # sign, so it is q + offset (#205). A tilted axis keeps its name and
+        # is refused there if it is calibrated.
+        if shortname.endswith("Unaligned"):
+            try:
+                shortname = "JointModel" + _determine_axis_motion(joint)
+            except ValueError:
+                pass
         for i in range(joint.nv):
             if i > 0:
                 offset_param = (
@@ -2688,8 +2759,14 @@ Side Effects
 
 Modifies calib_config["param_name"] in place by:
 
-- For full_params: Replaces first 6 entries with base parameters
+- For full_params: Renames the base parameters the base frame replaces (`base_frame_absorbed_rows`, from `calculate_base_kinematics_regressor`) to the base frame parameters, and records them in `base_frame_row_names`. Without that key (a hand-built config), the first 6 structural base parameters (from `base_mapping_slice`, after any elastic `k_*` names) are renamed.
 - For joint_offset: Prepends base parameters to list
+
+Raises:
+
+| Type         | Description                                                                                                               |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `ValueError` | At full_params, if the base frame does not replace exactly six base parameters (some of its directions are not observed). |
 
 Source code in `src/figaroh/calibration/parameter.py`
 
@@ -2707,11 +2784,41 @@ def add_base_name(calib_config):
 
     Side Effects:
         Modifies calib_config["param_name"] in place by:
-        - For full_params: Replaces first 6 entries with base parameters
+        - For full_params: Renames the base parameters the base frame
+          replaces (``base_frame_absorbed_rows``, from
+          ``calculate_base_kinematics_regressor``) to the base frame
+          parameters, and records them in ``base_frame_row_names``. Without
+          that key (a hand-built config), the first 6 structural base
+          parameters (from ``base_mapping_slice``, after any elastic
+          ``k_*`` names) are renamed.
         - For joint_offset: Prepends base parameters to list
+
+    Raises:
+        ValueError: At full_params, if the base frame does not replace
+            exactly six base parameters (some of its directions are not
+            observed).
     """
     if calib_config["calib_model"] == "full_params":
-        calib_config["param_name"][0:6] = BASE_TPL
+        # the structural parameters start after any non-geometric names
+        # (elastic k_*, #206); without them the slice starts at 0
+        start, end = calib_config.get("base_mapping_slice", (0, 0))
+        absorbed = calib_config.get("base_frame_absorbed_rows")
+        if absorbed is None:
+            calib_config["param_name"][start : start + len(BASE_TPL)] = BASE_TPL
+            return
+        # renaming the first six by position dropped an independent
+        # parameter when the selection grouped one of the first joint's
+        # placement parameters with a later joint (#204)
+        if len(absorbed) != len(BASE_TPL):
+            raise ValueError(
+                f"the base frame replaces {len(absorbed)} base parameters "
+                f"({absorbed}), not {len(BASE_TPL)}: the measurements do not "
+                "observe every base frame direction. Set known_baseframe."
+            )
+        names = calib_config["param_name"]
+        for row, base_name in zip(absorbed, BASE_TPL):
+            names[names.index(row, start, end)] = base_name
+        calib_config["base_frame_row_names"] = list(absorbed)
     elif calib_config["calib_model"] == "joint_offset":
         calib_config["param_name"] = BASE_TPL + calib_config["param_name"]
         # base_mapping_slice is positional: prepending shifts it
@@ -3412,7 +3519,7 @@ wMf = wMo * oMee * eeMf
 
 where
 
-- `wMo`: world (measurement) frame to the kinematic chain's start frame. Estimated directly when `BASE_TPL` params are present in `param_name` (unknown base frame, e.g. `known_baseframe=False`), estimated via a known camera/ref-frame anchor when `calib_config["base_to_ref_frame"]`/`"ref_frame"` are set (e.g. eye-hand calibration), or identity otherwise.
+- `wMo`: world (measurement) frame to the kinematic chain's start frame. Estimated directly when `BASE_TPL` params are present in `param_name` (unknown base frame, e.g. `known_baseframe=False`), estimated via a known camera/ref-frame anchor when `calib_config["base_to_ref_frame"]`/`"ref_frame"` are set (e.g. eye-hand calibration), or identity otherwise. The anchor chain from `start_frame` to `base_to_ref_frame` is evaluated at each sample, so it may move (e.g. a head camera).
 - `oMee`: start frame to end frame, through the updated kinematic chain (`full_params`/`joint_offset` geometric error parameters), optionally including joint elasticity when `calib_config["non_geom"]` is set — a per-joint compliance parameter (`ELAS_TPL`) that adds a gravity-torque-proportional deflection about that joint's own motion axis, then reverts it, on every sample.
 - `eeMf`: end frame to the measured marker frame (`EE_TPL` params), or identity if not estimated. With several markers (`NbMarkers` > 1, e.g. the points of one rigid body), each marker `k` has its own `eeMf_k` (`pEEx_k` ... `phiEEz_k`) on the same tool frame, and its rows follow marker `k - 1`'s (figaroh-plus#119).
 
@@ -3457,7 +3564,9 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
           ``param_name`` (unknown base frame, e.g. ``known_baseframe=False``),
           estimated via a known camera/ref-frame anchor when
           ``calib_config["base_to_ref_frame"]``/``"ref_frame"`` are set (e.g.
-          eye-hand calibration), or identity otherwise.
+          eye-hand calibration), or identity otherwise. The anchor chain
+          from ``start_frame`` to ``base_to_ref_frame`` is evaluated at each
+          sample, so it may move (e.g. a head camera).
         - ``oMee``: start frame to end frame, through the updated kinematic
           chain (``full_params``/``joint_offset`` geometric error
           parameters), optionally including joint elasticity when
@@ -3527,8 +3636,11 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
 
     # 1/ calc transformation from the world frame to start frame: wMo
     base_to_ref_frame = calib_config.get("base_to_ref_frame")
+    cam_to_ref = None
     if base_to_ref_frame is not None:
-        # known chain anchor + unknown camera/ref pose (e.g. eye-hand calib)
+        # known chain anchor + unknown camera/ref pose (e.g. eye-hand calib);
+        # wMo = b_to_cam * cam_to_ref is formed per sample below, since the
+        # chain to the camera can move between samples (head camera, #217)
         start_f = calib_config["ref_frame"]
         base_tf = np.zeros(6)
         for key in param_dict.keys():
@@ -3536,12 +3648,9 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
                 if base_ax in key:
                     base_tf[base_id] = param_dict[key]
                     updated_params.append(key)
-        b_to_cam = get_rel_transform(
-            model, data, calib_config["start_frame"], base_to_ref_frame
-        )
         ref_to_cam = cartesian_to_SE3(base_tf)
         cam_to_ref = ref_to_cam.actInv(pin.SE3.Identity())
-        wMo = b_to_cam * cam_to_ref
+        wMo = None
     elif base_param_incl:
         # fully unknown world (measurement) frame to start frame transform
         base_tf = np.zeros(6)
@@ -3584,21 +3693,36 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
         xyz_rpy = np.zeros(6)
         j_name = model.names[j_id]
 
-        # check joint name in param dict
-        for key in param_dict.keys():
-            if j_name in key:
-
-                # update xyz_rpy with kinematic errors based on identifiable axis
-                for axis_id, axis in enumerate(axis_tpl):
-                    if axis in key:
-                        if verbose == 1:
-                            logger.debug(
-                                "Updating [{}] joint placement at axis {} with [{}]".format(
-                                    j_name, axis, key
-                                )
-                            )
-                        xyz_rpy[axis_id] += param_dict[key]
-                        updated_params.append(key)
+        # update xyz_rpy with kinematic errors based on identifiable axis;
+        # names are "<template>_<joint>", matched exactly (a substring match
+        # gives joint_1 the parameters of joint_10, #206)
+        for axis_id, axis in enumerate(axis_tpl):
+            key = f"{axis}_{j_name}"
+            if key in param_dict:
+                if verbose == 1:
+                    logger.debug(
+                        "Updating [{}] joint placement at axis {} with [{}]".format(
+                            j_name, axis, key
+                        )
+                    )
+                value = param_dict[key]
+                if calib_config["calib_model"] == "joint_offset":
+                    # an unaligned joint about -z moves by -q about z (#205)
+                    value *= _axis_sign(model, j_id, axis_id)
+                xyz_rpy[axis_id] += value
+                updated_params.append(key)
+        # get_joint_offset keeps the shortname of an unaligned joint whose
+        # axis is tilted: no frame axis to offset it about
+        shortname = model.joints[j_id].shortname()
+        if (
+            calib_config["calib_model"] == "joint_offset"
+            and shortname.endswith("Unaligned")
+            and f"{shortname.replace('JointModel', 'offset')}_{j_name}" in param_dict
+        ):
+            raise ValueError(
+                f"joint_offset: {j_name} is a {shortname} whose axis is not "
+                "a coordinate axis; its offset is not supported (#205)"
+            )
 
         # update joint placement: full_params perturb the placement in the
         # parent frame; joint offsets act about the joint's own axes (q + offset)
@@ -3611,22 +3735,23 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
     # see _build_elastic_param_names), matched once here since the mapping
     # joint -> param is static; the deflection itself is gravity-torque
     # dependent and recomputed per sample below.
+    # Names are matched exactly: a substring match would give joint_1 the
+    # gain of joint_10 (#206).
     elastic_map = {}
     if calib_config.get("non_geom"):
         for j_id in calib_config["actJoint_idx"]:
             j_name = model.names[j_id]
-            for key in param_dict.keys():
-                if j_name in key:
-                    for elas_id, elas in enumerate(ELAS_TPL):
-                        if elas in key:
-                            if verbose == 1:
-                                logger.debug(
-                                    "Joint [{}] elastic gain [{}] on axis {}".format(
-                                        j_name, key, elas
-                                    )
-                                )
-                            elastic_map[j_id] = (key, elas_id)
-                            updated_params.append(key)
+            for elas_id, elas in enumerate(ELAS_TPL):
+                key = f"{elas}_{j_name}"
+                if key in param_dict:
+                    if verbose == 1:
+                        logger.debug(
+                            "Joint [{}] elastic gain [{}] on axis {}".format(
+                                j_name, key, elas
+                            )
+                        )
+                    elastic_map[j_id] = (key, elas_id, _axis_sign(model, j_id, elas_id))
+                    updated_params.append(key)
 
     # check if all parameters are updated to the model
     assert len(updated_params) == len(
@@ -3657,9 +3782,15 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
             geometric_placements = {
                 j_id: model.jointPlacements[j_id].copy() for j_id in elastic_map
             }
-            for j_id, (key, elas_id) in elastic_map.items():
+            for j_id, (key, elas_id, sign) in elastic_map.items():
                 xyz_rpy = np.zeros(6)
-                xyz_rpy[elas_id] = param_dict[key] * tau[j_id - 1]
+                # the joint's velocity index, not j_id - 1: they differ after
+                # a free-flyer or any multi-DOF joint (#206). The deflection
+                # k * tau is along the joint axis, i.e. q -> q + k * tau, so
+                # k is the physical compliance; sign maps it to the joint
+                # frame axis apply_joint_offset acts on.
+                tau_j = tau[model.joints[j_id].idx_v]
+                xyz_rpy[elas_id] = sign * param_dict[key] * tau_j
                 model = apply_joint_offset(model, j_id, xyz_rpy)
 
             # jointPlacements changed: data.oMf is stale until FK is redone
@@ -3676,6 +3807,14 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
                 model.jointPlacements[j_id] = placement
         else:
             oMee = get_rel_transform(model, data, start_f, end_f)
+
+        # camera anchor from this sample's kinematics, the same data.oMf
+        # as oMee (#217)
+        if cam_to_ref is not None:
+            b_to_cam = get_rel_transform(
+                model, data, calib_config["start_frame"], base_to_ref_frame
+            )
+            wMo = b_to_cam * cam_to_ref
 
         # calculate transformation from world frame to each marker frame
         wMee = wMo * oMee
@@ -4140,9 +4279,21 @@ def calculate_base_kinematics_regressor(
     # (random-config) regressor covers both, since the base/dependent
     # column split is a property of the kinematic chain, not of any
     # particular dataset.
-    # LAPACK pivoting: calibration selection is made deterministic in #113,
-    # not here, so calibration results stay as they were.
-    decomposer = QRDecomposer(tolerance=tol_qr, deterministic=False)
+    # LAPACK pivoting by default: calibration selection is made deterministic
+    # in #113, not here, so calibration results stay as they were.
+    # ``estimation.structural_selection: ordered`` takes the first
+    # independent columns in joint order instead, so the selected names do
+    # not depend on the random draw (#204).
+    selection = (calib_config.get("estimation") or {}).get(
+        "structural_selection", "lapack"
+    )
+    if selection not in ("lapack", "ordered"):
+        raise ValueError(
+            f"estimation.structural_selection '{selection}' not in lapack, ordered"
+        )
+    decomposer = QRDecomposer(
+        tolerance=tol_qr, deterministic=False, ordered=selection == "ordered"
+    )
     M, paramsrand_base, idx_base, _ = decomposer.get_base_mapping_matrix_double(
         Rrand_e, paramsrand_e
     )
@@ -4178,8 +4329,81 @@ def calculate_base_kinematics_regressor(
     calib_config["base_mapping_param_names"] = list(paramsrand_e)
     calib_config["base_mapping_row_names"] = [paramsrand_e[j] for j in idx_base]
     calib_config["base_mapping_slice"] = (_base_slice_start, _base_slice_end)
+    if calib_config["calib_model"] == "full_params":
+        calib_config["base_frame_absorbed_rows"] = rows_absorbed_by_base_frame(
+            Rrand_sel,
+            list(geo_params_sel),
+            Rrand_b,
+            calib_config["base_mapping_row_names"],
+            paramsrand_e,
+            tol=tol_qr,
+        )
 
     return Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e
+```
+
+## `rows_absorbed_by_base_frame(R, names, R_b, base_rows, params_e, tol=TOL_QR)`
+
+Base parameters that an unknown base frame replaces at full_params.
+
+The base frame moves the placement of the chain's first joint, so its six directions are that joint's six placement columns. Put first, ahead of the base columns, they make as many base columns dependent: those are the parameters the base frame replaces. They are the first joint's own parameters when the selection kept them, or columns equal to them (on TIAGo the prismatic torso's `d_px` is `arm_1`'s). Picking the first six base parameters instead dropped an independent one when the selection grouped a first-joint parameter with a later joint (#204).
+
+Parameters:
+
+| Name        | Type      | Description                                                                                          | Default    |
+| ----------- | --------- | ---------------------------------------------------------------------------------------------------- | ---------- |
+| `R`         | `ndarray` | Structural regressor, one column per name in names.                                                  | *required* |
+| `names`     | `list`    | Parameter names of the columns of R.                                                                 | *required* |
+| `R_b`       | `ndarray` | Base regressor, one column per base_rows entry.                                                      | *required* |
+| `base_rows` | `list`    | Base parameter names.                                                                                | *required* |
+| `params_e`  | `list`    | Parameters left after elimination, in joint order; the first one's joint is the chain's first joint. | *required* |
+| `tol`       | `float`   | Absolute rank threshold.                                                                             | `TOL_QR`   |
+
+Returns:
+
+| Name   | Type | Description                                                  |
+| ------ | ---- | ------------------------------------------------------------ |
+| `list` |      | Base parameter names the base frame replaces, in base order. |
+
+Source code in `src/figaroh/calibration/calibration_tools.py`
+
+```
+def rows_absorbed_by_base_frame(R, names, R_b, base_rows, params_e, tol=TOL_QR):
+    """Base parameters that an unknown base frame replaces at full_params.
+
+    The base frame moves the placement of the chain's first joint, so its
+    six directions are that joint's six placement columns. Put first, ahead
+    of the base columns, they make as many base columns dependent: those
+    are the parameters the base frame replaces. They are the first joint's
+    own parameters when the selection kept them, or columns equal to them
+    (on TIAGo the prismatic torso's ``d_px`` is ``arm_1``'s). Picking the
+    first six base parameters instead dropped an independent one when the
+    selection grouped a first-joint parameter with a later joint (#204).
+
+    Args:
+        R (ndarray): Structural regressor, one column per name in ``names``.
+        names (list): Parameter names of the columns of ``R``.
+        R_b (ndarray): Base regressor, one column per ``base_rows`` entry.
+        base_rows (list): Base parameter names.
+        params_e (list): Parameters left after elimination, in joint order;
+            the first one's joint is the chain's first joint.
+        tol (float): Absolute rank threshold.
+
+    Returns:
+        list: Base parameter names the base frame replaces, in base order.
+    """
+    first = None
+    for name in params_e:
+        tpl = next((t for t in FULL_PARAMTPL if name.startswith(t + "_")), None)
+        if tpl is not None:
+            first = name[len(tpl) + 1 :]
+            break
+    if first is None:
+        return []
+    own = [names.index(f"{tpl}_{first}") for tpl in FULL_PARAMTPL]
+    P, rank = ordered_column_basis(np.hstack([R[:, own], R_b]), tol=tol)
+    kept = set(P[:rank].tolist())
+    return [row for k, row in enumerate(base_rows) if len(own) + k not in kept]
 ```
 
 ## `random_joint_configuration(model, rng)`
@@ -4381,6 +4605,113 @@ def measurement_jacobian(model, data, var, q, calib_config, step=1e-6):
     return np.column_stack(cols)
 ```
 
+## `chain_jacobian(model, data, var, q, calib_config)`
+
+Exact Jacobian of the chain placement w.r.t. `full_params` parameters.
+
+The chain placement is `oMee`, the `start_frame` -> `end_frame` transform of :func:`calc_updated_fkm` with the joint corrections in `var` applied (base and tool frames excluded). Its variation is the twist in the end frame (Pinocchio `LOCAL`): `oMee(x + dx) ~= oMee(x) * exp6(J dx)`, rows linear then angular. Built on `pin.computeFrameKinematicRegressor(..., LOCAL)` and, per joint, the derivative of `SE3(exp3(phi), p)` (:func:`update_joint_placement`): `exp3(phi)^T` for the translation and `Jexp3(phi)` for the rotation vector (figaroh-plus#210). A calibrator measuring something composed on `oMee` chains its own derivative onto this one.
+
+Parameters:
+
+| Name           | Type      | Description                          | Default    |
+| -------------- | --------- | ------------------------------------ | ---------- |
+| `model`        | `Model`   | Robot model (restored on return)     | *required* |
+| `data`         | `Data`    | Robot data                           | *required* |
+| `var`          | `ndarray` | Values of calib_config["param_name"] | *required* |
+| `q`            | `ndarray` | (n_samples, nq) joint configurations | *required* |
+| `calib_config` | `dict`    | calib_model must be full_params      | *required* |
+
+Returns:
+
+| Name      | Type | Description                                                 |
+| --------- | ---- | ----------------------------------------------------------- |
+| `ndarray` |      | (n_samples, 6, len(var)). Columns of names that are not     |
+|           |      | joint parameters of an active joint (e.g. base, tool or the |
+|           |      | calibrator's own parameters) are zero.                      |
+
+Source code in `src/figaroh/calibration/calibration_tools.py`
+
+```
+def chain_jacobian(model, data, var, q, calib_config):
+    """Exact Jacobian of the chain placement w.r.t. ``full_params`` parameters.
+
+    The chain placement is ``oMee``, the ``start_frame`` -> ``end_frame``
+    transform of :func:`calc_updated_fkm` with the joint corrections in
+    ``var`` applied (base and tool frames excluded). Its variation is the
+    twist in the end frame (Pinocchio ``LOCAL``): ``oMee(x + dx) ~= oMee(x) *
+    exp6(J dx)``, rows linear then angular. Built on
+    ``pin.computeFrameKinematicRegressor(..., LOCAL)`` and, per joint, the
+    derivative of ``SE3(exp3(phi), p)`` (:func:`update_joint_placement`):
+    ``exp3(phi)^T`` for the translation and ``Jexp3(phi)`` for the rotation
+    vector (figaroh-plus#210). A calibrator measuring something composed on
+    ``oMee`` chains its own derivative onto this one.
+
+    Args:
+        model (pin.Model): Robot model (restored on return)
+        data (pin.Data): Robot data
+        var (ndarray): Values of ``calib_config["param_name"]``
+        q (ndarray): (n_samples, nq) joint configurations
+        calib_config (dict): ``calib_model`` must be ``full_params``
+
+    Returns:
+        ndarray: (n_samples, 6, len(var)). Columns of names that are not
+        joint parameters of an active joint (e.g. base, tool or the
+        calibrator's own parameters) are zero.
+    """
+    if calib_config["calib_model"] != "full_params":
+        raise ValueError("chain_jacobian supports calib_model 'full_params' only")
+    if calib_config.get("non_geom"):
+        raise ValueError("chain_jacobian does not support joint elasticity")
+    names = list(calib_config["param_name"])
+    var = np.asarray(var, dtype=float)
+    assert len(var) == len(names), "Length of variables != length of params"
+    index = {n: i for i, n in enumerate(names)}
+    q = np.atleast_2d(q)
+
+    saved = {j: model.jointPlacements[j].copy() for j in calib_config["actJoint_idx"]}
+    blocks = []  # (joint id, axis ids, column ids, 6x6 local derivative)
+    try:
+        for j_id in calib_config["actJoint_idx"]:
+            j_name = model.names[j_id]
+            xyz_rpy = np.zeros(6)
+            axes, cols = [], []
+            for axis_id, axis in enumerate(FULL_PARAMTPL):
+                key = f"{axis}_{j_name}"
+                if key in index:
+                    xyz_rpy[axis_id] = var[index[key]]
+                    axes.append(axis_id)
+                    cols.append(index[key])
+            update_joint_placement(model, j_id, xyz_rpy)
+            if cols:
+                d = np.zeros((6, 6))
+                d[:3, :3] = pin.exp3(xyz_rpy[3:6]).T
+                d[3:, 3:] = pin.Jexp3(xyz_rpy[3:6])
+                blocks.append((j_id, axes, cols, d))
+
+        start_id = model.getFrameId(calib_config["start_frame"])
+        end_id = model.getFrameId(calib_config["end_frame"])
+        J = np.zeros((len(q), 6, len(var)))
+        for i, qi in enumerate(q):
+            pin.forwardKinematics(model, data, qi)
+            pin.updateFramePlacements(model, data)
+            reg_e = pin.computeFrameKinematicRegressor(model, data, end_id, pin.LOCAL)
+            if start_id == 0:  # universe: does not move, and Pinocchio rejects it
+                reg_s = np.zeros_like(reg_e)
+            else:
+                reg_s = pin.computeFrameKinematicRegressor(
+                    model, data, start_id, pin.LOCAL
+                )
+            # oMee = oMs^-1 oMe: its local twist is d_e - Ad(eMs) d_s
+            eMs = data.oMf[end_id].actInv(data.oMf[start_id])
+            reg = reg_e - eMs.action @ reg_s
+            for j_id, axes, cols, d in blocks:
+                J[i][:, cols] = reg[:, 6 * (j_id - 1) : 6 * j_id] @ d[:, axes]
+    finally:
+        for j_id, placement in saved.items():
+            model.jointPlacements[j_id] = placement
+    return J
+```
+
 ## `select_identifiable_parameters(jacobian, names, always_keep=(), tol=0.0001)`
 
 Split parameters into identifiable and absorbed ones, deterministically.
@@ -4493,9 +4824,9 @@ Choosing which calibration parameters to estimate, and how (#113).
 
 `calib_config["estimation"]["method"]` selects one of:
 
-`structural` (default) The structural base parameters from random configurations, then the data-level elimination of frame-absorbed parameters (#102). Unchanged behaviour. `excitation` Start from every joint parameter of the calibration level, drop exact dependencies on the measured postures, then remove, one at a time, the parameter whose predicted standard error is largest relative to its expected size, while that ratio exceeds `excitation_k`. Kept parameters are estimated freely. `map` Estimate every joint parameter with a zero-mean Gaussian prior of the given expected sizes (`priors`). Weakly excited directions stay near nominal; nothing is dropped. `map_cv` `map` with the prior sizes scaled by a factor chosen by k-fold cross-validation over the training postures (optionally one factor per parameter group). Needs no robot-specific sizes. `cv_subset` Nested parameter sets in the `excitation` removal order; the set size is chosen by k-fold cross-validation over the training postures.
+`structural` (default) The structural base parameters from random configurations, then the data-level elimination of frame-absorbed parameters (#102). Unchanged behaviour. `structural_selection` picks how the independent columns are chosen among exactly dependent ones: `lapack` (default) takes the largest residual first, so the selected names follow the random draw (`random_seed`); `ordered` takes the first independent columns in joint order, which is the same for every draw (#204). `excitation` Start from every joint parameter of the calibration level, drop exact dependencies on the measured postures, then remove, one at a time, the parameter whose predicted standard error is largest relative to its expected size, while that ratio exceeds `excitation_k`. Kept parameters are estimated freely. `map` Estimate every joint parameter with a zero-mean Gaussian prior of the given expected sizes (`priors`). Weakly excited directions stay near nominal; nothing is dropped. `map_cv` `map` with the prior sizes scaled by a factor chosen by k-fold cross-validation over the training postures (optionally one factor per parameter group). Needs no robot-specific sizes. `cv_subset` Nested parameter sets in the `excitation` removal order; the set size is chosen by k-fold cross-validation over the training postures.
 
-The base and tool frames are always estimated freely (no prior). Noise is `noise_std` in the units of the cost function's measurement residuals (metres for position unless the robot's cost function weights them), or, when `None`, estimated from a free fit of the identifiable parameters. Selection runs once, in :meth:`BaseCalibration.create_param_list`; the choices and diagnostics are stored in `calib_config["estimation_report"]`. See the guide `docs/source/concepts/calibration_estimation.md`.
+Nuisance parameters are always estimated freely (no prior): by default the base and tool frames, or what the calibrator's :meth:`~BaseCalibration.nuisance_param_names` returns (#210). Noise is `noise_std` in the units of the cost function's measurement residuals (metres for position unless the robot's cost function weights them), or, when `None`, estimated from a free fit of the identifiable parameters. `noise_std` may also be one value per measurement component, given or estimated (`per_component`); the measurement residuals are then whitened before the fit, the prior weighting and the covariance (#215). That fit also gives `excitation` and `cv_subset` their Jacobian; it is skipped for `map` and `map_cv` when `noise_std` is given, and a fit that stops unconverged is logged and reported as `prelim_converged` (#211). Selection runs once, in :meth:`BaseCalibration.create_param_list`; the choices and diagnostics are stored in `calib_config["estimation_report"]`. See the guide `docs/source/concepts/calibration_estimation.md`.
 
 ## `EstimationError`
 
@@ -4522,9 +4853,109 @@ def settings(calib_config: dict) -> dict:
     unknown = set(out["priors"]) - set(GROUPS)
     if unknown:
         raise EstimationError(f"unknown prior groups {sorted(unknown)}")
+    if out["structural_selection"] not in STRUCTURAL_SELECTIONS:
+        raise EstimationError(
+            "estimation.structural_selection must be one of "
+            f"{', '.join(STRUCTURAL_SELECTIONS)}"
+        )
     if out["cv_rule"] not in ("min", "one_se"):
         raise EstimationError("estimation.cv_rule must be 'min' or 'one_se'")
+    _check_noise_setting(out["noise_std"])
     return out
+```
+
+## `n_components(calib)`
+
+Measurement components per sample: `len(PEE_measured) / NbSample`.
+
+Source code in `src/figaroh/calibration/estimation.py`
+
+```
+def n_components(calib) -> int:
+    """Measurement components per sample: ``len(PEE_measured) / NbSample``."""
+    n = calib.calib_config["NbSample"]
+    m = len(calib.PEE_measured)
+    if n <= 0 or m % n:
+        raise EstimationError(
+            f"{m} measurements are not a whole number of components for " f"{n} samples"
+        )
+    return m // n
+```
+
+## `whiten(calib, rows, sigma=None, ref=None)`
+
+Measurement rows of `rows` (residuals or Jacobian) whitened.
+
+Off (`rows` returned as is) unless `configure` set unequal per-component noise (`calib_config["measurement_noise_std"]`). The first `len(PEE_measured)` rows, DOF-major, are scaled by `ref / sigma_c` of their component, with `ref` the smallest sigma (`measurement_noise_ref`): the problem keeps one noise level `ref` for the priors and the covariance. With per-sample rotations (`calib.noise_rotation`, R_i) the sensor-frame covariance Sigma = diag(sigma\*\*2) becomes R_i Sigma R_i^T, and sample i's rows are multiplied by ref * R_i diag(1/sigma) R_i^T. Later rows are unchanged. `sigma` and `ref` override the configured values.
+
+Source code in `src/figaroh/calibration/estimation.py`
+
+```
+def whiten(calib, rows, sigma=None, ref=None):
+    """Measurement rows of ``rows`` (residuals or Jacobian) whitened.
+
+    Off (``rows`` returned as is) unless ``configure`` set unequal
+    per-component noise (``calib_config["measurement_noise_std"]``). The
+    first ``len(PEE_measured)`` rows, DOF-major, are scaled by
+    ``ref / sigma_c`` of their component, with ``ref`` the smallest sigma
+    (``measurement_noise_ref``): the problem keeps one noise level ``ref``
+    for the priors and the covariance. With per-sample rotations
+    (``calib.noise_rotation``, R_i) the sensor-frame covariance
+    Sigma = diag(sigma**2) becomes R_i Sigma R_i^T, and sample i's rows are
+    multiplied by ref * R_i diag(1/sigma) R_i^T. Later rows are unchanged.
+    ``sigma`` and ``ref`` override the configured values.
+    """
+    cfg = calib.calib_config
+    if sigma is None:
+        sigma = cfg.get("measurement_noise_std")
+        ref = cfg.get("measurement_noise_ref")
+    if sigma is None:
+        return rows
+    sigma = np.asarray(sigma, dtype=float)
+    rows = np.array(rows, dtype=float)
+    n, c = cfg["NbSample"], len(sigma)
+    head = rows[: n * c].reshape((c, n) + rows.shape[1:])
+    scale = (ref / sigma).reshape((c, 1) + (1,) * (head.ndim - 2))
+    R = _noise_rotation(calib)
+    if R is None:
+        head = head * scale
+    else:
+        sensor = np.einsum("ikc,ki...->ci...", R, head)
+        head = np.einsum("ikc,ci...->ki...", R, sensor * scale)
+    rows[: n * c] = head.reshape((n * c,) + rows.shape[1:])
+    return rows
+```
+
+## `component_noise(calib, residuals, n_params)`
+
+Noise per measurement component from free-fit residuals.
+
+Each component's rows share the `n_params` degrees of freedom equally, so `sigma_c = sqrt(sum r_c**2 / (NbSample - n_params / n_components))`. With `calib.noise_rotation` the residuals are first expressed in the sensor frame. The residuals hold the unmodelled systematic error too: the estimate is noise plus model error.
+
+Source code in `src/figaroh/calibration/estimation.py`
+
+```
+def component_noise(calib, residuals, n_params) -> np.ndarray:
+    """Noise per measurement component from free-fit residuals.
+
+    Each component's rows share the ``n_params`` degrees of freedom equally,
+    so ``sigma_c = sqrt(sum r_c**2 / (NbSample - n_params / n_components))``.
+    With ``calib.noise_rotation`` the residuals are first expressed in the
+    sensor frame. The residuals hold the unmodelled systematic error too: the
+    estimate is noise plus model error.
+    """
+    n, c = calib.calib_config["NbSample"], n_components(calib)
+    r = np.asarray(residuals, dtype=float)[: n * c].reshape(c, n)
+    R = _noise_rotation(calib)
+    if R is not None:
+        r = np.einsum("ikc,ki->ci", R, r)
+    dof = n - n_params / c
+    if dof <= 0:
+        raise EstimationError(
+            "too few samples to estimate the noise per component; set "
+            "estimation.noise_std"
+        )
+    return np.sqrt(np.sum(r**2, axis=1) / dof)
 ```
 
 ## `joint_candidates(model, calib_config)`
@@ -4568,45 +4999,79 @@ def prior_group(name: str, model) -> Optional[str]:
     return "joint_offset"
 ```
 
-## `prior_std(names, model, priors)`
+## `prior_std(names, model, priors, nuisance=())`
 
-Expected size per parameter; `inf` for frame parameters.
+Expected size per parameter; `inf` for frame and nuisance parameters.
 
 Source code in `src/figaroh/calibration/estimation.py`
 
 ```
-def prior_std(names: Sequence[str], model, priors: Dict[str, float]) -> np.ndarray:
-    """Expected size per parameter; ``inf`` for frame parameters."""
+def prior_std(
+    names: Sequence[str], model, priors: Dict[str, float], nuisance=()
+) -> np.ndarray:
+    """Expected size per parameter; ``inf`` for frame and nuisance parameters."""
+    nuisance = set(nuisance)
     out = []
     for n in names:
-        group = prior_group(n, model)
+        group = None if n in nuisance else prior_group(n, model)
         out.append(np.inf if group is None else float(priors[group]))
     return np.array(out)
 ```
 
-## `identifiable(calib, names, frames, tol)`
+## `check_nuisance(J, names, nuisance, tol, where='on this data')`
 
-Drop exact dependencies on the measured postures (frames kept).
+Raise when the nuisance columns of `J` are dependent among themselves.
+
+Nuisance parameters get no prior, so a direction they share would drift freely instead of being fixed by the data.
 
 Source code in `src/figaroh/calibration/estimation.py`
 
 ```
-def identifiable(calib, names, frames, tol) -> List[str]:
-    """Drop exact dependencies on the measured postures (frames kept)."""
-    cfg = calib.calib_config
+def check_nuisance(J, names, nuisance, tol, where="on this data") -> None:
+    """Raise when the nuisance columns of ``J`` are dependent among themselves.
+
+    Nuisance parameters get no prior, so a direction they share would drift
+    freely instead of being fixed by the data.
+    """
+    if not nuisance:
+        return
+    cols = [names.index(n) for n in nuisance]
+    _, dependent = select_identifiable_parameters(J[:, cols], nuisance, tol=tol)
+    if dependent:
+        raise EstimationError(
+            f"nuisance parameters are not identifiable {where}: fix a gauge "
+            f"(dependent on the others: {dependent})"
+        )
+```
+
+## `identifiable(calib, names, nuisance, tol)`
+
+Drop exact dependencies on the measured postures (nuisance kept).
+
+Returns the kept names and the measurement Jacobian over `names` (:meth:`BaseCalibration.measurement_jacobian`). Raises when the nuisance parameters are dependent among themselves (:func:`check_nuisance`).
+
+Source code in `src/figaroh/calibration/estimation.py`
+
+```
+def identifiable(calib, names, nuisance, tol):
+    """Drop exact dependencies on the measured postures (nuisance kept).
+
+    Returns the kept names and the measurement Jacobian over ``names``
+    (:meth:`BaseCalibration.measurement_jacobian`). Raises when the nuisance
+    parameters are dependent among themselves (:func:`check_nuisance`).
+    """
     x0 = _start(calib, names)
-    J = measurement_jacobian(
-        calib.model, calib.data, x0, calib.q_measured, dict(cfg, param_name=names)
-    )
-    kept, _ = select_identifiable_parameters(J, names, frames, tol=tol)
-    return kept
+    J = calib.measurement_jacobian(names, x0)
+    check_nuisance(J, names, nuisance, tol)
+    kept, _ = select_identifiable_parameters(J, names, nuisance, tol=tol)
+    return kept, J
 ```
 
 ## `excitation_order(J, names, frames, prior, noise, k=None)`
 
 Backward elimination by predicted standard error / expected size.
 
-Returns (kept, removed in order, ratio at removal). With `k` None the elimination runs until only frames remain.
+`frames` are the nuisance parameters, never removed. Returns (kept, removed in order, ratio at removal). With `k` None the elimination runs until only `frames` remain.
 
 Source code in `src/figaroh/calibration/estimation.py`
 
@@ -4614,8 +5079,9 @@ Source code in `src/figaroh/calibration/estimation.py`
 def excitation_order(J, names, frames, prior, noise, k=None):
     """Backward elimination by predicted standard error / expected size.
 
-    Returns (kept, removed in order, ratio at removal). With ``k`` None the
-    elimination runs until only frames remain.
+    ``frames`` are the nuisance parameters, never removed. Returns (kept,
+    removed in order, ratio at removal). With ``k`` None the elimination runs
+    until only ``frames`` remain.
     """
     active = list(names)
     removed, ratios = [], []
@@ -4640,11 +5106,43 @@ def excitation_order(J, names, frames, prior, noise, k=None):
 
 Set `param_name` and prior weights for a non-structural method.
 
+The candidates are every joint parameter of the calibration level plus the calibrator's nuisance parameters (:meth:`BaseCalibration.nuisance_param_names`, by default the unknown base and tool frames), which get no prior. A calibrator with its own measurement model (not an end-effector pose) works here when it keeps this contract (#210):
+
+- the first `len(PEE_measured)` entries of `cost_function` are the measurement residuals, laid out DOF-major (all samples of the first measured component, then the next), with no regularisation rows appended (use priors, #120); later rows are ignored;
+- parameters are read by name from `calib_config["param_name"]`, which this function changes;
+- :meth:`BaseCalibration.measurement_jacobian` is the derivative of the quantity measured (by default a finite difference of :meth:`BaseCalibration.get_pose_from_measure`);
+- all per-sample state is `q_measured`, `PEE_measured` or an attribute named in `per_sample_attributes`, so that the cross-validation folds can slice it; `NbSample` follows the slice;
+- the nuisance parameters are identifiable on the data, and on every fold's training samples for `map_cv` and `cv_subset`; otherwise :class:`EstimationError` asks for a gauge.
+
 Source code in `src/figaroh/calibration/estimation.py`
 
 ```
 def configure(calib) -> dict:
-    """Set ``param_name`` and prior weights for a non-structural method."""
+    """Set ``param_name`` and prior weights for a non-structural method.
+
+    The candidates are every joint parameter of the calibration level plus
+    the calibrator's nuisance parameters
+    (:meth:`BaseCalibration.nuisance_param_names`, by default the unknown
+    base and tool frames), which get no prior. A calibrator with its own
+    measurement model (not an end-effector pose) works here when it keeps
+    this contract (#210):
+
+    - the first ``len(PEE_measured)`` entries of ``cost_function`` are the
+      measurement residuals, laid out DOF-major (all samples of the first
+      measured component, then the next), with no regularisation rows
+      appended (use priors, #120); later rows are ignored;
+    - parameters are read by name from ``calib_config["param_name"]``, which
+      this function changes;
+    - :meth:`BaseCalibration.measurement_jacobian` is the derivative of the
+      quantity measured (by default a finite difference of
+      :meth:`BaseCalibration.get_pose_from_measure`);
+    - all per-sample state is ``q_measured``, ``PEE_measured`` or an
+      attribute named in ``per_sample_attributes``, so that the
+      cross-validation folds can slice it; ``NbSample`` follows the slice;
+    - the nuisance parameters are identifiable on the data, and on every
+      fold's training samples for ``map_cv`` and ``cv_subset``; otherwise
+      :class:`EstimationError` asks for a gauge.
+    """
     cfg = calib.calib_config
     est = settings(cfg)
     if cfg.get("non_geom"):
@@ -4659,37 +5157,99 @@ def configure(calib) -> dict:
         )
     model = calib.model
     candidates = joint_candidates(model, cfg)
-    base = [] if cfg["known_baseframe"] else list(BASE_TPL)
-    cfg["param_name"] = base + candidates
-    if not cfg["known_tipframe"]:
-        add_pee_name(cfg)
-    all_names = list(cfg["param_name"])
-    for key in _BASE_MAPPING_KEYS:
+    nuisance = list(calib.nuisance_param_names())
+    clash = sorted(set(nuisance) & set(candidates))
+    if clash:
+        raise EstimationError(f"nuisance parameters {clash} are joint parameters")
+    # base frame first, the other nuisance parameters last: the layout the
+    # robot cost functions read
+    head = [n for n in nuisance if n in BASE_TPL]
+    all_names = head + candidates + [n for n in nuisance if n not in head]
+    cfg["param_name"] = list(all_names)
+    for key in _BASE_MAPPING_KEYS + _NOISE_KEYS:
         cfg.pop(key, None)
-    frames = calib._frame_param_names()
-    prior = prior_std(all_names, model, est["priors"])
+    prior = prior_std(all_names, model, est["priors"], nuisance)
     prior_of = dict(zip(all_names, prior))
 
-    ident = identifiable(calib, all_names, frames, est["dependency_tol"])
-    prelim = _fit(calib, ident)
+    ident, J_all = identifiable(calib, all_names, nuisance, est["dependency_tol"])
+    method = est["method"]
     n_meas = len(calib.PEE_measured)
+    n_comp = n_components(calib)
+    rotation = _noise_rotation(calib, n_comp)
     noise, noise_source = est["noise_std"], "given"
-    if noise is None:
-        dof = n_meas - len(ident)
-        if dof <= 0:
+    per_component = isinstance(noise, str)
+    sigma = None  # one noise per component, when not one scalar
+    if not per_component and np.ndim(noise) == 1:
+        sigma = np.asarray(noise, dtype=float)
+        if len(sigma) != n_comp:
             raise EstimationError(
-                "too few measurements to estimate the noise; set estimation.noise_std"
+                f"estimation.noise_std has {len(sigma)} values; the "
+                f"measurements have {n_comp} components per sample"
             )
+        noise = _set_component_noise(cfg, sigma)
+    dof = n_meas - len(ident)
+    if (noise is None or per_component) and dof <= 0:
+        raise EstimationError(
+            "too few measurements to estimate the noise; set estimation.noise_std"
+        )
+    # the free fit feeds only the noise estimate and the excitation
+    # Jacobian; skip it when neither is needed (#211)
+    prelim = None
+    # per-component row weights of the free fit, hence of its Jacobian
+    prelim_weight = _row_weight(cfg, n_comp)
+    if noise is None or per_component or method in ("excitation", "cv_subset"):
+        prelim = _fit(calib, ident, max_nfev=PRELIM_MAX_NFEV)
+        if not prelim.success:
+            logger.warning(
+                "estimation '%s': the free fit of the %d identifiable "
+                "parameters did not converge (%s, %d evaluations); its noise "
+                "estimate and excitation Jacobian are unreliable. Set "
+                "estimation.noise_std to skip it for map and map_cv.",
+                method,
+                len(ident),
+                prelim.message,
+                prelim.nfev,
+            )
+    if per_component:
+        # the unweighted fit lets the noisiest component pull the others'
+        # residuals: estimate again after one fit weighted by the first
+        # estimate (further rounds change it by well under 1%)
+        sigma = component_noise(calib, prelim.fun, len(ident))
+        _set_component_noise(cfg, sigma)
+        if cfg.get("measurement_noise_std") is not None:
+            prelim = _fit(calib, ident, max_nfev=PRELIM_MAX_NFEV)
+            with _params(calib, ident):
+                raw = calib.cost_function(prelim.x)
+            prelim_weight = _row_weight(cfg, n_comp)
+            sigma = component_noise(calib, raw, len(ident))
+            for key in _NOISE_KEYS:
+                cfg.pop(key, None)
+        noise = _set_component_noise(cfg, sigma)
+        noise_source = (
+            "estimated per component (free fit of the identifiable "
+            "parameters): noise plus model error"
+        )
+    elif noise is None:
         noise = float(np.sqrt(np.sum(prelim.fun[:n_meas] ** 2) / dof))
         noise_source = "estimated (free fit of the identifiable parameters)"
+    whitened = cfg.get("measurement_noise_std") is not None
     report = {
         "method": est["method"],
         "candidates": candidates,
+        "nuisance": nuisance,
         "dependent": [n for n in all_names if n not in ident],
-        "noise_std": noise,
+        # one value, or one per measurement component (then whitened
+        # to the smallest, ``noise_std_ref``)
+        "noise_std": [float(v) for v in sigma] if whitened else noise,
         "noise_source": noise_source,
         "priors": est["priors"],
+        # None: the free fit did not run
+        "prelim_converged": None if prelim is None else bool(prelim.success),
+        "prelim_nfev": 0 if prelim is None else int(prelim.nfev),
     }
+    if whitened:
+        report["noise_std_ref"] = noise
+        report["noise_rotated"] = rotation is not None
 
     def weights(names, scale=None):
         scale = scale or {}
@@ -4698,14 +5258,21 @@ def configure(calib) -> dict:
         )
         return np.where(np.isfinite(s), noise / s, 0.0)
 
-    method = est["method"]
+    if method in ("map_cv", "cv_subset"):
+        n = cfg["NbSample"]
+        folds = _folds(n, est["cv_folds"], est["cv_seed"])
+        _check_folds(J_all, all_names, nuisance, folds, n, est["dependency_tol"])
     final, w = None, None
     if method in ("excitation", "cv_subset"):
+        # reweight the free fit's Jacobian to the final whitening
+        ratio = _row_weight(cfg, n_comp) / prelim_weight
         J = prelim.jac[:n_meas]
+        if np.any(ratio != 1.0):
+            J = whiten(calib, J, sigma=1.0 / ratio, ref=1.0)
         prior_ident = np.array([prior_of[n] for n in ident])
         k = est["excitation_k"] if method == "excitation" else None
         kept, removed, ratios = excitation_order(
-            J, ident, frames, prior_ident, noise, k
+            J, ident, nuisance, prior_ident, noise, k
         )
         report["removal_order"] = list(zip(removed, ratios))
         if method == "excitation":
@@ -4716,7 +5283,7 @@ def configure(calib) -> dict:
     elif method == "map":
         final, w = all_names, weights(all_names)
     elif method == "map_cv":
-        scale = _choose_scale(calib, all_names, weights, est, report)
+        scale = _choose_scale(calib, all_names, weights, est, report, nuisance)
         report["prior_scale"] = scale
         final, w = all_names, weights(all_names, scale)
 
@@ -5157,9 +5724,15 @@ def get_joint_offset(model, joint_names):
     for id, joint in enumerate(joints):
         name = joint_names[id]
         shortname = joint.shortname()
-        if model.name == "canopies":
-            if "RevoluteUnaligned" in shortname:
-                shortname = shortname.replace("RevoluteUnaligned", "RZ")
+        # an unaligned joint about a coordinate axis (up to sign) is named
+        # after that axis; calc_updated_fkm applies the offset with the axis
+        # sign, so it is q + offset (#205). A tilted axis keeps its name and
+        # is refused there if it is calibrated.
+        if shortname.endswith("Unaligned"):
+            try:
+                shortname = "JointModel" + _determine_axis_motion(joint)
+            except ValueError:
+                pass
         for i in range(joint.nv):
             if i > 0:
                 offset_param = (
@@ -5250,8 +5823,14 @@ Side Effects
 
 Modifies calib_config["param_name"] in place by:
 
-- For full_params: Replaces first 6 entries with base parameters
+- For full_params: Renames the base parameters the base frame replaces (`base_frame_absorbed_rows`, from `calculate_base_kinematics_regressor`) to the base frame parameters, and records them in `base_frame_row_names`. Without that key (a hand-built config), the first 6 structural base parameters (from `base_mapping_slice`, after any elastic `k_*` names) are renamed.
 - For joint_offset: Prepends base parameters to list
+
+Raises:
+
+| Type         | Description                                                                                                               |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `ValueError` | At full_params, if the base frame does not replace exactly six base parameters (some of its directions are not observed). |
 
 Source code in `src/figaroh/calibration/parameter.py`
 
@@ -5269,11 +5848,41 @@ def add_base_name(calib_config):
 
     Side Effects:
         Modifies calib_config["param_name"] in place by:
-        - For full_params: Replaces first 6 entries with base parameters
+        - For full_params: Renames the base parameters the base frame
+          replaces (``base_frame_absorbed_rows``, from
+          ``calculate_base_kinematics_regressor``) to the base frame
+          parameters, and records them in ``base_frame_row_names``. Without
+          that key (a hand-built config), the first 6 structural base
+          parameters (from ``base_mapping_slice``, after any elastic
+          ``k_*`` names) are renamed.
         - For joint_offset: Prepends base parameters to list
+
+    Raises:
+        ValueError: At full_params, if the base frame does not replace
+            exactly six base parameters (some of its directions are not
+            observed).
     """
     if calib_config["calib_model"] == "full_params":
-        calib_config["param_name"][0:6] = BASE_TPL
+        # the structural parameters start after any non-geometric names
+        # (elastic k_*, #206); without them the slice starts at 0
+        start, end = calib_config.get("base_mapping_slice", (0, 0))
+        absorbed = calib_config.get("base_frame_absorbed_rows")
+        if absorbed is None:
+            calib_config["param_name"][start : start + len(BASE_TPL)] = BASE_TPL
+            return
+        # renaming the first six by position dropped an independent
+        # parameter when the selection grouped one of the first joint's
+        # placement parameters with a later joint (#204)
+        if len(absorbed) != len(BASE_TPL):
+            raise ValueError(
+                f"the base frame replaces {len(absorbed)} base parameters "
+                f"({absorbed}), not {len(BASE_TPL)}: the measurements do not "
+                "observe every base frame direction. Set known_baseframe."
+            )
+        names = calib_config["param_name"]
+        for row, base_name in zip(absorbed, BASE_TPL):
+            names[names.index(row, start, end)] = base_name
+        calib_config["base_frame_row_names"] = list(absorbed)
     elif calib_config["calib_model"] == "joint_offset":
         calib_config["param_name"] = BASE_TPL + calib_config["param_name"]
         # base_mapping_slice is positional: prepending shifts it

@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/figaroh-mark-light.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
@@ -31,10 +31,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -1407,6 +1407,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Noise">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#noise-per-measurement-component" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Noise per measurement component
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1414,6 +1431,17 @@
     <span class="md-ellipsis">
       
         Outputs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-measurement-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom measurement models
       
     </span>
   </a>
@@ -2548,6 +2576,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Noise">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#noise-per-measurement-component" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Noise per measurement component
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2555,6 +2600,17 @@
     <span class="md-ellipsis">
       
         Outputs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-measurement-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom measurement models
       
     </span>
   </a>
@@ -2631,12 +2687,14 @@ tends to work. The choice is yours, in the configuration.</p>
 <span class="w">      </span><span class="nt">calibration_level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">full_params</span><span class="w">      </span><span class="c1"># or joint_offset</span>
 <span class="w">      </span><span class="nt">estimation</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">map_cv</span><span class="w">                    </span><span class="c1"># structural | excitation | map | map_cv | cv_subset</span>
+<span class="w">        </span><span class="nt">structural_selection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lapack</span><span class="w">      </span><span class="c1"># structural: lapack | ordered</span>
 <span class="w">        </span><span class="nt">priors</span><span class="p">:</span><span class="w">                           </span><span class="c1"># expected error sizes (1 sigma)</span>
 <span class="w">          </span><span class="nt">translation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0e-3</span><span class="w">             </span><span class="c1"># m</span>
 <span class="w">          </span><span class="nt">rotation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.0e-3</span><span class="w">                </span><span class="c1"># rad</span>
 <span class="w">          </span><span class="nt">joint_offset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.0e-2</span><span class="w">            </span><span class="c1"># rad, revolute joint-angle offset</span>
 <span class="w">          </span><span class="nt">prismatic_offset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.0e-3</span><span class="w">        </span><span class="c1"># m</span>
-<span class="w">        </span><span class="nt">noise_std</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">                   </span><span class="c1"># residual units; null = estimated</span>
+<span class="w">        </span><span class="nt">noise_std</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">                   </span><span class="c1"># residual units; null = estimated;</span>
+<span class="w">                                          </span><span class="c1"># or one per component, or per_component</span>
 <span class="w">        </span><span class="nt">excitation_k</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span><span class="w">                 </span><span class="c1"># excitation only</span>
 <span class="w">        </span><span class="nt">cv_folds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">                       </span><span class="c1"># map_cv, cv_subset</span>
 <span class="w">        </span><span class="nt">cv_seed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
@@ -2665,6 +2723,18 @@ drops those the estimated frames absorb on the measured postures
   freely.</li>
 <li><strong>Use when:</strong> you need results comparable with an earlier run.</li>
 </ul>
+<p><code>structural_selection</code> chooses among exactly dependent columns. <code>lapack</code>
+(default) takes the largest residual first, so the selected names follow the
+random draw (<code>random_seed</code>): the span is the same, the basis is not. That
+does not matter for one chain, but it does when chains share parameters by
+name (the TALOS two-chain fit swapped its shared torso axes between draws
+and moved the held-out height error by about 1.5 mm, figaroh-plus#204).
+<code>ordered</code> takes the first independent columns in joint order, the same for
+every draw. The choice of order is still a convention: it fixes which of
+several equivalent bases is fitted, and the regularisation and the name
+sharing depend on that basis. Either way, at <code>full_params</code> with an unknown
+base frame, the base frame replaces the six base parameters that span the
+first joint's placement, whichever columns the selection kept for it.</p>
 <h3 id="excitation"><code>excitation</code><a class="headerlink" href="#excitation" title="Permanent link">&para;</a></h3>
 <p>Starts from every joint parameter of the calibration level and drops exact
 dependencies on the measured postures. Then, one at a time, removes the
@@ -2853,11 +2923,50 @@ it is <code>null</code>, FIGAROH fits the identifiable parameters freely and use
 √(RSS / (m − n)). That estimate includes unmodelled effects (backlash,
 deflection), which is usually what you want: it keeps the data from looking
 more precise than it is.</p>
+<p>That free fit is capped at 2000 evaluations. On a nearly square, weakly
+determined problem (TALOS table contact: 63 residuals, 52 parameters) it can
+stop before converging; FIGAROH then logs a warning and the report shows
+<code>prelim_converged: false</code>. Give <code>noise_std</code> in that case: <code>map</code> and <code>map_cv</code>
+then skip the free fit altogether. <code>excitation</code> and <code>cv_subset</code> always run
+it, because they rank parameters with its Jacobian.</p>
+<h3 id="noise-per-measurement-component">Noise per measurement component<a class="headerlink" href="#noise-per-measurement-component" title="Permanent link">&para;</a></h3>
+<p>One σ is wrong when the measurement components differ in noise or units: a
+camera pose is noisier along the depth axis than across the image; a contact
+measurement mixes a height in metres with angles in radians. <code>noise_std</code> then
+takes one value per component, in the order of the cost function's
+measurement residuals (for example 6 for a pose, 3 for a position):</p>
+<div class="highlight"><pre><span></span><code><span class="nt">estimation</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">map</span>
+<span class="w">  </span><span class="nt">noise_std</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">3.0e-4</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">3.0e-4</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1.5e-3</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1.7e-3</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1.7e-3</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">4.4e-4</span><span class="p p-Indicator">]</span>
+</code></pre></div>
+<p>FIGAROH divides each component's residual rows by its σ and multiplies them
+by the smallest σ, before the fit, the prior weights and the covariance.
+Every method of this page then works unchanged, at that smallest noise
+level. A scalar, or equal values, leave the problem exactly as before.</p>
+<p><code>noise_std: per_component</code> estimates the vector instead: the free fit of the
+identifiable parameters is weighted once by a first estimate and refitted,
+and each component gets √(RSS_c / (N − n/c)) over its N residuals (c
+components share the n parameters' degrees of freedom). Like the scalar
+estimate, this is <strong>noise plus model error</strong>: unmodelled systematic error
+inflates σ, which strengthens the prior. The report says so in
+<code>noise_source</code>. Per-sample noise levels are not offered: fitted from the
+same residuals as the parameters, they would hand the samples that disagree
+with the model to the prior, which is outlier rejection in disguise.</p>
+<p>When the noise is fixed in a sensor frame that turns with the posture, a
+calibrator can set <code>noise_rotation</code>, one rotation Rᵢ per sample over the
+components (shape <code>(N, c, c)</code>); sample i's covariance is then
+Rᵢ diag(σ²) Rᵢᵀ, and <code>per_component</code> estimates σ in the sensor frame. The
+rotations are sliced with the samples by the cross-validation folds. For
+example, the UR10 cost function's orientation residual is the body-frame
+angle-axis error, so a rotation noise fixed in the board frame has
+Rᵢ = R_measᵀ on those three components.</p>
 <h2 id="outputs">Outputs<a class="headerlink" href="#outputs" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>calib_config["estimation_report"]</code> (also <code>calibrator.estimation_report</code>):
-  the method, candidates, exactly dependent parameters, the noise and its
-  source, the priors, and per method the removal order with ratios, the
+  the method, candidates, nuisance parameters, exactly dependent parameters, the noise and its
+  source (a list per component when whitened, with <code>noise_std_ref</code>, the level
+  the problem keeps, and <code>noise_rotated</code>), the priors, whether the free fit converged (<code>prelim_converged</code>,
+  <code>None</code> when it was skipped) and its evaluation count (<code>prelim_nfev</code>), and per method the removal order with ratios, the
   cross-validation curve and the chosen factor or size.</li>
 <li><code>calibrator.std_dev</code>: for <code>map</code>/<code>map_cv</code>, posterior standard deviations;
   a value close to the prior means the data did not inform that parameter.</li>
@@ -2878,14 +2987,54 @@ more precise than it is.</p>
   the measurement setup, so they are not written into the URDF; applied
   outside a reloaded URDF they reproduce the calibrated forward kinematics,
   for every method and both levels (figaroh-plus#62).</p>
+<h2 id="custom-measurement-models">Custom measurement models<a class="headerlink" href="#custom-measurement-models" title="Permanent link">&para;</a></h2>
+<p>The non-structural methods do not assume an end-effector pose. A calibrator
+that measures something else (a distance to a plane, a contact gap) plugs in
+through three <code>BaseCalibration</code> hooks (figaroh-plus#210):</p>
+<ul>
+<li><code>nuisance_param_names()</code>: the parameters fitted freely besides the joints,
+  with no prior and never removed. Default: the unknown base and tool
+  frames. A table-contact calibrator returns its plane and contact-offset
+  parameters. They come after the joint parameters in <code>param_name</code> (the base
+  frame, if any, stays first).</li>
+<li><code>measurement_jacobian(names, x)</code>: the derivative of the measured quantity,
+  used to drop exact dependencies. Default: a central difference of
+  <code>get_pose_from_measure</code>, so overriding <code>get_pose_from_measure</code> is often
+  enough. For an exact derivative, chain the measurement's derivative onto
+  <code>calibration_tools.chain_jacobian</code>, the Pinocchio-built Jacobian of the
+  chain placement at the <code>full_params</code> level.</li>
+<li><code>per_sample_attributes</code>: names of attributes with one entry per sample
+  (e.g. <code>("session_ids",)</code>), sliced with <code>q_measured</code> in the
+  cross-validation folds.</li>
+</ul>
+<p>The calibrator must keep this contract:</p>
+<ul>
+<li>the first <code>len(PEE_measured)</code> entries of <code>cost_function</code> are the
+  measurement residuals, DOF-major (every sample of the first measured
+  component, then the next); rows after them are ignored, and
+  regularisation belongs in priors, not appended rows;</li>
+<li>parameters are read by name from <code>calib_config["param_name"]</code>;</li>
+<li>all per-sample state is <code>q_measured</code>, <code>PEE_measured</code> or listed in
+  <code>per_sample_attributes</code>, and <code>NbSample</code> follows the slice;</li>
+<li>the nuisance parameters are identifiable on the data. Two nuisance
+  parameters with the same effect (a plane height and a probe length)
+  raise "nuisance parameters are not identifiable on this data: fix a
+  gauge"; remove one or fix its value. With <code>map_cv</code> and <code>cv_subset</code> the
+  check also runs on each fold's training samples, so a session with too
+  few postures for every fold to determine its parameters raises: reduce
+  <code>cv_folds</code> or record more postures.</li>
+</ul>
 <h2 id="limits">Limits<a class="headerlink" href="#limits" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Not supported with <code>include_non_geometric</code> (elastic parameters); use
   <code>structural</code>.</li>
-<li>The robot's <code>cost_function</code> must keep the parameter layout: base frame
-  first, joint parameters, tool point last (as the TIAGo, UR10 and TALOS
-  examples do). Classes with extra parameters (e.g. table-contact planes)
-  are not supported.</li>
+<li>The robot's <code>cost_function</code> must read parameters by name, or keep the
+  layout: base frame first, joint parameters, then the other nuisance
+  parameters (tool point by default), as the TIAGo, UR10 and TALOS examples
+  do. See <a href="#custom-measurement-models">Custom measurement models</a>.</li>
+<li>Per-session nuisance parameters are not split across folds: a fold that
+  misses a session raises instead of leaving its parameters undetermined.</li>
+<li><code>chain_jacobian</code> covers <code>full_params</code>; not <code>joint_offset</code> or elasticity.</li>
 <li><code>regularization_coefficient</code> was removed in 1.0 (#120): it weighted metres
   and radians alike. A non-zero value is a <code>ConfigurationError</code>; leave it at 0; <code>map</code>/<code>map_cv</code> are the
   unit-consistent replacement.</li>
@@ -2987,10 +3136,10 @@ more precise than it is.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
       
         <script src="../../javascripts/figaroh.js"></script>
       
