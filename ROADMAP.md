@@ -220,7 +220,8 @@ feature in the minor release after its go decision and never holds a release.
 | 1.0.0 | M1 accepted | M1 review ✅ (2026-10-12, [#181](https://github.com/thanhndv212/figaroh-plus/issues/181)); public API (#184), deprecation removals (#185, examples #125), G-1 (#182) and RC procedure (#186) done. Released 2026-10-12 without a release candidate (maintainer decision; [release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v1.0.0), [tracker #192](https://github.com/thanhndv212/figaroh-plus/issues/192)); examples tag `v1.0.0` |
 | 1.0.1 | Documentation and housekeeping | none (no library code) | Released 2026-10-12; examples `v1.0.0` remains the pair |
 | 1.0.2 | Documentation | none (no library code) | Released 2026-10-13; examples `v1.0.0` remains the pair |
-| 1.1, 1.2 | M2 composable calibration and identification | S2, S3, S4 | Later |
+| 1.1.0 | Calibration estimation improvements and C5 follow-up fixes | none (fixes and additions since 1.0.2; maintainer decision 2026-10-29) | Released 2026-10-29 ([tracker #228](https://github.com/thanhndv212/figaroh-plus/issues/228)); examples tag `v1.1.0` |
+| 1.2 and later | M2 composable calibration and identification | S2, S3, S4 | Later |
 | 1.x or 2.0 | M3 backend parity | B1 | Later; 2.0 only if the backend API breaks |
 
 Each release is tracked by a core release issue. It lists the packages in scope

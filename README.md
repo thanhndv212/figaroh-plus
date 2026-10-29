@@ -131,19 +131,21 @@ Every run can also write:
 - a JSON verdict with the scope, per-stage status and each check
   (`export_verification_report()`).
 
-## What's new in 1.0
+## What's new in 1.1
 
-- A declared public API with a stability policy: the
-  [Public API and stability](https://thanhndv212.github.io/figaroh-plus/api/stability/)
-  page lists what is supported, what is experimental and what is internal.
-  Deprecated names now warn for at least one minor release and are removed
-  only in a major release.
-- Features deprecated before 1.0 are removed, including the legacy flat config
-  format. Convert old files once with
-  `python -m figaroh.utils.config_migration --input old.yaml --output new.yaml`.
-- Calibration refuses to export a fit whose solver failed, as identification
-  already did. Pass `allow_failed_fit=True` to export one for diagnosis.
-- Python 3.10 to 3.14 are supported; 3.8 and 3.9 users stay on 0.7.x.
+- Calibration noise per measurement component: `estimation.noise_std` takes
+  one value per component, or `per_component` to estimate them, and a
+  calibrator can give the sensor frame the noise is fixed in (#215).
+- The `map`, `map_cv`, `excitation` and `cv_subset` estimation methods work
+  with calibrators that measure something other than a pose, such as a
+  table contact (#210).
+- `estimation.structural_selection: ordered` makes the selected parameter
+  names independent of `random_seed` (#204).
+- Fixes found by the calibration studies, several of which change results:
+  `joint_offset` on unaligned joints (#205), joint elasticity beyond simple
+  chains (#206), the eye-hand camera anchor on a moving chain (#217), the
+  base-frame rename (#204), the optimal-trajectory base columns (#218) and
+  `Detmax` (#90). Read "Upgrading from 1.0" in the changelog.
 
 The full list, including fixes and behaviour changes, is in the
 [CHANGELOG](https://github.com/thanhndv212/figaroh-plus/blob/main/CHANGELOG.md).
