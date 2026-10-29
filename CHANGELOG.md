@@ -37,6 +37,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `Detmax.main_algo` records the configurations it selects in `cur_set`
+  and `opt_set` (#90); it returned only the criterion history and left
+  `cur_set` empty. Its add step now draws only from candidates outside the
+  subset (it could re-add a selected one), an exchange is kept only if the
+  criterion strictly increases (a stale candidate could loop forever), and
+  the history starts with the initial subset's criterion. `init_set` gives
+  a fixed starting subset. No core workflow calls `Detmax`.
 - The `dev` extra excludes pytest 9.2.0, which stops with an internal
   error at session start on Python 3.10 (`NodeId` has no `_str_cache`).
 - The optimal-trajectory design chooses its base columns as the
