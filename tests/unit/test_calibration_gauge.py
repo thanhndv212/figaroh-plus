@@ -21,10 +21,18 @@ from figaroh.calibration.calibration_tools import (
     drop_calibration_parameters,
     estimate_frames_closed_form,
     random_joint_configuration,
+    rows_absorbed_by_base_frame,
     select_identifiable_parameters,
 )
 from figaroh.calibration.config import unified_to_legacy_config
-from figaroh.calibration.parameter import BASE_TPL, add_base_name
+from figaroh.calibration.parameter import (
+    BASE_TPL,
+    FULL_PARAMTPL,
+    add_base_name,
+    get_fullparam_offset,
+)
+from figaroh.tools.qrdecomposition import ordered_column_basis
+from figaroh.tools.regressor import eliminate_non_dynaffect
 
 
 class _Robot:
@@ -243,3 +251,110 @@ def test_logmap_residual_across_yaw_wrap():
     estimated = np.array([0, 0, 0, 0, 0, -np.pi + eps])
     res = calib._compute_logmap_residuals(measured, estimated)
     assert np.linalg.norm(res[3:]) == pytest.approx(2 * eps, abs=1e-9)
+
+
+# ── draw-independent structural selection (#204) ────────────────
+
+
+def _selection_for_seed(model, seed, selection):
+    cfg = _tiago_config(model, "full_params", [True] * 3 + [False] * 3)
+    cfg["NbSample"] = 20
+    cfg["random_seed"] = seed
+    cfg["estimation"] = {"structural_selection": selection}
+    return _selected_parameters(model, cfg)
+
+
+def test_ordered_selection_ignores_the_random_draw(tiago_model):
+    """LAPACK pivoting follows ``random_seed``; ``ordered`` does not."""
+    seeds = range(5)
+    lapack = [_selection_for_seed(tiago_model, s, "lapack") for s in seeds]
+    ordered = [_selection_for_seed(tiago_model, s, "ordered") for s in seeds]
+    # the problem is a real one: the default selection moves with the draw
+    assert len({tuple(sel) for sel in lapack}) > 1
+    assert len({tuple(sel) for sel in ordered}) == 1
+    # same number of base parameters either way
+    assert {len(sel) for sel in lapack} == {len(ordered[0])}
+
+
+def test_structural_selection_rejects_unknown_value(tiago_model):
+    with pytest.raises(ValueError, match="structural_selection"):
+        _selection_for_seed(tiago_model, 0, "nope")
+
+
+# ── the base frame replaces a span, not the first six names (#204) ─────
+
+
+def _rank(*blocks):
+    return np.linalg.matrix_rank(np.hstack(blocks))
+
+
+def test_base_frame_replaces_the_first_joint_span(tiago_model):
+    """A base set without all of the first joint's placement parameters.
+
+    LAPACK pivoting can group one of the first joint's parameters with a
+    later joint (Staubli TX40: ``d_phiz_joint_1``). Renaming the first six
+    base parameters then dropped an independent one. Built here by
+    selecting the first joint's columns last, so it does not depend on the
+    pivoting.
+    """
+    model = tiago_model
+    cfg = _tiago_config(model, "full_params", [True] * 6)
+    cfg["NbSample"] = 20
+    names = list(get_fullparam_offset(list(model.names[1:])))
+    R = calculate_identifiable_kinematics_model([], model, model.createData(), cfg)
+    R_e, params_e = eliminate_non_dynaffect(R, dict.fromkeys(names, 0), tol_e=1e-6)
+    first = params_e[0].removeprefix("d_px_")
+    own = [f"{tpl}_{first}" for tpl in FULL_PARAMTPL]
+    last = [i for i, n in enumerate(params_e) if n in own]
+    order = [i for i in range(len(params_e)) if i not in last] + last
+    P, rank = ordered_column_basis(R_e[:, order], tol=1e-6)
+    idx = sorted(order[j] for j in P[:rank])
+    rows = [params_e[i] for i in idx]
+    assert not set(own) <= set(rows)  # the defect's precondition
+
+    absorbed = rows_absorbed_by_base_frame(
+        R, names, R_e[:, idx], rows, params_e, tol=1e-6
+    )
+
+    B = R[:, [names.index(n) for n in own]]
+    rest = [i for i, n in zip(idx, rows) if n not in absorbed]
+    assert len(absorbed) == len(BASE_TPL)
+    # the base frame and the remaining parameters span the structure
+    assert _rank(B, R_e[:, rest]) == rank
+    # renaming the first six instead loses a direction
+    assert _rank(B, R_e[:, idx[len(BASE_TPL) :]]) < rank
+
+
+def test_add_base_name_renames_the_absorbed_rows():
+    cfg = {
+        "calib_model": "full_params",
+        "param_name": ["k_RZ_a"] + [f"p{i}" for i in range(8)],
+        "base_mapping_slice": (1, 9),
+        "base_frame_absorbed_rows": ["p0", "p1", "p2", "p3", "p4", "p6"],
+    }
+    add_base_name(cfg)
+    assert cfg["param_name"] == ["k_RZ_a"] + BASE_TPL[:5] + ["p5", BASE_TPL[5], "p7"]
+    assert cfg["base_frame_row_names"] == ["p0", "p1", "p2", "p3", "p4", "p6"]
+
+
+def test_add_base_name_refuses_an_unobserved_base_direction():
+    cfg = {
+        "calib_model": "full_params",
+        "param_name": [f"p{i}" for i in range(8)],
+        "base_mapping_slice": (0, 8),
+        "base_frame_absorbed_rows": ["p0", "p1", "p2"],
+    }
+    with pytest.raises(ValueError, match="known_baseframe"):
+        add_base_name(cfg)
+
+
+@pytest.mark.parametrize("selection", ["lapack", "ordered"])
+def test_full_params_base_frame_rows_are_recorded(tiago_model, selection):
+    cfg = _tiago_config(tiago_model, "full_params", [True] * 3 + [False] * 3)
+    cfg["NbSample"] = 20
+    cfg["estimation"] = {"structural_selection": selection}
+    names = _selected_parameters(tiago_model, cfg)
+    rows = cfg["base_frame_row_names"]
+    assert len(rows) == len(BASE_TPL)
+    assert set(BASE_TPL) <= set(names)
+    assert not set(rows) & set(names)

@@ -9,7 +9,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "figaroh"
-version = "1.0.2"
+version = "1.1.0"
 description = "A Python toolbox for dynamics identification and geometric calibration of robots and humans"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -61,7 +61,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=6.0",
+    # 9.2.0 fails at session start on Python 3.10 (NodeId has no _str_cache).
+    "pytest>=6.0,!=9.2.0",
     "pytest-cov",
     "black",
     "isort",

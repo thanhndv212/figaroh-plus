@@ -31,6 +31,7 @@ from ..tools.regressor import eliminate_non_dynaffect
 from ..tools.qrdecomposition import (
     QRDecomposer,
     build_baseRegressor,
+    ordered_column_basis,
 )
 
 # Import configuration functions and constants from config module
@@ -303,7 +304,9 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
           ``param_name`` (unknown base frame, e.g. ``known_baseframe=False``),
           estimated via a known camera/ref-frame anchor when
           ``calib_config["base_to_ref_frame"]``/``"ref_frame"`` are set (e.g.
-          eye-hand calibration), or identity otherwise.
+          eye-hand calibration), or identity otherwise. The anchor chain
+          from ``start_frame`` to ``base_to_ref_frame`` is evaluated at each
+          sample, so it may move (e.g. a head camera).
         - ``oMee``: start frame to end frame, through the updated kinematic
           chain (``full_params``/``joint_offset`` geometric error
           parameters), optionally including joint elasticity when
@@ -373,8 +376,11 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
 
     # 1/ calc transformation from the world frame to start frame: wMo
     base_to_ref_frame = calib_config.get("base_to_ref_frame")
+    cam_to_ref = None
     if base_to_ref_frame is not None:
-        # known chain anchor + unknown camera/ref pose (e.g. eye-hand calib)
+        # known chain anchor + unknown camera/ref pose (e.g. eye-hand calib);
+        # wMo = b_to_cam * cam_to_ref is formed per sample below, since the
+        # chain to the camera can move between samples (head camera, #217)
         start_f = calib_config["ref_frame"]
         base_tf = np.zeros(6)
         for key in param_dict.keys():
@@ -382,12 +388,9 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
                 if base_ax in key:
                     base_tf[base_id] = param_dict[key]
                     updated_params.append(key)
-        b_to_cam = get_rel_transform(
-            model, data, calib_config["start_frame"], base_to_ref_frame
-        )
         ref_to_cam = cartesian_to_SE3(base_tf)
         cam_to_ref = ref_to_cam.actInv(pin.SE3.Identity())
-        wMo = b_to_cam * cam_to_ref
+        wMo = None
     elif base_param_incl:
         # fully unknown world (measurement) frame to start frame transform
         base_tf = np.zeros(6)
@@ -430,21 +433,36 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
         xyz_rpy = np.zeros(6)
         j_name = model.names[j_id]
 
-        # check joint name in param dict
-        for key in param_dict.keys():
-            if j_name in key:
-
-                # update xyz_rpy with kinematic errors based on identifiable axis
-                for axis_id, axis in enumerate(axis_tpl):
-                    if axis in key:
-                        if verbose == 1:
-                            logger.debug(
-                                "Updating [{}] joint placement at axis {} with [{}]".format(
-                                    j_name, axis, key
-                                )
-                            )
-                        xyz_rpy[axis_id] += param_dict[key]
-                        updated_params.append(key)
+        # update xyz_rpy with kinematic errors based on identifiable axis;
+        # names are "<template>_<joint>", matched exactly (a substring match
+        # gives joint_1 the parameters of joint_10, #206)
+        for axis_id, axis in enumerate(axis_tpl):
+            key = f"{axis}_{j_name}"
+            if key in param_dict:
+                if verbose == 1:
+                    logger.debug(
+                        "Updating [{}] joint placement at axis {} with [{}]".format(
+                            j_name, axis, key
+                        )
+                    )
+                value = param_dict[key]
+                if calib_config["calib_model"] == "joint_offset":
+                    # an unaligned joint about -z moves by -q about z (#205)
+                    value *= _axis_sign(model, j_id, axis_id)
+                xyz_rpy[axis_id] += value
+                updated_params.append(key)
+        # get_joint_offset keeps the shortname of an unaligned joint whose
+        # axis is tilted: no frame axis to offset it about
+        shortname = model.joints[j_id].shortname()
+        if (
+            calib_config["calib_model"] == "joint_offset"
+            and shortname.endswith("Unaligned")
+            and f"{shortname.replace('JointModel', 'offset')}_{j_name}" in param_dict
+        ):
+            raise ValueError(
+                f"joint_offset: {j_name} is a {shortname} whose axis is not "
+                "a coordinate axis; its offset is not supported (#205)"
+            )
 
         # update joint placement: full_params perturb the placement in the
         # parent frame; joint offsets act about the joint's own axes (q + offset)
@@ -457,22 +475,23 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
     # see _build_elastic_param_names), matched once here since the mapping
     # joint -> param is static; the deflection itself is gravity-torque
     # dependent and recomputed per sample below.
+    # Names are matched exactly: a substring match would give joint_1 the
+    # gain of joint_10 (#206).
     elastic_map = {}
     if calib_config.get("non_geom"):
         for j_id in calib_config["actJoint_idx"]:
             j_name = model.names[j_id]
-            for key in param_dict.keys():
-                if j_name in key:
-                    for elas_id, elas in enumerate(ELAS_TPL):
-                        if elas in key:
-                            if verbose == 1:
-                                logger.debug(
-                                    "Joint [{}] elastic gain [{}] on axis {}".format(
-                                        j_name, key, elas
-                                    )
-                                )
-                            elastic_map[j_id] = (key, elas_id)
-                            updated_params.append(key)
+            for elas_id, elas in enumerate(ELAS_TPL):
+                key = f"{elas}_{j_name}"
+                if key in param_dict:
+                    if verbose == 1:
+                        logger.debug(
+                            "Joint [{}] elastic gain [{}] on axis {}".format(
+                                j_name, key, elas
+                            )
+                        )
+                    elastic_map[j_id] = (key, elas_id, _axis_sign(model, j_id, elas_id))
+                    updated_params.append(key)
 
     # check if all parameters are updated to the model
     assert len(updated_params) == len(
@@ -503,9 +522,15 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
             geometric_placements = {
                 j_id: model.jointPlacements[j_id].copy() for j_id in elastic_map
             }
-            for j_id, (key, elas_id) in elastic_map.items():
+            for j_id, (key, elas_id, sign) in elastic_map.items():
                 xyz_rpy = np.zeros(6)
-                xyz_rpy[elas_id] = param_dict[key] * tau[j_id - 1]
+                # the joint's velocity index, not j_id - 1: they differ after
+                # a free-flyer or any multi-DOF joint (#206). The deflection
+                # k * tau is along the joint axis, i.e. q -> q + k * tau, so
+                # k is the physical compliance; sign maps it to the joint
+                # frame axis apply_joint_offset acts on.
+                tau_j = tau[model.joints[j_id].idx_v]
+                xyz_rpy[elas_id] = sign * param_dict[key] * tau_j
                 model = apply_joint_offset(model, j_id, xyz_rpy)
 
             # jointPlacements changed: data.oMf is stale until FK is redone
@@ -522,6 +547,14 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
                 model.jointPlacements[j_id] = placement
         else:
             oMee = get_rel_transform(model, data, start_f, end_f)
+
+        # camera anchor from this sample's kinematics, the same data.oMf
+        # as oMee (#217)
+        if cam_to_ref is not None:
+            b_to_cam = get_rel_transform(
+                model, data, calib_config["start_frame"], base_to_ref_frame
+            )
+            wMo = b_to_cam * cam_to_ref
 
         # calculate transformation from world frame to each marker frame
         wMee = wMo * oMee
@@ -576,6 +609,24 @@ def update_joint_placement(model, joint_idx, xyz_rpy):
     delta = pin.SE3(pin.exp3(xyz_rpy[3:6]), xyz_rpy[0:3])
     model.jointPlacements[joint_idx] = model.jointPlacements[joint_idx] * delta
     return model
+
+
+def _axis_sign(model, j_id, elas_id):
+    """Sign of a joint's motion axis along the frame axis of ``ELAS_TPL[elas_id]``.
+
+    +1 for aligned joints. An unaligned joint about ``[0, 0, -1]`` moves by
+    ``-q`` about the joint frame z, so its deflection is applied with -1 (#206).
+    """
+    axis = getattr(model.joints[j_id].extract(), "axis", None)
+    if axis is None:
+        return 1.0
+    sign = float(np.sign(axis[elas_id % 3]))
+    if sign == 0.0:
+        raise ValueError(
+            f"joint elasticity: {ELAS_TPL[elas_id]} is not the axis "
+            f"{np.asarray(axis).tolist()} of joint {model.names[j_id]}"
+        )
+    return sign
 
 
 def apply_joint_offset(model, joint_idx, offset):
@@ -841,9 +892,21 @@ def calculate_base_kinematics_regressor(
     # (random-config) regressor covers both, since the base/dependent
     # column split is a property of the kinematic chain, not of any
     # particular dataset.
-    # LAPACK pivoting: calibration selection is made deterministic in #113,
-    # not here, so calibration results stay as they were.
-    decomposer = QRDecomposer(tolerance=tol_qr, deterministic=False)
+    # LAPACK pivoting by default: calibration selection is made deterministic
+    # in #113, not here, so calibration results stay as they were.
+    # ``estimation.structural_selection: ordered`` takes the first
+    # independent columns in joint order instead, so the selected names do
+    # not depend on the random draw (#204).
+    selection = (calib_config.get("estimation") or {}).get(
+        "structural_selection", "lapack"
+    )
+    if selection not in ("lapack", "ordered"):
+        raise ValueError(
+            f"estimation.structural_selection '{selection}' not in lapack, ordered"
+        )
+    decomposer = QRDecomposer(
+        tolerance=tol_qr, deterministic=False, ordered=selection == "ordered"
+    )
     M, paramsrand_base, idx_base, _ = decomposer.get_base_mapping_matrix_double(
         Rrand_e, paramsrand_e
     )
@@ -879,8 +942,55 @@ def calculate_base_kinematics_regressor(
     calib_config["base_mapping_param_names"] = list(paramsrand_e)
     calib_config["base_mapping_row_names"] = [paramsrand_e[j] for j in idx_base]
     calib_config["base_mapping_slice"] = (_base_slice_start, _base_slice_end)
+    if calib_config["calib_model"] == "full_params":
+        calib_config["base_frame_absorbed_rows"] = rows_absorbed_by_base_frame(
+            Rrand_sel,
+            list(geo_params_sel),
+            Rrand_b,
+            calib_config["base_mapping_row_names"],
+            paramsrand_e,
+            tol=tol_qr,
+        )
 
     return Rrand_b, R_b, R_e, paramsrand_base, paramsrand_e
+
+
+def rows_absorbed_by_base_frame(R, names, R_b, base_rows, params_e, tol=TOL_QR):
+    """Base parameters that an unknown base frame replaces at full_params.
+
+    The base frame moves the placement of the chain's first joint, so its
+    six directions are that joint's six placement columns. Put first, ahead
+    of the base columns, they make as many base columns dependent: those
+    are the parameters the base frame replaces. They are the first joint's
+    own parameters when the selection kept them, or columns equal to them
+    (on TIAGo the prismatic torso's ``d_px`` is ``arm_1``'s). Picking the
+    first six base parameters instead dropped an independent one when the
+    selection grouped a first-joint parameter with a later joint (#204).
+
+    Args:
+        R (ndarray): Structural regressor, one column per name in ``names``.
+        names (list): Parameter names of the columns of ``R``.
+        R_b (ndarray): Base regressor, one column per ``base_rows`` entry.
+        base_rows (list): Base parameter names.
+        params_e (list): Parameters left after elimination, in joint order;
+            the first one's joint is the chain's first joint.
+        tol (float): Absolute rank threshold.
+
+    Returns:
+        list: Base parameter names the base frame replaces, in base order.
+    """
+    first = None
+    for name in params_e:
+        tpl = next((t for t in FULL_PARAMTPL if name.startswith(t + "_")), None)
+        if tpl is not None:
+            first = name[len(tpl) + 1 :]
+            break
+    if first is None:
+        return []
+    own = [names.index(f"{tpl}_{first}") for tpl in FULL_PARAMTPL]
+    P, rank = ordered_column_basis(np.hstack([R[:, own], R_b]), tol=tol)
+    kept = set(P[:rank].tolist())
+    return [row for k, row in enumerate(base_rows) if len(own) + k not in kept]
 
 
 # FRAME INITIALISATION AND DATA-LEVEL IDENTIFIABILITY
@@ -1036,6 +1146,86 @@ def measurement_jacobian(model, data, var, q, calib_config, step=1e-6):
         lo = calc_updated_fkm(model, data, var - dv, q, cfg)
         cols.append((hi - lo) / (2 * step))
     return np.column_stack(cols)
+
+
+def chain_jacobian(model, data, var, q, calib_config):
+    """Exact Jacobian of the chain placement w.r.t. ``full_params`` parameters.
+
+    The chain placement is ``oMee``, the ``start_frame`` -> ``end_frame``
+    transform of :func:`calc_updated_fkm` with the joint corrections in
+    ``var`` applied (base and tool frames excluded). Its variation is the
+    twist in the end frame (Pinocchio ``LOCAL``): ``oMee(x + dx) ~= oMee(x) *
+    exp6(J dx)``, rows linear then angular. Built on
+    ``pin.computeFrameKinematicRegressor(..., LOCAL)`` and, per joint, the
+    derivative of ``SE3(exp3(phi), p)`` (:func:`update_joint_placement`):
+    ``exp3(phi)^T`` for the translation and ``Jexp3(phi)`` for the rotation
+    vector (figaroh-plus#210). A calibrator measuring something composed on
+    ``oMee`` chains its own derivative onto this one.
+
+    Args:
+        model (pin.Model): Robot model (restored on return)
+        data (pin.Data): Robot data
+        var (ndarray): Values of ``calib_config["param_name"]``
+        q (ndarray): (n_samples, nq) joint configurations
+        calib_config (dict): ``calib_model`` must be ``full_params``
+
+    Returns:
+        ndarray: (n_samples, 6, len(var)). Columns of names that are not
+        joint parameters of an active joint (e.g. base, tool or the
+        calibrator's own parameters) are zero.
+    """
+    if calib_config["calib_model"] != "full_params":
+        raise ValueError("chain_jacobian supports calib_model 'full_params' only")
+    if calib_config.get("non_geom"):
+        raise ValueError("chain_jacobian does not support joint elasticity")
+    names = list(calib_config["param_name"])
+    var = np.asarray(var, dtype=float)
+    assert len(var) == len(names), "Length of variables != length of params"
+    index = {n: i for i, n in enumerate(names)}
+    q = np.atleast_2d(q)
+
+    saved = {j: model.jointPlacements[j].copy() for j in calib_config["actJoint_idx"]}
+    blocks = []  # (joint id, axis ids, column ids, 6x6 local derivative)
+    try:
+        for j_id in calib_config["actJoint_idx"]:
+            j_name = model.names[j_id]
+            xyz_rpy = np.zeros(6)
+            axes, cols = [], []
+            for axis_id, axis in enumerate(FULL_PARAMTPL):
+                key = f"{axis}_{j_name}"
+                if key in index:
+                    xyz_rpy[axis_id] = var[index[key]]
+                    axes.append(axis_id)
+                    cols.append(index[key])
+            update_joint_placement(model, j_id, xyz_rpy)
+            if cols:
+                d = np.zeros((6, 6))
+                d[:3, :3] = pin.exp3(xyz_rpy[3:6]).T
+                d[3:, 3:] = pin.Jexp3(xyz_rpy[3:6])
+                blocks.append((j_id, axes, cols, d))
+
+        start_id = model.getFrameId(calib_config["start_frame"])
+        end_id = model.getFrameId(calib_config["end_frame"])
+        J = np.zeros((len(q), 6, len(var)))
+        for i, qi in enumerate(q):
+            pin.forwardKinematics(model, data, qi)
+            pin.updateFramePlacements(model, data)
+            reg_e = pin.computeFrameKinematicRegressor(model, data, end_id, pin.LOCAL)
+            if start_id == 0:  # universe: does not move, and Pinocchio rejects it
+                reg_s = np.zeros_like(reg_e)
+            else:
+                reg_s = pin.computeFrameKinematicRegressor(
+                    model, data, start_id, pin.LOCAL
+                )
+            # oMee = oMs^-1 oMe: its local twist is d_e - Ad(eMs) d_s
+            eMs = data.oMf[end_id].actInv(data.oMf[start_id])
+            reg = reg_e - eMs.action @ reg_s
+            for j_id, axes, cols, d in blocks:
+                J[i][:, cols] = reg[:, 6 * (j_id - 1) : 6 * j_id] @ d[:, axes]
+    finally:
+        for j_id, placement in saved.items():
+            model.jointPlacements[j_id] = placement
+    return J
 
 
 def select_identifiable_parameters(jacobian, names, always_keep=(), tol=1e-4):

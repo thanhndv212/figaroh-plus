@@ -25,6 +25,8 @@ This module handles all configuration-related functionality including:
 
 import logging
 
+import numpy as np
+
 from ..utils.error_handling import ConfigurationError
 
 # Setup logger for this module
@@ -369,47 +371,65 @@ def _extract_calibration_params(calib_config, robot, parameters):
 def _build_elastic_param_names(robot, actJoint_idx):
     """Build elastic gain parameter names for active joints.
 
+    One name ``k_<axis>_<joint>`` per active joint, ``<axis>`` its axis of
+    motion in the joint frame (:func:`_determine_axis_motion`).
+
     Args:
         robot: Robot instance
         actJoint_idx (list): List of active joint indices
 
     Returns:
         list: List of elastic parameter names
+
+    Raises:
+        ValueError: An active joint has no single coordinate axis.
     """
-    elastic_gain = []
-    joint_axes = ["PX", "PY", "PZ", "RX", "RY", "RZ"]
-
-    # Build elastic gain names for all joints
-    for j_id, joint_name in enumerate(robot.model.names.tolist()):
-        if joint_name == "universe":
-            axis_motion = "null"
-        else:
-            shortname = robot.model.joints[j_id].shortname()
-            axis_motion = _determine_axis_motion(shortname, joint_axes)
-
-        elastic_gain.append(f"k_{axis_motion}_{joint_name}")
-
-    # Select only active joints
-    return [elastic_gain[i] for i in actJoint_idx]
+    model = robot.model
+    return [
+        f"k_{_determine_axis_motion(model.joints[j_id])}_{model.names[j_id]}"
+        for j_id in actJoint_idx
+    ]
 
 
-def _determine_axis_motion(shortname, joint_axes):
-    """Determine axis of motion from joint short name.
+_AXES = ("X", "Y", "Z")
+
+
+def _determine_axis_motion(joint):
+    """Axis of motion of a one-DOF joint, as ``PX`` .. ``RZ``.
+
+    Aligned joints (``JointModelRZ``, ``JointModelPX``, the continuous
+    ``JointModelRUBZ``) give their axis directly. An unaligned joint is
+    accepted when its axis is a coordinate axis up to sign (the deflection
+    follows the axis sign, so the compliance keeps its physical sign; see
+    ``calc_updated_fkm``); any other axis, and any joint
+    that is not one-DOF, raises rather than fit a deflection about the
+    wrong axis (#206).
 
     Args:
-        shortname (str): Joint short name from Pinocchio
-        joint_axes (list): List of possible joint axes
+        joint: Pinocchio joint model
 
     Returns:
         str: Axis of motion identifier
     """
-    # Check for standard joint axes
-    for ja in joint_axes:
-        if ja in shortname:
-            return ja
-
-    # Handle special cases
-    if "RevoluteUnaligned" in shortname:
-        return "RZ"  # Hard-coded fix for canopies and similar robots
-
-    return "RZ"  # Default fallback
+    shortname = joint.shortname()
+    kind = shortname.removeprefix("JointModel")
+    if kind.endswith("Unaligned"):
+        concrete = joint.extract() if hasattr(joint, "extract") else joint
+        axis = getattr(concrete, "axis", None)
+        axis = None if axis is None else np.asarray(axis, dtype=float)
+        hits = [] if axis is None else np.flatnonzero(np.isclose(abs(axis), 1.0))
+        if len(hits) != 1:
+            raise ValueError(
+                f"joint elasticity: {shortname} axis "
+                f"{None if axis is None else axis.tolist()} is not a "
+                "coordinate axis; include_non_geometric supports only those"
+            )
+        return ("R" if kind.startswith("Revolute") else "P") + _AXES[hits[0]]
+    for prefix, letter in (("RUB", "R"), ("R", "R"), ("P", "P")):
+        rest = kind.removeprefix(prefix)
+        if kind.startswith(prefix) and rest in _AXES:
+            return letter + rest
+    raise ValueError(
+        f"joint elasticity: {shortname} is not a one-DOF joint with a single "
+        "axis; include_non_geometric supports revolute and prismatic joints"
+    )

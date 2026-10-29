@@ -1,6 +1,6 @@
 # FIGAROH Roadmap
 
-**Evidence refresh: 2026-10-12; delivery status refreshed 2026-10-12. Priority changes below are a tracker scope approved; execution details under review, revision 4.**
+**Evidence refresh: 2026-10-12; delivery status refreshed 2026-10-29. Priority changes below are a tracker scope approved; execution details under review, revision 4.**
 
 Review the [detailed delivery plan](docs/source/further_reading/plans.md)
 before implementation. The user requested calibration improvements in parallel
@@ -97,6 +97,14 @@ fit could be exported), is fixed before 1.0.0: core #182 by PR
 Per-package evidence is in the
 [implementation status](docs/source/further_reading/plans.md#implementation-status).
 
+**Since 1.0 (2026-10-29).** C5 calibration studies, which bring every
+real-data calibration study in `figaroh-examples` to the TIAGo mocap
+standard, were accepted on 2026-10-26
+([tracker #167](https://github.com/thanhndv212/figaroh-plus/issues/167));
+it added no core features. D8 collects optional identification research
+(#157–#161) outside baseline M1. `devel` carries post-1.0 fixes not yet
+released; the changelog's Unreleased section lists them.
+
 **M0 gate review (accepted 2026-10-12, [tracker #181](https://github.com/thanhndv212/figaroh-plus/issues/181) §9).**
 Existing core gates retained (blocking `Lint`, Core CI and Documentation green);
 examples assets and dependencies reproducible (W1); numerical regressions
@@ -142,16 +150,18 @@ that achieve them; issues are their implementation units. Their canonical
 scope, dependencies and closure policy are in the
 [work-package milestone rules](docs/source/further_reading/plans.md#work-package-milestone-rules).
 
-| Roadmap outcome / gate | Required delivery milestones in this draft | Status at 2026-10-12 (✅ = cleared) |
+| Roadmap outcome / gate | Required delivery milestones in this draft | Status at 2026-10-29 (✅ = cleared) |
 | --- | --- | --- |
 | M0 reviewed delivery scope | W1 fixtures, W2 regression diagnosis, W4 engineering process | ✅ **W1, W2, W4 all cleared** |
 | M1.1 inputs | D1–D2 dynamic signals; C1 calibration frames/data | ✅ **D1, D2, C1 all cleared** |
 | M1.2 estimation | D3–D4 dynamic truth/comparison; C2 calibration truth/holdout | ✅ **C2, D3, D4** all cleared |
 | M1.3 export | D6 inertial export; C3 geometric export | ✅ **C3, D6** both cleared |
 | M1.4 integrated workflows | W3 minimum contracts, S1 minimum reports, D7 dynamic reference, C4 calibration reference, U1 verified onboarding | ✅ **W3, S1, C4, D7, U1** |
-| M2 follow-up | S2 uncertainty, S3 experiment-design improvements, S4 selective composition; W3 is prerequisite groundwork | ✅ W3 groundwork done; S2 in progress; S3, S4 blocked |
-| M3 backend parity | B1 capabilities and measured parity; broader ports need separately reviewed packages | Blocked on M1 |
+| M2 follow-up | S2 uncertainty, S3 experiment-design improvements, S4 selective composition; W3 is prerequisite groundwork | ✅ W3 groundwork done; S2 in progress; S3, S4 blocked (except S3 bug #90, ready) |
+| M3 backend parity | B1 capabilities and measured parity; broader ports need separately reviewed packages | Planned; M1 accepted, not started |
 | Optional nonlinear research | D5 and linked production #23–#25 when that path is approved; excluded from baseline M1 closure | D5 open: #22 revise, #30 no-go; #155 (method change) ready |
+| Calibration studies (after M1) | C5: every calibration study to the TIAGo mocap standard | ✅ **C5** accepted 2026-10-26 (#167) |
+| Optional identification research | D8: #157–#161 and examples #115; excluded from baseline M1 | Open, planned |
 
 A delivery milestone is cleared only when **all included issues meet their
 acceptance criteria**, required changes are reviewed/merged, and milestone-level
@@ -208,7 +218,10 @@ feature in the minor release after its go decision and never holds a release.
 | 0.6.0 | Calibration reference workflow (M1.1–M1.4, calibration side) and shared foundations | D2, C1–C4, W3, S1; D6 inertial export and D3 fixture fixes, both accepted | Released 2026-10-07 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.6.0), [tracker #146](https://github.com/thanhndv212/figaroh-plus/issues/146)); examples tag `v0.6.0` |
 | 0.7.0 | Dynamic reference workflow (M1.2–M1.4, dynamic side) | D4, D7 (D5 no-go; LC1 #155 not included) | Released 2026-10-11 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.7.0), [tracker #177](https://github.com/thanhndv212/figaroh-plus/issues/177)); examples tag `v0.7.0` |
 | 1.0.0 | M1 accepted | M1 review ✅ (2026-10-12, [#181](https://github.com/thanhndv212/figaroh-plus/issues/181)); public API (#184), deprecation removals (#185, examples #125), G-1 (#182) and RC procedure (#186) done. Released 2026-10-12 without a release candidate (maintainer decision; [release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v1.0.0), [tracker #192](https://github.com/thanhndv212/figaroh-plus/issues/192)); examples tag `v1.0.0` |
-| 1.1, 1.2 | M2 composable calibration and identification | S2, S3, S4 | Later |
+| 1.0.1 | Documentation and housekeeping | none (no library code) | Released 2026-10-12; examples `v1.0.0` remains the pair |
+| 1.0.2 | Documentation | none (no library code) | Released 2026-10-13; examples `v1.0.0` remains the pair |
+| 1.1.0 | Calibration estimation improvements and C5 follow-up fixes | none (fixes and additions since 1.0.2; maintainer decision 2026-10-29) | Released 2026-10-29 ([tracker #228](https://github.com/thanhndv212/figaroh-plus/issues/228)); examples tag `v1.1.0` |
+| 1.2 and later | M2 composable calibration and identification | S2, S3, S4 | Later |
 | 1.x or 2.0 | M3 backend parity | B1 | Later; 2.0 only if the backend API breaks |
 
 Each release is tracked by a core release issue. It lists the packages in scope

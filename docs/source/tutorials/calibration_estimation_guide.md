@@ -74,6 +74,10 @@ likely to set:
 - `noise_std` — measurement noise in the units of your cost function's
   residuals. Leave `null` to estimate it from the data (recommended unless you
   have a reason to trust a sensor specification more than your residuals).
+  When the components differ in noise or units (a camera's depth axis, a
+  height mixed with angles), give one value per component or
+  `per_component`; see
+  [Noise per measurement component](../concepts/calibration_estimation.md#noise-per-measurement-component).
 - `cv_folds`, `cv_seed` — cross-validation over your training postures.
 - `cv_rule: one_se` — with `cv_subset`, prefer the smallest set within one
   standard error of the best.

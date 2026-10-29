@@ -68,3 +68,53 @@ def test_pivots_rank_deficient_and_empty():
     assert rank == 0 and sorted(P.tolist()) == [0, 1, 2]
     P, rank = deterministic_column_pivots(np.zeros((10, 0)))
     assert rank == 0 and P.size == 0
+
+
+# ── first independent columns in order (#204) ───────────────────
+
+
+def test_ordered_basis_takes_earliest_independent_columns():
+    from figaroh.tools.qrdecomposition import ordered_column_basis
+
+    rng = np.random.default_rng(0)
+    a, b, c = rng.standard_normal((3, 40)) * np.array([[1.0], [100.0], [0.01]])
+    # columns: a, b, a+b (dependent), c, 2c (dependent), zeros
+    W = np.column_stack([a, b, a + b, c, 2 * c, np.zeros(40)])
+    P, rank = ordered_column_basis(W, tol=1e-8)
+    assert rank == 3
+    assert P[:rank].tolist() == [0, 1, 3]  # not the largest-norm columns
+    assert sorted(P.tolist()) == list(range(6))
+
+
+def test_ordered_basis_ignores_which_rows_are_drawn():
+    from figaroh.tools.qrdecomposition import ordered_column_basis
+
+    rng = np.random.default_rng(1)
+    coeff = rng.standard_normal((6, 10))  # 10 columns of rank 6
+    picks = set()
+    for seed in range(5):
+        rows = np.random.default_rng(seed).standard_normal((60, 6))
+        P, rank = ordered_column_basis(rows @ coeff, tol=1e-8)
+        assert rank == 6
+        picks.add(tuple(P[:rank]))
+    assert len(picks) == 1
+
+
+def test_ordered_basis_empty():
+    from figaroh.tools.qrdecomposition import ordered_column_basis
+
+    P, rank = ordered_column_basis(np.zeros((5, 0)))
+    assert rank == 0 and P.size == 0
+    P, rank = ordered_column_basis(np.zeros((5, 3)))
+    assert rank == 0 and sorted(P.tolist()) == [0, 1, 2]
+
+
+def test_decomposer_ordered_matches_lapack_prediction():
+    W, names = _tied_regressor()
+    tau = W @ np.arange(1.0, W.shape[1] + 1)
+    ref = QRDecomposer(tolerance=1e-8).decompose(W, names, tau=tau, method="double")
+    res = QRDecomposer(tolerance=1e-8, ordered=True).decompose(
+        W, names, tau=tau, method="double"
+    )
+    assert len(res.base_indices) == len(ref.base_indices)
+    np.testing.assert_allclose(res.W_b @ res.phi_b, ref.W_b @ ref.phi_b, atol=1e-8)

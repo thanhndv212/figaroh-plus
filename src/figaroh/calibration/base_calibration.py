@@ -193,6 +193,18 @@ class BaseCalibration(ABC):
         - apply_measurement_weighting: Unit-aware weighting utility
     """
 
+    #: Attributes holding one entry per sample (first axis), sliced together
+    #: with ``q_measured`` by the cross-validation folds of the estimation
+    #: methods (e.g. a session id per posture, figaroh-plus#210).
+    per_sample_attributes: Tuple[str, ...] = ()
+
+    #: Optional per-sample sensor-frame rotations, shape
+    #: ``(NbSample, n_components, n_components)``: with a per-component
+    #: ``estimation.noise_std``, sample i's measurement covariance is
+    #: ``R_i diag(noise_std**2) R_i^T`` (figaroh-plus#215). Sliced with the
+    #: samples by the cross-validation folds.
+    noise_rotation: Optional[np.ndarray] = None
+
     @handle_calibration_errors
     def __init__(self, robot, config_file: str, del_list: List[int] = None):
         """Initialize robot calibration framework.
@@ -562,11 +574,11 @@ class BaseCalibration(ABC):
         rows = list(cfg["base_mapping_row_names"])
         cfg["base_mapping_matrix_full"] = np.array(cfg["base_mapping_matrix"])
         cfg["base_mapping_row_names_full"] = rows
-        start, _ = cfg["base_mapping_slice"]
         frame_rows = []
         if cfg["calib_model"] == "full_params" and not cfg["known_baseframe"]:
-            frame_rows = rows[: max(0, len(BASE_TPL) - start)]
-        cfg["base_frame_row_names"] = frame_rows
+            # add_base_name renames the first joint's placement (#204)
+            frame_rows = cfg.get("base_frame_row_names") or rows[: len(BASE_TPL)]
+        cfg["base_frame_row_names"] = list(frame_rows)
 
     def _frame_param_names(self) -> List[str]:
         """Base and tip frame parameters present in ``param_name``."""
@@ -576,6 +588,51 @@ class BaseCalibration(ABC):
             for k in range(self.calib_config["NbMarkers"])
         }
         return [n for n in self.calib_config["param_name"] if n in BASE_TPL or n in tip]
+
+    def nuisance_param_names(self) -> List[str]:
+        """Parameters the estimation methods fit freely, besides the joints.
+
+        Used by ``estimation.method`` other than ``structural``
+        (figaroh-plus#210): they get no prior and are never removed. The
+        default is the unknown base frame (``BASE_TPL``) and tool frames
+        (``EE_TPL`` per marker and measured component). A calibrator with
+        its own measurement model returns its own (e.g. a table pose); they
+        must be identifiable on the data.
+        """
+        cfg = self.calib_config
+        names = [] if cfg["known_baseframe"] else list(BASE_TPL)
+        if not cfg["known_tipframe"]:
+            tip = dict(cfg, param_name=[])
+            add_pee_name(tip)
+            names += tip["param_name"]
+        return names
+
+    def measurement_jacobian(
+        self, names: List[str], x: np.ndarray, step: float = 1e-6
+    ) -> np.ndarray:
+        """Jacobian of the measured quantity w.r.t. parameters ``names`` at ``x``.
+
+        Rows follow ``PEE_measured`` (DOF-major), columns ``names``. The
+        default is a central difference of :meth:`get_pose_from_measure`
+        with ``param_name`` set to ``names``. Override it with an exact
+        derivative when one is available, e.g. chaining the measurement's
+        derivative onto :func:`chain_jacobian` (figaroh-plus#210).
+        """
+        cfg = self.calib_config
+        saved = cfg["param_name"]
+        cfg["param_name"] = list(names)
+        x = np.asarray(x, dtype=float)
+        try:
+            cols = []
+            for j in range(len(x)):
+                dx = np.zeros_like(x)
+                dx[j] = step
+                hi = self.get_pose_from_measure(x + dx)
+                lo = self.get_pose_from_measure(x - dx)
+                cols.append((hi - lo) / (2 * step))
+        finally:
+            cfg["param_name"] = saved
+        return np.column_stack(cols)
 
     def initial_frame_guess(self) -> Dict[str, float]:
         """Closed-form guess for the unknown base and tip frames.
@@ -1154,9 +1211,11 @@ class BaseCalibration(ABC):
 
         The robot's :meth:`cost_function`, plus ``w * var`` when the
         estimation method sets prior weights (``map``, ``map_cv``,
-        figaroh-plus#113); ``w`` is 0 for frame parameters.
+        figaroh-plus#113); ``w`` is 0 for frame parameters. Measurement
+        rows are whitened when the estimation set per-component noise
+        (:func:`~figaroh.calibration.estimation.whiten`, figaroh-plus#215).
         """
-        residuals = self.cost_function(var)
+        residuals = estimation.whiten(self, self.cost_function(var))
         excluded = getattr(self, "_excluded_rows", None)
         if excluded is not None and len(excluded):
             # excluded outlier samples (figaroh-plus#98): constant zero rows,

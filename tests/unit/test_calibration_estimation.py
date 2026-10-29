@@ -17,6 +17,8 @@ from figaroh.calibration import estimation
 from figaroh.calibration.base_calibration import BaseCalibration
 from figaroh.calibration.calibration_tools import (
     calc_updated_fkm,
+    cartesian_to_SE3,
+    chain_jacobian,
     random_joint_configuration,
 )
 from figaroh.calibration.config import unified_to_legacy_config
@@ -52,7 +54,7 @@ class _Calib(BaseCalibration):
         return pee - self.PEE_measured
 
 
-def _calibrator(model, level, estimation_cfg, n=40, noise=2e-4, seed=0):
+def _calibrator(model, level, estimation_cfg, n=40, noise=2e-4, seed=0, cls=None):
     unified = {
         "joints": {},
         "kinematics": {"base_frame": "universe", "tool_frame": "wrist_ft_tool_link"},
@@ -70,7 +72,8 @@ def _calibrator(model, level, estimation_cfg, n=40, noise=2e-4, seed=0):
     cfg = unified_to_legacy_config(_Robot(model), unified)
     cfg["known_baseframe"] = False
     cfg["known_tipframe"] = False
-    calib = _Calib.__new__(_Calib)
+    cls = cls or _Calib
+    calib = cls.__new__(cls)
     calib.model, calib.data, calib.calib_config = model, model.createData(), cfg
     rng = np.random.default_rng(seed)
     q = np.array([random_joint_configuration(model, rng) for _ in range(n)])
@@ -223,6 +226,56 @@ def test_given_noise_is_used(tiago_model):
     assert report["noise_std"] == 1e-3 and report["noise_source"] == "given"
 
 
+def _count_fits(monkeypatch):
+    calls = []
+    fit = estimation._fit
+
+    def counting(calib, names, weights=None, **kw):
+        calls.append(weights is None)
+        return fit(calib, names, weights, **kw)
+
+    monkeypatch.setattr(estimation, "_fit", counting)
+    return calls
+
+
+@pytest.mark.parametrize("method", ["map", "map_cv"])
+def test_given_noise_skips_the_preliminary_fit(tiago_model, monkeypatch, method):
+    # figaroh-plus#211: the free fit only feeds the noise estimate and the
+    # excitation Jacobian; map and map_cv with noise_std given use neither
+    calls = _count_fits(monkeypatch)
+    est = {"method": method, "noise_std": 1e-3, "cv_multipliers": [1.0]}
+    calib = _calibrator(tiago_model, "joint_offset", est)
+    calib.create_param_list()
+    report = calib.calib_config["estimation_report"]
+    # map_cv's fold fits carry prior weights; no unweighted fit ran
+    assert not any(calls)
+    assert report["prelim_converged"] is None and report["prelim_nfev"] == 0
+
+
+@pytest.mark.parametrize(
+    "est",
+    [{"method": "map"}, {"method": "excitation", "noise_std": 1e-3}],
+)
+def test_preliminary_fit_runs_when_used(tiago_model, monkeypatch, est):
+    calls = _count_fits(monkeypatch)
+    calib = _calibrator(tiago_model, "joint_offset", est)
+    calib.create_param_list()
+    report = calib.calib_config["estimation_report"]
+    assert calls == [True]
+    assert report["prelim_converged"] is True and report["prelim_nfev"] > 0
+
+
+def test_unconverged_preliminary_fit_warns(tiago_model, monkeypatch, caplog):
+    monkeypatch.setattr(estimation, "PRELIM_MAX_NFEV", 2)
+    calib = _calibrator(tiago_model, "joint_offset", {"method": "map"})
+    with caplog.at_level("WARNING", logger=estimation.__name__):
+        calib.create_param_list()
+    report = calib.calib_config["estimation_report"]
+    assert report["prelim_converged"] is False
+    assert 0 < report["prelim_nfev"]
+    assert "did not converge" in caplog.text and "noise_std" in caplog.text
+
+
 def test_non_structural_methods_need_data(tiago_model):
     calib = _calibrator(tiago_model, "joint_offset", {"method": "map"})
     del calib.PEE_measured
@@ -291,3 +344,167 @@ def test_excitation_order_ignores_column_order(tiago_model):
     )
     assert removed_p == removed
     assert set(kept_p) == set(kept)
+
+
+# ── custom measurement models (#210) ────────────────────────────
+
+SESSIONS = 2
+PLANE = [f"plane_{a}_s{k}" for k in range(SESSIONS) for a in ("h", "rx", "ry")]
+
+
+class _PlaneCalib(BaseCalibration):
+    """Signed distance of the tool point to one plane per session.
+
+    The plane offsets and tilts are the nuisance parameters; the session of
+    each posture is per-sample state.
+    """
+
+    per_sample_attributes = ("session_ids",)
+    extra_nuisance = ()
+
+    def nuisance_param_names(self):
+        return PLANE + list(self.extra_nuisance)
+
+    def get_pose_from_measure(self, var):
+        cfg = self.calib_config
+        values = dict(zip(cfg["param_name"], var))
+        joints = [n for n in cfg["param_name"] if n not in self.nuisance_param_names()]
+        fk_cfg = dict(cfg, param_name=joints, NbSample=len(self.q_measured))
+        p = calc_updated_fkm(
+            self.model, self.data, [values[n] for n in joints], self.q_measured, fk_cfg
+        ).reshape(3, -1)
+        out = np.empty(p.shape[1])
+        for i, k in enumerate(self.session_ids):
+            normal = pin.exp3(
+                np.array([values[f"plane_rx_s{k}"], values[f"plane_ry_s{k}"], 0.0])
+            )[:, 2]
+            h = 0.5 + 0.1 * k + values[f"plane_h_s{k}"]
+            out[i] = normal @ p[:, i] - h - sum(values[n] for n in self.extra_nuisance)
+        return out
+
+    def cost_function(self, var):
+        return self.get_pose_from_measure(var) - self.PEE_measured
+
+
+def _plane_calibrator(model, est, sessions=None, n=60, noise=2e-4, seed=0):
+    calib = _calibrator(model, "joint_offset", est, n=n, cls=_PlaneCalib)
+    cfg = calib.calib_config
+    cfg["known_baseframe"] = cfg["known_tipframe"] = True
+    rng = np.random.default_rng(seed + 1)
+    calib.session_ids = (
+        np.arange(n) % SESSIONS if sessions is None else np.asarray(sessions)
+    )
+    truth = {
+        n_: v for n_, v in calib.truth.items() if not n_.startswith(("base", "pEE"))
+    }
+    truth.update({n_: rng.normal(0.0, 5e-3) for n_ in PLANE})
+    names = list(truth)
+    cfg["param_name"] = names
+    calib.PEE_measured = calib.get_pose_from_measure(
+        np.array([truth[k] for k in names])
+    ) + rng.normal(0.0, noise, n)
+    calib.truth = truth
+    return calib
+
+
+@pytest.mark.parametrize("method", ["excitation", "map", "map_cv", "cv_subset"])
+def test_custom_measurement_runs_every_method(tiago_model, method):
+    """A point-to-plane calibrator with its own nuisance parameters (#210)."""
+    est = {"method": method, "cv_folds": 4, "cv_multipliers": [0.3, 1.0, 3.0]}
+    calib = _plane_calibrator(tiago_model, est)
+    calib.create_param_list()
+    cfg = calib.calib_config
+    report = cfg["estimation_report"]
+    assert report["nuisance"] == PLANE
+    assert cfg["param_name"][-len(PLANE) :] == PLANE  # kept, after the joints
+    if cfg["prior_weights"] is not None:
+        w = dict(zip(cfg["param_name"], cfg["prior_weights"]))
+        assert all(w[n] == 0 for n in PLANE)
+    # the vertical torso offset is the plane height: dependent, dropped
+    assert "offsetPZ_torso_lift_joint" in report["dependent"]
+    fit = estimation._fit(calib, cfg["param_name"], cfg["prior_weights"])
+    rms = estimation._measurement_rms(calib, cfg["param_name"], fit.x)
+    assert rms < 3e-4
+
+
+def test_nuisance_gauge_is_refused(tiago_model):
+    calib = _plane_calibrator(tiago_model, {"method": "map"})
+    calib.extra_nuisance = ("probe_length",)  # same direction as each plane_h
+    with pytest.raises(CalibrationError, match="fix a gauge"):
+        calib.create_param_list()
+
+
+def test_cv_fold_missing_a_session_is_refused(tiago_model):
+    sessions = np.zeros(60, dtype=int)
+    sessions[:3] = 1  # three postures fix session 1's plane, two do not
+    est = {"method": "map_cv", "cv_folds": 4}
+    calib = _plane_calibrator(tiago_model, est, sessions=sessions)
+    with pytest.raises(CalibrationError, match="CV fold"):
+        calib.create_param_list()
+    ok = _plane_calibrator(tiago_model, {"method": "map"}, sessions=sessions)
+    ok.create_param_list()  # no folds: the full data determines the planes
+
+
+def test_samples_slices_per_sample_attributes(tiago_model):
+    calib = _plane_calibrator(tiago_model, {"method": "map"}, n=10)
+    sessions, pee = calib.session_ids.copy(), calib.PEE_measured.copy()
+    idx = np.array([1, 4, 7])
+    with estimation._samples(calib, idx):
+        np.testing.assert_array_equal(calib.session_ids, sessions[idx])
+        np.testing.assert_array_equal(calib.PEE_measured, pee[idx])
+        assert calib.calib_config["NbSample"] == 3
+    np.testing.assert_array_equal(calib.session_ids, sessions)
+
+
+def test_default_hooks_match_the_pose_model(tiago_model):
+    calib = _calibrator(tiago_model, "joint_offset", {"method": "map"}, n=5)
+    cfg = calib.calib_config
+    assert calib.nuisance_param_names() == list(BASE_TPL) + TIP
+    names = list(BASE_TPL) + estimation.joint_candidates(tiago_model, cfg) + TIP
+    x = np.full(len(names), 1e-3)
+    from figaroh.calibration.calibration_tools import measurement_jacobian
+
+    np.testing.assert_array_equal(
+        calib.measurement_jacobian(names, x),
+        measurement_jacobian(
+            tiago_model, calib.data, x, calib.q_measured, dict(cfg, param_name=names)
+        ),
+    )
+
+
+# ── exact chain Jacobian (#210) ─────────────────────────────────
+
+
+@pytest.mark.parametrize("start", ["universe", "base_link"])
+def test_chain_jacobian_matches_finite_differences(tiago_model, start):
+    calib = _calibrator(tiago_model, "full_params", {"method": "map"}, n=3)
+    cfg = dict(calib.calib_config, start_frame=start)
+    names = estimation.joint_candidates(tiago_model, cfg)
+    cfg.update(param_name=names, measurability=[True] * 6, calibration_index=6)
+    x = np.random.default_rng(1).normal(0.0, 1e-2, len(names))
+    J = chain_jacobian(tiago_model, calib.data, x, calib.q_measured, cfg)
+    assert J.shape == (3, 6, len(names))
+
+    def poses(v):
+        p = calc_updated_fkm(tiago_model, calib.data, v, calib.q_measured, cfg)
+        p = p.reshape(6, -1)
+        return [cartesian_to_SE3(p[:, i]) for i in range(p.shape[1])]
+
+    base, h = poses(x), 1e-6
+    for k in range(len(names)):
+        dx = np.zeros_like(x)
+        dx[k] = h
+        hi, lo = poses(x + dx), poses(x - dx)
+        for i, M in enumerate(base):
+            fd = (
+                pin.log6(M.actInv(hi[i])).vector - pin.log6(M.actInv(lo[i])).vector
+            ) / (2 * h)
+            np.testing.assert_allclose(J[i][:, k], fd, atol=1e-7)
+    with pytest.raises(ValueError, match="full_params"):
+        chain_jacobian(
+            tiago_model,
+            calib.data,
+            x,
+            calib.q_measured,
+            dict(cfg, calib_model="joint_offset"),
+        )
