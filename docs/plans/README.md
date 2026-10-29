@@ -7,7 +7,7 @@ belongs in GitHub issues and design contracts in `docs/decisions/`.
 | Plan | Status |
 | --- | --- |
 | [Identification and calibration delivery](identification-calibration-delivery.md) | Revision 4, 2026-10-02; tracker setup approved; execution details under review. Status refreshed 2026-10-09 |
-| [Calibration studies](calibration-studies-plan.md) | In progress; proposed 2026-10-09, tracker core #167 (C5). All studies done 2026-10-26 (last: TALOS motion capture, examples #172); closing review pending |
+| [Calibration studies](calibration-studies-plan.md) | Done; proposed 2026-10-09, tracker core #167 (C5). All studies done and the package accepted 2026-10-26 (last: TALOS motion capture, examples #172) |
 | [Archived roadmap v2](archive/roadmap-v2.md) | Historical; dates/completion claims are not current commitments |
 
 ## How to read delivery issues

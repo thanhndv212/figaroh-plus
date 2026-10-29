@@ -1,12 +1,12 @@
 # Calibration studies plan
 
-**Status:** In progress. Proposed 2026-10-09; tracker core #167 (package C5) with
+**Status:** Done; accepted 2026-10-26 on core #167. Proposed 2026-10-09; tracker core #167 (package C5) with
 examples #96–#101; backlash (#71) and suspension (#70) are existing issues.
 Phases 0–3 are done: every study issue (#96–#101, #70, #71, #172) and every
 data issue (#104–#114) is closed. The last study, TALOS motion capture
 (examples [#172](https://github.com/thanhndv212/figaroh-examples/issues/172)),
-closed 2026-10-26 by examples PR #173. Remaining: the C5 closing review on
-core #167.
+closed 2026-10-26 by examples PR #173, and the C5 closing review on core #167
+accepted the package the same day.
 
 **Scope:** improve the existing real-data calibration and identification
 studies in `figaroh-examples` so that each meets the standard set by the TIAGo
