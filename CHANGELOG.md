@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-29
+
+Calibration estimation improvements and the fixes found by the C5
+calibration studies (accepted 2026-10-26, #167). Several fixes correct wrong
+results in 1.0.x, so they ship now instead of waiting for M2, which moves
+to 1.2 and later (#228). The paired figaroh-examples tag is `v1.1.0`.
+
+Upgrading from 1.0: no configuration change is required, but some results
+change.
+
+- `calib_model: joint_offset` names offsets after the joint's coordinate
+  axis (`offsetRZ_<joint>`), and on a `-z` joint the fitted offset changes
+  sign (#205). Rename stored offsets for those joints.
+- With an unknown base frame at `full_params` and the default
+  `structural_selection: lapack`, a fit whose first six base parameters did
+  not span the first joint's placement now fits every parameter (#204).
+  Its results change; set `structural_selection: ordered` for names that
+  do not depend on `random_seed`.
+- Optimal trajectories are designed on the identification's base columns
+  (#218), so designed trajectories change.
+- Joint elasticity (`include_non_geometric`) fits change on chains with a
+  free-flyer, multi-DOF or negative-axis joint (#206). A joint axis that is
+  not a coordinate axis now raises a `ValueError` where it was treated as
+  `RZ`.
+
 ### Added
 
 - `estimation.noise_std` accepts one value per measurement component, or
