@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Change the log-Cholesky spike's method instead of its budget: detect an
+  infeasible unconstrained optimum first, fit log-Cholesky coordinates with
+  the regressor null space pinned (dogbox, stopping on the identifiable
+  residual) in the interior, and solve the torque SDP with an eigenvalue
+  margin on the boundary. The protocol was frozen before confirmation; on
+  fresh seeds all 24 gated fits converge and pass every gate on Pinocchio 3.7
+  and 4.1, so the decision is go. Private research spike, not a production
+  solver. (#155)
+
 ## [1.1.0] - 2026-10-29
 
 Calibration estimation improvements and the fixes found by the C5

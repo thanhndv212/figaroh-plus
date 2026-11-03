@@ -1,6 +1,7 @@
 # Log-Cholesky boundary-aware fit: method change (frozen before confirmation)
 
-- Status: Proposed — protocol frozen (2026-11-03); confirmation not yet run
+- Status: Accepted — **go** for the boundary-aware method (2026-11-03);
+  protocol frozen the same day in a separate earlier commit
 - Issue: [#155](https://github.com/thanhndv212/figaroh-plus/issues/155)
 - Parent: [#20 (LC1)](https://github.com/thanhndv212/figaroh-plus/issues/20)
 - Follows the **no-go** of [log-Cholesky convergence](log-cholesky-convergence.md)
@@ -8,9 +9,18 @@
   #30 protocols, scripts and results stay unchanged.
 - Scope: private synthetic research spike; no production API approval
 
-The protocol sections below are committed before any confirmation-seed run.
-Results will be added in a separate later commit, so the history shows what
-was fixed in advance.
+The protocol sections below were committed before any confirmation-seed run.
+The decision and results sections were added afterwards in a separate commit,
+so the history shows what was fixed in advance.
+
+## Decision
+
+**Go**, on the private synthetic spike. On the fresh seeds, all 24 gated fits
+converge, are feasible and pass every accuracy and runtime gate, on both
+Pinocchio 3.7 and 4.1; so do all 36 reported near-boundary and perturbed
+starts. #23 is unblocked. The go covers termination of this method on these
+fixtures; it does not approve a production API, and the shape of #23–#25
+should take the consequences below into account.
 
 ## What changes
 
@@ -135,6 +145,58 @@ Unchanged from #30: a non-converged fit keeps its record with
 `converged: false`, its branch and status. In a production pipeline built
 after a go it must return an explicit failure and leave the previous valid
 stage as the result.
+
+## Results (2026-11-03)
+
+Run at core `6127b63` (protocol commit). Python 3.12.11, SciPy 1.16.1, PICOS
+2.6.1, CVXOPT 1.3.2, NumPy 2.3.4; Pinocchio 3.7.0 (`figaroh-dev`) and 4.1.0
+(a pip virtual environment with `ci/pinocchio-4.1.0.txt`). The 3.7 output
+lists NumPy 2.3.2 because `figaroh-dev` contains a stale `numpy-2.3.2`
+metadata directory next to the imported 2.3.4. Both profiles give the same
+branch, evaluation count, convergence and data hash for every fit; held-out
+errors agree to 5e-8 relative.
+
+| Set | Branch (clean, noisy, weak, near-boundary) | Converged (all starts) | Max runtime |
+| --- | --- | --- | --- |
+| confirmation_a | boundary, boundary, boundary, boundary | 20 / 20 | 0.04 s |
+| confirmation_b | boundary, boundary, boundary, boundary | 20 / 20 | 0.02 s |
+| confirmation_c | boundary, boundary, interior, boundary | 20 / 20 | 0.05 s |
+
+The unconstrained optimum is infeasible on 1–6 links in 11 of 12 fixtures, as
+on the #30 seeds, so 22 of the 24 gated fits are decided by the boundary SDP,
+all with status `optimal`. The one interior fixture (confirmation_c, weak
+excitation) converges from all five starts in 9–33 evaluations, each stopped
+by the identifiable-residual rule. Every result is feasible on every link;
+the smallest pseudo-inertia eigenvalue is the 1e-6 margin.
+
+| Set | Clean held-out, nominal / repaired OLS (Nm) | Noisy held-out, method / OLS+SDP (Nm) |
+| --- | --- | --- |
+| confirmation_a | 3.40e-6 / 3.40e-6 | 0.0163 / 0.8155 |
+| confirmation_b | 3.84e-7 / 3.84e-7 | 0.0254 / 0.0595 |
+| confirmation_c | 5.74e-7 / 5.74e-7 | 0.0119 / 0.0567 |
+
+Nominal and repaired-OLS starts give the same result because both branches
+return the same constrained optimum; in the boundary branch the start is not
+used at all.
+
+## Consequences for #23–#25 (not frozen)
+
+- The boundary is the common case, not an edge case: on 15 of 16 fixtures
+  drawn after #22 the constrained optimum lies on the margin. A log-Cholesky
+  solver alone cannot return it; any production fit needs the detection step
+  and a convex boundary solver.
+- For the linear-in-parameter torque objective, the margin SDP alone returns
+  the same answer as both branches (development check above). The interior
+  log-Cholesky branch adds a representation that is feasible by construction,
+  not a different estimator. #23–#25 should state what that representation is
+  for (for example nonlinear terms, or objectives that are not convex in `p`)
+  before committing to it as the user-facing solver. The boundary branch is
+  the same kind of problem as the direct LMI effort fit that D4 (#39)
+  selected for the D7 reference, so the two should share one implementation.
+- The null-space pin uses the training regressor's null space. Production
+  needs the same explicit rank-cutoff and prior policy, and must report which
+  directions were pinned.
+- The SDP depends on PICOS/CVXOPT, which are already package dependencies.
 
 ## Reproduction
 

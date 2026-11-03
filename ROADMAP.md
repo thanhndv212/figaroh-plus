@@ -55,9 +55,12 @@ and then `main`. The docs site embeds this file directly.
   recorded **revise**; the budget/scaling revision
   ([#30](https://github.com/thanhndv212/figaroh-plus/issues/30)) recorded
   **no-go** because 8 of 24 gated fits still exhaust 2000 evaluations.
-  [#155](https://github.com/thanhndv212/figaroh-plus/issues/155) changes the
-  fitting method next. The private experiment is not a production solver, and
-  #23–#25 stay blocked until a go decision.
+  [#155](https://github.com/thanhndv212/figaroh-plus/issues/155) changed the
+  method and recorded **go** (2026-11-03): detect a boundary optimum, pin the
+  regressor null space in the interior and solve the torque SDP on the
+  boundary; all gated fits converge on fresh seeds on 3.7 and 4.1. The
+  private experiment is not a production solver; #23 is unblocked, and the
+  record lists what #23–#25 must decide first.
 - [Examples PR #13](https://github.com/thanhndv212/figaroh-examples/pull/13) was merged on
   2026-10-08. The Hey5 geometry failure was fixed by W1 (every robot loads from a clean
   checkout) and the 3.7 TALOS regression ([examples #14](https://github.com/thanhndv212/figaroh-examples/issues/14))
@@ -159,7 +162,7 @@ scope, dependencies and closure policy are in the
 | M1.4 integrated workflows | W3 minimum contracts, S1 minimum reports, D7 dynamic reference, C4 calibration reference, U1 verified onboarding | ✅ **W3, S1, C4, D7, U1** |
 | M2 follow-up | S2 uncertainty, S3 experiment-design improvements, S4 selective composition; W3 is prerequisite groundwork | ✅ W3 groundwork done; S2 in progress; S3, S4 blocked (except S3 bug #90, ready) |
 | M3 backend parity | B1 capabilities and measured parity; broader ports need separately reviewed packages | Planned; M1 accepted, not started |
-| Optional nonlinear research | D5 and linked production #23–#25 when that path is approved; excluded from baseline M1 closure | D5 open: #22 revise, #30 no-go; #155 (method change) ready |
+| Optional nonlinear research | D5 and linked production #23–#25 when that path is approved; excluded from baseline M1 closure | D5 open: #22 revise, #30 no-go, #155 go; #23 unblocked |
 | Calibration studies (after M1) | C5: every calibration study to the TIAGo mocap standard | ✅ **C5** accepted 2026-10-26 (#167) |
 | Optional identification research | D8: #157–#161 and examples #115; excluded from baseline M1 | Open, planned |
 

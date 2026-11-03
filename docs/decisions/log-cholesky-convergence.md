@@ -8,6 +8,9 @@
   [log-Cholesky feasibility](log-cholesky-feasibility.md) (#22). That record,
   its script and its results stay unchanged as the first experiment.
 - Scope: private synthetic research spike; no production API approval
+- Superseded by [log-Cholesky boundary-aware fit](log-cholesky-boundary-aware.md)
+  (#155, go, 2026-11-03), which implements the "next revision" below. This
+  record, its scripts and results stay unchanged.
 
 The protocol sections below were committed before any confirmation-seed run.
 The results section was added afterwards in a separate commit, so the history
