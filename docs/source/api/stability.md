@@ -113,10 +113,11 @@ release, and a call can raise `NotImplementedError`.
 - **Log-Cholesky coordinates (LC1).**
   `figaroh.identification.inertial_parameterization` maps a link's inertial
   parameters to and from log-Cholesky coordinates (#23). It is not
-  re-exported from `figaroh.identification`; import the module. The
-  log-Cholesky fit itself is not part of the library yet: #155 made it a go
-  as a detect, interior-fit or boundary-SDP method, and #24 will ship it as
-  an opt-in, experimental method.
+  re-exported from `figaroh.identification`; import the module.
+  `figaroh.identification.log_cholesky_fit` is the opt-in fit built on it
+  (#24): it detects whether the unconstrained optimum is feasible, fits
+  log-Cholesky coordinates when it is, and otherwise solves the direct-fit
+  SDP. Its result record and statuses may still change.
 
 Names in these modules, as they stand today:
 
@@ -125,6 +126,7 @@ Names in these modules, as they stand today:
 - `figaroh.visualisation.colors`: `rgb2int`, `material`, `red`, `blue`, `green`, `yellow`, `magenta`, `cyan`, `white`, `black`, `grey`, `colormap`
 - `figaroh.backends.mujoco`: `MuJoCoBackend`
 - `figaroh.identification.inertial_parameterization`: `P10_ORDER`, `LOG_CHOLESKY_ORDER`, `MAX_LOG_SCALE`, `PD_RTOL`, `RepairReport`, `pseudo_inertia_from_p10`, `p10_from_pseudo_inertia`, `log_cholesky_from_pseudo_inertia`, `pseudo_inertia_from_log_cholesky`, `log_cholesky_from_p10`, `p10_from_log_cholesky`, `p10_jacobian_from_log_cholesky`, `repair_p10`, `log_cholesky_by_joint_from_param_dict`, `param_dict_with_log_cholesky_by_joint`
+- `figaroh.identification.log_cholesky_fit`: `LogCholeskyOptions`, `solve_log_cholesky_fit`
 - `figaroh.tools.robotvisualization`: `VisualizationConfig`, `RobotVisualizer`, `place`, `display_COM`, `display_axes`, `rotation_matrix_from_vectors`, `display_force`, `display_bounding_boxes`, `display_joints`
 - `figaroh.measurements`: `Measurement`
 
