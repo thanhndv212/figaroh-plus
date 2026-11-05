@@ -39,6 +39,20 @@ Direct LMI effort fit over all standard parameters (public since #61;
     options:
       show_root_heading: false
 
+## inertial_parameterization
+
+Experimental (not re-exported from `figaroh.identification`). Log-Cholesky
+coordinates for one link's inertial parameters (#23): exact
+maps between `p10`, the pseudo-inertia and `z`, the Jacobian `d p10 / d z`,
+an opt-in reported repair and per-joint dictionary helpers. It is a
+representation for estimators to build on, not an estimator, and imports
+neither PICOS nor CVXOPT. See the
+[boundary-aware log-Cholesky decision](https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/decisions/log-cholesky-boundary-aware.md).
+
+::: figaroh.identification.inertial_parameterization
+    options:
+      show_root_heading: false
+
 ## selection
 
 ::: figaroh.identification.selection

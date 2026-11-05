@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Experimental `figaroh.identification.inertial_parameterization`: exact
+  maps between a link's Pinocchio-order inertial vector, its pseudo-inertia
+  and log-Cholesky coordinates, with the Jacobian `d p10 / d z`. Massless,
+  singular or inconsistent links and out-of-range exponents raise errors
+  that say what to do; `repair_p10` is the opt-in alternative and reports
+  how far it moved the body. Per-joint helpers keep other parameter keys
+  and never modify their input. A representation for later estimators; it
+  changes no identification result and imports no SDP solver. (#23)
+
 - Change the log-Cholesky spike's method instead of its budget: detect an
   infeasible unconstrained optimum first, fit log-Cholesky coordinates with
   the regressor null space pinned (dogbox, stopping on the identifiable

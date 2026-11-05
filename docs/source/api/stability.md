@@ -110,9 +110,13 @@ release, and a call can raise `NotImplementedError`.
   Meshcat and plotting helpers.
 - **`figaroh.measurements`.** A measurement container that no shipped
   workflow uses.
-- **Log-Cholesky fits (LC1).** The log-Cholesky physical fit is not part of
-  the library: the feasibility spike was a no-go for 0.7.0 (D5, issue 155).
-  If it ships, it ships as an opt-in, experimental method.
+- **Log-Cholesky coordinates (LC1).**
+  `figaroh.identification.inertial_parameterization` maps a link's inertial
+  parameters to and from log-Cholesky coordinates (#23). It is not
+  re-exported from `figaroh.identification`; import the module. The
+  log-Cholesky fit itself is not part of the library yet: #155 made it a go
+  as a detect, interior-fit or boundary-SDP method, and #24 will ship it as
+  an opt-in, experimental method.
 
 Names in these modules, as they stand today:
 
@@ -120,6 +124,7 @@ Names in these modules, as they stand today:
 - `figaroh.visualisation`: `colors`, `MeshcatVisualizer`
 - `figaroh.visualisation.colors`: `rgb2int`, `material`, `red`, `blue`, `green`, `yellow`, `magenta`, `cyan`, `white`, `black`, `grey`, `colormap`
 - `figaroh.backends.mujoco`: `MuJoCoBackend`
+- `figaroh.identification.inertial_parameterization`: `P10_ORDER`, `LOG_CHOLESKY_ORDER`, `MAX_LOG_SCALE`, `PD_RTOL`, `RepairReport`, `pseudo_inertia_from_p10`, `p10_from_pseudo_inertia`, `log_cholesky_from_pseudo_inertia`, `pseudo_inertia_from_log_cholesky`, `log_cholesky_from_p10`, `p10_from_log_cholesky`, `p10_jacobian_from_log_cholesky`, `repair_p10`, `log_cholesky_by_joint_from_param_dict`, `param_dict_with_log_cholesky_by_joint`
 - `figaroh.tools.robotvisualization`: `VisualizationConfig`, `RobotVisualizer`, `place`, `display_COM`, `display_axes`, `rotation_matrix_from_vectors`, `display_force`, `display_bounding_boxes`, `display_joints`
 - `figaroh.measurements`: `Measurement`
 
