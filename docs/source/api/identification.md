@@ -53,6 +53,26 @@ neither PICOS nor CVXOPT. See the
     options:
       show_root_heading: false
 
+## log_cholesky_fit
+
+Experimental (not re-exported from `figaroh.identification`). Opt-in,
+boundary-aware log-Cholesky fit (#24) for a `ComparatorProblem`. It first
+checks the regularised unconstrained optimum. If every link stays inside the
+pseudo-inertia margin and the mass bounds, it minimises the direct-fit
+objective in log-Cholesky coordinates from a feasible start (the
+unidentifiable directions are pinned to that optimum). Otherwise it solves
+the same objective as the direct-fit SDP. `notes` records the branch, the
+detection, the start (and any opt-in repair) and why the iteration stopped.
+Identifiability (`detection["rank"]`) is reported separately from physical
+feasibility. Statuses such as `invalid_start`, `time_budget`,
+`nonfinite_trial` and `max_nfev` come back unaccepted with no estimate. See
+the
+[boundary-aware log-Cholesky decision](https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/decisions/log-cholesky-boundary-aware.md).
+
+::: figaroh.identification.log_cholesky_fit
+    options:
+      show_root_heading: false
+
 ## selection
 
 ::: figaroh.identification.selection
