@@ -18,6 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and never modify their input. A representation for later estimators; it
   changes no identification result and imports no SDP solver. (#23)
 
+- Experimental `figaroh.identification.log_cholesky_fit`: an opt-in
+  boundary-aware fit. It checks the unconstrained optimum first, fits
+  log-Cholesky coordinates when that optimum is feasible and solves the
+  direct-fit SDP when it is not. The record reports the branch, the
+  identifiable rank and why the fit stopped. An invalid start, an exhausted
+  budget or a nonfinite trial returns an unaccepted record with no estimate.
+  No existing workflow calls it. (#24)
+
 - Change the log-Cholesky spike's method instead of its budget: detect an
   infeasible unconstrained optimum first, fit log-Cholesky coordinates with
   the regressor null space pinned (dogbox, stopping on the identifiable
