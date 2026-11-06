@@ -22,8 +22,13 @@
 * ``reconstruction``: the full parameter vector reconstructed from the fit,
   accepted only when it is physically consistent and was produced by the
   requested method.
-* ``physical_fit``: the direct LMI effort fit
-  (:func:`figaroh.identification.physical_fit.solve_direct_effort_fit`).
+* ``physical_fit``: a physically consistent effort fit chosen by
+  ``physical_fit.method``: ``direct`` (default), the direct LMI effort fit
+  (:func:`figaroh.identification.physical_fit.solve_direct_effort_fit`), or
+  ``log_cholesky``, the experimental boundary-aware log-Cholesky fit
+  (:func:`figaroh.identification.log_cholesky_fit.solve_log_cholesky_fit`,
+  #25). Both minimise the same objective on the same training rows; the
+  result names the method and, for ``log_cholesky``, the branch.
 
 A requested stage that does not meet its acceptance conditions is
 *rejected*: nothing else is substituted, the selected stage is ``none`` and
@@ -63,7 +68,9 @@ class SelectedEstimate:
         base_residual_rel: Relative distance of ``phi_base_equivalent`` from
             the fitted base parameters.
         feasibility: Per link ``{mass, min_eig, ok}`` for standard candidates.
-        effective_method: Method that produced a reconstruction.
+        effective_method: Method that produced a reconstruction, or the
+            ``physical_fit.method`` (``direct``/``log_cholesky``) of a
+            physical fit.
         solvers: Solver names tried for a physical fit.
         psd_eig_tol: Pseudo-inertia eigenvalue tolerance the links were
             judged feasible with; export uses the same one.
@@ -152,17 +159,27 @@ def physical_fit_config(identif) -> Dict[str, Any]:
     """The ``physical_fit`` settings with every key present.
 
     The config parser already merges the defaults; a programmatic config
-    may hold a partial mapping (or none), which is completed here.
+    may hold a partial mapping (or none), which is completed here. Raises
+    ``ValueError`` for an unknown key or a setting that
+    :func:`~figaroh.identification.config.check_physical_fit_config`
+    rejects, so a bad programmatic config fails as clearly as a parsed one.
     """
-    from figaroh.identification.config import PHYSICAL_FIT_DEFAULTS
+    from figaroh.identification.config import (
+        PHYSICAL_FIT_DEFAULTS,
+        check_physical_fit_config,
+    )
 
     raw = (getattr(identif, "identif_config", None) or {}).get("physical_fit")
-    if isinstance(raw, dict) and PHYSICAL_FIT_DEFAULTS.keys() <= raw.keys():
-        return dict(raw)
     cfg = dict(PHYSICAL_FIT_DEFAULTS)
     if isinstance(raw, dict):
+        unknown = set(raw) - set(PHYSICAL_FIT_DEFAULTS)
+        if unknown:
+            raise ValueError(
+                f"unknown physical_fit keys {sorted(unknown)}; "
+                f"allowed: {sorted(PHYSICAL_FIT_DEFAULTS)}"
+            )
         cfg.update(raw)
-    return cfg
+    return check_physical_fit_config(cfg)
 
 
 def physical_fit_wanted(identif) -> bool:
@@ -237,20 +254,92 @@ def _link_feasibility(identif, theta_std, mass_min, psd_eig_tol):
 # ---------------------------------------------------------------------------
 
 
-def run_physical_fit(identif) -> Dict[str, Any]:
-    """Solve the direct LMI effort fit on the data the fit used.
+def log_cholesky_summary(record) -> Dict[str, Any]:
+    """JSON-ready branch, detection, start and solver metadata of a
+    log-Cholesky :class:`~figaroh.identification.physical_fit.SolveRecord`.
 
-    Returns an outcome dict (never raises): ``record`` (a
+    Reports the numerical rank and pinned null-space dimension separately
+    from per-link feasibility, the links that sent the fit to the boundary,
+    start repairs and, for the interior branch, the stop reason, evaluation
+    counts and identifiable residual distance.
+    """
+    notes = getattr(record, "notes", None) or {}
+    det = notes.get("detection") or {}
+    start = notes.get("start") or {}
+    out: Dict[str, Any] = {
+        "branch": notes.get("branch"),
+        "branch_forced": bool(notes.get("branch_forced", False)),
+        "rank": det.get("rank"),
+        "n_params": det.get("n_params"),
+        "null_space_dim": det.get("null_space_dim"),
+        "rank_rtol": det.get("rank_rtol"),
+        "eigenvalue_margin": det.get("eigenvalue_margin"),
+        "unconstrained_min_eig": det.get("unconstrained_min_eig"),
+        "active_links": {
+            j: list(v.get("active", []))
+            for j, v in (det.get("per_link") or {}).items()
+            if v.get("active")
+        },
+        "start_used": bool(start.get("used", False)),
+        "start_source": start.get("source"),
+        "start_repairs": dict(start.get("repairs") or {}),
+        "interior": None,
+    }
+    interior = notes.get("interior")
+    if interior:
+        keys = (
+            "stop_reason",
+            "nfev",
+            "njev",
+            "identifiable_rms",
+            "scipy_status",
+            "scipy_message",
+            "max_abs_log_scale",
+            "runtime_s",
+        )
+        out["interior"] = {k: interior[k] for k in keys if k in interior}
+    import json
+
+    return json.loads(json.dumps(out, default=float))
+
+
+def _run_log_cholesky(problem, cfg, solvers):
+    """One log-Cholesky fit; returns ``(record, steps)``."""
+    from figaroh.identification.config import log_cholesky_options
+    from figaroh.identification.log_cholesky_fit import solve_log_cholesky_fit
+
+    record = solve_log_cholesky_fit(problem, options=log_cholesky_options(cfg))
+    branch = record.notes.get("branch")
+    status = record.solver_status
+    if record.exception:
+        status = f"{status} ({record.exception})"
+    if branch == "boundary":
+        step = f"log_cholesky boundary branch ({solvers[0]} SDP): {status}"
+    else:
+        step = f"log_cholesky interior branch (scipy): {status}"
+    return record, [step]
+
+
+def run_physical_fit(identif) -> Dict[str, Any]:
+    """Solve the configured physical fit on the data the fit used.
+
+    Returns an outcome dict: ``record`` (a
     :class:`~figaroh.identification.physical_fit.SolveRecord` or ``None``),
-    ``solvers`` (names tried), ``reason`` and ``accepted``. The processed
-    regressor is scattered into all standard columns (zeros where columns
-    were eliminated); friction and offsets are free parameters and the
-    prior is the nominal standard parameter vector.
+    ``method``, ``solvers`` (names tried), ``reason``, ``accepted`` and,
+    for ``method: log_cholesky``, a ``log_cholesky`` summary
+    (:func:`log_cholesky_summary`). Solver failures do not raise; an invalid
+    ``physical_fit`` config does. The training rows (``_solve_W``,
+    ``_solve_tau``) are scattered into all standard columns (zeros where
+    columns were eliminated); held-out data never enters. Friction and
+    offsets are free parameters and the prior (also the log-Cholesky start)
+    is the nominal standard parameter vector.
     """
     cfg = physical_fit_config(identif)
+    method = cfg["method"]
     solvers = [str(cfg["solver"])]
     outcome: Dict[str, Any] = {
         "record": None,
+        "method": method,
         "solvers": solvers,
         "reason": "",
         "accepted": False,
@@ -283,16 +372,22 @@ def run_physical_fit(identif) -> Dict[str, Any]:
             ),
             row_weight=getattr(identif, "_wls_row_weight", None),
         )
-        opts = {}
-        if cfg["max_seconds"] is not None:
-            opts["max_seconds"] = float(cfg["max_seconds"])
-        record = pf.solve_direct_effort_fit(problem, solver=solvers[0], **opts)
-        steps = [f"{solvers[0]}: {record.solver_status}"]
-        if record.solver_status != "optimal" and cfg["second_solver"]:
-            second = str(cfg["second_solver"])
-            solvers.append(second)
-            record = pf.solve_direct_effort_fit(problem, solver=second, **opts)
-            steps.append(f"{second}: {record.solver_status}")
+        if method == "log_cholesky":
+            record, steps = _run_log_cholesky(problem, cfg, solvers)
+            outcome["log_cholesky"] = log_cholesky_summary(record)
+            if record.notes.get("branch") != "boundary":
+                solvers[:] = ["scipy"]
+        else:
+            opts = {}
+            if cfg["max_seconds"] is not None:
+                opts["max_seconds"] = float(cfg["max_seconds"])
+            record = pf.solve_direct_effort_fit(problem, solver=solvers[0], **opts)
+            steps = [f"{solvers[0]}: {record.solver_status}"]
+            if record.solver_status != "optimal" and cfg["second_solver"]:
+                second = str(cfg["second_solver"])
+                solvers.append(second)
+                record = pf.solve_direct_effort_fit(problem, solver=second, **opts)
+                steps.append(f"{second}: {record.solver_status}")
         outcome["record"] = record
         outcome["psd_eig_tol"] = problem.policy.feas_tol
         outcome["accepted"] = bool(
@@ -312,6 +407,26 @@ def run_physical_fit(identif) -> Dict[str, Any]:
         logger.warning("physical fit failed: %s", exc)
         outcome["reason"] = f"{type(exc).__name__}: {exc}"
     return outcome
+
+
+def physical_fit_result(out: Dict[str, Any]) -> Dict[str, Any]:
+    """The ``result["physical_fit"]`` entry for a :func:`run_physical_fit`
+    outcome: verdict, method, solver status, elapsed time, objective,
+    per-link feasibility and the log-Cholesky summary when present."""
+    record = out.get("record")
+    info = {
+        "status": "accepted" if out["accepted"] else "rejected",
+        "method": out.get("method", "direct"),
+        "reason": out["reason"],
+        "solvers": list(out["solvers"]),
+        "solver_status": None if record is None else record.solver_status,
+        "runtime_s": None if record is None else float(record.runtime_s),
+        "objective_value": None if record is None else record.objective_value,
+        "feasibility": {} if record is None else record.as_dict()["feasibility"],
+    }
+    if "log_cholesky" in out:
+        info["log_cholesky"] = out["log_cholesky"]
+    return info
 
 
 # ---------------------------------------------------------------------------
@@ -396,8 +511,18 @@ def _select_physical_fit(identif) -> SelectedEstimate:
         return SelectedEstimate(reason="physical fit did not run", **rejected)
     record = out.get("record")
     solvers = list(out.get("solvers", []))
+    method = out.get("method", "direct")
+    extra: Dict[str, Any] = {"physical_fit_method": method}
+    if "log_cholesky" in out:
+        extra["log_cholesky_branch"] = out["log_cholesky"].get("branch")
     if record is None or record.theta is None:
-        return SelectedEstimate(reason=out["reason"], solvers=solvers, **rejected)
+        return SelectedEstimate(
+            reason=out["reason"],
+            solvers=solvers,
+            effective_method=method,
+            extra=extra,
+            **rejected,
+        )
     theta = np.asarray(record.theta, dtype=float)
     equiv, rel = _equivalent_base(identif, theta)
     feas = {
@@ -410,7 +535,9 @@ def _select_physical_fit(identif) -> SelectedEstimate:
         base_residual_rel=rel,
         feasibility=feas,
         solvers=solvers,
+        effective_method=method,
         psd_eig_tol=float(out.get("psd_eig_tol", -1e-10)),
+        extra=extra,
     )
     if out["accepted"]:
         return SelectedEstimate(
@@ -421,6 +548,28 @@ def _select_physical_fit(identif) -> SelectedEstimate:
             **{**common, "names": names, "space": "standard"},
         )
     return SelectedEstimate(reason=out["reason"], **{**rejected, **common})
+
+
+def stage_label(selected: Dict[str, Any]) -> str:
+    """Display name of a selected-estimate dict (``SelectedEstimate.as_dict``).
+
+    A log-Cholesky physical fit names its method and branch, e.g.
+    ``physical_fit (log_cholesky, boundary branch)``; the default ``direct``
+    method keeps the plain ``physical_fit`` label. A rejection reads
+    ``none (requested ...: rejected)``.
+    """
+    if selected.get("status") != "accepted":
+        return f"none (requested {selected.get('requested')}: rejected)"
+    stage = str(selected.get("stage"))
+    if stage != "physical_fit" or selected.get("physical_fit_method") in (
+        None,
+        "direct",
+    ):
+        return stage
+    branch = selected.get("log_cholesky_branch")
+    method = selected["physical_fit_method"]
+    detail = f"{method}, {branch} branch" if branch else str(method)
+    return f"{stage} ({detail})"
 
 
 def select_estimate(identif) -> SelectedEstimate:

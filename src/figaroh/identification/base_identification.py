@@ -973,6 +973,8 @@ class BaseIdentification(ABC):
             # stage whose numbers are in the identified series; a rejected
             # selection leaves the fit's under the legacy keys
             extra = {"estimate_stage": sel.stage if sel.accepted else "fit"}
+            if sel.accepted and sel.stage == "physical_fit":
+                extra["estimate_method"] = sel.effective_method
         not_fitted = [
             j
             for j in self.identif_config.get("active_joints", [])
@@ -1733,20 +1735,9 @@ class BaseIdentification(ABC):
         requested = selection.requested_stage(self)
         if selection.physical_fit_wanted(self):
             self._physical_fit = selection.run_physical_fit(self)
-            record = self._physical_fit["record"]
-            self.result["physical_fit"] = {
-                "status": (
-                    "accepted" if self._physical_fit["accepted"] else "rejected"
-                ),
-                "reason": self._physical_fit["reason"],
-                "solvers": list(self._physical_fit["solvers"]),
-                "solver_status": None if record is None else record.solver_status,
-                "runtime_s": None if record is None else float(record.runtime_s),
-                "objective_value": (None if record is None else record.objective_value),
-                "feasibility": (
-                    {} if record is None else record.as_dict()["feasibility"]
-                ),
-            }
+            self.result["physical_fit"] = selection.physical_fit_result(
+                self._physical_fit
+            )
         if requested == "fit":
             self.selected = None
             return
@@ -1782,9 +1773,11 @@ class BaseIdentification(ABC):
         from figaroh.tools.stages import record_stage
 
         sel = getattr(self, "selected", None)
+        pf = getattr(self, "_physical_fit", None)
+        metrics = self._physical_fit_metrics(pf)
         if sel is not None:
             if sel.accepted:
-                record_stage(self, "physical", "ok", sel.reason)
+                record_stage(self, "physical", "ok", sel.reason, metrics)
             else:
                 swapped = bool(sel.extra.get("swapped_method"))
                 record_stage(
@@ -1792,15 +1785,16 @@ class BaseIdentification(ABC):
                     "physical",
                     "fallback" if swapped else "failed",
                     sel.reason,
+                    metrics,
                 )
             return
-        pf = getattr(self, "_physical_fit", None)
         if pf is not None:
             record_stage(
                 self,
                 "physical",
                 "ok" if pf["accepted"] else "failed",
                 pf["reason"],
+                metrics,
             )
             return
         info = self.result.get("physical consistency")
@@ -1816,6 +1810,30 @@ class BaseIdentification(ABC):
         else:
             stage_status = "ok"
         record_stage(self, "physical", stage_status, str(info.get("reason", status)))
+
+    @staticmethod
+    def _physical_fit_metrics(pf):
+        """Numeric metrics of a physical fit for its stage record.
+
+        Empty unless the fit ran; ``objective_value`` only when a solution
+        exists, so a failure never reads as a zero objective.
+        """
+        record = None if pf is None else pf.get("record")
+        if record is None:
+            return {}
+        metrics = {"runtime_s": (float(record.runtime_s), "s")}
+        if record.objective_value is not None:
+            metrics["objective_value"] = float(record.objective_value)
+        lc = pf.get("log_cholesky") or {}
+        if lc.get("rank") is not None:
+            metrics["rank"] = int(lc["rank"])
+            metrics["null_space_dim"] = int(lc["null_space_dim"])
+        interior = lc.get("interior") or {}
+        if "nfev" in interior:
+            metrics["nfev"] = int(interior["nfev"])
+        if interior.get("identifiable_rms") is not None:
+            metrics["identifiable_rms"] = float(interior["identifiable_rms"])
+        return metrics
 
     def _apply_physical_consistency_if_enabled(self, identif_results):
         pc_cfg = {}
@@ -2240,11 +2258,13 @@ class BaseIdentification(ABC):
         from figaroh.tools.stages import stages_line
 
         print(f"  Stages:          {stages_line(self)}")
+        from figaroh.identification.selection import stage_label
+
         sel = getattr(self, "selected", None)
         if sel is not None:
             print(
                 f"  Reported estimate: "
-                f"{sel.stage if sel.accepted else 'none'}"
+                f"{stage_label(sel.as_dict()) if sel.accepted else 'none'}"
                 f" (requested {sel.requested}: {sel.status}; {sel.reason})"
             )
 
@@ -2271,7 +2291,7 @@ class BaseIdentification(ABC):
         selected_info = result.get("selected")
         if isinstance(selected_info, dict) and "effort_rmse_fit" in selected_info:
             print(
-                f"  RMSE ({selected_info['stage']} estimate): "
+                f"  RMSE ({stage_label(selected_info)} estimate): "
                 f"{selected_info['effort_rmse_fit']:.4f}"
             )
 
@@ -2295,7 +2315,10 @@ class BaseIdentification(ABC):
                 print(f"  {names[i]:<22s} {m} {s} {r} {x}")
             per_joint_sel = (selected_info or {}).get("effort_rmse_fit_per_joint")
             if per_joint_sel:
-                print(f"  Selected estimate ({selected_info['stage']}) RMSE per joint")
+                print(
+                    f"  Selected estimate ({stage_label(selected_info)}) "
+                    "RMSE per joint"
+                )
                 for name, value in per_joint_sel.items():
                     print(f"  {name:<22s} {value:10.4f}")
         else:
@@ -2360,6 +2383,32 @@ class BaseIdentification(ABC):
         if recon is not None:
             print("-" * 70)
             print(f"  Full-parameter reconstruction: {recon.get('status', 'unknown')}")
+        pfit = result.get("physical_fit")
+        if pfit is not None:
+            print("-" * 70)
+            print(
+                f"  Physical fit ({pfit.get('method', 'direct')}): "
+                f"{pfit.get('status')} - {pfit.get('reason')}"
+            )
+            lc = pfit.get("log_cholesky")
+            if lc:
+                interior = lc.get("interior") or {}
+                print(
+                    f"    branch {lc.get('branch')}"
+                    f"{' (forced)' if lc.get('branch_forced') else ''}, "
+                    f"rank {lc.get('rank')}/{lc.get('n_params')}, "
+                    f"pinned null space {lc.get('null_space_dim')}"
+                )
+                if interior:
+                    print(
+                        f"    interior stop {interior.get('stop_reason')}, "
+                        f"nfev {interior.get('nfev')}"
+                    )
+                if lc.get("start_repairs"):
+                    print(
+                        "    repaired start links: "
+                        + ", ".join(sorted(lc["start_repairs"]))
+                    )
 
         print("=" * 70)
 
