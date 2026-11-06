@@ -117,7 +117,9 @@ release, and a call can raise `NotImplementedError`.
   `figaroh.identification.log_cholesky_fit` is the opt-in fit built on it
   (#24): it detects whether the unconstrained optimum is feasible, fits
   log-Cholesky coordinates when it is, and otherwise solves the direct-fit
-  SDP. Its result record and statuses may still change.
+  SDP. `BaseIdentification` reaches it through
+  `physical_fit.method: log_cholesky` (#25). Its result record, statuses and
+  the `physical_fit.log_cholesky` keys may still change.
 
 Names in these modules, as they stand today:
 

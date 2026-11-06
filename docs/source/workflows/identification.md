@@ -182,6 +182,8 @@ Pick the template (`manipulator_robot.yaml` for fixed-base arms, `humanoid_robot
 === "select_stage"
 
     Chooses which result is reported and exported: `fit`, `reconstruction` or `physical_fit`. `physical_fit` is a research path.
+
+    `physical_fit: {method: log_cholesky}` swaps its direct LMI fit for the experimental boundary-aware log-Cholesky fit; options such as `stop_rms`, `max_nfev`, `max_seconds`, `branch` and `repair_start` go under `physical_fit.log_cholesky`. It reports which branch ran and why it stopped; a fit that does not converge is rejected, and the base fit stays under its usual keys. `second_solver` and the top-level `max_seconds` are refused with this method.
 </div>
 
 If the log warns that the regressor is ill-conditioned, set `problem.qr_relative_tolerance: 1e-4`. All keys: [Config keys](../concepts/config_parameters.md).
