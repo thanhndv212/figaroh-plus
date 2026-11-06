@@ -258,9 +258,9 @@ def _summary_section(result: Dict[str, Any], correlation: float) -> str:
 
 def _selected_label(selected: Dict[str, Any]) -> str:
     """``physical_fit`` / ``none (requested physical_fit: rejected)``."""
-    if selected.get("status") == "accepted":
-        return str(selected.get("stage"))
-    return f"none (requested {selected.get('requested')}: rejected)"
+    from figaroh.identification.selection import stage_label
+
+    return stage_label(selected)
 
 
 def _selected_per_joint_table(selected: Optional[Dict[str, Any]]) -> str:
@@ -273,7 +273,7 @@ def _selected_per_joint_table(selected: Optional[Dict[str, Any]]) -> str:
         for name, value in per_joint.items()
     )
     return f"""
-    <h3>Selected estimate ({_esc(str(selected.get("stage")))}): RMSE per joint</h3>
+    <h3>Selected estimate ({_esc(_selected_label(selected))}): RMSE per joint</h3>
     <table class="data">
       <thead><tr><th>Joint</th><th>RMSE</th></tr></thead>
       <tbody>{rows}</tbody>
