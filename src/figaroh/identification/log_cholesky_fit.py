@@ -144,11 +144,16 @@ class _Objective:
         s_max = float(S[0]) if S.size else 0.0
         self.rank = int(np.sum(S > s_max * rank_rtol)) if s_max > 0 else 0
         self.s_max = s_max
-        k = S.size
-        self.q_star = Vt[:k].T @ (S / (S**2 + self.lam) * (U.T @ self.c))
-        self.null = Vt[self.rank :].T  # (n, n - rank)
-        # Pinning the null component adds a term that vanishes at q_star (the
-        # ridge minimiser has none), so it removes flat directions only.
+        r = self.rank
+        # Ridge minimiser on the kept directions only. Singular values below
+        # the cutoff are numerical noise; S / (S**2 + lam) would amplify them
+        # by 1 / lam into a spurious null-space component (#234).
+        self.q_star = Vt[:r].T @ (
+            S[:r] / (S[:r] ** 2 + self.lam) * (U[:, :r].T @ self.c)
+        )
+        self.null = Vt[r:].T  # (n, n - rank)
+        # Pinning the null component adds a term that vanishes at q_star (it
+        # has none by construction), so it removes flat directions only.
         self.pin = max(s_max, 1.0)
         self.M = np.vstack(
             [self.RD, np.sqrt(self.lam) * np.eye(n), self.pin * self.null.T]

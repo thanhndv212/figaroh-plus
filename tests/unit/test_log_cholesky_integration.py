@@ -302,13 +302,13 @@ def test_interior_converges_without_sdp(model, traj, monkeypatch):
 
     monkeypatch.setattr(pf, "_solve_core", no_sdp)
     monkeypatch.setitem(sys.modules, "picos", None)  # any import raises
-    # loose stop rule: see the default-options failure test below
-    ident = _run(model, traj, **_lc(log_cholesky={"stop_rms": 1e-3}))
+    # default options: the #155 stop rule holds on this model (#234)
+    ident = _run(model, traj, **_lc())
     lc = ident.result["physical_fit"]["log_cholesky"]
     assert lc["branch"] == "interior" and lc["branch_forced"] is False
     assert lc["start_used"] and lc["start_source"] == "prior"
     assert lc["interior"]["stop_reason"] == "converged"
-    assert lc["interior"]["identifiable_rms"] <= 1e-3
+    assert lc["interior"]["identifiable_rms"] <= 1e-7
     assert ident.selected.accepted and ident.result["physical_fit"]["solvers"] == [
         "scipy"
     ]
@@ -316,12 +316,37 @@ def test_interior_converges_without_sdp(model, traj, monkeypatch):
     assert {s.stage: s for s in ident.stages}["physical"].metrics["nfev"]["value"] > 0
 
 
+def test_interior_matches_the_direct_fit(model, traj, monkeypatch):
+    """Interior optimum, same objective: the same estimate as the SDP (#234)."""
+    pytest.importorskip("picos")
+    seen = {}
+    real = lcf.solve_log_cholesky_fit
+
+    def spy(p, **kw):
+        seen["p"] = p
+        return real(p, **kw)
+
+    monkeypatch.setattr(lcf, "solve_log_cholesky_fit", spy)
+    interior = _run(model, traj, **_lc())
+    assert interior.result["physical_fit"]["log_cholesky"]["branch"] == "interior"
+    direct = _run(model, traj, select_stage="physical_fit")
+    # Parameters along the null space are set only by the weak prior term and
+    # the SDP tolerance, so compare what the data determines.
+    # R from the QR of the weighted regressor: ||R d|| = ||W Y d||.
+    R = seen["p"].R
+    diff = R @ (interior.selected.values - direct.selected.values)
+    assert np.linalg.norm(diff) / np.sqrt(seen["p"].tau.size) < 1e-5
+    obj_i = interior.result["physical_fit"]["objective_value"]
+    obj_d = direct.result["physical_fit"]["objective_value"]
+    assert obj_i <= obj_d * (1 + 1e-6) + 1e-12
+
+
 def test_non_convergence_is_a_failure_not_a_zero(model, traj, tmp_path):
-    """Default options stall short of the 1e-7 stop rule on this model."""
-    ident = _run(model, traj, **_lc())
+    """An exhausted evaluation budget rejects the fit; nothing reads as zero."""
+    ident = _run(model, traj, **_lc(log_cholesky={"max_nfev": 1}))
     pfr = ident.result["physical_fit"]
     assert pfr["status"] == "rejected" and pfr["objective_value"] is None
-    assert pfr["solver_status"] in ("not_converged", "max_nfev")
+    assert pfr["solver_status"] == "max_nfev"
     assert pfr["log_cholesky"]["interior"]["identifiable_rms"] > 1e-7
     sel = ident.selected
     assert not sel.accepted and sel.stage == "none" and sel.values is None
@@ -353,7 +378,7 @@ def test_invalid_start_is_reported(model, traj, monkeypatch):
         return real(dataclasses.replace(p, theta_prior=prior), **kw)
 
     monkeypatch.setattr(lcf, "solve_log_cholesky_fit", bad_prior)
-    opts = {"branch": "interior", "stop_rms": 1e-3}
+    opts = {"branch": "interior"}
     ident = _run(model, traj, **_lc(log_cholesky=opts))
     assert ident.result["physical_fit"]["solver_status"] == "invalid_start"
     assert "repair_start=True" in ident.selected.reason
