@@ -47,6 +47,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and 4.1, so the decision is go. Private research spike, not a production
   solver. (#155)
 
+### Fixed
+
+- The log-Cholesky fit's interior branch no longer rejects fits that have
+  converged. The detected optimum kept a spurious null-space component,
+  amplified from noise-level singular values, that the stop rule could never
+  reach; on the sample manipulator every default-option interior fit was
+  rejected. The optimum is now computed on the kept rank only. (#234)
+
 ## [1.1.0] - 2026-10-29
 
 Calibration estimation improvements and the fixes found by the C5
