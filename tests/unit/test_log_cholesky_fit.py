@@ -312,3 +312,22 @@ def test_options_and_problem_validation(fx):
     p = build_problem(Y, fx["tau"], ["a", "b", "c"], fx["joints"], prior=np.ones(3))
     with pytest.raises(ValueError, match="no link with all ten"):
         lcf.solve_log_cholesky_fit(p)
+
+
+@pytest.mark.parametrize("prior_weight", [1e-6, 0.0])
+def test_q_star_has_no_null_space_component(fx, prior_weight):
+    """q_star lives on the kept directions, so the pin vanishes there (#234).
+
+    Singular values below the rank cutoff are numerical noise; the ridge
+    factor S / (S**2 + lam) amplifies them by 1 / lam (and by 1 / S when
+    lam = 0) into a null-space component the stop rule can never reach.
+    """
+    noisy = fx["noisy"]
+    policy = PhysicalPolicy(prior_weight=prior_weight)
+    p = _problem(fx, tau=noisy, policy=policy)
+    obj = lcf._Objective(p, lcf.LogCholeskyOptions().rank_rtol)
+    assert 0 < obj.rank < obj.D.size
+    assert np.linalg.norm(obj.null.T @ obj.q_star) == pytest.approx(0, abs=1e-12)
+    # So the pinned least-squares problem is minimised exactly at q_star.
+    q_min = np.linalg.lstsq(obj.M, obj.rhs, rcond=None)[0]
+    assert obj.identifiable_rms(q_min) <= 1e-10

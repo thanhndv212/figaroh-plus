@@ -2,6 +2,9 @@
 
 - Status: Accepted — **go** for the boundary-aware method (2026-11-03);
   protocol frozen the same day in a separate earlier commit
+- Amended 2026-11-06 ([#234](https://github.com/thanhndv212/figaroh-plus/issues/234)):
+  production computes the detected optimum on the kept rank only; see
+  [Amendment](#amendment-2026-11-06-null-space-component-of-the-optimum)
 - Issue: [#155](https://github.com/thanhndv212/figaroh-plus/issues/155)
 - Parent: [#20 (LC1)](https://github.com/thanhndv212/figaroh-plus/issues/20)
 - Follows the **no-go** of [log-Cholesky convergence](log-cholesky-convergence.md)
@@ -197,6 +200,29 @@ used at all.
   needs the same explicit rank-cutoff and prior policy, and must report which
   directions were pinned.
 - The SDP depends on PICOS/CVXOPT, which are already package dependencies.
+
+## Amendment 2026-11-06: null-space component of the optimum
+
+Step 2 says the unconstrained minimiser has no null-space component, so the
+pin vanishes there. That holds in exact arithmetic, but the spike and #24
+computed it as `V diag(S / (S**2 + lam)) U.T e` over **all** singular values.
+Values below the rank cutoff are numerical noise (about 1e-16 relative), and
+the ridge factor amplifies them by `1 / lam` into a null-space component
+whenever the torques have a part the regressor cannot explain. The pin weight
+`sigma_max` then turns that into a distance the stop rule never reaches.
+
+On `buildSampleModelManipulator` with the #25 integration data (400 samples,
+`sigma_max` 7268), this component was 2.4e-6 in `q`, so the interior fit stopped
+at identifiable RMS 3.5e-4 Nm and was rejected. The torque part of that
+distance was 4e-13 Nm, so the estimate itself was already correct. On the
+synthetic spike fixtures the component stays at round-off level, so the results
+above are unaffected.
+
+Production (`figaroh.identification.log_cholesky_fit`) now restricts the
+minimiser to the kept directions, which makes the statement in step 2 true by
+construction, and also covers `prior_weight = 0`, where the old factor becomes
+`1 / S`. The method, pin, stopping rule, thresholds and solver are unchanged.
+The spike script stays frozen as the record of what was run.
 
 ## Reproduction
 
