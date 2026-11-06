@@ -26,6 +26,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   budget or a nonfinite trial returns an unaccepted record with no estimate.
   No existing workflow calls it. (#24)
 
+- `physical_fit.method: log_cholesky` runs the experimental boundary-aware
+  log-Cholesky fit as the `physical_fit` stage; `direct` stays the default.
+  Options go under `physical_fit.log_cholesky` and are checked when the
+  config loads: an unknown method or key, options without the method, and
+  `second_solver` or top-level `max_seconds` with it raise. The result, the
+  selected estimate, the physical stage record, validation metrics and both
+  reports name the method and branch, and record rank, pinned null-space
+  dimension, start repairs, stop reason, runtime and objective. A fit that
+  does not converge is rejected with no estimate, so verification fails and
+  the archive writes no parameters. The interior branch imports no SDP
+  solver. (#25)
+
 - Change the log-Cholesky spike's method instead of its budget: detect an
   infeasible unconstrained optimum first, fit log-Cholesky coordinates with
   the regressor null space pinned (dogbox, stopping on the identifiable
