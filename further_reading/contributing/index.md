@@ -46,6 +46,8 @@ For triage, use one type (`bug`, `feature`, `docs`, `maintenance`), an area (`id
 | `figaroh-plus/main`     | Stable release branch; release and urgent hotfix PRs               |
 | `figaroh-examples/main` | Separate examples integration branch; no `devel` branch is assumed |
 
+**Pair core work with examples.** Before a core issue becomes Ready, check `figaroh-examples` for scripts, configs, expected outputs, docs and tests that use the behaviour being changed. If an example is affected, open a paired examples issue and link it; the core issue closes only when the paired examples PR is merged. If none is affected, say so on the core issue with what was searched; no paired item is needed. Planned work is listed in the roadmap and [delivery plan](https://thanhndv212.github.io/figaroh-plus/further_reading/plans/#coreexamples-pairing-rule) before implementation starts.
+
 Cross-repository work uses linked PRs and records the exact core/examples revisions validated together. Land a compatible core API before examples depend on it; document a minimum release or temporary commit dependency. Do not copy robot-specific code into core just to avoid a second PR.
 
 ### Merge and release gates

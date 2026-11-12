@@ -10,6 +10,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### [Unreleased]
 
+### [1.2.0] - 2026-11-13
+
+An opt-in, experimental log-Cholesky fit for the `physical_fit` stage (package LC1, tracker #20). The maintainer decided on 2026-11-12 to release it before the code-quality packages Q1–Q5 (#238, #240). The paired figaroh-examples tag is `v1.2.0`.
+
+Upgrading from 1.1: no configuration change is required and no result changes. `physical_fit.method: direct` stays the default; the new fit runs only when a config asks for `physical_fit.method: log_cholesky`. Its result record, statuses and option keys are experimental and may change in a minor release.
+
+Known issues, present in 1.1.0 as well and planned as Q1 (#238): `solve(decimate=False)` fails and `compute_reference_torque` reads the wrong regressor rows when the active joints are a subset of the model's joints. The fix is planned as 1.2.1.
+
+#### Added
+
+- Experimental `figaroh.identification.inertial_parameterization`: exact maps between a link's Pinocchio-order inertial vector, its pseudo-inertia and log-Cholesky coordinates, with the Jacobian `d p10 / d z`. Massless, singular or inconsistent links and out-of-range exponents raise errors that say what to do; `repair_p10` is the opt-in alternative and reports how far it moved the body. Per-joint helpers keep other parameter keys and never modify their input. A representation for later estimators; it changes no identification result and imports no SDP solver. (#23)
+- Experimental `figaroh.identification.log_cholesky_fit`: an opt-in boundary-aware fit. It checks the unconstrained optimum first, fits log-Cholesky coordinates when that optimum is feasible and solves the direct-fit SDP when it is not. The record reports the branch, the identifiable rank and why the fit stopped. An invalid start, an exhausted budget or a nonfinite trial returns an unaccepted record with no estimate. No existing workflow calls it. (#24)
+- `physical_fit.method: log_cholesky` runs the experimental boundary-aware log-Cholesky fit as the `physical_fit` stage; `direct` stays the default. Options go under `physical_fit.log_cholesky` and are checked when the config loads: an unknown method or key, options without the method, and `second_solver` or top-level `max_seconds` with it raise. The result, the selected estimate, the physical stage record, validation metrics and both reports name the method and branch, and record rank, pinned null-space dimension, start repairs, stop reason, runtime and objective. A fit that does not converge is rejected with no estimate, so verification fails and the archive writes no parameters. The interior branch imports no SDP solver. (#25)
+- Change the log-Cholesky spike's method instead of its budget: detect an infeasible unconstrained optimum first, fit log-Cholesky coordinates with the regressor null space pinned (dogbox, stopping on the identifiable residual) in the interior, and solve the torque SDP with an eigenvalue margin on the boundary. The protocol was frozen before confirmation; on fresh seeds all 24 gated fits converge and pass every gate on Pinocchio 3.7 and 4.1, so the decision is go. Private research spike, not a production solver. (#155)
+
+#### Changed
+
+- Roadmap and delivery plan: release the log-Cholesky work first as 1.2.0, then code-quality packages Q1–Q5 from the 2026-11-12 codebase review (1.2.1 hotfix, 1.3.0, 1.4.0, 2.0.0). CONTRIBUTING and AGENTS gain the rule that a core development or fix is paired with work in `figaroh-examples` whenever an example is affected. Documentation only; no library behaviour changes.
+
+#### Fixed
+
+- The log-Cholesky fit's interior branch no longer rejects fits that have converged. The detected optimum kept a spurious null-space component, amplified from noise-level singular values, that the stop rule could never reach; on the sample manipulator every default-option interior fit was rejected. The optimum is now computed on the kept rank only. (#234)
+
 ### [1.1.0] - 2026-10-29
 
 Calibration estimation improvements and the fixes found by the C5 calibration studies (accepted 2026-10-26, #167). Several fixes correct wrong results in 1.0.x, so they ship now instead of waiting for M2, which moves to 1.2 and later (#228). The paired figaroh-examples tag is `v1.1.0`.

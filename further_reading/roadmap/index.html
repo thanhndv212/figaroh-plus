@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/figaroh-mark-light.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -2655,7 +2655,7 @@ so it stays next to the code it tracks. This page embeds it directly so the
 same content is browsable as part of the docs site, without a second copy
 to keep in sync.</p>
 <h2 id="figaroh-roadmap">FIGAROH Roadmap<a class="headerlink" href="#figaroh-roadmap" title="Permanent link">&para;</a></h2>
-<p><strong>Evidence refresh: 2026-10-12; delivery status refreshed 2026-10-29. Priority changes below are a tracker scope approved; execution details under review, revision 4.</strong></p>
+<p><strong>Evidence refresh: 2026-10-12; delivery status refreshed 2026-10-29; code-quality packages Q1–Q5, the core/examples pairing rule and the release order (log-Cholesky first) added 2026-11-12. Priority changes below are a tracker scope approved; execution details under review, revision 4.</strong></p>
 <p>Review the <a href="../plans/">detailed delivery plan</a>
 before implementation. The user requested calibration improvements in parallel
 with dynamic identification, with TIAGo mocap as the first calibration reference
@@ -2706,9 +2706,12 @@ and then <code>main</code>. The docs site embeds this file directly.</p>
   recorded <strong>revise</strong>; the budget/scaling revision
   (<a href="https://github.com/thanhndv212/figaroh-plus/issues/30">#30</a>) recorded
   <strong>no-go</strong> because 8 of 24 gated fits still exhaust 2000 evaluations.
-  <a href="https://github.com/thanhndv212/figaroh-plus/issues/155">#155</a> changes the
-  fitting method next. The private experiment is not a production solver, and
-  #23–#25 stay blocked until a go decision.</li>
+  <a href="https://github.com/thanhndv212/figaroh-plus/issues/155">#155</a> changed the
+  method and recorded <strong>go</strong> (2026-11-03): detect a boundary optimum, pin the
+  regressor null space in the interior and solve the torque SDP on the
+  boundary; all gated fits converge on fresh seeds on 3.7 and 4.1. The
+  private experiment is not a production solver; #23 is unblocked, and the
+  record lists what #23–#25 must decide first.</li>
 <li><a href="https://github.com/thanhndv212/figaroh-examples/pull/13">Examples PR #13</a> was merged on
   2026-10-08. The Hey5 geometry failure was fixed by W1 (every robot loads from a clean
   checkout) and the 3.7 TALOS regression (<a href="https://github.com/thanhndv212/figaroh-examples/issues/14">examples #14</a>)
@@ -2753,6 +2756,30 @@ standard, were accepted on 2026-10-26
 it added no core features. D8 collects optional identification research
 (#157–#161) outside baseline M1. <code>devel</code> carries post-1.0 fixes not yet
 released; the changelog's Unreleased section lists them.</p>
+<p><strong>Code-quality review (2026-11-12).</strong> A review of <code>devel</code> at <code>21994ed</code>
+reproduced four defects and found a fifth by reading: undecimated
+identification fails for a subset of joints, the reference torque uses the
+wrong rows for a non-prefix active set, the custom-solver path ignores the
+sample mask and stage records, <code>LinearSolver</code> crashes or ignores options in
+some methods, and wrench-mode extra columns use inconsistent rows (not yet
+run). All five are in the <code>v1.1.0</code> sources. The review also found fallbacks
+that hide failures, library <code>print</code>/logging violations, unseeded randomness and
+tooling that is listed but not run. This work is planned as packages Q1–Q5
+under M0; rosters, evidence and the maintainer's decisions are in the
+<a href="../plans/#code-quality-and-reliability-packages-q1q5">delivery plan</a>.
+No tracker or issue exists yet.</p>
+<p><strong>Log-Cholesky release first (maintainer decision, 2026-11-12).</strong> The LC1 work
+is complete on <code>devel</code>: go gate #155, production issues #23–#25, the follow-up
+fix #234 and examples #11 are all closed. Tracker
+<a href="https://github.com/thanhndv212/figaroh-plus/issues/20">#20</a> is still open. Its
+closing review and the 1.2.0 release come before any Q package. The fit stays
+opt-in and experimental; <code>direct</code> remains the default.</p>
+<p><strong>Core/examples pairing (maintainer instruction, 2026-11-12).</strong> A core
+development or fix is paired with work in <code>figaroh-examples</code> whenever an
+example is affected; if none is, no paired item is needed and the issue records
+that. The
+<a href="../plans/#coreexamples-pairing-rule">pairing rule</a>
+applies to all packages from this date.</p>
 <p><strong>M0 gate review (accepted 2026-10-12, <a href="https://github.com/thanhndv212/figaroh-plus/issues/181">tracker #181</a> §9).</strong>
 Existing core gates retained (blocking <code>Lint</code>, Core CI and Documentation green);
 examples assets and dependencies reproducible (W1); numerical regressions
@@ -2855,6 +2882,11 @@ scope, dependencies and closure policy are in the
 <td>✅ <strong>W3, S1, C4, D7, U1</strong></td>
 </tr>
 <tr>
+<td>M0 code quality and reliability (2026-11-12 review)</td>
+<td>Q1 correctness fixes, Q2 fail loudly, Q3 tooling; then Q4 structure and performance; Q5 breaking removals</td>
+<td>Planned (2026-11-12): no trackers yet; next after the 1.2.0 log-Cholesky release, starting with the Q1.1 hotfix</td>
+</tr>
+<tr>
 <td>M2 follow-up</td>
 <td>S2 uncertainty, S3 experiment-design improvements, S4 selective composition; W3 is prerequisite groundwork</td>
 <td>✅ W3 groundwork done; S2 in progress; S3, S4 blocked (except S3 bug #90, ready)</td>
@@ -2867,7 +2899,7 @@ scope, dependencies and closure policy are in the
 <tr>
 <td>Optional nonlinear research</td>
 <td>D5 and linked production #23–#25 when that path is approved; excluded from baseline M1 closure</td>
-<td>D5 open: #22 revise, #30 no-go; #155 (method change) ready</td>
+<td>D5 cleared; LC1 in review: #155 go, #23–#25 and #234 closed, tracker #20 open; ships in 1.2.0</td>
 </tr>
 <tr>
 <td>Calibration studies (after M1)</td>
@@ -2963,7 +2995,10 @@ and a core/examples revision pair, and those records are its evidence.</p>
 </tbody>
 </table>
 <p>A deprecated feature warns for at least one minor release before it is removed;
-removals are batched into 1.0. Optional research (D5/LC1) ships as an opt-in
+removals were batched into 1.0 and the next batch (Q5) into 2.0. The Q1.1
+active-joint row defect gives wrong reference torques without an error, so it
+ships as a patch release from <code>main</code> (maintainer decision, 2026-11-12); with
+1.2.0 released first, that patch is 1.2.1. Optional research (D5/LC1) ships as an opt-in
 feature in the minor release after its go decision and never holds a release.</p>
 <table>
 <thead>
@@ -3018,10 +3053,40 @@ feature in the minor release after its go decision and never holds a release.</p
 <td>Released 2026-10-29 (<a href="https://github.com/thanhndv212/figaroh-plus/issues/228">tracker #228</a>); examples tag <code>v1.1.0</code></td>
 </tr>
 <tr>
-<td>1.2 and later</td>
+<td>1.2.0</td>
+<td>Opt-in log-Cholesky physical fit (optional research path, after its go decision)</td>
+<td>LC1: #23–#25, #234, examples #11</td>
+<td>Release PR open (<a href="https://github.com/thanhndv212/figaroh-plus/issues/240">tracker #240</a>, maintainer decision 2026-11-12); needs the tracker #20 closing review; examples pin <code>figaroh&gt;=1.2,&lt;1.3</code>, tag <code>v1.2.0</code></td>
+</tr>
+<tr>
+<td>1.2.1</td>
+<td>Hotfix: active-joint row selection</td>
+<td>Q1.1</td>
+<td>Planned, from <code>main</code> after 1.2.0</td>
+</tr>
+<tr>
+<td>1.3.0</td>
+<td>Correctness and reliability (M0)</td>
+<td>Q1.2–Q1.4, Q2, Q3</td>
+<td>Planned, after 1.2.1</td>
+</tr>
+<tr>
+<td>1.4.0</td>
+<td>Structure and performance without breaking callers (M0, overlapping M2)</td>
+<td>Q4; Q4.2 typed contracts designed with S4</td>
+<td>Planned, after 1.3.0</td>
+</tr>
+<tr>
+<td>1.4 and later</td>
 <td>M2 composable calibration and identification</td>
 <td>S2, S3, S4</td>
 <td>Later</td>
+</tr>
+<tr>
+<td>2.0.0</td>
+<td>Removal of deprecated features</td>
+<td>Q5</td>
+<td>Later; needs one released minor carrying the deprecation warnings</td>
 </tr>
 <tr>
 <td>1.x or 2.0</td>
@@ -3044,9 +3109,12 @@ sha256. The examples repository pins <code>figaroh&gt;=X.Y,&lt;X.(Y+1)</code> an
 <code>vX.Y.Z</code> as the paired revision. Finally <code>main</code> is merged back into <code>devel</code>.</p>
 <h3 id="work-to-split-into-issues">Work to split into issues<a class="headerlink" href="#work-to-split-into-issues" title="Permanent link">&para;</a></h3>
 <p>Create focused issues from these candidates as they enter <code>Ready</code>; keep their
-acceptance criteria and changing status in the tracker. For work spanning both
-repositories, use a parent issue in <code>figaroh-plus</code> and linked implementation
-issues/PRs in <code>figaroh-examples</code>, with the tested commit pair recorded.</p>
+acceptance criteria and changing status in the tracker. A core issue that
+affects an example has a paired <code>figaroh-examples</code> issue under the
+<a href="../plans/#coreexamples-pairing-rule">pairing rule</a>:
+use a parent issue in <code>figaroh-plus</code> and linked implementation issues/PRs in
+<code>figaroh-examples</code>, with the tested commit pair recorded. An issue that affects
+no example records that instead.</p>
 <table>
 <thead>
 <tr>
@@ -3100,6 +3168,26 @@ issues/PRs in <code>figaroh-examples</code>, with the tested commit pair recorde
 <td>✅ End-to-end reference example</td>
 <td>M1</td>
 <td>Calibration side ✅ done in C4; dynamic side ✅ <strong>done in D7</strong> (#42). Original gate: connect the existing projection, reconstruction, verification, export and archive APIs; demonstrate improvement on held-out data</td>
+</tr>
+<tr>
+<td>Identification and solver correctness fixes (Q1.1–Q1.4)</td>
+<td>M0 / Q1</td>
+<td>Regression test that fails before the fix; paired examples change where an example is affected (Q1.1, Q1.4); wrench-mode defect reproduced before it is fixed</td>
+</tr>
+<tr>
+<td>Failures reported instead of hidden; library logging; seeded randomness (Q2.1–Q2.5)</td>
+<td>M0 / Q2</td>
+<td>No silent fallback on the reference workflows; affected examples updated</td>
+</tr>
+<tr>
+<td>Packaging, test and CI configuration (Q3.1–Q3.3)</td>
+<td>M0 / Q3</td>
+<td>Clean install; coverage reported on hosted CI; documentation statements match metadata</td>
+</tr>
+<tr>
+<td>Typed results, class splits, performance (Q4.1–Q4.4)</td>
+<td>M0 / Q4, with S4</td>
+<td>ADR for typed contracts; numerical parity on both reference workflows; old keys remain as a deprecated view</td>
 </tr>
 <tr>
 <td>Backend selection in <code>RobotIdentificationSystem</code></td>
@@ -3278,7 +3366,7 @@ dependencies and measurable exit criteria are accepted.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
         <script src="../../javascripts/figaroh.js"></script>
       

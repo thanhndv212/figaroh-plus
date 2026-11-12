@@ -572,6 +572,8 @@ No extra keys. You get the identifiable combinations, which predict torque but a
 
 Chooses which result is reported and exported: `fit`, `reconstruction` or `physical_fit`. `physical_fit` is a research path.
 
+`physical_fit: {method: log_cholesky}` swaps its direct LMI fit for the experimental boundary-aware log-Cholesky fit; options such as `stop_rms`, `max_nfev`, `max_seconds`, `branch` and `repair_start` go under `physical_fit.log_cholesky`. It reports which branch ran and why it stopped; a fit that does not converge is rejected, and the base fit stays under its usual keys. `second_solver` and the top-level `max_seconds` are refused with this method.
+
 If the log warns that the regressor is ill-conditioned, set `problem.qr_relative_tolerance: 1e-4`. All keys: [Config keys](https://thanhndv212.github.io/figaroh-plus/concepts/config_parameters/index.md).
 
 **Done when** the config loads, the sampling rate matches your timestamps, and the cutoff is below Nyquist.
@@ -1619,6 +1621,7 @@ Important contracts:
 - Regressor rows are joint-major. Enabled friction, actuator-inertia and offset blocks must match parameter key order; see the [identification regressions](https://github.com/thanhndv212/figaroh-plus/blob/main/tests/unit/test_identification_regressions.py).
 - Pinocchio's dynamic parameter order is `[m, mx, my, mz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz]`; FIGAROH's standard ordering differs. Use the conversion helpers in [`identification/parameter.py`](https://github.com/thanhndv212/figaroh-plus/blob/main/src/figaroh/identification/parameter.py).
 - Projection is default-off. `result["physical consistency"]` records status, feasibility information, and, after projection, `raw_parameters` and `projected_parameters`. Reconstruction has its own `result["reconstruction"]`. Callers must not equate a fitted base vector with a complete physical model.
+- `select_stage` (`fit`, `reconstruction`, `physical_fit`) names the one estimate that validation, `verify()`, the reports, the archive and URDF export use; a rejected request selects `none`, never a substitute. The physical fit is the last optional stage and runs on the training rows only, from the nominal prior: it neither reads nor replaces the reconstruction or projection results, and nothing later rewrites it. `physical_fit.method` picks its estimator: `direct` (the LMI effort fit, default) or the experimental `log_cholesky` (boundary-aware: log-Cholesky coordinates when the unconstrained optimum is feasible, the same direct SDP otherwise). `result["physical_fit"]` and the selected estimate name the method and branch; a non-converged fit is a rejection with no estimate and no objective.
 - Unified signal-processing settings feed the filter parameters; explicit filter overrides take precedence. `qr_relative_tolerance` is optional, preserving the default rank-selection behavior when unset.
 
 ### Calibration and experiment design
@@ -12064,11 +12067,13 @@ def print_quality_report(self):
     from figaroh.tools.stages import stages_line
 
     print(f"  Stages:          {stages_line(self)}")
+    from figaroh.identification.selection import stage_label
+
     sel = getattr(self, "selected", None)
     if sel is not None:
         print(
             f"  Reported estimate: "
-            f"{sel.stage if sel.accepted else 'none'}"
+            f"{stage_label(sel.as_dict()) if sel.accepted else 'none'}"
             f" (requested {sel.requested}: {sel.status}; {sel.reason})"
         )
 
@@ -12095,7 +12100,7 @@ def print_quality_report(self):
     selected_info = result.get("selected")
     if isinstance(selected_info, dict) and "effort_rmse_fit" in selected_info:
         print(
-            f"  RMSE ({selected_info['stage']} estimate): "
+            f"  RMSE ({stage_label(selected_info)} estimate): "
             f"{selected_info['effort_rmse_fit']:.4f}"
         )
 
@@ -12119,7 +12124,10 @@ def print_quality_report(self):
             print(f"  {names[i]:<22s} {m} {s} {r} {x}")
         per_joint_sel = (selected_info or {}).get("effort_rmse_fit_per_joint")
         if per_joint_sel:
-            print(f"  Selected estimate ({selected_info['stage']}) RMSE per joint")
+            print(
+                f"  Selected estimate ({stage_label(selected_info)}) "
+                "RMSE per joint"
+            )
             for name, value in per_joint_sel.items():
                 print(f"  {name:<22s} {value:10.4f}")
     else:
@@ -12184,6 +12192,32 @@ def print_quality_report(self):
     if recon is not None:
         print("-" * 70)
         print(f"  Full-parameter reconstruction: {recon.get('status', 'unknown')}")
+    pfit = result.get("physical_fit")
+    if pfit is not None:
+        print("-" * 70)
+        print(
+            f"  Physical fit ({pfit.get('method', 'direct')}): "
+            f"{pfit.get('status')} - {pfit.get('reason')}"
+        )
+        lc = pfit.get("log_cholesky")
+        if lc:
+            interior = lc.get("interior") or {}
+            print(
+                f"    branch {lc.get('branch')}"
+                f"{' (forced)' if lc.get('branch_forced') else ''}, "
+                f"rank {lc.get('rank')}/{lc.get('n_params')}, "
+                f"pinned null space {lc.get('null_space_dim')}"
+            )
+            if interior:
+                print(
+                    f"    interior stop {interior.get('stop_reason')}, "
+                    f"nfev {interior.get('nfev')}"
+                )
+            if lc.get("start_repairs"):
+                print(
+                    "    repaired start links: "
+                    + ", ".join(sorted(lc["start_repairs"]))
+                )
 
     print("=" * 70)
 ```
@@ -13372,6 +13406,111 @@ def unified_to_legacy_identif_config(robot, unified_identif_config) -> dict:
     return identif_config
 ```
 
+## `check_physical_fit_config(cfg)`
+
+Validate a complete `physical_fit` mapping; return it normalised.
+
+`method` selects the estimator: `direct` (the direct LMI effort fit, default) or `log_cholesky` (the experimental boundary-aware log-Cholesky fit of :func:`~figaroh.identification.log_cholesky_fit.solve_log_cholesky_fit`,
+
+### 25). Its options go in `log_cholesky` (the fields of
+
+:class:`~figaroh.identification.log_cholesky_fit.LogCholeskyOptions` except `sdp_solver`, which is `solver`).
+
+Raises:
+
+| Type         | Description                                                                                                 |
+| ------------ | ----------------------------------------------------------------------------------------------------------- |
+| `ValueError` | unknown method, options for another method, settings the method does not support, or invalid option values. |
+
+Source code in `src/figaroh/identification/config.py`
+
+```
+def check_physical_fit_config(cfg):
+    """Validate a complete ``physical_fit`` mapping; return it normalised.
+
+    ``method`` selects the estimator: ``direct`` (the direct LMI effort fit,
+    default) or ``log_cholesky`` (the experimental boundary-aware
+    log-Cholesky fit of
+    :func:`~figaroh.identification.log_cholesky_fit.solve_log_cholesky_fit`,
+    #25). Its options go in ``log_cholesky`` (the fields of
+    :class:`~figaroh.identification.log_cholesky_fit.LogCholeskyOptions`
+    except ``sdp_solver``, which is ``solver``).
+
+    Raises:
+        ValueError: unknown method, options for another method, settings the
+            method does not support, or invalid option values.
+    """
+    cfg = dict(cfg)
+    method = str(cfg.get("method") or "direct").strip().lower()
+    if method not in PHYSICAL_FIT_METHODS:
+        raise ValueError(
+            f"physical_fit.method={cfg.get('method')!r} is unknown; "
+            f"choose one of {PHYSICAL_FIT_METHODS}"
+        )
+    cfg["method"] = method
+    lc = cfg.get("log_cholesky")
+    if lc is not None and not isinstance(lc, dict):
+        raise ValueError("physical_fit.log_cholesky must be a mapping")
+    if method == "direct":
+        if lc:
+            raise ValueError(
+                "physical_fit.log_cholesky options are set but "
+                "physical_fit.method is 'direct'; set method: log_cholesky "
+                "or remove them"
+            )
+        return cfg
+    if cfg.get("second_solver"):
+        raise ValueError(
+            "physical_fit.second_solver is not supported with method "
+            "'log_cholesky': its boundary branch runs the SDP once, with "
+            "physical_fit.solver"
+        )
+    if cfg.get("max_seconds") is not None:
+        raise ValueError(
+            "physical_fit.max_seconds is not supported with method "
+            "'log_cholesky'; set physical_fit.log_cholesky.max_seconds, which "
+            "bounds the interior fit (the boundary SDP has no time limit)"
+        )
+    from figaroh.identification.log_cholesky_fit import LogCholeskyOptions
+
+    allowed = {f.name for f in dataclasses.fields(LogCholeskyOptions)}
+    allowed.discard("sdp_solver")
+    lc = dict(lc or {})
+    if "sdp_solver" in lc:
+        raise ValueError(
+            "physical_fit.log_cholesky.sdp_solver is not a key; the boundary "
+            "SDP uses physical_fit.solver"
+        )
+    unknown = set(lc) - allowed
+    if unknown:
+        raise ValueError(
+            f"unknown physical_fit.log_cholesky keys {sorted(unknown)}; "
+            f"allowed: {sorted(allowed)}"
+        )
+    try:
+        LogCholeskyOptions(**lc, sdp_solver=str(cfg["solver"]))
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"physical_fit.log_cholesky: {exc}") from exc
+    cfg["log_cholesky"] = lc
+    return cfg
+```
+
+## `log_cholesky_options(cfg)`
+
+:class:`LogCholeskyOptions` for a checked `physical_fit` mapping.
+
+Source code in `src/figaroh/identification/config.py`
+
+```
+def log_cholesky_options(cfg):
+    """:class:`LogCholeskyOptions` for a checked ``physical_fit`` mapping."""
+    from figaroh.identification.log_cholesky_fit import LogCholeskyOptions
+
+    return LogCholeskyOptions(
+        **(cfg.get("log_cholesky") or {}), sdp_solver=str(cfg["solver"])
+    )
+```
+
 ## parameter
 
 Parameter management utilities for robot identification.
@@ -14081,6 +14220,508 @@ def diagnose_exact(
     return records
 ```
 
+## inertial_parameterization
+
+Experimental (not re-exported from `figaroh.identification`). Log-Cholesky coordinates for one link's inertial parameters (#23): exact maps between `p10`, the pseudo-inertia and `z`, the Jacobian `d p10 / d z`, an opt-in reported repair and per-joint dictionary helpers. It is a representation for estimators to build on, not an estimator, and imports neither PICOS nor CVXOPT. See the [boundary-aware log-Cholesky decision](https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/decisions/log-cholesky-boundary-aware.md).
+
+Log-Cholesky coordinates for per-link inertial parameters.
+
+This module maps between three representations of one rigid body's inertial parameters and gives the derivative of the map. It is a representation, not an estimator: nothing here fits data, solves an SDP or imports PICOS/CVXOPT (decision record `docs/decisions/log-cholesky-boundary-aware.md`).
+
+### Conventions
+
+`p10` (Pinocchio dynamic-parameter order, SI units)::
+
+```
+[m, mx, my, mz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz]
+```
+
+`m` in kg; `h = (mx, my, mz) = m*c` in kg*m, with `c` the centre of mass in the link frame; the six tensor entries in kg*m^2 are the rotational inertia `I_O` about the link-frame origin, not about the centre of mass. FIGAROH's regressor order differs; convert with the parameter helpers.
+
+Pseudo-inertia `P` (4x4, symmetric)::
+
+```
+P = [[Sigma, h], [h.T, m]],   Sigma = 0.5*trace(I_O)*eye(3) - I_O
+```
+
+A body is physically consistent when `P` is positive semidefinite; these mappings need it strictly positive definite.
+
+Log-Cholesky `z` (Pinocchio `LogCholeskyParameters` order)::
+
+```
+[alpha, d1, d2, d3, s12, s23, s13, t1, t2, t3]
+```
+
+with `P = exp(2*alpha) * U @ U.T` and the *upper*-triangular factor::
+
+```
+U = [[exp(d1), s12,     s13,     t1],
+     [0,       exp(d2), s23,     t2],
+     [0,       0,       exp(d3), t3],
+     [0,       0,       0,       1 ]]
+```
+
+So `m = exp(2*alpha)` and `(t1, t2, t3) = c`. `alpha` is `0.5*ln(m / 1 kg)`; `exp(d_i)`, `s_ij` and `t_i` are in metres, so `d_i` are logarithms of lengths in metres. `U` comes from a Cholesky factorisation of `P` with rows and columns reversed. Every finite `z` decodes to a positive definite `P`, and `log(det(P)) = 8*alpha + 2*(d1 + d2 + d3)` is linear in `z`.
+
+### Policies
+
+- Massless or fixed links (`m <= 0`) have no encoding. Leave them out of the encoded blocks; the dictionary helpers can skip them on request and leave their parameters untouched.
+- Singular or indefinite input is rejected. :func:`repair_p10` is the opt-in alternative: it lifts the eigenvalues of `P` to a floor, returns a new vector and reports how far it moved.
+- `alpha` and `d_i` must stay within `max_log_scale` (default :data:`MAX_LOG_SCALE`) so that `exp` neither overflows nor flushes a factor to zero. An encoding outside it means a near-singular body.
+
+## `MAX_LOG_SCALE = 30.0`
+
+Default bound on `|alpha|` and `|d_i|`.
+
+`exp(2*30)` is about `1e26`: far outside any robot link in SI units (`m` from 1e-6 to 1e4 kg gives `|alpha| < 7`; lengths from 1e-6 to 1e3 m give `|d_i| < 14`), yet `P` stays finite with headroom. It guards against overflow and against near-singular bodies whose factor would round to zero; it is not a physical bound.
+
+## `PD_RTOL = 1e-12`
+
+Default relative floor on `min eig(P)` / `max eig(P)` for encoding.
+
+## `RepairReport(p10_original, p10, repaired, min_eig_before, min_eig_after, p10_change_norm, p10_relative_change, pseudo_inertia_change_norm)`
+
+Result of :func:`repair_p10`. `p10_original` is a copy.
+
+## `pseudo_inertia_from_p10(p10)`
+
+Return `P = [[Sigma, h], [h.T, m]]` for one link's `p10`.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def pseudo_inertia_from_p10(p10) -> np.ndarray:
+    """Return ``P = [[Sigma, h], [h.T, m]]`` for one link's ``p10``."""
+    p = _as_vector(p10, "p10")
+    m, h = p[0], p[1:4]
+    Ixx, Ixy, Iyy, Ixz, Iyz, Izz = p[4:10]
+    inertia = np.array([[Ixx, Ixy, Ixz], [Ixy, Iyy, Iyz], [Ixz, Iyz, Izz]])
+    P = np.empty((4, 4))
+    P[:3, :3] = 0.5 * np.trace(inertia) * np.eye(3) - inertia
+    P[:3, 3] = h
+    P[3, :3] = h
+    P[3, 3] = m
+    return P
+```
+
+## `p10_from_pseudo_inertia(P)`
+
+Inverse of :func:`pseudo_inertia_from_p10`; `P` must be symmetric.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def p10_from_pseudo_inertia(P) -> np.ndarray:
+    """Inverse of :func:`pseudo_inertia_from_p10`; ``P`` must be symmetric."""
+    P = _as_pseudo_inertia(P)
+    return _p10_from_symmetric(P)
+```
+
+## `log_cholesky_from_pseudo_inertia(P, *, rtol=PD_RTOL, max_log_scale=MAX_LOG_SCALE)`
+
+Encode a strictly positive definite pseudo-inertia as `z`.
+
+Raises `ValueError` for a wrong shape, nonfinite or nonsymmetric matrix, `P[3, 3] <= 0`, `min eig(P) <= rtol * max eig(P)`, or an encoding outside `max_log_scale`.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def log_cholesky_from_pseudo_inertia(
+    P,
+    *,
+    rtol: float = PD_RTOL,
+    max_log_scale: float = MAX_LOG_SCALE,
+) -> np.ndarray:
+    """Encode a strictly positive definite pseudo-inertia as ``z``.
+
+    Raises ``ValueError`` for a wrong shape, nonfinite or nonsymmetric
+    matrix, ``P[3, 3] <= 0``, ``min eig(P) <= rtol * max eig(P)``, or an
+    encoding outside ``max_log_scale``.
+    """
+    P = _as_pseudo_inertia(P)
+    if P[3, 3] <= 0.0:
+        raise ValueError(
+            f"mass P[3, 3] = {P[3, 3]:.6g} <= 0: a massless or fixed link has "
+            "no log-Cholesky encoding; keep it out of the encoded blocks"
+        )
+    eig = np.linalg.eigvalsh(P)
+    if eig[0] <= rtol * eig[-1]:
+        raise ValueError(
+            f"pseudo-inertia is not positive definite: min eig {eig[0]:.3e}, "
+            f"max eig {eig[-1]:.3e} (relative floor {rtol:.0e}). The body is "
+            "physically inconsistent or singular (e.g. a point mass or thin "
+            "rod); use repair_p10 to lift it explicitly"
+        )
+    try:
+        # Reverse Cholesky: P = U U^T with U upper triangular.
+        U = np.linalg.cholesky(P[::-1, ::-1])[::-1, ::-1]
+    except np.linalg.LinAlgError as exc:  # pragma: no cover - guarded above
+        raise ValueError(f"pseudo-inertia Cholesky failed: {exc}") from exc
+    u44 = U[3, 3]
+    U = U / u44
+    z = np.empty(10)
+    z[0] = np.log(u44)
+    z[1:4] = np.log(np.diag(U)[:3])
+    for k, (i, j) in enumerate(_OFFDIAG):
+        z[4 + k] = U[i, j]
+    _check_log_scales(z, max_log_scale, "encoding")
+    return z
+```
+
+## `pseudo_inertia_from_log_cholesky(z, *, max_log_scale=MAX_LOG_SCALE)`
+
+Decode `z` to `P = exp(2*alpha) * U @ U.T`.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def pseudo_inertia_from_log_cholesky(
+    z, *, max_log_scale: float = MAX_LOG_SCALE
+) -> np.ndarray:
+    """Decode ``z`` to ``P = exp(2*alpha) * U @ U.T``."""
+    z = _as_vector(z, "log-Cholesky z")
+    _check_log_scales(z, max_log_scale, "decoding")
+    U = _factor(z)
+    with np.errstate(over="ignore", invalid="ignore"):
+        P = np.exp(2.0 * z[0]) * (U @ U.T)
+    if not np.all(np.isfinite(P)):
+        raise ValueError(
+            "decoded pseudo-inertia overflowed; off-diagonal coordinates "
+            f"are too large (max |s, t| = {np.max(np.abs(z[4:])):.3g})"
+        )
+    return 0.5 * (P + P.T)
+```
+
+## `log_cholesky_from_p10(p10, *, rtol=PD_RTOL, max_log_scale=MAX_LOG_SCALE)`
+
+Encode one link's `p10` as log-Cholesky `z`.
+
+Rejects massless, singular or physically inconsistent links; see :func:`log_cholesky_from_pseudo_inertia`.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def log_cholesky_from_p10(
+    p10,
+    *,
+    rtol: float = PD_RTOL,
+    max_log_scale: float = MAX_LOG_SCALE,
+) -> np.ndarray:
+    """Encode one link's ``p10`` as log-Cholesky ``z``.
+
+    Rejects massless, singular or physically inconsistent links; see
+    :func:`log_cholesky_from_pseudo_inertia`.
+    """
+    return log_cholesky_from_pseudo_inertia(
+        pseudo_inertia_from_p10(p10), rtol=rtol, max_log_scale=max_log_scale
+    )
+```
+
+## `p10_from_log_cholesky(z, *, max_log_scale=MAX_LOG_SCALE)`
+
+Decode `z` to one link's `p10`; always physically consistent.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def p10_from_log_cholesky(z, *, max_log_scale: float = MAX_LOG_SCALE) -> np.ndarray:
+    """Decode ``z`` to one link's ``p10``; always physically consistent."""
+    return _p10_from_symmetric(
+        pseudo_inertia_from_log_cholesky(z, max_log_scale=max_log_scale)
+    )
+```
+
+## `p10_jacobian_from_log_cholesky(z, *, max_log_scale=MAX_LOG_SCALE)`
+
+Return `d p10 / d z` (10x10; rows in :data:`P10_ORDER`, columns in :data:`LOG_CHOLESKY_ORDER`).
+
+Matches Pinocchio's `LogCholeskyParameters.calculateJacobian`. Chain a regressor in Pinocchio order through it: `d tau / d z = W @ J`.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def p10_jacobian_from_log_cholesky(
+    z, *, max_log_scale: float = MAX_LOG_SCALE
+) -> np.ndarray:
+    """Return ``d p10 / d z`` (10x10; rows in :data:`P10_ORDER`, columns in
+    :data:`LOG_CHOLESKY_ORDER`).
+
+    Matches Pinocchio's ``LogCholeskyParameters.calculateJacobian``. Chain a
+    regressor in Pinocchio order through it: ``d tau / d z = W @ J``.
+    """
+    z = _as_vector(z, "log-Cholesky z")
+    _check_log_scales(z, max_log_scale, "Jacobian")
+    U = _factor(z)
+    scale = np.exp(2.0 * z[0])
+    J = np.empty((10, 10))
+    J[:, 0] = _p10_from_symmetric(2.0 * scale * (U @ U.T))
+    for k in range(1, 10):
+        E = np.zeros((4, 4))
+        if k < 4:
+            E[k - 1, k - 1] = U[k - 1, k - 1]
+        else:
+            i, j = _OFFDIAG[k - 4]
+            E[i, j] = 1.0
+        dP = scale * (E @ U.T + U @ E.T)
+        J[:, k] = _p10_from_symmetric(dP)
+    return J
+```
+
+## `repair_p10(p10, *, min_eig=None, rtol=1e-08)`
+
+Opt-in repair: lift `eig(P)` to a floor and report the change.
+
+The floor is `min_eig` if given, else `rtol * max(max eig(P), m)`. Eigenvalues below it are raised to it (the Frobenius-nearest matrix on `P` with that floor, not a weighted or torque-aware projection; use the LMI projection or the SDP fit for those). The input is copied, never modified; a body already above the floor is returned unchanged with `repaired=False`. A nonpositive mass is not repaired.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def repair_p10(
+    p10,
+    *,
+    min_eig: Optional[float] = None,
+    rtol: float = 1e-8,
+) -> RepairReport:
+    """Opt-in repair: lift ``eig(P)`` to a floor and report the change.
+
+    The floor is ``min_eig`` if given, else ``rtol * max(max eig(P), m)``.
+    Eigenvalues below it are raised to it (the Frobenius-nearest matrix on
+    ``P`` with that floor, not a weighted or torque-aware projection; use
+    the LMI projection or the SDP fit for those). The input is copied, never
+    modified; a body already above the floor is returned unchanged with
+    ``repaired=False``. A nonpositive mass is not repaired.
+    """
+    original = _as_vector(p10, "p10")
+    if original[0] <= 0.0:
+        raise ValueError(
+            f"mass {original[0]:.6g} <= 0: repair does not invent mass for a "
+            "massless or fixed link; keep it out of the encoded blocks"
+        )
+    P = pseudo_inertia_from_p10(original)
+    eigval, eigvec = np.linalg.eigh(P)
+    floor = (
+        float(min_eig)
+        if min_eig is not None
+        else rtol * max(float(eigval[-1]), float(original[0]))
+    )
+    if not np.isfinite(floor) or floor <= 0.0:
+        raise ValueError(f"repair floor must be positive and finite, got {floor}")
+    if eigval[0] >= floor:
+        repaired_p10, P_new, did = original.copy(), P, False
+    else:
+        P_new = (eigvec * np.maximum(eigval, floor)) @ eigvec.T
+        P_new = 0.5 * (P_new + P_new.T)
+        repaired_p10, did = _p10_from_symmetric(P_new), True
+    change = float(np.linalg.norm(repaired_p10 - original))
+    report = RepairReport(
+        p10_original=original,
+        p10=repaired_p10,
+        repaired=did,
+        min_eig_before=float(eigval[0]),
+        min_eig_after=float(np.linalg.eigvalsh(P_new)[0]),
+        p10_change_norm=change,
+        p10_relative_change=change / max(float(np.linalg.norm(original)), 1e-300),
+        pseudo_inertia_change_norm=float(np.linalg.norm(P_new - P)),
+    )
+    if did:
+        logger.info(
+            "repaired p10: min eig %.3e -> %.3e, |dp10| = %.3e (relative %.3e)",
+            report.min_eig_before,
+            report.min_eig_after,
+            change,
+            report.p10_relative_change,
+        )
+    return report
+```
+
+## `log_cholesky_by_joint_from_param_dict(*, parameter_dict, joint_names, massless='raise', rtol=PD_RTOL, max_log_scale=MAX_LOG_SCALE)`
+
+Encode the links named by `joint_names` from a flat parameter dict.
+
+Keys follow `m_<joint>`, `mx_<joint>`, ..., `Izz_<joint>`; other keys (friction, offsets, ...) are ignored and the input is not modified. `massless="skip"` leaves links with `m <= 0` out of the result (so their parameters stay as they are on decode); the default `"raise"` rejects them. Errors name the offending joint.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def log_cholesky_by_joint_from_param_dict(
+    *,
+    parameter_dict: Mapping[str, float],
+    joint_names: Iterable[str],
+    massless: str = "raise",
+    rtol: float = PD_RTOL,
+    max_log_scale: float = MAX_LOG_SCALE,
+) -> Dict[str, np.ndarray]:
+    """Encode the links named by ``joint_names`` from a flat parameter dict.
+
+    Keys follow ``m_<joint>``, ``mx_<joint>``, ..., ``Izz_<joint>``; other
+    keys (friction, offsets, ...) are ignored and the input is not
+    modified. ``massless="skip"`` leaves links with ``m <= 0`` out of the
+    result (so their parameters stay as they are on decode); the default
+    ``"raise"`` rejects them. Errors name the offending joint.
+    """
+    if massless not in ("raise", "skip"):
+        raise ValueError(f"massless must be 'raise' or 'skip', got {massless!r}")
+    p10_by_joint = p10_by_joint_from_param_dict(
+        parameter_dict=parameter_dict, joint_names=list(joint_names)
+    )
+    out: Dict[str, np.ndarray] = {}
+    for joint, p10 in p10_by_joint.items():
+        if massless == "skip" and p10[0] <= 0.0:
+            logger.debug("skipping massless link %s (m = %g)", joint, p10[0])
+            continue
+        try:
+            out[joint] = log_cholesky_from_p10(
+                p10, rtol=rtol, max_log_scale=max_log_scale
+            )
+        except ValueError as exc:
+            raise ValueError(f"joint {joint!r}: {exc}") from exc
+    return out
+```
+
+## `param_dict_with_log_cholesky_by_joint(*, parameter_dict, log_cholesky_by_joint, max_log_scale=MAX_LOG_SCALE)`
+
+Return a copy of `parameter_dict` with the encoded links decoded.
+
+Only the ten inertial keys of each joint in `log_cholesky_by_joint` change; every other key, and key order, is preserved.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def param_dict_with_log_cholesky_by_joint(
+    *,
+    parameter_dict: Mapping[str, float],
+    log_cholesky_by_joint: Mapping[str, np.ndarray],
+    max_log_scale: float = MAX_LOG_SCALE,
+) -> Dict[str, float]:
+    """Return a copy of ``parameter_dict`` with the encoded links decoded.
+
+    Only the ten inertial keys of each joint in ``log_cholesky_by_joint``
+    change; every other key, and key order, is preserved.
+    """
+    p10_by_joint = {}
+    for joint, z in log_cholesky_by_joint.items():
+        try:
+            p10_by_joint[joint] = p10_from_log_cholesky(z, max_log_scale=max_log_scale)
+        except ValueError as exc:
+            raise ValueError(f"joint {joint!r}: {exc}") from exc
+    return param_dict_with_p10_by_joint(
+        parameter_dict=dict(parameter_dict), p10_by_joint=p10_by_joint
+    )
+```
+
+## log_cholesky_fit
+
+Experimental (not re-exported from `figaroh.identification`). Opt-in, boundary-aware log-Cholesky fit (#24) for a `ComparatorProblem`. It first checks the regularised unconstrained optimum. If every link stays inside the pseudo-inertia margin and the mass bounds, it minimises the direct-fit objective in log-Cholesky coordinates from a feasible start (the unidentifiable directions are pinned to that optimum). Otherwise it solves the same objective as the direct-fit SDP. `notes` records the branch, the detection, the start (and any opt-in repair) and why the iteration stopped. Identifiability (`detection["rank"]`) is reported separately from physical feasibility. Statuses such as `invalid_start`, `time_budget`, `nonfinite_trial` and `max_nfev` come back unaccepted with no estimate. `BaseIdentification` runs it for `physical_fit: {method: log_cholesky}` (#25), with options from `physical_fit.log_cholesky` and the SDP solver from `physical_fit.solver`; `result["physical_fit"]["log_cholesky"]` carries the branch, rank, pinned null-space dimension, start repairs and interior stop reason. See the [boundary-aware log-Cholesky decision](https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/decisions/log-cholesky-boundary-aware.md).
+
+Opt-in, boundary-aware log-Cholesky physical fit (LC1, #24). Experimental.
+
+:func:`solve_log_cholesky_fit` minimises the objective of :func:`~figaroh.identification.physical_fit.solve_direct_effort_fit` on the same :class:`~figaroh.identification.physical_fit.ComparatorProblem`::
+
+```
+||W (Y theta - tau)||^2 + lambda ||D^-1 (theta - theta0)||^2
+```
+
+subject to every link being physically consistent. `W` is the row weight, `D` the coordinate scale, `theta0` the prior and `lambda` the policy's `prior_weight`. The method is the one accepted in `docs/decisions/log-cholesky-boundary-aware.md`:
+
+1. **Detect.** Compute the unconstrained (ridge) minimiser in closed form. It is the constrained optimum when every link has `min eig(P) >= eigenvalue_margin`, `m >= mass_min` and its `mass_ratio_bounds`; then the *interior* branch runs. Otherwise the optimum is on the boundary, which log-Cholesky coordinates cannot reach, and the *boundary* branch runs.
+1. **Interior.** Fit in log-Cholesky coordinates (one 10-vector per link, :mod:`~figaroh.identification.inertial_parameterization`) plus the remaining linear columns, with the regressor null space pinned to the prior, and stop once the identifiable residual distance to the detected optimum is below `stop_rms`.
+1. **Boundary.** Run the direct LMI effort fit itself (PICOS/CVXOPT).
+
+For this linear objective both branches return the convex optimum; the interior branch is the feasible-by-construction path that objectives which are not convex in `theta` need, and the record names the branch used. It is a local method: no global-optimum claim is made for other objectives.
+
+Every outcome is a :class:`~figaroh.identification.physical_fit.SolveRecord` with an independent per-link feasibility check. `theta` is `None` whenever the fit did not converge (`invalid_start`, `max_nfev`, `time_budget`, `nonfinite_trial`, `not_converged` or an SDP failure); callers keep their previous valid stage.
+
+## `LogCholeskyOptions(rank_rtol=1e-10, eigenvalue_margin=1e-06, stop_rms=1e-07, max_nfev=2000, max_seconds=60.0, method='dogbox', ftol=1e-10, xtol=1e-10, gtol=1e-10, max_log_scale=MAX_LOG_SCALE, repair_start=False, branch='auto', sdp_solver='cvxopt')`
+
+Options for :func:`solve_log_cholesky_fit` (defaults: #155 protocol).
+
+`rank_rtol`: singular values below `rank_rtol * s_max` of the scaled weighted regressor span the pinned null space. `eigenvalue_margin`: minimum pseudo-inertia eigenvalue for the interior branch. `stop_rms`: interior stop on `||M (q - q*)|| / sqrt(rows)`, in weighted-effort units (N\*m for unit weights). `max_nfev` and `max_seconds` bound the interior fit. `branch` forces a branch (`"auto"` detects). `repair_start` allows :func:`repair_p10` on start links that cannot be encoded.
+
+## `solve_log_cholesky_fit(p, *, start=None, options=None)`
+
+Boundary-aware log-Cholesky fit on a problem from `build_problem`.
+
+`start` is a full vector over `p.params_std` (default: the prior); only the interior branch uses it. Returns a `SolveRecord` with `objective="log_cholesky_fit"`; `notes` holds the branch, detection (rank, pinned null-space dimension, per-link verdicts), start repairs and interior counters. Experimental; the module is not re-exported from `figaroh.identification`.
+
+Source code in `src/figaroh/identification/log_cholesky_fit.py`
+
+```
+def solve_log_cholesky_fit(
+    p: ComparatorProblem,
+    *,
+    start: Optional[np.ndarray] = None,
+    options: Optional[LogCholeskyOptions] = None,
+) -> SolveRecord:
+    """Boundary-aware log-Cholesky fit on a problem from ``build_problem``.
+
+    ``start`` is a full vector over ``p.params_std`` (default: the prior);
+    only the interior branch uses it. Returns a ``SolveRecord`` with
+    ``objective="log_cholesky_fit"``; ``notes`` holds the branch, detection
+    (rank, pinned null-space dimension, per-link verdicts), start repairs and
+    interior counters. Experimental; the module is not re-exported from
+    ``figaroh.identification``.
+    """
+    opts = options or LogCholeskyOptions()
+    t0 = time.perf_counter()
+    obj = _Objective(p, opts.rank_rtol)
+    layout = _Layout(p)
+    detection = _detect(p, obj, opts.eigenvalue_margin, opts.rank_rtol)
+    branch = detection["branch"] if opts.branch == "auto" else opts.branch
+    notes: Dict[str, Any] = {
+        "method": "boundary_aware_log_cholesky",
+        "branch": branch,
+        "branch_forced": opts.branch != "auto",
+        "detection": detection,
+        "options": dataclasses.asdict(opts),
+    }
+
+    if branch == "boundary":
+        raw = _solve_core(p, "direct", solver=opts.sdp_solver)
+        notes["start"] = {"used": False}
+        raw["runtime_s"] = time.perf_counter() - t0
+        record = _make_record(
+            p, "log_cholesky_fit", solver=opts.sdp_solver, raw=raw, notes=notes
+        )
+        logger.info("log-Cholesky fit: boundary branch, status %s", raw["status"])
+        return record
+
+    theta_start = (
+        p.theta_prior.copy()
+        if start is None
+        else np.asarray(start, dtype=float).reshape(len(p.params_std))
+    )
+    if not np.all(np.isfinite(theta_start)):
+        raise ValueError("start has nonfinite entries")
+    x0, repairs, error = _start_coordinates(p, layout, obj, theta_start, opts)
+    notes["start"] = {
+        "used": True,
+        "source": "prior" if start is None else "given",
+        "repairs": repairs,
+    }
+    raw: Dict[str, Any] = {
+        "status": "invalid_start",
+        "picos_status": None,
+        "exception": None,
+        "objective_value": None,
+        "theta": None,
+    }
+    if error is not None:
+        raw["exception"] = (
+            f"{error}. Pass a physically consistent start or set "
+            "LogCholeskyOptions(repair_start=True)"
+        )
+    else:
+        theta, info = _fit_interior(p, obj, layout, x0, opts)
+        notes["interior"] = info
+        raw["status"] = "optimal" if theta is not None else info["stop_reason"]
+        raw["theta"] = theta
+        if theta is not None:
+            raw["objective_value"] = obj.value(theta)
+    raw["runtime_s"] = time.perf_counter() - t0
+    logger.info("log-Cholesky fit: interior branch, status %s", raw["status"])
+    return _make_record(p, "log_cholesky_fit", solver="scipy", raw=raw, notes=notes)
+```
+
 ## selection
 
 Which estimate an identification run reports (#61).
@@ -14089,7 +14730,7 @@ Which estimate an identification run reports (#61).
 
 - `fit` (default): the base-parameter least-squares fit, unchanged.
 - `reconstruction`: the full parameter vector reconstructed from the fit, accepted only when it is physically consistent and was produced by the requested method.
-- `physical_fit`: the direct LMI effort fit (:func:`figaroh.identification.physical_fit.solve_direct_effort_fit`).
+- `physical_fit`: a physically consistent effort fit chosen by `physical_fit.method`: `direct` (default), the direct LMI effort fit (:func:`figaroh.identification.physical_fit.solve_direct_effort_fit`), or `log_cholesky`, the experimental boundary-aware log-Cholesky fit (:func:`figaroh.identification.log_cholesky_fit.solve_log_cholesky_fit`, #25). Both minimise the same objective on the same training rows; the result names the method and, for `log_cholesky`, the branch.
 
 A requested stage that does not meet its acceptance conditions is *rejected*: nothing else is substituted, the selected stage is `none` and the verdict fails. The fit numbers stay under their usual result keys.
 
@@ -14099,21 +14740,21 @@ The estimate chosen by `select_stage` and the verdict on it.
 
 Attributes:
 
-| Name                  | Type                        | Description                                                                                              |
-| --------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `stage`               | `str`                       | Stage whose numbers are reported: fit, reconstruction or physical_fit when accepted, none when rejected. |
-| `requested`           | `str`                       | The stage that was asked for.                                                                            |
-| `status`              | `str`                       | accepted or rejected.                                                                                    |
-| `reason`              | `str`                       | Why, in one line (names the solver(s) and the failed test).                                              |
-| `space`               | `str`                       | standard (values are the full standard parameter vector).                                                |
-| `names`               | `List[str]`                 | Parameter names aligned with values.                                                                     |
-| `values`              | `Optional[ndarray]`         | The candidate vector; kept for diagnosis when rejected.                                                  |
-| `phi_base_equivalent` | `Optional[ndarray]`         | M @ theta for a standard candidate (diagnostic only, never used for prediction).                         |
-| `base_residual_rel`   | `Optional[float]`           | Relative distance of phi_base_equivalent from the fitted base parameters.                                |
-| `feasibility`         | `Dict[str, Dict[str, Any]]` | Per link {mass, min_eig, ok} for standard candidates.                                                    |
-| `effective_method`    | `Optional[str]`             | Method that produced a reconstruction.                                                                   |
-| `solvers`             | `List[str]`                 | Solver names tried for a physical fit.                                                                   |
-| `psd_eig_tol`         | `float`                     | Pseudo-inertia eigenvalue tolerance the links were judged feasible with; export uses the same one.       |
+| Name                  | Type                        | Description                                                                                                |
+| --------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `stage`               | `str`                       | Stage whose numbers are reported: fit, reconstruction or physical_fit when accepted, none when rejected.   |
+| `requested`           | `str`                       | The stage that was asked for.                                                                              |
+| `status`              | `str`                       | accepted or rejected.                                                                                      |
+| `reason`              | `str`                       | Why, in one line (names the solver(s) and the failed test).                                                |
+| `space`               | `str`                       | standard (values are the full standard parameter vector).                                                  |
+| `names`               | `List[str]`                 | Parameter names aligned with values.                                                                       |
+| `values`              | `Optional[ndarray]`         | The candidate vector; kept for diagnosis when rejected.                                                    |
+| `phi_base_equivalent` | `Optional[ndarray]`         | M @ theta for a standard candidate (diagnostic only, never used for prediction).                           |
+| `base_residual_rel`   | `Optional[float]`           | Relative distance of phi_base_equivalent from the fitted base parameters.                                  |
+| `feasibility`         | `Dict[str, Dict[str, Any]]` | Per link {mass, min_eig, ok} for standard candidates.                                                      |
+| `effective_method`    | `Optional[str]`             | Method that produced a reconstruction, or the physical_fit.method (direct/log_cholesky) of a physical fit. |
+| `solvers`             | `List[str]`                 | Solver names tried for a physical fit.                                                                     |
+| `psd_eig_tol`         | `float`                     | Pseudo-inertia eigenvalue tolerance the links were judged feasible with; export uses the same one.         |
 
 ### `predict(W_full)`
 
@@ -14181,7 +14822,7 @@ def requested_stage(identif) -> str:
 
 The `physical_fit` settings with every key present.
 
-The config parser already merges the defaults; a programmatic config may hold a partial mapping (or none), which is completed here.
+The config parser already merges the defaults; a programmatic config may hold a partial mapping (or none), which is completed here. Raises `ValueError` for an unknown key or a setting that :func:`~figaroh.identification.config.check_physical_fit_config` rejects, so a bad programmatic config fails as clearly as a parsed one.
 
 Source code in `src/figaroh/identification/selection.py`
 
@@ -14190,42 +14831,116 @@ def physical_fit_config(identif) -> Dict[str, Any]:
     """The ``physical_fit`` settings with every key present.
 
     The config parser already merges the defaults; a programmatic config
-    may hold a partial mapping (or none), which is completed here.
+    may hold a partial mapping (or none), which is completed here. Raises
+    ``ValueError`` for an unknown key or a setting that
+    :func:`~figaroh.identification.config.check_physical_fit_config`
+    rejects, so a bad programmatic config fails as clearly as a parsed one.
     """
-    from figaroh.identification.config import PHYSICAL_FIT_DEFAULTS
+    from figaroh.identification.config import (
+        PHYSICAL_FIT_DEFAULTS,
+        check_physical_fit_config,
+    )
 
     raw = (getattr(identif, "identif_config", None) or {}).get("physical_fit")
-    if isinstance(raw, dict) and PHYSICAL_FIT_DEFAULTS.keys() <= raw.keys():
-        return dict(raw)
     cfg = dict(PHYSICAL_FIT_DEFAULTS)
     if isinstance(raw, dict):
+        unknown = set(raw) - set(PHYSICAL_FIT_DEFAULTS)
+        if unknown:
+            raise ValueError(
+                f"unknown physical_fit keys {sorted(unknown)}; "
+                f"allowed: {sorted(PHYSICAL_FIT_DEFAULTS)}"
+            )
         cfg.update(raw)
-    return cfg
+    return check_physical_fit_config(cfg)
+```
+
+## `log_cholesky_summary(record)`
+
+JSON-ready branch, detection, start and solver metadata of a log-Cholesky :class:`~figaroh.identification.physical_fit.SolveRecord`.
+
+Reports the numerical rank and pinned null-space dimension separately from per-link feasibility, the links that sent the fit to the boundary, start repairs and, for the interior branch, the stop reason, evaluation counts and identifiable residual distance.
+
+Source code in `src/figaroh/identification/selection.py`
+
+```
+def log_cholesky_summary(record) -> Dict[str, Any]:
+    """JSON-ready branch, detection, start and solver metadata of a
+    log-Cholesky :class:`~figaroh.identification.physical_fit.SolveRecord`.
+
+    Reports the numerical rank and pinned null-space dimension separately
+    from per-link feasibility, the links that sent the fit to the boundary,
+    start repairs and, for the interior branch, the stop reason, evaluation
+    counts and identifiable residual distance.
+    """
+    notes = getattr(record, "notes", None) or {}
+    det = notes.get("detection") or {}
+    start = notes.get("start") or {}
+    out: Dict[str, Any] = {
+        "branch": notes.get("branch"),
+        "branch_forced": bool(notes.get("branch_forced", False)),
+        "rank": det.get("rank"),
+        "n_params": det.get("n_params"),
+        "null_space_dim": det.get("null_space_dim"),
+        "rank_rtol": det.get("rank_rtol"),
+        "eigenvalue_margin": det.get("eigenvalue_margin"),
+        "unconstrained_min_eig": det.get("unconstrained_min_eig"),
+        "active_links": {
+            j: list(v.get("active", []))
+            for j, v in (det.get("per_link") or {}).items()
+            if v.get("active")
+        },
+        "start_used": bool(start.get("used", False)),
+        "start_source": start.get("source"),
+        "start_repairs": dict(start.get("repairs") or {}),
+        "interior": None,
+    }
+    interior = notes.get("interior")
+    if interior:
+        keys = (
+            "stop_reason",
+            "nfev",
+            "njev",
+            "identifiable_rms",
+            "scipy_status",
+            "scipy_message",
+            "max_abs_log_scale",
+            "runtime_s",
+        )
+        out["interior"] = {k: interior[k] for k in keys if k in interior}
+    import json
+
+    return json.loads(json.dumps(out, default=float))
 ```
 
 ## `run_physical_fit(identif)`
 
-Solve the direct LMI effort fit on the data the fit used.
+Solve the configured physical fit on the data the fit used.
 
-Returns an outcome dict (never raises): `record` (a :class:`~figaroh.identification.physical_fit.SolveRecord` or `None`), `solvers` (names tried), `reason` and `accepted`. The processed regressor is scattered into all standard columns (zeros where columns were eliminated); friction and offsets are free parameters and the prior is the nominal standard parameter vector.
+Returns an outcome dict: `record` (a :class:`~figaroh.identification.physical_fit.SolveRecord` or `None`), `method`, `solvers` (names tried), `reason`, `accepted` and, for `method: log_cholesky`, a `log_cholesky` summary (:func:`log_cholesky_summary`). Solver failures do not raise; an invalid `physical_fit` config does. The training rows (`_solve_W`, `_solve_tau`) are scattered into all standard columns (zeros where columns were eliminated); held-out data never enters. Friction and offsets are free parameters and the prior (also the log-Cholesky start) is the nominal standard parameter vector.
 
 Source code in `src/figaroh/identification/selection.py`
 
 ```
 def run_physical_fit(identif) -> Dict[str, Any]:
-    """Solve the direct LMI effort fit on the data the fit used.
+    """Solve the configured physical fit on the data the fit used.
 
-    Returns an outcome dict (never raises): ``record`` (a
+    Returns an outcome dict: ``record`` (a
     :class:`~figaroh.identification.physical_fit.SolveRecord` or ``None``),
-    ``solvers`` (names tried), ``reason`` and ``accepted``. The processed
-    regressor is scattered into all standard columns (zeros where columns
-    were eliminated); friction and offsets are free parameters and the
-    prior is the nominal standard parameter vector.
+    ``method``, ``solvers`` (names tried), ``reason``, ``accepted`` and,
+    for ``method: log_cholesky``, a ``log_cholesky`` summary
+    (:func:`log_cholesky_summary`). Solver failures do not raise; an invalid
+    ``physical_fit`` config does. The training rows (``_solve_W``,
+    ``_solve_tau``) are scattered into all standard columns (zeros where
+    columns were eliminated); held-out data never enters. Friction and
+    offsets are free parameters and the prior (also the log-Cholesky start)
+    is the nominal standard parameter vector.
     """
     cfg = physical_fit_config(identif)
+    method = cfg["method"]
     solvers = [str(cfg["solver"])]
     outcome: Dict[str, Any] = {
         "record": None,
+        "method": method,
         "solvers": solvers,
         "reason": "",
         "accepted": False,
@@ -14258,16 +14973,22 @@ def run_physical_fit(identif) -> Dict[str, Any]:
             ),
             row_weight=getattr(identif, "_wls_row_weight", None),
         )
-        opts = {}
-        if cfg["max_seconds"] is not None:
-            opts["max_seconds"] = float(cfg["max_seconds"])
-        record = pf.solve_direct_effort_fit(problem, solver=solvers[0], **opts)
-        steps = [f"{solvers[0]}: {record.solver_status}"]
-        if record.solver_status != "optimal" and cfg["second_solver"]:
-            second = str(cfg["second_solver"])
-            solvers.append(second)
-            record = pf.solve_direct_effort_fit(problem, solver=second, **opts)
-            steps.append(f"{second}: {record.solver_status}")
+        if method == "log_cholesky":
+            record, steps = _run_log_cholesky(problem, cfg, solvers)
+            outcome["log_cholesky"] = log_cholesky_summary(record)
+            if record.notes.get("branch") != "boundary":
+                solvers[:] = ["scipy"]
+        else:
+            opts = {}
+            if cfg["max_seconds"] is not None:
+                opts["max_seconds"] = float(cfg["max_seconds"])
+            record = pf.solve_direct_effort_fit(problem, solver=solvers[0], **opts)
+            steps = [f"{solvers[0]}: {record.solver_status}"]
+            if record.solver_status != "optimal" and cfg["second_solver"]:
+                second = str(cfg["second_solver"])
+                solvers.append(second)
+                record = pf.solve_direct_effort_fit(problem, solver=second, **opts)
+                steps.append(f"{second}: {record.solver_status}")
         outcome["record"] = record
         outcome["psd_eig_tol"] = problem.policy.feas_tol
         outcome["accepted"] = bool(
@@ -14287,6 +15008,64 @@ def run_physical_fit(identif) -> Dict[str, Any]:
         logger.warning("physical fit failed: %s", exc)
         outcome["reason"] = f"{type(exc).__name__}: {exc}"
     return outcome
+```
+
+## `physical_fit_result(out)`
+
+The `result["physical_fit"]` entry for a :func:`run_physical_fit` outcome: verdict, method, solver status, elapsed time, objective, per-link feasibility and the log-Cholesky summary when present.
+
+Source code in `src/figaroh/identification/selection.py`
+
+```
+def physical_fit_result(out: Dict[str, Any]) -> Dict[str, Any]:
+    """The ``result["physical_fit"]`` entry for a :func:`run_physical_fit`
+    outcome: verdict, method, solver status, elapsed time, objective,
+    per-link feasibility and the log-Cholesky summary when present."""
+    record = out.get("record")
+    info = {
+        "status": "accepted" if out["accepted"] else "rejected",
+        "method": out.get("method", "direct"),
+        "reason": out["reason"],
+        "solvers": list(out["solvers"]),
+        "solver_status": None if record is None else record.solver_status,
+        "runtime_s": None if record is None else float(record.runtime_s),
+        "objective_value": None if record is None else record.objective_value,
+        "feasibility": {} if record is None else record.as_dict()["feasibility"],
+    }
+    if "log_cholesky" in out:
+        info["log_cholesky"] = out["log_cholesky"]
+    return info
+```
+
+## `stage_label(selected)`
+
+Display name of a selected-estimate dict (`SelectedEstimate.as_dict`).
+
+A log-Cholesky physical fit names its method and branch, e.g. `physical_fit (log_cholesky, boundary branch)`; the default `direct` method keeps the plain `physical_fit` label. A rejection reads `none (requested ...: rejected)`.
+
+Source code in `src/figaroh/identification/selection.py`
+
+```
+def stage_label(selected: Dict[str, Any]) -> str:
+    """Display name of a selected-estimate dict (``SelectedEstimate.as_dict``).
+
+    A log-Cholesky physical fit names its method and branch, e.g.
+    ``physical_fit (log_cholesky, boundary branch)``; the default ``direct``
+    method keeps the plain ``physical_fit`` label. A rejection reads
+    ``none (requested ...: rejected)``.
+    """
+    if selected.get("status") != "accepted":
+        return f"none (requested {selected.get('requested')}: rejected)"
+    stage = str(selected.get("stage"))
+    if stage != "physical_fit" or selected.get("physical_fit_method") in (
+        None,
+        "direct",
+    ):
+        return stage
+    branch = selected.get("log_cholesky_branch")
+    method = selected["physical_fit_method"]
+    detail = f"{method}, {branch} branch" if branch else str(method)
+    return f"{stage} ({detail})"
 ```
 
 ## `select_estimate(identif)`
@@ -19453,7 +20232,7 @@ These are importable and tested, but they may change or move in a minor release,
 - **`figaroh.integration`.** The one-line `RobotIdentificationSystem` workflow.
 - **`figaroh.visualisation` and `figaroh.tools.robotvisualization`.** Meshcat and plotting helpers.
 - **`figaroh.measurements`.** A measurement container that no shipped workflow uses.
-- **Log-Cholesky fits (LC1).** The log-Cholesky physical fit is not part of the library: the feasibility spike was a no-go for 0.7.0 (D5, issue 155). If it ships, it ships as an opt-in, experimental method.
+- **Log-Cholesky coordinates (LC1).** `figaroh.identification.inertial_parameterization` maps a link's inertial parameters to and from log-Cholesky coordinates (#23). It is not re-exported from `figaroh.identification`; import the module. `figaroh.identification.log_cholesky_fit` is the opt-in fit built on it (#24): it detects whether the unconstrained optimum is feasible, fits log-Cholesky coordinates when it is, and otherwise solves the direct-fit SDP. `BaseIdentification` reaches it through `physical_fit.method: log_cholesky` (#25). Its result record, statuses and the `physical_fit.log_cholesky` keys may still change.
 
 Names in these modules, as they stand today:
 
@@ -19461,6 +20240,8 @@ Names in these modules, as they stand today:
 - `figaroh.visualisation`: `colors`, `MeshcatVisualizer`
 - `figaroh.visualisation.colors`: `rgb2int`, `material`, `red`, `blue`, `green`, `yellow`, `magenta`, `cyan`, `white`, `black`, `grey`, `colormap`
 - `figaroh.backends.mujoco`: `MuJoCoBackend`
+- `figaroh.identification.inertial_parameterization`: `P10_ORDER`, `LOG_CHOLESKY_ORDER`, `MAX_LOG_SCALE`, `PD_RTOL`, `RepairReport`, `pseudo_inertia_from_p10`, `p10_from_pseudo_inertia`, `log_cholesky_from_pseudo_inertia`, `pseudo_inertia_from_log_cholesky`, `log_cholesky_from_p10`, `p10_from_log_cholesky`, `p10_jacobian_from_log_cholesky`, `repair_p10`, `log_cholesky_by_joint_from_param_dict`, `param_dict_with_log_cholesky_by_joint`
+- `figaroh.identification.log_cholesky_fit`: `LogCholeskyOptions`, `solve_log_cholesky_fit`
 - `figaroh.tools.robotvisualization`: `VisualizationConfig`, `RobotVisualizer`, `place`, `display_COM`, `display_axes`, `rotation_matrix_from_vectors`, `display_force`, `display_bounding_boxes`, `display_joints`
 - `figaroh.measurements`: `Measurement`
 
@@ -29971,6 +30752,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### [Unreleased]
 
+### [1.2.0] - 2026-11-13
+
+An opt-in, experimental log-Cholesky fit for the `physical_fit` stage (package LC1, tracker #20). The maintainer decided on 2026-11-12 to release it before the code-quality packages Q1–Q5 (#238, #240). The paired figaroh-examples tag is `v1.2.0`.
+
+Upgrading from 1.1: no configuration change is required and no result changes. `physical_fit.method: direct` stays the default; the new fit runs only when a config asks for `physical_fit.method: log_cholesky`. Its result record, statuses and option keys are experimental and may change in a minor release.
+
+Known issues, present in 1.1.0 as well and planned as Q1 (#238): `solve(decimate=False)` fails and `compute_reference_torque` reads the wrong regressor rows when the active joints are a subset of the model's joints. The fix is planned as 1.2.1.
+
+#### Added
+
+- Experimental `figaroh.identification.inertial_parameterization`: exact maps between a link's Pinocchio-order inertial vector, its pseudo-inertia and log-Cholesky coordinates, with the Jacobian `d p10 / d z`. Massless, singular or inconsistent links and out-of-range exponents raise errors that say what to do; `repair_p10` is the opt-in alternative and reports how far it moved the body. Per-joint helpers keep other parameter keys and never modify their input. A representation for later estimators; it changes no identification result and imports no SDP solver. (#23)
+- Experimental `figaroh.identification.log_cholesky_fit`: an opt-in boundary-aware fit. It checks the unconstrained optimum first, fits log-Cholesky coordinates when that optimum is feasible and solves the direct-fit SDP when it is not. The record reports the branch, the identifiable rank and why the fit stopped. An invalid start, an exhausted budget or a nonfinite trial returns an unaccepted record with no estimate. No existing workflow calls it. (#24)
+- `physical_fit.method: log_cholesky` runs the experimental boundary-aware log-Cholesky fit as the `physical_fit` stage; `direct` stays the default. Options go under `physical_fit.log_cholesky` and are checked when the config loads: an unknown method or key, options without the method, and `second_solver` or top-level `max_seconds` with it raise. The result, the selected estimate, the physical stage record, validation metrics and both reports name the method and branch, and record rank, pinned null-space dimension, start repairs, stop reason, runtime and objective. A fit that does not converge is rejected with no estimate, so verification fails and the archive writes no parameters. The interior branch imports no SDP solver. (#25)
+- Change the log-Cholesky spike's method instead of its budget: detect an infeasible unconstrained optimum first, fit log-Cholesky coordinates with the regressor null space pinned (dogbox, stopping on the identifiable residual) in the interior, and solve the torque SDP with an eigenvalue margin on the boundary. The protocol was frozen before confirmation; on fresh seeds all 24 gated fits converge and pass every gate on Pinocchio 3.7 and 4.1, so the decision is go. Private research spike, not a production solver. (#155)
+
+#### Changed
+
+- Roadmap and delivery plan: release the log-Cholesky work first as 1.2.0, then code-quality packages Q1–Q5 from the 2026-11-12 codebase review (1.2.1 hotfix, 1.3.0, 1.4.0, 2.0.0). CONTRIBUTING and AGENTS gain the rule that a core development or fix is paired with work in `figaroh-examples` whenever an example is affected. Documentation only; no library behaviour changes.
+
+#### Fixed
+
+- The log-Cholesky fit's interior branch no longer rejects fits that have converged. The detected optimum kept a spurious null-space component, amplified from noise-level singular values, that the stop rule could never reach; on the sample manipulator every default-option interior fit was rejected. The optimum is now computed on the kept rank only. (#234)
+
 ### [1.1.0] - 2026-10-29
 
 Calibration estimation improvements and the fixes found by the C5 calibration studies (accepted 2026-10-26, #167). Several fixes correct wrong results in 1.0.x, so they ship now instead of waiting for M2, which moves to 1.2 and later (#228). The paired figaroh-examples tag is `v1.1.0`.
@@ -30752,6 +31556,8 @@ For triage, use one type (`bug`, `feature`, `docs`, `maintenance`), an area (`id
 | `figaroh-plus/main`     | Stable release branch; release and urgent hotfix PRs               |
 | `figaroh-examples/main` | Separate examples integration branch; no `devel` branch is assumed |
 
+**Pair core work with examples.** Before a core issue becomes Ready, check `figaroh-examples` for scripts, configs, expected outputs, docs and tests that use the behaviour being changed. If an example is affected, open a paired examples issue and link it; the core issue closes only when the paired examples PR is merged. If none is affected, say so on the core issue with what was searched; no paired item is needed. Planned work is listed in the roadmap and [delivery plan](https://thanhndv212.github.io/figaroh-plus/further_reading/plans/#coreexamples-pairing-rule) before implementation starts.
+
 Cross-repository work uses linked PRs and records the exact core/examples revisions validated together. Land a compatible core API before examples depend on it; document a minimum release or temporary commit dependency. Do not copy robot-specific code into core just to avoid a second PR.
 
 ### Merge and release gates
@@ -30916,7 +31722,7 @@ The canonical proposal is maintained in `docs/plans/` and embedded below. It is 
 
 ## Identification and calibration delivery plan
 
-**Status: Tracker setup approved; execution details under review — revision 4, 2026-10-02. Implementation status refreshed 2026-10-12 (after the M1 acceptance review)** (see [implementation status](#implementation-status)). Confirmed user preferences: advance calibration alongside dynamic identification; TIAGo mocap is the first calibration reference, with TALOS contact as the second consumer/regression target. The user authorized GitHub milestone/issue creation on 2026-10-02 and requested one-by-one delivery. Tracker setup does not accept unresolved public interfaces, change solver defaults, or approve automatic implementation/merges. Review issue readiness before selecting implementation work. Existing approved work and open PRs retain their own review gates.
+**Status: Tracker setup approved; execution details under review — revision 4, 2026-10-02. Implementation status refreshed 2026-10-12 (after the M1 acceptance review)** (see [implementation status](#implementation-status)). **Code-quality packages Q1–Q5, the core/examples pairing rule and the release order (log-Cholesky first, as 1.2.0) were added on 2026-11-12** (see [Q1–Q5](#code-quality-and-reliability-packages-q1q5)). Confirmed user preferences: advance calibration alongside dynamic identification; TIAGo mocap is the first calibration reference, with TALOS contact as the second consumer/regression target. The user authorized GitHub milestone/issue creation on 2026-10-02 and requested one-by-one delivery. Tracker setup does not accept unresolved public interfaces, change solver defaults, or approve automatic implementation/merges. Review issue readiness before selecting implementation work. Existing approved work and open PRs retain their own review gates.
 
 ### Purpose and scope
 
@@ -30993,7 +31799,12 @@ flowchart TD
     S3["<b>S3: Improved experiment design</b> · #49<br/>#65 #90<br/>ex#32"]
     S4["<b>S4: Selective composition</b> · #52<br/>#67"]
     B1["<b>B1: Backend parity</b> · #53<br/>#68<br/>ex#34"]
-    LC1["<b>LC1: Log-Cholesky production</b> · #20<br/>#155 (go gate)<br/>#23 #24 #25<br/>ex#11"]
+    LC1["<b>LC1: Log-Cholesky production</b> · #20<br/>✓ #155 (go) #23 #24 #25 #234<br/>✓ ex#11<br/>release 1.2.0 pending"]
+    Q1["<b>Q1: Correctness fixes</b><br/>planned, no tracker"]
+    Q2["<b>Q2: Fail loudly</b><br/>planned, no tracker"]
+    Q3["<b>Q3: Tooling</b><br/>planned, no tracker"]
+    Q4["<b>Q4: Structure and performance</b><br/>planned, no tracker"]
+    Q5["<b>Q5: Breaking removals</b><br/>planned, no tracker"]
 
     R --> W1
     R --> W2
@@ -31029,6 +31840,13 @@ flowchart TD
     A --> S4
     W3 --> S4
     A --> B1
+    LC1 -. "released first (1.2.0)" .-> Q1
+    Q1 --> Q4
+    Q2 --> Q4
+    Q3 --> Q4
+    Q4 -. typed contracts designed together .-> S4
+    Q2 --> Q5
+    Q4 --> Q5
 
     classDef cleared fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
     classDef ready fill:#fff3cd,stroke:#b8860b,color:#5c4400
@@ -31037,36 +31855,38 @@ flowchart TD
     classDef active fill:#fff3cd,stroke:#b8860b,stroke-width:3px,stroke-dasharray:6 3,color:#5c4400
 ```
 
-Legend: **green ✅ = tracker cleared** (closure record confirmed); **amber = ready**, all prerequisites cleared (dashed amber border = work in progress or in review); uncoloured = blocked on an upstream package. Each box lists its tracker number, then the issues in its milestone (core first, then `ex#` = figaroh-examples). Issues marked ✓ are closed; unmarked issues are open. Two open examples issues have no package yet: ex#70 (TIAGo suspension real-data fit) and ex#71 (TIAGo backlash surface); both are research examples outside M1.
+Legend: **green ✅ = tracker cleared** (closure record confirmed); **amber = ready**, all prerequisites cleared (dashed amber border = work in progress or in review); uncoloured = blocked on an upstream package. Each box lists its tracker number, then the issues in its milestone (core first, then `ex#` = figaroh-examples). Issues marked ✓ are closed; unmarked issues are open. Two open examples issues have no package yet: ex#70 (TIAGo suspension real-data fit) and ex#71 (TIAGo backlash surface); both are research examples outside M1. Q1–Q5 (added 2026-11-12) are planned packages without trackers; their rosters are in [Code-quality and reliability packages](#code-quality-and-reliability-packages-q1q5).
 
 #### Implementation status
 
 Status as of 2026-10-12 (C5 row 2026-10-29), taken from the GitHub trackers. The trackers stay authoritative; refresh this table when a tracker closes.
 
-| Package                          | Status                 | Closed     | Delivered by / remaining                                                                                                                                                                                                                                                                                                                                                                                     |
-| -------------------------------- | ---------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **W1** fixtures                  | ✅ **Cleared**         | 2026-10-03 | examples #44, #57, #61, #62: hosted examples CI on both Pinocchio profiles; every robot loads from a clean checkout                                                                                                                                                                                                                                                                                          |
-| **W2** TALOS regression          | ✅ **Cleared**         | 2026-10-03 | examples #46, #54: examples #14 explained; deterministic TALOS fixtures and noise-floor held-out checks                                                                                                                                                                                                                                                                                                      |
-| **W4** engineering process       | ✅ **Cleared**         | 2026-10-03 | core #71, #74, #80, #86–#93; examples #37, #40, #47: templates, real-model regressor tests, lint debt removed, full pre-commit blocking                                                                                                                                                                                                                                                                      |
-| **D1** acceleration              | ✅ **Cleared**         | 2026-10-02 | core #69 (fixes #32)                                                                                                                                                                                                                                                                                                                                                                                         |
-| **D2** signal audit              | ✅ **Cleared**         | 2026-10-03 | examples #19/#20 UR10 and TIAGo audits, examples #35                                                                                                                                                                                                                                                                                                                                                         |
-| **C1** frames/data audit         | ✅ **Cleared**         | 2026-10-03 | examples #24/#25 TIAGo and TALOS audits; its follow-ups #97–#99 were moved to C4 and closed there                                                                                                                                                                                                                                                                                                            |
-| **C2** calibration truth/holdout | ✅ **Cleared**         | 2026-10-05 | accepted on core `a991bf3` + examples `c791ecd`; deferred items moved to #119/#120 (C4)                                                                                                                                                                                                                                                                                                                      |
-| **C3** geometric export          | ✅ **Cleared**         | 2026-10-06 | accepted on core `efd9f69` + examples `2c75f50`                                                                                                                                                                                                                                                                                                                                                              |
-| **W3** data/result contracts     | ✅ **Cleared**         | 2026-10-06 | core #126 (ADR, #54), #128/#130 (contract, #55), #132 (#131), #127 (#125); examples #84 (#17); accepted on core `4ec06d4` + examples `9a9e6d7`                                                                                                                                                                                                                                                               |
-| **D3** UR10 truth fixture        | ✅ **Cleared**         | 2026-10-07 | examples #21 by examples #89/#91 (fixture, frozen protocol v1, UR10 example moved onto it); #142 by #144; #143 by #145 + examples #92 (both added 2026-10-07); accepted on core `2260786` + examples `b23b836` (core 846 passed; examples `validate.py` 16/16, pytest 255 passed)                                                                                                                            |
-| **D5** convergence research      | ✅ **Cleared**         | 2026-10-10 | #22 by PR #31 (revise); #30 by PR #154 (no-go: 8/24 gated fits exhaust 2000 evaluations). The method change #155 moved to LC1 as its go gate                                                                                                                                                                                                                                                                 |
-| **D6** inertial export           | ✅ **Cleared**         | 2026-10-06 | #60 by PR #138; accepted on core `0e6a78c` + examples `a3381bc` (core 817 passed; examples `validate.py` 16/16, pytest 237 passed); merged-body export left to D7 (#61)                                                                                                                                                                                                                                      |
-| **S1** reporting contract        | ✅ **Cleared**         | 2026-10-06 | core #63 (PR #134), #70, #100, #103 (PR #135); examples #30 (examples PR #85), #36                                                                                                                                                                                                                                                                                                                           |
-| **C4** calibration reference     | ✅ **Cleared**         | 2026-10-06 | examples #29 by examples #88 (`reference_run.py`); #119 by #141 (core support; TIAGo protocol keeps one marker); #120 by #140 + examples #87 (`map` replaces the coefficient); #97–#99 by #127, #137, #139 + examples #86; accepted on core `c80b5fc` + examples `88e2fc2`. Held-out marker RMSE 3.8–4.2 mm; export parity ≤ 2.1e-12 m                                                                       |
-| S2 uncertainty                   | In progress (M2)       | —          | core #107 calibration standard errors fixed; #64 open                                                                                                                                                                                                                                                                                                                                                        |
-| **U1** onboarding                | ✅ **Cleared**         | 2026-10-11 | core #66 (guideline); examples #33 by examples PR #123: worked briefs for the UR10 truth and TIAGo identification references, TIAGo mocap calibration and a TX40 no-validation-data case, rerun against the accepted D7/C4 evidence on core `779e830` + examples `b167298` (examples `validate.py` 18/18)                                                                                                    |
-| **D4** physical comparison       | ✅ **Cleared**         | 2026-10-09 | #59 by PR #153 (2026-10-08); examples #12 by examples PR #13; examples #22 by examples PRs #94 and #95                                                                                                                                                                                                                                                                                                       |
-| **D7** dynamic reference         | ✅ **Cleared**         | 2026-10-10 | #61 by PRs #165, #172; #116 by #169 + examples #117; examples #69, #68 by examples #118, #23 by examples #119 (`identification_reference.py`). Accepted on core `658fe99` + examples `663d642` (examples `validate.py` 18/18). UR10 truth and TIAGo select `physical_fit`; export parity ≤ 6.1e-10. Follow-ups #163 and #164 fixed by PR #174 (`projected` stays non-selectable)                             |
-| **C5** calibration studies (M2)  | ✅ **Cleared**         | 2026-10-26 | Phases 0–3 done: studies examples #96–#101, #71, #70 and data #104–#114 (last, #112 by examples PR #171, 2026-10-25). Suspension (#70) has no run record (requirement 6), accepted as a disclosed limit. TALOS motion capture examples #172 (on data #114) done 2026-10-26 by examples PR #173. Closing review accepted on #167 the same day. Follow-ups core #204, #205, #215 and #217 are fixed on `devel` |
-| LC1 log-Cholesky production      | In progress (optional) | —          | Go gate #155 (method change) in progress: exploration done on spent seeds, method choice pending, protocol not frozen. #23–#25 and examples #11 wait on its go decision                                                                                                                                                                                                                                      |
-| S3, B1                           | Blocked                | —          | S3 and B1 wait on S2 and M1 acceptance                                                                                                                                                                                                                                                                                                                                                                       |
-| S4 composition (M2)              | Blocked                | —          | W3 cleared; still waits on accepted M1 references                                                                                                                                                                                                                                                                                                                                                            |
+| Package                                    | Status               | Closed     | Delivered by / remaining                                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------------ | -------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **W1** fixtures                            | ✅ **Cleared**       | 2026-10-03 | examples #44, #57, #61, #62: hosted examples CI on both Pinocchio profiles; every robot loads from a clean checkout                                                                                                                                                                                                                                                                                          |
+| **W2** TALOS regression                    | ✅ **Cleared**       | 2026-10-03 | examples #46, #54: examples #14 explained; deterministic TALOS fixtures and noise-floor held-out checks                                                                                                                                                                                                                                                                                                      |
+| **W4** engineering process                 | ✅ **Cleared**       | 2026-10-03 | core #71, #74, #80, #86–#93; examples #37, #40, #47: templates, real-model regressor tests, lint debt removed, full pre-commit blocking                                                                                                                                                                                                                                                                      |
+| **D1** acceleration                        | ✅ **Cleared**       | 2026-10-02 | core #69 (fixes #32)                                                                                                                                                                                                                                                                                                                                                                                         |
+| **D2** signal audit                        | ✅ **Cleared**       | 2026-10-03 | examples #19/#20 UR10 and TIAGo audits, examples #35                                                                                                                                                                                                                                                                                                                                                         |
+| **C1** frames/data audit                   | ✅ **Cleared**       | 2026-10-03 | examples #24/#25 TIAGo and TALOS audits; its follow-ups #97–#99 were moved to C4 and closed there                                                                                                                                                                                                                                                                                                            |
+| **C2** calibration truth/holdout           | ✅ **Cleared**       | 2026-10-05 | accepted on core `a991bf3` + examples `c791ecd`; deferred items moved to #119/#120 (C4)                                                                                                                                                                                                                                                                                                                      |
+| **C3** geometric export                    | ✅ **Cleared**       | 2026-10-06 | accepted on core `efd9f69` + examples `2c75f50`                                                                                                                                                                                                                                                                                                                                                              |
+| **W3** data/result contracts               | ✅ **Cleared**       | 2026-10-06 | core #126 (ADR, #54), #128/#130 (contract, #55), #132 (#131), #127 (#125); examples #84 (#17); accepted on core `4ec06d4` + examples `9a9e6d7`                                                                                                                                                                                                                                                               |
+| **D3** UR10 truth fixture                  | ✅ **Cleared**       | 2026-10-07 | examples #21 by examples #89/#91 (fixture, frozen protocol v1, UR10 example moved onto it); #142 by #144; #143 by #145 + examples #92 (both added 2026-10-07); accepted on core `2260786` + examples `b23b836` (core 846 passed; examples `validate.py` 16/16, pytest 255 passed)                                                                                                                            |
+| **D5** convergence research                | ✅ **Cleared**       | 2026-10-10 | #22 by PR #31 (revise); #30 by PR #154 (no-go: 8/24 gated fits exhaust 2000 evaluations). The method change #155 moved to LC1 as its go gate                                                                                                                                                                                                                                                                 |
+| **D6** inertial export                     | ✅ **Cleared**       | 2026-10-06 | #60 by PR #138; accepted on core `0e6a78c` + examples `a3381bc` (core 817 passed; examples `validate.py` 16/16, pytest 237 passed); merged-body export left to D7 (#61)                                                                                                                                                                                                                                      |
+| **S1** reporting contract                  | ✅ **Cleared**       | 2026-10-06 | core #63 (PR #134), #70, #100, #103 (PR #135); examples #30 (examples PR #85), #36                                                                                                                                                                                                                                                                                                                           |
+| **C4** calibration reference               | ✅ **Cleared**       | 2026-10-06 | examples #29 by examples #88 (`reference_run.py`); #119 by #141 (core support; TIAGo protocol keeps one marker); #120 by #140 + examples #87 (`map` replaces the coefficient); #97–#99 by #127, #137, #139 + examples #86; accepted on core `c80b5fc` + examples `88e2fc2`. Held-out marker RMSE 3.8–4.2 mm; export parity ≤ 2.1e-12 m                                                                       |
+| S2 uncertainty                             | In progress (M2)     | —          | core #107 calibration standard errors fixed; #64 open                                                                                                                                                                                                                                                                                                                                                        |
+| **U1** onboarding                          | ✅ **Cleared**       | 2026-10-11 | core #66 (guideline); examples #33 by examples PR #123: worked briefs for the UR10 truth and TIAGo identification references, TIAGo mocap calibration and a TX40 no-validation-data case, rerun against the accepted D7/C4 evidence on core `779e830` + examples `b167298` (examples `validate.py` 18/18)                                                                                                    |
+| **D4** physical comparison                 | ✅ **Cleared**       | 2026-10-09 | #59 by PR #153 (2026-10-08); examples #12 by examples PR #13; examples #22 by examples PRs #94 and #95                                                                                                                                                                                                                                                                                                       |
+| **D7** dynamic reference                   | ✅ **Cleared**       | 2026-10-10 | #61 by PRs #165, #172; #116 by #169 + examples #117; examples #69, #68 by examples #118, #23 by examples #119 (`identification_reference.py`). Accepted on core `658fe99` + examples `663d642` (examples `validate.py` 18/18). UR10 truth and TIAGo select `physical_fit`; export parity ≤ 6.1e-10. Follow-ups #163 and #164 fixed by PR #174 (`projected` stays non-selectable)                             |
+| **C5** calibration studies (M2)            | ✅ **Cleared**       | 2026-10-26 | Phases 0–3 done: studies examples #96–#101, #71, #70 and data #104–#114 (last, #112 by examples PR #171, 2026-10-25). Suspension (#70) has no run record (requirement 6), accepted as a disclosed limit. TALOS motion capture examples #172 (on data #114) done 2026-10-26 by examples PR #173. Closing review accepted on #167 the same day. Follow-ups core #204, #205, #215 and #217 are fixed on `devel` |
+| LC1 log-Cholesky production                | In review (optional) | —          | Go gate #155 recorded go (closed 2026-11-05); #23, #24, #25 and the follow-up fix #234 are closed and on `devel`; examples #11 is closed. Tracker #20 is open: its closing review and the 1.2.0 release are what remain (status checked 2026-11-12)                                                                                                                                                          |
+| S3, B1                                     | Blocked              | —          | S3 and B1 wait on S2 and M1 acceptance                                                                                                                                                                                                                                                                                                                                                                       |
+| S4 composition (M2)                        | Blocked              | —          | W3 cleared; still waits on accepted M1 references                                                                                                                                                                                                                                                                                                                                                            |
+| Q1 correctness, Q2 fail loudly, Q3 tooling | Planned (2026-11-12) | —          | Rosters in [Q1–Q5](#code-quality-and-reliability-packages-q1q5); no tracker or issues yet. Q1.1 is the 1.2.1 hotfix; the rest is planned for 1.3.0, after LC1 ships in 1.2.0                                                                                                                                                                                                                                 |
+| Q4 structure/performance, Q5 removals      | Planned (2026-11-12) | —          | Q4 waits on Q1–Q3 (1.4.0); Q5 waits on a released minor with the deprecation warnings (2.0.0)                                                                                                                                                                                                                                                                                                                |
 
 **Gate summary:** M0's delivery roster (W1, W2, W4) and M1.1 (D1, D2, C1) are cleared. **The calibration workstream is complete through M1.4** (C2, C3, C4). **The dynamic workstream is complete through M1.4** (D3, D4, D6, D7), released in 0.7.0. U1 cleared on 2026-10-11.
 
@@ -31191,6 +32011,76 @@ Potential new work must not duplicate #20/#22–#25/#30/#32 or examples
 
 individual issues/PRs rather than closing a broad issue with partial evidence.
 
+### Code-quality and reliability packages (Q1–Q5)
+
+**Status: proposed 2026-11-12; scope, pairing and release order decided by the maintainer the same day** (see [decisions](#maintainer-decisions-2026-11-12)). No tracker, milestone or issue exists yet, and nothing in this section authorizes a merge. The packages come from a codebase review of `devel` at `21994ed` (local baseline in `figaroh-dev`, Python 3.12: 1155 passed, 6 skipped, 1 environmental failure in `test_meshes_exist`). That count is dated evidence, not a claim about hosted CI.
+
+#### Evidence
+
+| Finding                                                                                                                                                                            | Evidence                                                                            | Consequence                                                        |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `solve(decimate=False)` fails when the active joints are a subset of the model                                                                                                     | Reproduced: 6-joint fixture, 4 active joints, `matmul` size mismatch (1600 vs 2400) | Only the decimated path selects active-joint rows                  |
+| `compute_reference_torque` takes the first `n_active * N` rows                                                                                                                     | Reproduced: correct for a prefix active set, wrong joints otherwise                 | Silent wrong reference torque for non-prefix active sets           |
+| `solve_with_custom_solver` skips the sample mask, the `fit` stage record and the run-state reset                                                                                   | Reproduced: 2400 rows against 2100 in `solve` with 50 masked samples                | Results differ from `solve` and stale state can reach later stages |
+| `LinearSolver(method="robust")` raises `UnboundLocalError` on an exact fit; `bounds` and `regularization` are ignored by some methods; a failed constrained solve returns a result | Reproduced                                                                          | The caller cannot tell that the requested estimator was not used   |
+| Wrench-mode friction, actuator-inertia and offset columns use row `j * 6 + sample`                                                                                                 | Read in `tools/regressor.py`, **not run**                                           | Needs a wrench-mode reproducer before the fix                      |
+| Fallbacks that hide failures (dropped CAD constraints, correlation reported as 1.0, validation falling back to identification data, a save path that returns nothing)              | Read                                                                                | A failed step can look like a result                               |
+| `print`, `plt.show` and a handler on a global logger in library code; unseeded global `np.random`                                                                                  | Read; conflicts with the logging rule in AGENTS                                     | Not reproducible or embeddable as shipped                          |
+| `cyipopt` and `cvxopt` used but undeclared; `mypy`, `isort`, `pytest-cov` listed but not configured or run; stale `MANIFEST.in`                                                    | Read                                                                                | Tooling claims exceed what CI checks                               |
+
+The five defects in the first five rows are present in the `v1.1.0` sources.
+
+#### Core/examples pairing rule
+
+Maintainer instruction, 2026-11-12: **a core development or fix is paired with work in `figaroh-examples` whenever an example is affected.** If no example is affected, no paired item is needed. This applies to all packages from this date, not only Q1–Q5.
+
+1. Before a core issue becomes Ready, check `figaroh-examples` for scripts, configs, expected outputs, docs and tests that use the behaviour being changed, and record the result on the issue: the paired examples issue, or "no example affected" with what was searched.
+1. When an example is affected, the core PR merges first; the examples PR follows and records the core commit it was validated against.
+1. Both issues record the tested core/examples commit pair and the `validate.py` result. The core issue closes only when its paired item is merged.
+1. An unpaired core change is still covered by the release evidence, which runs examples `validate.py` on the release pair.
+
+#### Packages and rosters
+
+Work items below are candidates for issues; each row becomes one core issue, with an examples issue where the pairing column names a change. IDs such as Q1.2 are plan references, not issue numbers.
+
+| Item                                                 | Core work                                                                                                                                                                             | Paired `figaroh-examples` work                                                                                                                                                   | Release        |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| **Q1 — Correctness fixes** (M0)                      |                                                                                                                                                                                       |                                                                                                                                                                                  |                |
+| Q1.1                                                 | One helper returns the row slices of the active joints; used by the undecimated path, the decimated path and `compute_reference_torque`. Regression test with a non-prefix active set | Subset-joint run with `decimate=False` on the UR10 truth fixture (`examples/ur10/identification_truth.py` already uses `decimate=False`); full-joint reference numbers unchanged | 1.2.1 (hotfix) |
+| Q1.2                                                 | `solve_with_custom_solver` shares the preparation, masking, stage record and state reset of `solve`                                                                                   | None: no example calls it                                                                                                                                                        | 1.3.0          |
+| Q1.3                                                 | `LinearSolver`: fix the robust exact-fit crash, reject options a method does not support, raise on a failed constrained solve, drop dense diagonal weight matrices                    | None: no example uses `LinearSolver` directly                                                                                                                                    | 1.3.0          |
+| Q1.4                                                 | Reproduce, then fix, wrench-mode row indexing with a test that includes friction columns and more than six samples                                                                    | TALOS and TIAGo configs set `include_external_forces: true`; audit which mode they actually run, then add a wrench-mode check or correct the configs                             | 1.3.0          |
+| **Q2 — Fail loudly** (M0)                            |                                                                                                                                                                                       |                                                                                                                                                                                  |                |
+| Q2.1                                                 | Remove the silent fallbacks listed above; uncomputable metrics are NaN                                                                                                                | rerun both reference workflows; fix any example that relied on a fallback and update its expected outputs                                                                        | 1.3.0          |
+| Q2.2                                                 | `assert` used as validation becomes explicit exceptions; base exception renamed `FigarohError` with `FigarohExampleError` kept as a deprecated alias                                  | `examples/__init__.py` and `tests/test_error_handling.py` use the old name                                                                                                       | 1.3.0          |
+| Q2.3                                                 | Library output goes through `figaroh.*` loggers; no handler on a global logger; `solve()` printing and plotting by default is deprecated with a warning                               | about 20 example files pass `plotting=` and the calibration scripts rely on the printed report; call reports explicitly                                                          | 1.3.0          |
+| Q2.4                                                 | Random data, waypoint and initial-guess generators accept a seed or `Generator`                                                                                                       | example scripts that generate data or trajectories pass a recorded seed                                                                                                          | 1.3.0          |
+| Q2.5                                                 | Deprecation warnings for everything Q5 removes                                                                                                                                        | Replace any deprecated usage the new warnings report in examples; none needed if there is none                                                                                   | 1.3.0          |
+| **Q3 — Tooling** (M0)                                |                                                                                                                                                                                       |                                                                                                                                                                                  |                |
+| Q3.1                                                 | Packaging metadata: declare or make optional the solver dependencies, remove `MANIFEST.in` and empty tables, single-source the version                                                | align `environment.yml` and `requirements.txt`; clean-install check                                                                                                              | 1.3.0          |
+| Q3.2                                                 | pytest `pythonpath` and shared fixtures instead of `sys.path` edits, coverage reported in CI, type checking on new modules, refreshed hook revisions                                  | same hook revisions and coverage report in examples CI                                                                                                                           | 1.3.0          |
+| Q3.3                                                 | Correct documentation drift (Python floor in AGENTS, development-status classifier)                                                                                                   | Matching statements in examples AGENTS/CONTRIBUTING, if present                                                                                                                  | 1.3.0          |
+| **Q4 — Structure and performance** (M0, overlaps M2) |                                                                                                                                                                                       |                                                                                                                                                                                  |                |
+| Q4.1                                                 | Remove unreferenced private code; move example-only validators, decorators and logging setup out of `utils/error_handling.py`                                                         | examples receives those helpers (11 files import the module)                                                                                                                     | 1.4.0          |
+| Q4.2                                                 | Typed result and configuration objects, old dictionary keys kept as a deprecated view. Needs an ADR and is designed with S4, not separately                                           | one identification and one calibration reference migrate as the two consumers                                                                                                    | 1.4.0          |
+| Q4.3                                                 | Move reporting, plotting and the physical-consistency step out of `BaseIdentification` and `BaseCalibration` with numerical parity                                                    | robot subclasses in `examples/<robot>/utils/` keep working; reference numbers unchanged                                                                                          | 1.4.0          |
+| Q4.4                                                 | Vectorized decimation, regressor built for active joints only, no explicit normal-equation inverse                                                                                    | None expected: results must be identical                                                                                                                                         | 1.4.0          |
+| **Q5 — Breaking removals**                           |                                                                                                                                                                                       |                                                                                                                                                                                  |                |
+| Q5.1                                                 | Remove the 1.0 shims, the legacy result keys and the exception alias; `solve()` neither prints nor plots by default; optional dependencies move to extras                             | migration PR and the `figaroh>=2.0,<2.1` pin                                                                                                                                     | 2.0.0          |
+
+#### Order and gates
+
+The log-Cholesky work (LC1) is released first, as 1.2.0, before any Q package. Q1.1 follows as a hotfix from `main` (1.2.1) and is merged back into `devel`. The other Q1 items are independent of each other except that Q1.2 rebases on Q1.1 (same file). Q3 can run alongside Q1 and Q2. Q4 starts only after Q1 and Q2 have merged, because it moves the code they change and relies on their regression tests; Q3.2's coverage report shows which code is safe to move. Q5 needs one released minor in which Q2.5's warnings were visible.
+
+Q1–Q3 are validated at V2 (affected examples) and Q4–Q5 at V3 (both reference workflows and export invariants). Each package clears under the [package rules](#work-package-milestone-rules) on a declared commit pair.
+
+#### Maintainer decisions (2026-11-12)
+
+1. **Pairing.** A paired examples item is required only when an example is affected; the rule goes into CONTRIBUTING and AGENTS.
+1. **Release order.** The log-Cholesky work (LC1) is released first as 1.2.0. Q1.2–Q1.4, Q2 and Q3 follow in 1.3.0, Q4 in 1.4.0 and Q5 in 2.0.0; M2 packages move to 1.4 and later.
+1. **Hotfix.** Q1.1 ships as a patch release from `main`. Because 1.2.0 is released first, the patch is 1.2.1.
+1. **Raising where the code used to fall back** (Q1.3, Q2.1): raise where the returned numbers were not what was asked for, warn first elsewhere.
+
 ### GitHub delivery register
 
 Milestones and their canonical rosters were created on 2026-10-02. Open each tracker for its complete issue roster, dependency links and acceptance evidence. Core trackers combine both repositories; GitHub milestone percentages are local to a repository and do not supersede the closure review. No due dates or automatic merging are configured by this setup.
@@ -31221,6 +32111,7 @@ Milestones and their canonical rosters were created on 2026-10-02. Open each tra
 | [C5](https://github.com/thanhndv212/figaroh-plus/issues/167) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/23)           | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/19) |
 | D8 (no tracker yet)                                          | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/24)           | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/20) |
 | [LC1](https://github.com/thanhndv212/figaroh-plus/issues/20) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/22)           | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/18) |
+| Q1–Q5 (no trackers yet)                                      | Not created                                                                          | Not created                                                                    |
 
 **C5** (calibration studies, tracker core #167) and **D8** (identification studies, core #157–#161) were added on 2026-10-09 beneath M2 and are outside baseline M1 closure. Their milestones were created on 2026-10-10. Each data transfer is its own examples issue: C5 examples #104–#114 (sub-issues of their studies), D8 examples #115 (sub-issue of core #160).
 
@@ -31327,7 +32218,7 @@ The canonical roadmap lives at the repository root ([`ROADMAP.md`](https://githu
 
 ## FIGAROH Roadmap
 
-**Evidence refresh: 2026-10-12; delivery status refreshed 2026-10-29. Priority changes below are a tracker scope approved; execution details under review, revision 4.**
+**Evidence refresh: 2026-10-12; delivery status refreshed 2026-10-29; code-quality packages Q1–Q5, the core/examples pairing rule and the release order (log-Cholesky first) added 2026-11-12. Priority changes below are a tracker scope approved; execution details under review, revision 4.**
 
 Review the [detailed delivery plan](https://thanhndv212.github.io/figaroh-plus/further_reading/plans/index.md) before implementation. The user requested calibration improvements in parallel with dynamic identification, with TIAGo mocap as the first calibration reference and TALOS contact as the second consumer/regression target. Proposed work is not an accepted API, completed feature or authorization to implement/merge.
 
@@ -31346,7 +32237,7 @@ This file owns priorities and milestone exit criteria. [GitHub issues](https://g
 #### October findings
 
 - The reproduced final-joint acceleration defect ([core #32](https://github.com/thanhndv212/figaroh-plus/issues/32), package D1) is fixed by [PR #69](https://github.com/thanhndv212/figaroh-plus/pull/69), merged into `devel` on 2026-10-02. UR10/TIAGo signal-rate assumptions still require separate examples audits (D2) before new scientific benchmark claims.
-- Log-Cholesky research (D5) is optional and still open. The feasibility spike ([core PR #31](https://github.com/thanhndv212/figaroh-plus/pull/31), merged) recorded **revise**; the budget/scaling revision ([#30](https://github.com/thanhndv212/figaroh-plus/issues/30)) recorded **no-go** because 8 of 24 gated fits still exhaust 2000 evaluations. [#155](https://github.com/thanhndv212/figaroh-plus/issues/155) changes the fitting method next. The private experiment is not a production solver, and #23–#25 stay blocked until a go decision.
+- Log-Cholesky research (D5) is optional and still open. The feasibility spike ([core PR #31](https://github.com/thanhndv212/figaroh-plus/pull/31), merged) recorded **revise**; the budget/scaling revision ([#30](https://github.com/thanhndv212/figaroh-plus/issues/30)) recorded **no-go** because 8 of 24 gated fits still exhaust 2000 evaluations. [#155](https://github.com/thanhndv212/figaroh-plus/issues/155) changed the method and recorded **go** (2026-11-03): detect a boundary optimum, pin the regressor null space in the interior and solve the torque SDP on the boundary; all gated fits converge on fresh seeds on 3.7 and 4.1. The private experiment is not a production solver; #23 is unblocked, and the record lists what #23–#25 must decide first.
 - [Examples PR #13](https://github.com/thanhndv212/figaroh-examples/pull/13) was merged on 2026-10-08. The Hey5 geometry failure was fixed by W1 (every robot loads from a clean checkout) and the 3.7 TALOS regression ([examples #14](https://github.com/thanhndv212/figaroh-examples/issues/14)) was explained and fixed by W2. Completion of a dataset runner is not a passing physical-model workflow.
 - Local supplemental comparisons distinguish exact base-preserving SDP reconstruction from per-link projection; exact reconstruction yields no accepted model and nonlinear dataset candidates exhaust 200 evaluations. A direct constrained SDP effort-fit comparator remains unmeasured.
 - Existing calibration redistribution, report/archive and geometric export helpers provide a starting point for a parallel calibration reference. New data/result types or composition interfaces require an ADR first.
@@ -31360,6 +32251,12 @@ This file owns priorities and milestone exit criteria. [GitHub issues](https://g
 Per-package evidence is in the [implementation status](https://thanhndv212.github.io/figaroh-plus/further_reading/plans/#implementation-status).
 
 **Since 1.0 (2026-10-29).** C5 calibration studies, which bring every real-data calibration study in `figaroh-examples` to the TIAGo mocap standard, were accepted on 2026-10-26 ([tracker #167](https://github.com/thanhndv212/figaroh-plus/issues/167)); it added no core features. D8 collects optional identification research (#157–#161) outside baseline M1. `devel` carries post-1.0 fixes not yet released; the changelog's Unreleased section lists them.
+
+**Code-quality review (2026-11-12).** A review of `devel` at `21994ed` reproduced four defects and found a fifth by reading: undecimated identification fails for a subset of joints, the reference torque uses the wrong rows for a non-prefix active set, the custom-solver path ignores the sample mask and stage records, `LinearSolver` crashes or ignores options in some methods, and wrench-mode extra columns use inconsistent rows (not yet run). All five are in the `v1.1.0` sources. The review also found fallbacks that hide failures, library `print`/logging violations, unseeded randomness and tooling that is listed but not run. This work is planned as packages Q1–Q5 under M0; rosters, evidence and the maintainer's decisions are in the [delivery plan](https://thanhndv212.github.io/figaroh-plus/further_reading/plans/#code-quality-and-reliability-packages-q1q5). No tracker or issue exists yet.
+
+**Log-Cholesky release first (maintainer decision, 2026-11-12).** The LC1 work is complete on `devel`: go gate #155, production issues #23–#25, the follow-up fix #234 and examples #11 are all closed. Tracker [#20](https://github.com/thanhndv212/figaroh-plus/issues/20) is still open. Its closing review and the 1.2.0 release come before any Q package. The fit stays opt-in and experimental; `direct` remains the default.
+
+**Core/examples pairing (maintainer instruction, 2026-11-12).** A core development or fix is paired with work in `figaroh-examples` whenever an example is affected; if none is, no paired item is needed and the issue records that. The [pairing rule](https://thanhndv212.github.io/figaroh-plus/further_reading/plans/#coreexamples-pairing-rule) applies to all packages from this date.
 
 **M0 gate review (accepted 2026-10-12, [tracker #181](https://github.com/thanhndv212/figaroh-plus/issues/181) §9).** Existing core gates retained (blocking `Lint`, Core CI and Documentation green); examples assets and dependencies reproducible (W1); numerical regressions explained (W2); review/merge rules and cleanup applied (W4); exact tested commit pairs cited as core `fe7dc51` + examples `b8d9c75` (hosted runs 37134266859 / 37136143367) and core tag `v0.5.0` (`02f705a`). The pair is not clean for the M0 cycle: examples has no `v0.5.0` tag, because pairing started at 0.6.0.
 
@@ -31382,18 +32279,19 @@ M0's delivery roster for this cycle (W1, W2, W4) has cleared: examples assets an
 
 M0–M3 describe strategic outcomes. Work packages are the delivery milestones that achieve them; issues are their implementation units. Their canonical scope, dependencies and closure policy are in the [work-package milestone rules](https://thanhndv212.github.io/figaroh-plus/further_reading/plans/#work-package-milestone-rules).
 
-| Roadmap outcome / gate           | Required delivery milestones in this draft                                                                       | Status at 2026-10-29 (✅ = cleared)                                              |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| M0 reviewed delivery scope       | W1 fixtures, W2 regression diagnosis, W4 engineering process                                                     | ✅ **W1, W2, W4 all cleared**                                                    |
-| M1.1 inputs                      | D1–D2 dynamic signals; C1 calibration frames/data                                                                | ✅ **D1, D2, C1 all cleared**                                                    |
-| M1.2 estimation                  | D3–D4 dynamic truth/comparison; C2 calibration truth/holdout                                                     | ✅ **C2, D3, D4** all cleared                                                    |
-| M1.3 export                      | D6 inertial export; C3 geometric export                                                                          | ✅ **C3, D6** both cleared                                                       |
-| M1.4 integrated workflows        | W3 minimum contracts, S1 minimum reports, D7 dynamic reference, C4 calibration reference, U1 verified onboarding | ✅ **W3, S1, C4, D7, U1**                                                        |
-| M2 follow-up                     | S2 uncertainty, S3 experiment-design improvements, S4 selective composition; W3 is prerequisite groundwork       | ✅ W3 groundwork done; S2 in progress; S3, S4 blocked (except S3 bug #90, ready) |
-| M3 backend parity                | B1 capabilities and measured parity; broader ports need separately reviewed packages                             | Planned; M1 accepted, not started                                                |
-| Optional nonlinear research      | D5 and linked production #23–#25 when that path is approved; excluded from baseline M1 closure                   | D5 open: #22 revise, #30 no-go; #155 (method change) ready                       |
-| Calibration studies (after M1)   | C5: every calibration study to the TIAGo mocap standard                                                          | ✅ **C5** accepted 2026-10-26 (#167)                                             |
-| Optional identification research | D8: #157–#161 and examples #115; excluded from baseline M1                                                       | Open, planned                                                                    |
+| Roadmap outcome / gate                              | Required delivery milestones in this draft                                                                       | Status at 2026-10-29 (✅ = cleared)                                                                             |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| M0 reviewed delivery scope                          | W1 fixtures, W2 regression diagnosis, W4 engineering process                                                     | ✅ **W1, W2, W4 all cleared**                                                                                   |
+| M1.1 inputs                                         | D1–D2 dynamic signals; C1 calibration frames/data                                                                | ✅ **D1, D2, C1 all cleared**                                                                                   |
+| M1.2 estimation                                     | D3–D4 dynamic truth/comparison; C2 calibration truth/holdout                                                     | ✅ **C2, D3, D4** all cleared                                                                                   |
+| M1.3 export                                         | D6 inertial export; C3 geometric export                                                                          | ✅ **C3, D6** both cleared                                                                                      |
+| M1.4 integrated workflows                           | W3 minimum contracts, S1 minimum reports, D7 dynamic reference, C4 calibration reference, U1 verified onboarding | ✅ **W3, S1, C4, D7, U1**                                                                                       |
+| M0 code quality and reliability (2026-11-12 review) | Q1 correctness fixes, Q2 fail loudly, Q3 tooling; then Q4 structure and performance; Q5 breaking removals        | Planned (2026-11-12): no trackers yet; next after the 1.2.0 log-Cholesky release, starting with the Q1.1 hotfix |
+| M2 follow-up                                        | S2 uncertainty, S3 experiment-design improvements, S4 selective composition; W3 is prerequisite groundwork       | ✅ W3 groundwork done; S2 in progress; S3, S4 blocked (except S3 bug #90, ready)                                |
+| M3 backend parity                                   | B1 capabilities and measured parity; broader ports need separately reviewed packages                             | Planned; M1 accepted, not started                                                                               |
+| Optional nonlinear research                         | D5 and linked production #23–#25 when that path is approved; excluded from baseline M1 closure                   | D5 cleared; LC1 in review: #155 go, #23–#25 and #234 closed, tracker #20 open; ships in 1.2.0                   |
+| Calibration studies (after M1)                      | C5: every calibration study to the TIAGo mocap standard                                                          | ✅ **C5** accepted 2026-10-26 (#167)                                                                            |
+| Optional identification research                    | D8: #157–#161 and examples #115; excluded from baseline M1                                                       | Open, planned                                                                                                   |
 
 A delivery milestone is cleared only when **all included issues meet their acceptance criteria**, required changes are reviewed/merged, and milestone-level integration evidence is accepted. Deferred or administratively closed issues are not completed work; scope changes require review and preserve the original roster/history. Each roadmap gate closes only when all required delivery milestones and its own exit criteria pass. M0's delivery roster is scoped per cycle; ongoing maintenance does not prevent acceptance of that reviewed cycle.
 
@@ -31423,39 +32321,48 @@ Versions follow roadmap outcomes, not commit counts. A release ships what has be
 | **1.0.0**                | M1 accepted (both reference workflows), public API declared, deprecated features removed; a release candidate first (waived by the maintainer for 1.0.0 on 2026-10-12, #192) |
 | **After 1.0**            | M2 additions are minor releases; removing a deprecated feature is a major release                                                                                            |
 
-A deprecated feature warns for at least one minor release before it is removed; removals are batched into 1.0. Optional research (D5/LC1) ships as an opt-in feature in the minor release after its go decision and never holds a release.
+A deprecated feature warns for at least one minor release before it is removed; removals were batched into 1.0 and the next batch (Q5) into 2.0. The Q1.1 active-joint row defect gives wrong reference torques without an error, so it ships as a patch release from `main` (maintainer decision, 2026-11-12); with 1.2.0 released first, that patch is 1.2.1. Optional research (D5/LC1) ships as an opt-in feature in the minor release after its go decision and never holds a release.
 
-| Version       | Outcome                                                                             | Delivery packages                                                                                                                                                                                                                                                                                                                                                                                                                                   | Status                                                                                                                                                                                          |
-| ------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.5.0         | M0 engineering baseline                                                             | W1, W2, W4, D1                                                                                                                                                                                                                                                                                                                                                                                                                                      | Released 2026-10-03                                                                                                                                                                             |
-| 0.6.0         | Calibration reference workflow (M1.1–M1.4, calibration side) and shared foundations | D2, C1–C4, W3, S1; D6 inertial export and D3 fixture fixes, both accepted                                                                                                                                                                                                                                                                                                                                                                           | Released 2026-10-07 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.6.0), [tracker #146](https://github.com/thanhndv212/figaroh-plus/issues/146)); examples tag `v0.6.0` |
-| 0.7.0         | Dynamic reference workflow (M1.2–M1.4, dynamic side)                                | D4, D7 (D5 no-go; LC1 #155 not included)                                                                                                                                                                                                                                                                                                                                                                                                            | Released 2026-10-11 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.7.0), [tracker #177](https://github.com/thanhndv212/figaroh-plus/issues/177)); examples tag `v0.7.0` |
-| 1.0.0         | M1 accepted                                                                         | M1 review ✅ (2026-10-12, [#181](https://github.com/thanhndv212/figaroh-plus/issues/181)); public API (#184), deprecation removals (#185, examples #125), G-1 (#182) and RC procedure (#186) done. Released 2026-10-12 without a release candidate (maintainer decision; [release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v1.0.0), [tracker #192](https://github.com/thanhndv212/figaroh-plus/issues/192)); examples tag `v1.0.0` |                                                                                                                                                                                                 |
-| 1.0.1         | Documentation and housekeeping                                                      | none (no library code)                                                                                                                                                                                                                                                                                                                                                                                                                              | Released 2026-10-12; examples `v1.0.0` remains the pair                                                                                                                                         |
-| 1.0.2         | Documentation                                                                       | none (no library code)                                                                                                                                                                                                                                                                                                                                                                                                                              | Released 2026-10-13; examples `v1.0.0` remains the pair                                                                                                                                         |
-| 1.1.0         | Calibration estimation improvements and C5 follow-up fixes                          | none (fixes and additions since 1.0.2; maintainer decision 2026-10-29)                                                                                                                                                                                                                                                                                                                                                                              | Released 2026-10-29 ([tracker #228](https://github.com/thanhndv212/figaroh-plus/issues/228)); examples tag `v1.1.0`                                                                             |
-| 1.2 and later | M2 composable calibration and identification                                        | S2, S3, S4                                                                                                                                                                                                                                                                                                                                                                                                                                          | Later                                                                                                                                                                                           |
-| 1.x or 2.0    | M3 backend parity                                                                   | B1                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Later; 2.0 only if the backend API breaks                                                                                                                                                       |
+| Version       | Outcome                                                                             | Delivery packages                                                                                                                                                                                                                                                                                                                                                                                                                                   | Status                                                                                                                                                                                                         |
+| ------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.5.0         | M0 engineering baseline                                                             | W1, W2, W4, D1                                                                                                                                                                                                                                                                                                                                                                                                                                      | Released 2026-10-03                                                                                                                                                                                            |
+| 0.6.0         | Calibration reference workflow (M1.1–M1.4, calibration side) and shared foundations | D2, C1–C4, W3, S1; D6 inertial export and D3 fixture fixes, both accepted                                                                                                                                                                                                                                                                                                                                                                           | Released 2026-10-07 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.6.0), [tracker #146](https://github.com/thanhndv212/figaroh-plus/issues/146)); examples tag `v0.6.0`                |
+| 0.7.0         | Dynamic reference workflow (M1.2–M1.4, dynamic side)                                | D4, D7 (D5 no-go; LC1 #155 not included)                                                                                                                                                                                                                                                                                                                                                                                                            | Released 2026-10-11 ([release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v0.7.0), [tracker #177](https://github.com/thanhndv212/figaroh-plus/issues/177)); examples tag `v0.7.0`                |
+| 1.0.0         | M1 accepted                                                                         | M1 review ✅ (2026-10-12, [#181](https://github.com/thanhndv212/figaroh-plus/issues/181)); public API (#184), deprecation removals (#185, examples #125), G-1 (#182) and RC procedure (#186) done. Released 2026-10-12 without a release candidate (maintainer decision; [release](https://github.com/thanhndv212/figaroh-plus/releases/tag/v1.0.0), [tracker #192](https://github.com/thanhndv212/figaroh-plus/issues/192)); examples tag `v1.0.0` |                                                                                                                                                                                                                |
+| 1.0.1         | Documentation and housekeeping                                                      | none (no library code)                                                                                                                                                                                                                                                                                                                                                                                                                              | Released 2026-10-12; examples `v1.0.0` remains the pair                                                                                                                                                        |
+| 1.0.2         | Documentation                                                                       | none (no library code)                                                                                                                                                                                                                                                                                                                                                                                                                              | Released 2026-10-13; examples `v1.0.0` remains the pair                                                                                                                                                        |
+| 1.1.0         | Calibration estimation improvements and C5 follow-up fixes                          | none (fixes and additions since 1.0.2; maintainer decision 2026-10-29)                                                                                                                                                                                                                                                                                                                                                                              | Released 2026-10-29 ([tracker #228](https://github.com/thanhndv212/figaroh-plus/issues/228)); examples tag `v1.1.0`                                                                                            |
+| 1.2.0         | Opt-in log-Cholesky physical fit (optional research path, after its go decision)    | LC1: #23–#25, #234, examples #11                                                                                                                                                                                                                                                                                                                                                                                                                    | Release PR open ([tracker #240](https://github.com/thanhndv212/figaroh-plus/issues/240), maintainer decision 2026-11-12); needs the tracker #20 closing review; examples pin `figaroh>=1.2,<1.3`, tag `v1.2.0` |
+| 1.2.1         | Hotfix: active-joint row selection                                                  | Q1.1                                                                                                                                                                                                                                                                                                                                                                                                                                                | Planned, from `main` after 1.2.0                                                                                                                                                                               |
+| 1.3.0         | Correctness and reliability (M0)                                                    | Q1.2–Q1.4, Q2, Q3                                                                                                                                                                                                                                                                                                                                                                                                                                   | Planned, after 1.2.1                                                                                                                                                                                           |
+| 1.4.0         | Structure and performance without breaking callers (M0, overlapping M2)             | Q4; Q4.2 typed contracts designed with S4                                                                                                                                                                                                                                                                                                                                                                                                           | Planned, after 1.3.0                                                                                                                                                                                           |
+| 1.4 and later | M2 composable calibration and identification                                        | S2, S3, S4                                                                                                                                                                                                                                                                                                                                                                                                                                          | Later                                                                                                                                                                                                          |
+| 2.0.0         | Removal of deprecated features                                                      | Q5                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Later; needs one released minor carrying the deprecation warnings                                                                                                                                              |
+| 1.x or 2.0    | M3 backend parity                                                                   | B1                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Later; 2.0 only if the backend API breaks                                                                                                                                                                      |
 
 Each release is tracked by a core release issue. It lists the packages in scope and what is excluded, freezes `devel`, and records the release-candidate evidence on one core/examples pair: core tests, hosted CI on both Pinocchio profiles, examples `validate.py`, package build with `twine check` and a clean wheel install, and the docs build. The release PR bumps both version strings and dates the changelog with a scope paragraph, behaviour changes, migration notes and limitations. The [release sequence](https://github.com/thanhndv212/figaroh-plus/blob/devel/CONTRIBUTING.md#merge-and-release-gates) then merges `devel` into `main` with a merge commit (branch deletion off); one build from the `vX.Y.Z` tag goes to PyPI and the GitHub release, with matching sha256. The examples repository pins `figaroh>=X.Y,<X.(Y+1)` and is tagged `vX.Y.Z` as the paired revision. Finally `main` is merged back into `devel`.
 
 ### Work to split into issues
 
-Create focused issues from these candidates as they enter `Ready`; keep their acceptance criteria and changing status in the tracker. For work spanning both repositories, use a parent issue in `figaroh-plus` and linked implementation issues/PRs in `figaroh-examples`, with the tested commit pair recorded.
+Create focused issues from these candidates as they enter `Ready`; keep their acceptance criteria and changing status in the tracker. A core issue that affects an example has a paired `figaroh-examples` issue under the [pairing rule](https://thanhndv212.github.io/figaroh-plus/further_reading/plans/#coreexamples-pairing-rule): use a parent issue in `figaroh-plus` and linked implementation issues/PRs in `figaroh-examples`, with the tested commit pair recorded. An issue that affects no example records that instead.
 
-| Candidate                                                  | Milestone                 | Evidence or acceptance gate                                                                                                                                                                                                                                                            |
-| ---------------------------------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ✅ Legacy lint and formatting cleanup                      | M0 follow-up              | **Done in W4** (#81–#85 via #87–#92); full pre-commit is a blocking gate (#93)                                                                                                                                                                                                         |
-| ✅ Regressor tests that skip on incompatible mocks         | M0 follow-up              | **Done in W4** (#58 via #80): obsolete mocks replaced with real-model coverage                                                                                                                                                                                                         |
-| ✅ Signal-rate/provenance audits and fresh UR10 truth data | M1.1/M1.2                 | ✅ Audits **done in D2**; fresh UR10 truth data **done in D3** (examples #89, frozen protocol v1). Original gate: independent analytic truth and validation trajectories                                                                                                               |
-| ✅ Physical estimator comparison and convergence revision  | M1.2                      | **Done in D4** (#39; examples #22 report): direct LMI effort fit selected for D7. Original gate: reuse #30; distinguish exact reconstruction, direct constrained effort fitting, per-link projection and log-Cholesky; freeze metrics/extra-column policies before measurement         |
-| ✅ Calibration held-out reference and export parity        | Parallel M1.1–M1.4        | ✅ TALOS #14 diagnosed (W2), held-out reference (C2) and reloaded-model FK parity (C3) **done**; integrated TIAGo reference **done in C4** (examples #29 via examples #88)                                                                                                             |
-| ✅ General robot/dataset onboarding guide                  | Parallel M1 / proposed U1 | **Done in U1** (examples #33 via examples PR #123). Original gate: Data/model inventory → method choice → acquisition/processing → fit interpretation → held-out validation/export; reusable experiment brief; worked dynamic and TIAGo mocap cases; missing-data limitations explicit |
-| ✅ Narrow data/result contract                             | M1/M2                     | **Done in W3** (core #126/#128/#130, examples #84). Original gate: Inventory current adapters; ADR; two consumers; legacy dictionaries/configs remain compatible; proposed types not presented as existing API                                                                         |
-| ✅ Full inertial URDF export                               | M1 correctness            | **Merged in D6** (#60, PR #138). Original gate: first moments and inertia tensors survive export/reload; mass/CoM conventions and inertia reference frames are tested                                                                                                                  |
-| ✅ End-to-end reference example                            | M1                        | Calibration side ✅ done in C4; dynamic side ✅ **done in D7** (#42). Original gate: connect the existing projection, reconstruction, verification, export and archive APIs; demonstrate improvement on held-out data                                                                  |
-| Backend selection in `RobotIdentificationSystem`           | M3 correctness            | `from_urdf(backend=...)` currently stores a name while loading the usual Robot; selection must change the executing backend or reject unsupported choices                                                                                                                              |
-| Optional backend/solver coverage                           | M0/M3                     | Record tested dependency versions and skips; broaden OS/Python coverage after the initial Python 3.12 gate                                                                                                                                                                             |
+| Candidate                                                                           | Milestone                 | Evidence or acceptance gate                                                                                                                                                                                                                                                            |
+| ----------------------------------------------------------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ✅ Legacy lint and formatting cleanup                                               | M0 follow-up              | **Done in W4** (#81–#85 via #87–#92); full pre-commit is a blocking gate (#93)                                                                                                                                                                                                         |
+| ✅ Regressor tests that skip on incompatible mocks                                  | M0 follow-up              | **Done in W4** (#58 via #80): obsolete mocks replaced with real-model coverage                                                                                                                                                                                                         |
+| ✅ Signal-rate/provenance audits and fresh UR10 truth data                          | M1.1/M1.2                 | ✅ Audits **done in D2**; fresh UR10 truth data **done in D3** (examples #89, frozen protocol v1). Original gate: independent analytic truth and validation trajectories                                                                                                               |
+| ✅ Physical estimator comparison and convergence revision                           | M1.2                      | **Done in D4** (#39; examples #22 report): direct LMI effort fit selected for D7. Original gate: reuse #30; distinguish exact reconstruction, direct constrained effort fitting, per-link projection and log-Cholesky; freeze metrics/extra-column policies before measurement         |
+| ✅ Calibration held-out reference and export parity                                 | Parallel M1.1–M1.4        | ✅ TALOS #14 diagnosed (W2), held-out reference (C2) and reloaded-model FK parity (C3) **done**; integrated TIAGo reference **done in C4** (examples #29 via examples #88)                                                                                                             |
+| ✅ General robot/dataset onboarding guide                                           | Parallel M1 / proposed U1 | **Done in U1** (examples #33 via examples PR #123). Original gate: Data/model inventory → method choice → acquisition/processing → fit interpretation → held-out validation/export; reusable experiment brief; worked dynamic and TIAGo mocap cases; missing-data limitations explicit |
+| ✅ Narrow data/result contract                                                      | M1/M2                     | **Done in W3** (core #126/#128/#130, examples #84). Original gate: Inventory current adapters; ADR; two consumers; legacy dictionaries/configs remain compatible; proposed types not presented as existing API                                                                         |
+| ✅ Full inertial URDF export                                                        | M1 correctness            | **Merged in D6** (#60, PR #138). Original gate: first moments and inertia tensors survive export/reload; mass/CoM conventions and inertia reference frames are tested                                                                                                                  |
+| ✅ End-to-end reference example                                                     | M1                        | Calibration side ✅ done in C4; dynamic side ✅ **done in D7** (#42). Original gate: connect the existing projection, reconstruction, verification, export and archive APIs; demonstrate improvement on held-out data                                                                  |
+| Identification and solver correctness fixes (Q1.1–Q1.4)                             | M0 / Q1                   | Regression test that fails before the fix; paired examples change where an example is affected (Q1.1, Q1.4); wrench-mode defect reproduced before it is fixed                                                                                                                          |
+| Failures reported instead of hidden; library logging; seeded randomness (Q2.1–Q2.5) | M0 / Q2                   | No silent fallback on the reference workflows; affected examples updated                                                                                                                                                                                                               |
+| Packaging, test and CI configuration (Q3.1–Q3.3)                                    | M0 / Q3                   | Clean install; coverage reported on hosted CI; documentation statements match metadata                                                                                                                                                                                                 |
+| Typed results, class splits, performance (Q4.1–Q4.4)                                | M0 / Q4, with S4          | ADR for typed contracts; numerical parity on both reference workflows; old keys remain as a deprecated view                                                                                                                                                                            |
+| Backend selection in `RobotIdentificationSystem`                                    | M3 correctness            | `from_urdf(backend=...)` currently stores a name while loading the usual Robot; selection must change the executing backend or reject unsupported choices                                                                                                                              |
+| Optional backend/solver coverage                                                    | M0/M3                     | Record tested dependency versions and skips; broaden OS/Python coverage after the initial Python 3.12 gate                                                                                                                                                                             |
 
 Bug severity takes precedence over milestone order. A reproducible wrong-result bug can be fixed immediately without starting the rest of its milestone.
 

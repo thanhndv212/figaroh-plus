@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/figaroh-mark-light.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -2664,6 +2664,18 @@ Optional dependency skips are reported as missing coverage.</p>
   feasibility information, and, after projection, <code>raw_parameters</code> and
   <code>projected_parameters</code>. Reconstruction has its own <code>result["reconstruction"]</code>.
   Callers must not equate a fitted base vector with a complete physical model.</li>
+<li><code>select_stage</code> (<code>fit</code>, <code>reconstruction</code>, <code>physical_fit</code>) names the one
+  estimate that validation, <code>verify()</code>, the reports, the archive and URDF
+  export use; a rejected request selects <code>none</code>, never a substitute. The
+  physical fit is the last optional stage and runs on the training rows
+  only, from the nominal prior: it neither reads nor replaces the
+  reconstruction or projection results, and nothing later rewrites it.
+  <code>physical_fit.method</code> picks its estimator: <code>direct</code> (the LMI effort fit,
+  default) or the experimental <code>log_cholesky</code> (boundary-aware: log-Cholesky
+  coordinates when the unconstrained optimum is feasible, the same direct
+  SDP otherwise). <code>result["physical_fit"]</code> and the selected estimate name
+  the method and branch; a non-converged fit is a rejection with no
+  estimate and no objective.</li>
 <li>Unified signal-processing settings feed the filter parameters; explicit filter
   overrides take precedence. <code>qr_relative_tolerance</code> is optional, preserving the
   default rank-selection behavior when unset.</li>
@@ -2820,7 +2832,7 @@ this overview when boundaries or result contracts change.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
         <script src="../../javascripts/figaroh.js"></script>
       

@@ -821,11 +821,13 @@ def print_quality_report(self):
     from figaroh.tools.stages import stages_line
 
     print(f"  Stages:          {stages_line(self)}")
+    from figaroh.identification.selection import stage_label
+
     sel = getattr(self, "selected", None)
     if sel is not None:
         print(
             f"  Reported estimate: "
-            f"{sel.stage if sel.accepted else 'none'}"
+            f"{stage_label(sel.as_dict()) if sel.accepted else 'none'}"
             f" (requested {sel.requested}: {sel.status}; {sel.reason})"
         )
 
@@ -852,7 +854,7 @@ def print_quality_report(self):
     selected_info = result.get("selected")
     if isinstance(selected_info, dict) and "effort_rmse_fit" in selected_info:
         print(
-            f"  RMSE ({selected_info['stage']} estimate): "
+            f"  RMSE ({stage_label(selected_info)} estimate): "
             f"{selected_info['effort_rmse_fit']:.4f}"
         )
 
@@ -876,7 +878,10 @@ def print_quality_report(self):
             print(f"  {names[i]:<22s} {m} {s} {r} {x}")
         per_joint_sel = (selected_info or {}).get("effort_rmse_fit_per_joint")
         if per_joint_sel:
-            print(f"  Selected estimate ({selected_info['stage']}) RMSE per joint")
+            print(
+                f"  Selected estimate ({stage_label(selected_info)}) "
+                "RMSE per joint"
+            )
             for name, value in per_joint_sel.items():
                 print(f"  {name:<22s} {value:10.4f}")
     else:
@@ -941,6 +946,32 @@ def print_quality_report(self):
     if recon is not None:
         print("-" * 70)
         print(f"  Full-parameter reconstruction: {recon.get('status', 'unknown')}")
+    pfit = result.get("physical_fit")
+    if pfit is not None:
+        print("-" * 70)
+        print(
+            f"  Physical fit ({pfit.get('method', 'direct')}): "
+            f"{pfit.get('status')} - {pfit.get('reason')}"
+        )
+        lc = pfit.get("log_cholesky")
+        if lc:
+            interior = lc.get("interior") or {}
+            print(
+                f"    branch {lc.get('branch')}"
+                f"{' (forced)' if lc.get('branch_forced') else ''}, "
+                f"rank {lc.get('rank')}/{lc.get('n_params')}, "
+                f"pinned null space {lc.get('null_space_dim')}"
+            )
+            if interior:
+                print(
+                    f"    interior stop {interior.get('stop_reason')}, "
+                    f"nfev {interior.get('nfev')}"
+                )
+            if lc.get("start_repairs"):
+                print(
+                    "    repaired start links: "
+                    + ", ".join(sorted(lc["start_repairs"]))
+                )
 
     print("=" * 70)
 ```
@@ -2129,6 +2160,111 @@ def unified_to_legacy_identif_config(robot, unified_identif_config) -> dict:
     return identif_config
 ```
 
+## `check_physical_fit_config(cfg)`
+
+Validate a complete `physical_fit` mapping; return it normalised.
+
+`method` selects the estimator: `direct` (the direct LMI effort fit, default) or `log_cholesky` (the experimental boundary-aware log-Cholesky fit of :func:`~figaroh.identification.log_cholesky_fit.solve_log_cholesky_fit`,
+
+### 25). Its options go in `log_cholesky` (the fields of
+
+:class:`~figaroh.identification.log_cholesky_fit.LogCholeskyOptions` except `sdp_solver`, which is `solver`).
+
+Raises:
+
+| Type         | Description                                                                                                 |
+| ------------ | ----------------------------------------------------------------------------------------------------------- |
+| `ValueError` | unknown method, options for another method, settings the method does not support, or invalid option values. |
+
+Source code in `src/figaroh/identification/config.py`
+
+```
+def check_physical_fit_config(cfg):
+    """Validate a complete ``physical_fit`` mapping; return it normalised.
+
+    ``method`` selects the estimator: ``direct`` (the direct LMI effort fit,
+    default) or ``log_cholesky`` (the experimental boundary-aware
+    log-Cholesky fit of
+    :func:`~figaroh.identification.log_cholesky_fit.solve_log_cholesky_fit`,
+    #25). Its options go in ``log_cholesky`` (the fields of
+    :class:`~figaroh.identification.log_cholesky_fit.LogCholeskyOptions`
+    except ``sdp_solver``, which is ``solver``).
+
+    Raises:
+        ValueError: unknown method, options for another method, settings the
+            method does not support, or invalid option values.
+    """
+    cfg = dict(cfg)
+    method = str(cfg.get("method") or "direct").strip().lower()
+    if method not in PHYSICAL_FIT_METHODS:
+        raise ValueError(
+            f"physical_fit.method={cfg.get('method')!r} is unknown; "
+            f"choose one of {PHYSICAL_FIT_METHODS}"
+        )
+    cfg["method"] = method
+    lc = cfg.get("log_cholesky")
+    if lc is not None and not isinstance(lc, dict):
+        raise ValueError("physical_fit.log_cholesky must be a mapping")
+    if method == "direct":
+        if lc:
+            raise ValueError(
+                "physical_fit.log_cholesky options are set but "
+                "physical_fit.method is 'direct'; set method: log_cholesky "
+                "or remove them"
+            )
+        return cfg
+    if cfg.get("second_solver"):
+        raise ValueError(
+            "physical_fit.second_solver is not supported with method "
+            "'log_cholesky': its boundary branch runs the SDP once, with "
+            "physical_fit.solver"
+        )
+    if cfg.get("max_seconds") is not None:
+        raise ValueError(
+            "physical_fit.max_seconds is not supported with method "
+            "'log_cholesky'; set physical_fit.log_cholesky.max_seconds, which "
+            "bounds the interior fit (the boundary SDP has no time limit)"
+        )
+    from figaroh.identification.log_cholesky_fit import LogCholeskyOptions
+
+    allowed = {f.name for f in dataclasses.fields(LogCholeskyOptions)}
+    allowed.discard("sdp_solver")
+    lc = dict(lc or {})
+    if "sdp_solver" in lc:
+        raise ValueError(
+            "physical_fit.log_cholesky.sdp_solver is not a key; the boundary "
+            "SDP uses physical_fit.solver"
+        )
+    unknown = set(lc) - allowed
+    if unknown:
+        raise ValueError(
+            f"unknown physical_fit.log_cholesky keys {sorted(unknown)}; "
+            f"allowed: {sorted(allowed)}"
+        )
+    try:
+        LogCholeskyOptions(**lc, sdp_solver=str(cfg["solver"]))
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"physical_fit.log_cholesky: {exc}") from exc
+    cfg["log_cholesky"] = lc
+    return cfg
+```
+
+## `log_cholesky_options(cfg)`
+
+:class:`LogCholeskyOptions` for a checked `physical_fit` mapping.
+
+Source code in `src/figaroh/identification/config.py`
+
+```
+def log_cholesky_options(cfg):
+    """:class:`LogCholeskyOptions` for a checked ``physical_fit`` mapping."""
+    from figaroh.identification.log_cholesky_fit import LogCholeskyOptions
+
+    return LogCholeskyOptions(
+        **(cfg.get("log_cholesky") or {}), sdp_solver=str(cfg["solver"])
+    )
+```
+
 ## parameter
 
 Parameter management utilities for robot identification.
@@ -2838,6 +2974,508 @@ def diagnose_exact(
     return records
 ```
 
+## inertial_parameterization
+
+Experimental (not re-exported from `figaroh.identification`). Log-Cholesky coordinates for one link's inertial parameters (#23): exact maps between `p10`, the pseudo-inertia and `z`, the Jacobian `d p10 / d z`, an opt-in reported repair and per-joint dictionary helpers. It is a representation for estimators to build on, not an estimator, and imports neither PICOS nor CVXOPT. See the [boundary-aware log-Cholesky decision](https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/decisions/log-cholesky-boundary-aware.md).
+
+Log-Cholesky coordinates for per-link inertial parameters.
+
+This module maps between three representations of one rigid body's inertial parameters and gives the derivative of the map. It is a representation, not an estimator: nothing here fits data, solves an SDP or imports PICOS/CVXOPT (decision record `docs/decisions/log-cholesky-boundary-aware.md`).
+
+### Conventions
+
+`p10` (Pinocchio dynamic-parameter order, SI units)::
+
+```
+[m, mx, my, mz, Ixx, Ixy, Iyy, Ixz, Iyz, Izz]
+```
+
+`m` in kg; `h = (mx, my, mz) = m*c` in kg*m, with `c` the centre of mass in the link frame; the six tensor entries in kg*m^2 are the rotational inertia `I_O` about the link-frame origin, not about the centre of mass. FIGAROH's regressor order differs; convert with the parameter helpers.
+
+Pseudo-inertia `P` (4x4, symmetric)::
+
+```
+P = [[Sigma, h], [h.T, m]],   Sigma = 0.5*trace(I_O)*eye(3) - I_O
+```
+
+A body is physically consistent when `P` is positive semidefinite; these mappings need it strictly positive definite.
+
+Log-Cholesky `z` (Pinocchio `LogCholeskyParameters` order)::
+
+```
+[alpha, d1, d2, d3, s12, s23, s13, t1, t2, t3]
+```
+
+with `P = exp(2*alpha) * U @ U.T` and the *upper*-triangular factor::
+
+```
+U = [[exp(d1), s12,     s13,     t1],
+     [0,       exp(d2), s23,     t2],
+     [0,       0,       exp(d3), t3],
+     [0,       0,       0,       1 ]]
+```
+
+So `m = exp(2*alpha)` and `(t1, t2, t3) = c`. `alpha` is `0.5*ln(m / 1 kg)`; `exp(d_i)`, `s_ij` and `t_i` are in metres, so `d_i` are logarithms of lengths in metres. `U` comes from a Cholesky factorisation of `P` with rows and columns reversed. Every finite `z` decodes to a positive definite `P`, and `log(det(P)) = 8*alpha + 2*(d1 + d2 + d3)` is linear in `z`.
+
+### Policies
+
+- Massless or fixed links (`m <= 0`) have no encoding. Leave them out of the encoded blocks; the dictionary helpers can skip them on request and leave their parameters untouched.
+- Singular or indefinite input is rejected. :func:`repair_p10` is the opt-in alternative: it lifts the eigenvalues of `P` to a floor, returns a new vector and reports how far it moved.
+- `alpha` and `d_i` must stay within `max_log_scale` (default :data:`MAX_LOG_SCALE`) so that `exp` neither overflows nor flushes a factor to zero. An encoding outside it means a near-singular body.
+
+## `MAX_LOG_SCALE = 30.0`
+
+Default bound on `|alpha|` and `|d_i|`.
+
+`exp(2*30)` is about `1e26`: far outside any robot link in SI units (`m` from 1e-6 to 1e4 kg gives `|alpha| < 7`; lengths from 1e-6 to 1e3 m give `|d_i| < 14`), yet `P` stays finite with headroom. It guards against overflow and against near-singular bodies whose factor would round to zero; it is not a physical bound.
+
+## `PD_RTOL = 1e-12`
+
+Default relative floor on `min eig(P)` / `max eig(P)` for encoding.
+
+## `RepairReport(p10_original, p10, repaired, min_eig_before, min_eig_after, p10_change_norm, p10_relative_change, pseudo_inertia_change_norm)`
+
+Result of :func:`repair_p10`. `p10_original` is a copy.
+
+## `pseudo_inertia_from_p10(p10)`
+
+Return `P = [[Sigma, h], [h.T, m]]` for one link's `p10`.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def pseudo_inertia_from_p10(p10) -> np.ndarray:
+    """Return ``P = [[Sigma, h], [h.T, m]]`` for one link's ``p10``."""
+    p = _as_vector(p10, "p10")
+    m, h = p[0], p[1:4]
+    Ixx, Ixy, Iyy, Ixz, Iyz, Izz = p[4:10]
+    inertia = np.array([[Ixx, Ixy, Ixz], [Ixy, Iyy, Iyz], [Ixz, Iyz, Izz]])
+    P = np.empty((4, 4))
+    P[:3, :3] = 0.5 * np.trace(inertia) * np.eye(3) - inertia
+    P[:3, 3] = h
+    P[3, :3] = h
+    P[3, 3] = m
+    return P
+```
+
+## `p10_from_pseudo_inertia(P)`
+
+Inverse of :func:`pseudo_inertia_from_p10`; `P` must be symmetric.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def p10_from_pseudo_inertia(P) -> np.ndarray:
+    """Inverse of :func:`pseudo_inertia_from_p10`; ``P`` must be symmetric."""
+    P = _as_pseudo_inertia(P)
+    return _p10_from_symmetric(P)
+```
+
+## `log_cholesky_from_pseudo_inertia(P, *, rtol=PD_RTOL, max_log_scale=MAX_LOG_SCALE)`
+
+Encode a strictly positive definite pseudo-inertia as `z`.
+
+Raises `ValueError` for a wrong shape, nonfinite or nonsymmetric matrix, `P[3, 3] <= 0`, `min eig(P) <= rtol * max eig(P)`, or an encoding outside `max_log_scale`.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def log_cholesky_from_pseudo_inertia(
+    P,
+    *,
+    rtol: float = PD_RTOL,
+    max_log_scale: float = MAX_LOG_SCALE,
+) -> np.ndarray:
+    """Encode a strictly positive definite pseudo-inertia as ``z``.
+
+    Raises ``ValueError`` for a wrong shape, nonfinite or nonsymmetric
+    matrix, ``P[3, 3] <= 0``, ``min eig(P) <= rtol * max eig(P)``, or an
+    encoding outside ``max_log_scale``.
+    """
+    P = _as_pseudo_inertia(P)
+    if P[3, 3] <= 0.0:
+        raise ValueError(
+            f"mass P[3, 3] = {P[3, 3]:.6g} <= 0: a massless or fixed link has "
+            "no log-Cholesky encoding; keep it out of the encoded blocks"
+        )
+    eig = np.linalg.eigvalsh(P)
+    if eig[0] <= rtol * eig[-1]:
+        raise ValueError(
+            f"pseudo-inertia is not positive definite: min eig {eig[0]:.3e}, "
+            f"max eig {eig[-1]:.3e} (relative floor {rtol:.0e}). The body is "
+            "physically inconsistent or singular (e.g. a point mass or thin "
+            "rod); use repair_p10 to lift it explicitly"
+        )
+    try:
+        # Reverse Cholesky: P = U U^T with U upper triangular.
+        U = np.linalg.cholesky(P[::-1, ::-1])[::-1, ::-1]
+    except np.linalg.LinAlgError as exc:  # pragma: no cover - guarded above
+        raise ValueError(f"pseudo-inertia Cholesky failed: {exc}") from exc
+    u44 = U[3, 3]
+    U = U / u44
+    z = np.empty(10)
+    z[0] = np.log(u44)
+    z[1:4] = np.log(np.diag(U)[:3])
+    for k, (i, j) in enumerate(_OFFDIAG):
+        z[4 + k] = U[i, j]
+    _check_log_scales(z, max_log_scale, "encoding")
+    return z
+```
+
+## `pseudo_inertia_from_log_cholesky(z, *, max_log_scale=MAX_LOG_SCALE)`
+
+Decode `z` to `P = exp(2*alpha) * U @ U.T`.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def pseudo_inertia_from_log_cholesky(
+    z, *, max_log_scale: float = MAX_LOG_SCALE
+) -> np.ndarray:
+    """Decode ``z`` to ``P = exp(2*alpha) * U @ U.T``."""
+    z = _as_vector(z, "log-Cholesky z")
+    _check_log_scales(z, max_log_scale, "decoding")
+    U = _factor(z)
+    with np.errstate(over="ignore", invalid="ignore"):
+        P = np.exp(2.0 * z[0]) * (U @ U.T)
+    if not np.all(np.isfinite(P)):
+        raise ValueError(
+            "decoded pseudo-inertia overflowed; off-diagonal coordinates "
+            f"are too large (max |s, t| = {np.max(np.abs(z[4:])):.3g})"
+        )
+    return 0.5 * (P + P.T)
+```
+
+## `log_cholesky_from_p10(p10, *, rtol=PD_RTOL, max_log_scale=MAX_LOG_SCALE)`
+
+Encode one link's `p10` as log-Cholesky `z`.
+
+Rejects massless, singular or physically inconsistent links; see :func:`log_cholesky_from_pseudo_inertia`.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def log_cholesky_from_p10(
+    p10,
+    *,
+    rtol: float = PD_RTOL,
+    max_log_scale: float = MAX_LOG_SCALE,
+) -> np.ndarray:
+    """Encode one link's ``p10`` as log-Cholesky ``z``.
+
+    Rejects massless, singular or physically inconsistent links; see
+    :func:`log_cholesky_from_pseudo_inertia`.
+    """
+    return log_cholesky_from_pseudo_inertia(
+        pseudo_inertia_from_p10(p10), rtol=rtol, max_log_scale=max_log_scale
+    )
+```
+
+## `p10_from_log_cholesky(z, *, max_log_scale=MAX_LOG_SCALE)`
+
+Decode `z` to one link's `p10`; always physically consistent.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def p10_from_log_cholesky(z, *, max_log_scale: float = MAX_LOG_SCALE) -> np.ndarray:
+    """Decode ``z`` to one link's ``p10``; always physically consistent."""
+    return _p10_from_symmetric(
+        pseudo_inertia_from_log_cholesky(z, max_log_scale=max_log_scale)
+    )
+```
+
+## `p10_jacobian_from_log_cholesky(z, *, max_log_scale=MAX_LOG_SCALE)`
+
+Return `d p10 / d z` (10x10; rows in :data:`P10_ORDER`, columns in :data:`LOG_CHOLESKY_ORDER`).
+
+Matches Pinocchio's `LogCholeskyParameters.calculateJacobian`. Chain a regressor in Pinocchio order through it: `d tau / d z = W @ J`.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def p10_jacobian_from_log_cholesky(
+    z, *, max_log_scale: float = MAX_LOG_SCALE
+) -> np.ndarray:
+    """Return ``d p10 / d z`` (10x10; rows in :data:`P10_ORDER`, columns in
+    :data:`LOG_CHOLESKY_ORDER`).
+
+    Matches Pinocchio's ``LogCholeskyParameters.calculateJacobian``. Chain a
+    regressor in Pinocchio order through it: ``d tau / d z = W @ J``.
+    """
+    z = _as_vector(z, "log-Cholesky z")
+    _check_log_scales(z, max_log_scale, "Jacobian")
+    U = _factor(z)
+    scale = np.exp(2.0 * z[0])
+    J = np.empty((10, 10))
+    J[:, 0] = _p10_from_symmetric(2.0 * scale * (U @ U.T))
+    for k in range(1, 10):
+        E = np.zeros((4, 4))
+        if k < 4:
+            E[k - 1, k - 1] = U[k - 1, k - 1]
+        else:
+            i, j = _OFFDIAG[k - 4]
+            E[i, j] = 1.0
+        dP = scale * (E @ U.T + U @ E.T)
+        J[:, k] = _p10_from_symmetric(dP)
+    return J
+```
+
+## `repair_p10(p10, *, min_eig=None, rtol=1e-08)`
+
+Opt-in repair: lift `eig(P)` to a floor and report the change.
+
+The floor is `min_eig` if given, else `rtol * max(max eig(P), m)`. Eigenvalues below it are raised to it (the Frobenius-nearest matrix on `P` with that floor, not a weighted or torque-aware projection; use the LMI projection or the SDP fit for those). The input is copied, never modified; a body already above the floor is returned unchanged with `repaired=False`. A nonpositive mass is not repaired.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def repair_p10(
+    p10,
+    *,
+    min_eig: Optional[float] = None,
+    rtol: float = 1e-8,
+) -> RepairReport:
+    """Opt-in repair: lift ``eig(P)`` to a floor and report the change.
+
+    The floor is ``min_eig`` if given, else ``rtol * max(max eig(P), m)``.
+    Eigenvalues below it are raised to it (the Frobenius-nearest matrix on
+    ``P`` with that floor, not a weighted or torque-aware projection; use
+    the LMI projection or the SDP fit for those). The input is copied, never
+    modified; a body already above the floor is returned unchanged with
+    ``repaired=False``. A nonpositive mass is not repaired.
+    """
+    original = _as_vector(p10, "p10")
+    if original[0] <= 0.0:
+        raise ValueError(
+            f"mass {original[0]:.6g} <= 0: repair does not invent mass for a "
+            "massless or fixed link; keep it out of the encoded blocks"
+        )
+    P = pseudo_inertia_from_p10(original)
+    eigval, eigvec = np.linalg.eigh(P)
+    floor = (
+        float(min_eig)
+        if min_eig is not None
+        else rtol * max(float(eigval[-1]), float(original[0]))
+    )
+    if not np.isfinite(floor) or floor <= 0.0:
+        raise ValueError(f"repair floor must be positive and finite, got {floor}")
+    if eigval[0] >= floor:
+        repaired_p10, P_new, did = original.copy(), P, False
+    else:
+        P_new = (eigvec * np.maximum(eigval, floor)) @ eigvec.T
+        P_new = 0.5 * (P_new + P_new.T)
+        repaired_p10, did = _p10_from_symmetric(P_new), True
+    change = float(np.linalg.norm(repaired_p10 - original))
+    report = RepairReport(
+        p10_original=original,
+        p10=repaired_p10,
+        repaired=did,
+        min_eig_before=float(eigval[0]),
+        min_eig_after=float(np.linalg.eigvalsh(P_new)[0]),
+        p10_change_norm=change,
+        p10_relative_change=change / max(float(np.linalg.norm(original)), 1e-300),
+        pseudo_inertia_change_norm=float(np.linalg.norm(P_new - P)),
+    )
+    if did:
+        logger.info(
+            "repaired p10: min eig %.3e -> %.3e, |dp10| = %.3e (relative %.3e)",
+            report.min_eig_before,
+            report.min_eig_after,
+            change,
+            report.p10_relative_change,
+        )
+    return report
+```
+
+## `log_cholesky_by_joint_from_param_dict(*, parameter_dict, joint_names, massless='raise', rtol=PD_RTOL, max_log_scale=MAX_LOG_SCALE)`
+
+Encode the links named by `joint_names` from a flat parameter dict.
+
+Keys follow `m_<joint>`, `mx_<joint>`, ..., `Izz_<joint>`; other keys (friction, offsets, ...) are ignored and the input is not modified. `massless="skip"` leaves links with `m <= 0` out of the result (so their parameters stay as they are on decode); the default `"raise"` rejects them. Errors name the offending joint.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def log_cholesky_by_joint_from_param_dict(
+    *,
+    parameter_dict: Mapping[str, float],
+    joint_names: Iterable[str],
+    massless: str = "raise",
+    rtol: float = PD_RTOL,
+    max_log_scale: float = MAX_LOG_SCALE,
+) -> Dict[str, np.ndarray]:
+    """Encode the links named by ``joint_names`` from a flat parameter dict.
+
+    Keys follow ``m_<joint>``, ``mx_<joint>``, ..., ``Izz_<joint>``; other
+    keys (friction, offsets, ...) are ignored and the input is not
+    modified. ``massless="skip"`` leaves links with ``m <= 0`` out of the
+    result (so their parameters stay as they are on decode); the default
+    ``"raise"`` rejects them. Errors name the offending joint.
+    """
+    if massless not in ("raise", "skip"):
+        raise ValueError(f"massless must be 'raise' or 'skip', got {massless!r}")
+    p10_by_joint = p10_by_joint_from_param_dict(
+        parameter_dict=parameter_dict, joint_names=list(joint_names)
+    )
+    out: Dict[str, np.ndarray] = {}
+    for joint, p10 in p10_by_joint.items():
+        if massless == "skip" and p10[0] <= 0.0:
+            logger.debug("skipping massless link %s (m = %g)", joint, p10[0])
+            continue
+        try:
+            out[joint] = log_cholesky_from_p10(
+                p10, rtol=rtol, max_log_scale=max_log_scale
+            )
+        except ValueError as exc:
+            raise ValueError(f"joint {joint!r}: {exc}") from exc
+    return out
+```
+
+## `param_dict_with_log_cholesky_by_joint(*, parameter_dict, log_cholesky_by_joint, max_log_scale=MAX_LOG_SCALE)`
+
+Return a copy of `parameter_dict` with the encoded links decoded.
+
+Only the ten inertial keys of each joint in `log_cholesky_by_joint` change; every other key, and key order, is preserved.
+
+Source code in `src/figaroh/identification/inertial_parameterization.py`
+
+```
+def param_dict_with_log_cholesky_by_joint(
+    *,
+    parameter_dict: Mapping[str, float],
+    log_cholesky_by_joint: Mapping[str, np.ndarray],
+    max_log_scale: float = MAX_LOG_SCALE,
+) -> Dict[str, float]:
+    """Return a copy of ``parameter_dict`` with the encoded links decoded.
+
+    Only the ten inertial keys of each joint in ``log_cholesky_by_joint``
+    change; every other key, and key order, is preserved.
+    """
+    p10_by_joint = {}
+    for joint, z in log_cholesky_by_joint.items():
+        try:
+            p10_by_joint[joint] = p10_from_log_cholesky(z, max_log_scale=max_log_scale)
+        except ValueError as exc:
+            raise ValueError(f"joint {joint!r}: {exc}") from exc
+    return param_dict_with_p10_by_joint(
+        parameter_dict=dict(parameter_dict), p10_by_joint=p10_by_joint
+    )
+```
+
+## log_cholesky_fit
+
+Experimental (not re-exported from `figaroh.identification`). Opt-in, boundary-aware log-Cholesky fit (#24) for a `ComparatorProblem`. It first checks the regularised unconstrained optimum. If every link stays inside the pseudo-inertia margin and the mass bounds, it minimises the direct-fit objective in log-Cholesky coordinates from a feasible start (the unidentifiable directions are pinned to that optimum). Otherwise it solves the same objective as the direct-fit SDP. `notes` records the branch, the detection, the start (and any opt-in repair) and why the iteration stopped. Identifiability (`detection["rank"]`) is reported separately from physical feasibility. Statuses such as `invalid_start`, `time_budget`, `nonfinite_trial` and `max_nfev` come back unaccepted with no estimate. `BaseIdentification` runs it for `physical_fit: {method: log_cholesky}` (#25), with options from `physical_fit.log_cholesky` and the SDP solver from `physical_fit.solver`; `result["physical_fit"]["log_cholesky"]` carries the branch, rank, pinned null-space dimension, start repairs and interior stop reason. See the [boundary-aware log-Cholesky decision](https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/decisions/log-cholesky-boundary-aware.md).
+
+Opt-in, boundary-aware log-Cholesky physical fit (LC1, #24). Experimental.
+
+:func:`solve_log_cholesky_fit` minimises the objective of :func:`~figaroh.identification.physical_fit.solve_direct_effort_fit` on the same :class:`~figaroh.identification.physical_fit.ComparatorProblem`::
+
+```
+||W (Y theta - tau)||^2 + lambda ||D^-1 (theta - theta0)||^2
+```
+
+subject to every link being physically consistent. `W` is the row weight, `D` the coordinate scale, `theta0` the prior and `lambda` the policy's `prior_weight`. The method is the one accepted in `docs/decisions/log-cholesky-boundary-aware.md`:
+
+1. **Detect.** Compute the unconstrained (ridge) minimiser in closed form. It is the constrained optimum when every link has `min eig(P) >= eigenvalue_margin`, `m >= mass_min` and its `mass_ratio_bounds`; then the *interior* branch runs. Otherwise the optimum is on the boundary, which log-Cholesky coordinates cannot reach, and the *boundary* branch runs.
+1. **Interior.** Fit in log-Cholesky coordinates (one 10-vector per link, :mod:`~figaroh.identification.inertial_parameterization`) plus the remaining linear columns, with the regressor null space pinned to the prior, and stop once the identifiable residual distance to the detected optimum is below `stop_rms`.
+1. **Boundary.** Run the direct LMI effort fit itself (PICOS/CVXOPT).
+
+For this linear objective both branches return the convex optimum; the interior branch is the feasible-by-construction path that objectives which are not convex in `theta` need, and the record names the branch used. It is a local method: no global-optimum claim is made for other objectives.
+
+Every outcome is a :class:`~figaroh.identification.physical_fit.SolveRecord` with an independent per-link feasibility check. `theta` is `None` whenever the fit did not converge (`invalid_start`, `max_nfev`, `time_budget`, `nonfinite_trial`, `not_converged` or an SDP failure); callers keep their previous valid stage.
+
+## `LogCholeskyOptions(rank_rtol=1e-10, eigenvalue_margin=1e-06, stop_rms=1e-07, max_nfev=2000, max_seconds=60.0, method='dogbox', ftol=1e-10, xtol=1e-10, gtol=1e-10, max_log_scale=MAX_LOG_SCALE, repair_start=False, branch='auto', sdp_solver='cvxopt')`
+
+Options for :func:`solve_log_cholesky_fit` (defaults: #155 protocol).
+
+`rank_rtol`: singular values below `rank_rtol * s_max` of the scaled weighted regressor span the pinned null space. `eigenvalue_margin`: minimum pseudo-inertia eigenvalue for the interior branch. `stop_rms`: interior stop on `||M (q - q*)|| / sqrt(rows)`, in weighted-effort units (N\*m for unit weights). `max_nfev` and `max_seconds` bound the interior fit. `branch` forces a branch (`"auto"` detects). `repair_start` allows :func:`repair_p10` on start links that cannot be encoded.
+
+## `solve_log_cholesky_fit(p, *, start=None, options=None)`
+
+Boundary-aware log-Cholesky fit on a problem from `build_problem`.
+
+`start` is a full vector over `p.params_std` (default: the prior); only the interior branch uses it. Returns a `SolveRecord` with `objective="log_cholesky_fit"`; `notes` holds the branch, detection (rank, pinned null-space dimension, per-link verdicts), start repairs and interior counters. Experimental; the module is not re-exported from `figaroh.identification`.
+
+Source code in `src/figaroh/identification/log_cholesky_fit.py`
+
+```
+def solve_log_cholesky_fit(
+    p: ComparatorProblem,
+    *,
+    start: Optional[np.ndarray] = None,
+    options: Optional[LogCholeskyOptions] = None,
+) -> SolveRecord:
+    """Boundary-aware log-Cholesky fit on a problem from ``build_problem``.
+
+    ``start`` is a full vector over ``p.params_std`` (default: the prior);
+    only the interior branch uses it. Returns a ``SolveRecord`` with
+    ``objective="log_cholesky_fit"``; ``notes`` holds the branch, detection
+    (rank, pinned null-space dimension, per-link verdicts), start repairs and
+    interior counters. Experimental; the module is not re-exported from
+    ``figaroh.identification``.
+    """
+    opts = options or LogCholeskyOptions()
+    t0 = time.perf_counter()
+    obj = _Objective(p, opts.rank_rtol)
+    layout = _Layout(p)
+    detection = _detect(p, obj, opts.eigenvalue_margin, opts.rank_rtol)
+    branch = detection["branch"] if opts.branch == "auto" else opts.branch
+    notes: Dict[str, Any] = {
+        "method": "boundary_aware_log_cholesky",
+        "branch": branch,
+        "branch_forced": opts.branch != "auto",
+        "detection": detection,
+        "options": dataclasses.asdict(opts),
+    }
+
+    if branch == "boundary":
+        raw = _solve_core(p, "direct", solver=opts.sdp_solver)
+        notes["start"] = {"used": False}
+        raw["runtime_s"] = time.perf_counter() - t0
+        record = _make_record(
+            p, "log_cholesky_fit", solver=opts.sdp_solver, raw=raw, notes=notes
+        )
+        logger.info("log-Cholesky fit: boundary branch, status %s", raw["status"])
+        return record
+
+    theta_start = (
+        p.theta_prior.copy()
+        if start is None
+        else np.asarray(start, dtype=float).reshape(len(p.params_std))
+    )
+    if not np.all(np.isfinite(theta_start)):
+        raise ValueError("start has nonfinite entries")
+    x0, repairs, error = _start_coordinates(p, layout, obj, theta_start, opts)
+    notes["start"] = {
+        "used": True,
+        "source": "prior" if start is None else "given",
+        "repairs": repairs,
+    }
+    raw: Dict[str, Any] = {
+        "status": "invalid_start",
+        "picos_status": None,
+        "exception": None,
+        "objective_value": None,
+        "theta": None,
+    }
+    if error is not None:
+        raw["exception"] = (
+            f"{error}. Pass a physically consistent start or set "
+            "LogCholeskyOptions(repair_start=True)"
+        )
+    else:
+        theta, info = _fit_interior(p, obj, layout, x0, opts)
+        notes["interior"] = info
+        raw["status"] = "optimal" if theta is not None else info["stop_reason"]
+        raw["theta"] = theta
+        if theta is not None:
+            raw["objective_value"] = obj.value(theta)
+    raw["runtime_s"] = time.perf_counter() - t0
+    logger.info("log-Cholesky fit: interior branch, status %s", raw["status"])
+    return _make_record(p, "log_cholesky_fit", solver="scipy", raw=raw, notes=notes)
+```
+
 ## selection
 
 Which estimate an identification run reports (#61).
@@ -2846,7 +3484,7 @@ Which estimate an identification run reports (#61).
 
 - `fit` (default): the base-parameter least-squares fit, unchanged.
 - `reconstruction`: the full parameter vector reconstructed from the fit, accepted only when it is physically consistent and was produced by the requested method.
-- `physical_fit`: the direct LMI effort fit (:func:`figaroh.identification.physical_fit.solve_direct_effort_fit`).
+- `physical_fit`: a physically consistent effort fit chosen by `physical_fit.method`: `direct` (default), the direct LMI effort fit (:func:`figaroh.identification.physical_fit.solve_direct_effort_fit`), or `log_cholesky`, the experimental boundary-aware log-Cholesky fit (:func:`figaroh.identification.log_cholesky_fit.solve_log_cholesky_fit`, #25). Both minimise the same objective on the same training rows; the result names the method and, for `log_cholesky`, the branch.
 
 A requested stage that does not meet its acceptance conditions is *rejected*: nothing else is substituted, the selected stage is `none` and the verdict fails. The fit numbers stay under their usual result keys.
 
@@ -2856,21 +3494,21 @@ The estimate chosen by `select_stage` and the verdict on it.
 
 Attributes:
 
-| Name                  | Type                        | Description                                                                                              |
-| --------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `stage`               | `str`                       | Stage whose numbers are reported: fit, reconstruction or physical_fit when accepted, none when rejected. |
-| `requested`           | `str`                       | The stage that was asked for.                                                                            |
-| `status`              | `str`                       | accepted or rejected.                                                                                    |
-| `reason`              | `str`                       | Why, in one line (names the solver(s) and the failed test).                                              |
-| `space`               | `str`                       | standard (values are the full standard parameter vector).                                                |
-| `names`               | `List[str]`                 | Parameter names aligned with values.                                                                     |
-| `values`              | `Optional[ndarray]`         | The candidate vector; kept for diagnosis when rejected.                                                  |
-| `phi_base_equivalent` | `Optional[ndarray]`         | M @ theta for a standard candidate (diagnostic only, never used for prediction).                         |
-| `base_residual_rel`   | `Optional[float]`           | Relative distance of phi_base_equivalent from the fitted base parameters.                                |
-| `feasibility`         | `Dict[str, Dict[str, Any]]` | Per link {mass, min_eig, ok} for standard candidates.                                                    |
-| `effective_method`    | `Optional[str]`             | Method that produced a reconstruction.                                                                   |
-| `solvers`             | `List[str]`                 | Solver names tried for a physical fit.                                                                   |
-| `psd_eig_tol`         | `float`                     | Pseudo-inertia eigenvalue tolerance the links were judged feasible with; export uses the same one.       |
+| Name                  | Type                        | Description                                                                                                |
+| --------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `stage`               | `str`                       | Stage whose numbers are reported: fit, reconstruction or physical_fit when accepted, none when rejected.   |
+| `requested`           | `str`                       | The stage that was asked for.                                                                              |
+| `status`              | `str`                       | accepted or rejected.                                                                                      |
+| `reason`              | `str`                       | Why, in one line (names the solver(s) and the failed test).                                                |
+| `space`               | `str`                       | standard (values are the full standard parameter vector).                                                  |
+| `names`               | `List[str]`                 | Parameter names aligned with values.                                                                       |
+| `values`              | `Optional[ndarray]`         | The candidate vector; kept for diagnosis when rejected.                                                    |
+| `phi_base_equivalent` | `Optional[ndarray]`         | M @ theta for a standard candidate (diagnostic only, never used for prediction).                           |
+| `base_residual_rel`   | `Optional[float]`           | Relative distance of phi_base_equivalent from the fitted base parameters.                                  |
+| `feasibility`         | `Dict[str, Dict[str, Any]]` | Per link {mass, min_eig, ok} for standard candidates.                                                      |
+| `effective_method`    | `Optional[str]`             | Method that produced a reconstruction, or the physical_fit.method (direct/log_cholesky) of a physical fit. |
+| `solvers`             | `List[str]`                 | Solver names tried for a physical fit.                                                                     |
+| `psd_eig_tol`         | `float`                     | Pseudo-inertia eigenvalue tolerance the links were judged feasible with; export uses the same one.         |
 
 ### `predict(W_full)`
 
@@ -2938,7 +3576,7 @@ def requested_stage(identif) -> str:
 
 The `physical_fit` settings with every key present.
 
-The config parser already merges the defaults; a programmatic config may hold a partial mapping (or none), which is completed here.
+The config parser already merges the defaults; a programmatic config may hold a partial mapping (or none), which is completed here. Raises `ValueError` for an unknown key or a setting that :func:`~figaroh.identification.config.check_physical_fit_config` rejects, so a bad programmatic config fails as clearly as a parsed one.
 
 Source code in `src/figaroh/identification/selection.py`
 
@@ -2947,42 +3585,116 @@ def physical_fit_config(identif) -> Dict[str, Any]:
     """The ``physical_fit`` settings with every key present.
 
     The config parser already merges the defaults; a programmatic config
-    may hold a partial mapping (or none), which is completed here.
+    may hold a partial mapping (or none), which is completed here. Raises
+    ``ValueError`` for an unknown key or a setting that
+    :func:`~figaroh.identification.config.check_physical_fit_config`
+    rejects, so a bad programmatic config fails as clearly as a parsed one.
     """
-    from figaroh.identification.config import PHYSICAL_FIT_DEFAULTS
+    from figaroh.identification.config import (
+        PHYSICAL_FIT_DEFAULTS,
+        check_physical_fit_config,
+    )
 
     raw = (getattr(identif, "identif_config", None) or {}).get("physical_fit")
-    if isinstance(raw, dict) and PHYSICAL_FIT_DEFAULTS.keys() <= raw.keys():
-        return dict(raw)
     cfg = dict(PHYSICAL_FIT_DEFAULTS)
     if isinstance(raw, dict):
+        unknown = set(raw) - set(PHYSICAL_FIT_DEFAULTS)
+        if unknown:
+            raise ValueError(
+                f"unknown physical_fit keys {sorted(unknown)}; "
+                f"allowed: {sorted(PHYSICAL_FIT_DEFAULTS)}"
+            )
         cfg.update(raw)
-    return cfg
+    return check_physical_fit_config(cfg)
+```
+
+## `log_cholesky_summary(record)`
+
+JSON-ready branch, detection, start and solver metadata of a log-Cholesky :class:`~figaroh.identification.physical_fit.SolveRecord`.
+
+Reports the numerical rank and pinned null-space dimension separately from per-link feasibility, the links that sent the fit to the boundary, start repairs and, for the interior branch, the stop reason, evaluation counts and identifiable residual distance.
+
+Source code in `src/figaroh/identification/selection.py`
+
+```
+def log_cholesky_summary(record) -> Dict[str, Any]:
+    """JSON-ready branch, detection, start and solver metadata of a
+    log-Cholesky :class:`~figaroh.identification.physical_fit.SolveRecord`.
+
+    Reports the numerical rank and pinned null-space dimension separately
+    from per-link feasibility, the links that sent the fit to the boundary,
+    start repairs and, for the interior branch, the stop reason, evaluation
+    counts and identifiable residual distance.
+    """
+    notes = getattr(record, "notes", None) or {}
+    det = notes.get("detection") or {}
+    start = notes.get("start") or {}
+    out: Dict[str, Any] = {
+        "branch": notes.get("branch"),
+        "branch_forced": bool(notes.get("branch_forced", False)),
+        "rank": det.get("rank"),
+        "n_params": det.get("n_params"),
+        "null_space_dim": det.get("null_space_dim"),
+        "rank_rtol": det.get("rank_rtol"),
+        "eigenvalue_margin": det.get("eigenvalue_margin"),
+        "unconstrained_min_eig": det.get("unconstrained_min_eig"),
+        "active_links": {
+            j: list(v.get("active", []))
+            for j, v in (det.get("per_link") or {}).items()
+            if v.get("active")
+        },
+        "start_used": bool(start.get("used", False)),
+        "start_source": start.get("source"),
+        "start_repairs": dict(start.get("repairs") or {}),
+        "interior": None,
+    }
+    interior = notes.get("interior")
+    if interior:
+        keys = (
+            "stop_reason",
+            "nfev",
+            "njev",
+            "identifiable_rms",
+            "scipy_status",
+            "scipy_message",
+            "max_abs_log_scale",
+            "runtime_s",
+        )
+        out["interior"] = {k: interior[k] for k in keys if k in interior}
+    import json
+
+    return json.loads(json.dumps(out, default=float))
 ```
 
 ## `run_physical_fit(identif)`
 
-Solve the direct LMI effort fit on the data the fit used.
+Solve the configured physical fit on the data the fit used.
 
-Returns an outcome dict (never raises): `record` (a :class:`~figaroh.identification.physical_fit.SolveRecord` or `None`), `solvers` (names tried), `reason` and `accepted`. The processed regressor is scattered into all standard columns (zeros where columns were eliminated); friction and offsets are free parameters and the prior is the nominal standard parameter vector.
+Returns an outcome dict: `record` (a :class:`~figaroh.identification.physical_fit.SolveRecord` or `None`), `method`, `solvers` (names tried), `reason`, `accepted` and, for `method: log_cholesky`, a `log_cholesky` summary (:func:`log_cholesky_summary`). Solver failures do not raise; an invalid `physical_fit` config does. The training rows (`_solve_W`, `_solve_tau`) are scattered into all standard columns (zeros where columns were eliminated); held-out data never enters. Friction and offsets are free parameters and the prior (also the log-Cholesky start) is the nominal standard parameter vector.
 
 Source code in `src/figaroh/identification/selection.py`
 
 ```
 def run_physical_fit(identif) -> Dict[str, Any]:
-    """Solve the direct LMI effort fit on the data the fit used.
+    """Solve the configured physical fit on the data the fit used.
 
-    Returns an outcome dict (never raises): ``record`` (a
+    Returns an outcome dict: ``record`` (a
     :class:`~figaroh.identification.physical_fit.SolveRecord` or ``None``),
-    ``solvers`` (names tried), ``reason`` and ``accepted``. The processed
-    regressor is scattered into all standard columns (zeros where columns
-    were eliminated); friction and offsets are free parameters and the
-    prior is the nominal standard parameter vector.
+    ``method``, ``solvers`` (names tried), ``reason``, ``accepted`` and,
+    for ``method: log_cholesky``, a ``log_cholesky`` summary
+    (:func:`log_cholesky_summary`). Solver failures do not raise; an invalid
+    ``physical_fit`` config does. The training rows (``_solve_W``,
+    ``_solve_tau``) are scattered into all standard columns (zeros where
+    columns were eliminated); held-out data never enters. Friction and
+    offsets are free parameters and the prior (also the log-Cholesky start)
+    is the nominal standard parameter vector.
     """
     cfg = physical_fit_config(identif)
+    method = cfg["method"]
     solvers = [str(cfg["solver"])]
     outcome: Dict[str, Any] = {
         "record": None,
+        "method": method,
         "solvers": solvers,
         "reason": "",
         "accepted": False,
@@ -3015,16 +3727,22 @@ def run_physical_fit(identif) -> Dict[str, Any]:
             ),
             row_weight=getattr(identif, "_wls_row_weight", None),
         )
-        opts = {}
-        if cfg["max_seconds"] is not None:
-            opts["max_seconds"] = float(cfg["max_seconds"])
-        record = pf.solve_direct_effort_fit(problem, solver=solvers[0], **opts)
-        steps = [f"{solvers[0]}: {record.solver_status}"]
-        if record.solver_status != "optimal" and cfg["second_solver"]:
-            second = str(cfg["second_solver"])
-            solvers.append(second)
-            record = pf.solve_direct_effort_fit(problem, solver=second, **opts)
-            steps.append(f"{second}: {record.solver_status}")
+        if method == "log_cholesky":
+            record, steps = _run_log_cholesky(problem, cfg, solvers)
+            outcome["log_cholesky"] = log_cholesky_summary(record)
+            if record.notes.get("branch") != "boundary":
+                solvers[:] = ["scipy"]
+        else:
+            opts = {}
+            if cfg["max_seconds"] is not None:
+                opts["max_seconds"] = float(cfg["max_seconds"])
+            record = pf.solve_direct_effort_fit(problem, solver=solvers[0], **opts)
+            steps = [f"{solvers[0]}: {record.solver_status}"]
+            if record.solver_status != "optimal" and cfg["second_solver"]:
+                second = str(cfg["second_solver"])
+                solvers.append(second)
+                record = pf.solve_direct_effort_fit(problem, solver=second, **opts)
+                steps.append(f"{second}: {record.solver_status}")
         outcome["record"] = record
         outcome["psd_eig_tol"] = problem.policy.feas_tol
         outcome["accepted"] = bool(
@@ -3044,6 +3762,64 @@ def run_physical_fit(identif) -> Dict[str, Any]:
         logger.warning("physical fit failed: %s", exc)
         outcome["reason"] = f"{type(exc).__name__}: {exc}"
     return outcome
+```
+
+## `physical_fit_result(out)`
+
+The `result["physical_fit"]` entry for a :func:`run_physical_fit` outcome: verdict, method, solver status, elapsed time, objective, per-link feasibility and the log-Cholesky summary when present.
+
+Source code in `src/figaroh/identification/selection.py`
+
+```
+def physical_fit_result(out: Dict[str, Any]) -> Dict[str, Any]:
+    """The ``result["physical_fit"]`` entry for a :func:`run_physical_fit`
+    outcome: verdict, method, solver status, elapsed time, objective,
+    per-link feasibility and the log-Cholesky summary when present."""
+    record = out.get("record")
+    info = {
+        "status": "accepted" if out["accepted"] else "rejected",
+        "method": out.get("method", "direct"),
+        "reason": out["reason"],
+        "solvers": list(out["solvers"]),
+        "solver_status": None if record is None else record.solver_status,
+        "runtime_s": None if record is None else float(record.runtime_s),
+        "objective_value": None if record is None else record.objective_value,
+        "feasibility": {} if record is None else record.as_dict()["feasibility"],
+    }
+    if "log_cholesky" in out:
+        info["log_cholesky"] = out["log_cholesky"]
+    return info
+```
+
+## `stage_label(selected)`
+
+Display name of a selected-estimate dict (`SelectedEstimate.as_dict`).
+
+A log-Cholesky physical fit names its method and branch, e.g. `physical_fit (log_cholesky, boundary branch)`; the default `direct` method keeps the plain `physical_fit` label. A rejection reads `none (requested ...: rejected)`.
+
+Source code in `src/figaroh/identification/selection.py`
+
+```
+def stage_label(selected: Dict[str, Any]) -> str:
+    """Display name of a selected-estimate dict (``SelectedEstimate.as_dict``).
+
+    A log-Cholesky physical fit names its method and branch, e.g.
+    ``physical_fit (log_cholesky, boundary branch)``; the default ``direct``
+    method keeps the plain ``physical_fit`` label. A rejection reads
+    ``none (requested ...: rejected)``.
+    """
+    if selected.get("status") != "accepted":
+        return f"none (requested {selected.get('requested')}: rejected)"
+    stage = str(selected.get("stage"))
+    if stage != "physical_fit" or selected.get("physical_fit_method") in (
+        None,
+        "direct",
+    ):
+        return stage
+    branch = selected.get("log_cholesky_branch")
+    method = selected["physical_fit_method"]
+    detail = f"{method}, {branch} branch" if branch else str(method)
+    return f"{stage} ({detail})"
 ```
 
 ## `select_estimate(identif)`

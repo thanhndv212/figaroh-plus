@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/figaroh-mark-light.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -2697,9 +2697,16 @@ release, and a call can raise <code>NotImplementedError</code>.</p>
   Meshcat and plotting helpers.</li>
 <li><strong><code>figaroh.measurements</code>.</strong> A measurement container that no shipped
   workflow uses.</li>
-<li><strong>Log-Cholesky fits (LC1).</strong> The log-Cholesky physical fit is not part of
-  the library: the feasibility spike was a no-go for 0.7.0 (D5, issue 155).
-  If it ships, it ships as an opt-in, experimental method.</li>
+<li><strong>Log-Cholesky coordinates (LC1).</strong>
+  <code>figaroh.identification.inertial_parameterization</code> maps a link's inertial
+  parameters to and from log-Cholesky coordinates (#23). It is not
+  re-exported from <code>figaroh.identification</code>; import the module.
+  <code>figaroh.identification.log_cholesky_fit</code> is the opt-in fit built on it
+  (#24): it detects whether the unconstrained optimum is feasible, fits
+  log-Cholesky coordinates when it is, and otherwise solves the direct-fit
+  SDP. <code>BaseIdentification</code> reaches it through
+  <code>physical_fit.method: log_cholesky</code> (#25). Its result record, statuses and
+  the <code>physical_fit.log_cholesky</code> keys may still change.</li>
 </ul>
 <p>Names in these modules, as they stand today:</p>
 <ul>
@@ -2707,6 +2714,8 @@ release, and a call can raise <code>NotImplementedError</code>.</p>
 <li><code>figaroh.visualisation</code>: <code>colors</code>, <code>MeshcatVisualizer</code></li>
 <li><code>figaroh.visualisation.colors</code>: <code>rgb2int</code>, <code>material</code>, <code>red</code>, <code>blue</code>, <code>green</code>, <code>yellow</code>, <code>magenta</code>, <code>cyan</code>, <code>white</code>, <code>black</code>, <code>grey</code>, <code>colormap</code></li>
 <li><code>figaroh.backends.mujoco</code>: <code>MuJoCoBackend</code></li>
+<li><code>figaroh.identification.inertial_parameterization</code>: <code>P10_ORDER</code>, <code>LOG_CHOLESKY_ORDER</code>, <code>MAX_LOG_SCALE</code>, <code>PD_RTOL</code>, <code>RepairReport</code>, <code>pseudo_inertia_from_p10</code>, <code>p10_from_pseudo_inertia</code>, <code>log_cholesky_from_pseudo_inertia</code>, <code>pseudo_inertia_from_log_cholesky</code>, <code>log_cholesky_from_p10</code>, <code>p10_from_log_cholesky</code>, <code>p10_jacobian_from_log_cholesky</code>, <code>repair_p10</code>, <code>log_cholesky_by_joint_from_param_dict</code>, <code>param_dict_with_log_cholesky_by_joint</code></li>
+<li><code>figaroh.identification.log_cholesky_fit</code>: <code>LogCholeskyOptions</code>, <code>solve_log_cholesky_fit</code></li>
 <li><code>figaroh.tools.robotvisualization</code>: <code>VisualizationConfig</code>, <code>RobotVisualizer</code>, <code>place</code>, <code>display_COM</code>, <code>display_axes</code>, <code>rotation_matrix_from_vectors</code>, <code>display_force</code>, <code>display_bounding_boxes</code>, <code>display_joints</code></li>
 <li><code>figaroh.measurements</code>: <code>Measurement</code></li>
 </ul>
@@ -2886,7 +2895,7 @@ CI tests Python 3.10 (lowest), 3.12 (main) and 3.14 (highest).</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
         <script src="../../javascripts/figaroh.js"></script>
       
