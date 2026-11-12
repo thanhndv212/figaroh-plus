@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.2.0] - 2026-11-12
+## [1.2.0] - 2026-11-13
 
 An opt-in, experimental log-Cholesky fit for the `physical_fit` stage
 (package LC1, tracker #20). The maintainer decided on 2026-11-12 to release
