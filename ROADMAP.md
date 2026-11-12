@@ -255,7 +255,7 @@ feature in the minor release after its go decision and never holds a release.
 | 1.0.1 | Documentation and housekeeping | none (no library code) | Released 2026-10-12; examples `v1.0.0` remains the pair |
 | 1.0.2 | Documentation | none (no library code) | Released 2026-10-13; examples `v1.0.0` remains the pair |
 | 1.1.0 | Calibration estimation improvements and C5 follow-up fixes | none (fixes and additions since 1.0.2; maintainer decision 2026-10-29) | Released 2026-10-29 ([tracker #228](https://github.com/thanhndv212/figaroh-plus/issues/228)); examples tag `v1.1.0` |
-| 1.2.0 | Opt-in log-Cholesky physical fit (optional research path, after its go decision) | LC1: #23–#25, #234, examples #11 | Next (maintainer decision 2026-11-12); needs the tracker #20 closing review and a release tracker; examples pin `figaroh>=1.2,<1.3` |
+| 1.2.0 | Opt-in log-Cholesky physical fit (optional research path, after its go decision) | LC1: #23–#25, #234, examples #11 | Release PR open ([tracker #240](https://github.com/thanhndv212/figaroh-plus/issues/240), maintainer decision 2026-11-12); needs the tracker #20 closing review; examples pin `figaroh>=1.2,<1.3`, tag `v1.2.0` |
 | 1.2.1 | Hotfix: active-joint row selection | Q1.1 | Planned, from `main` after 1.2.0 |
 | 1.3.0 | Correctness and reliability (M0) | Q1.2–Q1.4, Q2, Q3 | Planned, after 1.2.1 |
 | 1.4.0 | Structure and performance without breaking callers (M0, overlapping M2) | Q4; Q4.2 typed contracts designed with S4 | Planned, after 1.3.0 |
