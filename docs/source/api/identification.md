@@ -39,6 +39,44 @@ Direct LMI effort fit over all standard parameters (public since #61;
     options:
       show_root_heading: false
 
+## inertial_parameterization
+
+Experimental (not re-exported from `figaroh.identification`). Log-Cholesky
+coordinates for one link's inertial parameters (#23): exact
+maps between `p10`, the pseudo-inertia and `z`, the Jacobian `d p10 / d z`,
+an opt-in reported repair and per-joint dictionary helpers. It is a
+representation for estimators to build on, not an estimator, and imports
+neither PICOS nor CVXOPT. See the
+[boundary-aware log-Cholesky decision](https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/decisions/log-cholesky-boundary-aware.md).
+
+::: figaroh.identification.inertial_parameterization
+    options:
+      show_root_heading: false
+
+## log_cholesky_fit
+
+Experimental (not re-exported from `figaroh.identification`). Opt-in,
+boundary-aware log-Cholesky fit (#24) for a `ComparatorProblem`. It first
+checks the regularised unconstrained optimum. If every link stays inside the
+pseudo-inertia margin and the mass bounds, it minimises the direct-fit
+objective in log-Cholesky coordinates from a feasible start (the
+unidentifiable directions are pinned to that optimum). Otherwise it solves
+the same objective as the direct-fit SDP. `notes` records the branch, the
+detection, the start (and any opt-in repair) and why the iteration stopped.
+Identifiability (`detection["rank"]`) is reported separately from physical
+feasibility. Statuses such as `invalid_start`, `time_budget`,
+`nonfinite_trial` and `max_nfev` come back unaccepted with no estimate.
+`BaseIdentification` runs it for `physical_fit: {method: log_cholesky}`
+(#25), with options from `physical_fit.log_cholesky` and the SDP solver from
+`physical_fit.solver`; `result["physical_fit"]["log_cholesky"]` carries the
+branch, rank, pinned null-space dimension, start repairs and interior stop
+reason. See the
+[boundary-aware log-Cholesky decision](https://github.com/thanhndv212/figaroh-plus/blob/devel/docs/decisions/log-cholesky-boundary-aware.md).
+
+::: figaroh.identification.log_cholesky_fit
+    options:
+      show_root_heading: false
+
 ## selection
 
 ::: figaroh.identification.selection

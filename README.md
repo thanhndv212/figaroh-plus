@@ -85,7 +85,8 @@ goes through up to three stages:
   and decimation. Base-parameter selection is deterministic across platforms.
 - `reconstruction`: a full standard-parameter set recovered from the base fit.
 - `physical_fit`: a direct LMI fit constrained to physically consistent
-  inertias.
+  inertias, or the experimental log-Cholesky fit
+  (`physical_fit.method: log_cholesky`).
 
 `identification.select_stage` chooses which stage is reported, validated and
 exported; a requested stage that fails is rejected rather than replaced.
@@ -131,21 +132,23 @@ Every run can also write:
 - a JSON verdict with the scope, per-stage status and each check
   (`export_verification_report()`).
 
-## What's new in 1.1
+## What's new in 1.2
 
-- Calibration noise per measurement component: `estimation.noise_std` takes
-  one value per component, or `per_component` to estimate them, and a
-  calibrator can give the sensor frame the noise is fixed in (#215).
-- The `map`, `map_cv`, `excitation` and `cv_subset` estimation methods work
-  with calibrators that measure something other than a pose, such as a
-  table contact (#210).
-- `estimation.structural_selection: ordered` makes the selected parameter
-  names independent of `random_seed` (#204).
-- Fixes found by the calibration studies, several of which change results:
-  `joint_offset` on unaligned joints (#205), joint elasticity beyond simple
-  chains (#206), the eye-hand camera anchor on a moving chain (#217), the
-  base-frame rename (#204), the optimal-trajectory base columns (#218) and
-  `Detmax` (#90). Read "Upgrading from 1.0" in the changelog.
+- `physical_fit.method: log_cholesky` runs an experimental boundary-aware
+  fit as the `physical_fit` stage. It checks the unconstrained optimum first,
+  fits log-Cholesky coordinates when that optimum is physically consistent,
+  and solves the direct LMI fit when it is not (#24, #25). `direct` stays the
+  default, so existing configs give the same results.
+- The result, the stage record and both reports name the method and the
+  branch that ran, with the identifiable rank and the stop reason. A fit that
+  does not converge is rejected with no estimate (#25, #234).
+- `figaroh.identification.inertial_parameterization` converts a link's
+  inertial parameters to and from pseudo-inertia and log-Cholesky
+  coordinates (#23).
+
+These names are experimental: see
+[API stability](https://thanhndv212.github.io/figaroh-plus/api/stability/).
+No configuration change is needed when upgrading from 1.1.
 
 The full list, including fixes and behaviour changes, is in the
 [CHANGELOG](https://github.com/thanhndv212/figaroh-plus/blob/main/CHANGELOG.md).

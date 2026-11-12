@@ -23,6 +23,7 @@ This module handles all configuration-related functionality including:
 - Signal processing and mechanical parameter management
 """
 
+import dataclasses
 import logging
 
 logger = logging.getLogger(__name__)
@@ -113,14 +114,97 @@ def unified_to_legacy_identif_config(robot, unified_identif_config) -> dict:
 
 SELECT_STAGES = ("fit", "reconstruction", "physical_fit")
 
+PHYSICAL_FIT_METHODS = ("direct", "log_cholesky")
+
 PHYSICAL_FIT_DEFAULTS = {
     "enabled": False,
+    "method": "direct",
     "solver": "cvxopt",
     "second_solver": None,
     "mass_min": 1e-6,
     "prior_weight": 1e-6,
     "max_seconds": None,
+    "log_cholesky": None,
 }
+
+
+def check_physical_fit_config(cfg):
+    """Validate a complete ``physical_fit`` mapping; return it normalised.
+
+    ``method`` selects the estimator: ``direct`` (the direct LMI effort fit,
+    default) or ``log_cholesky`` (the experimental boundary-aware
+    log-Cholesky fit of
+    :func:`~figaroh.identification.log_cholesky_fit.solve_log_cholesky_fit`,
+    #25). Its options go in ``log_cholesky`` (the fields of
+    :class:`~figaroh.identification.log_cholesky_fit.LogCholeskyOptions`
+    except ``sdp_solver``, which is ``solver``).
+
+    Raises:
+        ValueError: unknown method, options for another method, settings the
+            method does not support, or invalid option values.
+    """
+    cfg = dict(cfg)
+    method = str(cfg.get("method") or "direct").strip().lower()
+    if method not in PHYSICAL_FIT_METHODS:
+        raise ValueError(
+            f"physical_fit.method={cfg.get('method')!r} is unknown; "
+            f"choose one of {PHYSICAL_FIT_METHODS}"
+        )
+    cfg["method"] = method
+    lc = cfg.get("log_cholesky")
+    if lc is not None and not isinstance(lc, dict):
+        raise ValueError("physical_fit.log_cholesky must be a mapping")
+    if method == "direct":
+        if lc:
+            raise ValueError(
+                "physical_fit.log_cholesky options are set but "
+                "physical_fit.method is 'direct'; set method: log_cholesky "
+                "or remove them"
+            )
+        return cfg
+    if cfg.get("second_solver"):
+        raise ValueError(
+            "physical_fit.second_solver is not supported with method "
+            "'log_cholesky': its boundary branch runs the SDP once, with "
+            "physical_fit.solver"
+        )
+    if cfg.get("max_seconds") is not None:
+        raise ValueError(
+            "physical_fit.max_seconds is not supported with method "
+            "'log_cholesky'; set physical_fit.log_cholesky.max_seconds, which "
+            "bounds the interior fit (the boundary SDP has no time limit)"
+        )
+    from figaroh.identification.log_cholesky_fit import LogCholeskyOptions
+
+    allowed = {f.name for f in dataclasses.fields(LogCholeskyOptions)}
+    allowed.discard("sdp_solver")
+    lc = dict(lc or {})
+    if "sdp_solver" in lc:
+        raise ValueError(
+            "physical_fit.log_cholesky.sdp_solver is not a key; the boundary "
+            "SDP uses physical_fit.solver"
+        )
+    unknown = set(lc) - allowed
+    if unknown:
+        raise ValueError(
+            f"unknown physical_fit.log_cholesky keys {sorted(unknown)}; "
+            f"allowed: {sorted(allowed)}"
+        )
+    try:
+        LogCholeskyOptions(**lc, sdp_solver=str(cfg["solver"]))
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"physical_fit.log_cholesky: {exc}") from exc
+    cfg["log_cholesky"] = lc
+    return cfg
+
+
+def log_cholesky_options(cfg):
+    """:class:`LogCholeskyOptions` for a checked ``physical_fit`` mapping."""
+    from figaroh.identification.log_cholesky_fit import LogCholeskyOptions
+
+    return LogCholeskyOptions(
+        **(cfg.get("log_cholesky") or {}), sdp_solver=str(cfg["solver"])
+    )
 
 
 def _extract_selection_config(identif_config, source):
@@ -132,7 +216,9 @@ def _extract_selection_config(identif_config, source):
     physical-consistency projection is of the nominal model, not the fit).
 
     Raises:
-        ValueError: unknown ``select_stage`` or ``physical_fit`` key/type.
+        ValueError: unknown ``select_stage`` or ``physical_fit`` key/type,
+            or a ``physical_fit`` setting rejected by
+            :func:`check_physical_fit_config`.
     """
     if "select_stage" in source and source["select_stage"] is not None:
         stage = str(source["select_stage"]).strip().lower()
@@ -163,7 +249,7 @@ def _extract_selection_config(identif_config, source):
             )
         merged = dict(PHYSICAL_FIT_DEFAULTS)
         merged.update(pf)
-        identif_config["physical_fit"] = merged
+        identif_config["physical_fit"] = check_physical_fit_config(merged)
 
 
 def _extract_signal_processing_params(identif_config, signal_processing):
