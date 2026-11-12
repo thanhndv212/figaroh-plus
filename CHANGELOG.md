@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-12
+
+An opt-in, experimental log-Cholesky fit for the `physical_fit` stage
+(package LC1, tracker #20). The maintainer decided on 2026-11-12 to release
+it before the code-quality packages Q1–Q5 (#238, #240). The paired
+figaroh-examples tag is `v1.2.0`.
+
+Upgrading from 1.1: no configuration change is required and no result
+changes. `physical_fit.method: direct` stays the default; the new fit runs
+only when a config asks for `physical_fit.method: log_cholesky`. Its result
+record, statuses and option keys are experimental and may change in a minor
+release.
+
+Known issues, present in 1.1.0 as well and planned as Q1 (#238):
+`solve(decimate=False)` fails and `compute_reference_torque` reads the wrong
+regressor rows when the active joints are a subset of the model's joints.
+The fix is planned as 1.2.1.
+
 ### Added
 
 - Experimental `figaroh.identification.inertial_parameterization`: exact
