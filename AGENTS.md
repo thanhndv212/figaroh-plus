@@ -37,6 +37,11 @@ or complete. Do not use an old test count as present-day validation evidence.
   in sibling `figaroh-examples`; keep robot-specific logic there.
 - Normal core PRs target `devel`; release PRs target `main`. Examples PRs target
   that repository's `main`. See CONTRIBUTING for hotfixes and back-merges.
+- Pair core work with examples: before implementing a core issue, check
+  `figaroh-examples` for anything that uses the behaviour being changed. If an
+  example is affected, a paired examples issue/PR is required and the core
+  issue closes only when it merges; if none is, record that on the issue. The
+  work must be listed in ROADMAP and the delivery plan first. See CONTRIBUTING.
 - Core CI now has tests and lint in addition to docs. Hosted check results and
   branch protection must be verified independently; a workflow file is not proof
   of a green run or an enforced rule.

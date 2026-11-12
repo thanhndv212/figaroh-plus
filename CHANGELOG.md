@@ -47,6 +47,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and 4.1, so the decision is go. Private research spike, not a production
   solver. (#155)
 
+### Changed
+
+- Roadmap and delivery plan: release the log-Cholesky work first as 1.2.0,
+  then code-quality packages Q1–Q5 from the 2026-11-12 codebase review
+  (1.2.1 hotfix, 1.3.0, 1.4.0, 2.0.0). CONTRIBUTING and AGENTS gain the rule
+  that a core development or fix is paired with work in `figaroh-examples`
+  whenever an example is affected. Documentation only; no library behaviour
+  changes.
+
 ### Fixed
 
 - The log-Cholesky fit's interior branch no longer rejects fits that have
