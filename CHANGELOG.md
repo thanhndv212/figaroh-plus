@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Roadmap and delivery plan record 1.2.0 as released on 2026-11-13 (#240).
+  Documentation only.
+
 ## [1.2.0] - 2026-11-13
 
 An opt-in, experimental log-Cholesky fit for the `physical_fit` stage
