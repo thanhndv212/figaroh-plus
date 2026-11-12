@@ -1,6 +1,6 @@
 # FIGAROH Roadmap
 
-**Evidence refresh: 2026-10-12; delivery status refreshed 2026-10-29. Priority changes below are a tracker scope approved; execution details under review, revision 4.**
+**Evidence refresh: 2026-10-12; delivery status refreshed 2026-10-29; code-quality packages Q1–Q5, the core/examples pairing rule and the release order (log-Cholesky first) added 2026-11-12. Priority changes below are a tracker scope approved; execution details under review, revision 4.**
 
 Review the [detailed delivery plan](docs/source/further_reading/plans.md)
 before implementation. The user requested calibration improvements in parallel
@@ -108,6 +108,33 @@ it added no core features. D8 collects optional identification research
 (#157–#161) outside baseline M1. `devel` carries post-1.0 fixes not yet
 released; the changelog's Unreleased section lists them.
 
+**Code-quality review (2026-11-12).** A review of `devel` at `21994ed`
+reproduced four defects and found a fifth by reading: undecimated
+identification fails for a subset of joints, the reference torque uses the
+wrong rows for a non-prefix active set, the custom-solver path ignores the
+sample mask and stage records, `LinearSolver` crashes or ignores options in
+some methods, and wrench-mode extra columns use inconsistent rows (not yet
+run). All five are in the `v1.1.0` sources. The review also found fallbacks
+that hide failures, library `print`/logging violations, unseeded randomness and
+tooling that is listed but not run. This work is planned as packages Q1–Q5
+under M0; rosters, evidence and the maintainer's decisions are in the
+[delivery plan](docs/source/further_reading/plans.md#code-quality-and-reliability-packages-q1q5).
+No tracker or issue exists yet.
+
+**Log-Cholesky release first (maintainer decision, 2026-11-12).** The LC1 work
+is complete on `devel`: go gate #155, production issues #23–#25, the follow-up
+fix #234 and examples #11 are all closed. Tracker
+[#20](https://github.com/thanhndv212/figaroh-plus/issues/20) is still open. Its
+closing review and the 1.2.0 release come before any Q package. The fit stays
+opt-in and experimental; `direct` remains the default.
+
+**Core/examples pairing (maintainer instruction, 2026-11-12).** A core
+development or fix is paired with work in `figaroh-examples` whenever an
+example is affected; if none is, no paired item is needed and the issue records
+that. The
+[pairing rule](docs/source/further_reading/plans.md#coreexamples-pairing-rule)
+applies to all packages from this date.
+
 **M0 gate review (accepted 2026-10-12, [tracker #181](https://github.com/thanhndv212/figaroh-plus/issues/181) §9).**
 Existing core gates retained (blocking `Lint`, Core CI and Documentation green);
 examples assets and dependencies reproducible (W1); numerical regressions
@@ -160,9 +187,10 @@ scope, dependencies and closure policy are in the
 | M1.2 estimation | D3–D4 dynamic truth/comparison; C2 calibration truth/holdout | ✅ **C2, D3, D4** all cleared |
 | M1.3 export | D6 inertial export; C3 geometric export | ✅ **C3, D6** both cleared |
 | M1.4 integrated workflows | W3 minimum contracts, S1 minimum reports, D7 dynamic reference, C4 calibration reference, U1 verified onboarding | ✅ **W3, S1, C4, D7, U1** |
+| M0 code quality and reliability (2026-11-12 review) | Q1 correctness fixes, Q2 fail loudly, Q3 tooling; then Q4 structure and performance; Q5 breaking removals | Planned (2026-11-12): no trackers yet; next after the 1.2.0 log-Cholesky release, starting with the Q1.1 hotfix |
 | M2 follow-up | S2 uncertainty, S3 experiment-design improvements, S4 selective composition; W3 is prerequisite groundwork | ✅ W3 groundwork done; S2 in progress; S3, S4 blocked (except S3 bug #90, ready) |
 | M3 backend parity | B1 capabilities and measured parity; broader ports need separately reviewed packages | Planned; M1 accepted, not started |
-| Optional nonlinear research | D5 and linked production #23–#25 when that path is approved; excluded from baseline M1 closure | D5 open: #22 revise, #30 no-go, #155 go; #23 unblocked |
+| Optional nonlinear research | D5 and linked production #23–#25 when that path is approved; excluded from baseline M1 closure | D5 cleared; LC1 in review: #155 go, #23–#25 and #234 closed, tracker #20 open; ships in 1.2.0 |
 | Calibration studies (after M1) | C5: every calibration study to the TIAGo mocap standard | ✅ **C5** accepted 2026-10-26 (#167) |
 | Optional identification research | D8: #157–#161 and examples #115; excluded from baseline M1 | Open, planned |
 
@@ -212,7 +240,10 @@ and a core/examples revision pair, and those records are its evidence.
 | **After 1.0** | M2 additions are minor releases; removing a deprecated feature is a major release |
 
 A deprecated feature warns for at least one minor release before it is removed;
-removals are batched into 1.0. Optional research (D5/LC1) ships as an opt-in
+removals were batched into 1.0 and the next batch (Q5) into 2.0. The Q1.1
+active-joint row defect gives wrong reference torques without an error, so it
+ships as a patch release from `main` (maintainer decision, 2026-11-12); with
+1.2.0 released first, that patch is 1.2.1. Optional research (D5/LC1) ships as an opt-in
 feature in the minor release after its go decision and never holds a release.
 
 | Version | Outcome | Delivery packages | Status |
@@ -224,7 +255,12 @@ feature in the minor release after its go decision and never holds a release.
 | 1.0.1 | Documentation and housekeeping | none (no library code) | Released 2026-10-12; examples `v1.0.0` remains the pair |
 | 1.0.2 | Documentation | none (no library code) | Released 2026-10-13; examples `v1.0.0` remains the pair |
 | 1.1.0 | Calibration estimation improvements and C5 follow-up fixes | none (fixes and additions since 1.0.2; maintainer decision 2026-10-29) | Released 2026-10-29 ([tracker #228](https://github.com/thanhndv212/figaroh-plus/issues/228)); examples tag `v1.1.0` |
-| 1.2 and later | M2 composable calibration and identification | S2, S3, S4 | Later |
+| 1.2.0 | Opt-in log-Cholesky physical fit (optional research path, after its go decision) | LC1: #23–#25, #234, examples #11 | Next (maintainer decision 2026-11-12); needs the tracker #20 closing review and a release tracker; examples pin `figaroh>=1.2,<1.3` |
+| 1.2.1 | Hotfix: active-joint row selection | Q1.1 | Planned, from `main` after 1.2.0 |
+| 1.3.0 | Correctness and reliability (M0) | Q1.2–Q1.4, Q2, Q3 | Planned, after 1.2.1 |
+| 1.4.0 | Structure and performance without breaking callers (M0, overlapping M2) | Q4; Q4.2 typed contracts designed with S4 | Planned, after 1.3.0 |
+| 1.4 and later | M2 composable calibration and identification | S2, S3, S4 | Later |
+| 2.0.0 | Removal of deprecated features | Q5 | Later; needs one released minor carrying the deprecation warnings |
 | 1.x or 2.0 | M3 backend parity | B1 | Later; 2.0 only if the backend API breaks |
 
 Each release is tracked by a core release issue. It lists the packages in scope
@@ -242,9 +278,12 @@ sha256. The examples repository pins `figaroh>=X.Y,<X.(Y+1)` and is tagged
 ## Work to split into issues
 
 Create focused issues from these candidates as they enter `Ready`; keep their
-acceptance criteria and changing status in the tracker. For work spanning both
-repositories, use a parent issue in `figaroh-plus` and linked implementation
-issues/PRs in `figaroh-examples`, with the tested commit pair recorded.
+acceptance criteria and changing status in the tracker. A core issue that
+affects an example has a paired `figaroh-examples` issue under the
+[pairing rule](docs/source/further_reading/plans.md#coreexamples-pairing-rule):
+use a parent issue in `figaroh-plus` and linked implementation issues/PRs in
+`figaroh-examples`, with the tested commit pair recorded. An issue that affects
+no example records that instead.
 
 | Candidate | Milestone | Evidence or acceptance gate |
 |---|---|---|
@@ -257,6 +296,10 @@ issues/PRs in `figaroh-examples`, with the tested commit pair recorded.
 | ✅ Narrow data/result contract | M1/M2 | **Done in W3** (core #126/#128/#130, examples #84). Original gate: Inventory current adapters; ADR; two consumers; legacy dictionaries/configs remain compatible; proposed types not presented as existing API |
 | ✅ Full inertial URDF export | M1 correctness | **Merged in D6** (#60, PR #138). Original gate: first moments and inertia tensors survive export/reload; mass/CoM conventions and inertia reference frames are tested |
 | ✅ End-to-end reference example | M1 | Calibration side ✅ done in C4; dynamic side ✅ **done in D7** (#42). Original gate: connect the existing projection, reconstruction, verification, export and archive APIs; demonstrate improvement on held-out data |
+| Identification and solver correctness fixes (Q1.1–Q1.4) | M0 / Q1 | Regression test that fails before the fix; paired examples change where an example is affected (Q1.1, Q1.4); wrench-mode defect reproduced before it is fixed |
+| Failures reported instead of hidden; library logging; seeded randomness (Q2.1–Q2.5) | M0 / Q2 | No silent fallback on the reference workflows; affected examples updated |
+| Packaging, test and CI configuration (Q3.1–Q3.3) | M0 / Q3 | Clean install; coverage reported on hosted CI; documentation statements match metadata |
+| Typed results, class splits, performance (Q4.1–Q4.4) | M0 / Q4, with S4 | ADR for typed contracts; numerical parity on both reference workflows; old keys remain as a deprecated view |
 | Backend selection in `RobotIdentificationSystem` | M3 correctness | `from_urdf(backend=...)` currently stores a name while loading the usual Robot; selection must change the executing backend or reject unsupported choices |
 | Optional backend/solver coverage | M0/M3 | Record tested dependency versions and skips; broaden OS/Python coverage after the initial Python 3.12 gate |
 

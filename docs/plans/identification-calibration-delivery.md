@@ -2,6 +2,8 @@
 
 **Status: Tracker setup approved; execution details under review — revision 4, 2026-10-02.
 Implementation status refreshed 2026-10-12 (after the M1 acceptance review)** (see [implementation status](#implementation-status)).
+**Code-quality packages Q1–Q5, the core/examples pairing rule and the release
+order (log-Cholesky first, as 1.2.0) were added on 2026-11-12** (see [Q1–Q5](#code-quality-and-reliability-packages-q1q5)).
 Confirmed user preferences: advance calibration alongside dynamic identification;
 TIAGo mocap is the first calibration reference, with TALOS contact as the
 second consumer/regression target. The user authorized GitHub milestone/issue creation on 2026-10-02 and requested
@@ -101,7 +103,12 @@ flowchart TD
     S3["<b>S3: Improved experiment design</b> · #49<br/>#65 #90<br/>ex#32"]
     S4["<b>S4: Selective composition</b> · #52<br/>#67"]
     B1["<b>B1: Backend parity</b> · #53<br/>#68<br/>ex#34"]
-    LC1["<b>LC1: Log-Cholesky production</b> · #20<br/>#155 (go gate)<br/>#23 #24 #25<br/>ex#11"]
+    LC1["<b>LC1: Log-Cholesky production</b> · #20<br/>✓ #155 (go) #23 #24 #25 #234<br/>✓ ex#11<br/>release 1.2.0 pending"]
+    Q1["<b>Q1: Correctness fixes</b><br/>planned, no tracker"]
+    Q2["<b>Q2: Fail loudly</b><br/>planned, no tracker"]
+    Q3["<b>Q3: Tooling</b><br/>planned, no tracker"]
+    Q4["<b>Q4: Structure and performance</b><br/>planned, no tracker"]
+    Q5["<b>Q5: Breaking removals</b><br/>planned, no tracker"]
 
     R --> W1
     R --> W2
@@ -137,6 +144,13 @@ flowchart TD
     A --> S4
     W3 --> S4
     A --> B1
+    LC1 -. "released first (1.2.0)" .-> Q1
+    Q1 --> Q4
+    Q2 --> Q4
+    Q3 --> Q4
+    Q4 -. typed contracts designed together .-> S4
+    Q2 --> Q5
+    Q4 --> Q5
 
     classDef cleared fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
     classDef ready fill:#fff3cd,stroke:#b8860b,color:#5c4400
@@ -152,7 +166,9 @@ Each box lists its tracker number, then the issues in its milestone (core
 first, then `ex#` = figaroh-examples). Issues marked ✓ are closed; unmarked
 issues are open. Two open examples issues have no package yet: ex#70 (TIAGo
 suspension real-data fit) and ex#71 (TIAGo backlash surface); both are
-research examples outside M1.
+research examples outside M1. Q1–Q5 (added 2026-11-12) are planned packages without
+trackers; their rosters are in
+[Code-quality and reliability packages](#code-quality-and-reliability-packages-q1q5).
 
 ### Implementation status
 
@@ -180,9 +196,11 @@ authoritative; refresh this table when a tracker closes.
 | **D4** physical comparison | ✅ **Cleared** | 2026-10-09 | #59 by PR #153 (2026-10-08); examples #12 by examples PR #13; examples #22 by examples PRs #94 and #95 |
 | **D7** dynamic reference | ✅ **Cleared** | 2026-10-10 | #61 by PRs #165, #172; #116 by #169 + examples #117; examples #69, #68 by examples #118, #23 by examples #119 (`identification_reference.py`). Accepted on core `658fe99` + examples `663d642` (examples `validate.py` 18/18). UR10 truth and TIAGo select `physical_fit`; export parity ≤ 6.1e-10. Follow-ups #163 and #164 fixed by PR #174 (`projected` stays non-selectable) |
 | **C5** calibration studies (M2) | ✅ **Cleared** | 2026-10-26 | Phases 0–3 done: studies examples #96–#101, #71, #70 and data #104–#114 (last, #112 by examples PR #171, 2026-10-25). Suspension (#70) has no run record (requirement 6), accepted as a disclosed limit. TALOS motion capture examples #172 (on data #114) done 2026-10-26 by examples PR #173. Closing review accepted on #167 the same day. Follow-ups core #204, #205, #215 and #217 are fixed on `devel` |
-| LC1 log-Cholesky production | In progress (optional) | — | Go gate #155 (method change) in progress: exploration done on spent seeds, method choice pending, protocol not frozen. #23–#25 and examples #11 wait on its go decision |
+| LC1 log-Cholesky production | In review (optional) | — | Go gate #155 recorded go (closed 2026-11-05); #23, #24, #25 and the follow-up fix #234 are closed and on `devel`; examples #11 is closed. Tracker #20 is open: its closing review and the 1.2.0 release are what remain (status checked 2026-11-12) |
 | S3, B1 | Blocked | — | S3 and B1 wait on S2 and M1 acceptance |
 | S4 composition (M2) | Blocked | — | W3 cleared; still waits on accepted M1 references |
+| Q1 correctness, Q2 fail loudly, Q3 tooling | Planned (2026-11-12) | — | Rosters in [Q1–Q5](#code-quality-and-reliability-packages-q1q5); no tracker or issues yet. Q1.1 is the 1.2.1 hotfix; the rest is planned for 1.3.0, after LC1 ships in 1.2.0 |
+| Q4 structure/performance, Q5 removals | Planned (2026-11-12) | — | Q4 waits on Q1–Q3 (1.4.0); Q5 waits on a released minor with the deprecation warnings (2.0.0) |
 
 **Gate summary:** M0's delivery roster (W1, W2, W4) and M1.1 (D1, D2, C1)
 are cleared. **The calibration workstream is complete through M1.4** (C2, C3,
@@ -360,6 +378,107 @@ Potential new work must not duplicate #20/#22–#25/#30/#32 or examples
 #11/#12/#14. If one package contains independent defects, split them into
 individual issues/PRs rather than closing a broad issue with partial evidence.
 
+## Code-quality and reliability packages (Q1–Q5)
+
+**Status: proposed 2026-11-12; scope, pairing and release order decided by the
+maintainer the same day** (see [decisions](#maintainer-decisions-2026-11-12)).
+No tracker, milestone or issue exists yet, and nothing in this section
+authorizes a merge. The packages come from a codebase review of `devel`
+at `21994ed` (local baseline in `figaroh-dev`, Python 3.12: 1155 passed,
+6 skipped, 1 environmental failure in `test_meshes_exist`). That count is
+dated evidence, not a claim about hosted CI.
+
+### Evidence
+
+| Finding | Evidence | Consequence |
+| --- | --- | --- |
+| `solve(decimate=False)` fails when the active joints are a subset of the model | Reproduced: 6-joint fixture, 4 active joints, `matmul` size mismatch (1600 vs 2400) | Only the decimated path selects active-joint rows |
+| `compute_reference_torque` takes the first `n_active * N` rows | Reproduced: correct for a prefix active set, wrong joints otherwise | Silent wrong reference torque for non-prefix active sets |
+| `solve_with_custom_solver` skips the sample mask, the `fit` stage record and the run-state reset | Reproduced: 2400 rows against 2100 in `solve` with 50 masked samples | Results differ from `solve` and stale state can reach later stages |
+| `LinearSolver(method="robust")` raises `UnboundLocalError` on an exact fit; `bounds` and `regularization` are ignored by some methods; a failed constrained solve returns a result | Reproduced | The caller cannot tell that the requested estimator was not used |
+| Wrench-mode friction, actuator-inertia and offset columns use row `j * 6 + sample` | Read in `tools/regressor.py`, **not run** | Needs a wrench-mode reproducer before the fix |
+| Fallbacks that hide failures (dropped CAD constraints, correlation reported as 1.0, validation falling back to identification data, a save path that returns nothing) | Read | A failed step can look like a result |
+| `print`, `plt.show` and a handler on a global logger in library code; unseeded global `np.random` | Read; conflicts with the logging rule in AGENTS | Not reproducible or embeddable as shipped |
+| `cyipopt` and `cvxopt` used but undeclared; `mypy`, `isort`, `pytest-cov` listed but not configured or run; stale `MANIFEST.in` | Read | Tooling claims exceed what CI checks |
+
+The five defects in the first five rows are present in the `v1.1.0` sources.
+
+### Core/examples pairing rule
+
+Maintainer instruction, 2026-11-12: **a core development or fix is paired with
+work in `figaroh-examples` whenever an example is affected.** If no example is
+affected, no paired item is needed. This applies to all packages from this
+date, not only Q1–Q5.
+
+1. Before a core issue becomes Ready, check `figaroh-examples` for scripts,
+   configs, expected outputs, docs and tests that use the behaviour being
+   changed, and record the result on the issue: the paired examples issue, or
+   "no example affected" with what was searched.
+2. When an example is affected, the core PR merges first; the examples PR
+   follows and records the core commit it was validated against.
+3. Both issues record the tested core/examples commit pair and the
+   `validate.py` result. The core issue closes only when its paired item is
+   merged.
+4. An unpaired core change is still covered by the release evidence, which
+   runs examples `validate.py` on the release pair.
+
+### Packages and rosters
+
+Work items below are candidates for issues; each row becomes one core issue,
+with an examples issue where the pairing column names a change. IDs such as
+Q1.2 are plan references, not issue numbers.
+
+| Item | Core work | Paired `figaroh-examples` work | Release |
+| --- | --- | --- | --- |
+| **Q1 — Correctness fixes** (M0) | | | |
+| Q1.1 | One helper returns the row slices of the active joints; used by the undecimated path, the decimated path and `compute_reference_torque`. Regression test with a non-prefix active set | Subset-joint run with `decimate=False` on the UR10 truth fixture (`examples/ur10/identification_truth.py` already uses `decimate=False`); full-joint reference numbers unchanged | 1.2.1 (hotfix) |
+| Q1.2 | `solve_with_custom_solver` shares the preparation, masking, stage record and state reset of `solve` | None: no example calls it | 1.3.0 |
+| Q1.3 | `LinearSolver`: fix the robust exact-fit crash, reject options a method does not support, raise on a failed constrained solve, drop dense diagonal weight matrices | None: no example uses `LinearSolver` directly | 1.3.0 |
+| Q1.4 | Reproduce, then fix, wrench-mode row indexing with a test that includes friction columns and more than six samples | TALOS and TIAGo configs set `include_external_forces: true`; audit which mode they actually run, then add a wrench-mode check or correct the configs | 1.3.0 |
+| **Q2 — Fail loudly** (M0) | | | |
+| Q2.1 | Remove the silent fallbacks listed above; uncomputable metrics are NaN | rerun both reference workflows; fix any example that relied on a fallback and update its expected outputs | 1.3.0 |
+| Q2.2 | `assert` used as validation becomes explicit exceptions; base exception renamed `FigarohError` with `FigarohExampleError` kept as a deprecated alias | `examples/__init__.py` and `tests/test_error_handling.py` use the old name | 1.3.0 |
+| Q2.3 | Library output goes through `figaroh.*` loggers; no handler on a global logger; `solve()` printing and plotting by default is deprecated with a warning | about 20 example files pass `plotting=` and the calibration scripts rely on the printed report; call reports explicitly | 1.3.0 |
+| Q2.4 | Random data, waypoint and initial-guess generators accept a seed or `Generator` | example scripts that generate data or trajectories pass a recorded seed | 1.3.0 |
+| Q2.5 | Deprecation warnings for everything Q5 removes | Replace any deprecated usage the new warnings report in examples; none needed if there is none | 1.3.0 |
+| **Q3 — Tooling** (M0) | | | |
+| Q3.1 | Packaging metadata: declare or make optional the solver dependencies, remove `MANIFEST.in` and empty tables, single-source the version | align `environment.yml` and `requirements.txt`; clean-install check | 1.3.0 |
+| Q3.2 | pytest `pythonpath` and shared fixtures instead of `sys.path` edits, coverage reported in CI, type checking on new modules, refreshed hook revisions | same hook revisions and coverage report in examples CI | 1.3.0 |
+| Q3.3 | Correct documentation drift (Python floor in AGENTS, development-status classifier) | Matching statements in examples AGENTS/CONTRIBUTING, if present | 1.3.0 |
+| **Q4 — Structure and performance** (M0, overlaps M2) | | | |
+| Q4.1 | Remove unreferenced private code; move example-only validators, decorators and logging setup out of `utils/error_handling.py` | examples receives those helpers (11 files import the module) | 1.4.0 |
+| Q4.2 | Typed result and configuration objects, old dictionary keys kept as a deprecated view. Needs an ADR and is designed with S4, not separately | one identification and one calibration reference migrate as the two consumers | 1.4.0 |
+| Q4.3 | Move reporting, plotting and the physical-consistency step out of `BaseIdentification` and `BaseCalibration` with numerical parity | robot subclasses in `examples/<robot>/utils/` keep working; reference numbers unchanged | 1.4.0 |
+| Q4.4 | Vectorized decimation, regressor built for active joints only, no explicit normal-equation inverse | None expected: results must be identical | 1.4.0 |
+| **Q5 — Breaking removals** | | | |
+| Q5.1 | Remove the 1.0 shims, the legacy result keys and the exception alias; `solve()` neither prints nor plots by default; optional dependencies move to extras | migration PR and the `figaroh>=2.0,<2.1` pin | 2.0.0 |
+
+### Order and gates
+
+The log-Cholesky work (LC1) is released first, as 1.2.0, before any Q package.
+Q1.1 follows as a hotfix from `main` (1.2.1) and is merged back into `devel`.
+The other Q1 items are independent of each other except that Q1.2 rebases on
+Q1.1 (same file). Q3 can run alongside Q1 and Q2. Q4 starts only after Q1 and Q2 have
+merged, because it moves the code they change and relies on their regression
+tests; Q3.2's coverage report shows which code is safe to move. Q5 needs one
+released minor in which Q2.5's warnings were visible.
+
+Q1–Q3 are validated at V2 (affected examples) and Q4–Q5 at V3 (both reference
+workflows and export invariants). Each package clears under the
+[package rules](#work-package-milestone-rules) on a declared commit pair.
+
+### Maintainer decisions (2026-11-12)
+
+1. **Pairing.** A paired examples item is required only when an example is
+   affected; the rule goes into CONTRIBUTING and AGENTS.
+2. **Release order.** The log-Cholesky work (LC1) is released first as 1.2.0.
+   Q1.2–Q1.4, Q2 and Q3 follow in 1.3.0, Q4 in 1.4.0 and Q5 in 2.0.0; M2
+   packages move to 1.4 and later.
+3. **Hotfix.** Q1.1 ships as a patch release from `main`. Because 1.2.0 is
+   released first, the patch is 1.2.1.
+4. **Raising where the code used to fall back** (Q1.3, Q2.1): raise where the
+   returned numbers were not what was asked for, warn first elsewhere.
+
 ## GitHub delivery register
 
 Milestones and their canonical rosters were created on 2026-10-02. Open each
@@ -394,6 +513,7 @@ automatic merging are configured by this setup.
 | [C5](https://github.com/thanhndv212/figaroh-plus/issues/167) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/23) | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/19) |
 | D8 (no tracker yet) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/24) | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/20) |
 | [LC1](https://github.com/thanhndv212/figaroh-plus/issues/20) | [Open milestone](https://github.com/thanhndv212/figaroh-plus/milestone/22) | [Open milestone](https://github.com/thanhndv212/figaroh-examples/milestone/18) |
+| Q1–Q5 (no trackers yet) | Not created | Not created |
 
 **C5** (calibration studies, tracker core #167) and **D8** (identification studies,
 core #157–#161) were added on 2026-10-09 beneath M2 and are outside baseline M1

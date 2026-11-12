@@ -6,7 +6,7 @@ belongs in GitHub issues and design contracts in `docs/decisions/`.
 
 | Plan | Status |
 | --- | --- |
-| [Identification and calibration delivery](identification-calibration-delivery.md) | Revision 4, 2026-10-02; tracker setup approved; execution details under review. Status refreshed 2026-10-09 |
+| [Identification and calibration delivery](identification-calibration-delivery.md) | Revision 4, 2026-10-02; tracker setup approved; execution details under review. Status refreshed 2026-10-09; code-quality packages Q1–Q5, the core/examples pairing rule and the release order (log-Cholesky first) added 2026-11-12 |
 | [Calibration studies](calibration-studies-plan.md) | Done; proposed 2026-10-09, tracker core #167 (C5). All studies done and the package accepted 2026-10-26 (last: TALOS motion capture, examples #172) |
 | [Archived roadmap v2](archive/roadmap-v2.md) | Historical; dates/completion claims are not current commitments |
 
@@ -38,6 +38,10 @@ name in each repository that has work for it.
 | B | Backends | B1 — backend capability review |
 | LC | Conditional log-Cholesky production (outside baseline M1) | LC1 |
 | C5 / D8 | Calibration studies / identification studies (research follow-ups, outside baseline M1) | C5 — calibration studies |
+| Q | Code quality and reliability from the 2026-11-12 review (planned, no trackers yet) | Q1 — correctness fixes |
+
+A core issue that affects an example is paired with a figaroh-examples issue; see the
+[pairing rule](identification-calibration-delivery.md#coreexamples-pairing-rule).
 
 **Work issues** are the units a PR closes. They are sub-issues of their package
 tracker and state Problem, Goal, Acceptance criteria, Out of scope and Dependencies
