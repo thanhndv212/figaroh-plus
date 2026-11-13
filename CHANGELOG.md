@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Roadmap and delivery plan record 1.2.0 as released on 2026-11-13 (#240).
   Documentation only.
+- External-wrench mode refuses what it cannot identify (#249). With
+  `is_external_wrench` on and `is_joint_torques` off, `has_friction`,
+  `has_actuator_inertia` or `has_joint_offset` now raise `ValueError`; they
+  act inside the joints and do not appear in the base wrench. The wrench
+  regressor has the ten inertial columns per body only, so its width no
+  longer includes those blocks. `force_torque` must be a non-empty list of
+  `Fx`, `Fy`, `Fz`, `Mx`, `My`, `Mz`; anything else raises `ValueError`.
+  Configs that set both modes still run joint-torque mode and are unchanged.
+
+### Fixed
+
+- External-wrench mode no longer raises `IndexError` for fewer than about
+  six samples per body, and no longer writes friction, actuator-inertia and
+  offset entries into rows that belong to other wrench components (#249).
 
 ## [1.2.0] - 2026-11-13
 
