@@ -84,37 +84,35 @@ W = builder.build_basic_regressor(q, dq, ddq)
 ```python
 from figaroh.tools.solver import LinearSolver, solve_linear_system
 
-# Basic usage with convenience function
-result = solve_linear_system(
-    A, b,
-    method='ridge',
-    alpha=0.01
-)
-x = result['solution']
+# Convenience function: returns the solution and the solver's metrics
+x, info = solve_linear_system(A, b, method='ridge', alpha=0.01)
 
-# Advanced usage with constraints
-solver = LinearSolver()
-result = solver.solve(
-    A, b,
+# Constrained least squares: bounds and linear constraints
+solver = LinearSolver(
     method='constrained',
-    bounds=(0, None),  # Positive constraints
-    A_eq=A_eq, b_eq=b_eq,  # Equality constraints
-    alpha=0.1  # Regularization
+    bounds=[(0, None)] * A.shape[1],  # one (lower, upper) pair per parameter
+    constraints={'A_eq': A_eq, 'b_eq': b_eq},
 )
+x = solver.solve(A, b)  # raises RuntimeError if the solve does not converge
 
-# Access quality metrics
-print(f"RMSE: {result['rmse']:.4f}")
-print(f"R²: {result['r_squared']:.4f}")
-print(f"Condition number: {result['condition_number']:.2e}")
+# Quality metrics
+info = solver.solver_info
+print(f"RMSE: {info['rmse']:.4f}")
+print(f"R²: {info['r_squared']:.4f}")
+print(f"Condition number: {info['condition_number']:.2e}")
 
 # Use in identification workflow
 params = identifier.solve_with_custom_solver(
     method='elastic_net',
     alpha=0.01,
     l1_ratio=0.5,
-    bounds=(0, None)  # Physical constraints
 )
 ```
+
+Each method reads only its own options: `bounds` and linear `constraints`
+belong to `constrained`, `alpha` to `ridge`, `lasso`, `elastic_net` and
+`tikhonov`, `weights` to `weighted`. An option the selected method does not
+use raises `ValueError` instead of being ignored.
 
 ## Next Steps
 
