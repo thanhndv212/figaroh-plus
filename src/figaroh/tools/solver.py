@@ -67,6 +67,20 @@ class LinearSolver:
         "weighted",  # Weighted least squares
     ]
 
+    # Options each method reads. Any other option is refused in __init__:
+    # a solve that ignored it would return numbers the caller did not ask for.
+    _ALPHA_METHODS = ("ridge", "lasso", "elastic_net", "tikhonov")
+    _REGULARIZATION = {
+        "ridge": "l2",
+        "tikhonov": "l2",
+        "lasso": "l1",
+        "elastic_net": "elastic_net",
+    }
+    _CONSTRAINT_KEYS = {
+        "constrained": ("A_eq", "b_eq", "A_ineq", "b_ineq"),
+        "tikhonov": ("L",),
+    }
+
     def __init__(
         self,
         method="lstsq",
@@ -85,19 +99,30 @@ class LinearSolver:
 
         Args:
             method (str): Solving method (see METHODS)
-            regularization (str): 'l1', 'l2', 'elastic_net', or None
-            alpha (float): Regularization strength (>=0)
-            l1_ratio (float): Elastic net mixing (0=Ridge, 1=Lasso)
-            weights (ndarray): Sample weights for weighted least squares
-            constraints (dict): Linear constraints:
+            regularization (str): Optional check on the penalty ``method``
+                applies: 'l2' (ridge, tikhonov), 'l1' (lasso) or
+                'elastic_net'. The method alone selects the penalty.
+            alpha (float): Regularization strength (>=0); ridge, lasso,
+                elastic_net and tikhonov only
+            l1_ratio (float): Elastic net mixing (0=Ridge, 1=Lasso);
+                elastic_net only
+            weights (ndarray): Sample weights; weighted only
+            constraints (dict): With ``constrained``, linear constraints,
+                each matrix with its vector:
                 - 'A_eq': Equality constraint matrix (A_eq @ x = b_eq)
                 - 'b_eq': Equality constraint vector
                 - 'A_ineq': Inequality constraint matrix (A_ineq @ x <= b_ineq)
                 - 'b_ineq': Inequality constraint vector
-            bounds (tuple): Box constraints (lower, upper) for each variable
+                With ``tikhonov``, 'L': the regularization matrix.
+            bounds (tuple): Box constraints (lower, upper) for each
+                variable; constrained only
             max_iter (int): Maximum iterations for iterative methods
             tol (float): Convergence tolerance
             verbose (bool): Print solver information
+
+        Raises:
+            ValueError: If the method is unknown, or an option is given that
+                the method does not use.
         """
         if method not in self.METHODS:
             raise ValueError(f"Method must be one of {self.METHODS}")
@@ -113,6 +138,51 @@ class LinearSolver:
         self.tol = tol
         self.verbose = verbose
         self.solver_info = {}
+        self._check_options()
+
+    def _check_options(self):
+        """Refuse options the selected method does not use."""
+        method = self.method
+
+        def refuse(option, used_by):
+            raise ValueError(
+                f"{option} is not used by method '{method}'; it applies to "
+                f"{used_by}"
+            )
+
+        if self.bounds is not None and method != "constrained":
+            refuse("bounds", "'constrained'")
+        if self.weights is not None and method != "weighted":
+            refuse("weights", "'weighted'")
+        if self.alpha < 0:
+            raise ValueError(f"alpha must be >= 0, got {self.alpha}")
+        if self.alpha != 0 and method not in self._ALPHA_METHODS:
+            refuse(f"alpha={self.alpha}", f"{list(self._ALPHA_METHODS)}")
+        if self.l1_ratio != 0.5 and method != "elastic_net":
+            refuse(f"l1_ratio={self.l1_ratio}", "'elastic_net'")
+
+        if self.regularization is not None:
+            applied = self._REGULARIZATION.get(method)
+            if self.regularization != applied:
+                raise ValueError(
+                    f"regularization='{self.regularization}' does not match "
+                    f"method '{method}', which applies "
+                    f"{repr(applied) if applied else 'no penalty'}; the method "
+                    f"selects the penalty ({self._REGULARIZATION})"
+                )
+
+        allowed = self._CONSTRAINT_KEYS.get(method, ())
+        unused = sorted(set(self.constraints) - set(allowed))
+        if unused:
+            raise ValueError(
+                f"constraints {unused} are not used by method '{method}'"
+                + (f"; it reads {list(allowed)}" if allowed else "")
+            )
+        for matrix, vector in (("A_eq", "b_eq"), ("A_ineq", "b_ineq")):
+            if (matrix in self.constraints) != (vector in self.constraints):
+                raise ValueError(
+                    f"constraints need both '{matrix}' and '{vector}', or neither"
+                )
 
     def solve(self, A, b):
         """
@@ -128,6 +198,8 @@ class LinearSolver:
         Raises:
             ValueError: If inputs are incompatible
             np.linalg.LinAlgError: If solution fails
+            RuntimeError: If the constrained solve does not converge;
+                ``solver_info`` holds the optimizer's message.
         """
         # Validate inputs
         A, b = self._validate_inputs(A, b)
@@ -375,12 +447,18 @@ class LinearSolver:
 
         self.solver_info.update(
             {
-                "success": result.success,
+                "success": bool(result.success),
                 "message": result.message,
                 "n_iter": result.nit,
                 "fun": result.fun,
             }
         )
+        if not result.success:
+            # result.x is the last iterate, not a constrained minimiser
+            raise RuntimeError(
+                f"constrained solve failed after {result.nit} iterations: "
+                f"{result.message}"
+            )
 
         return result.x
 
@@ -391,35 +469,41 @@ class LinearSolver:
         # Initialize with standard least squares
         x = self._solve_lstsq(A, b)
 
+        # An exact fit leaves the loop before any reweighting
+        weights = np.ones(n_samples)
+        n_iter = 0
+        converged = False
+
         # Iterative reweighting
-        for iteration in range(self.max_iter):
+        for _ in range(self.max_iter):
             # Compute residuals
             residuals = A @ x - b
 
             # Compute robust weights using Huber function
             scale = 1.4826 * np.median(np.abs(residuals))
             if scale < self.tol:
+                converged = True
                 break
 
-            normalized_residuals = residuals / scale
-            weights = np.where(
-                np.abs(normalized_residuals) <= 1.345,
-                1.0,
-                1.345 / np.abs(normalized_residuals),
-            )
+            normalized_residuals = np.abs(residuals) / scale
+            weights = np.ones(n_samples)
+            outlying = normalized_residuals > 1.345
+            weights[outlying] = 1.345 / normalized_residuals[outlying]
 
-            # Weighted least squares
-            W = np.diag(weights)
-            x_new = linalg.lstsq(W @ A, W @ b)[0]
+            # Weighted least squares; rows are scaled, no n x n matrix
+            x_new = linalg.lstsq(weights[:, np.newaxis] * A, weights * b)[0]
+            n_iter += 1
 
             # Check convergence
-            if np.linalg.norm(x_new - x) < self.tol:
-                x = x_new
+            step = np.linalg.norm(x_new - x)
+            x = x_new
+            if step < self.tol:
+                converged = True
                 break
 
-            x = x_new
-
-        self.solver_info.update({"n_iter": iteration + 1, "weights": weights})
+        self.solver_info.update(
+            {"n_iter": n_iter, "weights": weights, "converged": converged}
+        )
 
         return x
 
@@ -428,13 +512,20 @@ class LinearSolver:
         if self.weights is None:
             raise ValueError("Weights must be provided for weighted least squares")
 
-        W = np.sqrt(self.weights)
-        if W.ndim == 1:
-            W = np.diag(W)
+        W = np.sqrt(np.asarray(self.weights, dtype=np.float64))
+        if W.shape[0] != A.shape[0]:
+            raise ValueError(
+                f"weights have {W.shape[0]} rows, the system has {A.shape[0]}"
+            )
 
         # Weighted problem: minimize ||W(Ax - b)||^2
-        A_weighted = W @ A
-        b_weighted = W @ b
+        if W.ndim == 1:
+            # per-sample weights scale the rows; no n x n matrix
+            A_weighted = W[:, np.newaxis] * A
+            b_weighted = W * b
+        else:
+            A_weighted = W @ A
+            b_weighted = W @ b
 
         x = self._solve_lstsq(A_weighted, b_weighted)
         return x
