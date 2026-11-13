@@ -22,20 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `LinearSolver(method="constrained")` raises `RuntimeError` when the
   optimizer does not converge, instead of returning its last iterate.
   `solver_info` still holds `success` and `message`.
-
-### Fixed
-
-- `LinearSolver(method="robust")` raised `UnboundLocalError` on an exact
-  fit. `solver_info` gains `converged`; `n_iter` now counts the reweighted
-  solves (0 for an exact fit).
-- The `robust` and `weighted` methods scale rows instead of building an
-  n x n diagonal weight matrix; results are unchanged. Weights whose length
-  differs from the number of rows are refused.
-- The "Advanced Linear Solver" example in Getting Started called an API that
-  does not exist and showed `bounds` with `elastic_net`, which was ignored.
-
-### Changed
-
 - Roadmap and delivery plan record 1.2.0 as released on 2026-11-13 (#240).
   Documentation only.
 - External-wrench mode refuses what it cannot identify (#249). With
@@ -49,6 +35,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `LinearSolver(method="robust")` raised `UnboundLocalError` on an exact
+  fit. `solver_info` gains `converged`; `n_iter` now counts the reweighted
+  solves (0 for an exact fit).
+- The `robust` and `weighted` methods scale rows instead of building an
+  n x n diagonal weight matrix; results are unchanged. Weights whose length
+  differs from the number of rows are refused.
+- The "Advanced Linear Solver" example in Getting Started called an API that
+  does not exist and showed `bounds` with `elastic_net`, which was ignored.
 - External-wrench mode no longer raises `IndexError` for fewer than about
   six samples per body, and no longer writes friction, actuator-inertia and
   offset entries into rows that belong to other wrench components (#249).
