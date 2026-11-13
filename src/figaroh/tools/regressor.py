@@ -46,6 +46,9 @@ class RegressorConfig:
         return blocks
 
 
+WRENCH_COMPONENTS = ("Fx", "Fy", "Fz", "Mx", "My", "Mz")
+
+
 class RegressorBuilder:
     """Enhanced regressor builder with better organization."""
 
@@ -141,14 +144,27 @@ class RegressorBuilder:
     def _build_external_wrench_regressor(
         self, Q, V, A, N, identif_config=None
     ) -> np.ndarray:
-        """Build regressor for external wrench identification."""
+        """Build regressor for external wrench identification.
+
+        Rows are wrench-component-major: component ``c`` of
+        :data:`WRENCH_COMPONENTS` occupies rows ``[c * N, (c + 1) * N)``;
+        components that are not requested stay zero. Columns are the ten
+        inertial parameters of each body and nothing else. Joint friction,
+        actuator inertia and joint torque offsets are internal to the
+        joints and do not appear in the base wrench, so they cannot be
+        identified from it; requesting them raises.
+
+        Raises:
+            ValueError: If a per-joint extra block is enabled, or
+                ``force_torque`` is not a list of wrench components.
+        """
+        ft_rows = self._wrench_rows()
         if self._has_backend:
             nb_bodies = len(self.robot.backend.get_inertias()) - 1
         else:
             nb_bodies = len(self.robot.model.inertias) - 1
-        ft_components = self.config.force_torque or []
 
-        W_ = np.zeros([N * 6, (10 + self._n_extra_columns) * nb_bodies])
+        W_ = np.zeros([N * 6, 10 * nb_bodies])
 
         for i in range(N):
             if self._has_backend:
@@ -159,11 +175,41 @@ class RegressorBuilder:
                 W_temp = pin.computeJointTorqueRegressor(
                     self.robot.model, self.robot.data, Q[i], V[i], A[i]
                 )
-            self._fill_wrench_regressor_sample(
-                W_, W_temp, V, A, ft_components, i, N, nb_bodies, identif_config
-            )
+            for j in ft_rows:
+                W_[j * N + i, :] = W_temp[j, : 10 * nb_bodies]
         return W_
-        # return self._reorder_parameters(W, nb_bodies)
+
+    def _wrench_rows(self) -> List[int]:
+        """Check the wrench-mode options; return the requested components'
+        indices in :data:`WRENCH_COMPONENTS`."""
+        requested = {
+            "has_friction": self.config.has_friction,
+            "has_actuator_inertia": self.config.has_actuator_inertia,
+            "has_joint_offset": self.config.has_joint_offset,
+        }
+        enabled = [name for name, on in requested.items() if on]
+        if enabled:
+            raise ValueError(
+                f"External-wrench mode cannot identify {enabled}: joint "
+                "friction, actuator inertia and joint offsets are internal "
+                "to the joints and do not appear in the base wrench. Set "
+                "them to false (problem.model_components.friction, "
+                "actuator_inertia, joint_offset), or identify from joint "
+                "torques"
+            )
+
+        ft = self.config.force_torque
+        if (
+            not isinstance(ft, (list, tuple))
+            or not ft
+            or any(c not in WRENCH_COMPONENTS for c in ft)
+        ):
+            raise ValueError(
+                "External-wrench mode needs force_torque as a non-empty list "
+                f"of wrench components from {list(WRENCH_COMPONENTS)}, got "
+                f"{ft!r}"
+            )
+        return [WRENCH_COMPONENTS.index(c) for c in ft]
 
     def _fill_joint_regressor_sample(
         self, W, W_temp, V, A, sample_idx, N, identif_config=None
@@ -185,40 +231,6 @@ class RegressorBuilder:
 
                 if self.config.has_joint_offset:
                     W[base_idx, self._extra_col("off", self.nv, j)] = 1.0
-
-    def _fill_wrench_regressor_sample(
-        self,
-        W,
-        W_temp,
-        V,
-        A,
-        ft_components,
-        sample_idx,
-        N,
-        nb_bodies,
-        identif_config=None,
-    ):
-        """Fill regressor for one sample in external wrench mode."""
-        for k, ft in enumerate(ft_components):
-            j = "Fx Fy Fz Mx My Mz".split().index(ft)
-            base_idx = j * N + sample_idx
-            W[base_idx, : 10 * nb_bodies] = W_temp[j, : 10 * nb_bodies]
-
-        for j in range(nb_bodies):
-            base_idx = j * 6 + sample_idx
-
-            if identif_config and j in identif_config["act_idxv"]:
-                if self.config.has_friction:
-                    W[base_idx, self._extra_col("fv", nb_bodies, j)] = V[sample_idx, j]
-                    W[base_idx, self._extra_col("fs", nb_bodies, j)] = np.sign(
-                        V[sample_idx, j]
-                    )
-
-                if self.config.has_actuator_inertia:
-                    W[base_idx, self._extra_col("ia", nb_bodies, j)] = A[sample_idx, j]
-
-                if self.config.has_joint_offset:
-                    W[base_idx, self._extra_col("off", nb_bodies, j)] = 1
 
     def _reorder_parameters(self, W: np.ndarray, num_params: int) -> np.ndarray:
         """Reorder parameters to standard format."""
