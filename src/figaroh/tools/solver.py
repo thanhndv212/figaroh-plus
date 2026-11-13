@@ -447,7 +447,7 @@ class LinearSolver:
 
         self.solver_info.update(
             {
-                "success": result.success,
+                "success": bool(result.success),
                 "message": result.message,
                 "n_iter": result.nit,
                 "fun": result.fun,
