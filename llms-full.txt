@@ -11930,10 +11930,8 @@ def compute_reference_torque(self):
     phi_ref = np.array(list(self.standard_parameter.values()))
     tau_ref = np.dot(self.dynamic_regressor, phi_ref)
 
-    # filter only active joints
-    self.tau_ref = tau_ref[
-        range(len(self.identif_config["act_idxv"]) * self.num_samples)
-    ]
+    # keep the active joints' blocks (not the first n_active blocks)
+    self.tau_ref = self._take_active_joint_rows(tau_ref, self.num_samples)
 ```
 
 ### `process_kinematics_data(filter_config=None)`
@@ -30751,6 +30749,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### [Unreleased]
+
+#### Fixed
+
+- Identification with a subset of the model's joints active (#245, plan item Q1.1; present since 1.1.0). `solve(decimate=False)` passed every model joint's regressor rows to the fit and failed with a size mismatch, and `compute_reference_torque` took the first `n_active * N` rows, which are other joints' torque unless the active joints are the model's first ones. Both now select the active joints' rows through the helper the decimated path and the validation metrics use. Runs with every joint active are unchanged.
 
 ### [1.2.0] - 2026-11-13
 

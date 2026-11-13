@@ -684,10 +684,8 @@ def compute_reference_torque(self):
     phi_ref = np.array(list(self.standard_parameter.values()))
     tau_ref = np.dot(self.dynamic_regressor, phi_ref)
 
-    # filter only active joints
-    self.tau_ref = tau_ref[
-        range(len(self.identif_config["act_idxv"]) * self.num_samples)
-    ]
+    # keep the active joints' blocks (not the first n_active blocks)
+    self.tau_ref = self._take_active_joint_rows(tau_ref, self.num_samples)
 ```
 
 ### `process_kinematics_data(filter_config=None)`

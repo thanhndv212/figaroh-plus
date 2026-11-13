@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### [Unreleased]
 
+#### Fixed
+
+- Identification with a subset of the model's joints active (#245, plan item Q1.1; present since 1.1.0). `solve(decimate=False)` passed every model joint's regressor rows to the fit and failed with a size mismatch, and `compute_reference_torque` took the first `n_active * N` rows, which are other joints' torque unless the active joints are the model's first ones. Both now select the active joints' rows through the helper the decimated path and the validation metrics use. Runs with every joint active are unchanged.
+
 ### [1.2.0] - 2026-11-13
 
 An opt-in, experimental log-Cholesky fit for the `physical_fit` stage (package LC1, tracker #20). The maintainer decided on 2026-11-12 to release it before the code-quality packages Q1–Q5 (#238, #240). The paired figaroh-examples tag is `v1.2.0`.
