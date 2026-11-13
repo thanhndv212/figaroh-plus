@@ -9,6 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `LinearSolver` (and `solve_linear_system`,
+  `solve_with_custom_solver`) refuses an option the selected method does not
+  use, with `ValueError`, instead of ignoring it (#247, plan item Q1.3). `bounds`
+  and the linear `constraints` belong to `constrained`, `constraints["L"]` to
+  `tikhonov`, `alpha` to `ridge`, `lasso`, `elastic_net` and `tikhonov`,
+  `l1_ratio` to `elastic_net`, `weights` to `weighted`. `regularization`
+  never selected anything; it is now only checked against the method's
+  penalty. A call that passed such an option got an unbounded or
+  unregularized result before and now has to drop the option or choose the
+  method that uses it.
+- `LinearSolver(method="constrained")` raises `RuntimeError` when the
+  optimizer does not converge, instead of returning its last iterate.
+  `solver_info` still holds `success` and `message`.
+
+### Fixed
+
+- `LinearSolver(method="robust")` raised `UnboundLocalError` on an exact
+  fit. `solver_info` gains `converged`; `n_iter` now counts the reweighted
+  solves (0 for an exact fit).
+- The `robust` and `weighted` methods scale rows instead of building an
+  n x n diagonal weight matrix; results are unchanged. Weights whose length
+  differs from the number of rows are refused.
+- The "Advanced Linear Solver" example in Getting Started called an API that
+  does not exist and showed `bounds` with `elastic_net`, which was ignored.
+
+### Changed
+
 - Roadmap and delivery plan record 1.2.0 as released on 2026-11-13 (#240).
   Documentation only.
 - External-wrench mode refuses what it cannot identify (#249). With
