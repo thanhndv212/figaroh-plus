@@ -70,6 +70,8 @@ If your robot has no folder under `figaroh-examples/examples/` yet, do [Add your
 === "include_external_forces"
 
     Fits base wrenches from force/torque sensors (`force_torque_sensors`, `external_wrench_offsets`). Use it for floating-base robots. The humanoid template turns it on.
+
+    The wrench regressor has the ten inertial columns of each body and nothing else. Joint friction, actuator inertia and joint torque offsets act inside the joints and do not appear in the base wrench, so asking for them in this mode raises `ValueError`; identify them from joint torques. The mode runs only when `use_joint_torques` is false: with both set, the joint-torque regressor is built and this setting has no effect.
 </div>
 
 <div class="fg-done" markdown>

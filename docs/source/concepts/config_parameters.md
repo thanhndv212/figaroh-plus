@@ -131,10 +131,10 @@ points.
 
 | Field | Meaning | Unified path |
 |---|---|---|
-| `is_external_wrench` | Include a measured force/torque sensor wrench as a regressor input | `problem.include_external_forces` |
+| `is_external_wrench` | Build the base-wrench regressor (inertial columns only) instead of the joint-torque one. Takes effect only when `is_joint_torques` is `False`; `has_friction`, `has_actuator_inertia` and `has_joint_offset` must then be `False` or the build raises `ValueError` | `problem.include_external_forces` |
 | `is_joint_torques` | Regress against joint torque signals (standard inverse-dynamics identification; almost always `True`) | `problem.use_joint_torques` |
-| `force_torque` | Which F/T channels to use (e.g. `['Fx','Fy','Fz']` or `['All']`) — only applied if `is_external_wrench` is `True` | `problem.force_torque_sensors` |
-| `external_wrench_offsets` | Also identify a constant bias offset on the F/T sensor reading | `problem.external_wrench_offsets` |
+| `force_torque` | Which wrench components to fit: a non-empty list from `Fx`, `Fy`, `Fz`, `Mx`, `My`, `Mz`. Read only in external-wrench mode, which raises `ValueError` for anything else | `problem.force_torque_sensors` |
+| `external_wrench_offsets` | Intended to add a constant bias on the F/T reading — **parsed but not read by the regressor** | `problem.external_wrench_offsets` |
 | `has_friction` | Include the `fv`/`fs` columns in the regressor | `problem.model_components.friction` |
 | `has_actuator_inertia` | Include the `Ia` column in the regressor | `problem.model_components.actuator_inertia` |
 | `has_joint_offset` | Include the `offset` column in the regressor | `problem.model_components.joint_offset` |
