@@ -321,11 +321,12 @@ class BaseIdentification(ABC):
         Args:
             method (str): Solving method ('lstsq', 'ridge', 'lasso',
                 'constrained', etc.)
-            regularization (str): Regularization type ('l1', 'l2',
-                'elastic_net')
-            alpha (float): Regularization strength
-            constraints (dict): Linear constraints
-            bounds (tuple): Box constraints on parameters
+            regularization (str): Optional check on the penalty the method
+                applies ('l1', 'l2', 'elastic_net'); the method selects it
+            alpha (float): Regularization strength (ridge, lasso,
+                elastic_net, tikhonov)
+            constraints (dict): Linear constraints ('constrained')
+            bounds (tuple): Box constraints on parameters ('constrained')
             decimate (bool): Whether to apply decimation
             decimation_factor (int): Decimation factor if decimate=True
             zero_tolerance (float): Tolerance for eliminating zero columns
@@ -335,6 +336,10 @@ class BaseIdentification(ABC):
 
         Returns:
             ndarray: Identified base parameters
+
+        Raises:
+            ValueError: If an option is given that the method does not use
+            RuntimeError: If the constrained solve does not converge
 
         Example:
             >>> # Ridge regression with L2 regularization
