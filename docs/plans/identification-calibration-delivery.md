@@ -103,7 +103,7 @@ flowchart TD
     S3["<b>S3: Improved experiment design</b> · #49<br/>#65 #90<br/>ex#32"]
     S4["<b>S4: Selective composition</b> · #52<br/>#67"]
     B1["<b>B1: Backend parity</b> · #53<br/>#68<br/>ex#34"]
-    LC1["<b>LC1: Log-Cholesky production</b> · #20<br/>✓ #155 (go) #23 #24 #25 #234<br/>✓ ex#11<br/>release 1.2.0 pending"]
+    LC1["<b>LC1: Log-Cholesky production</b> · #20<br/>✓ #155 (go) #23 #24 #25 #234<br/>✓ ex#11<br/>✓ released 1.2.0, 2026-11-13"]
     Q1["<b>Q1: Correctness fixes</b><br/>planned, no tracker"]
     Q2["<b>Q2: Fail loudly</b><br/>planned, no tracker"]
     Q3["<b>Q3: Tooling</b><br/>planned, no tracker"]
@@ -196,7 +196,7 @@ authoritative; refresh this table when a tracker closes.
 | **D4** physical comparison | ✅ **Cleared** | 2026-10-09 | #59 by PR #153 (2026-10-08); examples #12 by examples PR #13; examples #22 by examples PRs #94 and #95 |
 | **D7** dynamic reference | ✅ **Cleared** | 2026-10-10 | #61 by PRs #165, #172; #116 by #169 + examples #117; examples #69, #68 by examples #118, #23 by examples #119 (`identification_reference.py`). Accepted on core `658fe99` + examples `663d642` (examples `validate.py` 18/18). UR10 truth and TIAGo select `physical_fit`; export parity ≤ 6.1e-10. Follow-ups #163 and #164 fixed by PR #174 (`projected` stays non-selectable) |
 | **C5** calibration studies (M2) | ✅ **Cleared** | 2026-10-26 | Phases 0–3 done: studies examples #96–#101, #71, #70 and data #104–#114 (last, #112 by examples PR #171, 2026-10-25). Suspension (#70) has no run record (requirement 6), accepted as a disclosed limit. TALOS motion capture examples #172 (on data #114) done 2026-10-26 by examples PR #173. Closing review accepted on #167 the same day. Follow-ups core #204, #205, #215 and #217 are fixed on `devel` |
-| LC1 log-Cholesky production | In review (optional) | — | Go gate #155 recorded go (closed 2026-11-05); #23, #24, #25 and the follow-up fix #234 are closed and on `devel`; examples #11 is closed. Released as 1.2.0 on 2026-11-13 (#240, examples tag `v1.2.0`). Tracker #20 is open: its closing review is what remains (status checked 2026-11-13) |
+| LC1 log-Cholesky production | ✅ **Cleared** (optional) | 2026-11-13 | Go gate #155 recorded go (closed 2026-11-05); #23, #24, #25 and the follow-up fix #234 are closed and on `devel`; examples #11 is closed. Released as 1.2.0 on 2026-11-13 (#240, examples tag `v1.2.0`). Tracker #20 closed 2026-11-13 |
 | S3, B1 | Blocked | — | S3 and B1 wait on S2 and M1 acceptance |
 | S4 composition (M2) | Blocked | — | W3 cleared; still waits on accepted M1 references |
 | Q1 correctness, Q2 fail loudly, Q3 tooling | Planned (2026-11-12) | — | Rosters in [Q1–Q5](#code-quality-and-reliability-packages-q1q5); no tracker or issues yet. Q1.1 is the 1.2.1 hotfix; the rest is planned for 1.3.0, after LC1 ships in 1.2.0 |
