@@ -9,7 +9,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "figaroh"
-version = "1.2.1"
+dynamic = ["version"]
 description = "A Python toolbox for dynamics identification and geometric calibration of robots and humans"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -55,6 +55,8 @@ dependencies = [
     "pandas",
     "rospkg",
     "picos",
+    # The default SDP solver, selected by name; picos already depends on it.
+    "cvxopt",
     "numdifftools",
     "ndcurves",
 ]
@@ -79,17 +81,28 @@ docs = [
     "mkdocs-llmstxt>=0.5",
     "pymdown-extensions<12.2",
 ]
+# Optional estimators and backends. cyipopt (IPOPT) has no extra on purpose:
+# PyPI carries no wheels for it, so it is installed from conda-forge
+# (environment.yml).
+sklearn = [
+    "scikit-learn",
+]
+# CI tests MuJoCo 3.9 and 3.14; 4.x is untested.
+mujoco = [
+    "mujoco>=3.0.0,<4",
+]
 examples = [
     "jupyter",
     "notebook",
     "ipywidgets",
 ]
 
+# The one version string; `figaroh.__version__` reads the same line.
+[tool.hatch.version]
+path = "src/figaroh/__init__.py"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/figaroh"]
-
-[tool.hatch.build.targets.wheel.force-include]
-# Only include core package, exclude examples and models
 
 [tool.hatch.build.targets.sdist]
 exclude = [
@@ -103,13 +116,6 @@ Homepage = "https://github.com/thanhndv212/figaroh-plus"
 Repository = "https://github.com/thanhndv212/figaroh-plus"
 Issues = "https://github.com/thanhndv212/figaroh-plus/issues"
 Examples = "https://github.com/thanhndv212/figaroh-examples"
-
-# Uncomment if you have CLI tools
-# [project.scripts]
-# figaroh = "figaroh.cli:main"
-
-# [project.gui-scripts]
-# figaroh-gui = "figaroh.gui:main"
 
 [tool.black]
 line-length = 88
