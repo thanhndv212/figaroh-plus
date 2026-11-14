@@ -185,7 +185,6 @@ class CubicSpline:
                 Defaults to 0.
 
         Raises:
-            AssertionError: If joint names are not found in robot model
 
         Examples:
             ```python
@@ -254,23 +253,26 @@ class CubicSpline:
     ):
         """Generate cubic splines on active joints"""
         # dimensions
-        assert (
-            self.dim_q == waypoints.shape
-        ), "(Pos) Check size \
-                                        (num_active_joints,num_waypoints)!"
+        if self.dim_q != waypoints.shape:
+            raise ValueError(
+                "Position waypoints must have shape (num_active_joints, "
+                f"num_waypoints) = {self.dim_q}, got {waypoints.shape}"
+            )
         self.pc = ndcurves.piecewise()  # set piecewise object to join segments
 
         # C_2 continuous at waypoints
         if vel_waypoints is not None and acc_waypoints is not None:
             # dimensions
-            assert (
-                self.dim_v == vel_waypoints.shape
-            ), "(Vel) Check size\
-                                        (num_active_joints, num_waypoints)!"
-            assert (
-                self.dim_v == acc_waypoints.shape
-            ), "(Acc) Check size\
-                                        (num_active_joints, num_waypoints)!"
+            if self.dim_v != vel_waypoints.shape:
+                raise ValueError(
+                    "Velocity waypoints must have shape (num_active_joints, "
+                    f"num_waypoints) = {self.dim_v}, got {vel_waypoints.shape}"
+                )
+            if self.dim_v != acc_waypoints.shape:
+                raise ValueError(
+                    "Acceleration waypoints must have shape (num_active_joints, "
+                    f"num_waypoints) = {self.dim_v}, got {acc_waypoints.shape}"
+                )
 
             # make exact cubic WITH constraints on vel and acc on both ends
             for i in range(self.num_waypoints - 1):
@@ -362,7 +364,7 @@ class CubicSpline:
                 Where N = int(total_time * freq) + 1
 
         Raises:
-            AssertionError: If waypoint dimensions don't match active joints
+            ValueError: If waypoint dimensions don't match active joints
 
         Examples:
             Position-only trajectory:
@@ -612,10 +614,11 @@ class WaypointsGeneration(CubicSpline):
         """
         if soft_limit_pool is None:
             soft_limit_pool = self.soft_limit_pool_default
-        assert np.array(soft_limit_pool).shape == (
-            3,
-            len(self.act_idxq),
-        ), "input a vector of soft limit pool with a shape of (3, len(activejoints)"
+        if np.array(soft_limit_pool).shape != (3, len(self.act_idxq)):
+            raise ValueError(
+                "soft_limit_pool must have shape (3, len(active joints)) = "
+                f"(3, {len(self.act_idxq)}), got {np.array(soft_limit_pool).shape}"
+            )
         lim_q = soft_limit_pool[0, :]
         lim_dq = soft_limit_pool[1, :]
         lim_ddq = soft_limit_pool[2, :]

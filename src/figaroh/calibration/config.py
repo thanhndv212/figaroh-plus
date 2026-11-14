@@ -74,7 +74,7 @@ def get_sup_joints(model, start_frame, end_frame):
             3. Partially overlapping branches
 
     Raises:
-        AssertionError: If end frame appears before start frame in chain
+        ValueError: If end frame appears before start frame in chain
 
     Note:
         Excludes "universe" joints from returned list since they don't
@@ -106,7 +106,8 @@ def get_sup_joints(model, start_frame, end_frame):
         if shared_joints == branch_s:
             sup_joints = [branch_s[-1]] + list_2
         else:
-            assert shared_joints != branch_e, "End frame should be before start frame."
+            if shared_joints == branch_e:
+                raise ValueError("End frame should be before start frame.")
             # case 3: there are overlapping joints between two branches
             sup_joints = list_1 + [shared_joints[-1]] + list_2
     return sup_joints
@@ -127,7 +128,7 @@ def unified_to_legacy_config(robot, unified_calib_config) -> dict:
 
     Raises:
         KeyError: If required fields are missing from unified config
-        AssertionError: If frame validation fails
+        ValueError: If frame validation fails
 
     Example:
         >>> unified_config = create_task_config(robot, parsed_config,
@@ -220,7 +221,7 @@ def _extract_frame_info(calib_config, robot, kinematics):
 
     Raises:
         KeyError: If tool_frame not specified
-        AssertionError: If frames don't exist in robot model
+        ValueError: If frames don't exist in robot model
     """
     frames = [f.name for f in robot.model.frames]
     start_frame = kinematics.get("base_frame", "universe")
@@ -231,9 +232,9 @@ def _extract_frame_info(calib_config, robot, kinematics):
 
     # Validate frames exist
     if start_frame not in frames:
-        raise AssertionError(f"Start_frame {start_frame} does not exist")
+        raise ValueError(f"Start_frame {start_frame} does not exist")
     if end_frame not in frames:
-        raise AssertionError(f"End_frame {end_frame} does not exist")
+        raise ValueError(f"End_frame {end_frame} does not exist")
 
     calib_config["start_frame"] = start_frame
     calib_config["end_frame"] = end_frame

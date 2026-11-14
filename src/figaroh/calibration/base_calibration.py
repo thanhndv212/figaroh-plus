@@ -276,7 +276,7 @@ class BaseCalibration(ABC):
         Raises:
             FileNotFoundError: If measurement data file not found
             ValueError: If data format is invalid or incompatible
-            AssertionError: If required data dimensions don't match
+            CalibrationError: If initialization fails (e.g. data dimensions don't match)
             CalibrationError: If initialization fails
 
         Side Effects:
@@ -1792,7 +1792,7 @@ class BaseCalibration(ABC):
 
         Raises:
             ValueError: If optimization fails completely
-            AssertionError: If required data is not loaded
+            CalibrationError: If required data is not loaded
             CalibrationError: If optimization fails
 
         Side Effects:
