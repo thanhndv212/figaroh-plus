@@ -2,14 +2,9 @@
 
 import pytest
 import numpy as np
-import sys
-import os
 from types import SimpleNamespace
 
 import pinocchio as pin
-
-# Add the src directory to the path if needed
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
 try:
     from figaroh.tools.regressor import build_regressor_basic
