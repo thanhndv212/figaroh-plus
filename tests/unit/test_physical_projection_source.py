@@ -1,8 +1,5 @@
 """Regression tests for #163 (projection source) and #164 (picos timelimit)."""
 
-import os
-import sys
-
 import numpy as np
 import pytest
 
@@ -57,7 +54,6 @@ def model():
 
 @pytest.fixture(scope="module")
 def traj(model):
-    sys.path.insert(0, os.path.dirname(__file__))
     from test_data_contract_wiring import _trajectory
 
     return _trajectory(model)
