@@ -31,6 +31,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `solver_info` still holds `success` and `message`.
 - Roadmap and delivery plan record 1.2.0 as released on 2026-11-13 (#240).
   Documentation only.
+- Test and CI configuration (#259, plan item Q3.2). pytest reads `src` and
+  `tests/unit` from `pyproject.toml`, so the suite tests the checkout it runs
+  in and the 16 `sys.path` edits in the tests are gone (needs pytest >= 7).
+  The `core` CI profile reports coverage and type-checks the 34 modules that
+  pass mypy; neither is a gate. Hooks: `pre-commit-hooks` v6.0.0, flake8
+  7.5.0, the unused `clang-format` hook removed; black stays at 25.1.0.
+  `isort` is dropped from the `dev` extra because nothing ran it.
 - Packaging metadata (#258): `cvxopt`, the default SDP solver, is declared
   as a dependency (it was already installed through `picos`); the version is
   read from `figaroh.__version__` instead of being written twice; the unused

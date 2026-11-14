@@ -5,13 +5,8 @@ that did not converge raises, the robust method accepts an exact fit, and
 per-sample weights never build an n x n matrix.
 """
 
-import os
-import sys
-
 import numpy as np
 import pytest
-
-sys.path.insert(0, os.path.dirname(__file__))
 
 from figaroh.tools.solver import LinearSolver, solve_linear_system  # noqa: E402
 

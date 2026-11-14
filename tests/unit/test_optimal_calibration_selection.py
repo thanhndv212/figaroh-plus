@@ -13,13 +13,8 @@ Both are tested directly against a synthetic candidate-configuration pool
 anything but self.w_dict_sort, self._subX_list and self.minNbChosen.
 """
 
-import sys
-import os
-
 import numpy as np
 import pytest
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
 pytest.importorskip("picos")
 pytest.importorskip("cvxopt")

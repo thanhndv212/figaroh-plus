@@ -2,11 +2,6 @@
 
 import pytest
 import numpy as np
-import sys
-import os
-
-# Add the src directory to the path if needed
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
 try:
     from figaroh.tools.qrdecomposition import (

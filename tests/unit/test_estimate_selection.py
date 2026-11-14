@@ -12,8 +12,6 @@ try:
 except ImportError:
     pytest.skip("Pinocchio not available", allow_module_level=True)
 
-sys.path.insert(0, os.path.dirname(__file__))
-
 from _selection_capture import capture  # noqa: E402
 from test_data_contract_wiring import _Ident, _trajectory  # noqa: E402
 

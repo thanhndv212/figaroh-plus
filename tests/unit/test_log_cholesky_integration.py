@@ -1,7 +1,6 @@
 """physical_fit.method: log_cholesky through the identification workflow (#25)."""
 
 import json
-import os
 import sys
 
 import numpy as np
@@ -11,8 +10,6 @@ try:
     import pinocchio as pin
 except ImportError:
     pytest.skip("Pinocchio not available", allow_module_level=True)
-
-sys.path.insert(0, os.path.dirname(__file__))
 
 from test_data_contract_wiring import _Ident, _trajectory  # noqa: E402
 from test_estimate_selection import _run  # noqa: E402

@@ -2,12 +2,7 @@
 
 import pytest
 import numpy as np
-import sys
-import os
 from unittest.mock import Mock, patch
-
-# Add the src directory to the path if needed
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
 try:
     from figaroh.tools.robotcollisions import CollisionManager, CollisionWrapper

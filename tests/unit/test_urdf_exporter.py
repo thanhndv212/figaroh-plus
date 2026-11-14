@@ -13,9 +13,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
-
 try:
     from figaroh.tools.urdf_exporter import export_urdf
     from figaroh.tools.export_validation import URDFComparison

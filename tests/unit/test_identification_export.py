@@ -1,7 +1,5 @@
 """BaseIdentification.export_urdf and the export stage (#61)."""
 
-import os
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -13,7 +11,6 @@ except ImportError:
     pytest.skip("Pinocchio not available", allow_module_level=True)
 
 pytest.importorskip("picos")
-sys.path.insert(0, os.path.dirname(__file__))
 
 from test_data_contract_wiring import _trajectory  # noqa: E402
 from test_estimate_selection import _break_solver, _run  # noqa: E402
