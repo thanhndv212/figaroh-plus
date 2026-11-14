@@ -79,9 +79,9 @@ means that module is public too and is listed on its own line.
 - `figaroh.tools.robotcollisions`: `add_non_adjacent_pairs`, `CollisionManager`, `CollisionWrapper`
 - `figaroh.tools.robotipopt`: `IPOPTConfig`, `BaseOptimizationProblem`, `RobotIPOPTSolver`, `TrajectoryOptimizationProblem`, `create_trajectory_solver`
 
-- `figaroh.utils`: `config_parser`, `error_handling`, `ResultsManager`, `FigarohExampleError`, `CalibrationError`, `IdentificationError`, `handle_calibration_errors`, `handle_identification_errors`, `validate_input_data`, `setup_example_logging`
+- `figaroh.utils`: `config_parser`, `error_handling`, `ResultsManager`, `FigarohError`, `FigarohExampleError`, `CalibrationError`, `IdentificationError`, `handle_calibration_errors`, `handle_identification_errors`, `validate_input_data`, `setup_example_logging`
 - `figaroh.utils.config_parser`: `UnifiedConfigParser`, `create_task_config`, `parse_configuration`, `get_param_from_yaml`, `is_unified_config`, `ConfigurationError`
-- `figaroh.utils.error_handling`: `FigarohExampleError`, `RobotInitializationError`, `ConfigurationError`, `DataProcessingError`, `CalibrationError`, `IdentificationError`, `ValidationError`, `validate_robot_config`, `validate_trajectory_data`, `validate_numeric_range`, `validate_robot_initialization`, `validate_input_data`, `handle_calibration_errors`, `handle_identification_errors`, `safe_execute`, `setup_example_logging`, `ErrorContext`
+- `figaroh.utils.error_handling`: `FigarohError`, `FigarohExampleError`, `RobotInitializationError`, `ConfigurationError`, `DataProcessingError`, `CalibrationError`, `IdentificationError`, `ValidationError`, `validate_robot_config`, `validate_trajectory_data`, `validate_numeric_range`, `validate_robot_initialization`, `validate_input_data`, `handle_calibration_errors`, `handle_identification_errors`, `safe_execute`, `setup_example_logging`, `ErrorContext`
 
 Notes on judgement calls:
 
@@ -159,7 +159,7 @@ may change or disappear in any release.
 ## Deprecated
 
 These names still work but emit a `DeprecationWarning`. Each is deprecated
-in 1.0 and scheduled for removal in 2.0.
+in 1.0 unless noted and scheduled for removal in 2.0.
 
 - `figaroh.tools.qrdecomposition.QR_pivoting` and `double_QR`: use
   `QRDecomposer.decompose_with_pivoting` and
@@ -175,7 +175,10 @@ in 1.0 and scheduled for removal in 2.0.
   `figaroh.utils.results_manager`: use the `ResultsManager` methods of the
   same names;
 - the flat `physical_consistency_enabled` identification config key: use
-  `physical_consistency.enabled`.
+  `physical_consistency.enabled`;
+- `FigarohExampleError` in `figaroh.utils` and
+  `figaroh.utils.error_handling` (deprecated in 1.3, warns when the name is
+  looked up): use `FigarohError`, which is the same class.
 
 ## Removed in 1.0
 

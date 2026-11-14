@@ -187,7 +187,7 @@ class BaseIdentification(ABC):
             ndarray: Base parameters phi_base
 
         Raises:
-            AssertionError: If prerequisites not met (dynamic_regressor, standard_parameter)
+            RuntimeError: If prerequisites not met (dynamic_regressor, standard_parameter)
             ValueError: If data shapes are incompatible
             np.linalg.LinAlgError: If QR decomposition fails
         """
@@ -1273,19 +1273,20 @@ class BaseIdentification(ABC):
         """Validate that required data is available for calculation.
 
         Raises:
-            AssertionError: If required attributes are not set
+            RuntimeError: If required attributes are not set
         """
-        assert (
-            hasattr(self, "dynamic_regressor") and self.dynamic_regressor is not None
-        ), (
-            "Regressor matrix not calculated. " "Call calculate_full_regressor() first."
-        )
-        assert (
-            hasattr(self, "standard_parameter") and self.standard_parameter is not None
-        ), ("Standard parameters not loaded. " "Call calculate_full_regressor() first.")
-        assert (
-            hasattr(self, "processed_data") and self.processed_data is not None
-        ), "Data not processed. Call process_data() first."
+        if getattr(self, "dynamic_regressor", None) is None:
+            raise RuntimeError(
+                "Regressor matrix not calculated. "
+                "Call calculate_full_regressor() first."
+            )
+        if getattr(self, "standard_parameter", None) is None:
+            raise RuntimeError(
+                "Standard parameters not loaded. "
+                "Call calculate_full_regressor() first."
+            )
+        if getattr(self, "processed_data", None) is None:
+            raise RuntimeError("Data not processed. Call process_data() first.")
 
     def _eliminate_zero_columns(self, zero_tolerance):
         """Eliminate columns with near-zero values from regressor matrix.

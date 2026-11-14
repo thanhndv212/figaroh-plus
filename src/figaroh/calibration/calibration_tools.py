@@ -164,11 +164,12 @@ def get_rel_transform(model, data, start_frame, end_frame):
         pin.SE3: Relative transformation sMt from start to target frame
 
     Raises:
-        AssertionError: If frame names don't exist in model
+        ValueError: If frame names don't exist in model
     """
     frames = [f.name for f in model.frames]
-    assert start_frame in frames, "{} does not exist.".format(start_frame)
-    assert end_frame in frames, "{} does not exist.".format(end_frame)
+    for frame in (start_frame, end_frame):
+        if frame not in frames:
+            raise ValueError("{} does not exist.".format(frame))
     start_frameId = model.getFrameId(start_frame)
     oMsf = data.oMf[start_frameId]
     end_frameId = model.getFrameId(end_frame)
@@ -357,9 +358,11 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
         axis_tpl = JOINT_OFFSETTPL
 
     # order of joint in variables are arranged as in calib_config['actJoint_idx']
-    assert len(var) == len(
-        calib_config["param_name"]
-    ), "Length of variables != length of params"
+    if len(var) != len(calib_config["param_name"]):
+        raise ValueError(
+            "Length of variables != length of params "
+            f"({len(var)} != {len(calib_config['param_name'])})"
+        )
     param_dict = dict(zip(calib_config["param_name"], var))
 
     # store parameter updated to the model
@@ -494,11 +497,12 @@ def calc_updated_fkm(model, data, var, q, calib_config, verbose=0, backend=None)
                     updated_params.append(key)
 
     # check if all parameters are updated to the model
-    assert len(updated_params) == len(
-        list(param_dict.keys())
-    ), "Not all parameters are updated {} and {}".format(
-        updated_params, list(param_dict.keys())
-    )
+    if len(updated_params) != len(param_dict):
+        raise RuntimeError(
+            "Not all parameters are updated {} and {}".format(
+                updated_params, list(param_dict.keys())
+            )
+        )
 
     # pose vector of the markers: rows are marker-major, then component
     n_dofs = calib_config["calibration_index"]
@@ -1180,7 +1184,10 @@ def chain_jacobian(model, data, var, q, calib_config):
         raise ValueError("chain_jacobian does not support joint elasticity")
     names = list(calib_config["param_name"])
     var = np.asarray(var, dtype=float)
-    assert len(var) == len(names), "Length of variables != length of params"
+    if len(var) != len(names):
+        raise ValueError(
+            f"Length of variables != length of params ({len(var)} != {len(names)})"
+        )
     index = {n: i for i, n in enumerate(names)}
     q = np.atleast_2d(q)
 

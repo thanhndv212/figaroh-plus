@@ -18,7 +18,7 @@
 
 from .results_manager import ResultsManager
 from .error_handling import (
-    FigarohExampleError,
+    FigarohError,
     CalibrationError,
     IdentificationError,
     handle_calibration_errors,
@@ -34,6 +34,7 @@ __all__ = [
     "config_parser",
     "error_handling",
     "ResultsManager",
+    "FigarohError",
     "FigarohExampleError",
     "CalibrationError",
     "IdentificationError",
@@ -42,3 +43,10 @@ __all__ = [
     "validate_input_data",
     "setup_example_logging",
 ]
+
+
+def __getattr__(name):
+    # Deprecated alias, removed in 2.0.
+    if name == "FigarohExampleError":
+        return error_handling._deprecated_base_error(stacklevel=2)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Input and state validation raises `ValueError` or `RuntimeError` instead of
+  `AssertionError` (#262, plan item Q2.2). The library had 23 `assert`
+  statements and two explicit `raise AssertionError` on user-reachable paths;
+  they vanished under `python -O`, and one of them
+  (`BaseOptimalCalibration`) ran the regressor computation inside the
+  `assert`, so that mode skipped the work as well. Affected: calibration
+  configuration and data loading (unknown frame, joint or calibration model,
+  sample-count and parameter-count mismatches), `ResultsManager`, the cubic
+  spline waypoint checks, and the identification parameter helpers. Code that
+  caught `AssertionError` from these calls has to catch `ValueError`
+  (`RuntimeError` for "not initialised/failed" states) instead.
+- The base exception is `figaroh.utils.error_handling.FigarohError`; it was
+  named `FigarohExampleError`, a leftover from when the module lived in the
+  examples.
+
 - `LinearSolver` (and `solve_linear_system`,
   `solve_with_custom_solver`) refuses an option the selected method does not
   use, with `ValueError`, instead of ignoring it (#247, plan item Q1.3). `bounds`
@@ -32,6 +47,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   longer includes those blocks. `force_torque` must be a non-empty list of
   `Fx`, `Fy`, `Fz`, `Mx`, `My`, `Mz`; anything else raises `ValueError`.
   Configs that set both modes still run joint-torque mode and are unchanged.
+
+### Deprecated
+
+- `FigarohExampleError` (in `figaroh.utils` and
+  `figaroh.utils.error_handling`) is an alias of `FigarohError` that emits a
+  `DeprecationWarning` when it is looked up, and goes away in 2.0. `except`
+  clauses on the old name keep catching the library's errors meanwhile.
 
 ### Fixed
 
