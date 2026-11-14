@@ -237,7 +237,7 @@ ident.solve(plotting=False, html_report=True, save_results=True)
 
 === "Custom solver"
 
-    `solve_with_custom_solver(method=…)` takes one of `lstsq`, `qr`, `svd`, `ridge`, `lasso`, `elastic_net`, `tikhonov`, `constrained`, `robust`, `weighted`. Use it for regularisation or bounds.
+    `solve_with_custom_solver(method=…)` takes one of `lstsq`, `qr`, `svd`, `ridge`, `lasso`, `elastic_net`, `tikhonov`, `constrained`, `robust`, `weighted`. Use it for regularisation or bounds. It fits the same rows and base regressor as `solve()` (decimation is off by default here) and differs only in the estimator; the result gains `solver_method` and `solver_info`.
 </div>
 
 Read the report in this order:

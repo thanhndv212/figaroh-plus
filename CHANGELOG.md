@@ -35,6 +35,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `solve_with_custom_solver` fits the rows `solve` fits (#253, plan item
+  Q1.2; present since 1.1.0). It did not leave out masked samples, ignored
+  `qr_relative_tolerance`, wrote no `fit` record, and did not store the
+  base-column selection, so validation metrics were skipped and
+  reconstruction could read the matrix of an earlier `solve`. Both methods
+  now share the preparation and the base-parameter step; only the estimator
+  differs. A custom solve records `fit` as `custom solver: <method>`, or as
+  failed when it raises, and stores `solver_method` and `solver_info` in the
+  result. Results change for runs with masked samples or
+  `qr_relative_tolerance` set; `solve` is unchanged.
 - `LinearSolver(method="robust")` raised `UnboundLocalError` on an exact
   fit. `solver_info` gains `converged`; `n_iter` now counts the reweighted
   solves (0 for an exact fit).
