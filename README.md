@@ -150,6 +150,10 @@ These names are experimental: see
 [API stability](https://thanhndv212.github.io/figaroh-plus/api/stability/).
 No configuration change is needed when upgrading from 1.1.
 
+1.2.1 fixes identification with a subset of the model's joints active:
+`solve(decimate=False)` failed and `compute_reference_torque` read other
+joints' rows (#245). Runs with every joint active are unchanged.
+
 The full list, including fixes and behaviour changes, is in the
 [CHANGELOG](https://github.com/thanhndv212/figaroh-plus/blob/main/CHANGELOG.md).
 
