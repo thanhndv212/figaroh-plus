@@ -11,8 +11,8 @@ constraints and pitfalls; current architecture belongs in
   `conda activate figaroh-dev` or `conda run -n figaroh-dev ...`.
 - Create it with `conda env create -f environment.yml`; install contributor tools
   using `python -m pip install -e '.[dev,docs]'`. Use conda for `cyipopt`/IPOPT.
-- Python development/initial CI baseline is 3.12. Package metadata still declares
-  Python >=3.8; this is not a claim that every supported version is CI-tested.
+- Python development baseline is 3.12. Package metadata declares Python >=3.10;
+  CI tests 3.10, 3.12 and 3.14, so 3.11 and 3.13 are supported but not CI-tested.
 - Tests: `python -m pytest -q -rs`; one file:
   `python -m pytest tests/unit/test_identification_regressions.py -q -rs`.
 - Hooks: `pre-commit run --all-files` (what the blocking `Lint` job runs); for a
