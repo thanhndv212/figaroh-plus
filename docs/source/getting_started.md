@@ -8,6 +8,17 @@ Install FIGAROH from PyPI:
 pip install figaroh
 ```
 
+Optional parts are installed as extras:
+
+| Extra | Adds | Needed for |
+|---|---|---|
+| `figaroh[sklearn]` | scikit-learn | `LinearSolver` methods `lasso` and `elastic_net` |
+| `figaroh[mujoco]` | MuJoCo 3.x | the MuJoCo backend (4.x is untested) |
+
+IPOPT (`cyipopt`), which optimal trajectory generation needs, has no extra:
+PyPI carries no wheels for it. Install it from conda-forge, as the
+development environment below does.
+
 For development with all dependencies:
 
 ```bash

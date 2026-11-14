@@ -63,7 +63,7 @@ class MuJoCoBackend(DynamicsBackend):
         """
         if not MUJOCO_AVAILABLE:
             raise ImportError(
-                "MuJoCo is not installed. Install with: pip install mujoco>=3.0.0"
+                "MuJoCo is not installed. Install with: pip install 'figaroh[mujoco]'"
             )
 
         super().__init__(model_path, **kwargs)

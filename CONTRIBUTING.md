@@ -114,8 +114,9 @@ Release sequence:
 1. Confirm the selected roadmap exit criteria and linked validation evidence on
    `devel`. Run full tests, package build/metadata checks and the affected example
    workflows. Record unsupported or untested platforms explicitly.
-2. Prepare the version and dated changelog on `devel` through a PR. Keep
-   `pyproject.toml` and `src/figaroh/__init__.py` version strings aligned.
+2. Prepare the version and dated changelog on `devel` through a PR. The
+   version is the `__version__` string in `src/figaroh/__init__.py`; the build
+   reads it from there, so `pyproject.toml` carries none.
    In the same PR, revise `README.md` against the release: rewrite "What's
    new", rerun the Quickstart commands, check every claim (features, supported
    platforms, links) against the code and CI, and remove anything stale. Do
