@@ -47,6 +47,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   six samples per body, and no longer writes friction, actuator-inertia and
   offset entries into rows that belong to other wrench components (#249).
 
+## [1.2.1] - 2026-11-14
+
+Hotfix for identification with a subset of the model's joints active
+(plan item Q1.1, #245; release tracker #251). The paired examples work is
+thanhndv212/figaroh-examples#184.
+
+Upgrading from 1.2.0: no configuration change is required. Results change
+only for runs that were wrong or failed before: `solve(decimate=False)` and
+`compute_reference_torque` with a subset of the model's joints active. Runs
+with every joint active are unchanged.
+
+### Fixed
+
+- Identification with a subset of the model's joints active (#245, plan item
+  Q1.1; present since 1.1.0). `solve(decimate=False)` passed every model
+  joint's regressor rows to the fit and failed with a size mismatch, and
+  `compute_reference_torque` took the first `n_active * N` rows, which are
+  other joints' torque unless the active joints are the model's first ones.
+  Both now select the active joints' rows through the helper the decimated
+  path and the validation metrics use. Runs with every joint active are
+  unchanged.
+
 ## [1.2.0] - 2026-11-13
 
 An opt-in, experimental log-Cholesky fit for the `physical_fit` stage

@@ -701,10 +701,35 @@ class BaseIdentification(ABC):
         phi_ref = np.array(list(self.standard_parameter.values()))
         tau_ref = np.dot(self.dynamic_regressor, phi_ref)
 
-        # filter only active joints
-        self.tau_ref = tau_ref[
-            range(len(self.identif_config["act_idxv"]) * self.num_samples)
+        # keep the active joints' blocks (not the first n_active blocks)
+        self.tau_ref = self._take_active_joint_rows(tau_ref, self.num_samples)
+
+    def _active_joint_rows(self, n_samples):
+        """Row slices of the active joints in a full-model regressor.
+
+        The regressor built by :mod:`figaroh.tools.regressor` is joint-major
+        over every model joint: joint ``j`` occupies rows
+        ``[j * n_samples, (j + 1) * n_samples)``. The active joints are in
+        general neither all the joints nor the first ones (TIAGo identifies
+        torso and arm out of many more), so the active rows are these
+        slices, in ``act_idxv`` order, and never ``[:n_active * n_samples]``.
+
+        Args:
+            n_samples: Samples per joint in the regressor being indexed.
+
+        Returns:
+            list[slice]: One slice per active joint, in ``act_idxv`` order.
+        """
+        return [
+            slice(idx * n_samples, (idx + 1) * n_samples)
+            for idx in self.identif_config["act_idxv"]
         ]
+
+    def _take_active_joint_rows(self, array, n_samples):
+        """Active joints' rows of a full-model joint-major vector or matrix."""
+        return np.concatenate(
+            [array[rows] for rows in self._active_joint_rows(n_samples)]
+        )
 
     def _load_validation_data(self, data_source: str):
         """Load and process a held-out validation trajectory.
@@ -811,22 +836,7 @@ class BaseIdentification(ABC):
         n_rows = n_active * n_val
 
         def _select_active_joint_rows(vec: np.ndarray) -> np.ndarray:
-            """Extract the active joints' blocks from a full-model
-            joint-major vector (block j occupies rows
-            [j*n_val:(j+1)*n_val] for j in 0..self.nv-1 — see
-            :mod:`figaroh.tools.regressor`).
-
-            Active joints are usually a strict subset of the model's
-            DOFs (e.g. TIAGo identifies only torso+arm out of many
-            more DOFs), so ``act_idxv`` is generally *not*
-            ``[0, 1, ..., n_active-1]`` — a plain ``vec[:n_rows]``
-            would silently grab the wrong joints' blocks. This mirrors
-            the row-selection already used correctly in
-            :meth:`_decimate_regressor_matrix`.
-            """
-            return np.concatenate(
-                [vec[idx * n_val : (idx + 1) * n_val] for idx in act_idxv]
-            )
+            return self._take_active_joint_rows(vec, n_val)
 
         phi_std_vec = np.array(list(self.standard_parameter.values()))
         tau_val_nominal = _select_active_joint_rows(W_val_full @ phi_std_vec)
@@ -1362,17 +1372,12 @@ class BaseIdentification(ABC):
         """
         from scipy import signal
 
-        num_joints = len(self.identif_config["act_idxv"])
         regressor_list = []
 
-        for i in range(num_joints):
-            # Extract rows corresponding to joint i
-            start_idx = self.identif_config["act_idxv"][i] * self.num_samples
-            end_idx = (self.identif_config["act_idxv"][i] + 1) * self.num_samples
-
+        for rows in self._active_joint_rows(self.num_samples):
             joint_regressor_decimated = []
             for j in range(regressor_reduced.shape[1]):
-                column_data = regressor_reduced[start_idx:end_idx, j]
+                column_data = regressor_reduced[rows, j]
                 decimated_column = signal.decimate(
                     column_data, q=decimation_factor, zero_phase=True
                 )
@@ -1405,7 +1410,8 @@ class BaseIdentification(ABC):
             regressor_reduced (ndarray): Reduced regressor matrix
 
         Returns:
-            tuple: (tau_flattened, regressor_reduced)
+            tuple: (tau_flattened, regressor_active), the regressor holding
+            the active joints' rows only, as the decimated path returns.
 
         Note:
             ``self.processed_data["torques"]`` has shape ``(num_samples,
@@ -1422,7 +1428,10 @@ class BaseIdentification(ABC):
             tau_flattened = tau_data.T.flatten()
         else:
             tau_flattened = tau_data
-        return tau_flattened, regressor_reduced
+        regressor_active = self._take_active_joint_rows(
+            regressor_reduced, self.num_samples
+        )
+        return tau_flattened, regressor_active
 
     def _calculate_base_parameters(
         self, tau_processed, regressor_processed, active_parameters
