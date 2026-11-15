@@ -28,6 +28,7 @@ import numpy as np
 import pinocchio as pin
 
 from ..tools.regressor import eliminate_non_dynaffect
+from ..tools.rng import resolve_rng
 from ..tools.qrdecomposition import (
     QRDecomposer,
     build_baseRegressor,
@@ -258,7 +259,7 @@ def get_rel_jac(model, data, start_frame, end_frame, q, backend=None):
 # LEVENBERG-MARQUARDT TOOLS
 
 
-def initialize_variables(calib_config, mode=0, seed=0):
+def initialize_variables(calib_config, mode=0, seed=0, rng=None):
     """Initialize variables for Levenberg-Marquardt optimization.
 
     Creates initial parameter vector either as zeros or random values within bounds.
@@ -269,7 +270,11 @@ def initialize_variables(calib_config, mode=0, seed=0):
         mode (int, optional): Initialization mode:
             - 0: Zero initialization
             - 1: Random uniform initialization. Defaults to 0.
-        seed (float, optional): Range [-seed,seed] for random init. Defaults to 0.
+        seed (float, optional): Half-width of the range [-seed, seed] for
+            random init (not a random seed). Defaults to 0.
+        rng (optional): Random source for ``mode=1``: ``None`` (NumPy's
+            global state, as before), a seed or an ``np.random.Generator``;
+            see :mod:`figaroh.tools.rng`.
 
     Returns:
         tuple:
@@ -286,7 +291,7 @@ def initialize_variables(calib_config, mode=0, seed=0):
     if mode == 0:
         var = np.zeros(nvar)
     elif mode == 1:
-        var = np.random.uniform(-seed, seed, nvar)
+        var = resolve_rng(rng).uniform(-seed, seed, nvar)
     return var, nvar
 
 

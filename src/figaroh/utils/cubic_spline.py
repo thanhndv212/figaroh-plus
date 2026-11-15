@@ -94,6 +94,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 import pinocchio as pin
 
+from figaroh.tools.rng import RandomSource, resolve_rng
+
 # Configure logger for this module
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
@@ -578,7 +580,14 @@ class WaypointsGeneration(CubicSpline):
         cause numerical issues in spline generation.
     """
 
-    def __init__(self, robot, num_waypoints: int, active_joints: list, soft_lim=0):
+    def __init__(
+        self,
+        robot,
+        num_waypoints: int,
+        active_joints: list,
+        soft_lim=0,
+        rng: RandomSource = None,
+    ):
         """
         Initialize waypoint generation for cubic spline trajectories.
 
@@ -592,6 +601,9 @@ class WaypointsGeneration(CubicSpline):
             active_joints (list): List of joint names to include in trajectory
             soft_lim (float, optional): Soft limit reduction factor (0-1).
                 Defaults to 0.
+            rng (optional): Random source for :meth:`gen_rand_wp`: ``None``
+                (NumPy's global state, as before), a seed or an
+                ``np.random.Generator``; see :mod:`figaroh.tools.rng`.
 
         Note:
             The soft_lim parameter affects the base CubicSpline initialization
@@ -599,6 +611,7 @@ class WaypointsGeneration(CubicSpline):
             set_soft_limit_pool() for custom pool limits.
         """
         super().__init__(robot, num_waypoints, active_joints, soft_lim=0)
+        self.rng = resolve_rng(rng)
 
         self.n_set = 10  # size of waypoints pool
         self.pool_q = np.zeros((self.n_set, len(self.act_idxq)))
@@ -693,7 +706,7 @@ class WaypointsGeneration(CubicSpline):
             for i in range(len(self.act_idxq)):
                 repeat_ = True
                 while repeat_:
-                    wps_rand[range(1, self.num_waypoints), i] = np.random.choice(
+                    wps_rand[range(1, self.num_waypoints), i] = self.rng.choice(
                         self.pool_q[:, i], self.num_waypoints - 1
                     )
                     repeat_ = self.check_repeat_wp(
@@ -703,7 +716,7 @@ class WaypointsGeneration(CubicSpline):
             for i in range(len(self.act_idxq)):
                 repeat_ = True
                 while repeat_:
-                    wps_rand[:, i] = np.random.choice(
+                    wps_rand[:, i] = self.rng.choice(
                         self.pool_q[:, i], self.num_waypoints
                     )
                     repeat_ = self.check_repeat_wp(list(wps_rand[:, i]))
@@ -713,8 +726,8 @@ class WaypointsGeneration(CubicSpline):
                 for i in range(len(self.act_idxv)):
                     repeat_ = True
                     while repeat_:
-                        vel_wps_rand[range(1, self.num_waypoints), i] = (
-                            np.random.choice(self.pool_dq[:, i], self.num_waypoints - 1)
+                        vel_wps_rand[range(1, self.num_waypoints), i] = self.rng.choice(
+                            self.pool_dq[:, i], self.num_waypoints - 1
                         )
                         repeat_ = self.check_repeat_wp(
                             list(vel_wps_rand[range(1, self.num_waypoints), i])
@@ -724,7 +737,7 @@ class WaypointsGeneration(CubicSpline):
                 for i in range(len(self.act_idxv)):
                     repeat_ = True
                     while repeat_:
-                        vel_wps_rand[:, i] = np.random.choice(
+                        vel_wps_rand[:, i] = self.rng.choice(
                             self.pool_dq[:, i], self.num_waypoints
                         )
                         repeat_ = self.check_repeat_wp(list(vel_wps_rand[:, i]))
@@ -734,10 +747,8 @@ class WaypointsGeneration(CubicSpline):
                 for i in range(len(self.act_idxv)):
                     repeat_ = True
                     while repeat_:
-                        acc_wps_rand[range(1, self.num_waypoints), i] = (
-                            np.random.choice(
-                                self.pool_ddq[:, i], self.num_waypoints - 1
-                            )
+                        acc_wps_rand[range(1, self.num_waypoints), i] = self.rng.choice(
+                            self.pool_ddq[:, i], self.num_waypoints - 1
                         )
                         repeat_ = self.check_repeat_wp(
                             list(acc_wps_rand[range(1, self.num_waypoints), i])
@@ -747,7 +758,7 @@ class WaypointsGeneration(CubicSpline):
                 for i in range(len(self.act_idxv)):
                     repeat_ = True
                     while repeat_:
-                        acc_wps_rand[:, i] = np.random.choice(
+                        acc_wps_rand[:, i] = self.rng.choice(
                             self.pool_ddq[:, i], self.num_waypoints
                         )
                         repeat_ = self.check_repeat_wp(list(acc_wps_rand[:, i]))
