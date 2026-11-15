@@ -261,6 +261,7 @@ class RobotIdentificationSystem:
         zero_tolerance=0.001,
         plotting=False,
         save_results=False,
+        report=None,
         **kwargs,
     ):
         """Run parameter identification.
@@ -282,6 +283,9 @@ class RobotIdentificationSystem:
             zero_tolerance: Tolerance for zero column elimination (default: 0.001)
             plotting: Whether to generate plots (default: False)
             save_results: Whether to save results to file (default: False)
+            report: Whether to print the terminal quality report. Unset
+                (``None``) means True with a ``FutureWarning``: from 2.0
+                the default is False.
             **kwargs: Additional solver arguments
 
         Returns:
@@ -291,6 +295,12 @@ class RobotIdentificationSystem:
             ValueError: If no data source is configured
             FileNotFoundError: If config or data files not found
         """
+        from figaroh.tools._deprecation import resolve_changing_defaults
+
+        report = resolve_changing_defaults(
+            f"{type(self).__name__}.identify_parameters", {"report": report}
+        )["report"]
+
         # Override data_dir in config if provided
         _created_temp_config = False
         if data_dir is not None:
@@ -369,6 +379,7 @@ class RobotIdentificationSystem:
                 zero_tolerance=zero_tolerance,
                 plotting=plotting,
                 save_results=save_results,
+                report=report,
             )
 
             # Extract results
