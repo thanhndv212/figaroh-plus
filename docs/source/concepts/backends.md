@@ -10,7 +10,7 @@ is a config change, not a rewrite.
 | Backend | Formats | Status | Best for |
 |---|---|---|---|
 | **Pinocchio** | URDF | Always available (core dependency) | Research & identification, CPU |
-| **MuJoCo** | URDF, MJCF | Optional (`pip install mujoco`) | Contact dynamics, optimal control, sparse ops |
+| **MuJoCo** | URDF, MJCF | Optional (`pip install 'figaroh[mujoco]'`) | Contact dynamics, optimal control, sparse ops |
 | **Genesis** | URDF, MJCF, USD | Optional (`pip install genesis-world`) | GPU, large-scale parallel/multi-robot |
 | **Isaac Sim** | USD, URDF | Optional, requires NVIDIA Omniverse | Sim-to-real, RL, synthetic data |
 

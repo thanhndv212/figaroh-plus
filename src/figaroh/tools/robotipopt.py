@@ -769,7 +769,8 @@ class RobotIPOPTSolver:
             except ImportError:
                 raise ImportError(
                     "cyipopt is required for IPOPT optimization. "
-                    "Install with: pip install cyipopt"
+                    "Install with: conda install -c conda-forge cyipopt "
+                    "(PyPI has no wheels for it)"
                 )
 
             self.logger.info(f"Setting up IPOPT problem: {self.problem.name}")
