@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Extras `figaroh[sklearn]` (the `lasso` and `elastic_net` solver methods)
+  and `figaroh[mujoco]` (the MuJoCo backend, 3.x; 4.x is untested) (#258,
+  plan item Q3.1). `cyipopt` gets no extra because PyPI has no wheels for
+  it; the missing-package message now names conda-forge.
+
 ### Changed
 
 - `LinearSolver` (and `solve_linear_system`,
@@ -24,6 +31,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `solver_info` still holds `success` and `message`.
 - Roadmap and delivery plan record 1.2.0 as released on 2026-11-13 (#240).
   Documentation only.
+- Packaging metadata (#258): `cvxopt`, the default SDP solver, is declared
+  as a dependency (it was already installed through `picos`); the version is
+  read from `figaroh.__version__` instead of being written twice; the unused
+  `MANIFEST.in` and empty `pyproject.toml` tables are removed. The wheel's
+  files are unchanged and the sdist differs only by `MANIFEST.in`.
 - External-wrench mode refuses what it cannot identify (#249). With
   `is_external_wrench` on and `is_joint_torques` off, `has_friction`,
   `has_actuator_inertia` or `has_joint_offset` now raise `ValueError`; they
