@@ -156,10 +156,11 @@ class BaseIdentification(ABC):
         decimate=True,
         decimation_factor=10,
         zero_tolerance=0.001,
-        plotting=True,
+        plotting=None,
         save_results=False,
         html_report=False,
         wls=False,
+        report=None,
     ):
         """Main solving method for dynamic parameter identification.
 
@@ -171,17 +172,21 @@ class BaseIdentification(ABC):
             decimate (bool): Whether to apply decimation to reduce data size
             decimation_factor (int): Factor for signal decimation (default: 10)
             zero_tolerance (float): Tolerance for eliminating zero columns
-            plotting (bool): Whether to generate plots
+            plotting (bool): Whether to generate plots. Unset (``None``)
+                means True with a ``FutureWarning``: from 2.0 the default
+                is False.
             save_results (bool): Whether to save parameters to file
             html_report (bool): If True, also export an HTML diagnostic
-                report (see :meth:`export_html_report`) after the terminal
-                quality report is printed.
+                report (see :meth:`export_html_report`).
             wls (bool): If True, refine the OLS base-parameter estimate with
                 iteratively-weighted least squares (Gautier, 1997) before
                 computing quality metrics — see
                 :meth:`_apply_weighted_least_squares`. Relative standard
                 deviations from the WLS fit are stored under
                 ``self.result["wls_std_deviations"]``.
+            report (bool): If True, print the terminal quality report
+                (:meth:`print_quality_report`). Unset (``None``) means True
+                with a ``FutureWarning``: from 2.0 the default is False.
 
         Returns:
             ndarray: Base parameters phi_base
@@ -191,6 +196,14 @@ class BaseIdentification(ABC):
             ValueError: If data shapes are incompatible
             np.linalg.LinAlgError: If QR decomposition fails
         """
+        from figaroh.tools._deprecation import resolve_changing_defaults
+
+        flags = resolve_changing_defaults(
+            f"{type(self).__name__}.solve",
+            {"plotting": plotting, "report": report},
+        )
+        plotting, report = flags["plotting"], flags["report"]
+
         logger.info(
             f"Starting {self.__class__.__name__} dynamic parameter identification..."
         )
@@ -238,8 +251,8 @@ class BaseIdentification(ABC):
         if wls_std is not None:
             self.result["wls_std_deviations"] = wls_std
 
-        # Print quality report
-        self.print_quality_report()
+        if report:
+            self.print_quality_report()
 
         # Step 5: Optional plotting
         if plotting:

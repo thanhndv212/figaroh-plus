@@ -159,6 +159,7 @@ files = [
     "src/figaroh/optimal/base_optimal_calibration.py",
     "src/figaroh/optimal/base_parameter.py",
     "src/figaroh/optimal/contraints.py",
+    "src/figaroh/tools/_deprecation.py",
     "src/figaroh/tools/_report_common.py",
     "src/figaroh/tools/compare_report.py",
     "src/figaroh/tools/randomdata.py",

@@ -60,6 +60,9 @@ from figaroh.utils.results_manager import plot_with_fallback
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+# name of the console handler _setup_logging() attaches to ``logger``
+_CONSOLE_HANDLER_NAME = "figaroh-calibration-console"
+
 _COMPONENT_NAMES = ("X", "Y", "Z", "rx", "ry", "rz")
 
 
@@ -304,10 +307,11 @@ class BaseCalibration(ABC):
         method="lm",
         max_iterations=3,
         outlier_threshold=None,
-        enable_logging=True,
+        enable_logging=None,
         plotting=False,
         save_results=False,
         html_report=False,
+        report=None,
     ):
         """Execute the complete calibration process.
 
@@ -327,9 +331,15 @@ class BaseCalibration(ABC):
             outlier_threshold: Position error [m] above which a sample is
                 excluded; ``None`` (default) uses the config's
                 ``parameters.outlier_threshold`` (``outlier_eps``).
+            enable_logging: If True, attach a console handler to this
+                module's logger and log the run (see :meth:`_setup_logging`).
+                Unset (``None``) means True with a ``FutureWarning``: from
+                2.0 the default is False.
             html_report: If True, also export an HTML diagnostic report
-                (see :meth:`export_html_report`) after the terminal
-                quality report is printed.
+                (see :meth:`export_html_report`).
+            report: If True, print the terminal quality report
+                (:meth:`print_quality_report`). Unset (``None``) means True
+                with a ``FutureWarning``: from 2.0 the default is False.
 
         Side Effects:
             - Updates calibration parameters through optimization
@@ -344,7 +354,14 @@ class BaseCalibration(ABC):
             plot: Visualization and analysis plotting
             export_html_report: Visual counterpart of the terminal report
         """
+        from figaroh.tools._deprecation import resolve_changing_defaults
         from figaroh.tools.stages import record_stage
+
+        flags = resolve_changing_defaults(
+            f"{type(self).__name__}.solve",
+            {"enable_logging": enable_logging, "report": report},
+        )
+        enable_logging, report = flags["enable_logging"], flags["report"]
 
         self._run_started_at = datetime.now(timezone.utc).isoformat()
         try:
@@ -387,8 +404,8 @@ class BaseCalibration(ABC):
         # Store results
         self._store_optimization_results(result, evaluation, outlier_indices)
 
-        # Print quality report
-        self.print_quality_report()
+        if report:
+            self.print_quality_report()
 
         # Generate plots if required
         if plotting:
@@ -1228,16 +1245,20 @@ class BaseCalibration(ABC):
         return np.append(residuals, np.asarray(weights) * var)
 
     def _setup_logging(self):
-        """Setup logging configuration for terminal output."""
-        # Create logger
-        logger = logging.getLogger("calibration")
-        logger.setLevel(logging.INFO)
+        """Attach a console handler to this module's logger.
 
-        # Clear existing handlers to avoid duplicates
-        logger.handlers.clear()
+        Opt-in (``enable_logging=True``). Only the handler a previous call
+        added is replaced; handlers the application attached are kept
+        (figaroh-plus#267).
+        """
+        for handler in list(logger.handlers):
+            if handler.get_name() == _CONSOLE_HANDLER_NAME:
+                logger.removeHandler(handler)
+        logger.setLevel(logging.INFO)
 
         # Create console handler
         console_handler = logging.StreamHandler()
+        console_handler.set_name(_CONSOLE_HANDLER_NAME)
         console_handler.setLevel(logging.INFO)
 
         # Create formatter
@@ -1280,7 +1301,6 @@ class BaseCalibration(ABC):
         Returns:
             tuple: (result, excluded sample indices, final residuals)
         """
-        logger = logging.getLogger("calibration")
         if outlier_threshold is None:
             outlier_threshold = self.calib_config.get("outlier_eps")
         self._outlier_threshold = outlier_threshold
@@ -1649,8 +1669,6 @@ class BaseCalibration(ABC):
             result: Optimization result
             evaluation (dict): Solution evaluation metrics
         """
-        logger = logging.getLogger("calibration")
-
         logger.info(f"Iteration {iteration} Results:")
         logger.info(f"  Success: {evaluation['optimization_success']}")
         logger.info(f"  RMSE: {evaluation['rmse']:.6f}")
@@ -1809,7 +1827,7 @@ class BaseCalibration(ABC):
 
         # Setup logging
         if enable_logging:
-            logger = self._setup_logging()
+            self._setup_logging()
             logger.info("Starting calibration optimization")
             logger.info(f"Parameters: {len(self.calib_config['param_name'])}")
             logger.info(f"Parameter names: {self.calib_config['param_name']}")
@@ -1838,7 +1856,6 @@ class BaseCalibration(ABC):
 
         except Exception as e:
             if enable_logging:
-                logger = logging.getLogger("calibration")
                 logger.error(f"Calibration failed: {str(e)}")
             raise CalibrationError(f"Optimization failed: {str(e)}")
 

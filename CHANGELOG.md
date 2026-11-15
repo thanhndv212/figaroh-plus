@@ -54,6 +54,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   longer includes those blocks. `force_torque` must be a non-empty list of
   `Fx`, `Fy`, `Fz`, `Mx`, `My`, `Mz`; anything else raises `ValueError`.
   Configs that set both modes still run joint-torque mode and are unchanged.
+- Calibration logs to its module logger, `figaroh.calibration.base_calibration`,
+  instead of the top-level `"calibration"` logger (#267, plan item Q2.3).
+  Logging configured on `figaroh` now reaches it; an application that
+  configured `"calibration"` has to configure the new name.
+  `enable_logging=True` replaces only the console handler it added before;
+  it no longer clears handlers the application attached.
+
+### Deprecated
+
+- Printing and plotting by default (#267, plan item Q2.3).
+  `BaseCalibration.solve()`, `BaseIdentification.solve()` and
+  `RobotIdentificationSystem.identify_parameters()` take `report=` (print
+  the quality report). `BaseCalibration.solve(enable_logging=)` and
+  `BaseIdentification.solve(plotting=)` now default to `None`. Leaving any of
+  these unset still prints, logs or plots as before, but emits one
+  `FutureWarning`, because the default becomes `False` in 2.0. Pass them
+  explicitly to keep the output or turn it off.
 
 ### Fixed
 
