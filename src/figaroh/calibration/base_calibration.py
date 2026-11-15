@@ -872,7 +872,7 @@ class BaseCalibration(ABC):
                 return float("nan")
             if before > 0:
                 return (before - after) / before * 100
-            return 0.0
+            return float("nan")
 
         # Per-DOF scaled error series (nominal vs. calibrated, in the
         # same mm/deg units as the summary stats above) — feeds
@@ -2283,28 +2283,37 @@ class BaseCalibration(ABC):
             ax4.grid()
 
     def save_results(self, output_dir="results"):
-        """Save calibration results using unified results manager."""
+        """Save calibration results using unified results manager.
+
+        Returns:
+            dict: format -> path written; ``None`` when there is no result
+            yet.
+
+        Raises:
+            RuntimeError: If no results manager was set up by ``solve()``.
+            Exception: Whatever the writer raised. A failed save is not
+                reported as a return value.
+        """
         if not hasattr(self, "result") or self.results_data is None:
             logger.warning("No calibration results to save. Run solve() first.")
             return
 
         # Use pre-initialized results manager if available
-        if hasattr(self, "results_manager") and self.results_manager is not None:
-            try:
-                # Save using unified manager with self.result data
-                saved_files = self.results_manager.save_results(
-                    output_dir=output_dir, save_formats=["yaml", "csv", "npz"]
-                )
+        if getattr(self, "results_manager", None) is None:
+            raise RuntimeError(
+                "No results manager available; calibration results were not saved."
+            )
 
-                logger.info("Calibration results saved using ResultsManager")
-                for fmt, path in saved_files.items():
-                    logger.info(f"  {fmt}: {path}")
+        # Save using unified manager with self.result data
+        saved_files = self.results_manager.save_results(
+            output_dir=output_dir, save_formats=["yaml", "csv", "npz"]
+        )
 
-                return saved_files
+        logger.info("Calibration results saved using ResultsManager")
+        for fmt, path in saved_files.items():
+            logger.info(f"  {fmt}: {path}")
 
-            except Exception as e:
-                logger.error(f"Error saving with ResultsManager: {e}")
-                logger.info("Falling back to basic saving...")
+        return saved_files
 
     def export_html_report(
         self, output_path: str = None, output_dir: str = "results"
@@ -2650,7 +2659,9 @@ class BaseCalibration(ABC):
                     f"{gain:13.1f}%  {arrow}"
                 )
             for k, (nominal, calibrated) in enumerate(_per_point_rows(val)):
-                gain = (nominal - calibrated) / nominal * 100 if nominal else 0.0
+                gain = (
+                    (nominal - calibrated) / nominal * 100 if nominal else float("nan")
+                )
                 arrow = "\u2193" if gain > 0 else "\u2191"
                 print(
                     f"  {f'  point {k + 1} RMSE':<20s} "
