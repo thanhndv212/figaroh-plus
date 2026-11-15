@@ -7,6 +7,7 @@ utilities for robot identification and calibration workflows.
 
 import functools
 import logging
+import warnings
 from typing import Any, Callable, Dict, Optional, TypeVar, Union
 import numpy as np
 
@@ -18,7 +19,9 @@ F = TypeVar("F", bound=Callable[..., Any])
 
 
 # Custom Exception Classes
-__all__ = [
+# FigarohExampleError is resolved by the module __getattr__ below.
+__all__ = [  # noqa: F822
+    "FigarohError",
     "FigarohExampleError",
     "RobotInitializationError",
     "ConfigurationError",
@@ -39,43 +42,43 @@ __all__ = [
 ]
 
 
-class FigarohExampleError(Exception):
-    """Base exception for FIGAROH examples."""
+class FigarohError(Exception):
+    """Base exception for the errors FIGAROH raises itself."""
 
     pass
 
 
-class RobotInitializationError(FigarohExampleError):
+class RobotInitializationError(FigarohError):
     """Exception raised when robot initialization fails."""
 
     pass
 
 
-class ConfigurationError(FigarohExampleError):
+class ConfigurationError(FigarohError):
     """Exception raised for configuration-related issues."""
 
     pass
 
 
-class DataProcessingError(FigarohExampleError):
+class DataProcessingError(FigarohError):
     """Exception raised during data processing operations."""
 
     pass
 
 
-class CalibrationError(FigarohExampleError):
+class CalibrationError(FigarohError):
     """Exception raised during calibration procedures."""
 
     pass
 
 
-class IdentificationError(FigarohExampleError):
+class IdentificationError(FigarohError):
     """Exception raised during identification procedures."""
 
     pass
 
 
-class ValidationError(FigarohExampleError):
+class ValidationError(FigarohError):
     """Exception raised when validation fails."""
 
     pass
@@ -369,3 +372,23 @@ class ErrorContext:
         else:
             logger.info(f"{self.operation_name} completed successfully")
             return True
+
+
+def _deprecated_base_error(stacklevel):
+    # stacklevel counts from the caller of this helper, so the warning
+    # points at the code that still uses the old name.
+    warnings.warn(
+        "FigarohExampleError is deprecated and will be removed in 2.0; "
+        "use FigarohError.",
+        DeprecationWarning,
+        stacklevel=stacklevel + 1,
+    )
+    return FigarohError
+
+
+def __getattr__(name):
+    # Deprecated alias, removed in 2.0. Resolved lazily so that only code
+    # that still uses the old name sees the warning.
+    if name == "FigarohExampleError":
+        return _deprecated_base_error(stacklevel=2)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

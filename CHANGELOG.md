@@ -16,6 +16,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Silent fallbacks removed (#264, plan item Q2.1). A metric that cannot be
+  computed is now `NaN` instead of a value that reads as a result:
+  identification fit and validation correlation (was `1.0` with fewer than
+  two samples or a constant signal), identification and calibration
+  improvement percentages (was `0.0` when the nominal error is zero), and
+  `LinearSolver`'s `r_squared` on a constant target (was `0`). The HTML
+  identification report says the correlation could not be computed instead of
+  reporting no issues. Steps that failed now raise: `LinearSolver` methods
+  `lasso` and `elastic_net` raise `ImportError` without scikit-learn (they
+  returned a ridge solution with a warning; install `figaroh[sklearn]` or ask
+  for `ridge`), a `physical_consistency.cad_constraints` block that cannot be
+  built raises instead of projecting without it, and `save_results` raises the
+  writer's error instead of logging it and returning `None`
+  (`BaseCalibration.save_results` also raises `RuntimeError` when `solve()` set
+  up no results manager). Validation on the training data when no validation
+  set is configured is unchanged: it was already labelled as a fallback and is
+  not counted as held-out evidence.
+- Input and state validation raises `ValueError` or `RuntimeError` instead of
+  `AssertionError` (#262, plan item Q2.2). The library had 23 `assert`
+  statements and two explicit `raise AssertionError` on user-reachable paths;
+  they vanished under `python -O`, and one of them
+  (`BaseOptimalCalibration`) ran the regressor computation inside the
+  `assert`, so that mode skipped the work as well. Affected: calibration
+  configuration and data loading (unknown frame, joint or calibration model,
+  sample-count and parameter-count mismatches), `ResultsManager`, the cubic
+  spline waypoint checks, and the identification parameter helpers. Code that
+  caught `AssertionError` from these calls has to catch `ValueError`
+  (`RuntimeError` for "not initialised/failed" states) instead.
+- The base exception is `figaroh.utils.error_handling.FigarohError`; it was
+  named `FigarohExampleError`, a leftover from when the module lived in the
+  examples.
+
 - `LinearSolver` (and `solve_linear_system`,
   `solve_with_custom_solver`) refuses an option the selected method does not
   use, with `ValueError`, instead of ignoring it (#247, plan item Q1.3). `bounds`
@@ -71,6 +103,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   these unset still prints, logs or plots as before, but emits one
   `FutureWarning`, because the default becomes `False` in 2.0. Pass them
   explicitly to keep the output or turn it off.
+
+### Deprecated
+
+- `FigarohExampleError` (in `figaroh.utils` and
+  `figaroh.utils.error_handling`) is an alias of `FigarohError` that emits a
+  `DeprecationWarning` when it is looked up, and goes away in 2.0. `except`
+  clauses on the old name keep catching the library's errors meanwhile.
 
 ### Fixed
 

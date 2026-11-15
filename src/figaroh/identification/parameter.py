@@ -256,7 +256,8 @@ def get_standard_parameters(model, identif_config=None):
     ]
 
     # Extract and rearrange inertial parameters for each link
-    assert len(model.inertias) == model.njoints, "Inertia count mismatch with joints"
+    if len(model.inertias) != model.njoints:
+        raise ValueError("Inertia count mismatch with joints")
     for link_idx, jname in enumerate(model.names[1:]):
         # Get dynamic parameters from Pinocchio (in Pinocchio order)
         # Returns the representation of the matrix as a vector of dynamic

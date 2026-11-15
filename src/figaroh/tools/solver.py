@@ -35,6 +35,11 @@ import warnings
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+_SKLEARN_REQUIRED = (
+    "method={method!r} needs scikit-learn: pip install 'figaroh[sklearn]' "
+    "(or choose method='ridge' explicitly)"
+)
+
 
 class LinearSolver:
     """
@@ -340,12 +345,8 @@ class LinearSolver:
             self.solver_info["alpha"] = self.alpha
             self.solver_info["n_iter"] = model.n_iter_
             return model.coef_
-        except ImportError:
-            warnings.warn(
-                "sklearn not available, falling back to ridge regression",
-                UserWarning,
-            )
-            return self._solve_ridge(A, b)
+        except ImportError as exc:
+            raise ImportError(_SKLEARN_REQUIRED.format(method=self.method)) from exc
 
     def _solve_elastic_net(self, A, b):
         """Elastic Net (L1 + L2 regularization)."""
@@ -366,12 +367,8 @@ class LinearSolver:
             self.solver_info["l1_ratio"] = self.l1_ratio
             self.solver_info["n_iter"] = model.n_iter_
             return model.coef_
-        except ImportError:
-            warnings.warn(
-                "sklearn not available, falling back to ridge regression",
-                UserWarning,
-            )
-            return self._solve_ridge(A, b)
+        except ImportError as exc:
+            raise ImportError(_SKLEARN_REQUIRED.format(method=self.method)) from exc
 
     def _solve_tikhonov(self, A, b):
         """Tikhonov regularization with custom regularization matrix."""
@@ -543,7 +540,8 @@ class LinearSolver:
 
         # R-squared
         ss_tot = np.sum((b - np.mean(b)) ** 2)
-        r_squared = 1 - (rss / ss_tot) if ss_tot > 0 else 0
+        # Undefined for a constant target: there is no variance to explain.
+        r_squared = 1 - (rss / ss_tot) if ss_tot > 0 else float("nan")
 
         # Condition number (if not already computed)
         if "condition_number" not in self.solver_info:

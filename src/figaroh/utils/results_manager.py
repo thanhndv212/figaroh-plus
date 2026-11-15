@@ -23,7 +23,7 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 from .error_handling import (
-    FigarohExampleError,
+    FigarohError,
     setup_example_logging,
 )
 
@@ -75,12 +75,10 @@ class ResultsManager:
         """
         self.task_type = task_type.lower()
         self.robot_name = robot_name
-        assert (
-            self.task_type in self.PLOT_STYLES
-        ), f"Unsupported task type: {self.task_type}"
-        assert (
-            self.task_type == results_data["task type"] if results_data else True
-        ), "Results data must match task type"
+        if self.task_type not in self.PLOT_STYLES:
+            raise ValueError(f"Unsupported task type: {self.task_type}")
+        if results_data and self.task_type != results_data["task type"]:
+            raise ValueError("Results data must match task type")
         self.result = results_data or {}
         self.logger = setup_example_logging()
 
@@ -594,7 +592,7 @@ class ResultsManager:
 
         except Exception as e:
             self.logger.error(f"Error saving results: {e}")
-            raise FigarohExampleError(f"Failed to save results: {e}")
+            raise FigarohError(f"Failed to save results: {e}")
 
     # Helper plotting methods
     def _plot_pose_comparison(

@@ -151,9 +151,17 @@ def _build_insights(
                 }
             )
         corr = validation.get(
-            "correlation_normalised", validation.get("correlation", 1.0)
+            "correlation_normalised", validation.get("correlation", float("nan"))
         )
-        if corr < LOW_CORRELATION_WARN:
+        if not math.isfinite(corr):
+            insights.append(
+                {
+                    "level": "warn",
+                    "text": "Validation torque correlation could not be "
+                    "computed (too few samples or a constant signal).",
+                }
+            )
+        elif corr < LOW_CORRELATION_WARN:
             insights.append(
                 {
                     "level": "warn",
