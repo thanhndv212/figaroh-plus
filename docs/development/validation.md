@@ -37,6 +37,21 @@ python -m mkdocs build
 git diff --check
 ```
 
+`pyproject.toml` puts `src` on pytest's path, so the suite tests the checkout
+it runs in whatever `figaroh` is installed (a second worktree needs no
+`PYTHONPATH`). Test modules share helpers through `tests/unit` on the same
+path; do not edit `sys.path` in a test.
+
+Coverage and type checking are reported, not gated:
+
+```bash
+python -m pytest -q --cov --cov-report=term   # the `core` CI profile uploads coverage.xml
+python -m mypy                                # checks the modules listed under [tool.mypy]
+```
+
+The mypy list holds the modules that pass. Add a module when it passes; a new
+module is expected to be on it.
+
 For optional backend coverage:
 
 ```bash
