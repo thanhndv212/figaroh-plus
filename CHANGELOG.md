@@ -60,6 +60,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   read from `figaroh.__version__` instead of being written twice; the unused
   `MANIFEST.in` and empty `pyproject.toml` tables are removed. The wheel's
   files are unchanged and the sdist differs only by `MANIFEST.in`.
+- `AGENTS.md` states the Python floor the package metadata declares (>=3.10)
+  and the versions CI tests, instead of the superseded floor of 3.8 (#254, plan
+  item Q3.3). Documentation only.
 - External-wrench mode refuses what it cannot identify (#249). With
   `is_external_wrench` on and `is_joint_torques` off, `has_friction`,
   `has_actuator_inertia` or `has_joint_offset` now raise `ValueError`; they
