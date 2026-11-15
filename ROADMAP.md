@@ -299,7 +299,7 @@ no example records that instead.
 | ✅ End-to-end reference example | M1 | Calibration side ✅ done in C4; dynamic side ✅ **done in D7** (#42). Original gate: connect the existing projection, reconstruction, verification, export and archive APIs; demonstrate improvement on held-out data |
 | Identification and solver correctness fixes (Q1.1–Q1.4) | M0 / Q1 | Regression test that fails before the fix; paired examples change where an example is affected (Q1.1, Q1.4); wrench-mode defect reproduced before it is fixed |
 | Failures reported instead of hidden; library logging; seeded randomness (Q2.1–Q2.5) | M0 / Q2 | No silent fallback on the reference workflows; affected examples updated |
-| Packaging, test and CI configuration (Q3.1–Q3.3) | M0 / Q3 | Clean install; coverage reported on hosted CI; documentation statements match metadata |
+| Packaging, test and CI configuration; contributor workflow (Q3.1–Q3.4) | M0 / Q3 | Clean install; coverage reported on hosted CI; documentation statements match metadata; changelog entries no longer conflict between PRs |
 | Typed results, class splits, performance (Q4.1–Q4.4) | M0 / Q4, with S4 | ADR for typed contracts; numerical parity on both reference workflows; old keys remain as a deprecated view |
 | Backend selection in `RobotIdentificationSystem` | M3 correctness | `from_urdf(backend=...)` currently stores a name while loading the usual Robot; selection must change the executing backend or reject unsupported choices |
 | Optional backend/solver coverage | M0/M3 | Record tested dependency versions and skips; broaden OS/Python coverage after the initial Python 3.12 gate |

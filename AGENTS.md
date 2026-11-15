@@ -80,6 +80,10 @@ or complete. Do not use an old test count as present-day validation evidence.
 Update canonical root documents; docs-site roadmap/architecture pages embed
 those files. `docs/decisions/` owns design rationale and is linked from the site.
 Keep acceptance criteria/task status in issues and release history in CHANGELOG.
+Changelog entries are fragment files in `changelog.d/` (naming in its README);
+do not edit `CHANGELOG.md` outside a release PR. Update an open branch only for a
+conflict or a CI need, by rebasing your own branch onto `devel` and pushing with
+`--force-with-lease`; do not merge `devel` into it. See CONTRIBUTING.
 Check references when files move; update the roadmap only when its outcome or
 priority changes. Preserve historical decisions with explicit status/supersession.
 

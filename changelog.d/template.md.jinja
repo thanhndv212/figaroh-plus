@@ -1,0 +1,13 @@
+{#- Keep a Changelog layout. Entries are written in full, with their issue
+    references in the prose, so the file name's issue number is not appended.
+    towncrier indents continuation lines itself. -#}
+{% for section, _ in sections.items() -%}
+{% for category, val in definitions.items() if category in sections[section] -%}
+### {{ definitions[category]['name'] }}
+
+{% for text, values in sections[section][category].items() -%}
+- {{ text }}
+{% endfor %}
+
+{% endfor -%}
+{% endfor -%}
