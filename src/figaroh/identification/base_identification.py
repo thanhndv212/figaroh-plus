@@ -195,34 +195,10 @@ class BaseIdentification(ABC):
             f"Starting {self.__class__.__name__} dynamic parameter identification..."
         )
 
-        self._run_started_at = datetime.now(timezone.utc).isoformat()
-        self._decimate_used = decimate
-
-        # Validate prerequisites
-        self._validate_prerequisites()
-
-        # Step 1: Eliminate zero columns
-        regressor_reduced, active_params = self._eliminate_zero_columns(zero_tolerance)
-
-        # Step 2: Apply decimation if requested
-        if decimate:
-            tau_processed, W_processed = self._apply_decimation(
-                regressor_reduced, decimation_factor
-            )
-        else:
-            tau_processed, W_processed = self._prepare_undecimated_data(
-                regressor_reduced
-            )
-
-        # Step 2b: leave out masked samples (after filtering/decimation)
-        tau_processed, W_processed = self._mask_rows(
-            tau_processed, W_processed, decimation_factor if decimate else 1
+        # Steps 1-2: rows, regressor and active parameters of this run
+        tau_processed, W_processed, active_params = self._prepare_fit(
+            decimate, decimation_factor, zero_tolerance
         )
-
-        # Step 2c: keep only the joints whose effort enters the fit
-        tau_processed, W_processed = self._select_fit_rows(tau_processed, W_processed)
-
-        self._reset_solve_state(tau_processed, W_processed, active_params)
 
         # Step 3: Calculate base parameters
         from figaroh.tools.stages import record_stage
@@ -278,6 +254,46 @@ class BaseIdentification(ABC):
             self.export_html_report()
 
         return self.phi_base
+
+    def _prepare_fit(self, decimate, decimation_factor, zero_tolerance):
+        """Start a run and return the rows that enter its fit.
+
+        Shared by :meth:`solve` and :meth:`solve_with_custom_solver`, so
+        both fit the same rows: zero columns eliminated, decimated or not,
+        masked samples left out, and only the joints of :meth:`fit_joints`.
+
+        Returns:
+            tuple: ``(tau, regressor, active_parameters)``.
+        """
+        self._run_started_at = datetime.now(timezone.utc).isoformat()
+        self._run_finished_at = None
+        self._decimate_used = decimate
+
+        self._validate_prerequisites()
+
+        # Step 1: Eliminate zero columns
+        regressor_reduced, active_params = self._eliminate_zero_columns(zero_tolerance)
+
+        # Step 2: Apply decimation if requested
+        if decimate:
+            tau_processed, W_processed = self._apply_decimation(
+                regressor_reduced, decimation_factor
+            )
+        else:
+            tau_processed, W_processed = self._prepare_undecimated_data(
+                regressor_reduced
+            )
+
+        # Step 2b: leave out masked samples (after filtering/decimation)
+        tau_processed, W_processed = self._mask_rows(
+            tau_processed, W_processed, decimation_factor if decimate else 1
+        )
+
+        # Step 2c: keep only the joints whose effort enters the fit
+        tau_processed, W_processed = self._select_fit_rows(tau_processed, W_processed)
+
+        self._reset_solve_state(tau_processed, W_processed, active_params)
+        return tau_processed, W_processed, active_params
 
     def _reset_solve_state(self, tau, W, active_params):
         """Start a solve: keep its rows, drop what an earlier solve left.
@@ -356,26 +372,10 @@ class BaseIdentification(ABC):
             f"with custom solver..."
         )
 
-        # Validate prerequisites
-        self._validate_prerequisites()
+        from figaroh.tools.stages import record_stage
 
-        # Step 1: Eliminate zero columns
-        regressor_reduced, active_params = self._eliminate_zero_columns(zero_tolerance)
-
-        # Step 2: Apply decimation if requested
-        if decimate:
-            tau_processed, W_processed = self._apply_decimation(
-                regressor_reduced, decimation_factor
-            )
-        else:
-            tau_processed, W_processed = self._prepare_undecimated_data(
-                regressor_reduced
-            )
-        tau_processed, W_processed = self._select_fit_rows(tau_processed, W_processed)
-
-        self._reset_solve_state(tau_processed, W_processed, active_params)
-
-        # Step 3: Solve using custom solver
+        # Built first: an option the method does not use is refused before
+        # the previous run's state is touched
         solver = LinearSolver(
             method=method,
             regularization=regularization,
@@ -386,57 +386,57 @@ class BaseIdentification(ABC):
             **solver_kwargs,
         )
 
-        # # Solve for reduced parameters
-        # phi_reduced = solver.solve(W_processed, tau_processed)
-
-        # # Map back to full parameter space
-        # phi_full = np.zeros(len(self.standard_parameter))
-        # active_indices = [
-        #     i for i, active in enumerate(active_params.values()) if active
-        # ]
-        # phi_full[active_indices] = phi_reduced
-
-        # Step 4: Compute base parameters using QR decomposition
-        from figaroh.tools.qrdecomposition import QRDecomposer
-
-        W_base, _, base_parameters, _, phi_std = QRDecomposer().double_decomposition(
-            tau_processed, W_processed, active_params, self.standard_parameter
+        # Steps 1-2: the same rows as solve()
+        tau_processed, W_processed, active_params = self._prepare_fit(
+            decimate, decimation_factor, zero_tolerance
         )
-        phi_base = solver.solve(W_base, tau_processed)
-        base_param_dict = {
-            param: phi_base[i] for i, param in enumerate(base_parameters)
-        }
 
-        # Store results
-        self.dynamic_regressor_base = W_base
+        # Step 3: the base regressor of solve(), fitted by the chosen method
+        try:
+            results = self._calculate_base_parameters(
+                tau_processed, W_processed, active_params
+            )
+            W_base = results["base_regressor"]
+            phi_base = np.asarray(solver.solve(W_base, tau_processed))
+        except Exception as e:
+            record_stage(self, "fit", "failed", f"{type(e).__name__}: {e}")
+            raise
+
         self.phi_base = phi_base
-        self.params_base = list(base_param_dict.keys())
         self.tau_identif = W_base @ phi_base
-        self.tau_noised = tau_processed
+        results.update(
+            phi_base=phi_base,
+            base_param_dict=dict(zip(results["base_param_dict"], phi_base)),
+            tau_estimated=self.tau_identif,
+            solver_info=solver.solver_info,
+            solver_method=method,
+            regularization=regularization,
+            alpha=alpha,
+        )
 
-        # Step 5: Compute quality metrics and store
+        # Step 4: Compute quality metrics and store
+        self._run_finished_at = datetime.now(timezone.utc).isoformat()
         self._compute_quality_metrics()
-
-        results = {
-            "base_regressor": W_base,
-            "base_param_dict": base_param_dict,
-            "base_parameters": base_parameters,
-            "phi_base": phi_base,
-            "tau_estimated": self.tau_identif,
-            "tau_processed": tau_processed,
-            "solver_info": solver.solver_info,
-            "solver_method": method,
-            "regularization": regularization,
-            "alpha": alpha,
-        }
-
+        record_stage(
+            self,
+            "fit",
+            "ok",
+            f"custom solver: {method}",
+            {
+                "effort_rmse": (float(self.rms_error), "N·m or N (stacked joints)"),
+                "rows": len(self.tau_noised),
+                "base_parameters": len(self.phi_base),
+            },
+        )
         self._store_results(results)
+        self.result["solver_method"] = method
+        self.result["solver_info"] = solver.solver_info
 
-        # Step 6: Optional plotting
+        # Step 5: Optional plotting
         if plotting:
             self.plot_results()
 
-        # Step 7: Optional parameter saving
+        # Step 6: Optional parameter saving
         if save_results:
             self.save_results()
 
