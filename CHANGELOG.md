@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-11-14
+
+Hotfix for identification with a subset of the model's joints active
+(plan item Q1.1, #245; release tracker #251). The paired examples work is
+thanhndv212/figaroh-examples#184.
+
+Upgrading from 1.2.0: no configuration change is required. Results change
+only for runs that were wrong or failed before: `solve(decimate=False)` and
+`compute_reference_torque` with a subset of the model's joints active. Runs
+with every joint active are unchanged.
+
 ### Fixed
 
 - Identification with a subset of the model's joints active (#245, plan item
