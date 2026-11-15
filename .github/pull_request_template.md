@@ -26,7 +26,7 @@ Closes #
 
 ## Docs and changelog
 
-- [ ] `CHANGELOG.md` `[Unreleased]` entry, or not user-visible (reason: …)
+- [ ] Fragment in `changelog.d/` (see its README; do not edit `CHANGELOG.md`), or not user-visible (reason: …)
 - [ ] Docs / ARCHITECTURE / ROADMAP / decision record updated, or not needed
 
 ## Found along the way / limits

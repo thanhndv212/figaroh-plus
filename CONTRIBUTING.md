@@ -13,7 +13,7 @@ Development commands run in the **`figaroh-dev` conda environment**. Start with
 | Current module boundaries, data flow and limitations | `ARCHITECTURE.md` |
 | Design choices, alternatives and research | `docs/decisions/` |
 | Task status, bugs, acceptance criteria and dependencies | GitHub issues |
-| What changed in a release | `CHANGELOG.md` |
+| What changed in a release | `CHANGELOG.md`; unreleased entries in `changelog.d/` |
 | User instructions and API reference | `docs/source/` and source docstrings |
 | Contribution and release procedure | This file |
 | Agent environment, commands and implementation pitfalls | `AGENTS.md` |
@@ -58,9 +58,11 @@ current architecture description.
 6. When one issue's implementation and local validation are complete, commit
    and push its focused branch and open a PR **against `devel`** using the template.
    Keep each completed issue in its own PR; independent work may continue on a
-   separate branch. Include a changelog entry
-   under `[Unreleased]` (including documentation reorganizations), user docs for
-   changed behavior, and architecture/roadmap updates when their facts change.
+   separate branch. Include a changelog entry as a fragment file in
+   [`changelog.d/`](https://github.com/thanhndv212/figaroh-plus/tree/devel/changelog.d)
+   (including documentation reorganizations), user docs for changed behavior,
+   and architecture/roadmap updates when their facts change. Do not edit
+   `CHANGELOG.md` itself; only the release PR does.
 7. The maintainer reviews each PR. Agents must wait for the maintainer's explicit
    approval before merging; passing checks or a request to implement/open a PR
    does not authorize a merge. Address review comments and rerun affected checks.
@@ -69,9 +71,31 @@ current architecture description.
    PR's individual commits stay in `devel`'s history. If the approved scope
    changes materially, obtain a renewed review before merging. Use a
    Conventional Commit title, e.g. `fix(identification): preserve joint ordering`.
+   While the PR is open, keep it current as described in
+   [Keeping a branch current](#keeping-a-branch-current).
 8. Close the issue with the merged PR linked. Because `main` is the default
    branch, `Closes #N` may not close it when merging into `devel`. Mark roadmap
    outcomes complete only after their exit criteria pass.
+
+### Keeping a branch current
+
+Being behind `devel` is not a reason to update a branch. Update it only when
+GitHub reports a conflict, when CI on the branch needs a change that landed on
+`devel`, or when the maintainer asks. Update by rebasing, not by merging
+`devel` into the branch:
+
+```bash
+git fetch figaroh-plus
+git rebase figaroh-plus/devel
+pre-commit run --files $(git diff --name-only figaroh-plus/devel...)
+git push --force-with-lease
+```
+
+Rebase only your own branch. If someone else has commits on it or a branch
+built on top of it, agree first or merge instead. Rerun the validation the
+rebase could affect. Landing is unchanged: the PR is merged with a merge
+commit, so `devel` gets one merge per PR, and
+`git log --first-parent --oneline devel` lists the PRs in order.
 
 For triage, use one type (`bug`, `feature`, `docs`, `maintenance`), an area
 (`identification`, `calibration`, `optimal`, `backends`, `examples`, `tooling`)
@@ -116,7 +140,13 @@ Release sequence:
    workflows. Record unsupported or untested platforms explicitly.
 2. Prepare the version and dated changelog on `devel` through a PR. The
    version is the `__version__` string in `src/figaroh/__init__.py`; the build
-   reads it from there, so `pyproject.toml` carries none.
+   reads it from there, so `pyproject.toml` carries none. Build the changelog
+   section from the fragments, then add the release's scope paragraph under
+   its heading by hand:
+   ```bash
+   towncrier build --draft --version X.Y.Z   # review
+   towncrier build --yes --version X.Y.Z     # writes CHANGELOG.md, removes fragments
+   ```
    In the same PR, revise `README.md` against the release: rewrite "What's
    new", rerun the Quickstart commands, check every claim (features, supported
    platforms, links) against the code and CI, and remove anything stale. Do
@@ -139,6 +169,9 @@ Release sequence:
 
 For an urgent released-code bug, branch `fix/<issue>-<slug>` from `main`, target
 `main`, validate and make a patch release, then back-merge into `devel`.
+The hotfix adds its own fragment and the patch release runs
+`towncrier build` on `main`, which consumes only the fragments on `main`;
+fragments that exist only on `devel` stay there for the next release.
 For normal fixes, use `devel` and the next planned release.
 
 ### Release candidate procedure (1.0.0)
@@ -155,8 +188,8 @@ the steps below add only what is specific to the RC.
 1. **Freeze `devel`.** Announce the freeze on the release tracker issue. From
    then on only fixes for soak blockers land on `devel`, each as a focused PR.
 2. **Open the release PR into `main`.** Set the version to `1.0.0rc1` in
-   `pyproject.toml` and `src/figaroh/__init__.py`, add the dated changelog
-   section, and update the README as in release sequence step 2. Merge
+   `pyproject.toml` and `src/figaroh/__init__.py`, build the dated changelog
+   section (`towncrier build`), and update the README as in release sequence step 2. Merge
    `devel` → `main` with a merge commit, then tag `v1.0.0rc1` on that merge
    commit.
 3. **Collect evidence on one core/examples pair.** Record both exact commit

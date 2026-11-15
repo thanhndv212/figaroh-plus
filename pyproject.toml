@@ -71,6 +71,8 @@ dev = [
     "flake8",
     "mypy",
     "pre-commit",
+    # Builds CHANGELOG.md from changelog.d/ at release time.
+    "towncrier>=24.7",
 ]
 # Keep in sync with docs/requirements.txt (the docs CI installs that file).
 docs = [
@@ -116,6 +118,50 @@ Homepage = "https://github.com/thanhndv212/figaroh-plus"
 Repository = "https://github.com/thanhndv212/figaroh-plus"
 Issues = "https://github.com/thanhndv212/figaroh-plus/issues"
 Examples = "https://github.com/thanhndv212/figaroh-examples"
+
+# Unreleased entries are fragment files in changelog.d/ (one per entry), so
+# parallel PRs never edit the same CHANGELOG.md lines. A release runs
+# `towncrier build --version X.Y.Z`; see CONTRIBUTING.md.
+[tool.towncrier]
+directory = "changelog.d"
+filename = "CHANGELOG.md"
+start_string = "<!-- towncrier release notes start -->\n"
+title_format = "## [{version}] - {project_date}"
+template = "changelog.d/template.md.jinja"
+orphan_prefix = "+"
+wrap = false
+underlines = ["", "", ""]
+ignore = ["README.md", "template.md.jinja"]
+
+[[tool.towncrier.type]]
+directory = "added"
+name = "Added"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "changed"
+name = "Changed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "deprecated"
+name = "Deprecated"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "removed"
+name = "Removed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "fixed"
+name = "Fixed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "security"
+name = "Security"
+showcontent = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
