@@ -32,6 +32,7 @@ from figaroh.tools.regressor import (
     build_regressor_reduced,
 )
 from figaroh.tools.qrdecomposition import build_baseRegressor
+from figaroh.tools.rng import RandomSource, resolve_rng
 from figaroh.utils.cubic_spline import (
     CubicSpline,
     WaypointsGeneration,
@@ -71,9 +72,22 @@ class BaseOptimalTrajectory:
         robot,
         active_joints: List[str],
         config_file: str = "config/robot_config.yaml",
+        rng: RandomSource = None,
     ):
-        """Initialize the optimal trajectory generator."""
+        """Initialize the optimal trajectory generator.
+
+        Args:
+            robot: Robot model wrapper.
+            active_joints: Names of the joints the trajectory moves.
+            config_file: Path to the YAML configuration.
+            rng: Random source for the initial waypoint and the waypoints:
+                ``None`` (NumPy's global state, as before), a seed or an
+                ``np.random.Generator``; see :mod:`figaroh.tools.rng`. A
+                subclass that builds its own ``WaypointsGeneration`` should
+                pass ``rng=self.rng`` to it.
+        """
         self.robot = robot
+        self.rng = resolve_rng(rng)
         self.model = self.robot.model
         self.active_joints = active_joints
 
@@ -118,6 +132,7 @@ class BaseOptimalTrajectory:
             self.trajectory_config["n_wps"],
             self.active_joints,
             self.trajectory_config["soft_lim"],
+            rng=self.rng,
         )
 
         # Initialize specialized components
@@ -158,7 +173,7 @@ class BaseOptimalTrajectory:
 
             # Random initial position
             for idx in range(len(self.CB.act_idxq)):
-                wp_init[idx] = np.random.choice(self.WP.pool_q[:, idx], 1)[0]
+                wp_init[idx] = self.rng.choice(self.WP.pool_q[:, idx], 1)[0]
 
             W_stack = None
 

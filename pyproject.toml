@@ -165,6 +165,7 @@ files = [
     "src/figaroh/tools/randomdata.py",
     "src/figaroh/tools/regressor.py",
     "src/figaroh/tools/report.py",
+    "src/figaroh/tools/rng.py",
     "src/figaroh/tools/robot.py",
     "src/figaroh/tools/run_archive.py",
     "src/figaroh/tools/solver.py",

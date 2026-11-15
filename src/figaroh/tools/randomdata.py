@@ -16,6 +16,8 @@
 import pinocchio as pin
 import numpy as np
 
+from figaroh.tools.rng import resolve_rng
+
 
 __all__ = [
     "generate_waypoints",
@@ -24,7 +26,7 @@ __all__ = [
 ]
 
 
-def generate_waypoints(N, robot, mlow, mhigh):
+def generate_waypoints(N, robot, mlow, mhigh, rng=None):
     """Generate random values for joint positions, velocities, accelerations.
 
     Args:
@@ -32,10 +34,13 @@ def generate_waypoints(N, robot, mlow, mhigh):
         robot: Robot model object
         mlow: Lower bound for random values
         mhigh: Upper bound for random values
+        rng: ``None`` (NumPy's global state, as before), a seed or an
+            ``np.random.Generator``; see :mod:`figaroh.tools.rng`.
 
     Returns:
         tuple: (q, v, a) joint position, velocity, acceleration arrays
     """
+    rng = resolve_rng(rng)
     has_backend = hasattr(robot, "backend")
     nq = robot.backend.nq if has_backend else robot.model.nq
     nv = robot.backend.nv if has_backend else robot.model.nv
@@ -43,14 +48,14 @@ def generate_waypoints(N, robot, mlow, mhigh):
     v = np.empty((1, nv))
     a = np.empty((1, nv))
     for i in range(N):
-        q = np.vstack((q, np.random.uniform(low=mlow, high=mhigh, size=(nq,))))
-        v = np.vstack((v, np.random.uniform(low=mlow, high=mhigh, size=(nv,))))
-        a = np.vstack((a, np.random.uniform(low=mlow, high=mhigh, size=(nv,))))
+        q = np.vstack((q, rng.uniform(low=mlow, high=mhigh, size=(nq,))))
+        v = np.vstack((v, rng.uniform(low=mlow, high=mhigh, size=(nv,))))
+        a = np.vstack((a, rng.uniform(low=mlow, high=mhigh, size=(nv,))))
     return q, v, a
 
 
 # TODO: generalize determine number of joints after the base link
-def generate_waypoints_fext(N, robot, mlow, mhigh):
+def generate_waypoints_fext(N, robot, mlow, mhigh, rng=None):
     """Generate random values for joints with external forces.
 
     Args:
@@ -58,10 +63,13 @@ def generate_waypoints_fext(N, robot, mlow, mhigh):
         robot: Robot model object
         mlow: Lower bound for random values
         mhigh: Upper bound for random values
+        rng: ``None`` (NumPy's global state, as before), a seed or an
+            ``np.random.Generator``; see :mod:`figaroh.tools.rng`.
 
     Returns:
         tuple: (q, v, a) joint position, velocity, acceleration arrays
     """
+    rng = resolve_rng(rng)
     has_backend = hasattr(robot, "backend")
     nq = robot.backend.nq if has_backend else robot.model.nq
     nv = robot.backend.nv if has_backend else robot.model.nv
@@ -72,13 +80,13 @@ def generate_waypoints_fext(N, robot, mlow, mhigh):
     v = np.empty((1, nv))
     a = np.empty((1, nv))
     for i in range(N):
-        q_ = np.append(q0, np.random.uniform(low=mlow, high=mhigh, size=(nq - 7,)))
+        q_ = np.append(q0, rng.uniform(low=mlow, high=mhigh, size=(nq - 7,)))
         q = np.vstack((q, q_))
 
-        v_ = np.append(v0, np.random.uniform(low=mlow, high=mhigh, size=(nv - 6,)))
+        v_ = np.append(v0, rng.uniform(low=mlow, high=mhigh, size=(nv - 6,)))
         v = np.vstack((v, v_))
 
-        a_ = np.append(a0, np.random.uniform(low=mlow, high=mhigh, size=(nv - 6,)))
+        a_ = np.append(a0, rng.uniform(low=mlow, high=mhigh, size=(nv - 6,)))
         a = np.vstack((a, a_))
     return q, v, a
 

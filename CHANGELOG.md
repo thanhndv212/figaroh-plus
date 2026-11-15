@@ -13,6 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and `figaroh[mujoco]` (the MuJoCo backend, 3.x; 4.x is untested) (#258,
   plan item Q3.1). `cyipopt` gets no extra because PyPI has no wheels for
   it; the missing-package message now names conda-forge.
+- An `rng` argument on the random generators (#266, plan item Q2.4):
+  `generate_waypoints`, `generate_waypoints_fext`,
+  `initialize_variables(mode=1)`, `WaypointsGeneration` and
+  `BaseOptimalTrajectory`. It takes a seed, `SeedSequence` or
+  `np.random.Generator`, which makes a run reproducible without touching
+  NumPy's global state. `BaseOptimalTrajectory` passes its generator to the
+  `WaypointsGeneration` it builds. The default `rng=None` draws from the
+  global state as before, so existing `np.random.seed(...)` callers get the
+  same numbers.
 
 ### Changed
 
