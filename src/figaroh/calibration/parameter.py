@@ -96,10 +96,11 @@ def get_joint_offset(model, joint_names):
     joint_off = []
     joint_names = list(model.names[1:])
     joints = list(model.joints[1:])
-    assert len(joint_names) == len(
-        joints
-    ), "Number of jointnames does not match number of joints! Please check\
-        imported model."
+    if len(joint_names) != len(joints):
+        raise ValueError(
+            "Number of joint names does not match number of joints; "
+            "check the imported model."
+        )
     for id, joint in enumerate(joints):
         name = joint_names[id]
         shortname = joint.shortname()

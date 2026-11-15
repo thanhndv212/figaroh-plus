@@ -221,7 +221,7 @@ class BaseOptimalCalibration(ABC):
 
         Raises:
             ValueError: If sample configuration file is invalid or missing
-            AssertionError: If regressor calculation fails
+            RuntimeError: If regressor calculation fails
 
         See Also:
             load_candidate_configurations: Configuration data loading
@@ -265,7 +265,7 @@ class BaseOptimalCalibration(ABC):
             - Prints progress and results to console
 
         Raises:
-            AssertionError: If minimum configuration requirement not met
+            RuntimeError: If minimum configuration requirement not met
             ValueError: If optimization problem is infeasible
             IOError: If file saving fails (logged as warning)
 
@@ -467,7 +467,7 @@ class BaseOptimalCalibration(ABC):
             - Requires picos library for determinant computation
 
         Raises:
-            AssertionError: If regressor calculation not performed first
+            RuntimeError: If regressor calculation fails
             ImportError: If picos library not available
 
         See Also:
@@ -476,7 +476,9 @@ class BaseOptimalCalibration(ABC):
         """
         import picos as pc
 
-        assert self.calculate_regressor(), "Calculate regressor first."
+        # Not an assert: the call computes the regressor and must run under -O.
+        if not self.calculate_regressor():
+            raise RuntimeError("Regressor calculation failed.")
         M_whole = np.matmul(self.R_rearr.T, self.R_rearr)
         self.detroot_whole = pc.DetRootN(M_whole) / np.sqrt(M_whole.shape[0])
         logger.info(f"detrootn of whole matrix: {self.detroot_whole}")
@@ -603,7 +605,7 @@ class BaseOptimalCalibration(ABC):
             bool: True if optimization successful and feasible
 
         Raises:
-            AssertionError: If regressor not calculated or if insufficient
+            RuntimeError: If regressor calculation fails or if insufficient
                           configurations selected (infeasible design)
             ValueError: If selection_method is not "threshold" or "iroc"
 
@@ -623,7 +625,9 @@ class BaseOptimalCalibration(ABC):
         """
         import time
 
-        assert self.calculate_regressor(), "Calculate regressor first."
+        # Not an assert: the call computes the regressor and must run under -O.
+        if not self.calculate_regressor():
+            raise RuntimeError("Regressor calculation failed.")
 
         # Picos optimization (A-optimality, C-optimality, D-optimality)
         prev_time = time.time()
@@ -642,9 +646,11 @@ class BaseOptimalCalibration(ABC):
                 f"{selection_method!r}."
             )
 
-        assert (
-            len(chosen_config) >= self.minNbChosen
-        ), "Infeasible design, try to increase NbSample."
+        if len(chosen_config) < self.minNbChosen:
+            raise RuntimeError(
+                "Infeasible design, try to increase NbSample "
+                f"({len(chosen_config)} chosen, {self.minNbChosen} needed)."
+            )
 
         logger.info(f"{len(chosen_config)} configs are chosen: {chosen_config}")
         self.nb_chosen = len(chosen_config)
@@ -791,10 +797,8 @@ class BaseOptimalCalibration(ABC):
         """
         import picos as pc
 
-        assert (
-            hasattr(self, "optimal_configurations")
-            and self.optimal_configurations is not None
-        ), "Calculate optimal configurations first."
+        if getattr(self, "optimal_configurations", None) is None:
+            raise RuntimeError("Calculate optimal configurations first.")
 
         # Plotting
         det_root_list = []
@@ -1221,7 +1225,7 @@ class Detmax:
                   Higher values indicate better parameter identifiability
 
         Raises:
-            AssertionError: If any configuration index not in candidate pool
+            ValueError: If any configuration index not in candidate pool
 
         Mathematical Details:
             For subset S, computes: det(Σᵢ∈S Xᵢ)^(1/n)
@@ -1236,7 +1240,8 @@ class Detmax:
 
         infor_mat = 0
         for idx in set:
-            assert idx in self.pool.keys(), "chosen sample not in candidate pool"
+            if idx not in self.pool:
+                raise ValueError(f"chosen sample {idx!r} not in candidate pool")
             infor_mat += self.pool[idx]
         return float(pc.DetRootN(infor_mat))
 
