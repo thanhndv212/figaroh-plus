@@ -56,6 +56,21 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 
+def _correlation(measured, estimated):
+    """Pearson correlation of two series, NaN when it is undefined.
+
+    Undefined means fewer than two samples or a constant series; reporting
+    1.0 there (as before #264) read as a perfect fit.
+    """
+    measured = np.ravel(measured)
+    estimated = np.ravel(estimated)
+    if measured.size < 2 or measured.size != estimated.size:
+        return float("nan")
+    if np.ptp(measured) == 0 or np.ptp(estimated) == 0:
+        return float("nan")
+    return float(np.corrcoef(measured, estimated)[0, 1])
+
+
 class BaseIdentification(ABC):
     """
     Base class for robot dynamic parameter identification.
@@ -889,18 +904,12 @@ class BaseIdentification(ABC):
         identif_stats = _stats(tau_val_identif)
 
         def _improvement(before, after):
+            # Undefined without a nominal error to improve on.
             if before > 0:
                 return (before - after) / before * 100
-            return 0.0
+            return float("nan")
 
-        correlation = 1.0
-        if rows.sum() > 1:
-            try:
-                correlation = float(
-                    np.corrcoef(tau_val_measured[rows], tau_val_identif[rows])[0, 1]
-                )
-            except (np.linalg.LinAlgError, ValueError):
-                correlation = 1.0
+        correlation = _correlation(tau_val_measured[rows], tau_val_identif[rows])
 
         # Per-joint raw torque series (joint-major blocks of size n_val,
         # same convention as _compute_per_joint_stats) — feeds verify()'s
@@ -1652,14 +1661,7 @@ class BaseIdentification(ABC):
         residuals = self.tau_noised - self.tau_identif
         self.rms_error = np.sqrt(np.mean(residuals**2))
 
-        if len(self.tau_noised) > 1 and len(self.tau_identif) > 1:
-            try:
-                correlation_matrix = np.corrcoef(self.tau_noised, self.tau_identif)
-                self.correlation = correlation_matrix[0, 1]
-            except (np.linalg.LinAlgError, ValueError):
-                self.correlation = 1.0
-        else:
-            self.correlation = 1.0
+        self.correlation = _correlation(self.tau_noised, self.tau_identif)
 
     def _store_results(self, identif_results):
         """Store calculation results in instance attributes.
@@ -2033,20 +2035,19 @@ class BaseIdentification(ABC):
             }
             return
 
-        # Project using SDP (requires picos backend)
-        try:
-            from figaroh.identification.cad_constraints import (
-                build_cad_constraints_from_config,
-            )
+        # Project using SDP (requires picos backend). A constraint block that
+        # cannot be built is an error: projecting without it would return
+        # parameters the configuration did not ask for.
+        from figaroh.identification.cad_constraints import (
+            build_cad_constraints_from_config,
+        )
 
-            pc_cad_cfg = pc_cfg.get("cad_constraints", {})
-            if not isinstance(pc_cad_cfg, dict):
-                pc_cad_cfg = {}
-            pc_cad_cst = build_cad_constraints_from_config(
-                pc_cad_cfg, model=getattr(self, "model", None)
-            )
-        except Exception:
-            pc_cad_cst = None
+        pc_cad_cfg = pc_cfg.get("cad_constraints", {})
+        if not isinstance(pc_cad_cfg, dict):
+            pc_cad_cfg = {}
+        pc_cad_cst = build_cad_constraints_from_config(
+            pc_cad_cfg, model=getattr(self, "model", None)
+        )
 
         try:
             projected_p10_by_joint, robot_report = project_robot_p10_lmi(
@@ -2872,70 +2873,69 @@ class BaseIdentification(ABC):
             _basic_plots()
 
     def save_results(self, output_dir="results"):
-        """Save identification results using unified results manager."""
+        """Save identification results using unified results manager.
+
+        Returns:
+            dict: format or file name -> path written; ``None`` when there
+            is no result yet.
+
+        Raises:
+            Exception: Whatever the writer raised. A failed save is not
+                reported as a return value.
+        """
         if not hasattr(self, "result") or self.result is None:
             logger.warning("No identification results to save. Run solve() first.")
             return
 
         # Use pre-initialized results manager if available
         if hasattr(self, "results_manager") and self.results_manager is not None:
-            try:
-                # Save using unified manager with self.result data
-                saved_files = self.results_manager.save_results(
-                    output_dir=output_dir, save_formats=["yaml", "csv", "npz"]
-                )
+            # Save using unified manager with self.result data
+            saved_files = self.results_manager.save_results(
+                output_dir=output_dir, save_formats=["yaml", "csv", "npz"]
+            )
 
-                logger.info("Identification results saved using ResultsManager")
-                for fmt, path in saved_files.items():
-                    logger.info(f"  {fmt}: {path}")
+            logger.info("Identification results saved using ResultsManager")
+            for fmt, path in saved_files.items():
+                logger.info(f"  {fmt}: {path}")
 
-                return saved_files
+            return saved_files
 
-            except Exception as e:
-                logger.error(f"Error saving with ResultsManager: {e}")
-                logger.info("Falling back to basic saving...")
+        # Basic saving when no ResultsManager was set up
+        import os
+        import yaml
+        import datetime
 
-        # Fallback to basic saving if ResultsManager not available
-        try:
-            import os
-            import yaml
-            import datetime
+        os.makedirs(output_dir, exist_ok=True)
 
-            os.makedirs(output_dir, exist_ok=True)
+        # Extract data from self.result dictionary
+        parameter_values = self.result.get("base parameters values", np.array([]))
+        parameter_names = self.result.get("base parameters names", [])
+        condition_number = self.result.get("condition number", 0)
+        rmse_norm = self.result.get("rmse norm (N/m)", 0)
+        std_dev_param = self.result.get("std dev of estimated param", np.array([]))
 
-            # Extract data from self.result dictionary
-            parameter_values = self.result.get("base parameters values", np.array([]))
-            parameter_names = self.result.get("base parameters names", [])
-            condition_number = self.result.get("condition number", 0)
-            rmse_norm = self.result.get("rmse norm (N/m)", 0)
-            std_dev_param = self.result.get("std dev of estimated param", np.array([]))
+        results_dict = {
+            "base_parameters": (
+                parameter_values.tolist()
+                if hasattr(parameter_values, "tolist")
+                else parameter_values
+            ),
+            "parameter_names": [str(p) for p in parameter_names],
+            "condition_number": float(condition_number),
+            "rmse_norm": float(rmse_norm),
+            "standard_deviation": (
+                std_dev_param.tolist()
+                if hasattr(std_dev_param, "tolist")
+                else std_dev_param
+            ),
+        }
 
-            results_dict = {
-                "base_parameters": (
-                    parameter_values.tolist()
-                    if hasattr(parameter_values, "tolist")
-                    else parameter_values
-                ),
-                "parameter_names": [str(p) for p in parameter_names],
-                "condition_number": float(condition_number),
-                "rmse_norm": float(rmse_norm),
-                "standard_deviation": (
-                    std_dev_param.tolist()
-                    if hasattr(std_dev_param, "tolist")
-                    else std_dev_param
-                ),
-            }
+        robot_name = self.__class__.__name__.lower().replace("identification", "")
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"{robot_name}_identification_results_{timestamp}.yaml"
 
-            robot_name = self.__class__.__name__.lower().replace("identification", "")
-            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"{robot_name}_identification_results_{timestamp}.yaml"
+        with open(os.path.join(output_dir, filename), "w") as f:
+            yaml.dump(results_dict, f, default_flow_style=False)
 
-            with open(os.path.join(output_dir, filename), "w") as f:
-                yaml.dump(results_dict, f, default_flow_style=False)
-
-            logger.info(f"Results saved to {output_dir}/{filename}")
-            return {filename: os.path.join(output_dir, filename)}
-
-        except Exception as e:
-            logger.error(f"Error in fallback saving: {e}")
-            return None
+        logger.info(f"Results saved to {output_dir}/{filename}")
+        return {filename: os.path.join(output_dir, filename)}
