@@ -1,8 +1,5 @@
 """Regression tests for the #61 code-review findings."""
 
-import os
-import sys
-
 import numpy as np
 import pytest
 
@@ -10,8 +7,6 @@ try:
     import pinocchio as pin
 except ImportError:
     pytest.skip("Pinocchio not available", allow_module_level=True)
-
-sys.path.insert(0, os.path.dirname(__file__))
 
 from test_data_contract_wiring import _Ident, _trajectory  # noqa: E402
 

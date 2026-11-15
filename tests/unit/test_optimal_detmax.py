@@ -6,14 +6,10 @@ the D-optimal subset of a small pool can be found by enumeration.
 """
 
 import itertools
-import os
 import random
-import sys
 
 import numpy as np
 import pytest
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
 pytest.importorskip("picos")
 
