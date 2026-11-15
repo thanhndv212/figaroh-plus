@@ -52,9 +52,10 @@ def get_idxq_from_jname(model, joint_name):
         int: Index of joint in configuration vector q
 
     Raises:
-        AssertionError: If joint name does not exist in model
+        ValueError: If joint name does not exist in model
     """
-    assert joint_name in model.names, "Given joint name does not exist."
+    if joint_name not in model.names:
+        raise ValueError(f"Given joint name does not exist: {joint_name!r}")
     jointId = model.getJointId(joint_name)
     joint_idx = model.joints[jointId].idx_q
     return joint_idx
