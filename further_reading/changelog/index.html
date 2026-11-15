@@ -2173,7 +2173,18 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="[Unreleased]">
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#121-2026-11-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [1.2.1] - 2026-11-14
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[1.2.1] - 2026-11-14">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3516,7 +3527,18 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="[Unreleased]">
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#121-2026-11-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [1.2.1] - 2026-11-14
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[1.2.1] - 2026-11-14">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -4725,6 +4747,14 @@ copy to keep in sync.</p>
 <p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
 and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
 <h3 id="unreleased">[Unreleased]<a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h3>
+<h3 id="121-2026-11-14">[1.2.1] - 2026-11-14<a class="headerlink" href="#121-2026-11-14" title="Permanent link">&para;</a></h3>
+<p>Hotfix for identification with a subset of the model's joints active
+(plan item Q1.1, #245; release tracker #251). The paired examples work is
+thanhndv212/figaroh-examples#184.</p>
+<p>Upgrading from 1.2.0: no configuration change is required. Results change
+only for runs that were wrong or failed before: <code>solve(decimate=False)</code> and
+<code>compute_reference_torque</code> with a subset of the model's joints active. Runs
+with every joint active are unchanged.</p>
 <h4 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h4>
 <ul>
 <li>Identification with a subset of the model's joints active (#245, plan item
