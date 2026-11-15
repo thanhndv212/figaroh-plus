@@ -107,7 +107,7 @@ archived runs offline. See
 [Reporting & Verification](https://thanhndv212.github.io/figaroh-plus/reporting_and_verification/).
 
 **Backends.** Pinocchio is the default dynamics backend; MuJoCo is available
-as an optional backend (`pip install mujoco`). See
+as an optional backend (`pip install 'figaroh[mujoco]'`). See
 [Backends](https://thanhndv212.github.io/figaroh-plus/concepts/backends/).
 
 ## Outputs
